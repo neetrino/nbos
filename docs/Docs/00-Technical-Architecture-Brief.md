@@ -418,24 +418,5 @@ Employee ──N:M──► Credential (access)
 
 ---
 
-## 13. Рекомендуемый промт для нового чата
 
-```
-Я создаю собственную Business Operation System (NBOS Platform) для IT-компании.
-Полная документация по бизнес-логике, модулям и UI уже готова (59 файлов).
-
-Сводный документ: @00-Technical-Architecture-Brief.md
-Детальная модель данных: @Docs/01-Platform-Overview/03-Core-Entities-and-Data-Model.md
-Автоматизации: @Docs/06-Integrations/05-Automation-Scenarios.md
-
-Задача: спроектировать техническую архитектуру:
-1. Выбор стека технологий (frontend, backend, database, infra)
-2. Архитектура приложения (monolith vs micro, API design)
-3. Schema базы данных (SQL migrations)
-4. Event system и автоматизации
-5. Безопасность (auth, encryption, RBAC implementation)
-6. Инфраструктура (hosting, CI/CD, deployment)
-7. План реализации по фазам
-
-Задавай вопросы если нужно, потом предлагай решения.
 ```
