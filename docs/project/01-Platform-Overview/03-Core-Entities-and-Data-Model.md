@@ -1,0 +1,638 @@
+# NBOS Platform — Core Entities & Data Model
+
+## Обзор
+
+Этот документ описывает все ключевые сущности (entities) платформы, их атрибуты и связи между собой. Это фундамент, на котором строятся все модули.
+
+---
+
+## 1. Иерархия сущностей
+
+```
+Contact (человек)
+  └── Company (юрлицо / физлицо)
+        └── Project (бизнес / бренд)
+              ├── Product (результат: website, app, logo)
+              │     ├── Order (коммерция: сумма, план оплаты)
+              │     │     ├── Invoice (счёт на оплату)
+              │     │     │     └── Payment (факт оплаты)
+              │     │     └── Bonus Entry (бонус за заказ)
+              │     ├── Work Package (исполнение: спринт, этап)
+              │     │     └── Task (атомарная задача)
+              │     └── Support Ticket (обращение клиента)
+              │
+              ├── Extension (доработка к продукту)
+              │     ├── Order
+              │     ├── Work Package
+              │     └── Task
+              │
+              ├── Subscription Contract (договор подписки)
+              │     ├── Invoice (ежемесячный)
+              │     └── Maintenance Work
+              │
+              ├── Credential (пароль / доступ)
+              ├── Asset (файл / документ)
+              ├── Chat (проектный чат с топиками)
+              └── Audit Log (история изменений)
+```
+
+---
+
+## 2. Описание каждой сущности
+
+### 2.1. Contact (Контакт)
+
+Физическое лицо — человек, с которым ведётся взаимодействие.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| first_name | String | Имя |
+| last_name | String | Фамилия |
+| phone | String | Телефон (основной) |
+| email | String | Email |
+| messenger_links | JSON | WhatsApp, Telegram, Instagram |
+| role | Enum | Client, Partner, Contractor, Other |
+| notes | Text | Заметки |
+| created_at | DateTime | Дата создания |
+
+**Связи:**
+- Contact → many Projects (один человек может заказать много проектов для разных бизнесов)
+- Contact → many Companies (один человек может представлять несколько юрлиц)
+- Contact → many Deals (один контакт может быть в нескольких сделках)
+
+---
+
+### 2.2. Company (Компания)
+
+Юридическое лицо или ИП — для выставления счетов.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| name | String | Название компании |
+| type | Enum | Legal Entity, Individual, Sole Proprietor |
+| tax_id | String | ИНН / VOEN / Tax ID |
+| legal_address | String | Юридический адрес |
+| bank_details | JSON | Банковские реквизиты |
+| tax_status | Enum | Tax (налогооблагаемый), Tax-Free |
+| contact_id | FK → Contact | Основной контакт |
+| notes | Text | Заметки |
+
+**Связи:**
+- Company → many Projects
+- Company → many Invoices (счета выставляются на компанию)
+
+---
+
+### 2.3. Project (Проект)
+
+**Центральная сущность платформы.** Один проект = один бизнес / бренд клиента.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| name | String | Название проекта (обычно = название бренда) |
+| contact_id | FK → Contact | Основной контакт |
+| company_id | FK → Company | Юрлицо для биллинга |
+| type | Enum | White Label, Mix, Custom Code |
+| status | Computed | Вычисляется из статусов Products (см. ниже) |
+| seller_id | FK → Employee | Ответственный продажник |
+| pm_id | FK → Employee | Ответственный PM |
+| deadline | Date | Общий дедлайн проекта |
+| description | Text | Описание проекта |
+| created_at | DateTime | Дата создания |
+| archived_at | DateTime | Дата архивации (если закрыт) |
+
+**Вычисляемый статус проекта:**
+- Проект не имеет собственного статуса. Его "состояние" определяется статусами его Products:
+  - Если хотя бы один Product в статусе Development → проект видим в табе "Development"
+  - Если хотя бы один Product в статусе Maintenance → проект видим в табе "Maintenance"
+  - Проект может быть одновременно в нескольких табах
+  - Если все Products в статусе Closed → проект в табе "Closed"
+
+**Связи:**
+- Project → many Products
+- Project → many Extensions
+- Project → many Subscription Contracts
+- Project → many Credentials
+- Project → many Assets
+- Project → many Chats
+- Project → many Audit Logs
+- Project → one Contact
+- Project → one Company
+
+---
+
+### 2.4. Product (Продукт)
+
+Конкретный результат работы внутри проекта: website, mobile app, logo, CRM system.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| project_id | FK → Project | Проект |
+| name | String | Название продукта ("Website", "Mobile App") |
+| product_type | Enum | Website, Mobile App, CRM, Logo, SMM, SEO, Other |
+| status | Enum | New, Development, QA, Transfer, On Hold, Done, Lost |
+| order_id | FK → Order | Связанный заказ |
+| pm_id | FK → Employee | PM продукта |
+| deadline | Date | Дедлайн продукта |
+| description | Text | Описание, техзадание |
+| checklist_template | FK → Template | Шаблон чеклиста по типу продукта |
+| created_at | DateTime | Дата создания |
+
+**Стадии Product (Stage Gates):**
+1. **New** — проект получен, заполняется начальная информация
+2. **Creating** — подготовка: аккаунты, домены, окружение, доступы
+3. **Development** — разработка (scrum/kanban внутри)
+4. **QA / Checking** — проверка качества, чеклисты
+5. **Transfer** — передача клиенту, acceptance
+6. **On Hold** — приостановлен
+7. **Done** — завершён успешно
+8. **Lost** — отменён
+
+Переход между стадиями контролируется Stage Gates (обязательные поля, задачи, чеклисты).
+
+**Связи:**
+- Product → one Order
+- Product → many Work Packages
+- Product → many Tasks
+- Product → many Support Tickets
+- Product → one Project
+
+---
+
+### 2.5. Extension (Доработка)
+
+Дополнительная работа к существующему продукту: новая функция, улучшение, доп. модуль.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| project_id | FK → Project | Проект |
+| product_id | FK → Product | К какому продукту доработка (опционально) |
+| name | String | Название доработки |
+| size | Enum | Micro (< 1 день), Small (1–3 дня), Medium (1–2 недели), Large (2+ недели) |
+| status | Enum | New, Development, QA, Transfer, Done, Lost |
+| order_id | FK → Order | Связанный заказ |
+| assigned_to | FK → Employee | Исполнитель |
+| description | Text | Описание |
+| created_at | DateTime | Дата создания |
+
+**Важно:** Extension — это тоже Order с коммерческой стороны. Разница с Product:
+- Product = полный жизненный цикл (месяцы работы)
+- Extension = доработка (от 1 часа до 1 месяца)
+- Оба генерируют бонусы через связанный Order
+
+**Связи:**
+- Extension → one Order
+- Extension → many Tasks
+- Extension → one Project
+- Extension → one Product (опционально)
+
+---
+
+### 2.6. Order (Заказ)
+
+Коммерческая единица: что продали, за сколько, как оплачивается.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| project_id | FK → Project | Проект |
+| deal_id | FK → Deal | Сделка, из которой создан |
+| type | Enum | Product, Extension, Subscription |
+| payment_type | Enum | Classic 50/50, Classic 30/30/40, Subscription Monthly |
+| total_amount | Decimal | Общая сумма заказа |
+| currency | Enum | AMD (default), USD, EUR |
+| tax_status | Enum | Tax, Tax-Free |
+| status | Enum | Active, Partially Paid, Fully Paid, Closed, Cancelled |
+| partner_id | FK → Partner | Партнёр-реферал (если есть) |
+| partner_percent | Decimal | % партнёра (обычно 30%) |
+| seller_id | FK → Employee | Продавец |
+| seller_bonus_percent | Decimal | % бонуса продавца (5–10%) |
+| seller_bonus_source | Enum | Cold Call, Marketing Lead, Existing Client, Partner Referral |
+| delivery_bonus_percent | Decimal | % бонуса delivery (зависит от типа проекта: WL 7%, Mix 10%, CC 15%) |
+| deadline | Date | Дедлайн |
+| notes | Text | Заметки |
+| created_at | DateTime | Дата создания |
+| closed_at | DateTime | Дата закрытия |
+
+**Связи:**
+- Order → many Invoices
+- Order → many Bonus Entries
+- Order → one Deal (источник)
+- Order → one Project
+- Order → one Product OR one Extension
+- Order → one Partner (если реферал)
+
+---
+
+### 2.7. Invoice (Счёт)
+
+Конкретный счёт на оплату. Один Order может иметь несколько Invoices (при оплате частями).
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| order_id | FK → Order | Заказ |
+| subscription_id | FK → Subscription | Подписка (если subscription invoice) |
+| project_id | FK → Project | Проект |
+| company_id | FK → Company | Кому выставлен (юрлицо) |
+| amount | Decimal | Сумма счёта |
+| currency | Enum | AMD, USD, EUR |
+| tax_status | Enum | Tax, Tax-Free (наследуется от Order/Subscription) |
+| type | Enum | Development, Extension, Subscription, Domain, Service, Other |
+| status | Enum | New, Created in Gov System, Sent to Client, Overdue, On Hold, Paid, Unpaid |
+| due_date | Date | Дата, до которой нужно оплатить |
+| paid_date | Date | Фактическая дата оплаты |
+| gov_invoice_id | String | ID в государственной системе |
+| notes | Text | Заметки |
+| created_at | DateTime | Дата создания |
+
+**Стадии Invoice (автоматизированные):**
+1. **New** — создан в системе
+2. **Create in Gov System** — (через ~1 час) отправка уведомления бухгалтеру
+3. **Sent to Client** — сообщение клиенту в WhatsApp с напоминанием
+4. **Overdue** — (через N дней) просрочка, повторные напоминания
+5. **On Hold** — приостановлен вручную
+6. **Paid** — оплачен (финдиректор подтверждает)
+7. **Unpaid** — не оплачен (закрыт как неуспешный)
+
+**Связи:**
+- Invoice → one Payment (при оплате)
+- Invoice → one Order OR one Subscription
+- Invoice → one Company
+
+---
+
+### 2.8. Payment (Платёж)
+
+Факт поступления денег.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| invoice_id | FK → Invoice | Связанный счёт |
+| amount | Decimal | Сумма |
+| currency | Enum | AMD, USD, EUR |
+| payment_date | Date | Дата поступления |
+| payment_method | Enum | Bank Transfer, Cash, Card, Other |
+| confirmed_by | FK → Employee | Кто подтвердил (финдиректор) |
+| notes | Text | Заметки |
+
+**Связи:**
+- Payment → one Invoice
+- Payment triggers: Bonus Entry creation, Order status update, Partner Payout creation
+
+---
+
+### 2.9. Subscription Contract (Контракт подписки)
+
+Повторяющееся коммерческое соглашение: клиент платит фиксированную сумму регулярно.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| project_id | FK → Project | Проект |
+| type | Enum | Maintenance Only, Development + Maintenance, Development Only, Partner Service |
+| amount | Decimal | Сумма подписки в месяц |
+| currency | Enum | AMD |
+| tax_status | Enum | Tax, Tax-Free |
+| billing_day | Integer | День месяца для биллинга (1–28) |
+| start_date | Date | Дата начала |
+| end_date | Date | Дата окончания (null = бессрочно) |
+| status | Enum | Active, Paused, Cancelled, Expired |
+| partner_id | FK → Partner | Партнёр (если partner service) |
+| partner_percent | Decimal | % партнёра |
+| notes | Text | Заметки |
+
+**Связи:**
+- Subscription → many Invoices (ежемесячные)
+- Subscription → one Project
+- Subscription → one Partner (опционально)
+
+---
+
+### 2.10. Expense (Затрата)
+
+Расход денег — запланированный или незапланированный.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| type | Enum | Planned, Unplanned |
+| category | Enum | Domain, Hosting, Service, Marketing, Salary, Bonus, Partner Payout, Tools, Other |
+| name | String | Название затраты |
+| amount | Decimal | Сумма |
+| currency | Enum | AMD, USD, EUR |
+| frequency | Enum | One-time, Monthly, Quarterly, Yearly, Multi-year |
+| due_date | Date | Дата, до которой нужно оплатить |
+| status | Enum | This Month, Pay Now, Delayed, On Hold, Old, Paid, Unpaid |
+| project_id | FK → Project | Привязка к проекту (опционально) |
+| order_id | FK → Order | Привязка к заказу (опционально) |
+| partner_id | FK → Partner | Партнёр (для partner payouts) |
+| owner_id | FK → Employee | Ответственный за оплату |
+| is_pass_through | Boolean | Затрата "вместо клиента" (домен, сервис) |
+| tax_status | Enum | Tax, Tax-Free |
+| source_planned_expense_id | FK → Expense | Ссылка на planned expense (для автосозданных) |
+| paid_date | Date | Фактическая дата оплаты |
+| notes | Text | Заметки |
+
+**Связи:**
+- Expense → one Project (опционально)
+- Expense → one Order (опционально)
+- Expense → one Partner (для partner payouts)
+
+---
+
+### 2.11. Bonus Entry (Запись бонуса)
+
+Единица бонусного учёта.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| employee_id | FK → Employee | Сотрудник |
+| order_id | FK → Order | Заказ, за который начислен |
+| project_id | FK → Project | Проект |
+| type | Enum | Sales Bonus, Delivery Bonus, PM Bonus, Design Bonus, Marketing Bonus |
+| amount | Decimal | Сумма бонуса |
+| percent | Decimal | % от суммы заказа |
+| status | Enum | Incoming, Earned, Pending Eligibility, Vested, Holdback, Active, Paid, Clawback |
+| kpi_gate_passed | Boolean | Прошёл ли KPI-гейт (для Sales) |
+| holdback_percent | Decimal | % удержания (20% по умолчанию) |
+| holdback_release_date | Date | Дата освобождения holdback |
+| earn_event | String | Событие начисления ("Invoice Paid", "Work Done + Paid") |
+| payout_month | String | Месяц выплаты (YYYY-MM) |
+| paid_date | Date | Фактическая дата выплаты |
+| notes | Text | Заметки |
+
+**Состояния бонуса:**
+1. **Incoming** — бонус будет начислен после выполнения работы (видно как прогноз)
+2. **Earned** — событие произошло (работа сдана / инвойс оплачен)
+3. **Pending Eligibility** — ожидание KPI-гейта / acceptance / полной оплаты
+4. **Vested** — разрешено к выплате (KPI пройден)
+5. **Holdback** — 20% удержано на 14–30 дней
+6. **Active** — готов к выплате в следующем payroll run
+7. **Paid** — выплачен
+8. **Clawback** — откат (refund/chargeback/спор)
+
+**Связи:**
+- Bonus Entry → one Employee
+- Bonus Entry → one Order
+- Bonus Entry → one Project
+
+---
+
+### 2.12. Lead (Лид)
+
+Входящее обращение потенциального клиента.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| contact_name | String | Имя |
+| phone | String | Телефон |
+| email | String | Email |
+| source | Enum | Instagram, Facebook, Website, Cold Call, Partner, Referral, Other |
+| status | Enum | New, Didn't Get Through, Contact Established, Qualification (MQL), SPAM, Frozen, Quality Lead (SQL) |
+| assigned_to | FK → Employee | Ответственный |
+| notes | Text | Заметки |
+| created_at | DateTime | Дата создания |
+
+**Связи:**
+- Lead → one Deal (при конверсии SQL → Deal)
+- Lead → one Contact (при создании контакта)
+
+---
+
+### 2.13. Deal (Сделка)
+
+Активная продажа. Создаётся из Lead (SQL) или как Extension Deal из существующего проекта.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| lead_id | FK → Lead | Источник (для новых клиентов) |
+| project_id | FK → Project | Проект (для extension deals) |
+| contact_id | FK → Contact | Контакт |
+| type | Enum | New Client, Extension, Upsell |
+| status | Enum | Start a Conversation, Discuss Needs, Meeting, Can We Do It, Send Offer, Get Answer, Deposit & Contract, Creating, Get Final Pay, Maintenance Offer, Failed, Deal Won |
+| amount | Decimal | Ожидаемая сумма |
+| payment_type | Enum | Classic 50/50, Classic 30/30/40, Subscription |
+| seller_id | FK → Employee | Ответственный продажник |
+| deadline | Date | Ожидаемая дата закрытия |
+| source | Enum | Marketing, Cold Call, Partner, Existing Client |
+| offer_url | String | Ссылка на коммерческое предложение |
+| notes | Text | Заметки |
+| created_at | DateTime | Дата создания |
+| closed_at | DateTime | Дата закрытия |
+
+**Связи:**
+- Deal → one Order (при успешном закрытии)
+- Deal → one Lead (источник)
+- Deal → one Contact
+- Deal → one Project (для extensions)
+
+---
+
+### 2.14. Support Ticket (Тикет)
+
+Обращение клиента по существующему проекту/продукту.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| project_id | FK → Project | Проект |
+| product_id | FK → Product | Продукт (опционально) |
+| contact_id | FK → Contact | Кто обратился |
+| category | Enum | Incident, Service Request, Change Request, Problem |
+| priority | Enum | P1 Critical, P2 High, P3 Normal |
+| status | Enum | New, Triaged, Assigned, In Progress, Resolved, Closed, Reopened |
+| billable | Boolean | Платная работа? |
+| source | Enum | Subscription (warranty), Paid Extension |
+| assigned_to | FK → Employee | Исполнитель |
+| sla_response_deadline | DateTime | Дедлайн первой реакции |
+| sla_resolve_deadline | DateTime | Дедлайн решения |
+| description | Text | Описание проблемы |
+| resolution | Text | Описание решения |
+| created_at | DateTime | Дата создания |
+| resolved_at | DateTime | Дата решения |
+
+**Связи:**
+- Ticket → one Project
+- Ticket → one Product (опционально)
+- Ticket → one Contact
+- Ticket → may create Extension Deal (если Change Request = платная работа)
+
+---
+
+### 2.15. Credential (Пароль / Доступ)
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| project_id | FK → Project | Проект (опционально, null = company-level) |
+| category | Enum | Admin, Domain, Hosting, Service, App, Mail, API Key, Database, Other |
+| provider | Enum | Beget, Reg.ru, Cloudflare, Neon, Upstash, Resend, Google, Apple, Other |
+| name | String | Название ("Cloudflare Account", "Production DB") |
+| url | String | URL входа |
+| login | String (encrypted) | Логин |
+| password | String (encrypted) | Пароль |
+| api_key | String (encrypted) | API ключ (опционально) |
+| env_data | Text (encrypted) | Содержимое .env файла (опционально) |
+| phone | String | Привязанный телефон |
+| access_level | Enum | Secret, Project Team, Department, All |
+| allowed_employees | FK[] → Employee | Конкретные сотрудники с доступом (для Secret level) |
+| owner_id | FK → Employee | Кто создал / владелец |
+| notes | Text | Заметки |
+| created_at | DateTime | Дата создания |
+| updated_at | DateTime | Дата последнего изменения |
+
+**Связи:**
+- Credential → one Project (опционально)
+- Credential → many Employees (через access rules)
+- Credential → Audit Log (каждый view/edit логируется)
+
+---
+
+### 2.16. Domain (Домен)
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| project_id | FK → Project | Проект |
+| domain_name | String | Доменное имя (example.com) |
+| provider | Enum | Reg.ru, GoDaddy, Beget, Other |
+| account_id | FK → Credential | Аккаунт провайдера |
+| purchase_date | Date | Дата покупки |
+| expiry_date | Date | Дата истечения |
+| renewal_cost | Decimal | Стоимость продления |
+| client_charge | Decimal | Сумма, которую платит клиент (может быть > renewal_cost) |
+| auto_renew | Boolean | Автопродление включено |
+| status | Enum | Active, Expiring Soon, Expired, Transferred |
+| notes | Text | Заметки |
+
+**Связи:**
+- Domain → one Project
+- Domain → one Credential (аккаунт провайдера)
+- Domain generates: annual Expense + Invoice for client
+
+---
+
+### 2.17. Employee (Сотрудник)
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| first_name | String | Имя |
+| last_name | String | Фамилия |
+| role | Enum | CEO, Seller, PM, Developer, Designer, QA, Tech Specialist, Finance, Marketing, Junior, Ops |
+| department | Enum | Executive, Sales, Marketing, Delivery, Support, Finance, HR, Ops |
+| level | Enum | Junior, Middle, Senior, Lead, Head |
+| base_salary | Decimal | Фиксированная зарплата |
+| email | String | Email |
+| phone | String | Телефон |
+| telegram_id | String | Telegram ID |
+| work_schedule | JSON | Рабочий график |
+| status | Enum | Active, Probation, On Leave, Fired |
+| hire_date | Date | Дата найма |
+
+**Связи:**
+- Employee → many Projects (как seller, PM, dev)
+- Employee → many Tasks
+- Employee → many Bonus Entries
+- Employee → many Credentials (доступ)
+
+---
+
+### 2.18. Partner (Партнёр)
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| name | String | Имя / название |
+| type | Enum | Regular (без договора), Premium (с договором) |
+| direction | Enum | Inbound (передаёт нам заказы), Outbound (мы передаём им клиентов), Both |
+| default_percent | Decimal | Стандартный % (30%) |
+| contact_info | JSON | Телефон, email, messenger |
+| agreement_url | String | Ссылка на договор |
+| status | Enum | Active, Inactive |
+| notes | Text | Заметки |
+
+**Связи:**
+- Partner → many Orders (referral deals)
+- Partner → many Subscription Contracts (partner services)
+- Partner → many Expenses (partner payouts)
+
+---
+
+### 2.19. Task (Задача)
+
+Подробное описание в отдельном документе (05-Tasks). Здесь — ключевые поля.
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | UUID | Уникальный идентификатор |
+| title | String | Название задачи |
+| project_id | FK → Project | Проект |
+| product_id | FK → Product | Продукт (опционально) |
+| extension_id | FK → Extension | Доработка (опционально) |
+| creator_id | FK → Employee | Кто поставил |
+| assignee_id | FK → Employee | Исполнитель |
+| co_assignees | FK[] → Employee | Соисполнители |
+| observers | FK[] → Employee | Наблюдатели |
+| status | Enum | Backlog, To Do, In Progress, Review, Done, Cancelled |
+| priority | Enum | Critical, High, Normal, Low |
+| sprint_id | FK → Sprint | Спринт (опционально) |
+| due_date | Date | Дедлайн |
+| description | Text | Описание |
+| has_chat | Boolean | Есть ли чат в задаче |
+| created_at | DateTime | Дата создания |
+| completed_at | DateTime | Дата завершения |
+
+---
+
+## 3. Diagram: Entity Relationships
+
+```
+Contact ──1:N──► Project ──1:N──► Product ──1:1──► Order ──1:N──► Invoice ──1:1──► Payment
+   │                │                                  │
+   │                ├──1:N──► Extension ──1:1──► Order  ├──1:N──► Bonus Entry
+   │                │                                  │
+   │                ├──1:N──► Subscription ──1:N──► Invoice
+   │                │
+   │                ├──1:N──► Credential
+   │                ├──1:N──► Domain
+   │                ├──1:N──► Asset (Drive)
+   │                ├──1:N──► Chat
+   │                ├──1:N──► Support Ticket
+   │                └──1:N──► Audit Log
+   │
+   └──1:N──► Company
+
+Partner ──1:N──► Order (referral)
+Partner ──1:N──► Subscription (partner service)
+Partner ──1:N──► Expense (payouts)
+
+Employee ──1:N──► Task
+Employee ──1:N──► Bonus Entry
+Employee ──N:M──► Project (roles: seller, PM, dev)
+Employee ──N:M──► Credential (access)
+
+Lead ──1:1──► Deal ──1:1──► Order
+```
+
+---
+
+## 4. Ключевые правила целостности данных
+
+1. **Каждый Invoice обязательно привязан к Order ИЛИ Subscription.** Нет "свободных" счетов.
+2. **Каждый Bonus Entry обязательно привязан к Order.** Даже micro-extension создаёт Order.
+3. **Payment триггерит события:** смена статуса Order, создание Bonus Entry, создание Partner Payout.
+4. **Tax-Free / Tax статус наследуется:** Order/Subscription → Invoice. Определяется один раз и не меняется.
+5. **Credential encryption:** логин, пароль, API key, env_data шифруются на уровне поля (AES-256).
+6. **Audit обязателен для:** Credentials (view + edit), Invoices, Payments, Bonus Entries, Access changes.
+7. **Project статус вычисляется**, а не устанавливается вручную.
