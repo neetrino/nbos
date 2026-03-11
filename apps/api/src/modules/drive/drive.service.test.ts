@@ -54,10 +54,10 @@ describe('DriveService', () => {
       service = new DriveService(config as never);
     });
 
-    it('should list files from R2', async () => {
+    it('should list files from R2 (under Drive/ prefix)', async () => {
       mockSend.mockResolvedValueOnce({
-        CommonPrefixes: [{ Prefix: 'projects/p1/docs/' }],
-        Contents: [{ Key: 'projects/p1/readme.txt', Size: 1024, LastModified: new Date() }],
+        CommonPrefixes: [{ Prefix: 'Drive/projects/p1/docs/' }],
+        Contents: [{ Key: 'Drive/projects/p1/readme.txt', Size: 1024, LastModified: new Date() }],
       });
 
       const files = await service.listFiles('p1');
@@ -68,12 +68,12 @@ describe('DriveService', () => {
       expect(files[1]!.name).toBe('readme.txt');
     });
 
-    it('should generate upload URL', async () => {
+    it('should generate upload URL (key under Drive/)', async () => {
       const result = await service.getUploadUrl('p1', 'test.pdf', 'application/pdf');
 
       expect(result.uploadUrl).toBe('https://presigned-url.example.com');
-      expect(result.key).toBe('projects/p1/test.pdf');
-      expect(result.publicUrl).toBe('https://cdn.example.com/projects/p1/test.pdf');
+      expect(result.key).toBe('Drive/projects/p1/test.pdf');
+      expect(result.publicUrl).toBe('https://cdn.example.com/Drive/projects/p1/test.pdf');
     });
 
     it('should generate download URL', async () => {
@@ -87,11 +87,11 @@ describe('DriveService', () => {
       await expect(service.deleteFile('p1', 'test.pdf')).resolves.toBeUndefined();
     });
 
-    it('should build project structure tree', async () => {
+    it('should build project structure tree (keys under Drive/)', async () => {
       mockSend.mockResolvedValueOnce({
         Contents: [
-          { Key: 'projects/p1/docs/readme.md', Size: 512, LastModified: new Date() },
-          { Key: 'projects/p1/src/index.ts', Size: 256, LastModified: new Date() },
+          { Key: 'Drive/projects/p1/docs/readme.md', Size: 512, LastModified: new Date() },
+          { Key: 'Drive/projects/p1/src/index.ts', Size: 256, LastModified: new Date() },
         ],
       });
 

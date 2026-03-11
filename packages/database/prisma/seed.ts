@@ -123,7 +123,7 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Contacts (3)');
+  console.log('  ✓ Contacts (6)');
 
   // Companies
   const company1 = await prisma.company.upsert({
@@ -152,7 +152,48 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Companies (2)');
+  const partnerContact = await prisma.contact.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000004' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000004',
+      firstName: 'Armen',
+      lastName: 'Sahakyan',
+      phone: '+37499112233',
+      email: 'armen@partneragency.am',
+      role: 'PARTNER',
+    },
+  });
+
+  // Partners
+  const partner1 = await prisma.partner.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000030' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000030',
+      name: 'Digital Partners Agency',
+      type: 'PREMIUM',
+      direction: 'INBOUND',
+      defaultPercent: 25,
+      status: 'ACTIVE',
+      contactId: partnerContact.id,
+    },
+  });
+
+  await prisma.partner.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000031' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000031',
+      name: 'Startup Hub',
+      type: 'REGULAR',
+      direction: 'BOTH',
+      defaultPercent: 30,
+      status: 'ACTIVE',
+    },
+  });
+
+  console.log('  ✓ Partners (2)');
 
   // Projects
   const project1 = await prisma.project.upsert({
@@ -199,7 +240,92 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Projects (3)');
+  const contact5 = await prisma.contact.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000005' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000005',
+      firstName: 'Anahit',
+      lastName: 'Martirosyan',
+      phone: '+37477123456',
+      email: 'anahit@medtech.am',
+      role: 'CLIENT',
+    },
+  });
+
+  const contact6 = await prisma.contact.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000006' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000006',
+      firstName: 'Vardan',
+      lastName: 'Stepanyan',
+      phone: '+37455998877',
+      email: 'vardan@logistics.am',
+      role: 'CLIENT',
+    },
+  });
+
+  const company5 = await prisma.company.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000012' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000012',
+      name: 'MedTech Solutions',
+      type: 'LEGAL',
+      taxStatus: 'TAX',
+      contactId: contact5.id,
+      taxId: '08765432',
+      legalAddress: 'Yerevan, Armenia',
+    },
+  });
+
+  const company6 = await prisma.company.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000013' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000013',
+      name: 'Logistics Pro',
+      type: 'LEGAL',
+      taxStatus: 'TAX',
+      contactId: contact6.id,
+      legalAddress: 'Gyumri, Armenia',
+    },
+  });
+
+  console.log('  ✓ Companies (4)');
+
+  const project4 = await prisma.project.upsert({
+    where: { code: 'P-2026-0004' },
+    update: {},
+    create: {
+      code: 'P-2026-0004',
+      name: 'MedTech Patient Portal',
+      type: 'CUSTOM_CODE',
+      contactId: contact5.id,
+      companyId: company5.id,
+      sellerId: seller.id,
+      pmId: pm.id,
+      description: 'Patient portal and appointment system',
+    },
+  });
+
+  const project5 = await prisma.project.upsert({
+    where: { code: 'P-2026-0005' },
+    update: {},
+    create: {
+      code: 'P-2026-0005',
+      name: 'Logistics Pro Dashboard',
+      type: 'MIX',
+      contactId: contact6.id,
+      companyId: company6.id,
+      sellerId: seller.id,
+      pmId: pm.id,
+      description: 'Fleet and delivery management dashboard',
+    },
+  });
+
+  console.log('  ✓ Projects (5)');
 
   // Products
   await prisma.product.upsert({
@@ -254,7 +380,40 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Products (4)');
+  const ext1 = await prisma.extension.create({
+    data: {
+      projectId: project1.id,
+      productId: '00000000-0000-0000-0000-000000000020',
+      name: 'Blog module',
+      size: 'MEDIUM',
+      status: 'IN_PROGRESS',
+      assignedTo: dev.id,
+    },
+  });
+
+  const ext2 = await prisma.extension.create({
+    data: {
+      projectId: project1.id,
+      productId: '00000000-0000-0000-0000-000000000020',
+      name: 'Multi-language support',
+      size: 'SMALL',
+      status: 'NEW',
+      assignedTo: undefined,
+    },
+  });
+
+  await prisma.extension.create({
+    data: {
+      projectId: project2.id,
+      productId: '00000000-0000-0000-0000-000000000022',
+      name: 'Push notifications',
+      size: 'MICRO',
+      status: 'DONE',
+      assignedTo: dev.id,
+    },
+  });
+
+  console.log('  ✓ Extensions (3)');
 
   // Leads
   await prisma.lead.upsert({
@@ -310,14 +469,59 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Leads (4)');
+  await prisma.lead.upsert({
+    where: { code: 'L-2026-0005' },
+    update: {},
+    create: {
+      code: 'L-2026-0005',
+      contactName: 'Anahit Martirosyan',
+      phone: '+37477123456',
+      email: 'anahit@medtech.am',
+      source: 'WEBSITE',
+      status: 'SQL',
+      contactId: contact5.id,
+      assignedTo: seller.id,
+    },
+  });
+
+  await prisma.lead.upsert({
+    where: { code: 'L-2026-0006' },
+    update: {},
+    create: {
+      code: 'L-2026-0006',
+      contactName: 'Vardan Stepanyan',
+      phone: '+37455998877',
+      email: 'vardan@logistics.am',
+      source: 'PARTNER',
+      status: 'MQL',
+      contactId: contact6.id,
+      assignedTo: seller.id,
+    },
+  });
+
+  await prisma.lead.upsert({
+    where: { code: 'L-2026-0007' },
+    update: {},
+    create: {
+      code: 'L-2026-0007',
+      contactName: 'Gayane Petrosyan',
+      phone: '+37494112233',
+      source: 'FACEBOOK',
+      status: 'DIDNT_GET_THROUGH',
+      assignedTo: seller.id,
+    },
+  });
+
+  const lead1 = await prisma.lead.findUniqueOrThrow({ where: { code: 'L-2026-0001' } });
+  console.log('  ✓ Leads (7)');
 
   // Deals
-  await prisma.deal.upsert({
+  const deal1 = await prisma.deal.upsert({
     where: { code: 'D-2026-0001' },
     update: {},
     create: {
       code: 'D-2026-0001',
+      leadId: lead1.id,
       contactId: contact1.id,
       type: 'NEW_CLIENT',
       status: 'WON',
@@ -328,7 +532,7 @@ async function main() {
     },
   });
 
-  await prisma.deal.upsert({
+  const deal2 = await prisma.deal.upsert({
     where: { code: 'D-2026-0002' },
     update: {},
     create: {
@@ -357,7 +561,37 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Deals (3)');
+  await prisma.deal.upsert({
+    where: { code: 'D-2026-0004' },
+    update: {},
+    create: {
+      code: 'D-2026-0004',
+      contactId: contact5.id,
+      type: 'NEW_CLIENT',
+      status: 'DISCUSS_NEEDS',
+      amount: 1200000,
+      paymentType: 'CLASSIC_50_50',
+      sellerId: seller.id,
+      source: 'WEBSITE',
+    },
+  });
+
+  await prisma.deal.upsert({
+    where: { code: 'D-2026-0005' },
+    update: {},
+    create: {
+      code: 'D-2026-0005',
+      contactId: contact6.id,
+      type: 'EXTENSION',
+      status: 'SEND_OFFER',
+      amount: 500000,
+      paymentType: 'CLASSIC_50_50',
+      sellerId: seller.id,
+      source: 'PARTNER',
+    },
+  });
+
+  console.log('  ✓ Deals (5)');
 
   // Orders
   const order1 = await prisma.order.upsert({
@@ -366,6 +600,7 @@ async function main() {
     create: {
       code: 'ORD-2026-0001',
       projectId: project1.id,
+      dealId: deal1.id,
       type: 'PRODUCT',
       paymentType: 'CLASSIC_50_50',
       totalAmount: 2500000,
@@ -374,12 +609,13 @@ async function main() {
     },
   });
 
-  await prisma.order.upsert({
+  const order2 = await prisma.order.upsert({
     where: { code: 'ORD-2026-0002' },
     update: {},
     create: {
       code: 'ORD-2026-0002',
       projectId: project2.id,
+      dealId: deal2.id,
       type: 'PRODUCT',
       paymentType: 'CLASSIC_30_30_40',
       totalAmount: 3500000,
@@ -388,7 +624,23 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Orders (2)');
+  const order3 = await prisma.order.upsert({
+    where: { code: 'ORD-2026-0003' },
+    update: {},
+    create: {
+      code: 'ORD-2026-0003',
+      projectId: project1.id,
+      type: 'EXTENSION',
+      paymentType: 'CLASSIC_50_50',
+      totalAmount: 450000,
+      status: 'ACTIVE',
+      extensionId: ext1.id,
+      partnerId: partner1.id,
+      partnerPercent: 25,
+    },
+  });
+
+  console.log('  ✓ Orders (3)');
 
   // Invoices
   await prisma.invoice.upsert({
@@ -406,7 +658,7 @@ async function main() {
     },
   });
 
-  await prisma.invoice.upsert({
+  const inv2 = await prisma.invoice.upsert({
     where: { code: 'INV-2026-0002' },
     update: {},
     create: {
@@ -421,7 +673,67 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Invoices (2)');
+  const inv1 = await prisma.invoice.findUniqueOrThrow({ where: { code: 'INV-2026-0001' } });
+  await prisma.payment.create({
+    data: {
+      invoiceId: inv1.id,
+      amount: 1250000,
+      paymentDate: new Date('2026-02-15'),
+      paymentMethod: 'BANK_TRANSFER',
+      confirmedBy: ceo.id,
+      notes: 'First 50% prepayment',
+    },
+  });
+
+  // Subscriptions
+  const sub1 = await prisma.subscription.upsert({
+    where: { code: 'SUB-2026-0001' },
+    update: {},
+    create: {
+      code: 'SUB-2026-0001',
+      projectId: project1.id,
+      type: 'DEV_AND_MAINTENANCE',
+      amount: 150000,
+      billingDay: 1,
+      startDate: new Date('2026-02-01'),
+      status: 'ACTIVE',
+      taxStatus: 'TAX',
+    },
+  });
+
+  await prisma.subscription.upsert({
+    where: { code: 'SUB-2026-0002' },
+    update: {},
+    create: {
+      code: 'SUB-2026-0002',
+      projectId: project2.id,
+      type: 'MAINTENANCE_ONLY',
+      amount: 80000,
+      billingDay: 15,
+      startDate: new Date('2026-01-15'),
+      status: 'ACTIVE',
+      partnerId: partner1.id,
+      taxStatus: 'TAX_FREE',
+    },
+  });
+
+  await prisma.invoice.upsert({
+    where: { code: 'INV-2026-0003' },
+    update: {},
+    create: {
+      code: 'INV-2026-0003',
+      subscriptionId: sub1.id,
+      projectId: project1.id,
+      companyId: company1.id,
+      amount: 150000,
+      type: 'SUBSCRIPTION',
+      status: 'SENT',
+      dueDate: new Date('2026-03-10'),
+      taxStatus: 'TAX',
+    },
+  });
+
+  console.log('  ✓ Invoices (3), Payments (1), Subscriptions (2)');
 
   // Tasks
   await prisma.task.upsert({
@@ -560,7 +872,344 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Expenses (3)');
+  // Bonus entries (sales/delivery from orders)
+  await prisma.bonusEntry.create({
+    data: {
+      employeeId: seller.id,
+      orderId: order1.id,
+      projectId: project1.id,
+      type: 'SALES',
+      amount: 75000,
+      percent: 3,
+      status: 'EARNED',
+      kpiGatePassed: true,
+      holdbackPercent: 20,
+      holdbackReleaseDate: new Date('2026-05-01'),
+      payoutMonth: new Date('2026-04-01'),
+    },
+  });
+
+  await prisma.bonusEntry.create({
+    data: {
+      employeeId: pm.id,
+      orderId: order1.id,
+      projectId: project1.id,
+      type: 'DELIVERY',
+      amount: 50000,
+      percent: 2,
+      status: 'INCOMING',
+      kpiGatePassed: null,
+    },
+  });
+
+  await prisma.bonusEntry.create({
+    data: {
+      employeeId: seller.id,
+      orderId: order2.id,
+      projectId: project2.id,
+      type: 'SALES',
+      amount: 105000,
+      percent: 3,
+      status: 'PENDING_ELIGIBILITY',
+      kpiGatePassed: null,
+    },
+  });
+
+  console.log('  ✓ Bonus entries (3)');
+
+  // Credentials
+  await prisma.credential.create({
+    data: {
+      projectId: project1.id,
+      category: 'ADMIN',
+      provider: 'Vercel',
+      name: 'ACME Production Admin',
+      url: 'https://vercel.com/acme',
+      login: 'admin@acme.am',
+      accessLevel: 'PROJECT_TEAM',
+      allowedEmployees: [pm.id, dev.id],
+    },
+  });
+
+  await prisma.credential.create({
+    data: {
+      projectId: project1.id,
+      category: 'DOMAIN',
+      provider: 'Namecheap',
+      name: 'acme.am DNS',
+      url: 'https://ap.manage.namecheap.com',
+      login: 'acme_account',
+      accessLevel: 'SECRET',
+      allowedEmployees: [pm.id],
+    },
+  });
+
+  await prisma.credential.create({
+    data: {
+      projectId: project2.id,
+      category: 'API_KEY',
+      provider: 'Firebase',
+      name: 'TechStart App Firebase',
+      accessLevel: 'PROJECT_TEAM',
+      allowedEmployees: [pm.id, dev.id],
+    },
+  });
+
+  await prisma.credential.create({
+    data: {
+      projectId: undefined,
+      category: 'SERVICE',
+      provider: 'Figma',
+      name: 'Figma Team',
+      url: 'https://figma.com',
+      accessLevel: 'DEPARTMENT',
+      allowedEmployees: [],
+    },
+  });
+
+  console.log('  ✓ Credentials (4)');
+
+  // Domains
+  await prisma.domain.upsert({
+    where: { domainName: 'acme.am' },
+    update: {},
+    create: {
+      projectId: project1.id,
+      domainName: 'acme.am',
+      provider: 'Namecheap',
+      purchaseDate: new Date('2024-03-01'),
+      expiryDate: new Date('2026-03-01'),
+      renewalCost: 15000,
+      clientCharge: 20000,
+      autoRenew: true,
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.domain.upsert({
+    where: { domainName: 'www.acme.am' },
+    update: {},
+    create: {
+      projectId: project1.id,
+      domainName: 'www.acme.am',
+      provider: 'Namecheap',
+      expiryDate: new Date('2026-03-01'),
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.domain.upsert({
+    where: { domainName: 'techstart-app.com' },
+    update: {},
+    create: {
+      projectId: project2.id,
+      domainName: 'techstart-app.com',
+      provider: 'Cloudflare',
+      purchaseDate: new Date('2025-06-01'),
+      expiryDate: new Date('2026-06-01'),
+      renewalCost: 12000,
+      status: 'EXPIRING_SOON',
+    },
+  });
+
+  console.log('  ✓ Domains (3)');
+
+  // Extra tasks (all statuses/priorities)
+  await prisma.task.upsert({
+    where: { code: 'T-2026-0005' },
+    update: {},
+    create: {
+      code: 'T-2026-0005',
+      title: 'Backlog: Research analytics',
+      projectId: project3.id,
+      productId: '00000000-0000-0000-0000-000000000023',
+      creatorId: pm.id,
+      status: 'BACKLOG',
+      priority: 'LOW',
+    },
+  });
+
+  await prisma.task.upsert({
+    where: { code: 'T-2026-0006' },
+    update: {},
+    create: {
+      code: 'T-2026-0006',
+      title: 'Review: Code review API',
+      projectId: project1.id,
+      productId: '00000000-0000-0000-0000-000000000020',
+      creatorId: pm.id,
+      assigneeId: dev.id,
+      status: 'REVIEW',
+      priority: 'HIGH',
+    },
+  });
+
+  await prisma.task.upsert({
+    where: { code: 'T-2026-0007' },
+    update: {},
+    create: {
+      code: 'T-2026-0007',
+      title: 'Cancelled: Old feature',
+      projectId: project1.id,
+      creatorId: ceo.id,
+      status: 'CANCELLED',
+      priority: 'NORMAL',
+    },
+  });
+
+  console.log('  ✓ Tasks (7 total)');
+
+  // Extra support tickets (all categories/priorities)
+  await prisma.supportTicket.upsert({
+    where: { code: 'TKT-2026-0003' },
+    update: {},
+    create: {
+      code: 'TKT-2026-0003',
+      projectId: project2.id,
+      productId: '00000000-0000-0000-0000-000000000022',
+      contactId: contact2.id,
+      category: 'SERVICE_REQUEST',
+      priority: 'P1',
+      status: 'ASSIGNED',
+      title: 'Need new admin account',
+      description: 'Client requested additional admin user for the app.',
+      assignedTo: pm.id,
+    },
+  });
+
+  await prisma.supportTicket.upsert({
+    where: { code: 'TKT-2026-0004' },
+    update: {},
+    create: {
+      code: 'TKT-2026-0004',
+      projectId: project1.id,
+      category: 'PROBLEM',
+      priority: 'P3',
+      status: 'RESOLVED',
+      title: 'Slow loading on mobile',
+      description: 'Homepage loads slowly on 3G. Fixed with image optimization.',
+      assignedTo: dev.id,
+    },
+  });
+
+  await prisma.supportTicket.upsert({
+    where: { code: 'TKT-2026-0005' },
+    update: {},
+    create: {
+      code: 'TKT-2026-0005',
+      projectId: project3.id,
+      contactId: contact3.id,
+      category: 'CHANGE_REQUEST',
+      priority: 'P2',
+      status: 'CLOSED',
+      title: 'Export to Excel',
+      description: 'CRM export to Excel was delivered.',
+      billable: true,
+    },
+  });
+
+  console.log('  ✓ Support Tickets (5 total)');
+
+  // Extra expenses (more categories)
+  await prisma.expense.create({
+    data: {
+      type: 'UNPLANNED',
+      category: 'MARKETING',
+      name: 'Facebook Ads — Q1 campaign',
+      amount: 85000,
+      frequency: 'ONE_TIME',
+      status: 'PAID',
+      taxStatus: 'TAX',
+    },
+  });
+
+  await prisma.expense.create({
+    data: {
+      type: 'PLANNED',
+      category: 'SALARY',
+      name: 'Contractor — Design',
+      amount: 200000,
+      frequency: 'MONTHLY',
+      status: 'THIS_MONTH',
+      projectId: project1.id,
+      taxStatus: 'TAX',
+    },
+  });
+
+  await prisma.expense.create({
+    data: {
+      type: 'PLANNED',
+      category: 'SERVICE',
+      name: 'Vercel — TechStart staging',
+      amount: 15000,
+      frequency: 'MONTHLY',
+      status: 'PAID',
+      projectId: project2.id,
+      isPassThrough: true,
+    },
+  });
+
+  console.log('  ✓ Expenses (6 total)');
+
+  // Extra invoices (different statuses for filters)
+  await prisma.invoice.upsert({
+    where: { code: 'INV-2026-0004' },
+    update: {},
+    create: {
+      code: 'INV-2026-0004',
+      projectId: project2.id,
+      companyId: company2.id,
+      amount: 1050000,
+      type: 'DEVELOPMENT',
+      status: 'NEW',
+      dueDate: new Date('2026-04-15'),
+      taxStatus: 'TAX_FREE',
+    },
+  });
+
+  await prisma.invoice.upsert({
+    where: { code: 'INV-2026-0005' },
+    update: {},
+    create: {
+      code: 'INV-2026-0005',
+      orderId: order3.id,
+      projectId: project1.id,
+      companyId: company1.id,
+      amount: 225000,
+      type: 'EXTENSION',
+      status: 'OVERDUE',
+      dueDate: new Date('2026-02-28'),
+      taxStatus: 'TAX',
+    },
+  });
+
+  console.log('  ✓ Invoices (5 total)');
+
+  // Audit log (for activity)
+  await prisma.auditLog.create({
+    data: {
+      projectId: project1.id,
+      entityType: 'Task',
+      entityId: '00000000-0000-0000-0000-000000000020',
+      action: 'STATUS_CHANGE',
+      userId: pm.id,
+      changes: { from: 'TODO', to: 'IN_PROGRESS' },
+      ipAddress: '127.0.0.1',
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      projectId: project1.id,
+      entityType: 'Invoice',
+      entityId: inv2.id,
+      action: 'CREATED',
+      userId: ceo.id,
+      ipAddress: '127.0.0.1',
+    },
+  });
+
+  console.log('  ✓ Audit logs (2)');
 
   console.log('\n✅ Seed completed successfully!');
   await prisma.$disconnect();

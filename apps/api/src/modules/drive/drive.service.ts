@@ -96,7 +96,7 @@ export class DriveService {
     fileName: string,
     contentType: string,
   ): Promise<{ uploadUrl: string; key: string; publicUrl: string }> {
-    const key = `projects/${projectId}/${fileName}`;
+    const key = `${DriveService.R2_DRIVE_PREFIX}projects/${projectId}/${fileName}`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucket,
@@ -143,7 +143,7 @@ export class DriveService {
   }
 
   async getProjectStructure(projectId: string): Promise<FolderNode> {
-    const prefix = `projects/${projectId}/`;
+    const prefix = `${DriveService.R2_DRIVE_PREFIX}projects/${projectId}/`;
 
     const command = new ListObjectsV2Command({
       Bucket: this.bucket,
@@ -162,16 +162,20 @@ export class DriveService {
     return root;
   }
 
+  /** Base prefix in R2: all Drive files live under Drive/projects/{projectId}/ */
+  private static readonly R2_DRIVE_PREFIX = 'Drive/';
+
   private buildPrefix(projectId: string, prefix?: string): string {
-    const base = `projects/${projectId}/`;
+    const base = `${DriveService.R2_DRIVE_PREFIX}projects/${projectId}/`;
     return prefix ? `${base}${prefix}` : base;
   }
 
   private resolveKey(projectId: string, filePath: string): string {
-    if (filePath.startsWith(`projects/${projectId}/`)) {
-      return filePath;
-    }
-    return `projects/${projectId}/${filePath}`;
+    const withProject = `projects/${projectId}/`;
+    const fullPrefix = `${DriveService.R2_DRIVE_PREFIX}${withProject}`;
+    if (filePath.startsWith(fullPrefix)) return filePath;
+    if (filePath.startsWith(withProject)) return DriveService.R2_DRIVE_PREFIX + filePath;
+    return `${fullPrefix}${filePath}`;
   }
 
   private extractName(key: string, isFolder: boolean): string {
