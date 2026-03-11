@@ -3,188 +3,316 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
-  Search,
-  FolderKanban,
-  Calendar,
-  User,
-  Building2,
-  MoreHorizontal,
-  Archive,
   RefreshCcw,
+  FolderKanban,
   LayoutGrid,
   List,
+  User,
+  Building2,
+  Calendar,
+  Archive,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
+import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import { ProjectSheet } from '@/features/projects/components/ProjectSheet';
+import {
+  PROJECT_TYPES,
+  PROJECT_TABS,
+  getProjectType,
+} from '@/features/projects/constants/projects';
 import { projectsApi, type Project } from '@/lib/api/projects';
 
-const PROJECT_TYPES: Record<string, string> = {
-  WHITE_LABEL: 'White Label',
-  MIX: 'Mix',
-  CUSTOM_CODE: 'Custom Code',
-};
-
-function ProjectCard({ project }: { project: Project }) {
-  return (
-    <div className="group border-border bg-card rounded-2xl border p-5 transition-all hover:shadow-md">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="bg-accent/10 text-accent rounded-xl p-2.5">
-            <FolderKanban size={18} />
-          </div>
-          <div>
-            <p className="text-muted-foreground text-xs font-medium">{project.code}</p>
-            <h3 className="text-foreground text-sm font-semibold">{project.name}</h3>
-          </div>
-        </div>
-        <button className="hover:bg-secondary rounded-lg p-1 opacity-0 transition-opacity group-hover:opacity-100">
-          <MoreHorizontal size={14} className="text-muted-foreground" />
-        </button>
-      </div>
-
-      {project.description && (
-        <p className="text-muted-foreground mt-3 line-clamp-2 text-xs">{project.description}</p>
-      )}
-
-      <div className="mt-4 space-y-2">
-        {project.company && (
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            <Building2 size={12} />
-            <span>{project.company.name}</span>
-          </div>
-        )}
-        {project.pm && (
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            <User size={12} />
-            <span>
-              PM: {project.pm.firstName} {project.pm.lastName}
-            </span>
-          </div>
-        )}
-        {project.deadline && (
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            <Calendar size={12} />
-            <span>{new Date(project.deadline).toLocaleDateString()}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-4 flex items-center justify-between">
-        <span className="bg-secondary text-muted-foreground rounded-md px-2 py-0.5 text-[10px] font-medium">
-          {PROJECT_TYPES[project.type] ?? project.type}
-        </span>
-        <div className="text-muted-foreground flex items-center gap-2 text-[10px]">
-          <span>{project._count.products} products</span>
-          <span>&middot;</span>
-          <span>{project._count.orders} orders</span>
-        </div>
-      </div>
-
-      {project.isArchived && (
-        <div className="text-muted-foreground mt-2 flex items-center gap-1 text-[10px]">
-          <Archive size={10} />
-          <span>Archived</span>
-        </div>
-      )}
-    </div>
-  );
-}
+type ViewMode = 'grid' | 'list';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [view, setView] = useState<ViewMode>('grid');
+  const [activeTab, setActiveTab] = useState('all');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
       const data = await projectsApi.getAll({
-        pageSize: 50,
+        pageSize: 100,
         search: search || undefined,
+        type: filters.type && filters.type !== 'all' ? filters.type : undefined,
       });
       setProjects(data.items);
     } catch {
-      /* empty */
+      /* handled */
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, filters]);
 
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-foreground text-2xl font-semibold">Projects</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{projects.length} projects total</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchProjects}
-            className="border-border text-muted-foreground hover:bg-secondary rounded-xl border p-2.5 transition-colors"
-          >
-            <RefreshCcw size={16} />
-          </button>
-          <div className="border-border flex rounded-xl border">
-            <button
-              onClick={() => setView('grid')}
-              className={`rounded-l-xl p-2.5 ${view === 'grid' ? 'bg-secondary text-foreground' : 'text-muted-foreground'}`}
-            >
-              <LayoutGrid size={16} />
-            </button>
-            <button
-              onClick={() => setView('list')}
-              className={`rounded-r-xl p-2.5 ${view === 'list' ? 'bg-secondary text-foreground' : 'text-muted-foreground'}`}
-            >
-              <List size={16} />
-            </button>
-          </div>
-          <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors">
-            <Plus size={16} />
-            New Project
-          </button>
-        </div>
-      </div>
+  const handleDelete = async (id: string) => {
+    await projectsApi.delete(id);
+    setSheetOpen(false);
+    setSelectedProject(null);
+    await fetchProjects();
+  };
 
-      <div className="relative">
-        <Search
-          size={16}
-          className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2"
-        />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search projects..."
-          className="border-input bg-card text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-xl border py-2.5 pr-4 pl-10 text-sm focus:ring-2 focus:outline-none"
-        />
-      </div>
+  const handleClick = (project: Project) => {
+    setSelectedProject(project);
+    setSheetOpen(true);
+  };
+
+  const filteredProjects = projects.filter((p) => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'closed') return p.isArchived;
+    if (activeTab === 'development') return !p.isArchived;
+    if (activeTab === 'maintenance') return !p.isArchived;
+    return true;
+  });
+
+  const filterConfigs = [
+    {
+      key: 'type',
+      label: 'Type',
+      options: PROJECT_TYPES.map((t) => ({ value: t.value, label: t.label })),
+    },
+  ];
+
+  return (
+    <div className="flex h-full flex-col gap-5">
+      <PageHeader title="Projects Hub" description={`${projects.length} projects total`}>
+        <Button variant="outline" size="icon" onClick={fetchProjects}>
+          <RefreshCcw size={16} />
+        </Button>
+        <div className="border-border flex rounded-lg border">
+          <Button
+            variant={view === 'grid' ? 'secondary' : 'ghost'}
+            size="icon-sm"
+            onClick={() => setView('grid')}
+            className="rounded-r-none"
+          >
+            <LayoutGrid size={14} />
+          </Button>
+          <Button
+            variant={view === 'list' ? 'secondary' : 'ghost'}
+            size="icon-sm"
+            onClick={() => setView('list')}
+            className="rounded-l-none"
+          >
+            <List size={14} />
+          </Button>
+        </div>
+        <Button>
+          <Plus size={16} />
+          New Project
+        </Button>
+      </PageHeader>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          {PROJECT_TABS.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search projects by name..."
+        filters={filterConfigs}
+        filterValues={filters}
+        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+        onClearFilters={() => setFilters({})}
+      />
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="border-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
-        </div>
-      ) : projects.length === 0 ? (
-        <div className="border-border rounded-2xl border border-dashed py-20 text-center">
-          <FolderKanban size={48} className="text-muted-foreground/30 mx-auto" />
-          <h3 className="text-foreground mt-4 text-lg font-semibold">No projects yet</h3>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Create your first project to get started
-          </p>
-        </div>
-      ) : (
-        <div
-          className={
-            view === 'grid' ? 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3' : 'space-y-3'
-          }
-        >
-          {projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-48 rounded-xl" />
           ))}
         </div>
+      ) : filteredProjects.length === 0 ? (
+        <EmptyState
+          icon={FolderKanban}
+          title="No projects found"
+          description="Create your first project to get started"
+          action={
+            <Button>
+              <Plus size={16} />
+              Create First Project
+            </Button>
+          }
+        />
+      ) : view === 'grid' ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filteredProjects.map((project) => {
+            const projType = getProjectType(project.type);
+            return (
+              <div
+                key={project.id}
+                className="group border-border bg-card cursor-pointer rounded-2xl border p-5 transition-all hover:shadow-md"
+                onClick={() => handleClick(project)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-accent/10 text-accent rounded-xl p-2.5">
+                      <FolderKanban size={18} />
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-[10px] font-medium">
+                        {project.code}
+                      </p>
+                      <h3 className="text-foreground text-sm font-semibold">{project.name}</h3>
+                    </div>
+                  </div>
+                  {project.isArchived && <Archive size={14} className="text-muted-foreground" />}
+                </div>
+
+                {project.description && (
+                  <p className="text-muted-foreground mt-3 line-clamp-2 text-xs">
+                    {project.description}
+                  </p>
+                )}
+
+                <div className="mt-4 space-y-2">
+                  {project.company && (
+                    <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                      <Building2 size={11} />
+                      <span>{project.company.name}</span>
+                    </div>
+                  )}
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                    <User size={11} />
+                    <span>
+                      {project.contact?.firstName} {project.contact?.lastName}
+                    </span>
+                  </div>
+                  {project.deadline && (
+                    <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                      <Calendar size={11} />
+                      <span>{new Date(project.deadline).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  {projType && <StatusBadge label={projType.label} variant={projType.variant} />}
+                  <div className="text-muted-foreground flex items-center gap-2 text-[10px]">
+                    <span>{project._count.products} products</span>
+                    <span>&middot;</span>
+                    <span>{project._count.orders} orders</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex gap-1.5">
+                  {project.seller && (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-[8px] font-bold text-amber-700">
+                      {project.seller.firstName[0]}
+                      {project.seller.lastName[0]}
+                    </div>
+                  )}
+                  {project.pm && (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-[8px] font-bold text-blue-700">
+                      {project.pm.firstName[0]}
+                      {project.pm.lastName[0]}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="border-border overflow-hidden rounded-xl border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Project</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>PM</TableHead>
+                <TableHead>Seller</TableHead>
+                <TableHead className="text-center">Products</TableHead>
+                <TableHead>Deadline</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredProjects.map((project) => {
+                const projType = getProjectType(project.type);
+                return (
+                  <TableRow
+                    key={project.id}
+                    className="cursor-pointer"
+                    onClick={() => handleClick(project)}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="bg-accent/10 text-accent rounded-lg p-1.5">
+                          <FolderKanban size={14} />
+                        </div>
+                        <div>
+                          <p className="font-medium">{project.name}</p>
+                          <p className="text-muted-foreground text-xs">{project.code}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {projType && (
+                        <StatusBadge label={projType.label} variant={projType.variant} />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {project.contact?.firstName} {project.contact?.lastName}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {project.company?.name ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {project.pm ? `${project.pm.firstName} ${project.pm.lastName}` : '—'}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {project.seller
+                        ? `${project.seller.firstName} ${project.seller.lastName}`
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="text-center font-medium">
+                      {project._count.products}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {project.deadline ? new Date(project.deadline).toLocaleDateString() : '—'}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
+
+      <ProjectSheet
+        project={selectedProject}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
