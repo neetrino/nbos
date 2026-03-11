@@ -5,3 +5,4 @@ export { FilterBar } from './FilterBar';
 export { EntitySheet } from './EntitySheet';
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';
 export { Spinner } from './Spinner';
+export { InlineField } from './InlineField';

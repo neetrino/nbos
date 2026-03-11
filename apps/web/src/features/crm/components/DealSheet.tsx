@@ -1,33 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DollarSign,
   User,
-  Building2,
   Calendar,
   Clock,
   MessageSquare,
   FileText,
   Link2,
-  ArrowRight,
   Trash2,
   CheckCircle2,
   XCircle,
+  Phone,
+  Mail,
+  Building2,
+  CreditCard,
+  Tag,
+  ArrowRight,
+  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { EntitySheet, StatusBadge } from '@/components/shared';
+import { EntitySheet, StatusBadge, InlineField } from '@/components/shared';
 import {
   DEAL_STAGES,
   DEAL_TYPES,
@@ -36,6 +31,8 @@ import {
   formatAmount,
 } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
+import { contactsApi, type Contact } from '@/lib/api/clients';
+import { cn } from '@/lib/utils';
 
 interface DealSheetProps {
   deal: Deal | null;
@@ -54,76 +51,46 @@ export function DealSheet({
   onStatusChange,
   onDelete,
 }: DealSheetProps) {
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    type: '',
-    amount: '',
-    paymentType: '',
-    notes: '',
-  });
+  const [contacts, setContacts] = useState<Contact[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      contactsApi
+        .getAll({ pageSize: 200 })
+        .then((d) => setContacts(d.items))
+        .catch(() => {});
+    }
+  }, [open]);
 
   if (!deal) return null;
 
   const stage = getDealStage(deal.status);
   const isTerminal = deal.status === 'FAILED' || deal.status === 'WON';
+  const activeStages = DEAL_STAGES.filter((s) => !('terminal' in s));
+  const currentIdx = activeStages.findIndex((s) => s.key === deal.status);
 
-  const nextStage = (() => {
-    const idx = DEAL_STAGES.findIndex((s) => s.key === deal.status);
-    if (idx < 0) return null;
-    const next = DEAL_STAGES[idx + 1];
-    return next && !('terminal' in next) ? next : null;
-  })();
-
-  const startEdit = () => {
-    setForm({
-      type: deal.type,
-      amount: deal.amount?.toString() ?? '',
-      paymentType: deal.paymentType ?? '',
-      notes: deal.notes ?? '',
-    });
-    setEditing(true);
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await onUpdate(deal.id, {
-        type: form.type,
-        amount: form.amount ? Number(form.amount) : null,
-        paymentType: form.paymentType || null,
-        notes: form.notes || null,
-      } as Partial<Deal>);
-      setEditing(false);
-    } finally {
-      setSaving(false);
+  const saveField = async (field: string, value: string) => {
+    const payload: Record<string, unknown> = {};
+    if (field === 'amount') {
+      payload[field] = value ? Number(value) : null;
+    } else {
+      payload[field] = value || null;
     }
+    await onUpdate(deal.id, payload as Partial<Deal>);
   };
-
-  const stageProgress = (() => {
-    const activeStages = DEAL_STAGES.filter((s) => !('terminal' in s));
-    const idx = activeStages.findIndex((s) => s.key === deal.status);
-    if (idx < 0) return 100;
-    return Math.round(((idx + 1) / activeStages.length) * 100);
-  })();
 
   return (
     <EntitySheet
       open={open}
       onOpenChange={onOpenChange}
-      title={editing ? 'Edit Deal' : `${deal.contact?.firstName} ${deal.contact?.lastName}`}
-      description={deal.code}
-      badge={
-        stage ? (
-          <StatusBadge label={stage.label} variant={stage.variant} dot dotColor={stage.color} />
-        ) : null
-      }
+      size="lg"
+      title=""
       footer={
         <div className="flex items-center justify-between">
-          <div className="flex gap-2">
+          <div>
             {onDelete && (
               <Button variant="destructive" size="sm" onClick={() => onDelete(deal.id)}>
-                <Trash2 size={14} />
+                <Trash2 size={14} className="mr-1" />
                 Delete
               </Button>
             )}
@@ -134,251 +101,359 @@ export function DealSheet({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-destructive"
+                  className="text-destructive hover:bg-destructive/10"
                   onClick={() => onStatusChange(deal.id, 'FAILED')}
                 >
-                  <XCircle size={14} />
+                  <XCircle size={14} className="mr-1" />
                   Failed
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-green-600"
+                  className="text-emerald-600 hover:bg-emerald-500/10"
                   onClick={() => onStatusChange(deal.id, 'WON')}
                 >
-                  <CheckCircle2 size={14} />
+                  <CheckCircle2 size={14} className="mr-1" />
                   Won
                 </Button>
-                {nextStage && (
-                  <Button size="sm" onClick={() => onStatusChange(deal.id, nextStage.key)}>
-                    <ArrowRight size={14} />
-                    {nextStage.label}
-                  </Button>
-                )}
               </>
             )}
           </div>
         </div>
       }
     >
-      {editing ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <div className="flex items-start justify-between">
             <div>
-              <Label>Deal Type</Label>
-              <Select
-                value={form.type}
-                onValueChange={(v) => setForm({ ...form, type: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DEAL_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <h2 className="text-foreground text-xl font-bold">
+                {deal.contact?.firstName} {deal.contact?.lastName}
+              </h2>
+              <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-sm">
+                <span className="font-mono">{deal.code}</span>
+                {stage && (
+                  <>
+                    <span>·</span>
+                    <StatusBadge
+                      label={stage.label}
+                      variant={stage.variant}
+                      dot
+                      dotColor={stage.color}
+                    />
+                  </>
+                )}
+              </div>
             </div>
-            <div>
-              <Label>Payment Type</Label>
-              <Select
-                value={form.paymentType || undefined}
-                onValueChange={(v) => setForm({ ...form, paymentType: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {PAYMENT_TYPES.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <Label>Amount (AMD)</Label>
-            <Input
-              type="number"
-              value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
-              placeholder="e.g. 1500000"
-            />
-          </div>
-
-          <div>
-            <Label>Notes</Label>
-            <Textarea
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              rows={4}
-              placeholder="Scope, requirements, details..."
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
+            {deal.amount != null && (
+              <div className="text-right">
+                <p className="text-2xl font-bold">{formatAmount(deal.amount)}</p>
+                <p className="text-muted-foreground text-xs">Deal value</p>
+              </div>
+            )}
           </div>
         </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="flex justify-end">
-            <Button variant="outline" size="sm" onClick={startEdit}>
-              Edit
-            </Button>
+
+        {/* Pipeline Stages */}
+        {!isTerminal && (
+          <div className="border-border/50 bg-muted/30 rounded-xl border p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                Pipeline
+              </span>
+              <span className="text-muted-foreground text-xs">
+                Step {currentIdx + 1} of {activeStages.length}
+              </span>
+            </div>
+            <div className="flex gap-1">
+              {activeStages.map((s, i) => {
+                const isCurrent = s.key === deal.status;
+                const isPast = i < currentIdx;
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => onStatusChange(deal.id, s.key)}
+                    title={s.label}
+                    className={cn(
+                      'relative h-2 flex-1 rounded-full transition-all hover:opacity-80',
+                      isCurrent ? s.color : isPast ? s.color + ' opacity-60' : 'bg-border',
+                    )}
+                  />
+                );
+              })}
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-foreground text-xs font-medium">{stage?.label}</span>
+              {currentIdx < activeStages.length - 1 && (
+                <button
+                  onClick={() => onStatusChange(deal.id, activeStages[currentIdx + 1].key)}
+                  className="text-accent flex items-center gap-1 text-xs font-medium hover:underline"
+                >
+                  Next: {activeStages[currentIdx + 1].label}
+                  <ArrowRight size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {isTerminal && (
+          <div
+            className={cn(
+              'flex items-center gap-3 rounded-xl border p-4',
+              deal.status === 'WON'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300',
+            )}
+          >
+            {deal.status === 'WON' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+            <div>
+              <p className="font-semibold">{deal.status === 'WON' ? 'Deal Won' : 'Deal Failed'}</p>
+              <p className="text-xs opacity-80">
+                {deal.status === 'WON'
+                  ? 'This deal was successfully closed'
+                  : 'This deal did not go through'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <Separator />
+
+        {/* Two-column layout */}
+        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+          {/* Financial Section */}
+          <div className="col-span-2 mb-2">
+            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+              <DollarSign size={13} />
+              Financial
+            </h3>
           </div>
 
-          {!isTerminal && (
-            <section>
-              <h4 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
-                Pipeline Progress
-              </h4>
-              <div className="bg-secondary h-2 overflow-hidden rounded-full">
-                <div
-                  className="bg-accent h-full rounded-full transition-all"
-                  style={{ width: `${stageProgress}%` }}
-                />
-              </div>
-              <p className="text-muted-foreground mt-1 text-xs">{stageProgress}% complete</p>
-            </section>
-          )}
+          <InlineField
+            label="Amount"
+            value={deal.amount}
+            displayValue={
+              deal.amount != null ? (
+                <span className="text-foreground text-lg font-bold">
+                  {formatAmount(deal.amount)}
+                </span>
+              ) : undefined
+            }
+            type="number"
+            placeholder="Enter amount..."
+            icon={<DollarSign size={12} />}
+            onSave={(v) => saveField('amount', v)}
+          />
 
-          <Separator />
+          <InlineField
+            label="Deal Type"
+            value={deal.type}
+            displayValue={
+              <StatusBadge
+                label={DEAL_TYPES.find((t) => t.value === deal.type)?.label ?? deal.type}
+                variant={
+                  deal.type === 'EXTENSION' ? 'blue' : deal.type === 'UPSELL' ? 'purple' : 'default'
+                }
+              />
+            }
+            type="select"
+            options={DEAL_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+            icon={<Tag size={12} />}
+            onSave={(v) => saveField('type', v)}
+          />
 
-          <section className="space-y-3">
-            <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Deal Info
-            </h4>
-            <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div className="text-muted-foreground">Amount</div>
-              <div className="text-foreground flex items-center gap-1.5 text-lg font-bold">
-                <DollarSign size={16} className="text-accent" />
-                {formatAmount(deal.amount)}
-              </div>
+          <InlineField
+            label="Payment Type"
+            value={deal.paymentType}
+            displayValue={
+              deal.paymentType ? (
+                <span className="text-foreground font-medium">
+                  {PAYMENT_TYPES.find((p) => p.value === deal.paymentType)?.label ??
+                    deal.paymentType?.replace(/_/g, ' ')}
+                </span>
+              ) : undefined
+            }
+            type="select"
+            options={PAYMENT_TYPES.map((p) => ({ value: p.value, label: p.label }))}
+            placeholder="Select payment type..."
+            icon={<CreditCard size={12} />}
+            onSave={(v) => saveField('paymentType', v)}
+          />
 
-              <div className="text-muted-foreground">Type</div>
-              <div>
-                <StatusBadge
-                  label={deal.type.replace(/_/g, ' ')}
-                  variant={deal.type === 'EXTENSION' ? 'blue' : 'default'}
-                />
-              </div>
+          <InlineField
+            label="Source"
+            value={deal.source}
+            displayValue={
+              deal.source ? (
+                <span className="text-foreground font-medium">
+                  {deal.source.replace(/_/g, ' ')}
+                </span>
+              ) : undefined
+            }
+            type="text"
+            placeholder="Lead source..."
+            icon={<ExternalLink size={12} />}
+            editable={false}
+          />
 
-              <div className="text-muted-foreground">Payment</div>
-              <div className="font-medium">{deal.paymentType?.replace(/_/g, ' ') ?? '—'}</div>
-            </div>
-          </section>
+          {/* Contact & Team Section */}
+          <div className="col-span-2 mt-4 mb-2">
+            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+              <User size={13} />
+              Contact & Team
+            </h3>
+          </div>
 
-          <Separator />
-
-          <section className="space-y-3">
-            <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Contact & Company
-            </h4>
-            <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div className="text-muted-foreground">Contact</div>
-              <div className="flex items-center gap-1.5 font-medium">
-                <User size={13} />
-                {deal.contact?.firstName} {deal.contact?.lastName}
-              </div>
-
-              <div className="text-muted-foreground">Seller</div>
-              <div className="flex items-center gap-1.5 font-medium">
-                <User size={13} />
-                {deal.seller?.firstName} {deal.seller?.lastName}
-              </div>
-
-              <div className="text-muted-foreground">Created</div>
-              <div className="flex items-center gap-1.5 font-medium">
-                <Calendar size={13} />
-                {new Date(deal.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </div>
-
-              <div className="text-muted-foreground">Updated</div>
-              <div className="flex items-center gap-1.5 font-medium">
-                <Clock size={13} />
-                {new Date(deal.updatedAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </div>
-            </div>
-          </section>
-
-          {deal.notes && (
-            <>
-              <Separator />
-              <section className="space-y-2">
-                <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                  Notes
-                </h4>
-                <div className="bg-secondary text-foreground rounded-lg p-3 text-sm">
-                  <MessageSquare size={13} className="text-muted-foreground mb-1 inline" />{' '}
-                  {deal.notes}
+          <InlineField
+            label="Contact"
+            value={deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : ''}
+            displayValue={
+              deal.contact ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                    {deal.contact.firstName[0]}
+                    {deal.contact.lastName[0]}
+                  </div>
+                  <div>
+                    <p className="text-foreground text-sm font-medium">
+                      {deal.contact.firstName} {deal.contact.lastName}
+                    </p>
+                    {deal.contact.email && (
+                      <p className="text-muted-foreground text-[11px]">{deal.contact.email}</p>
+                    )}
+                  </div>
                 </div>
-              </section>
-            </>
-          )}
+              ) : undefined
+            }
+            type="select"
+            options={contacts.map((c) => ({
+              value: c.id,
+              label: `${c.firstName} ${c.lastName}`,
+            }))}
+            placeholder="Select contact..."
+            icon={<User size={12} />}
+            onSave={(v) => saveField('contactId', v)}
+          />
 
-          {deal.lead && (
-            <>
-              <Separator />
-              <section className="space-y-2">
-                <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                  Source Lead
-                </h4>
-                <div className="border-border flex items-center gap-2 rounded-lg border p-3 text-sm">
-                  <Link2 size={14} className="text-muted-foreground" />
-                  <span className="font-medium">{deal.lead.code}</span>
-                  <span className="text-muted-foreground">— {deal.lead.contactName}</span>
+          <InlineField
+            label="Seller"
+            value={deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : ''}
+            displayValue={
+              deal.seller ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
+                    {deal.seller.firstName[0]}
+                    {deal.seller.lastName[0]}
+                  </div>
+                  <span className="text-foreground text-sm font-medium">
+                    {deal.seller.firstName} {deal.seller.lastName}
+                  </span>
                 </div>
-              </section>
-            </>
-          )}
+              ) : undefined
+            }
+            editable={false}
+            icon={<Building2 size={12} />}
+          />
 
-          {deal.orders.length > 0 && (
-            <>
-              <Separator />
-              <section className="space-y-2">
-                <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                  Orders ({deal.orders.length})
-                </h4>
-                <div className="space-y-2">
-                  {deal.orders.map((order) => (
-                    <div
-                      key={order.id}
-                      className="border-border flex items-center justify-between rounded-lg border p-3 text-sm"
-                    >
-                      <div className="flex items-center gap-2">
-                        <FileText size={14} className="text-muted-foreground" />
-                        <span className="font-medium">{order.code}</span>
+          {/* Dates Section */}
+          <div className="col-span-2 mt-4 mb-2">
+            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+              <Calendar size={13} />
+              Dates
+            </h3>
+          </div>
+
+          <InlineField
+            label="Created"
+            value={new Date(deal.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+            icon={<Calendar size={12} />}
+            editable={false}
+          />
+
+          <InlineField
+            label="Last Updated"
+            value={new Date(deal.updatedAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+            icon={<Clock size={12} />}
+            editable={false}
+          />
+        </div>
+
+        {/* Notes */}
+        <Separator />
+        <InlineField
+          label="Notes"
+          value={deal.notes}
+          type="textarea"
+          placeholder="Add notes about this deal..."
+          icon={<MessageSquare size={12} />}
+          onSave={(v) => saveField('notes', v)}
+        />
+
+        {/* Linked Entities */}
+        {deal.lead && (
+          <>
+            <Separator />
+            <div>
+              <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+                <Link2 size={13} />
+                Source Lead
+              </h3>
+              <div className="border-border hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-3 transition-colors">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                  <User size={16} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{deal.lead.contactName}</p>
+                  <p className="text-muted-foreground text-xs">{deal.lead.code}</p>
+                </div>
+                <ExternalLink size={14} className="text-muted-foreground" />
+              </div>
+            </div>
+          </>
+        )}
+
+        {deal.orders.length > 0 && (
+          <>
+            <Separator />
+            <div>
+              <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+                <FileText size={13} />
+                Orders ({deal.orders.length})
+              </h3>
+              <div className="space-y-2">
+                {deal.orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="border-border hover:bg-muted/50 flex items-center justify-between rounded-xl border p-3 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                        <FileText size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{order.code}</p>
                         <StatusBadge label={order.status.replace(/_/g, ' ')} variant="blue" />
                       </div>
-                      <span className="font-medium">{formatAmount(order.totalAmount)}</span>
                     </div>
-                  ))}
-                </div>
-              </section>
-            </>
-          )}
-        </div>
-      )}
+                    <span className="text-foreground font-semibold">
+                      {formatAmount(order.totalAmount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </EntitySheet>
   );
 }
