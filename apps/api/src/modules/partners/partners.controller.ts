@@ -59,11 +59,11 @@ export class PartnersController {
     @Body()
     body: {
       name: string;
-      contactPerson?: string;
-      phone?: string;
-      email?: string;
-      payoutPercent?: number;
-      notes?: string;
+      type?: string;
+      direction?: string;
+      defaultPercent?: number;
+      status?: string;
+      contactId?: string;
     },
   ) {
     return this.partnersService.create(body);
@@ -77,11 +77,11 @@ export class PartnersController {
     @Body()
     body: {
       name?: string;
-      contactPerson?: string;
-      phone?: string;
-      email?: string;
-      payoutPercent?: number;
-      notes?: string;
+      type?: string;
+      direction?: string;
+      defaultPercent?: number;
+      status?: string;
+      contactId?: string;
     },
   ) {
     return this.partnersService.update(id, body);

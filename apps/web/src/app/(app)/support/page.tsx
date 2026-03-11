@@ -60,7 +60,7 @@ export default function SupportPage() {
   const fetchTickets = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/support/tickets', {
+      const resp = await api.get('/api/support', {
         params: {
           pageSize: 100,
           search: search || undefined,

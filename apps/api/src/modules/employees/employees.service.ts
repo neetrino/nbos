@@ -1,6 +1,15 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+
+interface EmployeeQueryParams {
+  search?: string;
+  role?: string;
+  status?: string;
+  department?: string;
+  page?: number;
+  pageSize?: number;
+}
 
 @Injectable()
 export class EmployeesService {
@@ -10,6 +19,47 @@ export class EmployeesService {
     return this.prisma.employee.findMany({
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async findAllWithFilters(params: EmployeeQueryParams) {
+    const { search, role, status, department, page = 1, pageSize = 50 } = params;
+    const where: Prisma.EmployeeWhereInput = {};
+
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    if (role) where.role = role as Prisma.EmployeeWhereInput['role'];
+    if (status) where.status = status as Prisma.EmployeeWhereInput['status'];
+    if (department) where.department = { contains: department, mode: 'insensitive' };
+
+    const [items, total] = await Promise.all([
+      this.prisma.employee.findMany({
+        where,
+        include: {
+          _count: {
+            select: {
+              projectsSelling: true,
+              projectsManaging: true,
+              tasksAssigned: true,
+              tasksCreated: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.employee.count({ where }),
+    ]);
+
+    return {
+      items,
+      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    };
   }
 
   async findById(id: string) {

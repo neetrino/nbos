@@ -56,7 +56,7 @@ export default function ExpensesPage() {
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/finance/expenses', {
+      const resp = await api.get('/api/expenses', {
         params: {
           pageSize: 100,
           search: search || undefined,

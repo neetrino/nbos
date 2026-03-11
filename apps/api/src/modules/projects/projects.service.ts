@@ -92,16 +92,94 @@ export class ProjectsService {
       include: {
         company: true,
         contact: true,
-        pm: { select: { id: true, firstName: true, lastName: true } },
-        seller: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: { id: true, firstName: true, lastName: true, email: true, role: true } },
+        seller: { select: { id: true, firstName: true, lastName: true, email: true, role: true } },
         products: {
           include: {
-            extensions: { select: { id: true, name: true, status: true } },
+            pm: { select: { id: true, firstName: true, lastName: true } },
+            extensions: {
+              select: { id: true, name: true, size: true, status: true, assignedTo: true },
+            },
+            _count: { select: { tasks: true } },
           },
+          orderBy: { createdAt: 'desc' },
+        },
+        extensions: {
+          include: {
+            product: { select: { id: true, name: true } },
+            assignee: { select: { id: true, firstName: true, lastName: true } },
+          },
+          orderBy: { createdAt: 'desc' },
         },
         orders: {
           include: {
-            invoices: { select: { id: true, code: true, status: true, amount: true } },
+            invoices: {
+              select: {
+                id: true,
+                code: true,
+                status: true,
+                amount: true,
+                type: true,
+                dueDate: true,
+                paidDate: true,
+              },
+            },
+            product: { select: { id: true, name: true } },
+            extension: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        tasks: {
+          include: {
+            assignee: { select: { id: true, firstName: true, lastName: true } },
+            product: { select: { id: true, name: true } },
+            extension: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        tickets: {
+          include: {
+            assignee: { select: { id: true, firstName: true, lastName: true } },
+            contact: { select: { id: true, firstName: true, lastName: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        credentials: {
+          orderBy: { createdAt: 'desc' },
+        },
+        subscriptions: {
+          include: {
+            invoices: {
+              select: {
+                id: true,
+                code: true,
+                status: true,
+                amount: true,
+                dueDate: true,
+                paidDate: true,
+              },
+            },
+          },
+          orderBy: { startDate: 'desc' },
+        },
+        domains: {
+          orderBy: { expiryDate: 'asc' },
+        },
+        expenses: {
+          orderBy: { createdAt: 'desc' },
+        },
+        auditLogs: {
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+        },
+        _count: {
+          select: {
+            products: true,
+            orders: true,
+            tasks: true,
+            tickets: true,
+            credentials: true,
+            expenses: true,
           },
         },
       },

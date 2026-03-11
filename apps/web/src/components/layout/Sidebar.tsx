@@ -20,7 +20,9 @@ import {
   Settings,
   ChevronLeft,
   Search,
+  LogOut,
 } from 'lucide-react';
+import { useClerk, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -87,6 +89,8 @@ const NAV_ITEMS: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { signOut } = useClerk();
+  const { user } = useUser();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
@@ -213,6 +217,34 @@ export function Sidebar() {
           })}
         </ul>
       </nav>
+
+      {/* User + Sign Out */}
+      <div className="border-sidebar-border border-t px-3 py-3">
+        {!collapsed && user && (
+          <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
+            <div className="bg-accent text-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+              {user.firstName?.[0] ??
+                user.emailAddresses[0]?.emailAddress?.[0]?.toUpperCase() ??
+                'U'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sidebar-foreground truncate text-sm font-medium">
+                {user.fullName ?? user.emailAddresses[0]?.emailAddress ?? 'User'}
+              </p>
+              <p className="text-sidebar-muted truncate text-[10px]">
+                {user.emailAddresses[0]?.emailAddress ?? ''}
+              </p>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={() => signOut({ redirectUrl: '/sign-in' })}
+          className="text-sidebar-muted flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-red-500/10 hover:text-red-500"
+        >
+          <LogOut size={18} />
+          {!collapsed && <span>Sign Out</span>}
+        </button>
+      </div>
 
       {/* Collapse toggle */}
       <div className="border-sidebar-border border-t p-3">

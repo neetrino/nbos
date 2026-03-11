@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
   FolderKanban,
   User,
@@ -27,6 +28,8 @@ interface ProjectSheetProps {
 }
 
 export function ProjectSheet({ project, open, onOpenChange, onDelete }: ProjectSheetProps) {
+  const router = useRouter();
+
   if (!project) return null;
 
   const projType = getProjectType(project.type);
@@ -54,7 +57,14 @@ export function ProjectSheet({ project, open, onOpenChange, onDelete }: ProjectS
               </Button>
             )}
           </div>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              onOpenChange(false);
+              router.push(`/projects/${project.id}`);
+            }}
+          >
             Open Full View
           </Button>
         </div>
