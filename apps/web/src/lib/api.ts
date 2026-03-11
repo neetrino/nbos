@@ -1,15 +1,12 @@
 import axios from 'axios';
 
-const rawUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-const API_BASE_URL = rawUrl.endsWith('/api') ? rawUrl.slice(0, -4) : rawUrl;
-
 export interface ApiResponse<T> {
   data: T;
   timestamp: string;
 }
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: '',
   headers: {
     'Content-Type': 'application/json',
   },
