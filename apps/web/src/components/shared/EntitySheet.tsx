@@ -9,6 +9,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 type SheetSize = 'md' | 'lg' | 'xl';
 
@@ -43,20 +44,24 @@ export function EntitySheet({
   size = 'lg',
   className,
 }: EntitySheetProps) {
+  const hasHeader = title || description || badge;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side={side} className={className ?? SIZE_MAP[size]}>
-        <SheetHeader className="space-y-1">
-          <div className="flex items-center gap-2">
-            <SheetTitle className="text-lg">{title}</SheetTitle>
-            {badge}
-          </div>
-          {description && <SheetDescription>{description}</SheetDescription>}
-        </SheetHeader>
+      <SheetContent side={side} className={cn(className ?? SIZE_MAP[size], 'p-0')}>
+        {hasHeader && (
+          <SheetHeader className="space-y-1 px-8 pt-6">
+            <div className="flex items-center gap-2">
+              <SheetTitle className="text-lg">{title}</SheetTitle>
+              {badge}
+            </div>
+            {description && <SheetDescription>{description}</SheetDescription>}
+          </SheetHeader>
+        )}
 
-        <ScrollArea className="-mx-6 mt-6 flex-1 px-6">{children}</ScrollArea>
+        <ScrollArea className="flex-1 px-8 py-6">{children}</ScrollArea>
 
-        {footer && <div className="border-border mt-auto border-t pt-4">{footer}</div>}
+        {footer && <div className="border-border mt-auto border-t px-8 py-4">{footer}</div>}
       </SheetContent>
     </Sheet>
   );

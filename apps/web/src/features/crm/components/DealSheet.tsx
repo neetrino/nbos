@@ -122,7 +122,7 @@ export function DealSheet({
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
         <div>
           <div className="flex items-start justify-between">
@@ -221,7 +221,7 @@ export function DealSheet({
         <Separator />
 
         {/* Two-column layout */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
           {/* Financial Section */}
           <div className="col-span-2 mb-2">
             <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">

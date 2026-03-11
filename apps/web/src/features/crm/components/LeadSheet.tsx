@@ -105,7 +105,7 @@ export function LeadSheet({
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
         <div>
           <h2 className="text-foreground text-xl font-bold">{lead.contactName}</h2>
@@ -202,7 +202,7 @@ export function LeadSheet({
         <Separator />
 
         {/* Fields Grid */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
           {/* Contact Info */}
           <div className="col-span-2 mb-2">
             <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
