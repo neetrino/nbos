@@ -1,8 +1,8 @@
 # Ход разработки NBOS Platform
 
 **Проект.** NBOS Platform  
-**Текущая фаза.** Фаза 3 — Автоматизация  
-**Общий прогресс.** 65%
+**Текущая фаза.** Фаза 4 — Расширенное  
+**Общий прогресс.** 75%
 
 **Последнее обновление.** 2026-03-11
 
@@ -16,8 +16,8 @@
 | 0.5. Инициализация (monorepo, настройка, scaffold)            | ✅ Готово   | 100%     |
 | 1. MVP (CRM, Projects, Clients, Finance, Auth)                | ✅ Готово   | 100%     |
 | 2. Core (Tasks, Support, Credentials, Drive, Expenses, Bonus) | ✅ Готово   | 100%     |
-| 3. Автоматизация (уведомления, авто-биллинг, авто-задачи)     | 🔄 В работе | 60%      |
-| 4. Расширенное (Messenger, Calendar, Dashboards)              | ⏳ Ожидает  | 0%       |
+| 3. Автоматизация (уведомления, авто-биллинг, авто-задачи)     | ✅ Готово   | 100%     |
+| 4. Расширенное (Messenger, Calendar, Dashboards)              | 🔄 В работе | 40%      |
 | 5. Миграция (Bitrix, параллельная работа, переключение)       | ⏳ Ожидает  | 0%       |
 
 ---
@@ -127,7 +127,7 @@
 
 ---
 
-## Frontend Pages (19 маршрутов)
+## Frontend Pages (23 маршрута)
 
 | Маршрут            | Статус | Описание                          |
 | ------------------ | ------ | --------------------------------- |
@@ -146,6 +146,11 @@
 | /support           | ✅     | Support Tickets (таблица + SLA)   |
 | /expenses          | ✅     | Expenses Dashboard                |
 | /bonus             | ✅     | Bonus Board Kanban (8 колонок)    |
+| /credentials       | ✅     | Credentials Vault (AES-256-GCM)   |
+| /drive             | ✅     | File Explorer (R2)                |
+| /calendar          | ✅     | Monthly Calendar + Events         |
+| /crm/dashboard     | ✅     | Sales/CRM Dashboard               |
+| /finance/dashboard | ✅     | Finance Dashboard                 |
 | /sign-in           | ✅     | Clerk Sign In                     |
 | /sign-up           | ✅     | Clerk Sign Up                     |
 
@@ -230,13 +235,39 @@
 - [x] Reusable AuditService (log, findByEntity, findByUser)
 - [x] API endpoints for audit trail queries
 
+#### 3.4 — Авто-задачи ✅
+
+- [x] Product → auto-generate tasks from template (6 product types)
+- [x] WEB_APP: 8 задач, MOBILE_APP: 8, DESIGN: 5, ERP_MODULE: 8, INTEGRATION: 5, OTHER: 4
+
+#### 3.5 — Scheduler ✅
+
+- [x] External cron endpoints: /scheduler/billing, /scheduler/expenses, /scheduler/overdue-invoices
+- [x] Overdue invoice auto-marking
+
 ---
 
-## Следующие шаги (Фаза 3 → 4)
+### Фаза 4. Расширенное
 
-1. **Авто-задачи** → Product created → tasks from template
-2. **BullMQ Workers** → Queue-based async jobs (billing scheduler)
-3. **Фаза 4** → Messenger, Calendar, Dashboards
+#### 4.1 — Dashboards ✅
+
+- [x] CEO Dashboard — 6 KPI, revenue trend, deal funnel, activity/deadlines/deals списки
+- [x] Finance Dashboard — revenue/outstanding/overdue/MRR, charts, payments/invoices
+- [x] Sales/CRM Dashboard — leads/conversion/deals/pipeline, sources, performers
+
+#### 4.2 — Calendar ✅
+
+- [x] Monthly grid calendar (Date API, Monday-first)
+- [x] 4 типа событий: Meeting, Deadline, Billing, Personal
+- [x] Day detail panel, prev/next navigation, Today button
+
+---
+
+## Следующие шаги (Фаза 4 → 5)
+
+1. **Messenger** → проектные чаты, personal messages
+2. **Интеграции** → WhatsApp, Telegram (optional)
+3. **Фаза 5** → Миграция из Bitrix24
 
 ---
 

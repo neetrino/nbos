@@ -17,6 +17,8 @@ import { AuditModule } from './modules/audit/audit.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
 import { DriveModule } from './modules/drive/drive.module';
 import { NotificationModule } from './modules/notifications/notification.module';
+import { AutomationModule } from './modules/automation/automation.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
@@ -43,6 +45,8 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     CredentialsModule,
     DriveModule,
     NotificationModule,
+    AutomationModule,
+    SchedulerModule,
   ],
   controllers: [HealthController],
   providers: [

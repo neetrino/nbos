@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShoppingCart, FileText } from 'lucide-react';
+import { BarChart3, ShoppingCart, FileText } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 const TABS = [
+  { href: '/finance/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/finance/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/finance/invoices', label: 'Invoices', icon: FileText },
 ] as const;

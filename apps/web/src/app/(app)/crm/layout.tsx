@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Megaphone, Handshake } from 'lucide-react';
+import { BarChart3, Megaphone, Handshake } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 const CRM_TABS = [
+  { href: '/crm/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/crm/leads', label: 'Lead Pipeline', icon: Megaphone },
   { href: '/crm/deals', label: 'Deal Pipeline', icon: Handshake },
 ] as const;

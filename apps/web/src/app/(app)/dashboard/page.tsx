@@ -1,128 +1,380 @@
+'use client';
+
 import {
-  FolderKanban,
-  Users,
   DollarSign,
+  FolderKanban,
+  Handshake,
+  FileText,
   CheckSquare,
+  Headphones,
   TrendingUp,
-  Clock,
-  AlertTriangle,
   ArrowUpRight,
+  AlertTriangle,
+  Star,
+  MessageSquare,
+  UserPlus,
 } from 'lucide-react';
 
-const STATS = [
+/* ───────── Types ───────── */
+
+interface KpiCard {
+  label: string;
+  value: string;
+  change: string;
+  icon: React.ComponentType<{ size?: number }>;
+  iconBg: string;
+  iconText: string;
+}
+
+interface RevenueMonth {
+  month: string;
+  value: number;
+}
+
+interface PipelineStage {
+  label: string;
+  count: number;
+  color: string;
+}
+
+interface Activity {
+  text: string;
+  time: string;
+  icon: React.ComponentType<{ size?: number }>;
+}
+
+interface Deadline {
+  title: string;
+  dueDate: string;
+  status: 'on-track' | 'at-risk' | 'overdue';
+}
+
+interface TopDeal {
+  name: string;
+  amount: string;
+  stage: string;
+  stageColor: string;
+}
+
+/* ───────── Mock data ───────── */
+
+const KPI_CARDS: KpiCard[] = [
+  {
+    label: 'Revenue (MTD)',
+    value: '֏4,820,000',
+    change: '+18.2% vs last month',
+    icon: DollarSign,
+    iconBg: 'bg-emerald-100',
+    iconText: 'text-emerald-600',
+  },
   {
     label: 'Active Projects',
     value: '24',
     change: '+3 this month',
     icon: FolderKanban,
-    color: 'bg-accent/10 text-accent',
+    iconBg: 'bg-blue-100',
+    iconText: 'text-blue-600',
   },
   {
     label: 'Open Deals',
     value: '12',
-    change: '4 closing soon',
-    icon: Users,
-    color: 'bg-primary/5 text-primary',
+    change: '4 closing this week',
+    icon: Handshake,
+    iconBg: 'bg-amber-100',
+    iconText: 'text-amber-600',
   },
   {
-    label: 'Revenue (MTD)',
-    value: '2.4M AMD',
-    change: '+18% vs last month',
-    icon: DollarSign,
-    color: 'bg-success/10 text-success',
+    label: 'Pending Invoices',
+    value: '8',
+    change: '֏1.2M outstanding',
+    icon: FileText,
+    iconBg: 'bg-orange-100',
+    iconText: 'text-orange-600',
   },
   {
-    label: 'Pending Tasks',
+    label: 'Active Tasks',
     value: '47',
-    change: '8 overdue',
+    change: '8 due today',
     icon: CheckSquare,
-    color: 'bg-warning/10 text-warning',
+    iconBg: 'bg-violet-100',
+    iconText: 'text-violet-600',
   },
-] as const;
+  {
+    label: 'Support Tickets',
+    value: '5',
+    change: '2 high priority',
+    icon: Headphones,
+    iconBg: 'bg-red-100',
+    iconText: 'text-red-600',
+  },
+];
 
-const RECENT_ACTIVITIES = [
-  { text: 'Invoice INV-2026-0234 paid', time: '2 min ago', icon: DollarSign },
-  { text: 'New lead from Instagram', time: '15 min ago', icon: TrendingUp },
-  { text: 'Task "Design Landing" completed', time: '1 hour ago', icon: CheckSquare },
-  { text: 'Support ticket P2 assigned', time: '2 hours ago', icon: AlertTriangle },
-  { text: 'Project "TechCorp" deadline approaching', time: '3 hours ago', icon: Clock },
-] as const;
+const REVENUE_MONTHS: RevenueMonth[] = [
+  { month: 'Oct', value: 3200000 },
+  { month: 'Nov', value: 3800000 },
+  { month: 'Dec', value: 4100000 },
+  { month: 'Jan', value: 3600000 },
+  { month: 'Feb', value: 4400000 },
+  { month: 'Mar', value: 4820000 },
+];
+
+const PIPELINE_STAGES: PipelineStage[] = [
+  { label: 'Discovery', count: 18, color: 'bg-blue-500' },
+  { label: 'Proposal', count: 12, color: 'bg-amber-500' },
+  { label: 'Negotiation', count: 8, color: 'bg-orange-500' },
+  { label: 'Closing', count: 4, color: 'bg-emerald-500' },
+  { label: 'Won', count: 14, color: 'bg-green-600' },
+];
+
+const RECENT_ACTIVITIES: Activity[] = [
+  { text: 'Invoice INV-2026-0234 paid — ֏320,000', time: '2 min ago', icon: DollarSign },
+  { text: 'New lead from Instagram campaign', time: '15 min ago', icon: UserPlus },
+  { text: 'Task "Design Landing" marked complete', time: '1h ago', icon: CheckSquare },
+  { text: 'Support ticket #142 escalated to P2', time: '2h ago', icon: AlertTriangle },
+  { text: 'Client feedback on TechCorp proposal', time: '3h ago', icon: MessageSquare },
+];
+
+const UPCOMING_DEADLINES: Deadline[] = [
+  { title: 'TechCorp website delivery', dueDate: 'Mar 14', status: 'on-track' },
+  { title: 'Q1 financial report', dueDate: 'Mar 15', status: 'at-risk' },
+  { title: 'Invoice batch #47 due', dueDate: 'Mar 16', status: 'on-track' },
+  { title: 'Client presentation — ArmenTech', dueDate: 'Mar 18', status: 'on-track' },
+  { title: 'Server migration phase 2', dueDate: 'Mar 12', status: 'overdue' },
+];
+
+const TOP_DEALS: TopDeal[] = [
+  {
+    name: 'ArmenTech — ERP System',
+    amount: '֏12,500,000',
+    stage: 'Negotiation',
+    stageColor: 'bg-orange-100 text-orange-700',
+  },
+  {
+    name: 'SkyNet — Mobile App',
+    amount: '֏8,200,000',
+    stage: 'Proposal',
+    stageColor: 'bg-amber-100 text-amber-700',
+  },
+  {
+    name: 'GreenLine — Website',
+    amount: '֏4,800,000',
+    stage: 'Closing',
+    stageColor: 'bg-emerald-100 text-emerald-700',
+  },
+  {
+    name: 'DigiPay — Integration',
+    amount: '֏3,600,000',
+    stage: 'Discovery',
+    stageColor: 'bg-blue-100 text-blue-700',
+  },
+  {
+    name: 'CloudHost — Rebrand',
+    amount: '֏2,400,000',
+    stage: 'Proposal',
+    stageColor: 'bg-amber-100 text-amber-700',
+  },
+];
+
+/* ───────── Helpers ───────── */
+
+const STATUS_STYLES: Record<Deadline['status'], string> = {
+  'on-track': 'bg-emerald-100 text-emerald-700',
+  'at-risk': 'bg-amber-100 text-amber-700',
+  overdue: 'bg-red-100 text-red-700',
+};
+
+const STATUS_LABELS: Record<Deadline['status'], string> = {
+  'on-track': 'On Track',
+  'at-risk': 'At Risk',
+  overdue: 'Overdue',
+};
+
+/* ───────── Components ───────── */
+
+function KpiCardItem({ card }: { card: KpiCard }) {
+  return (
+    <div className="border-border bg-card rounded-2xl border p-5 transition-shadow hover:shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className={`rounded-xl p-2.5 ${card.iconBg} ${card.iconText}`}>
+          <card.icon size={20} />
+        </div>
+        <ArrowUpRight size={16} className="text-muted-foreground" />
+      </div>
+      <div className="mt-4">
+        <p className="text-foreground text-2xl font-semibold">{card.value}</p>
+        <p className="text-muted-foreground mt-1 text-sm">{card.label}</p>
+      </div>
+      <p className="text-muted-foreground mt-2 text-xs">{card.change}</p>
+    </div>
+  );
+}
+
+function RevenueChart() {
+  const maxVal = Math.max(...REVENUE_MONTHS.map((m) => m.value));
+
+  return (
+    <div className="border-border bg-card rounded-2xl border p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-foreground text-lg font-semibold">Revenue Trend</h2>
+        <span className="flex items-center gap-1 text-xs text-emerald-600">
+          <TrendingUp size={14} />
+          +18.2%
+        </span>
+      </div>
+      <div className="mt-6 flex items-end gap-3" style={{ height: 180 }}>
+        {REVENUE_MONTHS.map((m) => {
+          const pct = (m.value / maxVal) * 100;
+          return (
+            <div key={m.month} className="flex flex-1 flex-col items-center gap-2">
+              <span className="text-muted-foreground text-xs font-medium">
+                {(m.value / 1_000_000).toFixed(1)}M
+              </span>
+              <div
+                className="bg-accent/80 w-full rounded-t-lg transition-all"
+                style={{ height: `${pct}%` }}
+              />
+              <span className="text-muted-foreground text-xs">{m.month}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PipelineFunnel() {
+  const totalDeals = PIPELINE_STAGES.reduce((s, st) => s + st.count, 0);
+
+  return (
+    <div className="border-border bg-card rounded-2xl border p-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-foreground text-lg font-semibold">Deal Pipeline</h2>
+        <span className="text-muted-foreground text-xs">{totalDeals} total deals</span>
+      </div>
+      <div className="mt-6 space-y-3">
+        {PIPELINE_STAGES.map((stage) => {
+          const pct = (stage.count / totalDeals) * 100;
+          return (
+            <div key={stage.label} className="flex items-center gap-3">
+              <span className="text-muted-foreground w-24 text-sm">{stage.label}</span>
+              <div
+                className="bg-secondary flex-1 overflow-hidden rounded-full"
+                style={{ height: 10 }}
+              >
+                <div
+                  className={`h-full rounded-full ${stage.color} transition-all`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span className="text-foreground w-8 text-right text-sm font-medium">
+                {stage.count}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function RecentActivityList() {
+  return (
+    <div className="border-border bg-card rounded-2xl border p-6">
+      <h2 className="text-foreground text-lg font-semibold">Recent Activity</h2>
+      <div className="mt-4 space-y-4">
+        {RECENT_ACTIVITIES.map((a, i) => (
+          <div key={i} className="flex items-start gap-3">
+            <div className="bg-secondary text-muted-foreground rounded-lg p-2">
+              <a.icon size={16} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-foreground truncate text-sm">{a.text}</p>
+              <p className="text-muted-foreground text-xs">{a.time}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function UpcomingDeadlinesList() {
+  return (
+    <div className="border-border bg-card rounded-2xl border p-6">
+      <h2 className="text-foreground text-lg font-semibold">Upcoming Deadlines</h2>
+      <div className="mt-4 space-y-3">
+        {UPCOMING_DEADLINES.map((d, i) => (
+          <div key={i} className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-foreground truncate text-sm">{d.title}</p>
+              <p className="text-muted-foreground text-xs">{d.dueDate}</p>
+            </div>
+            <span
+              className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[d.status]}`}
+            >
+              {STATUS_LABELS[d.status]}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TopDealsList() {
+  return (
+    <div className="border-border bg-card rounded-2xl border p-6">
+      <div className="flex items-center gap-2">
+        <Star size={18} className="text-accent" />
+        <h2 className="text-foreground text-lg font-semibold">Top Deals</h2>
+      </div>
+      <div className="mt-4 space-y-3">
+        {TOP_DEALS.map((d, i) => (
+          <div key={i} className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-foreground truncate text-sm">{d.name}</p>
+              <p className="text-muted-foreground text-xs font-medium">{d.amount}</p>
+            </div>
+            <span className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-medium ${d.stageColor}`}>
+              {d.stage}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ───────── Page ───────── */
 
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Welcome back</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Here&apos;s what&apos;s happening across your projects today.
+        <h1 className="text-foreground text-2xl font-semibold">Welcome back</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Here&apos;s what&apos;s happening across your business today.
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {STATS.map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <div className={`rounded-xl p-2.5 ${stat.color}`}>
-                <stat.icon size={20} />
-              </div>
-              <ArrowUpRight size={16} className="text-muted-foreground" />
-            </div>
-            <div className="mt-4">
-              <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">{stat.change}</p>
-          </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {KPI_CARDS.map((card) => (
+          <KpiCardItem key={card.label} card={card} />
         ))}
       </div>
 
-      {/* Content Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Recent Activity */}
-        <div className="col-span-2 rounded-2xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
-          <div className="mt-4 space-y-4">
-            {RECENT_ACTIVITIES.map((activity, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="rounded-lg bg-secondary p-2 text-muted-foreground">
-                  <activity.icon size={16} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground">{activity.text}</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <RevenueChart />
+        <PipelineFunnel />
+      </div>
 
-        {/* Quick Actions */}
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>
-          <div className="mt-4 space-y-2">
-            {[
-              { label: 'New Lead', href: '/crm/leads' },
-              { label: 'Create Invoice', href: '/finance/invoices' },
-              { label: 'Add Task', href: '/tasks' },
-              { label: 'New Project', href: '/projects' },
-              { label: 'Support Ticket', href: '/support' },
-            ].map((action) => (
-              <a
-                key={action.label}
-                href={action.href}
-                className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-              >
-                <span>{action.label}</span>
-                <ArrowUpRight size={14} className="text-muted-foreground" />
-              </a>
-            ))}
-          </div>
-        </div>
+      {/* Bottom Lists Row */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <RecentActivityList />
+        <UpcomingDeadlinesList />
+        <TopDealsList />
       </div>
     </div>
   );

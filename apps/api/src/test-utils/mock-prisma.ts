@@ -11,6 +11,7 @@ function createModelMock() {
       .fn()
       .mockImplementation(({ create }) => Promise.resolve({ id: 'test-id', ...create })),
     delete: vi.fn().mockResolvedValue({ id: 'test-id' }),
+    updateMany: vi.fn().mockResolvedValue({ count: 0 }),
     count: vi.fn().mockResolvedValue(0),
     groupBy: vi.fn().mockResolvedValue([]),
     aggregate: vi.fn().mockResolvedValue({ _sum: { amount: null } }),
