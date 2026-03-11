@@ -36,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
     href: '/crm',
     icon: <Users size={20} />,
     children: [
+      { label: 'Dashboard', href: '/crm/dashboard' },
       { label: 'Leads', href: '/crm/leads' },
       { label: 'Deals', href: '/crm/deals' },
     ],
@@ -56,11 +57,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/finance',
     icon: <DollarSign size={20} />,
     children: [
+      { label: 'Dashboard', href: '/finance/dashboard' },
       { label: 'Invoices', href: '/finance/invoices' },
       { label: 'Payments', href: '/finance/payments' },
       { label: 'Subscriptions', href: '/finance/subscriptions' },
-      { label: 'Expenses', href: '/finance/expenses' },
-      { label: 'Bonus Board', href: '/finance/bonus' },
+      { label: 'Expenses', href: '/expenses' },
+      { label: 'Bonus Board', href: '/bonus' },
     ],
   },
   { label: 'Support', href: '/support', icon: <Headphones size={20} /> },
@@ -103,34 +105,34 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300',
+        'border-sidebar-border bg-sidebar fixed top-0 left-0 z-40 flex h-screen flex-col border-r transition-all duration-300',
         collapsed ? 'w-[68px]' : 'w-[260px]',
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
+      <div className="border-sidebar-border flex h-16 items-center justify-between border-b px-4">
         {!collapsed && (
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
-              <span className="text-sm font-bold text-accent-foreground">N</span>
+            <div className="bg-accent flex h-8 w-8 items-center justify-center rounded-lg">
+              <span className="text-accent-foreground text-sm font-bold">N</span>
             </div>
-            <span className="text-lg font-semibold text-sidebar-foreground">NBOS</span>
+            <span className="text-sidebar-foreground text-lg font-semibold">NBOS</span>
           </Link>
         )}
         {collapsed && (
-          <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
-            <span className="text-sm font-bold text-accent-foreground">N</span>
+          <div className="bg-accent mx-auto flex h-8 w-8 items-center justify-center rounded-lg">
+            <span className="text-accent-foreground text-sm font-bold">N</span>
           </div>
         )}
       </div>
 
       {/* Search */}
       {!collapsed && (
-        <div className="border-b border-sidebar-border px-3 py-3">
-          <button className="flex w-full items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary/80">
+        <div className="border-sidebar-border border-b px-3 py-3">
+          <button className="bg-secondary text-muted-foreground hover:bg-secondary/80 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors">
             <Search size={16} />
             <span>Search...</span>
-            <kbd className="ml-auto rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium">
+            <kbd className="border-border bg-background ml-auto rounded border px-1.5 py-0.5 text-[10px] font-medium">
               ⌘K
             </kbd>
           </button>
@@ -164,16 +166,13 @@ export function Sidebar() {
                           <span>{item.label}</span>
                           <ChevronLeft
                             size={14}
-                            className={cn(
-                              'ml-auto transition-transform',
-                              expanded && '-rotate-90',
-                            )}
+                            className={cn('ml-auto transition-transform', expanded && '-rotate-90')}
                           />
                         </>
                       )}
                     </button>
                     {!collapsed && expanded && (
-                      <ul className="ml-8 mt-1 space-y-0.5">
+                      <ul className="mt-1 ml-8 space-y-0.5">
                         {item.children.map((child) => (
                           <li key={child.href}>
                             <Link
@@ -181,7 +180,7 @@ export function Sidebar() {
                               className={cn(
                                 'block rounded-md px-3 py-1.5 text-sm transition-colors',
                                 pathname === child.href
-                                  ? 'font-medium text-sidebar-foreground'
+                                  ? 'text-sidebar-foreground font-medium'
                                   : 'text-sidebar-muted hover:text-sidebar-foreground',
                               )}
                             >
@@ -214,10 +213,10 @@ export function Sidebar() {
       </nav>
 
       {/* Collapse toggle */}
-      <div className="border-t border-sidebar-border p-3">
+      <div className="border-sidebar-border border-t p-3">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm text-sidebar-muted transition-colors hover:bg-secondary hover:text-sidebar-foreground"
+          className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm transition-colors"
         >
           <ChevronLeft
             size={18}

@@ -1,0 +1,295 @@
+'use client';
+
+import { useState } from 'react';
+import { User, Building2, Bell, Shield, Camera, Smartphone, Monitor } from 'lucide-react';
+
+/* ───────── Types ───────── */
+
+type TabId = 'profile' | 'company' | 'notifications' | 'security';
+
+interface Tab {
+  id: TabId;
+  label: string;
+  icon: React.ComponentType<{ size?: number }>;
+}
+
+/* ───────── Tabs config ───────── */
+
+const TABS: Tab[] = [
+  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'company', label: 'Company', icon: Building2 },
+  { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'security', label: 'Security', icon: Shield },
+];
+
+/* ───────── Shared components ───────── */
+
+function InputField({
+  label,
+  value,
+  type = 'text',
+}: {
+  label: string;
+  value: string;
+  type?: string;
+}) {
+  return (
+    <div>
+      <label className="text-foreground mb-1.5 block text-sm font-medium">{label}</label>
+      <input
+        type={type}
+        defaultValue={value}
+        className="border-border bg-secondary/30 text-foreground w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#E5A84B]/40"
+      />
+    </div>
+  );
+}
+
+function Toggle({
+  label,
+  description,
+  defaultChecked = false,
+}: {
+  label: string;
+  description: string;
+  defaultChecked?: boolean;
+}) {
+  const [enabled, setEnabled] = useState(defaultChecked);
+
+  return (
+    <div className="flex items-center justify-between gap-4 py-3">
+      <div>
+        <p className="text-foreground text-sm font-medium">{label}</p>
+        <p className="text-muted-foreground text-xs">{description}</p>
+      </div>
+      <button
+        onClick={() => setEnabled(!enabled)}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+          enabled ? 'bg-[#E5A84B]' : 'bg-secondary'
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+            enabled ? 'translate-x-5' : 'translate-x-0'
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+/* ───────── Tab panels ───────── */
+
+function ProfileTab() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-5">
+        <div className="relative">
+          <div className="bg-secondary text-muted-foreground flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-semibold">
+            AH
+          </div>
+          <button className="absolute -right-1 -bottom-1 rounded-lg bg-[#E5A84B] p-1.5 text-white shadow">
+            <Camera size={12} />
+          </button>
+        </div>
+        <div>
+          <p className="text-foreground text-lg font-semibold">Armen Hakobyan</p>
+          <p className="text-muted-foreground text-sm">Admin</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <InputField label="First Name" value="Armen" />
+        <InputField label="Last Name" value="Hakobyan" />
+        <InputField label="Email" value="armen@nbos.am" type="email" />
+        <InputField label="Phone" value="+374 91 000111" type="tel" />
+      </div>
+
+      <div>
+        <label className="text-foreground mb-1.5 block text-sm font-medium">Role</label>
+        <select className="border-border bg-secondary/30 text-foreground w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#E5A84B]/40 sm:max-w-xs">
+          <option>Admin</option>
+          <option>Manager</option>
+          <option>Developer</option>
+          <option>Viewer</option>
+        </select>
+      </div>
+
+      <SaveButton />
+    </div>
+  );
+}
+
+function CompanyTab() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <InputField label="Company Name" value="NBOS LLC" />
+        <InputField label="Tax ID" value="02612345" />
+        <div className="sm:col-span-2">
+          <InputField label="Address" value="Yerevan, Armenia, Tumanyan 8" />
+        </div>
+        <InputField label="Country" value="Armenia" />
+        <InputField label="City" value="Yerevan" />
+      </div>
+      <SaveButton />
+    </div>
+  );
+}
+
+function NotificationsTab() {
+  return (
+    <div className="space-y-1">
+      <h3 className="text-foreground mb-3 font-medium">Email Notifications</h3>
+      <Toggle
+        label="Invoice reminders"
+        description="Get notified about upcoming invoice deadlines"
+        defaultChecked
+      />
+      <Toggle
+        label="Payment received"
+        description="Notify when a payment is processed"
+        defaultChecked
+      />
+      <Toggle
+        label="New lead assigned"
+        description="Get notified when a new lead is assigned to you"
+      />
+      <Toggle
+        label="Weekly report"
+        description="Receive a weekly summary every Monday"
+        defaultChecked
+      />
+
+      <h3 className="text-foreground mt-6 mb-3 font-medium">In-App Notifications</h3>
+      <Toggle
+        label="Task updates"
+        description="When tasks assigned to you change status"
+        defaultChecked
+      />
+      <Toggle label="Comments & mentions" description="When someone mentions you" defaultChecked />
+      <Toggle
+        label="System alerts"
+        description="Maintenance and downtime notifications"
+        defaultChecked
+      />
+    </div>
+  );
+}
+
+function SecurityTab() {
+  return (
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <h3 className="text-foreground font-medium">Change Password</h3>
+        <div className="max-w-sm space-y-4">
+          <InputField label="Current Password" value="" type="password" />
+          <InputField label="New Password" value="" type="password" />
+          <InputField label="Confirm Password" value="" type="password" />
+        </div>
+        <SaveButton label="Update Password" />
+      </div>
+
+      <div className="border-border border-t pt-6">
+        <Toggle
+          label="Two-Factor Authentication"
+          description="Add an extra layer of security to your account"
+        />
+      </div>
+
+      <div className="border-border border-t pt-6">
+        <h3 className="text-foreground font-medium">Active Sessions</h3>
+        <div className="mt-4 space-y-3">
+          <SessionRow
+            icon={Monitor}
+            device="MacBook Pro — Yerevan"
+            time="Current session"
+            current
+          />
+          <SessionRow icon={Smartphone} device="iPhone 15 — Yerevan" time="2 hours ago" />
+          <SessionRow icon={Monitor} device="Windows PC — Gyumri" time="1 day ago" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SessionRow({
+  icon: Icon,
+  device,
+  time,
+  current = false,
+}: {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  device: string;
+  time: string;
+  current?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <Icon size={18} className="text-muted-foreground" />
+        <div>
+          <p className="text-foreground text-sm">{device}</p>
+          <p className="text-muted-foreground text-xs">{time}</p>
+        </div>
+      </div>
+      {current ? (
+        <span className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600">
+          Active
+        </span>
+      ) : (
+        <button className="text-muted-foreground text-xs hover:text-red-500">Revoke</button>
+      )}
+    </div>
+  );
+}
+
+function SaveButton({ label = 'Save Changes' }: { label?: string }) {
+  return (
+    <button className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90">
+      {label}
+    </button>
+  );
+}
+
+/* ───────── Page ───────── */
+
+export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState<TabId>('profile');
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-foreground text-2xl font-semibold">Settings</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Manage your account and application preferences.
+        </p>
+      </div>
+
+      <div className="border-border flex items-center gap-1 border-b pb-0">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 rounded-t-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+              activeTab === tab.id
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            }`}
+          >
+            <tab.icon size={16} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="border-border bg-card rounded-2xl border p-6">
+        {activeTab === 'profile' && <ProfileTab />}
+        {activeTab === 'company' && <CompanyTab />}
+        {activeTab === 'notifications' && <NotificationsTab />}
+        {activeTab === 'security' && <SecurityTab />}
+      </div>
+    </div>
+  );
+}

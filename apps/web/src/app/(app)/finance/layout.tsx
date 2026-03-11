@@ -2,13 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, ShoppingCart, FileText } from 'lucide-react';
+import { BarChart3, ShoppingCart, FileText, CreditCard, RefreshCw, Receipt } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 const TABS = [
   { href: '/finance/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/finance/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/finance/invoices', label: 'Invoices', icon: FileText },
+  { href: '/finance/payments', label: 'Payments', icon: CreditCard },
+  { href: '/finance/subscriptions', label: 'Subscriptions', icon: RefreshCw },
+  { href: '/finance/expenses', label: 'Expenses', icon: Receipt },
 ] as const;
 
 export default function FinanceLayout({ children }: { children: ReactNode }) {

@@ -19,6 +19,8 @@ import { DriveModule } from './modules/drive/drive.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { AutomationModule } from './modules/automation/automation.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { MessengerModule } from './modules/messenger/messenger.module';
+import { PartnersModule } from './modules/partners/partners.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
@@ -47,6 +49,8 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     NotificationModule,
     AutomationModule,
     SchedulerModule,
+    PartnersModule,
+    MessengerModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -2,7 +2,7 @@
 
 **Проект.** NBOS Platform  
 **Текущая фаза.** Фаза 4 — Расширенное  
-**Общий прогресс.** 75%
+**Общий прогресс.** 85%
 
 **Последнее обновление.** 2026-03-11
 
@@ -10,15 +10,15 @@
 
 ## Обзор по фазам
 
-| Фаза                                                          | Статус      | Прогресс |
-| ------------------------------------------------------------- | ----------- | -------- |
-| 0. Подготовка (документация, стек, архитектура)               | ✅ Готово   | 100%     |
-| 0.5. Инициализация (monorepo, настройка, scaffold)            | ✅ Готово   | 100%     |
-| 1. MVP (CRM, Projects, Clients, Finance, Auth)                | ✅ Готово   | 100%     |
-| 2. Core (Tasks, Support, Credentials, Drive, Expenses, Bonus) | ✅ Готово   | 100%     |
-| 3. Автоматизация (уведомления, авто-биллинг, авто-задачи)     | ✅ Готово   | 100%     |
-| 4. Расширенное (Messenger, Calendar, Dashboards)              | 🔄 В работе | 40%      |
-| 5. Миграция (Bitrix, параллельная работа, переключение)       | ⏳ Ожидает  | 0%       |
+| Фаза                                                          | Статус     | Прогресс |
+| ------------------------------------------------------------- | ---------- | -------- |
+| 0. Подготовка (документация, стек, архитектура)               | ✅ Готово  | 100%     |
+| 0.5. Инициализация (monorepo, настройка, scaffold)            | ✅ Готово  | 100%     |
+| 1. MVP (CRM, Projects, Clients, Finance, Auth)                | ✅ Готово  | 100%     |
+| 2. Core (Tasks, Support, Credentials, Drive, Expenses, Bonus) | ✅ Готово  | 100%     |
+| 3. Автоматизация (уведомления, авто-биллинг, авто-задачи)     | ✅ Готово  | 100%     |
+| 4. Расширенное (Messenger, Calendar, Dashboards)              | ✅ Готово  | 100%     |
+| 5. Миграция (Bitrix, параллельная работа, переключение)       | ⏳ Ожидает | 0%       |
 
 ---
 
@@ -127,32 +127,37 @@
 
 ---
 
-## Frontend Pages (23 маршрута)
+## Frontend Pages (27 маршрутов)
 
-| Маршрут            | Статус | Описание                          |
-| ------------------ | ------ | --------------------------------- |
-| /dashboard         | ✅     | Обзорная страница с статистикой   |
-| /crm               | ✅     | Redirect → /crm/leads             |
-| /crm/leads         | ✅     | Lead Pipeline Kanban (7 колонок)  |
-| /crm/deals         | ✅     | Deal Pipeline Kanban (12 колонок) |
-| /projects          | ✅     | Список проектов (Grid/List)       |
-| /clients           | ✅     | Redirect → /clients/contacts      |
-| /clients/contacts  | ✅     | Таблица контактов                 |
-| /clients/companies | ✅     | Карточки компаний                 |
-| /finance           | ✅     | Redirect → /finance/invoices      |
-| /finance/orders    | ✅     | Таблица заказов                   |
-| /finance/invoices  | ✅     | Таблица счетов                    |
-| /tasks             | ✅     | Tasks Kanban (6 колонок)          |
-| /support           | ✅     | Support Tickets (таблица + SLA)   |
-| /expenses          | ✅     | Expenses Dashboard                |
-| /bonus             | ✅     | Bonus Board Kanban (8 колонок)    |
-| /credentials       | ✅     | Credentials Vault (AES-256-GCM)   |
-| /drive             | ✅     | File Explorer (R2)                |
-| /calendar          | ✅     | Monthly Calendar + Events         |
-| /crm/dashboard     | ✅     | Sales/CRM Dashboard               |
-| /finance/dashboard | ✅     | Finance Dashboard                 |
-| /sign-in           | ✅     | Clerk Sign In                     |
-| /sign-up           | ✅     | Clerk Sign Up                     |
+| Маршрут                | Статус | Описание                          |
+| ---------------------- | ------ | --------------------------------- |
+| /dashboard             | ✅     | Обзорная страница с статистикой   |
+| /crm                   | ✅     | Redirect → /crm/leads             |
+| /crm/leads             | ✅     | Lead Pipeline Kanban (7 колонок)  |
+| /crm/deals             | ✅     | Deal Pipeline Kanban (12 колонок) |
+| /projects              | ✅     | Список проектов (Grid/List)       |
+| /clients               | ✅     | Redirect → /clients/contacts      |
+| /clients/contacts      | ✅     | Таблица контактов                 |
+| /clients/companies     | ✅     | Карточки компаний                 |
+| /finance               | ✅     | Redirect → /finance/invoices      |
+| /finance/orders        | ✅     | Таблица заказов                   |
+| /finance/invoices      | ✅     | Таблица счетов                    |
+| /tasks                 | ✅     | Tasks Kanban (6 колонок)          |
+| /support               | ✅     | Support Tickets (таблица + SLA)   |
+| /expenses              | ✅     | Expenses Dashboard                |
+| /bonus                 | ✅     | Bonus Board Kanban (8 колонок)    |
+| /credentials           | ✅     | Credentials Vault (AES-256-GCM)   |
+| /drive                 | ✅     | File Explorer (R2)                |
+| /calendar              | ✅     | Monthly Calendar + Events         |
+| /crm/dashboard         | ✅     | Sales/CRM Dashboard               |
+| /finance/dashboard     | ✅     | Finance Dashboard                 |
+| /finance/payments      | ✅     | Payments Table                    |
+| /finance/subscriptions | ✅     | Subscriptions Table               |
+| /messenger             | ✅     | Messenger (channels + DMs)        |
+| /partners              | ✅     | Partners Cards                    |
+| /settings              | ✅     | Settings (Profile/Company/etc)    |
+| /sign-in               | ✅     | Clerk Sign In                     |
+| /sign-up               | ✅     | Clerk Sign Up                     |
 
 ---
 
@@ -263,11 +268,36 @@
 
 ---
 
-## Следующие шаги (Фаза 4 → 5)
+#### 4.3 — Messenger ✅
 
-1. **Messenger** → проектные чаты, personal messages
-2. **Интеграции** → WhatsApp, Telegram (optional)
-3. **Фаза 5** → Миграция из Bitrix24
+- [x] In-memory messenger (channels + DMs)
+- [x] 7 API endpoints (channels CRUD, messages, DMs)
+- [x] Slack-like UI (channel sidebar, message area, compose)
+- [x] Pre-seeded: 3 channels, 5 messages, 4 DM users
+
+#### 4.4 — Partners ✅
+
+- [x] Partners CRUD API (type, direction, defaultPercent, status)
+- [x] Partners card grid UI (search, badges)
+
+#### 4.5 — Finance полный набор ✅
+
+- [x] Payments table UI (summary cards, method filter)
+- [x] Subscriptions table UI (MRR, status badges, billing day)
+- [x] Finance layout с 6 табами
+
+#### 4.6 — Settings ✅
+
+- [x] 4 таба: Profile, Company, Notifications, Security
+- [x] Forms + toggles (visual MVP)
+
+---
+
+## Следующие шаги (Фаза 5)
+
+1. **Миграция из Bitrix24** → импорт данных (~2000 записей)
+2. **Маппинг полей** → Bitrix → NBOS
+3. **Параллельная работа** → оба инструмента одновременно
 
 ---
 
