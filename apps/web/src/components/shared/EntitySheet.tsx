@@ -10,6 +10,14 @@ import {
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+type SheetSize = 'md' | 'lg' | 'xl';
+
+const SIZE_MAP: Record<SheetSize, string> = {
+  md: 'w-full sm:w-[50vw]',
+  lg: 'w-full sm:w-[70vw]',
+  xl: 'w-full sm:w-[85vw]',
+};
+
 interface EntitySheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -19,6 +27,7 @@ interface EntitySheetProps {
   children: ReactNode;
   footer?: ReactNode;
   side?: 'right' | 'left';
+  size?: SheetSize;
   className?: string;
 }
 
@@ -31,11 +40,12 @@ export function EntitySheet({
   children,
   footer,
   side = 'right',
+  size = 'lg',
   className,
 }: EntitySheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side={side} className={className ?? 'w-full sm:max-w-[540px]'}>
+      <SheetContent side={side} className={className ?? SIZE_MAP[size]}>
         <SheetHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <SheetTitle className="text-lg">{title}</SheetTitle>
