@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { LeadConversionService } from './lead-conversion.service';
 import { LeadsService } from './leads.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';

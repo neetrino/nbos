@@ -1,8 +1,8 @@
 # Ход разработки NBOS Platform
 
 **Проект.** NBOS Platform  
-**Текущая фаза.** Фаза 1 — MVP  
-**Общий прогресс.** 35%
+**Текущая фаза.** Фаза 3 — Автоматизация  
+**Общий прогресс.** 65%
 
 **Последнее обновление.** 2026-03-11
 
@@ -15,8 +15,8 @@
 | 0. Подготовка (документация, стек, архитектура)               | ✅ Готово   | 100%     |
 | 0.5. Инициализация (monorepo, настройка, scaffold)            | ✅ Готово   | 100%     |
 | 1. MVP (CRM, Projects, Clients, Finance, Auth)                | ✅ Готово   | 100%     |
-| 2. Core (Tasks, Support, Credentials, Drive, Expenses, Bonus) | 🔄 В работе | 0%       |
-| 3. Автоматизация (уведомления, авто-биллинг, авто-задачи)     | ⏳ Ожидает  | 0%       |
+| 2. Core (Tasks, Support, Credentials, Drive, Expenses, Bonus) | ✅ Готово   | 100%     |
+| 3. Автоматизация (уведомления, авто-биллинг, авто-задачи)     | 🔄 В работе | 60%      |
 | 4. Расширенное (Messenger, Calendar, Dashboards)              | ⏳ Ожидает  | 0%       |
 | 5. Миграция (Bitrix, параллельная работа, переключение)       | ⏳ Ожидает  | 0%       |
 
@@ -96,7 +96,7 @@
 
 ---
 
-## API Routes (40+ endpoints)
+## API Routes (70+ endpoints)
 
 | Модуль    | Endpoint                         | Методы           |
 | --------- | -------------------------------- | ---------------- |
@@ -127,7 +127,7 @@
 
 ---
 
-## Frontend Pages (14 маршрутов)
+## Frontend Pages (19 маршрутов)
 
 | Маршрут            | Статус | Описание                          |
 | ------------------ | ------ | --------------------------------- |
@@ -142,6 +142,67 @@
 | /finance           | ✅     | Redirect → /finance/invoices      |
 | /finance/orders    | ✅     | Таблица заказов                   |
 | /finance/invoices  | ✅     | Таблица счетов                    |
+| /tasks             | ✅     | Tasks Kanban (6 колонок)          |
+| /support           | ✅     | Support Tickets (таблица + SLA)   |
+| /expenses          | ✅     | Expenses Dashboard                |
+| /bonus             | ✅     | Bonus Board Kanban (8 колонок)    |
+| /sign-in           | ✅     | Clerk Sign In                     |
+| /sign-up           | ✅     | Clerk Sign Up                     |
+
+---
+
+### Фаза 2. Core
+
+#### 2.1 — Tasks ✅
+
+- [x] Tasks CRUD API (code gen T-YYYY-NNNN, Kanban, фильтры, stats)
+- [x] Tasks Kanban UI (6 колонок, поиск, priority badges)
+
+#### 2.2 — Support ✅
+
+- [x] Support Tickets CRUD API (code gen TKT-YYYY-NNNN, SLA auto-calc)
+- [x] Support Tickets UI (таблица, SLA индикаторы, фильтры)
+
+#### 2.3 — Products + Extensions ✅
+
+- [x] Products CRUD API (stage gate validation: NEW→CREATING→DEV→QA→TRANSFER→DONE)
+- [x] Extensions CRUD API (stage gate: NEW→IN_PROGRESS→REVIEW→DONE)
+
+#### 2.4 — Finance (расширение) ✅
+
+- [x] Payments CRUD API (auto invoice/order status sync)
+- [x] Subscriptions CRUD API (code gen SUB-YYYY-NNNN, billing day)
+
+#### 2.5 — Expenses + Bonus ✅
+
+- [x] Expenses CRUD API (Planned/Unplanned, 9 категорий, stats)
+- [x] Expenses UI (dashboard, summary, фильтры)
+- [x] Bonus CRUD API (8 стадий Kanban, stats)
+- [x] Bonus Board UI (Kanban, summary)
+
+#### 2.6 — Seed данные ✅
+
+- [x] 33 демо записи (employees, contacts, companies, projects, products, leads, deals, orders, invoices, tasks, tickets, expenses)
+
+#### 2.7 — Credentials Vault ✅
+
+- [x] AES-256-GCM шифрование (password, apiKey, envData)
+- [x] 4 уровня доступа (SECRET, PROJECT_TEAM, DEPARTMENT, ALL)
+- [x] Audit log на каждый view/create/update/delete
+- [x] CRUD API + UI (таблица с раскрытием, фильтры, поиск)
+
+#### 2.8 — Drive ✅
+
+- [x] R2 (S3-compatible) файловое хранилище
+- [x] Presigned upload/download URLs
+- [x] Project folder structure (tree view)
+- [x] File explorer UI (grid/list view, breadcrumbs)
+
+#### 2.9 — Notification Engine ✅
+
+- [x] In-memory MVP (Map<userId, Notification[]>)
+- [x] CRUD: create, findByUser, markAsRead, markAllAsRead, getUnreadCount
+- [x] NotificationDropdown компонент в Topbar
 
 ---
 
@@ -149,14 +210,33 @@
 
 - Нет активных блокеров
 
-## Следующие шаги (Фаза 2)
+### Фаза 3. Автоматизация
 
-1. **Seed данные** → тестовые пользователи и демо данные
-2. **Products + Extensions** → CRUD API
-3. **Payments + Subscriptions** → CRUD API
-4. **Tasks** → Kanban API + UI
-5. **Support Tickets** → ITIL-lite API + UI
-6. **Expenses + Bonus** → CRUD API + UI
+#### 3.1 — Notification Engine ✅
+
+- [x] In-app notifications (in-memory MVP)
+- [x] API: create, list, mark read, unread count
+- [x] NotificationDropdown UI component
+
+#### 3.2 — Авто-биллинг ✅
+
+- [x] Monthly billing: subscription → auto-invoice
+- [x] Monthly expenses: planned expense templates → auto-creation
+- [x] Duplicate prevention (per month)
+- [x] Error collection without stopping
+
+#### 3.3 — Audit System ✅
+
+- [x] Reusable AuditService (log, findByEntity, findByUser)
+- [x] API endpoints for audit trail queries
+
+---
+
+## Следующие шаги (Фаза 3 → 4)
+
+1. **Авто-задачи** → Product created → tasks from template
+2. **BullMQ Workers** → Queue-based async jobs (billing scheduler)
+3. **Фаза 4** → Messenger, Calendar, Dashboards
 
 ---
 

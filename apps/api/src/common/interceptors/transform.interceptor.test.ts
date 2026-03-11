@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { TransformInterceptor } from './transform.interceptor';
 import { of, lastValueFrom } from 'rxjs';
 import type { CallHandler, ExecutionContext } from '@nestjs/common';

@@ -35,6 +35,8 @@ export function createMockPrisma() {
     supportTicket: createModelMock(),
     expense: createModelMock(),
     bonusEntry: createModelMock(),
+    credential: createModelMock(),
+    auditLog: createModelMock(),
     $disconnect: vi.fn(),
   };
 }

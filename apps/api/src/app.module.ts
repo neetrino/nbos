@@ -13,6 +13,10 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { SupportModule } from './modules/support/support.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { BonusModule } from './modules/bonus/bonus.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { CredentialsModule } from './modules/credentials/credentials.module';
+import { DriveModule } from './modules/drive/drive.module';
+import { NotificationModule } from './modules/notifications/notification.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
@@ -35,6 +39,10 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     SupportModule,
     ExpensesModule,
     BonusModule,
+    AuditModule,
+    CredentialsModule,
+    DriveModule,
+    NotificationModule,
   ],
   controllers: [HealthController],
   providers: [

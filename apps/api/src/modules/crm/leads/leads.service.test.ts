@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { LeadsService } from './leads.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
