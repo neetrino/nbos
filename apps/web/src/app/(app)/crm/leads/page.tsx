@@ -1,218 +1,44 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Plus,
-  Search,
-  Filter,
-  Phone,
-  Mail,
-  User,
-  ChevronRight,
-  MoreHorizontal,
-  RefreshCcw,
-} from 'lucide-react';
+  PageHeader,
+  FilterBar,
+  KanbanBoard,
+  EmptyState,
+  type KanbanColumn,
+} from '@/components/shared';
+import { LeadCard } from '@/features/crm/components/LeadCard';
+import { LeadSheet } from '@/features/crm/components/LeadSheet';
+import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
+import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
 import { leadsApi, type Lead } from '@/lib/api/leads';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
+import { StatusBadge } from '@/components/shared';
+import { getLeadStage, getLeadSource } from '@/features/crm/constants/leadPipeline';
+import { Users } from 'lucide-react';
 
-const LEAD_STATUSES = [
-  { key: 'NEW', label: 'New', color: 'bg-blue-500' },
-  { key: 'DIDNT_GET_THROUGH', label: "Didn't Get Through", color: 'bg-gray-400' },
-  { key: 'CONTACT_ESTABLISHED', label: 'Contact Established', color: 'bg-indigo-500' },
-  { key: 'MQL', label: 'MQL', color: 'bg-purple-500' },
-  { key: 'SPAM', label: 'Spam', color: 'bg-red-400' },
-  { key: 'FROZEN', label: 'Frozen', color: 'bg-cyan-500' },
-  { key: 'SQL', label: 'SQL', color: 'bg-emerald-500' },
-] as const;
-
-const LEAD_SOURCES = [
-  'WEBSITE',
-  'INSTAGRAM',
-  'LINKEDIN',
-  'REFERRAL',
-  'COLD_CALL',
-  'PARTNER',
-  'EXHIBITION',
-  'OTHER',
-] as const;
-
-function LeadCard({
-  lead,
-  onStatusChange,
-}: {
-  lead: Lead;
-  onStatusChange: (id: string, status: string) => void;
-}) {
-  const statusIdx = LEAD_STATUSES.findIndex((s) => s.key === lead.status);
-  const nextStatus = LEAD_STATUSES[statusIdx + 1];
-
-  return (
-    <div className="group border-border bg-card rounded-xl border p-4 transition-all hover:shadow-md">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-muted-foreground text-xs font-medium">{lead.code}</p>
-          <h4 className="text-foreground mt-1 text-sm font-semibold">{lead.contactName}</h4>
-        </div>
-        <button className="hover:bg-secondary rounded-lg p-1 opacity-0 transition-opacity group-hover:opacity-100">
-          <MoreHorizontal size={14} className="text-muted-foreground" />
-        </button>
-      </div>
-
-      <div className="mt-3 space-y-1.5">
-        {lead.phone && (
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            <Phone size={12} />
-            <span>{lead.phone}</span>
-          </div>
-        )}
-        {lead.email && (
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            <Mail size={12} />
-            <span className="truncate">{lead.email}</span>
-          </div>
-        )}
-        {lead.assignee && (
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            <User size={12} />
-            <span>
-              {lead.assignee.firstName} {lead.assignee.lastName}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-3 flex items-center justify-between">
-        <span className="bg-secondary text-muted-foreground rounded-md px-2 py-0.5 text-[10px] font-medium">
-          {lead.source}
-        </span>
-        {nextStatus && lead.status !== 'SPAM' && (
-          <button
-            onClick={() => onStatusChange(lead.id, nextStatus.key)}
-            className="bg-accent/10 text-accent hover:bg-accent/20 flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium transition-colors"
-          >
-            <ChevronRight size={10} />
-            {nextStatus.label}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CreateLeadModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
-  const [contactName, setContactName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [source, setSource] = useState<string>('WEBSITE');
-  const [notes, setNotes] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await leadsApi.create({
-        contactName,
-        phone: phone || undefined,
-        email: email || undefined,
-        source,
-        notes: notes || undefined,
-      });
-      onCreated();
-      onClose();
-    } catch {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="border-border bg-card w-full max-w-md rounded-2xl border p-6 shadow-xl">
-        <h3 className="text-foreground text-lg font-semibold">New Lead</h3>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <div>
-            <label className="text-foreground mb-1 block text-sm font-medium">Contact Name *</label>
-            <input
-              type="text"
-              value={contactName}
-              onChange={(e) => setContactName(e.target.value)}
-              required
-              className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-              placeholder="John Smith"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-foreground mb-1 block text-sm font-medium">Phone</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-                placeholder="+374..."
-              />
-            </div>
-            <div>
-              <label className="text-foreground mb-1 block text-sm font-medium">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-                placeholder="email@example.com"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-foreground mb-1 block text-sm font-medium">Source *</label>
-            <select
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              className="border-input bg-background text-foreground focus:ring-ring w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-            >
-              {LEAD_SOURCES.map((s) => (
-                <option key={s} value={s}>
-                  {s.replace(/_/g, ' ')}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-foreground mb-1 block text-sm font-medium">Notes</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full resize-none rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-              placeholder="Any additional info..."
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-muted-foreground hover:bg-secondary rounded-xl px-4 py-2 text-sm font-medium transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !contactName}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Creating...' : 'Create Lead'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
+type ViewMode = 'kanban' | 'list';
 
 export default function LeadsPipelinePage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [view, setView] = useState<ViewMode>('kanban');
   const [showCreate, setShowCreate] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -220,14 +46,16 @@ export default function LeadsPipelinePage() {
       const data = await leadsApi.getAll({
         pageSize: 200,
         search: search || undefined,
+        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        source: filters.source && filters.source !== 'all' ? filters.source : undefined,
       });
       setLeads(data.items);
     } catch {
-      /* empty */
+      /* handled by API layer */
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, filters]);
 
   useEffect(() => {
     fetchLeads();
@@ -237,100 +65,199 @@ export default function LeadsPipelinePage() {
     try {
       await leadsApi.updateStatus(id, status);
       await fetchLeads();
+      if (selectedLead?.id === id) {
+        const updated = await leadsApi.getById(id);
+        setSelectedLead(updated);
+      }
     } catch {
-      /* empty */
+      /* handled by API layer */
     }
   };
 
-  const groupedLeads = LEAD_STATUSES.map((status) => ({
-    ...status,
-    leads: leads.filter((l) => l.status === status.key),
+  const handleUpdate = async (id: string, data: Partial<Lead>) => {
+    await leadsApi.update(id, data);
+    await fetchLeads();
+    const updated = await leadsApi.getById(id);
+    setSelectedLead(updated);
+  };
+
+  const handleDelete = async (id: string) => {
+    await leadsApi.delete(id);
+    setSheetOpen(false);
+    setSelectedLead(null);
+    await fetchLeads();
+  };
+
+  const handleCardClick = (lead: Lead) => {
+    setSelectedLead(lead);
+    setSheetOpen(true);
+  };
+
+  const handleMove = async (itemId: string, _from: string, toColumn: string) => {
+    await handleStatusChange(itemId, toColumn);
+  };
+
+  const kanbanColumns: KanbanColumn<Lead>[] = LEAD_STAGES.map((stage) => ({
+    key: stage.key,
+    label: stage.label,
+    color: stage.color,
+    items: leads.filter((l) => l.status === stage.key),
   }));
 
+  const totalCount = leads.length;
+  const activeCount = leads.filter((l) => !['SPAM', 'FROZEN', 'SQL'].includes(l.status)).length;
+
+  const filterConfigs = [
+    {
+      key: 'source',
+      label: 'Source',
+      options: LEAD_SOURCES.map((s) => ({ value: s.value, label: s.label })),
+    },
+    {
+      key: 'status',
+      label: 'Stage',
+      options: LEAD_STAGES.map((s) => ({ value: s.key, label: s.label })),
+    },
+  ];
+
   return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-foreground text-2xl font-semibold">Lead Pipeline</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {leads.length} leads total &middot; Track and manage your pipeline
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchLeads}
-            className="border-border text-muted-foreground hover:bg-secondary rounded-xl border p-2.5 transition-colors"
+    <div className="flex h-full flex-col gap-5">
+      <PageHeader
+        title="Lead Pipeline"
+        description={`${totalCount} leads total · ${activeCount} active`}
+      >
+        <Button variant="outline" size="icon" onClick={fetchLeads}>
+          <RefreshCcw size={16} />
+        </Button>
+        <div className="border-border flex rounded-lg border">
+          <Button
+            variant={view === 'kanban' ? 'secondary' : 'ghost'}
+            size="icon-sm"
+            onClick={() => setView('kanban')}
+            className="rounded-r-none"
           >
-            <RefreshCcw size={16} />
-          </button>
-          <button className="border-border text-muted-foreground hover:bg-secondary rounded-xl border p-2.5 transition-colors">
-            <Filter size={16} />
-          </button>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
+            <LayoutGrid size={14} />
+          </Button>
+          <Button
+            variant={view === 'list' ? 'secondary' : 'ghost'}
+            size="icon-sm"
+            onClick={() => setView('list')}
+            className="rounded-l-none"
           >
-            <Plus size={16} />
-            New Lead
-          </button>
+            <List size={14} />
+          </Button>
         </div>
-      </div>
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus size={16} />
+          New Lead
+        </Button>
+      </PageHeader>
 
-      {/* Search */}
-      <div className="mt-4 flex items-center gap-3">
-        <div className="relative flex-1">
-          <Search
-            size={16}
-            className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search leads by name, email, phone..."
-            className="border-input bg-card text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-xl border py-2.5 pr-4 pl-10 text-sm focus:ring-2 focus:outline-none"
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search leads by name, email, phone..."
+        filters={filterConfigs}
+        filterValues={filters}
+        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+        onClearFilters={() => setFilters({})}
+      />
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : leads.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No leads yet"
+          description="Add your first lead to start building your pipeline"
+          action={
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus size={16} />
+              Create First Lead
+            </Button>
+          }
+        />
+      ) : view === 'kanban' ? (
+        <div className="flex-1 overflow-hidden">
+          <KanbanBoard
+            columns={kanbanColumns}
+            renderCard={(lead) => (
+              <LeadCard lead={lead} onClick={handleCardClick} onStatusChange={handleStatusChange} />
+            )}
+            getItemId={(lead) => lead.id}
+            onMove={handleMove}
+            columnWidth={270}
+            emptyMessage="No leads"
           />
         </div>
-      </div>
-
-      {/* Kanban Board */}
-      <div className="mt-6 flex-1 overflow-x-auto">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="border-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
-          </div>
-        ) : (
-          <div className="flex gap-4 pb-4" style={{ minWidth: `${LEAD_STATUSES.length * 280}px` }}>
-            {groupedLeads.map((column) => (
-              <div key={column.key} className="w-[270px] flex-shrink-0">
-                <div className="mb-3 flex items-center gap-2">
-                  <div className={`h-2 w-2 rounded-full ${column.color}`} />
-                  <h3 className="text-foreground text-sm font-semibold">{column.label}</h3>
-                  <span className="bg-secondary text-muted-foreground ml-auto rounded-md px-2 py-0.5 text-xs font-medium">
-                    {column.leads.length}
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {column.leads.map((lead) => (
-                    <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatusChange} />
-                  ))}
-                  {column.leads.length === 0 && (
-                    <div className="border-border rounded-xl border border-dashed p-6 text-center">
-                      <p className="text-muted-foreground text-xs">No leads</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Create Modal */}
-      {showCreate && (
-        <CreateLeadModal onClose={() => setShowCreate(false)} onCreated={fetchLeads} />
+      ) : (
+        <div className="border-border overflow-hidden rounded-xl border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead>Stage</TableHead>
+                <TableHead>Seller</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {leads.map((lead) => {
+                const stage = getLeadStage(lead.status);
+                const source = getLeadSource(lead.source);
+                return (
+                  <TableRow
+                    key={lead.id}
+                    className="cursor-pointer"
+                    onClick={() => handleCardClick(lead)}
+                  >
+                    <TableCell className="font-medium">{lead.contactName}</TableCell>
+                    <TableCell className="text-muted-foreground">{lead.phone ?? '—'}</TableCell>
+                    <TableCell className="text-muted-foreground">{lead.email ?? '—'}</TableCell>
+                    <TableCell>
+                      <StatusBadge label={source?.label ?? lead.source} variant="default" />
+                    </TableCell>
+                    <TableCell>
+                      {stage && (
+                        <StatusBadge
+                          label={stage.label}
+                          variant={stage.variant}
+                          dot
+                          dotColor={stage.color}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : '—'}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {new Date(lead.createdAt).toLocaleDateString()}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
+
+      <CreateLeadDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchLeads} />
+
+      <LeadSheet
+        lead={selectedLead}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onUpdate={handleUpdate}
+        onStatusChange={handleStatusChange}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
