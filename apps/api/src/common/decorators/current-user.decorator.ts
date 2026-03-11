@@ -1,0 +1,19 @@
+import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
+import type { Request } from 'express';
+
+export interface CurrentUserPayload {
+  id: string;
+  clerkUserId: string;
+  email: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+}
+
+export const CurrentUser = createParamDecorator(
+  (data: keyof CurrentUserPayload | undefined, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest<Request & { user: CurrentUserPayload }>();
+    const user = request.user;
+    return data ? user?.[data] : user;
+  },
+);

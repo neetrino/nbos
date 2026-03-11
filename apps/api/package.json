@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "nest start --watch",
+    "dev": "nest build && node --import tsx --watch dist/main",
+    "dev:watch": "nest start --watch",
     "build": "nest build",
-    "start": "node dist/main",
-    "start:prod": "node dist/main",
+    "start": "node --import tsx dist/main",
+    "start:prod": "node --import tsx dist/main",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@clerk/backend": "^3.2.0",
     "@nbos/database": "workspace:*",
     "@nbos/shared": "workspace:*",
     "@nestjs/common": "^11.1.16",
