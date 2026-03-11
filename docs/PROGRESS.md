@@ -14,8 +14,8 @@
 | ------------------------------------------------------------- | ----------- | -------- |
 | 0. Подготовка (документация, стек, архитектура)               | ✅ Готово   | 100%     |
 | 0.5. Инициализация (monorepo, настройка, scaffold)            | ✅ Готово   | 100%     |
-| 1. MVP (CRM, Projects, Clients, Finance, Auth)                | 🔄 В работе | 80%      |
-| 2. Core (Tasks, Support, Credentials, Drive, Expenses, Bonus) | ⏳ Ожидает  | 0%       |
+| 1. MVP (CRM, Projects, Clients, Finance, Auth)                | ✅ Готово   | 100%     |
+| 2. Core (Tasks, Support, Credentials, Drive, Expenses, Bonus) | 🔄 В работе | 0%       |
 | 3. Автоматизация (уведомления, авто-биллинг, авто-задачи)     | ⏳ Ожидает  | 0%       |
 | 4. Расширенное (Messenger, Calendar, Dashboards)              | ⏳ Ожидает  | 0%       |
 | 5. Миграция (Bitrix, параллельная работа, переключение)       | ⏳ Ожидает  | 0%       |
@@ -49,16 +49,17 @@
 
 ### Фаза 1. MVP (текущая)
 
-#### 1.1 — Auth + RBAC (частично)
+#### 1.1 — Auth + RBAC ✅
 
 - [x] Декораторы: @Roles, @CurrentUser, @Public
-- [x] Guards: AuthGuard (JWT placeholder), RolesGuard (12 ролей)
+- [x] Guards: AuthGuard (Clerk verifyToken), RolesGuard (12 ролей)
 - [x] GlobalExceptionFilter + TransformInterceptor
 - [x] Employee service + module (upsertFromClerk)
-- [ ] **Ожидает: Clerk ключи** (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY)
-- [ ] Clerk JWT верификация в AuthGuard
-- [ ] Clerk middleware (web)
-- [ ] Seed: тестовые пользователи
+- [x] Clerk интеграция (web): ClerkProvider, middleware, sign-in/sign-up
+- [x] Clerk JWT верификация в AuthGuard (@clerk/backend verifyToken)
+- [x] Husky + lint-staged + commitlint (Conventional Commits)
+- [x] Vitest: 136 тестов, 92%+ coverage
+- [x] ESLint flat config (root + web)
 
 #### 1.2 — CRM (Leads + Deals) ✅
 
@@ -146,13 +147,16 @@
 
 ## Блокеры
 
-- **Clerk ключи**: нужны для завершения Auth + RBAC (1.1)
+- Нет активных блокеров
 
-## Следующие шаги
+## Следующие шаги (Фаза 2)
 
-1. **Получить Clerk ключи** → завершить Auth + RBAC
-2. **Seed данные** → тестовые пользователи и данные для демо
-3. **Фаза 2** → Tasks, Support, Credentials, Expenses, Bonus
+1. **Seed данные** → тестовые пользователи и демо данные
+2. **Products + Extensions** → CRUD API
+3. **Payments + Subscriptions** → CRUD API
+4. **Tasks** → Kanban API + UI
+5. **Support Tickets** → ITIL-lite API + UI
+6. **Expenses + Bonus** → CRUD API + UI
 
 ---
 

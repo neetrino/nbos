@@ -28,6 +28,13 @@ export function createMockPrisma() {
     invoice: createModelMock(),
     employee: createModelMock(),
     payment: createModelMock(),
+    product: createModelMock(),
+    extension: createModelMock(),
+    subscription: createModelMock(),
+    task: createModelMock(),
+    supportTicket: createModelMock(),
+    expense: createModelMock(),
+    bonusEntry: createModelMock(),
     $disconnect: vi.fn(),
   };
 }

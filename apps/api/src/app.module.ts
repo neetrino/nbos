@@ -9,6 +9,10 @@ import { CrmModule } from './modules/crm/crm.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { FinanceModule } from './modules/finance/finance.module';
+import { TasksModule } from './modules/tasks/tasks.module';
+import { SupportModule } from './modules/support/support.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
+import { BonusModule } from './modules/bonus/bonus.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
@@ -27,6 +31,10 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     ProjectsModule,
     ClientsModule,
     FinanceModule,
+    TasksModule,
+    SupportModule,
+    ExpensesModule,
+    BonusModule,
   ],
   controllers: [HealthController],
   providers: [
