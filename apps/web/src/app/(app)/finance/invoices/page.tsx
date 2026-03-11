@@ -3,179 +3,307 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
-  Search,
-  FileText,
   RefreshCcw,
+  FileText,
   DollarSign,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
+  Calendar,
+  Building2,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
+import { PageHeader, FilterBar, EmptyState, StatusBadge, KanbanBoard } from '@/components/shared';
+import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
+import {
+  INVOICE_TYPES,
+  INVOICE_STAGES,
+  getInvoiceStage,
+  formatAmount,
+} from '@/features/finance/constants/finance';
 import { api } from '@/lib/api';
 
 interface Invoice {
   id: string;
   code: string;
   amount: string;
+  currency: string;
   status: string;
   type: string;
+  taxStatus: string;
   dueDate: string | null;
   paidDate: string | null;
   createdAt: string;
+  description: string | null;
   order: { id: string; code: string } | null;
   company: { id: string; name: string } | null;
+  project: { id: string; name: string } | null;
+  contact: { id: string; firstName: string; lastName: string } | null;
   _count: { payments: number };
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle2 }> = {
-  NEW: { label: 'New', color: 'bg-blue-500/10 text-blue-500', icon: Clock },
-  SENT: { label: 'Sent', color: 'bg-indigo-500/10 text-indigo-500', icon: FileText },
-  PARTIAL: { label: 'Partial', color: 'bg-amber-500/10 text-amber-500', icon: AlertCircle },
-  PAID: { label: 'Paid', color: 'bg-emerald-500/10 text-emerald-500', icon: CheckCircle2 },
-  OVERDUE: { label: 'Overdue', color: 'bg-red-500/10 text-red-500', icon: AlertCircle },
-  CANCELLED: { label: 'Cancelled', color: 'bg-gray-500/10 text-gray-500', icon: AlertCircle },
-};
-
-function formatCurrency(amount: string | number): string {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'AMD',
-    maximumFractionDigits: 0,
-  }).format(num);
-}
+type ViewMode = 'kanban' | 'list';
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [view, setView] = useState<ViewMode>('list');
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
       const resp = await api.get('/api/finance/invoices', {
-        params: { pageSize: 50, search: search || undefined },
+        params: {
+          pageSize: 100,
+          search: search || undefined,
+          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+          type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+        },
       });
-      setInvoices(resp.data.items ?? []);
+      setInvoices(resp.data.items ?? resp.data ?? []);
     } catch {
-      /* empty */
+      /* handled */
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, filters]);
 
   useEffect(() => {
     fetchInvoices();
   }, [fetchInvoices]);
 
+  const handleClick = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setSheetOpen(true);
+  };
+
+  const totalAmount = invoices.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  const paidAmount = invoices
+    .filter((inv) => inv.status === 'PAID')
+    .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  const overdueAmount = invoices
+    .filter((inv) => inv.status === 'OVERDUE')
+    .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+
+  const filterConfigs = [
+    {
+      key: 'status',
+      label: 'Status',
+      options: INVOICE_STAGES.map((s) => ({ value: s.value, label: s.label })),
+    },
+    {
+      key: 'type',
+      label: 'Type',
+      options: INVOICE_TYPES.map((t) => ({ value: t.value, label: t.label })),
+    },
+  ];
+
+  const STAGE_COLORS: Record<string, string> = {
+    NEW: 'bg-blue-500',
+    GOV_SYSTEM: 'bg-indigo-500',
+    SEND_MESSAGE: 'bg-purple-500',
+    OVERDUE: 'bg-red-500',
+    ON_HOLD: 'bg-gray-400',
+    PAID: 'bg-green-500',
+  };
+
+  const kanbanColumns = INVOICE_STAGES.filter((s) =>
+    ['NEW', 'GOV_SYSTEM', 'SEND_MESSAGE', 'OVERDUE', 'ON_HOLD', 'PAID'].includes(s.value),
+  ).map((stage) => ({
+    key: stage.value,
+    label: stage.label,
+    color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
+    items: invoices.filter((inv) => inv.status === stage.value),
+  }));
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-foreground text-2xl font-semibold">Invoices</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{invoices.length} invoices</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchInvoices}
-            className="border-border text-muted-foreground hover:bg-secondary rounded-xl border p-2.5 transition-colors"
+    <div className="flex h-full flex-col gap-5">
+      <PageHeader title="Invoices" description={`${invoices.length} total`}>
+        <Button variant="outline" size="icon" onClick={fetchInvoices}>
+          <RefreshCcw size={16} />
+        </Button>
+        <div className="border-border flex rounded-lg border">
+          <Button
+            variant={view === 'list' ? 'secondary' : 'ghost'}
+            size="icon-sm"
+            onClick={() => setView('list')}
+            className="rounded-r-none"
           >
-            <RefreshCcw size={16} />
-          </button>
-          <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors">
-            <Plus size={16} />
-            New Invoice
-          </button>
+            <List size={14} />
+          </Button>
+          <Button
+            variant={view === 'kanban' ? 'secondary' : 'ghost'}
+            size="icon-sm"
+            onClick={() => setView('kanban')}
+            className="rounded-l-none"
+          >
+            <LayoutGrid size={14} />
+          </Button>
+        </div>
+        <Button>
+          <Plus size={16} />
+          New Invoice
+        </Button>
+      </PageHeader>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Total Invoiced</p>
+          <p className="mt-1 text-xl font-bold">{formatAmount(totalAmount)}</p>
+        </div>
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Collected</p>
+          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(paidAmount)}</p>
+        </div>
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Overdue</p>
+          <p className="mt-1 text-xl font-bold text-red-500">{formatAmount(overdueAmount)}</p>
         </div>
       </div>
 
-      <div className="relative">
-        <Search
-          size={16}
-          className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2"
-        />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search invoices..."
-          className="border-input bg-card text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-xl border py-2.5 pr-4 pl-10 text-sm focus:ring-2 focus:outline-none"
-        />
-      </div>
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by invoice number, company..."
+        filters={filterConfigs}
+        filterValues={filters}
+        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+        onClearFilters={() => setFilters({})}
+      />
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="border-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-lg" />
+          ))}
         </div>
       ) : invoices.length === 0 ? (
-        <div className="border-border rounded-2xl border border-dashed py-20 text-center">
-          <FileText size={48} className="text-muted-foreground/30 mx-auto" />
-          <h3 className="text-foreground mt-4 text-lg font-semibold">No invoices yet</h3>
-          <p className="text-muted-foreground mt-1 text-sm">Create your first invoice</p>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title="No invoices yet"
+          description="Create your first invoice to start tracking payments"
+          action={
+            <Button>
+              <Plus size={16} />
+              Create First Invoice
+            </Button>
+          }
+        />
+      ) : view === 'kanban' ? (
+        <KanbanBoard
+          columns={kanbanColumns}
+          getItemId={(inv: Invoice) => inv.id}
+          renderCard={(invoice: Invoice) => (
+            <div
+              className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+              onClick={() => handleClick(invoice)}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground text-xs font-medium">{invoice.code}</span>
+                {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
+              </div>
+              <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
+              {invoice.company && (
+                <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                  <Building2 size={10} />
+                  {invoice.company.name}
+                </div>
+              )}
+              {invoice.dueDate && (
+                <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                  <Calendar size={10} />
+                  {new Date(invoice.dueDate).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          )}
+        />
       ) : (
-        <div className="border-border overflow-hidden rounded-2xl border">
-          <table className="w-full">
-            <thead className="bg-secondary/50">
-              <tr>
-                <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium">
-                  Invoice
-                </th>
-                <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium">
-                  Company
-                </th>
-                <th className="text-muted-foreground px-4 py-3 text-right text-xs font-medium">
-                  Amount
-                </th>
-                <th className="text-muted-foreground px-4 py-3 text-center text-xs font-medium">
-                  Status
-                </th>
-                <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium">
-                  Due Date
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-border divide-y">
-              {invoices.map((inv) => {
-                const statusCfg = STATUS_CONFIG[inv.status] ?? STATUS_CONFIG['NEW']!;
-                const StatusIcon = statusCfg!.icon;
+        <div className="border-border overflow-hidden rounded-xl border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Invoice</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Tax</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Paid Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((invoice) => {
+                const stage = getInvoiceStage(invoice.status);
+                const isOverdue =
+                  invoice.dueDate &&
+                  new Date(invoice.dueDate) < new Date() &&
+                  invoice.status !== 'PAID';
                 return (
-                  <tr key={inv.id} className="hover:bg-secondary/30 transition-colors">
-                    <td className="px-4 py-3">
+                  <TableRow
+                    key={invoice.id}
+                    className="cursor-pointer"
+                    onClick={() => handleClick(invoice)}
+                  >
+                    <TableCell>
                       <div>
-                        <p className="text-foreground text-sm font-medium">{inv.code}</p>
-                        {inv.order && (
-                          <p className="text-muted-foreground text-xs">Order: {inv.order.code}</p>
+                        <p className="font-medium">{invoice.code}</p>
+                        {invoice.order && (
+                          <p className="text-muted-foreground text-xs">
+                            Order: {invoice.order.code}
+                          </p>
                         )}
                       </div>
-                    </td>
-                    <td className="text-muted-foreground px-4 py-3 text-sm">
-                      {inv.company?.name ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-foreground flex items-center justify-end gap-1 text-sm font-semibold">
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {invoice.company?.name ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-xs">{invoice.type}</TableCell>
+                    <TableCell className="text-right">
+                      <span className="flex items-center justify-end gap-1 font-semibold">
                         <DollarSign size={12} className="text-accent" />
-                        {formatCurrency(inv.amount)}
+                        {formatAmount(parseFloat(invoice.amount))}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-medium ${statusCfg.color}`}
-                      >
-                        <StatusIcon size={12} />
-                        {statusCfg.label}
-                      </span>
-                    </td>
-                    <td className="text-muted-foreground px-4 py-3 text-sm">
-                      {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
-                    </td>
-                  </tr>
+                    </TableCell>
+                    <TableCell>
+                      {stage && <StatusBadge label={stage.label} variant={stage.variant} />}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge
+                        label={invoice.taxStatus === 'TAX' ? 'Tax' : 'Free'}
+                        variant={invoice.taxStatus === 'TAX' ? 'green' : 'gray'}
+                      />
+                    </TableCell>
+                    <TableCell
+                      className={`text-xs ${isOverdue ? 'font-medium text-red-500' : 'text-muted-foreground'}`}
+                    >
+                      {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '—'}
+                    </TableCell>
+                    <TableCell className="text-xs text-green-600">
+                      {invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : '—'}
+                    </TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
+
+      <InvoiceSheet invoice={selectedInvoice} open={sheetOpen} onOpenChange={setSheetOpen} />
     </div>
   );
 }

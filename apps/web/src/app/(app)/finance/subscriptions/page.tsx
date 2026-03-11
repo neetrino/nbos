@@ -1,275 +1,305 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
+  Plus,
+  RefreshCcw,
   RefreshCw,
-  Server,
-  Globe,
-  KeyRound,
-  Headphones,
-  Package,
-  Filter,
-  CalendarDays,
+  DollarSign,
+  FolderKanban,
+  Calendar,
+  Building2,
 } from 'lucide-react';
-
-/* ───────── Types ───────── */
-
-type SubType = 'HOSTING' | 'DOMAIN' | 'LICENSE' | 'SUPPORT' | 'OTHER';
-type SubStatus = 'ACTIVE' | 'PAUSED' | 'CANCELLED';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
+import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  SUBSCRIPTION_TYPES,
+  SUBSCRIPTION_STATUSES,
+  getSubscriptionType,
+  getSubscriptionStatus,
+  formatAmount,
+} from '@/features/finance/constants/finance';
+import { api } from '@/lib/api';
 
 interface Subscription {
   id: string;
-  code: string;
-  project: string;
-  type: SubType;
+  type: string;
+  status: string;
   amount: string;
+  currency: string;
   billingDay: number;
-  status: SubStatus;
-  partner: string;
+  startDate: string;
+  endDate: string | null;
+  taxStatus: string;
+  project: { id: string; name: string } | null;
+  company: { id: string; name: string } | null;
+  contact: { id: string; firstName: string; lastName: string } | null;
+  createdAt: string;
 }
 
-/* ───────── Mock data ───────── */
+export default function SubscriptionsPage() {
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
-const SUBSCRIPTIONS: Subscription[] = [
-  {
-    id: '1',
-    code: 'SUB-001',
-    project: 'ArmenTech Website',
-    type: 'HOSTING',
-    amount: '֏45,000',
-    billingDay: 1,
-    status: 'ACTIVE',
-    partner: 'CloudHost Armenia',
-  },
-  {
-    id: '2',
-    code: 'SUB-002',
-    project: 'SkyNet Portal',
-    type: 'DOMAIN',
-    amount: '֏8,000',
-    billingDay: 15,
-    status: 'ACTIVE',
-    partner: 'ServerAM',
-  },
-  {
-    id: '3',
-    code: 'SUB-003',
-    project: 'GreenLine CRM',
-    type: 'LICENSE',
-    amount: '֏120,000',
-    billingDay: 5,
-    status: 'ACTIVE',
-    partner: 'TechSupport Pro',
-  },
-  {
-    id: '4',
-    code: 'SUB-004',
-    project: 'DigiPay App',
-    type: 'SUPPORT',
-    amount: '֏80,000',
-    billingDay: 10,
-    status: 'PAUSED',
-    partner: 'WebDev Studio',
-  },
-  {
-    id: '5',
-    code: 'SUB-005',
-    project: 'Nova Design Brand',
-    type: 'OTHER',
-    amount: '֏35,000',
-    billingDay: 20,
-    status: 'ACTIVE',
-    partner: 'DesignLab',
-  },
-  {
-    id: '6',
-    code: 'SUB-006',
-    project: 'FastTrack Logistics',
-    type: 'HOSTING',
-    amount: '֏65,000',
-    billingDay: 1,
-    status: 'CANCELLED',
-    partner: 'CloudHost Armenia',
-  },
-];
+  const fetchSubscriptions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const resp = await api.get('/api/finance/subscriptions', {
+        params: {
+          pageSize: 100,
+          search: search || undefined,
+          type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        },
+      });
+      setSubscriptions(resp.data.items ?? resp.data ?? []);
+    } catch {
+      /* handled */
+    } finally {
+      setLoading(false);
+    }
+  }, [search, filters]);
 
-const TYPE_CONFIG: Record<
-  SubType,
-  { label: string; color: string; icon: React.ComponentType<{ size?: number; className?: string }> }
-> = {
-  HOSTING: { label: 'Hosting', color: 'bg-blue-100 text-blue-700', icon: Server },
-  DOMAIN: { label: 'Domain', color: 'bg-violet-100 text-violet-700', icon: Globe },
-  LICENSE: { label: 'License', color: 'bg-amber-100 text-amber-700', icon: KeyRound },
-  SUPPORT: { label: 'Support', color: 'bg-emerald-100 text-emerald-700', icon: Headphones },
-  OTHER: { label: 'Other', color: 'bg-gray-100 text-gray-700', icon: Package },
-};
+  useEffect(() => {
+    fetchSubscriptions();
+  }, [fetchSubscriptions]);
 
-const STATUS_CONFIG: Record<SubStatus, string> = {
-  ACTIVE: 'bg-emerald-500/10 text-emerald-600',
-  PAUSED: 'bg-amber-500/10 text-amber-600',
-  CANCELLED: 'bg-red-500/10 text-red-600',
-};
+  const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE');
+  const totalMRR = activeSubs.reduce((sum, s) => sum + parseFloat(s.amount), 0);
 
-/* ───────── Computed summary ───────── */
-
-const ACTIVE_COUNT = SUBSCRIPTIONS.filter((s) => s.status === 'ACTIVE').length;
-
-const MRR = SUBSCRIPTIONS.filter((s) => s.status === 'ACTIVE').reduce(
-  (sum, s) => sum + parseInt(s.amount.replace(/[^\d]/g, ''), 10),
-  0,
-);
-
-function nextBillingDate(): string {
-  const today = new Date();
-  const upcoming = SUBSCRIPTIONS.filter((s) => s.status === 'ACTIVE')
-    .map((s) => {
-      const d = new Date(today.getFullYear(), today.getMonth(), s.billingDay);
-      if (d <= today) d.setMonth(d.getMonth() + 1);
-      return d;
-    })
-    .sort((a, b) => a.getTime() - b.getTime());
-  if (upcoming.length === 0) return '—';
-  return upcoming[0]!.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-/* ───────── Components ───────── */
-
-function SummaryCards() {
-  const summaries = [
+  const filterConfigs = [
     {
-      label: 'Total Active',
-      value: String(ACTIVE_COUNT),
-      icon: RefreshCw,
-      iconBg: 'bg-emerald-100',
-      iconText: 'text-emerald-600',
+      key: 'type',
+      label: 'Type',
+      options: SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label })),
     },
     {
-      label: 'MRR',
-      value: `֏${MRR.toLocaleString()}`,
-      icon: RefreshCw,
-      iconBg: 'bg-violet-100',
-      iconText: 'text-violet-600',
-    },
-    {
-      label: 'Next Billing',
-      value: nextBillingDate(),
-      icon: CalendarDays,
-      iconBg: 'bg-amber-100',
-      iconText: 'text-amber-600',
+      key: 'status',
+      label: 'Status',
+      options: SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
     },
   ];
 
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date(new Date().getFullYear(), i);
+    return {
+      key: i,
+      label: date.toLocaleString('en-US', { month: 'short' }),
+    };
+  });
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {summaries.map((s) => (
-        <div key={s.label} className="border-border bg-card rounded-2xl border p-5">
-          <div className={`inline-flex rounded-xl p-2.5 ${s.iconBg} ${s.iconText}`}>
-            <s.icon size={20} />
-          </div>
-          <p className="text-foreground mt-3 text-2xl font-semibold">{s.value}</p>
-          <p className="text-muted-foreground mt-1 text-sm">{s.label}</p>
+    <div className="flex h-full flex-col gap-5">
+      <PageHeader
+        title="Subscriptions"
+        description={`${activeSubs.length} active, MRR ${formatAmount(totalMRR)}`}
+      >
+        <Button variant="outline" size="icon" onClick={fetchSubscriptions}>
+          <RefreshCcw size={16} />
+        </Button>
+        <Button>
+          <Plus size={16} />
+          New Subscription
+        </Button>
+      </PageHeader>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Monthly Recurring Revenue</p>
+          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(totalMRR)}</p>
         </div>
-      ))}
-    </div>
-  );
-}
-
-function TypeBadge({ type }: { type: SubType }) {
-  const cfg = TYPE_CONFIG[type];
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium ${cfg.color}`}
-    >
-      <cfg.icon size={12} />
-      {cfg.label}
-    </span>
-  );
-}
-
-function StatusBadge({ status }: { status: SubStatus }) {
-  return (
-    <span className={`rounded-lg px-2.5 py-1 text-xs font-medium ${STATUS_CONFIG[status]}`}>
-      {status}
-    </span>
-  );
-}
-
-/* ───────── Page ───────── */
-
-export default function SubscriptionsPage() {
-  const [typeFilter, setTypeFilter] = useState<SubType | ''>('');
-
-  const filtered = typeFilter ? SUBSCRIPTIONS.filter((s) => s.type === typeFilter) : SUBSCRIPTIONS;
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-foreground text-2xl font-semibold">Subscriptions</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Recurring subscriptions and billing overview.
-        </p>
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Active Subscriptions</p>
+          <p className="mt-1 text-xl font-bold">{activeSubs.length}</p>
+        </div>
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Total Subscriptions</p>
+          <p className="mt-1 text-xl font-bold">{subscriptions.length}</p>
+        </div>
       </div>
 
-      <SummaryCards />
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by project or company..."
+        filters={filterConfigs}
+        filterValues={filters}
+        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+        onClearFilters={() => setFilters({})}
+      />
 
-      <div className="flex items-center gap-3">
-        <Filter size={16} className="text-muted-foreground" />
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as SubType | '')}
-          className="border-border bg-card text-foreground rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#E5A84B]/40"
-        >
-          <option value="">All Types</option>
-          {(Object.keys(TYPE_CONFIG) as SubType[]).map((t) => (
-            <option key={t} value={t}>
-              {TYPE_CONFIG[t].label}
-            </option>
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-lg" />
           ))}
-        </select>
-      </div>
+        </div>
+      ) : subscriptions.length === 0 ? (
+        <EmptyState
+          icon={RefreshCw}
+          title="No subscriptions yet"
+          description="Set up recurring billing for your clients"
+          action={
+            <Button>
+              <Plus size={16} />
+              Create First Subscription
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          {activeSubs.length > 0 && (
+            <div className="border-border overflow-x-auto rounded-xl border">
+              <table className="w-full text-xs">
+                <thead className="bg-secondary/50">
+                  <tr>
+                    <th className="bg-secondary/50 text-muted-foreground sticky left-0 px-3 py-2 text-left font-medium">
+                      Project
+                    </th>
+                    {months.map((m) => (
+                      <th
+                        key={m.key}
+                        className="text-muted-foreground px-3 py-2 text-center font-medium"
+                      >
+                        {m.label}
+                      </th>
+                    ))}
+                    <th className="text-muted-foreground px-3 py-2 text-right font-medium">
+                      Annual
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-border divide-y">
+                  {activeSubs.map((sub) => {
+                    const amount = parseFloat(sub.amount);
+                    const startMonth = new Date(sub.startDate).getMonth();
+                    return (
+                      <tr key={sub.id} className="hover:bg-secondary/30">
+                        <td className="bg-card sticky left-0 px-3 py-2 font-medium">
+                          <div>
+                            <p>{sub.project?.name ?? 'N/A'}</p>
+                            <p className="text-muted-foreground text-[10px]">
+                              {formatAmount(amount)}/mo
+                            </p>
+                          </div>
+                        </td>
+                        {months.map((m) => {
+                          const isActive = m.key >= startMonth;
+                          const isPast = m.key < new Date().getMonth();
+                          return (
+                            <td key={m.key} className="px-3 py-2 text-center">
+                              {isActive ? (
+                                <span
+                                  className={`inline-block rounded px-2 py-0.5 text-[10px] font-medium ${
+                                    isPast
+                                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                  }`}
+                                >
+                                  {formatAmount(amount)}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                        <td className="px-3 py-2 text-right font-bold">
+                          {formatAmount(amount * (12 - startMonth))}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  <tr className="bg-secondary/30 font-bold">
+                    <td className="bg-secondary/30 sticky left-0 px-3 py-2">Total</td>
+                    {months.map((m) => {
+                      const monthTotal = activeSubs.reduce((sum, sub) => {
+                        const startMonth = new Date(sub.startDate).getMonth();
+                        return m.key >= startMonth ? sum + parseFloat(sub.amount) : sum;
+                      }, 0);
+                      return (
+                        <td key={m.key} className="px-3 py-2 text-center">
+                          {monthTotal > 0 ? formatAmount(monthTotal) : '—'}
+                        </td>
+                      );
+                    })}
+                    <td className="px-3 py-2 text-right">{formatAmount(totalMRR * 12)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
 
-      <div className="border-border bg-card overflow-hidden rounded-2xl border">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-border border-b">
-              <th className="text-muted-foreground px-5 py-3.5 font-medium">Code</th>
-              <th className="text-muted-foreground px-5 py-3.5 font-medium">Project</th>
-              <th className="text-muted-foreground px-5 py-3.5 font-medium">Type</th>
-              <th className="text-muted-foreground px-5 py-3.5 font-medium">Amount/mo</th>
-              <th className="text-muted-foreground px-5 py-3.5 font-medium">Billing Day</th>
-              <th className="text-muted-foreground px-5 py-3.5 font-medium">Status</th>
-              <th className="text-muted-foreground px-5 py-3.5 font-medium">Partner</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((s) => (
-              <tr
-                key={s.id}
-                className="border-border hover:bg-secondary/30 border-b transition-colors last:border-0"
-              >
-                <td className="text-foreground px-5 py-3.5 font-medium">{s.code}</td>
-                <td className="text-foreground px-5 py-3.5">{s.project}</td>
-                <td className="px-5 py-3.5">
-                  <TypeBadge type={s.type} />
-                </td>
-                <td className="text-foreground px-5 py-3.5 font-semibold">{s.amount}</td>
-                <td className="text-muted-foreground px-5 py-3.5">{s.billingDay}</td>
-                <td className="px-5 py-3.5">
-                  <StatusBadge status={s.status} />
-                </td>
-                <td className="text-muted-foreground px-5 py-3.5">{s.partner}</td>
-              </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={7} className="text-muted-foreground px-5 py-12 text-center">
-                  No subscriptions found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          <div className="border-border overflow-hidden rounded-xl border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Amount/mo</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Billing Day</TableHead>
+                  <TableHead>Start Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subscriptions.map((sub) => {
+                  const subType = getSubscriptionType(sub.type);
+                  const subStatus = getSubscriptionStatus(sub.status);
+                  return (
+                    <TableRow key={sub.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <FolderKanban size={14} className="text-muted-foreground" />
+                          <span className="font-medium">{sub.project?.name ?? 'N/A'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {sub.company?.name ?? '—'}
+                      </TableCell>
+                      <TableCell>
+                        {subType && <StatusBadge label={subType.label} variant={subType.variant} />}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span className="flex items-center justify-end gap-1 font-semibold">
+                          <DollarSign size={12} className="text-accent" />
+                          {formatAmount(parseFloat(sub.amount))}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {subStatus && (
+                          <StatusBadge label={subStatus.label} variant={subStatus.variant} />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={12} className="text-muted-foreground" />
+                          {sub.billingDay}th
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-xs">
+                        {new Date(sub.startDate).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
     </div>
   );
 }
