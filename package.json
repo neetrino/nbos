@@ -1,0 +1,39 @@
+{
+  "name": "nbos",
+  "private": true,
+  "description": "NBOS Platform — Business Operation System",
+  "packageManager": "pnpm@8.15.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
+    "clean": "turbo clean && rm -rf node_modules",
+    "db:generate": "pnpm --filter @nbos/database generate",
+    "db:migrate": "pnpm --filter @nbos/database migrate:dev",
+    "db:push": "pnpm --filter @nbos/database push",
+    "db:seed": "pnpm --filter @nbos/database seed",
+    "db:studio": "pnpm --filter @nbos/database studio"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "turbo": "^2.5.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md,css}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ]
+  }
+}

@@ -1,0 +1,801 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── CONTACT & COMPANY ────────────────────────────────────
+
+enum ContactRole {
+  CLIENT
+  PARTNER
+  CONTRACTOR
+  OTHER
+}
+
+model Contact {
+  id             String      @id @default(uuid())
+  firstName      String      @map("first_name")
+  lastName       String      @map("last_name")
+  phone          String?
+  email          String?
+  messengerLinks Json?       @map("messenger_links")
+  role           ContactRole @default(CLIENT)
+  notes          String?
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  companies Company[]
+  projects  Project[]
+  leads     Lead[]
+  deals     Deal[]
+  tickets   SupportTicket[]
+
+  @@map("contacts")
+}
+
+enum CompanyType {
+  LEGAL
+  INDIVIDUAL
+  SOLE_PROPRIETOR
+}
+
+enum TaxStatus {
+  TAX
+  TAX_FREE
+}
+
+model Company {
+  id           String      @id @default(uuid())
+  name         String
+  type         CompanyType @default(LEGAL)
+  taxId        String?     @map("tax_id")
+  legalAddress String?     @map("legal_address")
+  bankDetails  Json?       @map("bank_details")
+  taxStatus    TaxStatus   @default(TAX)
+  contactId    String      @map("contact_id")
+  notes        String?
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  contact  Contact   @relation(fields: [contactId], references: [id])
+  projects Project[]
+  invoices Invoice[]
+
+  @@map("companies")
+}
+
+// ─── PROJECT & PRODUCT ────────────────────────────────────
+
+enum ProjectType {
+  WHITE_LABEL
+  MIX
+  CUSTOM_CODE
+}
+
+model Project {
+  id          String      @id @default(uuid())
+  code        String      @unique
+  name        String
+  contactId   String      @map("contact_id")
+  companyId   String?     @map("company_id")
+  type        ProjectType @default(CUSTOM_CODE)
+  sellerId    String?     @map("seller_id")
+  pmId        String?     @map("pm_id")
+  deadline    DateTime?
+  description String?
+  isArchived  Boolean     @default(false) @map("is_archived")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  contact       Contact        @relation(fields: [contactId], references: [id])
+  company       Company?       @relation(fields: [companyId], references: [id])
+  seller        Employee?      @relation("ProjectSeller", fields: [sellerId], references: [id])
+  pm            Employee?      @relation("ProjectPM", fields: [pmId], references: [id])
+  products      Product[]
+  extensions    Extension[]
+  orders        Order[]
+  subscriptions Subscription[]
+  credentials   Credential[]
+  domains       Domain[]
+  tasks         Task[]
+  tickets       SupportTicket[]
+  expenses      Expense[]
+  bonusEntries  BonusEntry[]
+  auditLogs     AuditLog[]
+
+  @@map("projects")
+}
+
+enum ProductTypeEnum {
+  WEBSITE
+  MOBILE_APP
+  CRM
+  LOGO
+  SMM
+  SEO
+  OTHER
+}
+
+enum ProductStatusEnum {
+  NEW
+  CREATING
+  DEVELOPMENT
+  QA
+  TRANSFER
+  ON_HOLD
+  DONE
+  LOST
+}
+
+model Product {
+  id                  String            @id @default(uuid())
+  projectId           String            @map("project_id")
+  name                String
+  productType         ProductTypeEnum   @map("product_type")
+  status              ProductStatusEnum @default(NEW)
+  pmId                String?           @map("pm_id")
+  deadline            DateTime?
+  checklistTemplateId String?           @map("checklist_template_id")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  project    Project        @relation(fields: [projectId], references: [id])
+  pm         Employee?      @relation("ProductPM", fields: [pmId], references: [id])
+  order      Order?
+  extensions Extension[]
+  tasks      Task[]
+  tickets    SupportTicket[]
+
+  @@map("products")
+}
+
+enum ExtensionSize {
+  MICRO
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ExtensionStatus {
+  NEW
+  IN_PROGRESS
+  REVIEW
+  DONE
+  CANCELLED
+}
+
+model Extension {
+  id         String          @id @default(uuid())
+  projectId  String          @map("project_id")
+  productId  String?         @map("product_id")
+  name       String
+  size       ExtensionSize   @default(SMALL)
+  status     ExtensionStatus @default(NEW)
+  assignedTo String?         @map("assigned_to")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+
+  project  Project   @relation(fields: [projectId], references: [id])
+  product  Product?  @relation(fields: [productId], references: [id])
+  assignee Employee? @relation("ExtensionAssignee", fields: [assignedTo], references: [id])
+  order    Order?
+  tasks    Task[]
+
+  @@map("extensions")
+}
+
+// ─── CRM ──────────────────────────────────────────────────
+
+enum LeadStatusEnum {
+  NEW
+  DIDNT_GET_THROUGH
+  CONTACT_ESTABLISHED
+  MQL
+  SPAM
+  FROZEN
+  SQL
+}
+
+enum LeadSourceEnum {
+  INSTAGRAM
+  FACEBOOK
+  WEBSITE
+  COLD_CALL
+  PARTNER
+  REFERRAL
+}
+
+model Lead {
+  id          String         @id @default(uuid())
+  code        String         @unique
+  contactName String         @map("contact_name")
+  phone       String?
+  email       String?
+  source      LeadSourceEnum
+  status      LeadStatusEnum @default(NEW)
+  assignedTo  String?        @map("assigned_to")
+  contactId   String?        @map("contact_id")
+  notes       String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  contact  Contact?  @relation(fields: [contactId], references: [id])
+  assignee Employee? @relation("LeadAssignee", fields: [assignedTo], references: [id])
+  deal     Deal?
+
+  @@map("leads")
+}
+
+enum DealStatusEnum {
+  START_CONVERSATION
+  DISCUSS_NEEDS
+  MEETING
+  CAN_WE_DO_IT
+  SEND_OFFER
+  GET_ANSWER
+  DEPOSIT_AND_CONTRACT
+  CREATING
+  GET_FINAL_PAY
+  MAINTENANCE_OFFER
+  FAILED
+  WON
+}
+
+enum DealTypeEnum {
+  NEW_CLIENT
+  EXTENSION
+  UPSELL
+}
+
+model Deal {
+  id          String         @id @default(uuid())
+  code        String         @unique
+  leadId      String?        @unique @map("lead_id")
+  contactId   String         @map("contact_id")
+  projectId   String?        @map("project_id")
+  type        DealTypeEnum
+  status      DealStatusEnum @default(START_CONVERSATION)
+  amount      Decimal?       @db.Decimal(12, 2)
+  paymentType PaymentTypeEnum?  @map("payment_type")
+  sellerId    String         @map("seller_id")
+  source      LeadSourceEnum?
+  notes       String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  lead    Lead?    @relation(fields: [leadId], references: [id])
+  contact Contact  @relation(fields: [contactId], references: [id])
+  seller  Employee @relation("DealSeller", fields: [sellerId], references: [id])
+  orders  Order[]
+
+  @@map("deals")
+}
+
+// ─── FINANCE ──────────────────────────────────────────────
+
+enum OrderTypeEnum {
+  PRODUCT
+  EXTENSION
+  SUBSCRIPTION
+}
+
+enum PaymentTypeEnum {
+  CLASSIC_50_50
+  CLASSIC_30_30_40
+  SUBSCRIPTION
+}
+
+enum OrderStatusEnum {
+  ACTIVE
+  PARTIALLY_PAID
+  FULLY_PAID
+  CLOSED
+}
+
+model Order {
+  id                   String           @id @default(uuid())
+  code                 String           @unique
+  projectId            String           @map("project_id")
+  dealId               String?          @map("deal_id")
+  productId            String?          @unique @map("product_id")
+  extensionId          String?          @unique @map("extension_id")
+  type                 OrderTypeEnum
+  paymentType          PaymentTypeEnum  @map("payment_type")
+  totalAmount          Decimal          @map("total_amount") @db.Decimal(12, 2)
+  currency             String           @default("AMD")
+  taxStatus            TaxStatus        @default(TAX) @map("tax_status")
+  status               OrderStatusEnum  @default(ACTIVE)
+  partnerId            String?          @map("partner_id")
+  partnerPercent       Decimal?         @default(30) @map("partner_percent") @db.Decimal(5, 2)
+  sellerBonusPercent   Decimal?         @map("seller_bonus_percent") @db.Decimal(5, 2)
+  deliveryBonusPercent Decimal?         @map("delivery_bonus_percent") @db.Decimal(5, 2)
+  sellerBonusSource    LeadSourceEnum?  @map("seller_bonus_source")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  project      Project      @relation(fields: [projectId], references: [id])
+  deal         Deal?        @relation(fields: [dealId], references: [id])
+  product      Product?     @relation(fields: [productId], references: [id])
+  extension    Extension?   @relation(fields: [extensionId], references: [id])
+  partner      Partner?     @relation(fields: [partnerId], references: [id])
+  invoices     Invoice[]
+  bonusEntries BonusEntry[]
+
+  @@map("orders")
+}
+
+enum InvoiceTypeEnum {
+  DEVELOPMENT
+  EXTENSION
+  SUBSCRIPTION
+  DOMAIN
+  SERVICE
+}
+
+enum InvoiceStatusEnum {
+  NEW
+  CREATED_IN_GOV
+  SENT
+  OVERDUE
+  ON_HOLD
+  PAID
+  UNPAID
+}
+
+model Invoice {
+  id             String            @id @default(uuid())
+  code           String            @unique
+  orderId        String?           @map("order_id")
+  subscriptionId String?           @map("subscription_id")
+  projectId      String            @map("project_id")
+  companyId      String?           @map("company_id")
+  amount         Decimal           @db.Decimal(12, 2)
+  taxStatus      TaxStatus         @default(TAX) @map("tax_status")
+  type           InvoiceTypeEnum
+  status         InvoiceStatusEnum @default(NEW)
+  dueDate        DateTime?         @map("due_date")
+  paidDate       DateTime?         @map("paid_date")
+  govInvoiceId   String?           @map("gov_invoice_id")
+  paymentLink    String?           @map("payment_link")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  order        Order?       @relation(fields: [orderId], references: [id])
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+  company      Company?     @relation(fields: [companyId], references: [id])
+  payments     Payment[]
+
+  @@map("invoices")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  invoiceId     String   @map("invoice_id")
+  amount        Decimal  @db.Decimal(12, 2)
+  paymentDate   DateTime @map("payment_date")
+  paymentMethod String?  @map("payment_method")
+  confirmedBy   String?  @map("confirmed_by")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  invoice   Invoice   @relation(fields: [invoiceId], references: [id])
+  confirmer Employee? @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
+
+  @@map("payments")
+}
+
+enum SubscriptionTypeEnum {
+  MAINTENANCE_ONLY
+  DEV_AND_MAINTENANCE
+  DEV_ONLY
+  PARTNER_SERVICE
+}
+
+enum SubscriptionStatusEnum {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+model Subscription {
+  id         String                 @id @default(uuid())
+  code       String                 @unique
+  projectId  String                 @map("project_id")
+  type       SubscriptionTypeEnum
+  amount     Decimal                @db.Decimal(12, 2)
+  billingDay Int                    @map("billing_day")
+  taxStatus  TaxStatus              @default(TAX) @map("tax_status")
+  startDate  DateTime               @map("start_date")
+  endDate    DateTime?              @map("end_date")
+  status     SubscriptionStatusEnum @default(ACTIVE)
+  partnerId  String?                @map("partner_id")
+  createdAt  DateTime               @default(now()) @map("created_at")
+  updatedAt  DateTime               @updatedAt @map("updated_at")
+
+  project  Project   @relation(fields: [projectId], references: [id])
+  partner  Partner?  @relation(fields: [partnerId], references: [id])
+  invoices Invoice[]
+
+  @@map("subscriptions")
+}
+
+enum ExpenseTypeEnum {
+  PLANNED
+  UNPLANNED
+}
+
+enum ExpenseCategoryEnum {
+  DOMAIN
+  HOSTING
+  SERVICE
+  MARKETING
+  SALARY
+  BONUS
+  PARTNER_PAYOUT
+  TOOLS
+  OTHER
+}
+
+enum ExpenseFrequency {
+  ONE_TIME
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  MULTI_YEAR
+}
+
+enum ExpenseStatusEnum {
+  THIS_MONTH
+  PAY_NOW
+  DELAYED
+  ON_HOLD
+  PAID
+  UNPAID
+}
+
+model Expense {
+  id            String              @id @default(uuid())
+  type          ExpenseTypeEnum
+  category      ExpenseCategoryEnum
+  name          String
+  amount        Decimal             @db.Decimal(12, 2)
+  frequency     ExpenseFrequency    @default(ONE_TIME)
+  dueDate       DateTime?           @map("due_date")
+  status        ExpenseStatusEnum   @default(THIS_MONTH)
+  projectId     String?             @map("project_id")
+  isPassThrough Boolean             @default(false) @map("is_pass_through")
+  taxStatus     TaxStatus           @default(TAX) @map("tax_status")
+  notes         String?
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@map("expenses")
+}
+
+enum BonusTypeEnum {
+  SALES
+  DELIVERY
+  PM
+  DESIGN
+  MARKETING
+}
+
+enum BonusStatusEnum {
+  INCOMING
+  EARNED
+  PENDING_ELIGIBILITY
+  VESTED
+  HOLDBACK
+  ACTIVE
+  PAID
+  CLAWBACK
+}
+
+model BonusEntry {
+  id                 String          @id @default(uuid())
+  employeeId         String          @map("employee_id")
+  orderId            String          @map("order_id")
+  projectId          String          @map("project_id")
+  type               BonusTypeEnum
+  amount             Decimal         @db.Decimal(12, 2)
+  percent            Decimal         @db.Decimal(5, 2)
+  status             BonusStatusEnum @default(INCOMING)
+  kpiGatePassed      Boolean?        @map("kpi_gate_passed")
+  holdbackPercent    Decimal?        @default(20) @map("holdback_percent") @db.Decimal(5, 2)
+  holdbackReleaseDate DateTime?      @map("holdback_release_date")
+  payoutMonth        DateTime?       @map("payout_month")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  order    Order    @relation(fields: [orderId], references: [id])
+  project  Project  @relation(fields: [projectId], references: [id])
+
+  @@map("bonus_entries")
+}
+
+// ─── TASKS & SUPPORT ──────────────────────────────────────
+
+enum TaskStatusEnum {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  CANCELLED
+}
+
+enum TaskPriorityEnum {
+  CRITICAL
+  HIGH
+  NORMAL
+  LOW
+}
+
+model Task {
+  id           String           @id @default(uuid())
+  code         String           @unique
+  title        String
+  description  String?
+  projectId    String           @map("project_id")
+  productId    String?          @map("product_id")
+  extensionId  String?          @map("extension_id")
+  creatorId    String           @map("creator_id")
+  assigneeId   String?          @map("assignee_id")
+  coAssignees  String[]         @map("co_assignees")
+  observers    String[]
+  status       TaskStatusEnum   @default(BACKLOG)
+  priority     TaskPriorityEnum @default(NORMAL)
+  sprintId     String?          @map("sprint_id")
+  dueDate      DateTime?        @map("due_date")
+  hasChat      Boolean          @default(false) @map("has_chat")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  project   Project    @relation(fields: [projectId], references: [id])
+  product   Product?   @relation(fields: [productId], references: [id])
+  extension Extension? @relation(fields: [extensionId], references: [id])
+  creator   Employee   @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee  Employee?  @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  @@map("tasks")
+}
+
+enum TicketCategoryEnum {
+  INCIDENT
+  SERVICE_REQUEST
+  CHANGE_REQUEST
+  PROBLEM
+}
+
+enum TicketPriorityEnum {
+  P1
+  P2
+  P3
+}
+
+enum TicketStatusEnum {
+  NEW
+  TRIAGED
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REOPENED
+}
+
+model SupportTicket {
+  id                  String              @id @default(uuid())
+  code                String              @unique
+  projectId           String              @map("project_id")
+  productId           String?             @map("product_id")
+  contactId           String?             @map("contact_id")
+  category            TicketCategoryEnum
+  priority            TicketPriorityEnum  @default(P3)
+  status              TicketStatusEnum    @default(NEW)
+  title               String
+  description         String?
+  billable            Boolean             @default(false)
+  assignedTo          String?             @map("assigned_to")
+  slaResponseDeadline DateTime?           @map("sla_response_deadline")
+  slaResolveDeadline  DateTime?           @map("sla_resolve_deadline")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  project  Project   @relation(fields: [projectId], references: [id])
+  product  Product?  @relation(fields: [productId], references: [id])
+  contact  Contact?  @relation(fields: [contactId], references: [id])
+  assignee Employee? @relation("TicketAssignee", fields: [assignedTo], references: [id])
+
+  @@map("support_tickets")
+}
+
+// ─── CREDENTIALS & DOMAINS ────────────────────────────────
+
+enum CredentialCategoryEnum {
+  ADMIN
+  DOMAIN
+  HOSTING
+  SERVICE
+  APP
+  MAIL
+  API_KEY
+  DATABASE
+}
+
+enum CredentialAccessLevelEnum {
+  SECRET
+  PROJECT_TEAM
+  DEPARTMENT
+  ALL
+}
+
+model Credential {
+  id               String                    @id @default(uuid())
+  projectId        String?                   @map("project_id")
+  category         CredentialCategoryEnum
+  provider         String?
+  name             String
+  url              String?
+  login            String?
+  password         String?
+  apiKey           String?                   @map("api_key")
+  envData          String?                   @map("env_data")
+  accessLevel      CredentialAccessLevelEnum  @default(PROJECT_TEAM) @map("access_level")
+  allowedEmployees String[]                  @map("allowed_employees")
+  createdAt        DateTime                  @default(now()) @map("created_at")
+  updatedAt        DateTime                  @updatedAt @map("updated_at")
+
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@map("credentials")
+}
+
+enum DomainStatusEnum {
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  TRANSFERRED
+}
+
+model Domain {
+  id           String           @id @default(uuid())
+  projectId    String           @map("project_id")
+  domainName   String           @unique @map("domain_name")
+  provider     String?
+  purchaseDate DateTime?        @map("purchase_date")
+  expiryDate   DateTime?        @map("expiry_date")
+  renewalCost  Decimal?         @map("renewal_cost") @db.Decimal(10, 2)
+  clientCharge Decimal?         @map("client_charge") @db.Decimal(10, 2)
+  autoRenew    Boolean          @default(true) @map("auto_renew")
+  status       DomainStatusEnum @default(ACTIVE)
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@map("domains")
+}
+
+// ─── EMPLOYEES & PARTNERS ─────────────────────────────────
+
+enum EmployeeRoleEnum {
+  CEO
+  SELLER
+  PM
+  DEVELOPER
+  JUNIOR_DEVELOPER
+  DESIGNER
+  QA
+  TECH_SPECIALIST
+  FINANCE_DIRECTOR
+  MARKETING
+  HEAD_SALES
+  HEAD_DELIVERY
+}
+
+enum EmployeeLevelEnum {
+  JUNIOR
+  MIDDLE
+  SENIOR
+  LEAD
+  HEAD
+}
+
+enum EmployeeStatusEnum {
+  ACTIVE
+  PROBATION
+  ON_LEAVE
+  FIRED
+}
+
+model Employee {
+  id           String             @id @default(uuid())
+  clerkUserId  String?            @unique @map("clerk_user_id")
+  firstName    String             @map("first_name")
+  lastName     String             @map("last_name")
+  email        String             @unique
+  role         EmployeeRoleEnum
+  department   String?
+  level        EmployeeLevelEnum?
+  baseSalary   Decimal?           @map("base_salary") @db.Decimal(12, 2)
+  workSchedule Json?              @map("work_schedule")
+  status       EmployeeStatusEnum @default(ACTIVE)
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  projectsSelling     Project[]       @relation("ProjectSeller")
+  projectsManaging    Project[]       @relation("ProjectPM")
+  productsManaging    Product[]       @relation("ProductPM")
+  extensionsAssigned  Extension[]     @relation("ExtensionAssignee")
+  leadsAssigned       Lead[]          @relation("LeadAssignee")
+  dealsSelling        Deal[]          @relation("DealSeller")
+  paymentsConfirmed   Payment[]       @relation("PaymentConfirmer")
+  tasksCreated        Task[]          @relation("TaskCreator")
+  tasksAssigned       Task[]          @relation("TaskAssignee")
+  ticketsAssigned     SupportTicket[] @relation("TicketAssignee")
+  bonusEntries        BonusEntry[]
+
+  @@map("employees")
+}
+
+enum PartnerTypeEnum {
+  REGULAR
+  PREMIUM
+}
+
+enum PartnerDirectionEnum {
+  INBOUND
+  OUTBOUND
+  BOTH
+}
+
+enum PartnerStatusEnum {
+  ACTIVE
+  INACTIVE
+}
+
+model Partner {
+  id             String               @id @default(uuid())
+  name           String
+  type           PartnerTypeEnum      @default(REGULAR)
+  direction      PartnerDirectionEnum @default(INBOUND)
+  defaultPercent Decimal              @default(30) @map("default_percent") @db.Decimal(5, 2)
+  status         PartnerStatusEnum    @default(ACTIVE)
+  contactId      String?              @map("contact_id")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  orders        Order[]
+  subscriptions Subscription[]
+
+  @@map("partners")
+}
+
+// ─── AUDIT ────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  projectId  String?  @map("project_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  action     String
+  userId     String   @map("user_id")
+  changes    Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

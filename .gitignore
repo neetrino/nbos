@@ -7,7 +7,7 @@ Thumbs.db
 .env.*
 !.env.example
 
-# Dependencies (if scripts use Node/npm)
+# Dependencies
 node_modules/
 
 # Build output
@@ -15,16 +15,20 @@ node_modules/
 dist/
 build/
 coverage/
+.turbo/
+
+# Prisma
+packages/database/prisma/*.db
 
 # Logs and temp
 *.log
 npm-debug.log*
+pnpm-debug.log*
 tmp/
 temp/
 .cache/
 
-# IDE (optional, uncomment if needed)
-# .idea/
-# .vscode/
-# *.swp
-# *.swo
+# IDE
+.idea/
+*.swp
+*.swo

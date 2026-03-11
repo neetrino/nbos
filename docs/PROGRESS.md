@@ -1,8 +1,8 @@
 # Ход разработки NBOS Platform
 
 **Проект.** NBOS Platform  
-**Текущая фаза.** Подготовка (документация и архитектура)  
-**Общий прогресс.** 5%
+**Текущая фаза.** Фаза 0.5 — Инициализация проекта  
+**Общий прогресс.** 12%
 
 **Последнее обновление.** 2026-03-11
 
@@ -12,7 +12,8 @@
 
 | Фаза | Статус | Прогресс |
 |------|--------|----------|
-| 0. Подготовка (документация, стек, архитектура) | 🔄 В работе | 90% |
+| 0. Подготовка (документация, стек, архитектура) | ✅ Готово | 100% |
+| 0.5. Инициализация (monorepo, настройка, scaffold) | 🔄 В работе | 80% |
 | 1. MVP (CRM, Projects, Clients, Finance, Auth) | ⏳ Ожидает | 0% |
 | 2. Core (Tasks, Support, Credentials, Drive, Expenses, Bonus) | ⏳ Ожидает | 0% |
 | 3. Автоматизация (уведомления, авто-биллинг, авто-задачи) | ⏳ Ожидает | 0% |
@@ -24,78 +25,138 @@
 ## Выполнено
 
 ### Фаза 0. Подготовка
-- [x] BRIEF.md — техзадание на русском
-- [x] TECH_CARD.md — технологическая карта (стек, решения)
-- [x] 01-ARCHITECTURE.md — техническая архитектура на русском
+- [x] BRIEF.md — техзадание
+- [x] TECH_CARD.md — технологическая карта (80+ пунктов)
+- [x] 01-ARCHITECTURE.md — техническая архитектура
+- [x] DEVELOPMENT_PLAN.md — детальный план разработки по фазам
 - [x] Размер проекта C (monorepo) зафиксирован в cursor rules
-- [ ] Инициализация monorepo (pnpm, Turborepo, apps/web, apps/api, packages)
-- [ ] Базовая настройка Next.js и NestJS
-- [ ] Prisma schema (первая итерация по модели данных)
-- [ ] CI/CD (GitHub Actions), .env.example
+- [x] 59 файлов детальной бизнес-документации в docs/NBOS/
+
+### Фаза 0.5. Инициализация (текущая)
+- [x] Monorepo scaffold: pnpm workspace, Turborepo, package.json
+- [x] apps/web: Next.js 16.1.6, Tailwind CSS 4, App Router
+- [x] apps/web: Дизайн-система (Modern + Minimal микс) — цвета, шрифты, CSS variables
+- [x] apps/web: Базовый layout (Sidebar с 14 пунктами + Topbar + Main)
+- [x] apps/web: Dashboard page (статистика, активность, быстрые действия)
+- [x] apps/web: Маршруты для всех 14 модулей (заглушки)
+- [x] apps/api: NestJS 11, Swagger, Health check endpoint
+- [x] apps/api: Database module (Prisma 7 + pg adapter)
+- [x] packages/database: Prisma 7 schema — 19 сущностей, 40+ enum, миграция SQL
+- [x] packages/shared: типы, константы, Zod-схемы (Lead, Deal, Pagination)
+- [x] packages/tsconfig: base, nextjs, nestjs конфиги
+- [x] packages/eslint-config: базовые правила
+- [x] .env.example обновлён
+- [x] .gitignore обновлён
+- [x] Prettier + Tailwind plugin
+- [x] Next.js build — проходит ✅
+- [x] NestJS build — проходит ✅
+- [ ] Применить миграцию к БД (Neon недоступен — нужно разморозить)
+- [ ] Husky + lint-staged + commit hooks
+- [ ] GitHub Actions CI workflow
 
 ---
 
 ## В работе
 
-### Документация и старт кода
-- Утверждение TECH_CARD и 01-ARCHITECTURE
-- Следующий шаг: создание репозитория (apps/web, apps/api, packages), настройка окружения
+### Фаза 0.5 — Остаток
+- Husky и Git hooks
+- CI workflow
+- Применить миграцию к Neon когда БД станет доступной
 
-**Блокеры.** Нет
+**Блокеры:**
+- Neon PostgreSQL временно недоступен (заморожен). Миграция SQL готова, нужно только применить.
 
 ---
 
 ## Ближайшие задачи
 
-### Приоритет 1 (после утверждения документов)
-1. [ ] Инициализация monorepo (pnpm workspace, Turborepo)
-2. [ ] apps/web: Next.js 16, Tailwind, shadcn/ui
-3. [ ] apps/api: NestJS 11, Prisma, базовые Guards
-4. [ ] packages: shared-types, shared-zod (или один shared)
-5. [ ] База данных: Prisma schema по docs/Docs/01-Platform-Overview/03-Core-Entities-and-Data-Model.md
-6. [ ] Auth: интеграция Clerk (web + api)
+### Приоритет 1 (Фаза 1 — MVP)
+1. [ ] Auth: интеграция Clerk (web + api JWT верификация)
+2. [ ] Employee модель: связка Clerk userId ↔ Employee
+3. [ ] RBAC Guards: 12 ролей, 3 уровня
+4. [ ] CRM Leads: API + Kanban UI
+5. [ ] CRM Deals: API + Pipeline UI
+6. [ ] Projects Hub: CRUD + Card с вкладками
 
 ### Приоритет 2
-7. [ ] CRM: модуль лидов и сделок (API + UI)
-8. [ ] Projects Hub: список проектов, базовая карточка проекта
-9. [ ] Clients: компании и контакты
-10. [ ] Finance: инвойсы, подписки, платежи (базовый поток)
-
-### Приоритет 3
-11. [ ] RBAC: матрица доступов в NestJS
-12. [ ] Real-time: Socket.io Gateway (заглушка для уведомлений)
-13. [ ] Очереди: BullMQ + первые джобы (например, смена стадии инвойса)
+7. [ ] Clients: Companies + Contacts
+8. [ ] Finance: Orders, Invoices, Payments
+9. [ ] Subscriptions: Grid View (проекты × месяцы)
 
 ---
 
-## Блокеры
+## Дизайн
 
-### Критические
-- Нет
-
-### Некритические
-- Нет
+**Стиль:** Modern + Minimal микс (на основе 2 дизайн-концептов)
+- Фон: тёплый серый `#F5F5F0` (Modern)
+- Акцент: золото/янтарь `#E5A84B` (Modern)
+- Кнопки/текст: чёрный `#1A1A1A` (Classic)
+- Карточки: белые, `border-radius: 16px`, мягкие тени
+- Шрифт: Inter (основной), JetBrains Mono (код)
+- Sidebar: фиксированный, с коллапсом, RBAC-фильтрация
 
 ---
 
 ## Заметки и решения
 
-### 2026-03-11
-- Обновлены версии стека: Next.js 15→16, Prisma 6→7, Node.js 22→24 LTS, TypeScript 5.x→5.9, Clerk→Core 3. Обновлены TECH_CARD.md, 01-ARCHITECTURE.md, PROGRESS.md.
+### 2026-03-11 (Фаза 0.5)
+- Создан DEVELOPMENT_PLAN.md с детальным планом всех фаз
+- Инициализирован monorepo: apps/web (Next.js 16), apps/api (NestJS 11), packages
+- Prisma 7 требует driver adapter (@prisma/adapter-pg) и prisma.config.ts — адаптировано
+- Prisma 7 output теперь в src/generated/prisma, не в node_modules
+- Дизайн-система с CSS variables для light/dark тем, основана на 2 концептах
+
+### 2026-03-11 (ранее)
+- Обновлены версии стека: Next.js 16, Prisma 7, Node.js 24 LTS, TS 5.9, Clerk Core 3
 
 ### 2026-03-05
-- Вся техническая документация в `docs/` переведена/создана на русском: BRIEF.md, TECH_CARD.md, 01-ARCHITECTURE.md, PROGRESS.md.
-- Стек: Next.js 16 (Vercel) + NestJS 11 (Render), PostgreSQL 17 (Neon), Upstash Redis, BullMQ, Clerk Core 3, R2, Socket.io, Prisma 7.
+- Вся документация создана/переведена на русском
+- Стек утверждён
+
+---
+
+## Структура проекта
+
+```
+nbos/
+├── apps/
+│   ├── web/                     # Next.js 16 (Vercel)
+│   │   └── src/
+│   │       ├── app/(app)/       # App Router с layout
+│   │       ├── components/      # UI + Layout компоненты
+│   │       ├── features/        # По модулям
+│   │       ├── hooks/
+│   │       └── lib/             # utils, api client
+│   └── api/                     # NestJS 11 (Render)
+│       └── src/
+│           ├── modules/         # 10 бизнес-модулей
+│           ├── common/          # Guards, Filters, Interceptors
+│           ├── jobs/            # BullMQ workers
+│           └── main.ts
+├── packages/
+│   ├── database/                # Prisma 7 (19 сущностей)
+│   ├── shared/                  # Типы, Zod-схемы, константы
+│   ├── eslint-config/
+│   └── tsconfig/
+├── docs/
+│   ├── DEVELOPMENT_PLAN.md      # ← План разработки
+│   ├── BRIEF.md
+│   ├── TECH_CARD.md
+│   ├── 01-ARCHITECTURE.md
+│   ├── PROGRESS.md              # ← Этот файл
+│   └── NBOS/                    # 59 детальных документов
+└── turbo.json
+```
 
 ---
 
 ## Полезные ссылки
 
-- [Сводный документ по платформе](Docs/00-Technical-Architecture-Brief.md)
-- [Модель данных](Docs/01-Platform-Overview/03-Core-Entities-and-Data-Model.md)
-- [Автоматизации](Docs/06-Integrations/05-Automation-Scenarios.md)
-- [Матрица доступов RBAC](Docs/04-Roles-and-Access/02-Access-Matrix.md)
+- [Сводный документ по платформе](NBOS/00-Technical-Architecture-Brief.md)
+- [Модель данных](NBOS/01-Platform-Overview/03-Core-Entities-and-Data-Model.md)
+- [Автоматизации](NBOS/06-Integrations/05-Automation-Scenarios.md)
+- [Матрица доступов RBAC](NBOS/04-Roles-and-Access/02-Access-Matrix.md)
 
 ---
 
-**Следующее обновление.** После утверждения документов и старта кода
+**Следующее обновление.** После завершения Фазы 0.5 и начала Фазы 1 (Auth + CRM)
