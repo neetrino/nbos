@@ -4,7 +4,7 @@
 **Текущая фаза.** Подготовка (документация и архитектура)  
 **Общий прогресс.** 5%
 
-**Последнее обновление.** 2026-03-05
+**Последнее обновление.** 2026-03-11
 
 ---
 
@@ -49,7 +49,7 @@
 
 ### Приоритет 1 (после утверждения документов)
 1. [ ] Инициализация monorepo (pnpm workspace, Turborepo)
-2. [ ] apps/web: Next.js 15, Tailwind, shadcn/ui
+2. [ ] apps/web: Next.js 16, Tailwind, shadcn/ui
 3. [ ] apps/api: NestJS 11, Prisma, базовые Guards
 4. [ ] packages: shared-types, shared-zod (или один shared)
 5. [ ] База данных: Prisma schema по docs/Docs/01-Platform-Overview/03-Core-Entities-and-Data-Model.md
@@ -80,9 +80,12 @@
 
 ## Заметки и решения
 
+### 2026-03-11
+- Обновлены версии стека: Next.js 15→16, Prisma 6→7, Node.js 22→24 LTS, TypeScript 5.x→5.9, Clerk→Core 3. Обновлены TECH_CARD.md, 01-ARCHITECTURE.md, PROGRESS.md.
+
 ### 2026-03-05
 - Вся техническая документация в `docs/` переведена/создана на русском: BRIEF.md, TECH_CARD.md, 01-ARCHITECTURE.md, PROGRESS.md.
-- Стек: Next.js (Vercel) + NestJS (Render), PostgreSQL (Neon), Upstash Redis, BullMQ, Clerk, R2, Socket.io.
+- Стек: Next.js 16 (Vercel) + NestJS 11 (Render), PostgreSQL 17 (Neon), Upstash Redis, BullMQ, Clerk Core 3, R2, Socket.io, Prisma 7.
 
 ---
 

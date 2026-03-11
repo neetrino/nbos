@@ -3,7 +3,7 @@
 > Внутренняя Business Operation System: CRM, проекты, финансы, задачи, поддержка, пароли, коммуникации, аналитика. Замена Bitrix24.
 
 **Размер проекта.** C (большой)  
-**Последнее обновление.** 2026-03-05
+**Последнее обновление.** 2026-03-11
 
 ---
 
@@ -87,14 +87,14 @@ NBOS объединяет все операционные процессы IT-к
 
 ### Frontend (apps/web)
 
-- **Технологии:** Next.js 15 (App Router), React 18, Tailwind CSS 4, shadcn/ui, TanStack Query, Zustand, Framer Motion, @dnd-kit
+- **Технологии:** Next.js 16 (App Router), React 19, Tailwind CSS 4, shadcn/ui, TanStack Query, Zustand, Framer Motion, @dnd-kit
 - **Назначение:** UI для всех модулей, SSR где нужно, клиентский кеш и real-time подписки через WebSocket
 - **Расположение:** `apps/web/`
 - **Особенности:** 14 разделов в сайдбаре (RBAC скрывает недоступное), Kanban/List/Grid представления, глобальный поиск, центр уведомлений
 
 ### Backend (apps/api)
 
-- **Технологии:** NestJS 11, Prisma 6, Socket.io (Gateway), BullMQ, class-validator, Zod
+- **Технологии:** NestJS 11, Prisma 7, Socket.io (Gateway), BullMQ, class-validator, Zod
 - **Назначение:** Бизнес-логика, валидация, RBAC, события, фоновые задачи, WebSocket
 - **Расположение:** `apps/api/`
 - **API:** REST, OpenAPI (Swagger) auto-generated. JWT от Clerk верифицируется в Guard.
@@ -102,7 +102,7 @@ NBOS объединяет все операционные процессы IT-к
 ### База данных
 
 - **СУБД:** PostgreSQL 17 (Neon)
-- **ORM:** Prisma 6
+- **ORM:** Prisma 7
 - **Схема:** 19 основных сущностей (Contact, Company, Project, Product, Order, Invoice, Payment, Subscription, Expense, Bonus, Lead, Deal, Task, Support Ticket, Credential, Domain, Employee, Partner и др.). Детально — `docs/Docs/01-Platform-Overview/03-Core-Entities-and-Data-Model.md`
 - **Миграции:** Prisma Migrate, SQL-миграции в репозитории
 
@@ -355,4 +355,4 @@ nbos/
 ---
 
 **Версия документа.** 1.0  
-**Дата.** 2026-03-05
+**Дата.** 2026-03-11

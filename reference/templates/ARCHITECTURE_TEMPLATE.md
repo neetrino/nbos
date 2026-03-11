@@ -48,7 +48,7 @@
 ## 🧩 ՀԱՄԱԿԱՐԳԻ ԿՈՄՊՈՆԵՆՏՆԵՐ
 
 ### Frontend
-- **Տեխնոլոգիա.** Next.js 15.x (App Router), React 18
+- **Տեխնոլոգիա.** Next.js 16.x (App Router), React 19
 - **Նշանակություն.** [Նկարագրություն]
 - **Գտնվելու վայր.** `apps/web/` կամ `src/`
 - **Առանձնահատկություններ.** [SSR/SSG, PWA և այլն]
@@ -61,7 +61,7 @@
 
 ### Բազային տվյալներ
 - **Տեխնոլոգիա.** PostgreSQL 17 (Neon)
-- **ORM.** Prisma 6.x
+- **ORM.** Prisma 7.x
 - **Սխեմա.** `prisma/schema.prisma`
 
 ### Cache (եթե կա)
