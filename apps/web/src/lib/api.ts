@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const rawUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_BASE_URL = rawUrl.endsWith('/api') ? rawUrl.slice(0, -4) : rawUrl;
 
 export interface ApiResponse<T> {
   data: T;

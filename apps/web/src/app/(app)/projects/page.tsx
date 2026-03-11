@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Plus,
   RefreshCcw,
@@ -24,7 +25,6 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
-import { ProjectSheet } from '@/features/projects/components/ProjectSheet';
 import {
   PROJECT_TYPES,
   PROJECT_TABS,
@@ -35,14 +35,13 @@ import { projectsApi, type Project } from '@/lib/api/projects';
 type ViewMode = 'grid' | 'list';
 
 export default function ProjectsPage() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('grid');
   const [activeTab, setActiveTab] = useState('all');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -64,16 +63,8 @@ export default function ProjectsPage() {
     fetchProjects();
   }, [fetchProjects]);
 
-  const handleDelete = async (id: string) => {
-    await projectsApi.delete(id);
-    setSheetOpen(false);
-    setSelectedProject(null);
-    await fetchProjects();
-  };
-
   const handleClick = (project: Project) => {
-    setSelectedProject(project);
-    setSheetOpen(true);
+    router.push(`/projects/${project.id}`);
   };
 
   const filteredProjects = projects.filter((p) => {
@@ -306,13 +297,6 @@ export default function ProjectsPage() {
           </Table>
         </div>
       )}
-
-      <ProjectSheet
-        project={selectedProject}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        onDelete={handleDelete}
-      />
     </div>
   );
 }
