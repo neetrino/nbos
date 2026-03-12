@@ -71,11 +71,6 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
                 Mark as Spam
               </DropdownMenuItem>
             )}
-            {lead.status !== 'FROZEN' && lead.status !== 'SPAM' && (
-              <DropdownMenuItem onClick={() => onStatusChange(lead.id, 'FROZEN')}>
-                Freeze Lead
-              </DropdownMenuItem>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

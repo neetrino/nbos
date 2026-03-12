@@ -128,7 +128,7 @@ export default function LeadsPipelinePage() {
   }));
 
   const totalCount = leads.length;
-  const activeCount = leads.filter((l) => !['SPAM', 'FROZEN', 'SQL'].includes(l.status)).length;
+  const activeCount = leads.filter((l) => !['SPAM', 'SQL'].includes(l.status)).length;
 
   const filterConfigs = [
     {

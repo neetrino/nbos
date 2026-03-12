@@ -9,10 +9,8 @@ import {
   Clock,
   MessageSquare,
   ArrowRight,
-  Snowflake,
   Trash2,
   AlertTriangle,
-  CheckCircle2,
   Globe,
   Link2,
   LayoutGrid,
@@ -23,14 +21,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { StatusBadge, InlineField } from '@/components/shared';
 import { LeadPipelineStages } from './LeadPipelineStages';
-import {
-  LEAD_SOURCES,
-  TERMINAL_LEAD_STAGES,
-  getLeadStage,
-  getLeadSource,
-} from '../constants/leadPipeline';
+import { LEAD_SOURCES, LEAD_STAGES, getLeadSource } from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
-import { cn } from '@/lib/utils';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -70,8 +62,8 @@ export function LeadSheet({
 
   if (!lead) return null;
 
-  const isTerminal = TERMINAL_LEAD_STAGES.some((s) => s.key === lead.status);
-  const stage = getLeadStage(lead.status);
+  const currentStage = LEAD_STAGES.find((s) => s.key === lead.status);
+  const isTerminal = currentStage ? 'terminal' in currentStage : false;
   const source = getLeadSource(lead.source);
   const leadTitle = lead.name || lead.code;
 
@@ -139,39 +131,10 @@ export function LeadSheet({
 
         {/* ── Pipeline Stages ── */}
         <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
-          {isTerminal ? (
-            <div
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-4 py-2',
-                lead.status === 'SQL'
-                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
-                  : lead.status === 'FROZEN'
-                    ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-300'
-                    : 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300',
-              )}
-            >
-              {lead.status === 'SQL' ? (
-                <CheckCircle2 size={16} />
-              ) : lead.status === 'FROZEN' ? (
-                <Snowflake size={16} />
-              ) : (
-                <AlertTriangle size={16} />
-              )}
-              <span className="text-sm font-semibold">{stage?.label}</span>
-              <span className="text-xs opacity-70">
-                {lead.status === 'SQL'
-                  ? '— Ready to convert'
-                  : lead.status === 'FROZEN'
-                    ? '— Can be reactivated'
-                    : '— Marked as spam'}
-              </span>
-            </div>
-          ) : (
-            <LeadPipelineStages
-              currentStatus={lead.status}
-              onStageClick={(key) => onStatusChange(lead.id, key)}
-            />
-          )}
+          <LeadPipelineStages
+            currentStatus={lead.status}
+            onStageClick={(key) => onStatusChange(lead.id, key)}
+          />
         </div>
 
         {/* ── Tabs ── */}
@@ -248,15 +211,6 @@ export function LeadSheet({
                   >
                     <AlertTriangle size={14} className="mr-1" />
                     Spam
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-cyan-600 hover:bg-cyan-500/10"
-                    onClick={() => onStatusChange(lead.id, 'FROZEN')}
-                  >
-                    <Snowflake size={14} className="mr-1" />
-                    Freeze
                   </Button>
                   {lead.status === 'MQL' && onConvertToDeal && (
                     <Button size="sm" onClick={() => onConvertToDeal(lead)}>

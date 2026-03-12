@@ -4,7 +4,6 @@ export const LEAD_STATUSES = [
   'CONTACT_ESTABLISHED',
   'MQL',
   'SPAM',
-  'FROZEN',
   'SQL',
 ] as const;
 
@@ -44,18 +43,9 @@ export const INVOICE_STATUSES = [
   'UNPAID',
 ] as const;
 
-export const ORDER_STATUSES = [
-  'ACTIVE',
-  'PARTIALLY_PAID',
-  'FULLY_PAID',
-  'CLOSED',
-] as const;
+export const ORDER_STATUSES = ['ACTIVE', 'PARTIALLY_PAID', 'FULLY_PAID', 'CLOSED'] as const;
 
-export const PAYMENT_TYPES = [
-  'CLASSIC_50_50',
-  'CLASSIC_30_30_40',
-  'SUBSCRIPTION',
-] as const;
+export const PAYMENT_TYPES = ['CLASSIC_50_50', 'CLASSIC_30_30_40', 'SUBSCRIPTION'] as const;
 
 export const SUBSCRIPTION_STATUSES = ['ACTIVE', 'PAUSED', 'CANCELLED'] as const;
 
@@ -126,12 +116,7 @@ export const EMPLOYEE_ROLES = [
 
 export const EMPLOYEE_LEVELS = ['JUNIOR', 'MIDDLE', 'SENIOR', 'LEAD', 'HEAD'] as const;
 
-export const CREDENTIAL_ACCESS_LEVELS = [
-  'SECRET',
-  'PROJECT_TEAM',
-  'DEPARTMENT',
-  'ALL',
-] as const;
+export const CREDENTIAL_ACCESS_LEVELS = ['SECRET', 'PROJECT_TEAM', 'DEPARTMENT', 'ALL'] as const;
 
 export const CREDENTIAL_CATEGORIES = [
   'ADMIN',

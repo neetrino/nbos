@@ -28,15 +28,8 @@ export const LEAD_STAGES = [
     terminal: true,
   },
   {
-    key: 'FROZEN',
-    label: 'Frozen',
-    variant: 'cyan' as StatusVariant,
-    color: 'bg-cyan-500',
-    terminal: true,
-  },
-  {
     key: 'SQL',
-    label: 'SQL (Qualified)',
+    label: 'Lead Won',
     variant: 'emerald' as StatusVariant,
     color: 'bg-emerald-500',
     terminal: true,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ACTIVE_LEAD_STAGES, TERMINAL_LEAD_STAGES } from '../constants/leadPipeline';
+import { LEAD_STAGES } from '../constants/leadPipeline';
 
 const STAGE_HEX: Record<string, string> = {
   NEW: '#3b82f6',
@@ -9,7 +9,6 @@ const STAGE_HEX: Record<string, string> = {
   CONTACT_ESTABLISHED: '#6366f1',
   MQL: '#a855f7',
   SPAM: '#ef4444',
-  FROZEN: '#06b6d4',
   SQL: '#10b981',
 };
 
@@ -24,24 +23,24 @@ interface LeadPipelineStagesProps {
 export function LeadPipelineStages({ currentStatus, onStageClick }: LeadPipelineStagesProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
-  const stages = ACTIVE_LEAD_STAGES;
+  const stages = LEAD_STAGES;
   const total = stages.length;
   const currentIdx = stages.findIndex((s) => s.key === currentStatus);
-  const isTerminal = TERMINAL_LEAD_STAGES.some((s) => s.key === currentStatus);
+  const isTerminal = 'terminal' in (stages[currentIdx] ?? {});
 
   const fillColor = useMemo(() => {
-    if (isTerminal) return STAGE_HEX[currentStatus] ?? '#d4d4d4';
     if (hoverIdx !== null) {
       const hStage = stages[hoverIdx];
       return hStage ? (STAGE_HEX[hStage.key] ?? '#d4d4d4') : '#d4d4d4';
     }
-    const cStage = stages[currentIdx];
-    return cStage ? (STAGE_HEX[cStage.key] ?? '#d4d4d4') : '#d4d4d4';
-  }, [hoverIdx, currentIdx, stages, isTerminal, currentStatus]);
+    return STAGE_HEX[currentStatus] ?? '#d4d4d4';
+  }, [hoverIdx, stages, currentStatus]);
 
   function isFilled(i: number): boolean {
-    if (isTerminal) return true;
     if (hoverIdx !== null) return i <= hoverIdx;
+    if (isTerminal) {
+      return i <= currentIdx;
+    }
     return i <= currentIdx;
   }
 
@@ -49,6 +48,7 @@ export function LeadPipelineStages({ currentStatus, onStageClick }: LeadPipeline
     <div className="flex select-none" onMouseLeave={() => setHoverIdx(null)}>
       {stages.map((stage, i) => {
         const filled = isFilled(i);
+        const isCurrent = i === currentIdx;
         const isFuture = !filled;
         const ownColor = STAGE_HEX[stage.key] ?? '#d4d4d4';
         const bg = filled ? fillColor : '#f0f0f0';
@@ -87,8 +87,8 @@ export function LeadPipelineStages({ currentStatus, onStageClick }: LeadPipeline
                       : `M0,0 L${100 - ARROW_W},0 L100,${H / 2} L${100 - ARROW_W},${H} L0,${H} L${ARROW_W},${H / 2} Z`
                 }
                 fill={bg}
-                stroke={filled ? 'rgba(255,255,255,0.3)' : '#ddd'}
-                strokeWidth="0.5"
+                stroke={isCurrent ? ownColor : filled ? 'rgba(255,255,255,0.3)' : '#ddd'}
+                strokeWidth={isCurrent ? '1.5' : '0.5'}
                 vectorEffect="non-scaling-stroke"
                 style={{ transition: 'fill 250ms ease' }}
               />
@@ -96,7 +96,7 @@ export function LeadPipelineStages({ currentStatus, onStageClick }: LeadPipeline
                 <rect
                   x={isFirst ? 0 : ARROW_W}
                   y={H - 3}
-                  width={isLast ? 100 - 0 : isFirst ? 100 - ARROW_W : 100 - ARROW_W * 2}
+                  width={isLast ? 100 : isFirst ? 100 - ARROW_W : 100 - ARROW_W * 2}
                   height="3"
                   fill={ownColor}
                   rx="0.5"

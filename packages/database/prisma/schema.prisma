@@ -196,7 +196,6 @@ enum LeadStatusEnum {
   CONTACT_ESTABLISHED
   MQL
   SPAM
-  FROZEN
   SQL
 }
 
