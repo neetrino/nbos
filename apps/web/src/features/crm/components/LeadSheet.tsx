@@ -15,13 +15,27 @@ import {
   CheckCircle2,
   Globe,
   Link2,
+  LayoutGrid,
+  History,
 } from 'lucide-react';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { EntitySheet, StatusBadge, InlineField } from '@/components/shared';
-import { LEAD_STAGES, LEAD_SOURCES, getLeadStage, getLeadSource } from '../constants/leadPipeline';
+import { StatusBadge, InlineField } from '@/components/shared';
+import { LeadPipelineStages } from './LeadPipelineStages';
+import {
+  LEAD_SOURCES,
+  TERMINAL_LEAD_STAGES,
+  getLeadStage,
+  getLeadSource,
+} from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
 import { cn } from '@/lib/utils';
+
+const TABS = [
+  { value: 'general', label: 'General', icon: LayoutGrid },
+  { value: 'history', label: 'History', icon: History },
+] as const;
 
 interface LeadSheetProps {
   lead: Lead | null;
@@ -42,6 +56,7 @@ export function LeadSheet({
   onConvertToDeal,
   onDelete,
 }: LeadSheetProps) {
+  const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -55,19 +70,16 @@ export function LeadSheet({
 
   if (!lead) return null;
 
+  const isTerminal = TERMINAL_LEAD_STAGES.some((s) => s.key === lead.status);
   const stage = getLeadStage(lead.status);
   const source = getLeadSource(lead.source);
-  const isTerminal = lead.status === 'SPAM' || lead.status === 'FROZEN' || lead.status === 'SQL';
-  const activeStages = LEAD_STAGES.filter((s) => !('terminal' in s));
-  const currentIdx = activeStages.findIndex((s) => s.key === lead.status);
+  const leadTitle = lead.name || lead.contactName;
 
   const saveField = async (field: string, value: string) => {
     const payload: Record<string, unknown> = {};
     payload[field] = value || null;
     await onUpdate(lead.id, payload as Partial<Lead>);
   };
-
-  const leadTitle = lead.name || lead.contactName;
 
   const startEditingName = () => {
     setNameValue(lead.name ?? '');
@@ -93,57 +105,14 @@ export function LeadSheet({
   };
 
   return (
-    <EntitySheet
-      open={open}
-      onOpenChange={onOpenChange}
-      size="lg"
-      title=""
-      footer={
-        <div className="flex items-center justify-between">
-          <div>
-            {onDelete && (
-              <Button variant="destructive" size="sm" onClick={() => onDelete(lead.id)}>
-                <Trash2 size={14} className="mr-1" />
-                Delete
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {!isTerminal && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-500 hover:bg-red-500/10"
-                  onClick={() => onStatusChange(lead.id, 'SPAM')}
-                >
-                  <AlertTriangle size={14} className="mr-1" />
-                  Spam
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-cyan-600 hover:bg-cyan-500/10"
-                  onClick={() => onStatusChange(lead.id, 'FROZEN')}
-                >
-                  <Snowflake size={14} className="mr-1" />
-                  Freeze
-                </Button>
-                {lead.status === 'MQL' && onConvertToDeal && (
-                  <Button size="sm" onClick={() => onConvertToDeal(lead)}>
-                    <ArrowRight size={14} className="mr-1" />
-                    Convert to Deal
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      }
-    >
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[92vw] sm:max-w-[1400px]"
+      >
+        {/* ── Header ── */}
+        <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-sky-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-sky-950/10 dark:via-transparent dark:to-transparent">
           {editingName ? (
             <input
               ref={nameInputRef}
@@ -152,121 +121,181 @@ export function LeadSheet({
               onBlur={saveLeadName}
               onKeyDown={handleNameKeyDown}
               placeholder="Lead name..."
-              className="text-foreground w-full border-0 border-b-2 border-sky-400 bg-transparent text-xl font-bold outline-none placeholder:text-stone-300"
+              className="text-foreground w-full border-0 border-b-2 border-sky-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
             />
           ) : (
             <h2
               onClick={startEditingName}
-              className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+              className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
               title="Click to edit lead name"
             >
               {leadTitle}
             </h2>
           )}
-          <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-sm">
-            <span className="font-mono">{lead.code}</span>
-            {stage && (
-              <>
-                <span>·</span>
-                <StatusBadge
-                  label={stage.label}
-                  variant={stage.variant}
-                  dot
-                  dotColor={stage.color}
-                />
-              </>
-            )}
+          <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
+            {lead.code}
+          </p>
+        </div>
+
+        {/* ── Pipeline Stages ── */}
+        <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+          {isTerminal ? (
+            <div
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-4 py-2',
+                lead.status === 'SQL'
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
+                  : lead.status === 'FROZEN'
+                    ? 'bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-300'
+                    : 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300',
+              )}
+            >
+              {lead.status === 'SQL' ? (
+                <CheckCircle2 size={16} />
+              ) : lead.status === 'FROZEN' ? (
+                <Snowflake size={16} />
+              ) : (
+                <AlertTriangle size={16} />
+              )}
+              <span className="text-sm font-semibold">{stage?.label}</span>
+              <span className="text-xs opacity-70">
+                {lead.status === 'SQL'
+                  ? '— Ready to convert'
+                  : lead.status === 'FROZEN'
+                    ? '— Can be reactivated'
+                    : '— Marked as spam'}
+              </span>
+            </div>
+          ) : (
+            <LeadPipelineStages
+              currentStatus={lead.status}
+              onStageClick={(key) => onStatusChange(lead.id, key)}
+            />
+          )}
+        </div>
+
+        {/* ── Tabs ── */}
+        <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
+          <div className="flex gap-1">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveTab(tab.value)}
+                  className={
+                    'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
+                    (isActive
+                      ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
+                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
+                  }
+                >
+                  <tab.icon size={16} />
+                  {tab.label}
+                  {isActive && (
+                    <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Pipeline Stages */}
-        {!isTerminal && (
-          <div className="border-border/50 bg-muted/30 rounded-xl border p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                Lead Pipeline
-              </span>
-              <span className="text-muted-foreground text-xs">
-                Step {currentIdx + 1} of {activeStages.length}
-              </span>
-            </div>
-            <div className="flex gap-1">
-              {activeStages.map((s, i) => {
-                const isCurrent = s.key === lead.status;
-                const isPast = i < currentIdx;
-                return (
-                  <button
-                    key={s.key}
-                    onClick={() => onStatusChange(lead.id, s.key)}
-                    title={s.label}
-                    className={cn(
-                      'relative h-2 flex-1 rounded-full transition-all hover:opacity-80',
-                      isCurrent ? s.color : isPast ? s.color + ' opacity-60' : 'bg-border',
-                    )}
-                  />
-                );
-              })}
-            </div>
-            <div className="mt-2 flex items-center justify-between">
-              <span className="text-foreground text-xs font-medium">{stage?.label}</span>
-              {currentIdx >= 0 && currentIdx < activeStages.length - 1 && (
-                <button
-                  onClick={() => onStatusChange(lead.id, activeStages[currentIdx + 1].key)}
-                  className="text-accent flex items-center gap-1 text-xs font-medium hover:underline"
+        {/* ── Content ── */}
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="px-7 py-5">
+            {activeTab === 'general' && (
+              <LeadGeneralContent
+                lead={lead}
+                source={source}
+                saveField={saveField}
+                onConvertToDeal={onConvertToDeal}
+                isTerminal={isTerminal}
+              />
+            )}
+            {activeTab === 'history' && (
+              <div className="text-muted-foreground py-12 text-center text-sm">
+                History coming soon...
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* ── Footer ── */}
+        <div className="shrink-0 border-t border-stone-100 bg-stone-50/50 px-7 py-3 dark:border-stone-800 dark:bg-stone-900/20">
+          <div className="flex items-center justify-between">
+            <div>
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive text-xs"
+                  onClick={() => onDelete(lead.id)}
                 >
-                  Next: {activeStages[currentIdx + 1].label}
-                  <ArrowRight size={12} />
-                </button>
+                  <Trash2 size={13} className="mr-1.5" />
+                  Delete
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {!isTerminal && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-500 hover:bg-red-500/10"
+                    onClick={() => onStatusChange(lead.id, 'SPAM')}
+                  >
+                    <AlertTriangle size={14} className="mr-1" />
+                    Spam
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-cyan-600 hover:bg-cyan-500/10"
+                    onClick={() => onStatusChange(lead.id, 'FROZEN')}
+                  >
+                    <Snowflake size={14} className="mr-1" />
+                    Freeze
+                  </Button>
+                  {lead.status === 'MQL' && onConvertToDeal && (
+                    <Button size="sm" onClick={() => onConvertToDeal(lead)}>
+                      <ArrowRight size={14} className="mr-1" />
+                      Convert to Deal
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </div>
-        )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
 
-        {isTerminal && (
-          <div
-            className={cn(
-              'flex items-center gap-3 rounded-xl border p-4',
-              lead.status === 'SQL'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                : lead.status === 'FROZEN'
-                  ? 'border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-cyan-800 dark:bg-cyan-950 dark:text-cyan-300'
-                  : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300',
-            )}
-          >
-            {lead.status === 'SQL' ? (
-              <CheckCircle2 size={20} />
-            ) : lead.status === 'FROZEN' ? (
-              <Snowflake size={20} />
-            ) : (
-              <AlertTriangle size={20} />
-            )}
-            <div>
-              <p className="font-semibold">{stage?.label}</p>
-              <p className="text-xs opacity-80">
-                {lead.status === 'SQL'
-                  ? 'Lead qualified — ready to convert to Deal'
-                  : lead.status === 'FROZEN'
-                    ? 'Lead frozen — can be reactivated later'
-                    : 'Marked as spam'}
-              </p>
-            </div>
-          </div>
-        )}
+/* ── General Tab Content ── */
 
-        <Separator />
+interface LeadGeneralContentProps {
+  lead: Lead;
+  source: ReturnType<typeof getLeadSource>;
+  saveField: (field: string, value: string) => Promise<void>;
+  onConvertToDeal?: (lead: Lead) => void;
+  isTerminal: boolean;
+}
 
-        {/* Fields Grid */}
+function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps) {
+  return (
+    <div className="space-y-8">
+      {/* Contact Information */}
+      <div>
+        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+          <User size={13} />
+          Contact Information
+        </h3>
         <div className="grid grid-cols-2 gap-x-10 gap-y-3">
-          {/* Contact Info */}
-          <div className="col-span-2 mb-2">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-              <User size={13} />
-              Contact Information
-            </h3>
-          </div>
-
           <InlineField
-            label="Name"
+            label="Contact Name"
             value={lead.contactName}
             type="text"
             placeholder="Contact name..."
@@ -334,15 +363,16 @@ export function LeadSheet({
             icon={<Globe size={12} />}
             onSave={(v) => saveField('source', v)}
           />
+        </div>
+      </div>
 
-          {/* Assignment */}
-          <div className="col-span-2 mt-4 mb-2">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-              <User size={13} />
-              Assignment
-            </h3>
-          </div>
-
+      {/* Assignment */}
+      <div>
+        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+          <User size={13} />
+          Assignment
+        </h3>
+        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
           <InlineField
             label="Assigned Seller"
             value={lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : ''}
@@ -362,15 +392,35 @@ export function LeadSheet({
             editable={false}
             icon={<User size={12} />}
           />
+        </div>
+      </div>
 
-          {/* Dates */}
-          <div className="col-span-2 mt-4 mb-2">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-              <Calendar size={13} />
-              Dates
-            </h3>
+      {/* Linked Deal */}
+      {lead.deal && (
+        <div>
+          <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+            <Link2 size={13} />
+            Linked Deal
+          </h3>
+          <div className="border-border hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-3 transition-colors">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+              <Link2 size={16} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">{lead.deal.code}</p>
+              <StatusBadge label={lead.deal.status.replace(/_/g, ' ')} variant="blue" />
+            </div>
           </div>
+        </div>
+      )}
 
+      {/* Dates */}
+      <div>
+        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+          <Calendar size={13} />
+          Dates
+        </h3>
+        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
           <InlineField
             label="Created"
             value={new Date(lead.createdAt).toLocaleDateString('en-US', {
@@ -393,40 +443,23 @@ export function LeadSheet({
             editable={false}
           />
         </div>
+      </div>
 
-        {/* Notes */}
-        <Separator />
+      {/* Notes */}
+      <div>
+        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+          <MessageSquare size={13} />
+          Notes
+        </h3>
         <InlineField
-          label="Notes"
+          label=""
           value={lead.notes}
           type="textarea"
           placeholder="Add notes about this lead..."
           icon={<MessageSquare size={12} />}
           onSave={(v) => saveField('notes', v)}
         />
-
-        {/* Linked Deal */}
-        {lead.deal && (
-          <>
-            <Separator />
-            <div>
-              <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-                <Link2 size={13} />
-                Linked Deal
-              </h3>
-              <div className="border-border hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-3 transition-colors">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-                  <Link2 size={16} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{lead.deal.code}</p>
-                  <StatusBadge label={lead.deal.status.replace(/_/g, ' ')} variant="blue" />
-                </div>
-              </div>
-            </div>
-          </>
-        )}
       </div>
-    </EntitySheet>
+    </div>
   );
 }
