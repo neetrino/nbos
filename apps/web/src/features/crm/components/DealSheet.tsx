@@ -77,14 +77,14 @@ export function DealSheet({
                   className={
                     'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
                     (isActive
-                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
+                      ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
                       : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
                   }
                 >
                   <tab.icon size={16} />
                   {tab.label}
                   {isActive && (
-                    <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-emerald-500" />
+                    <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
                   )}
                 </button>
               );
