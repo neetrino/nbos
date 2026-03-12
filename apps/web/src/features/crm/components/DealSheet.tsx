@@ -1,38 +1,36 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
-  DollarSign,
-  User,
-  Calendar,
-  Clock,
-  MessageSquare,
-  FileText,
-  Link2,
   Trash2,
   CheckCircle2,
   XCircle,
-  Phone,
-  Mail,
-  Building2,
-  CreditCard,
-  Tag,
   ArrowRight,
-  ExternalLink,
+  LayoutGrid,
+  History,
+  FileText,
+  Phone,
 } from 'lucide-react';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { EntitySheet, StatusBadge, InlineField } from '@/components/shared';
-import {
-  DEAL_STAGES,
-  DEAL_TYPES,
-  PAYMENT_TYPES,
-  getDealStage,
-  formatAmount,
-} from '../constants/dealPipeline';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { StatusBadge } from '@/components/shared';
+import { DealPipelineStages } from './DealPipelineStages';
+import { DealGeneralTab } from './DealGeneralTab';
+import { DealHistoryTab } from './DealHistoryTab';
+import { DealInvoiceTab } from './DealInvoiceTab';
+import { DealCallsTab } from './DealCallsTab';
+import { ACTIVE_DEAL_STAGES, getDealStage, formatAmount } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
-import { contactsApi, type Contact } from '@/lib/api/clients';
 import { cn } from '@/lib/utils';
+
+const TABS = [
+  { value: 'general', label: 'General', icon: LayoutGrid },
+  { value: 'history', label: 'History', icon: History },
+  { value: 'invoice', label: 'Invoice', icon: FileText },
+  { value: 'calls', label: 'Calls', icon: Phone },
+] as const;
 
 interface DealSheetProps {
   deal: Deal | null;
@@ -51,409 +49,175 @@ export function DealSheet({
   onStatusChange,
   onDelete,
 }: DealSheetProps) {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-
-  useEffect(() => {
-    if (open) {
-      contactsApi
-        .getAll({ pageSize: 200 })
-        .then((d) => setContacts(d.items))
-        .catch(() => {});
-    }
-  }, [open]);
+  const [activeTab, setActiveTab] = useState('general');
 
   if (!deal) return null;
 
   const stage = getDealStage(deal.status);
   const isTerminal = deal.status === 'FAILED' || deal.status === 'WON';
-  const activeStages = DEAL_STAGES.filter((s) => !('terminal' in s));
-  const currentIdx = activeStages.findIndex((s) => s.key === deal.status);
-
-  const saveField = async (field: string, value: string) => {
-    const payload: Record<string, unknown> = {};
-    if (field === 'amount') {
-      payload[field] = value ? Number(value) : null;
-    } else {
-      payload[field] = value || null;
-    }
-    await onUpdate(deal.id, payload as Partial<Deal>);
-  };
+  const currentIdx = ACTIVE_DEAL_STAGES.findIndex((s) => s.key === deal.status);
+  const nextStage = currentIdx >= 0 ? ACTIVE_DEAL_STAGES[currentIdx + 1] : undefined;
 
   return (
-    <EntitySheet
-      open={open}
-      onOpenChange={onOpenChange}
-      size="lg"
-      title=""
-      footer={
-        <div className="flex items-center justify-between">
-          <div>
-            {onDelete && (
-              <Button variant="destructive" size="sm" onClick={() => onDelete(deal.id)}>
-                <Trash2 size={14} className="mr-1" />
-                Delete
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {!isTerminal && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10"
-                  onClick={() => onStatusChange(deal.id, 'FAILED')}
-                >
-                  <XCircle size={14} className="mr-1" />
-                  Failed
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-emerald-600 hover:bg-emerald-500/10"
-                  onClick={() => onStatusChange(deal.id, 'WON')}
-                >
-                  <CheckCircle2 size={14} className="mr-1" />
-                  Won
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      }
-    >
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-foreground text-xl font-bold">
-                {deal.contact?.firstName} {deal.contact?.lastName}
-              </h2>
-              <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-sm">
-                <span className="font-mono">{deal.code}</span>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[72vw] sm:max-w-[920px]"
+      >
+        {/* ── Header ── */}
+        <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-6 pr-14 pb-4 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                  {deal.contact?.firstName} {deal.contact?.lastName}
+                </h2>
                 {stage && (
-                  <>
-                    <span>·</span>
-                    <StatusBadge
-                      label={stage.label}
-                      variant={stage.variant}
-                      dot
-                      dotColor={stage.color}
-                    />
-                  </>
+                  <StatusBadge
+                    label={stage.label}
+                    variant={stage.variant}
+                    dot
+                    dotColor={stage.color}
+                  />
                 )}
               </div>
+              <p className="text-muted-foreground mt-1 font-mono text-xs tracking-wider">
+                {deal.code}
+              </p>
             </div>
             {deal.amount != null && (
-              <div className="text-right">
-                <p className="text-2xl font-bold">{formatAmount(deal.amount)}</p>
-                <p className="text-muted-foreground text-xs">Deal value</p>
+              <div className="shrink-0 text-right">
+                <p className="text-2xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400">
+                  {formatAmount(deal.amount)}
+                </p>
+                <p className="text-muted-foreground mt-0.5 text-[10px] font-medium tracking-widest uppercase">
+                  Deal value
+                </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Pipeline Stages */}
+        {/* ── Pipeline Stages ── */}
         {!isTerminal && (
-          <div className="border-border/50 bg-muted/30 rounded-xl border p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                Pipeline
-              </span>
-              <span className="text-muted-foreground text-xs">
-                Step {currentIdx + 1} of {activeStages.length}
-              </span>
-            </div>
-            <div className="flex gap-1">
-              {activeStages.map((s, i) => {
-                const isCurrent = s.key === deal.status;
-                const isPast = i < currentIdx;
-                return (
-                  <button
-                    key={s.key}
-                    onClick={() => onStatusChange(deal.id, s.key)}
-                    title={s.label}
-                    className={cn(
-                      'relative h-2 flex-1 rounded-full transition-all hover:opacity-80',
-                      isCurrent ? s.color : isPast ? s.color + ' opacity-60' : 'bg-border',
-                    )}
-                  />
-                );
-              })}
-            </div>
-            <div className="mt-2 flex items-center justify-between">
-              <span className="text-foreground text-xs font-medium">{stage?.label}</span>
-              {currentIdx < activeStages.length - 1 && (
-                <button
-                  onClick={() => onStatusChange(deal.id, activeStages[currentIdx + 1].key)}
-                  className="text-accent flex items-center gap-1 text-xs font-medium hover:underline"
-                >
-                  Next: {activeStages[currentIdx + 1].label}
-                  <ArrowRight size={12} />
-                </button>
-              )}
-            </div>
+          <div className="shrink-0 border-b border-stone-100 px-7 py-2.5 dark:border-stone-800">
+            <DealPipelineStages
+              currentStatus={deal.status}
+              onStageClick={(key) => onStatusChange(deal.id, key)}
+            />
           </div>
         )}
 
+        {/* ── Terminal State ── */}
         {isTerminal && (
           <div
             className={cn(
-              'flex items-center gap-3 rounded-xl border p-4',
+              'flex shrink-0 items-center gap-3 border-b px-7 py-3',
               deal.status === 'WON'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                : 'border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300',
+                ? 'border-emerald-100 bg-emerald-50/80 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'border-red-100 bg-red-50/80 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300',
             )}
           >
-            {deal.status === 'WON' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+            {deal.status === 'WON' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
             <div>
-              <p className="font-semibold">{deal.status === 'WON' ? 'Deal Won' : 'Deal Failed'}</p>
-              <p className="text-xs opacity-80">
-                {deal.status === 'WON'
-                  ? 'This deal was successfully closed'
-                  : 'This deal did not go through'}
+              <p className="text-sm font-semibold">
+                {deal.status === 'WON' ? 'Deal Won' : 'Deal Failed'}
+              </p>
+              <p className="text-xs opacity-75">
+                {deal.status === 'WON' ? 'Successfully closed' : 'Did not go through'}
               </p>
             </div>
           </div>
         )}
 
-        <Separator />
-
-        {/* Two-column layout */}
-        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
-          {/* Financial Section */}
-          <div className="col-span-2 mb-2">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-              <DollarSign size={13} />
-              Financial
-            </h3>
+        {/* ── Tabs ── */}
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
+        >
+          <div className="shrink-0 border-b border-stone-100 px-7 dark:border-stone-800">
+            <TabsList variant="line" className="h-10 gap-1">
+              {TABS.map((tab) => (
+                <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 text-xs">
+                  <tab.icon size={13} />
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
           </div>
 
-          <InlineField
-            label="Amount"
-            value={deal.amount}
-            displayValue={
-              deal.amount != null ? (
-                <span className="text-foreground text-lg font-bold">
-                  {formatAmount(deal.amount)}
-                </span>
-              ) : undefined
-            }
-            type="number"
-            placeholder="Enter amount..."
-            icon={<DollarSign size={12} />}
-            onSave={(v) => saveField('amount', v)}
-          />
-
-          <InlineField
-            label="Deal Type"
-            value={deal.type}
-            displayValue={
-              <StatusBadge
-                label={DEAL_TYPES.find((t) => t.value === deal.type)?.label ?? deal.type}
-                variant={
-                  deal.type === 'EXTENSION' ? 'blue' : deal.type === 'UPSELL' ? 'purple' : 'default'
-                }
-              />
-            }
-            type="select"
-            options={DEAL_TYPES.map((t) => ({ value: t.value, label: t.label }))}
-            icon={<Tag size={12} />}
-            onSave={(v) => saveField('type', v)}
-          />
-
-          <InlineField
-            label="Payment Type"
-            value={deal.paymentType}
-            displayValue={
-              deal.paymentType ? (
-                <span className="text-foreground font-medium">
-                  {PAYMENT_TYPES.find((p) => p.value === deal.paymentType)?.label ??
-                    deal.paymentType?.replace(/_/g, ' ')}
-                </span>
-              ) : undefined
-            }
-            type="select"
-            options={PAYMENT_TYPES.map((p) => ({ value: p.value, label: p.label }))}
-            placeholder="Select payment type..."
-            icon={<CreditCard size={12} />}
-            onSave={(v) => saveField('paymentType', v)}
-          />
-
-          <InlineField
-            label="Source"
-            value={deal.source}
-            displayValue={
-              deal.source ? (
-                <span className="text-foreground font-medium">
-                  {deal.source.replace(/_/g, ' ')}
-                </span>
-              ) : undefined
-            }
-            type="text"
-            placeholder="Lead source..."
-            icon={<ExternalLink size={12} />}
-            editable={false}
-          />
-
-          {/* Contact & Team Section */}
-          <div className="col-span-2 mt-4 mb-2">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-              <User size={13} />
-              Contact & Team
-            </h3>
-          </div>
-
-          <InlineField
-            label="Contact"
-            value={deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : ''}
-            displayValue={
-              deal.contact ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
-                    {deal.contact.firstName[0]}
-                    {deal.contact.lastName[0]}
-                  </div>
-                  <div>
-                    <p className="text-foreground text-sm font-medium">
-                      {deal.contact.firstName} {deal.contact.lastName}
-                    </p>
-                    {deal.contact.email && (
-                      <p className="text-muted-foreground text-[11px]">{deal.contact.email}</p>
-                    )}
-                  </div>
-                </div>
-              ) : undefined
-            }
-            type="select"
-            options={contacts.map((c) => ({
-              value: c.id,
-              label: `${c.firstName} ${c.lastName}`,
-            }))}
-            placeholder="Select contact..."
-            icon={<User size={12} />}
-            onSave={(v) => saveField('contactId', v)}
-          />
-
-          <InlineField
-            label="Seller"
-            value={deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : ''}
-            displayValue={
-              deal.seller ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
-                    {deal.seller.firstName[0]}
-                    {deal.seller.lastName[0]}
-                  </div>
-                  <span className="text-foreground text-sm font-medium">
-                    {deal.seller.firstName} {deal.seller.lastName}
-                  </span>
-                </div>
-              ) : undefined
-            }
-            editable={false}
-            icon={<Building2 size={12} />}
-          />
-
-          {/* Dates Section */}
-          <div className="col-span-2 mt-4 mb-2">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-              <Calendar size={13} />
-              Dates
-            </h3>
-          </div>
-
-          <InlineField
-            label="Created"
-            value={new Date(deal.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
-            icon={<Calendar size={12} />}
-            editable={false}
-          />
-
-          <InlineField
-            label="Last Updated"
-            value={new Date(deal.updatedAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
-            icon={<Clock size={12} />}
-            editable={false}
-          />
-        </div>
-
-        {/* Notes */}
-        <Separator />
-        <InlineField
-          label="Notes"
-          value={deal.notes}
-          type="textarea"
-          placeholder="Add notes about this deal..."
-          icon={<MessageSquare size={12} />}
-          onSave={(v) => saveField('notes', v)}
-        />
-
-        {/* Linked Entities */}
-        {deal.lead && (
-          <>
-            <Separator />
-            <div>
-              <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-                <Link2 size={13} />
-                Source Lead
-              </h3>
-              <div className="border-border hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-3 transition-colors">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                  <User size={16} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{deal.lead.contactName}</p>
-                  <p className="text-muted-foreground text-xs">{deal.lead.code}</p>
-                </div>
-                <ExternalLink size={14} className="text-muted-foreground" />
-              </div>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="px-7 py-5">
+              <TabsContent value="general">
+                <DealGeneralTab deal={deal} onUpdate={onUpdate} />
+              </TabsContent>
+              <TabsContent value="history">
+                <DealHistoryTab />
+              </TabsContent>
+              <TabsContent value="invoice">
+                <DealInvoiceTab deal={deal} />
+              </TabsContent>
+              <TabsContent value="calls">
+                <DealCallsTab />
+              </TabsContent>
             </div>
-          </>
-        )}
+          </ScrollArea>
+        </Tabs>
 
-        {deal.orders.length > 0 && (
-          <>
-            <Separator />
+        {/* ── Footer ── */}
+        <div className="shrink-0 border-t border-stone-100 bg-stone-50/50 px-7 py-3 dark:border-stone-800 dark:bg-stone-900/20">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-                <FileText size={13} />
-                Orders ({deal.orders.length})
-              </h3>
-              <div className="space-y-2">
-                {deal.orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="border-border hover:bg-muted/50 flex items-center justify-between rounded-xl border p-3 transition-colors"
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive text-xs"
+                  onClick={() => onDelete(deal.id)}
+                >
+                  <Trash2 size={13} className="mr-1.5" />
+                  Delete
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5">
+              {!isTerminal && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                    onClick={() => onStatusChange(deal.id, 'FAILED')}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-                        <FileText size={16} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{order.code}</p>
-                        <StatusBadge label={order.status.replace(/_/g, ' ')} variant="blue" />
-                      </div>
-                    </div>
-                    <span className="text-foreground font-semibold">
-                      {formatAmount(order.totalAmount)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                    <XCircle size={13} className="mr-1" />
+                    Failed
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30"
+                    onClick={() => onStatusChange(deal.id, 'WON')}
+                  >
+                    <CheckCircle2 size={13} className="mr-1" />
+                    Won
+                  </Button>
+                  {nextStage && (
+                    <Button
+                      size="sm"
+                      className="bg-amber-500 text-xs text-white shadow-sm shadow-amber-500/20 hover:bg-amber-600"
+                      onClick={() => onStatusChange(deal.id, nextStage.key)}
+                    >
+                      {nextStage.shortLabel}
+                      <ArrowRight size={13} className="ml-1" />
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
-          </>
-        )}
-      </div>
-    </EntitySheet>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

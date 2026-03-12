@@ -1,84 +1,122 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
-export const DEAL_STAGES = [
+export interface DealStage {
+  key: string;
+  label: string;
+  shortLabel: string;
+  variant: StatusVariant;
+  color: string;
+  terminal?: boolean;
+}
+
+export const DEAL_STAGES: DealStage[] = [
   {
     key: 'START_CONVERSATION',
     label: 'Start a Conversation',
-    variant: 'blue' as StatusVariant,
+    shortLabel: 'Start',
+    variant: 'blue',
     color: 'bg-blue-400',
   },
   {
     key: 'DISCUSS_NEEDS',
     label: 'Discuss What Is Needed',
-    variant: 'blue' as StatusVariant,
+    shortLabel: 'Discuss',
+    variant: 'blue',
     color: 'bg-blue-500',
   },
-  { key: 'MEETING', label: 'Meeting', variant: 'indigo' as StatusVariant, color: 'bg-indigo-500' },
+  {
+    key: 'MEETING',
+    label: 'Meeting',
+    shortLabel: 'Meeting',
+    variant: 'indigo',
+    color: 'bg-indigo-500',
+  },
   {
     key: 'CAN_WE_DO_IT',
     label: 'Can We Do It?',
-    variant: 'purple' as StatusVariant,
+    shortLabel: 'Can We?',
+    variant: 'purple',
     color: 'bg-purple-500',
   },
   {
     key: 'SEND_OFFER',
     label: 'Send Offer',
-    variant: 'violet' as StatusVariant,
+    shortLabel: 'Offer',
+    variant: 'violet',
     color: 'bg-violet-500',
   },
   {
     key: 'GET_ANSWER',
     label: 'Get Answer',
-    variant: 'fuchsia' as StatusVariant,
+    shortLabel: 'Answer',
+    variant: 'fuchsia',
     color: 'bg-fuchsia-500',
   },
   {
     key: 'DEPOSIT_AND_CONTRACT',
     label: 'Deposit & Contract',
-    variant: 'amber' as StatusVariant,
+    shortLabel: 'Deposit',
+    variant: 'amber',
     color: 'bg-amber-500',
   },
   {
     key: 'CREATING',
     label: 'Creating',
-    variant: 'orange' as StatusVariant,
+    shortLabel: 'Creating',
+    variant: 'orange',
     color: 'bg-orange-500',
   },
   {
     key: 'GET_FINAL_PAY',
     label: 'Get Final Pay',
-    variant: 'emerald' as StatusVariant,
+    shortLabel: 'Final Pay',
+    variant: 'emerald',
     color: 'bg-emerald-500',
   },
   {
     key: 'MAINTENANCE_OFFER',
     label: 'Maintenance Offer',
-    variant: 'teal' as StatusVariant,
+    shortLabel: 'Maintenance',
+    variant: 'teal',
     color: 'bg-teal-500',
   },
   {
     key: 'FAILED',
     label: 'Failed',
-    variant: 'red' as StatusVariant,
+    shortLabel: 'Failed',
+    variant: 'red',
     color: 'bg-red-500',
     terminal: true,
   },
   {
     key: 'WON',
     label: 'Deal Won',
-    variant: 'green' as StatusVariant,
+    shortLabel: 'Won',
+    variant: 'green',
     color: 'bg-green-600',
     terminal: true,
   },
-] as const;
+];
 
-export const ACTIVE_DEAL_STAGES = DEAL_STAGES.filter((s) => !('terminal' in s));
-export const TERMINAL_DEAL_STAGES = DEAL_STAGES.filter((s) => 'terminal' in s);
+export const ACTIVE_DEAL_STAGES = DEAL_STAGES.filter((s) => !s.terminal);
+export const TERMINAL_DEAL_STAGES = DEAL_STAGES.filter((s) => s.terminal);
 
 export const DEAL_TYPES = [
-  { value: 'NEW_CLIENT', label: 'New Client' },
-  { value: 'EXTENSION', label: 'Extension' },
-  { value: 'UPSELL', label: 'Upsell' },
+  { value: 'NEW_CLIENT', label: 'Product', description: 'New IT product or service' },
+  { value: 'EXTENSION', label: 'Extension', description: 'Extension to an existing product' },
+  { value: 'UPSELL', label: 'Outsource', description: 'Outsourced to a partner' },
+] as const;
+
+export const PRODUCT_TYPES = [
+  { value: 'WEBSITE', label: 'Website' },
+  { value: 'MOBILE_APP', label: 'Mobile App' },
+  { value: 'WEB_APP', label: 'Web Application' },
+  { value: 'CRM', label: 'CRM System' },
+  { value: 'ECOMMERCE', label: 'E-Commerce' },
+  { value: 'SAAS', label: 'SaaS Platform' },
+  { value: 'LANDING', label: 'Landing Page' },
+  { value: 'ERP', label: 'ERP System' },
+  { value: 'OTHER', label: 'Other' },
 ] as const;
 
 export const PAYMENT_TYPES = [
@@ -89,7 +127,7 @@ export const PAYMENT_TYPES = [
   { value: 'MILESTONE', label: 'Milestone-based' },
 ] as const;
 
-export function getDealStage(key: string) {
+export function getDealStage(key: string): DealStage | undefined {
   return DEAL_STAGES.find((s) => s.key === key);
 }
 
