@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 export interface KanbanColumn<T> {
@@ -82,60 +81,63 @@ export function KanbanBoard<T>({
   );
 
   return (
-    <ScrollArea className="w-full">
-      <div
-        className="flex gap-4 pb-4"
-        style={{ minWidth: `${columns.length * (columnWidth + 16)}px` }}
-      >
-        {columns.map((column) => (
-          <div
-            key={column.key}
-            className={cn(
-              'flex-shrink-0 rounded-xl transition-colors duration-200',
-              dropTarget === column.key && 'bg-accent/10 ring-accent/20 ring-2 ring-inset',
-            )}
-            style={{ width: columnWidth }}
-            onDragOver={(e) => handleDragOver(e, column.key)}
-            onDragLeave={handleDragLeave}
-            onDrop={() => handleDrop(column.key)}
-          >
-            <div className="mb-3 flex items-center gap-2">
-              <div className={cn('h-2 w-2 rounded-full', column.color)} />
-              <h3 className="text-foreground text-sm font-semibold">{column.label}</h3>
-              <span className="bg-secondary text-muted-foreground ml-auto rounded-md px-2 py-0.5 text-xs font-medium tabular-nums transition-all duration-200">
-                {column.items.length}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {column.items.map((item) => {
-                const id = getItemId(item);
-                const isMoved = recentlyMoved.has(id);
-                return (
-                  <div
-                    key={id}
-                    draggable
-                    onDragStart={() => handleDragStart(id, column.key)}
-                    className={cn(
-                      'cursor-grab transition-all duration-300 active:cursor-grabbing',
-                      dragItem?.id === id && 'scale-[0.97] opacity-50',
-                      isMoved && 'animate-in fade-in slide-in-from-left-3 duration-300',
-                    )}
-                  >
-                    {renderCard(item, column.key)}
-                  </div>
-                );
-              })}
-              {column.items.length === 0 && (
-                <div className="border-border rounded-xl border border-dashed p-6 text-center transition-opacity duration-200">
-                  <p className="text-muted-foreground text-xs">{emptyMessage}</p>
-                </div>
+    <div className="flex h-full flex-col">
+      <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2">
+        <div
+          className="flex h-full gap-4"
+          style={{ minWidth: `${columns.length * (columnWidth + 16)}px` }}
+        >
+          {columns.map((column) => (
+            <div
+              key={column.key}
+              className={cn(
+                'flex h-full flex-shrink-0 flex-col rounded-xl transition-colors duration-200',
+                dropTarget === column.key && 'bg-accent/10 ring-accent/20 ring-2 ring-inset',
               )}
+              style={{ width: columnWidth }}
+              onDragOver={(e) => handleDragOver(e, column.key)}
+              onDragLeave={handleDragLeave}
+              onDrop={() => handleDrop(column.key)}
+            >
+              <div className="mb-3 flex shrink-0 items-center gap-2">
+                <div className={cn('h-2 w-2 rounded-full', column.color)} />
+                <h3 className="text-foreground text-sm font-semibold">{column.label}</h3>
+                <span className="bg-secondary text-muted-foreground ml-auto rounded-md px-2 py-0.5 text-xs font-medium tabular-nums transition-all duration-200">
+                  {column.items.length}
+                </span>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                <div className="space-y-3">
+                  {column.items.map((item) => {
+                    const id = getItemId(item);
+                    const isMoved = recentlyMoved.has(id);
+                    return (
+                      <div
+                        key={id}
+                        draggable
+                        onDragStart={() => handleDragStart(id, column.key)}
+                        className={cn(
+                          'cursor-grab transition-all duration-300 active:cursor-grabbing',
+                          dragItem?.id === id && 'scale-[0.97] opacity-50',
+                          isMoved && 'animate-in fade-in slide-in-from-left-3 duration-300',
+                        )}
+                      >
+                        {renderCard(item, column.key)}
+                      </div>
+                    );
+                  })}
+                  {column.items.length === 0 && (
+                    <div className="border-border rounded-xl border border-dashed p-6 text-center transition-opacity duration-200">
+                      <p className="text-muted-foreground text-xs">{emptyMessage}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+    </div>
   );
 }

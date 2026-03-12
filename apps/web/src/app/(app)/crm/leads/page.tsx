@@ -122,46 +122,50 @@ export default function LeadsPipelinePage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Lead Pipeline"
-        description={`${totalCount} leads total · ${activeCount} active`}
-      >
-        <Button variant="outline" size="icon" onClick={fetchLeads}>
-          <RefreshCcw size={16} />
-        </Button>
-        <div className="border-border flex rounded-lg border">
-          <Button
-            variant={view === 'kanban' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('kanban')}
-            className="rounded-r-none"
-          >
-            <LayoutGrid size={14} />
+      <div className="shrink-0">
+        <PageHeader
+          title="Lead Pipeline"
+          description={`${totalCount} leads total · ${activeCount} active`}
+        >
+          <Button variant="outline" size="icon" onClick={fetchLeads}>
+            <RefreshCcw size={16} />
           </Button>
-          <Button
-            variant={view === 'list' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('list')}
-            className="rounded-l-none"
-          >
-            <List size={14} />
+          <div className="border-border flex rounded-lg border">
+            <Button
+              variant={view === 'kanban' ? 'secondary' : 'ghost'}
+              size="icon-sm"
+              onClick={() => setView('kanban')}
+              className="rounded-r-none"
+            >
+              <LayoutGrid size={14} />
+            </Button>
+            <Button
+              variant={view === 'list' ? 'secondary' : 'ghost'}
+              size="icon-sm"
+              onClick={() => setView('list')}
+              className="rounded-l-none"
+            >
+              <List size={14} />
+            </Button>
+          </div>
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus size={16} />
+            New Lead
           </Button>
-        </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={16} />
-          New Lead
-        </Button>
-      </PageHeader>
+        </PageHeader>
+      </div>
 
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search leads by name, email, phone..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
-      />
+      <div className="shrink-0">
+        <FilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search leads by name, email, phone..."
+          filters={filterConfigs}
+          filterValues={filters}
+          onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+          onClearFilters={() => setFilters({})}
+        />
+      </div>
 
       {loading ? (
         <div className="space-y-3">
@@ -182,7 +186,7 @@ export default function LeadsPipelinePage() {
           }
         />
       ) : view === 'kanban' ? (
-        <div className="flex-1 overflow-hidden">
+        <div className="min-h-0 flex-1">
           <KanbanBoard
             columns={kanbanColumns}
             renderCard={(lead) => (
@@ -195,7 +199,7 @@ export default function LeadsPipelinePage() {
           />
         </div>
       ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
+        <div className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>

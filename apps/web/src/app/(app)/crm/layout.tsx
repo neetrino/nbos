@@ -16,8 +16,8 @@ export default function CrmLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-border flex items-center gap-1 border-b pb-4">
+    <div className="flex h-[calc(100dvh-7rem)] flex-col">
+      <div className="border-border flex shrink-0 items-center gap-1 border-b pb-4">
         {CRM_TABS.map((tab) => {
           const isActive = pathname.startsWith(tab.href);
           return (
@@ -37,7 +37,7 @@ export default function CrmLayout({ children }: { children: ReactNode }) {
           );
         })}
       </div>
-      <div className="flex-1 pt-6">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col pt-6">{children}</div>
     </div>
   );
 }
