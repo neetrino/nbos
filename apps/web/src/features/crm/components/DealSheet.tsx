@@ -5,14 +5,11 @@ import { Trash2, LayoutGrid, History, FileText, Phone } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { StatusBadge } from '@/components/shared';
 import { DealPipelineStages } from './DealPipelineStages';
 import { DealGeneralTab } from './DealGeneralTab';
 import { DealHistoryTab } from './DealHistoryTab';
 import { DealInvoiceTab } from './DealInvoiceTab';
 import { DealCallsTab } from './DealCallsTab';
-import { getDealStage, formatAmount } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
 
 const TABS = [
@@ -43,46 +40,21 @@ export function DealSheet({
 
   if (!deal) return null;
 
-  const stage = getDealStage(deal.status);
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
+        showCloseButton={false}
         className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[92vw] sm:max-w-[1400px]"
       >
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-6 pr-14 pb-4 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                  {deal.contact?.firstName} {deal.contact?.lastName}
-                </h2>
-                {stage && (
-                  <StatusBadge
-                    label={stage.label}
-                    variant={stage.variant}
-                    dot
-                    dotColor={stage.color}
-                  />
-                )}
-              </div>
-              <p className="text-muted-foreground mt-1 font-mono text-xs tracking-wider">
-                {deal.code}
-              </p>
-            </div>
-            {deal.amount != null && (
-              <div className="shrink-0 text-right">
-                <p className="text-2xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400">
-                  {formatAmount(deal.amount)}
-                </p>
-                <p className="text-muted-foreground mt-0.5 text-[10px] font-medium tracking-widest uppercase">
-                  Deal value
-                </p>
-              </div>
-            )}
-          </div>
+        <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
+          <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+            {deal.contact?.firstName} {deal.contact?.lastName}
+          </h2>
+          <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
+            {deal.code}
+          </p>
         </div>
 
         {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
@@ -94,39 +66,40 @@ export function DealSheet({
         </div>
 
         {/* ── Tabs ── */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="flex min-h-0 flex-1 flex-col overflow-hidden"
-        >
-          <div className="shrink-0 border-b border-stone-100 px-7 dark:border-stone-800">
-            <TabsList variant="line" className="h-10 gap-1">
-              {TABS.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 text-xs">
-                  <tab.icon size={13} />
+        <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
+          <div className="flex gap-1">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveTab(tab.value)}
+                  className={
+                    'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
+                    (isActive
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
+                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
+                  }
+                >
+                  <tab.icon size={16} />
                   {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+                  {isActive && (
+                    <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-emerald-500" />
+                  )}
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="px-7 py-5">
-              <TabsContent value="general">
-                <DealGeneralTab deal={deal} onUpdate={onUpdate} />
-              </TabsContent>
-              <TabsContent value="history">
-                <DealHistoryTab />
-              </TabsContent>
-              <TabsContent value="invoice">
-                <DealInvoiceTab deal={deal} />
-              </TabsContent>
-              <TabsContent value="calls">
-                <DealCallsTab />
-              </TabsContent>
-            </div>
-          </ScrollArea>
-        </Tabs>
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="px-7 py-5">
+            {activeTab === 'general' && <DealGeneralTab deal={deal} onUpdate={onUpdate} />}
+            {activeTab === 'history' && <DealHistoryTab />}
+            {activeTab === 'invoice' && <DealInvoiceTab deal={deal} />}
+            {activeTab === 'calls' && <DealCallsTab />}
+          </div>
+        </ScrollArea>
 
         {/* ── Footer (only Delete) ── */}
         {onDelete && (
