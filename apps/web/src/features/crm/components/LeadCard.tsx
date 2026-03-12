@@ -38,7 +38,7 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
         <div className="min-w-0 flex-1">
           <p className="text-muted-foreground text-[10px] font-medium">{lead.code}</p>
           <h4 className="text-foreground mt-0.5 truncate text-sm font-semibold">
-            {lead.name || lead.contactName}
+            {lead.name || lead.code}
           </h4>
         </div>
         <DropdownMenu>

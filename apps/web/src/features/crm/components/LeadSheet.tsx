@@ -73,7 +73,7 @@ export function LeadSheet({
   const isTerminal = TERMINAL_LEAD_STAGES.some((s) => s.key === lead.status);
   const stage = getLeadStage(lead.status);
   const source = getLeadSource(lead.source);
-  const leadTitle = lead.name || lead.contactName;
+  const leadTitle = lead.name || lead.code;
 
   const saveField = async (field: string, value: string) => {
     const payload: Record<string, unknown> = {};
