@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import {
   DollarSign,
   User,
@@ -14,7 +14,9 @@ import {
   Tag,
   FolderKanban,
   Layers,
+  Sparkles,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { InlineField, SearchField, StatusBadge } from '@/components/shared';
 import { DEAL_TYPES, PRODUCT_TYPES, PAYMENT_TYPES, formatAmount } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
@@ -27,6 +29,9 @@ interface DealGeneralTabProps {
 }
 
 export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
+  const [isNewProject, setIsNewProject] = useState(false);
+  const [linkedProjectName, setLinkedProjectName] = useState<string | null>(null);
+
   const saveField = async (field: string, value: string | number | null) => {
     const payload: Record<string, unknown> = {};
     if (field === 'amount') {
@@ -39,7 +44,7 @@ export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
 
   const searchProjects = useCallback(async (query: string) => {
     const data = await projectsApi.getAll({
-      pageSize: 20,
+      pageSize: 5,
       search: query || undefined,
     });
     return data.items.map((p) => ({
@@ -51,7 +56,7 @@ export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
 
   const searchContacts = useCallback(async (query: string) => {
     const data = await contactsApi.getAll({
-      pageSize: 20,
+      pageSize: 5,
       search: query || undefined,
     });
     return data.items.map((c) => ({
@@ -174,13 +179,41 @@ export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
         </h4>
         <SearchField
           label="Linked Project"
-          value={null}
+          value={linkedProjectName}
+          displayValue={
+            isNewProject ? (
+              <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                <Sparkles size={13} />
+                This is new Project
+              </span>
+            ) : linkedProjectName ? (
+              <span className="text-foreground text-sm font-medium">{linkedProjectName}</span>
+            ) : undefined
+          }
           placeholder="Search projects..."
           icon={<FolderKanban size={12} />}
           onSearch={searchProjects}
-          onSave={(v) => saveField('projectId', v)}
-          onNew={() => saveField('projectId', '__NEW__')}
-          newLabel="New Project"
+          onSave={async (v, label) => {
+            await saveField('projectId', v);
+            setLinkedProjectName(label);
+            setIsNewProject(false);
+          }}
+          newBadge={
+            !isNewProject ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-1.5 border-emerald-200 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
+                onClick={() => {
+                  setIsNewProject(true);
+                  setLinkedProjectName(null);
+                }}
+              >
+                <Sparkles size={12} />
+                This is new Project
+              </Button>
+            ) : undefined
+          }
         />
       </section>
 
@@ -215,7 +248,7 @@ export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
             placeholder="Search contacts..."
             icon={<User size={12} />}
             onSearch={searchContacts}
-            onSave={(v) => saveField('contactId', v)}
+            onSave={(v, _label) => saveField('contactId', v)}
           />
 
           <InlineField

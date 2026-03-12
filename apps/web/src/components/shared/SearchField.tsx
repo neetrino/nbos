@@ -5,6 +5,8 @@ import { Search, X, Plus, Pencil, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
+const MAX_RESULTS = 5;
+
 interface SearchOption {
   value: string;
   label: string;
@@ -17,10 +19,11 @@ interface SearchFieldProps {
   displayValue?: ReactNode;
   placeholder?: string;
   icon?: ReactNode;
-  onSave: (value: string) => Promise<void> | void;
+  onSave: (value: string, label: string) => Promise<void> | void;
   onSearch: (query: string) => Promise<SearchOption[]>;
   onNew?: () => void;
   newLabel?: string;
+  newBadge?: ReactNode;
   className?: string;
 }
 
@@ -34,6 +37,7 @@ export function SearchField({
   onSearch,
   onNew,
   newLabel = 'Create new',
+  newBadge,
   className,
 }: SearchFieldProps) {
   const [open, setOpen] = useState(false);
@@ -53,12 +57,12 @@ export function SearchField({
         setLoading(true);
         try {
           const items = await onSearch(q);
-          setResults(items);
+          setResults(items.slice(0, MAX_RESULTS));
           setHighlightIdx(-1);
         } finally {
           setLoading(false);
         }
-      }, 200);
+      }, 150);
     },
     [onSearch],
   );
@@ -84,14 +88,14 @@ export function SearchField({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const handleSelect = async (optValue: string) => {
+  const handleSelect = async (optValue: string, optLabel: string) => {
     setSaving(true);
     try {
-      await onSave(optValue);
-      setOpen(false);
-      setQuery('');
+      await onSave(optValue, optLabel);
     } finally {
       setSaving(false);
+      setOpen(false);
+      setQuery('');
     }
   };
 
@@ -104,11 +108,13 @@ export function SearchField({
       setHighlightIdx((i) => Math.max(i - 1, 0));
     } else if (e.key === 'Enter' && highlightIdx >= 0 && results[highlightIdx]) {
       e.preventDefault();
-      handleSelect(results[highlightIdx].value);
+      handleSelect(results[highlightIdx].value, results[highlightIdx].label);
     } else if (e.key === 'Escape') {
       setOpen(false);
     }
   };
+
+  const hasValue = value != null && value !== '';
 
   return (
     <div className={cn('group relative', className)} ref={containerRef}>
@@ -149,7 +155,7 @@ export function SearchField({
             )}
           </div>
 
-          <div className="absolute inset-x-0 top-full z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-900">
+          <div className="absolute inset-x-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border border-stone-200 bg-white shadow-lg dark:border-stone-700 dark:bg-stone-900">
             {loading && (
               <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
                 <Loader2 size={13} className="animate-spin" />
@@ -165,7 +171,7 @@ export function SearchField({
               results.map((opt, i) => (
                 <button
                   key={opt.value}
-                  onClick={() => handleSelect(opt.value)}
+                  onClick={() => handleSelect(opt.value, opt.label)}
                   className={cn(
                     'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-stone-50 dark:hover:bg-stone-800',
                     i === highlightIdx && 'bg-stone-50 dark:bg-stone-800',
@@ -186,6 +192,7 @@ export function SearchField({
                 onClick={() => {
                   onNew();
                   setOpen(false);
+                  setQuery('');
                 }}
                 className="flex w-full items-center gap-2 border-t border-stone-100 px-3 py-2 text-left text-sm font-medium text-amber-600 transition-colors hover:bg-amber-50 dark:border-stone-800 dark:text-amber-400 dark:hover:bg-amber-950/20"
               >
@@ -196,23 +203,30 @@ export function SearchField({
           </div>
         </div>
       ) : (
-        <div
-          onClick={() => setOpen(true)}
-          className="hover:bg-accent/5 hover:border-border cursor-pointer rounded-lg border border-transparent px-3 py-2 text-sm transition-all"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {displayValue ?? (
-                <span className={value ? 'text-foreground' : 'text-muted-foreground'}>
-                  {placeholder ?? 'Not set'}
-                </span>
-              )}
+        <div className="flex items-center gap-2">
+          <div
+            onClick={() => setOpen(true)}
+            className={cn(
+              'flex-1 cursor-pointer rounded-lg border border-transparent px-3 py-2 text-sm transition-all',
+              'hover:bg-accent/5 hover:border-border',
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {displayValue ??
+                  (hasValue ? (
+                    <span className="text-foreground">{value}</span>
+                  ) : (
+                    <span className="text-muted-foreground">{placeholder ?? 'Not set'}</span>
+                  ))}
+              </div>
+              <Pencil
+                size={12}
+                className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
+              />
             </div>
-            <Pencil
-              size={12}
-              className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
-            />
           </div>
+          {newBadge}
         </div>
       )}
     </div>
