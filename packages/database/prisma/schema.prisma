@@ -212,6 +212,7 @@ enum LeadSourceEnum {
 model Lead {
   id          String         @id @default(uuid())
   code        String         @unique
+  name        String?
   contactName String         @map("contact_name")
   phone       String?
   email       String?

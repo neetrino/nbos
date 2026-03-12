@@ -67,16 +67,18 @@ export function LeadSheet({
     await onUpdate(lead.id, payload as Partial<Lead>);
   };
 
+  const leadTitle = lead.name || lead.contactName;
+
   const startEditingName = () => {
-    setNameValue(lead.contactName);
+    setNameValue(lead.name ?? '');
     setEditingName(true);
   };
 
   const saveLeadName = () => {
     const trimmed = nameValue.trim();
     setEditingName(false);
-    if (trimmed && trimmed !== lead.contactName) {
-      onUpdate(lead.id, { contactName: trimmed } as Partial<Lead>);
+    if (trimmed !== (lead.name ?? '')) {
+      onUpdate(lead.id, { name: trimmed || null } as Partial<Lead>);
     }
   };
 
@@ -158,7 +160,7 @@ export function LeadSheet({
               className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
               title="Click to edit lead name"
             >
-              {lead.contactName}
+              {leadTitle}
             </h2>
           )}
           <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-sm">

@@ -172,6 +172,7 @@ export type ExtensionScalarFieldEnum =
 export const LeadScalarFieldEnum = {
   id: 'id',
   code: 'code',
+  name: 'name',
   contactName: 'contactName',
   phone: 'phone',
   email: 'email',

@@ -31,6 +31,7 @@ interface CreateLeadDialogProps {
 export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDialogProps) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
+    name: '',
     contactName: '',
     phone: '',
     email: '',
@@ -44,6 +45,7 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
 
   const reset = () => {
     setForm({
+      name: '',
       contactName: '',
       phone: '',
       email: '',
@@ -60,6 +62,7 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
     setLoading(true);
     try {
       await leadsApi.create({
+        name: form.name || undefined,
         contactName: form.contactName,
         phone: form.phone || undefined,
         email: form.email || undefined,
@@ -83,12 +86,21 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <Label>Lead Name</Label>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="e.g. Website redesign, Mobile app"
+              autoFocus
+            />
+          </div>
+
+          <div>
             <Label>Contact Name *</Label>
             <Input
               value={form.contactName}
               onChange={(e) => setForm({ ...form, contactName: e.target.value })}
-              placeholder="John Smith or Company Name"
-              autoFocus
+              placeholder="John Smith"
             />
           </div>
 

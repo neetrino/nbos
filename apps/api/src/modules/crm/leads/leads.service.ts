@@ -3,6 +3,7 @@ import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 
 interface CreateLeadDto {
+  name?: string;
   contactName: string;
   phone?: string;
   email?: string;
@@ -12,6 +13,7 @@ interface CreateLeadDto {
 }
 
 interface UpdateLeadDto {
+  name?: string;
   contactName?: string;
   phone?: string;
   email?: string;
@@ -61,6 +63,7 @@ export class LeadsService {
     }
     if (search) {
       where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
         { contactName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
@@ -112,6 +115,7 @@ export class LeadsService {
     return this.prisma.lead.create({
       data: {
         code,
+        name: data.name,
         contactName: data.contactName,
         phone: data.phone,
         email: data.email,
@@ -131,6 +135,7 @@ export class LeadsService {
     return this.prisma.lead.update({
       where: { id },
       data: {
+        ...(data.name !== undefined && { name: data.name }),
         ...(data.contactName && { contactName: data.contactName }),
         ...(data.phone !== undefined && { phone: data.phone }),
         ...(data.email !== undefined && { email: data.email }),

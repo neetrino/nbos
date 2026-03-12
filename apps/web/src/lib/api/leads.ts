@@ -3,6 +3,7 @@ import { api } from '../api';
 export interface Lead {
   id: string;
   code: string;
+  name: string | null;
   contactName: string;
   phone: string | null;
   email: string | null;
@@ -55,6 +56,7 @@ export const leadsApi = {
   },
 
   async create(data: {
+    name?: string;
     contactName: string;
     phone?: string;
     email?: string;

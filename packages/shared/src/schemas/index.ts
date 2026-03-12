@@ -19,6 +19,7 @@ export const searchSchema = z.object({
 });
 
 export const createLeadSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
   contactName: z.string().min(1).max(200),
   phone: z.string().max(50).optional(),
   email: z.string().email().max(200).optional(),
@@ -27,6 +28,7 @@ export const createLeadSchema = z.object({
 });
 
 export const updateLeadSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
   contactName: z.string().min(1).max(200).optional(),
   phone: z.string().max(50).optional(),
   email: z.string().email().max(200).optional(),

@@ -78,6 +78,7 @@ export class LeadsController {
   async create(
     @Body()
     body: {
+      name?: string;
       contactName: string;
       phone?: string;
       email?: string;
@@ -96,6 +97,7 @@ export class LeadsController {
     @Param('id') id: string,
     @Body()
     body: {
+      name?: string;
       contactName?: string;
       phone?: string;
       email?: string;

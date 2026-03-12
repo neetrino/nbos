@@ -230,7 +230,8 @@ export default function LeadsPipelinePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Lead Name</TableHead>
+                <TableHead>Contact</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Source</TableHead>
@@ -249,7 +250,8 @@ export default function LeadsPipelinePage() {
                     className="cursor-pointer"
                     onClick={() => handleCardClick(lead)}
                   >
-                    <TableCell className="font-medium">{lead.contactName}</TableCell>
+                    <TableCell className="font-medium">{lead.name || lead.code}</TableCell>
+                    <TableCell className="text-muted-foreground">{lead.contactName}</TableCell>
                     <TableCell className="text-muted-foreground">{lead.phone ?? '—'}</TableCell>
                     <TableCell className="text-muted-foreground">{lead.email ?? '—'}</TableCell>
                     <TableCell>
