@@ -51,6 +51,7 @@ export function InlineField({
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
+  const [selectOpen, setSelectOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -63,6 +64,9 @@ export function InlineField({
     if (!editable || !onSave) return;
     setEditValue(String(value ?? ''));
     setEditing(true);
+    if (type === 'select') {
+      setSelectOpen(true);
+    }
   };
 
   const handleSave = async () => {
@@ -104,9 +108,16 @@ export function InlineField({
         <div className="flex items-start gap-1.5">
           {type === 'select' && options ? (
             <Select
+              open={selectOpen}
+              onOpenChange={(open) => {
+                setSelectOpen(open);
+                if (!open) setEditing(false);
+              }}
               value={editValue || undefined}
               onValueChange={(v) => {
+                if (v === null) return;
                 setEditValue(v);
+                setSelectOpen(false);
                 if (onSave) {
                   setSaving(true);
                   Promise.resolve(onSave(v)).then(() => {
@@ -116,7 +127,7 @@ export function InlineField({
                 }
               }}
             >
-              <SelectTrigger className="h-8 text-sm">
+              <SelectTrigger className="h-8 w-full text-sm">
                 <SelectValue placeholder={placeholder ?? 'Select...'} />
               </SelectTrigger>
               <SelectContent>

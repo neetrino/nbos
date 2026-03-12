@@ -94,8 +94,11 @@ export class DealsController {
     @Body()
     body: {
       status?: string;
+      type?: string;
       amount?: number;
       paymentType?: string;
+      contactId?: string;
+      projectId?: string | null;
       notes?: string;
     },
   ) {

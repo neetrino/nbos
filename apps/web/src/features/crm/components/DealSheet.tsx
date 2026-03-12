@@ -49,7 +49,7 @@ export function DealSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[88vw] sm:max-w-[1200px]"
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[92vw] sm:max-w-[1400px]"
       >
         {/* ── Header ── */}
         <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-6 pr-14 pb-4 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">

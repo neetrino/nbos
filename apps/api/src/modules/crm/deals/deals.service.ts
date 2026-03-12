@@ -16,8 +16,11 @@ interface CreateDealDto {
 
 interface UpdateDealDto {
   status?: string;
+  type?: string;
   amount?: number;
   paymentType?: string;
+  contactId?: string;
+  projectId?: string | null;
   notes?: string;
 }
 
@@ -142,15 +145,19 @@ export class DealsService {
       where: { id },
       data: {
         ...(data.status && { status: data.status as Prisma.DealUpdateInput['status'] }),
+        ...(data.type && { type: data.type as Prisma.DealUpdateInput['type'] }),
         ...(data.amount !== undefined && { amount: data.amount }),
         ...(data.paymentType && {
           paymentType: data.paymentType as Prisma.DealUpdateInput['paymentType'],
         }),
+        ...(data.contactId && { contactId: data.contactId }),
+        ...(data.projectId !== undefined && { projectId: data.projectId }),
         ...(data.notes !== undefined && { notes: data.notes }),
       },
       include: {
-        contact: { select: { id: true, firstName: true, lastName: true } },
+        contact: { select: { id: true, firstName: true, lastName: true, email: true } },
         seller: { select: { id: true, firstName: true, lastName: true } },
+        orders: { select: { id: true, code: true, status: true, totalAmount: true } },
       },
     });
   }

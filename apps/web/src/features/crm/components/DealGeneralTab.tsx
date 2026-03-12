@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
 import {
   DollarSign,
   User,
@@ -15,12 +15,11 @@ import {
   FolderKanban,
   Layers,
 } from 'lucide-react';
-import { InlineField, StatusBadge } from '@/components/shared';
-import { Separator } from '@/components/ui/separator';
+import { InlineField, SearchField, StatusBadge } from '@/components/shared';
 import { DEAL_TYPES, PRODUCT_TYPES, PAYMENT_TYPES, formatAmount } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
-import { contactsApi, type Contact } from '@/lib/api/clients';
-import { projectsApi, type Project } from '@/lib/api/projects';
+import { contactsApi } from '@/lib/api/clients';
+import { projectsApi } from '@/lib/api/projects';
 
 interface DealGeneralTabProps {
   deal: Deal;
@@ -28,29 +27,39 @@ interface DealGeneralTabProps {
 }
 
 export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-
-  useEffect(() => {
-    contactsApi
-      .getAll({ pageSize: 200 })
-      .then((d) => setContacts(d.items))
-      .catch(() => {});
-    projectsApi
-      .getAll({ pageSize: 200 })
-      .then((d) => setProjects(d.items))
-      .catch(() => {});
-  }, []);
-
-  const saveField = async (field: string, value: string) => {
+  const saveField = async (field: string, value: string | number | null) => {
     const payload: Record<string, unknown> = {};
     if (field === 'amount') {
-      payload[field] = value ? Number(value) : null;
+      payload[field] = typeof value === 'string' ? (value ? Number(value) : null) : value;
     } else {
       payload[field] = value || null;
     }
     await onUpdate(deal.id, payload as Partial<Deal>);
   };
+
+  const searchProjects = useCallback(async (query: string) => {
+    const data = await projectsApi.getAll({
+      pageSize: 20,
+      search: query || undefined,
+    });
+    return data.items.map((p) => ({
+      value: p.id,
+      label: p.name,
+      subtitle: p.code,
+    }));
+  }, []);
+
+  const searchContacts = useCallback(async (query: string) => {
+    const data = await contactsApi.getAll({
+      pageSize: 20,
+      search: query || undefined,
+    });
+    return data.items.map((c) => ({
+      value: c.id,
+      label: `${c.firstName} ${c.lastName}`,
+      subtitle: c.email ?? undefined,
+    }));
+  }, []);
 
   const dealTypeLabel = DEAL_TYPES.find((t) => t.value === deal.type)?.label ?? deal.type;
   const isExtension = deal.type === 'EXTENSION';
@@ -163,17 +172,15 @@ export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
           <FolderKanban size={12} />
           Project
         </h4>
-        <InlineField
+        <SearchField
           label="Linked Project"
           value={null}
-          type="select"
-          options={[
-            { value: '__NEW__', label: '＋ New Project' },
-            ...projects.map((p) => ({ value: p.id, label: `${p.name} (${p.code})` })),
-          ]}
-          placeholder="Search or create project..."
+          placeholder="Search projects..."
           icon={<FolderKanban size={12} />}
+          onSearch={searchProjects}
           onSave={(v) => saveField('projectId', v)}
+          onNew={() => saveField('projectId', '__NEW__')}
+          newLabel="New Project"
         />
       </section>
 
@@ -184,9 +191,9 @@ export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
           Contact & Team
         </h4>
         <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-          <InlineField
+          <SearchField
             label="Contact"
-            value={deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : ''}
+            value={deal.contact?.id ?? null}
             displayValue={
               deal.contact ? (
                 <div className="flex items-center gap-2.5">
@@ -205,13 +212,9 @@ export function DealGeneralTab({ deal, onUpdate }: DealGeneralTabProps) {
                 </div>
               ) : undefined
             }
-            type="select"
-            options={contacts.map((c) => ({
-              value: c.id,
-              label: `${c.firstName} ${c.lastName}`,
-            }))}
-            placeholder="Select contact..."
+            placeholder="Search contacts..."
             icon={<User size={12} />}
+            onSearch={searchContacts}
             onSave={(v) => saveField('contactId', v)}
           />
 
