@@ -3,6 +3,7 @@ import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 
 interface CreateDealDto {
+  name?: string;
   leadId?: string;
   contactId: string;
   type: string;
@@ -15,6 +16,7 @@ interface CreateDealDto {
 }
 
 interface UpdateDealDto {
+  name?: string;
   status?: string;
   type?: string;
   amount?: number;
@@ -65,6 +67,7 @@ export class DealsService {
     if (search) {
       where.OR = [
         { code: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
         { contact: { firstName: { contains: search, mode: 'insensitive' } } },
         { contact: { lastName: { contains: search, mode: 'insensitive' } } },
       ];
@@ -122,6 +125,7 @@ export class DealsService {
     return this.prisma.deal.create({
       data: {
         code,
+        name: data.name,
         leadId: data.leadId,
         contactId: data.contactId,
         type: data.type as Prisma.DealCreateInput['type'],
@@ -144,6 +148,7 @@ export class DealsService {
     return this.prisma.deal.update({
       where: { id },
       data: {
+        ...(data.name !== undefined && { name: data.name }),
         ...(data.status && { status: data.status as Prisma.DealUpdateInput['status'] }),
         ...(data.type && { type: data.type as Prisma.DealUpdateInput['type'] }),
         ...(data.amount !== undefined && { amount: data.amount }),

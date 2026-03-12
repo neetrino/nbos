@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Trash2, LayoutGrid, History, FileText, Phone } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -37,8 +37,43 @@ export function DealSheet({
   onDelete,
 }: DealSheetProps) {
   const [activeTab, setActiveTab] = useState('general');
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingName]);
 
   if (!deal) return null;
+
+  const dealName = deal.name || deal.code;
+
+  const startEditing = () => {
+    setNameValue(deal.name ?? '');
+    setEditingName(true);
+  };
+
+  const saveName = () => {
+    const trimmed = nameValue.trim();
+    setEditingName(false);
+    if (trimmed !== (deal.name ?? '')) {
+      onUpdate(deal.id, { name: trimmed || null } as Partial<Deal>);
+    }
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveName();
+    }
+    if (e.key === 'Escape') {
+      setEditingName(false);
+    }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -49,9 +84,25 @@ export function DealSheet({
       >
         {/* ── Header ── */}
         <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
-          <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-            {deal.contact?.firstName} {deal.contact?.lastName}
-          </h2>
+          {editingName ? (
+            <input
+              ref={nameInputRef}
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              onBlur={saveName}
+              onKeyDown={handleNameKeyDown}
+              placeholder="Deal name..."
+              className="text-foreground w-full border-0 border-b-2 border-amber-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
+            />
+          ) : (
+            <h2
+              onClick={startEditing}
+              className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+              title="Click to edit deal name"
+            >
+              {dealName}
+            </h2>
+          )}
           <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
             {deal.code}
           </p>

@@ -254,6 +254,7 @@ enum DealTypeEnum {
 model Deal {
   id          String         @id @default(uuid())
   code        String         @unique
+  name        String?
   leadId      String?        @unique @map("lead_id")
   contactId   String         @map("contact_id")
   projectId   String?        @map("project_id")

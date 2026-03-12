@@ -37,6 +37,7 @@ export const updateLeadSchema = z.object({
 });
 
 export const createDealSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
   leadId: z.string().uuid().optional(),
   contactId: z.string().uuid(),
   type: z.enum(DEAL_TYPES),
@@ -48,6 +49,7 @@ export const createDealSchema = z.object({
 });
 
 export const updateDealSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
   status: z.enum(DEAL_STATUSES).optional(),
   amount: z.number().positive().optional(),
   paymentType: z.enum(PAYMENT_TYPES).optional(),

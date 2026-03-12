@@ -3,6 +3,7 @@ import { api } from '../api';
 export interface Deal {
   id: string;
   code: string;
+  name: string | null;
   status: string;
   type: string;
   amount: number | null;

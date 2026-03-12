@@ -72,6 +72,7 @@ export class DealsController {
   async create(
     @Body()
     body: {
+      name?: string;
       leadId?: string;
       contactId: string;
       type: string;
@@ -93,6 +94,7 @@ export class DealsController {
     @Param('id') id: string,
     @Body()
     body: {
+      name?: string;
       status?: string;
       type?: string;
       amount?: number;

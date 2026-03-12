@@ -136,7 +136,6 @@ export default function DealsPipelinePage() {
   }));
 
   const totalCount = deals.length;
-  const totalAmount = deals.reduce((sum, d) => sum + (d.amount ?? 0), 0);
   const activeCount = deals.filter((d) => d.status !== 'FAILED' && d.status !== 'WON').length;
 
   const filterConfigs = [
@@ -157,7 +156,7 @@ export default function DealsPipelinePage() {
       <div className="shrink-0">
         <PageHeader
           title="Deal Pipeline"
-          description={`${totalCount} deals · ${activeCount} active · Pipeline: ${formatAmount(totalAmount)}`}
+          description={`${totalCount} deals · ${activeCount} active`}
         >
           <Button variant="outline" size="icon" onClick={fetchDeals}>
             <RefreshCcw size={16} />

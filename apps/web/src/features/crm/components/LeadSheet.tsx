@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Phone,
   Mail,
@@ -42,6 +42,17 @@ export function LeadSheet({
   onConvertToDeal,
   onDelete,
 }: LeadSheetProps) {
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingName]);
+
   if (!lead) return null;
 
   const stage = getLeadStage(lead.status);
@@ -54,6 +65,29 @@ export function LeadSheet({
     const payload: Record<string, unknown> = {};
     payload[field] = value || null;
     await onUpdate(lead.id, payload as Partial<Lead>);
+  };
+
+  const startEditingName = () => {
+    setNameValue(lead.contactName);
+    setEditingName(true);
+  };
+
+  const saveLeadName = () => {
+    const trimmed = nameValue.trim();
+    setEditingName(false);
+    if (trimmed && trimmed !== lead.contactName) {
+      onUpdate(lead.id, { contactName: trimmed } as Partial<Lead>);
+    }
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveLeadName();
+    }
+    if (e.key === 'Escape') {
+      setEditingName(false);
+    }
   };
 
   return (
@@ -108,7 +142,25 @@ export function LeadSheet({
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h2 className="text-foreground text-xl font-bold">{lead.contactName}</h2>
+          {editingName ? (
+            <input
+              ref={nameInputRef}
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              onBlur={saveLeadName}
+              onKeyDown={handleNameKeyDown}
+              placeholder="Lead name..."
+              className="text-foreground w-full border-0 border-b-2 border-sky-400 bg-transparent text-xl font-bold outline-none placeholder:text-stone-300"
+            />
+          ) : (
+            <h2
+              onClick={startEditingName}
+              className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+              title="Click to edit lead name"
+            >
+              {lead.contactName}
+            </h2>
+          )}
           <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-sm">
             <span className="font-mono">{lead.code}</span>
             {stage && (
