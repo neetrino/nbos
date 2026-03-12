@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { DEAL_STAGES } from '../constants/dealPipeline';
 
-/** Hex-цвет каждого этапа — свой уникальный */
 const STAGE_HEX: Record<string, string> = {
   START_CONVERSATION: '#56b5eb',
   DISCUSS_NEEDS: '#39a0d8',
@@ -66,7 +65,7 @@ export function DealPipelineStages({ currentStatus, onStageClick }: DealPipeline
             onClick={() => onStageClick(stage.key)}
             onMouseEnter={() => setHoverIdx(i)}
             title={stage.label}
-            className="relative flex-1 cursor-pointer transition-all duration-100 active:scale-[0.98]"
+            className="relative flex-1 cursor-pointer active:scale-[0.98]"
             style={{
               height: H,
               marginLeft: isFirst ? 0 : -ARROW_W,
@@ -81,7 +80,6 @@ export function DealPipelineStages({ currentStatus, onStageClick }: DealPipeline
               viewBox={`0 0 100 ${H}`}
               style={{ overflow: 'visible' }}
             >
-              {/* Основная форма chevron */}
               <path
                 d={
                   isFirst
@@ -94,8 +92,8 @@ export function DealPipelineStages({ currentStatus, onStageClick }: DealPipeline
                 stroke={filled ? 'rgba(255,255,255,0.3)' : '#ddd'}
                 strokeWidth="0.5"
                 vectorEffect="non-scaling-stroke"
+                style={{ transition: 'fill 250ms ease' }}
               />
-              {/* Тонкая полоска снизу — показывает собственный цвет будущих этапов */}
               {isFuture && (
                 <rect
                   x={isFirst ? 0 : ARROW_W}
@@ -104,12 +102,13 @@ export function DealPipelineStages({ currentStatus, onStageClick }: DealPipeline
                   height="3"
                   fill={ownColor}
                   rx="0.5"
+                  style={{ transition: 'opacity 250ms ease' }}
                 />
               )}
             </svg>
             <span
               className="relative z-10 flex h-full items-center justify-center truncate px-1 text-[10px] leading-none font-semibold"
-              style={{ color: textColor }}
+              style={{ color: textColor, transition: 'color 250ms ease' }}
             >
               {stage.shortLabel}
             </span>

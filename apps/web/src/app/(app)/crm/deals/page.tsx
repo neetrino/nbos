@@ -66,30 +66,57 @@ export default function DealsPipelinePage() {
   }, [fetchDeals]);
 
   const handleStatusChange = async (id: string, status: string) => {
+    const previousDeals = deals;
+    const previousSelected = selectedDeal;
+
+    setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
+    if (selectedDeal?.id === id) {
+      setSelectedDeal((prev) => (prev ? { ...prev, status } : prev));
+    }
+
     try {
       await dealsApi.updateStatus(id, status);
-      await fetchDeals();
-      if (selectedDeal?.id === id) {
-        const updated = await dealsApi.getById(id);
-        setSelectedDeal(updated);
-      }
     } catch {
-      /* handled by API layer */
+      setDeals(previousDeals);
+      if (selectedDeal?.id === id) {
+        setSelectedDeal(previousSelected);
+      }
     }
   };
 
   const handleUpdate = async (id: string, data: Partial<Deal>) => {
-    await dealsApi.update(id, data);
-    await fetchDeals();
-    const updated = await dealsApi.getById(id);
-    setSelectedDeal(updated);
+    const previousDeals = deals;
+    const previousSelected = selectedDeal;
+
+    setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...data } : d)));
+    if (selectedDeal?.id === id) {
+      setSelectedDeal((prev) => (prev ? { ...prev, ...data } : prev));
+    }
+
+    try {
+      const updated = await dealsApi.update(id, data);
+      setDeals((prev) => prev.map((d) => (d.id === id ? updated : d)));
+      if (selectedDeal?.id === id) {
+        setSelectedDeal(updated);
+      }
+    } catch {
+      setDeals(previousDeals);
+      setSelectedDeal(previousSelected);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    await dealsApi.delete(id);
+    const previousDeals = deals;
+
     setSheetOpen(false);
     setSelectedDeal(null);
-    await fetchDeals();
+    setDeals((prev) => prev.filter((d) => d.id !== id));
+
+    try {
+      await dealsApi.delete(id);
+    } catch {
+      setDeals(previousDeals);
+    }
   };
 
   const handleCardClick = (deal: Deal) => {
@@ -97,8 +124,8 @@ export default function DealsPipelinePage() {
     setSheetOpen(true);
   };
 
-  const handleMove = async (itemId: string, _from: string, toColumn: string) => {
-    await handleStatusChange(itemId, toColumn);
+  const handleMove = (itemId: string, _from: string, toColumn: string) => {
+    handleStatusChange(itemId, toColumn);
   };
 
   const kanbanColumns: KanbanColumn<Deal>[] = DEAL_STAGES.map((stage) => ({

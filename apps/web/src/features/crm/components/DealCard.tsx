@@ -24,7 +24,7 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
 
   return (
     <div
-      className={`group cursor-pointer rounded-xl border p-4 transition-all hover:shadow-md ${
+      className={`group cursor-pointer rounded-xl border p-4 transition-all duration-200 hover:shadow-md ${
         isExtension
           ? 'border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30'
           : 'border-border bg-card'
