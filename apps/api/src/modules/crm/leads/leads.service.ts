@@ -141,6 +141,7 @@ export class LeadsService {
       },
       include: {
         assignee: { select: { id: true, firstName: true, lastName: true } },
+        deal: { select: { id: true, code: true, status: true } },
       },
     });
   }

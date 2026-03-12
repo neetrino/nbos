@@ -160,6 +160,7 @@ export class DealsService {
         ...(data.notes !== undefined && { notes: data.notes }),
       },
       include: {
+        lead: { select: { id: true, code: true, contactName: true } },
         contact: { select: { id: true, firstName: true, lastName: true, email: true } },
         seller: { select: { id: true, firstName: true, lastName: true } },
         orders: { select: { id: true, code: true, status: true, totalAmount: true } },

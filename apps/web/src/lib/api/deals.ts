@@ -49,6 +49,7 @@ export const dealsApi = {
   },
 
   async create(data: {
+    name?: string;
     leadId?: string;
     contactId: string;
     type: string;
