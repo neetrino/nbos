@@ -85,16 +85,12 @@ export default function LeadsPipelinePage() {
     const previousSelected = selectedLead;
 
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, ...data } : l)));
-    if (selectedLead?.id === id) {
-      setSelectedLead((prev) => (prev ? { ...prev, ...data } : prev));
-    }
+    setSelectedLead((prev) => (prev?.id === id ? { ...prev, ...data } : prev));
 
     try {
       const updated = await leadsApi.update(id, data);
-      setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
-      if (selectedLead?.id === id) {
-        setSelectedLead(updated);
-      }
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...updated, ...data } : l)));
+      setSelectedLead((prev) => (prev?.id === id ? { ...updated, ...data } : prev));
     } catch {
       setLeads(previousLeads);
       setSelectedLead(previousSelected);

@@ -89,16 +89,12 @@ export default function DealsPipelinePage() {
     const previousSelected = selectedDeal;
 
     setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...data } : d)));
-    if (selectedDeal?.id === id) {
-      setSelectedDeal((prev) => (prev ? { ...prev, ...data } : prev));
-    }
+    setSelectedDeal((prev) => (prev?.id === id ? { ...prev, ...data } : prev));
 
     try {
       const updated = await dealsApi.update(id, data);
-      setDeals((prev) => prev.map((d) => (d.id === id ? updated : d)));
-      if (selectedDeal?.id === id) {
-        setSelectedDeal(updated);
-      }
+      setDeals((prev) => prev.map((d) => (d.id === id ? { ...updated, ...data } : d)));
+      setSelectedDeal((prev) => (prev?.id === id ? { ...updated, ...data } : prev));
     } catch {
       setDeals(previousDeals);
       setSelectedDeal(previousSelected);
