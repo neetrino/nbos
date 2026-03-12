@@ -20,7 +20,8 @@ interface KanbanBoardProps<T> {
   emptyMessage?: string;
 }
 
-const SCROLL_AMOUNT = 300;
+const SCROLL_SPEED = 6;
+const EDGE_ZONE_WIDTH = 48;
 
 export function KanbanBoard<T>({
   columns,
@@ -38,6 +39,9 @@ export function KanbanBoard<T>({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const autoScrollDir = useRef<'left' | 'right' | null>(null);
+  const rafId = useRef<number>(0);
 
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current;
@@ -61,11 +65,29 @@ export function KanbanBoard<T>({
     };
   }, [updateScrollState, columns]);
 
-  const scrollBy = useCallback((direction: 'left' | 'right') => {
-    scrollRef.current?.scrollBy({
-      left: direction === 'left' ? -SCROLL_AMOUNT : SCROLL_AMOUNT,
-      behavior: 'smooth',
-    });
+  const startAutoScroll = useCallback((direction: 'left' | 'right') => {
+    autoScrollDir.current = direction;
+
+    const tick = () => {
+      const el = scrollRef.current;
+      if (!el || !autoScrollDir.current) return;
+
+      const delta = autoScrollDir.current === 'left' ? -SCROLL_SPEED : SCROLL_SPEED;
+      el.scrollLeft += delta;
+      rafId.current = requestAnimationFrame(tick);
+    };
+
+    cancelAnimationFrame(rafId.current);
+    rafId.current = requestAnimationFrame(tick);
+  }, []);
+
+  const stopAutoScroll = useCallback(() => {
+    autoScrollDir.current = null;
+    cancelAnimationFrame(rafId.current);
+  }, []);
+
+  useEffect(() => {
+    return () => cancelAnimationFrame(rafId.current);
   }, []);
 
   useEffect(() => {
@@ -118,39 +140,43 @@ export function KanbanBoard<T>({
 
   return (
     <div className="relative flex h-full flex-col">
-      {/* Left scroll arrow */}
-      <button
-        type="button"
-        onClick={() => scrollBy('left')}
+      {/* Left edge hover zone — auto-scrolls left on mouse enter */}
+      <div
+        onMouseEnter={() => canScrollLeft && startAutoScroll('left')}
+        onMouseLeave={stopAutoScroll}
         className={cn(
-          'absolute top-0 left-0 z-20 flex h-full w-8 items-center justify-center',
-          'from-background/90 bg-gradient-to-r to-transparent',
+          'absolute top-0 left-0 z-20 flex h-full items-center',
+          'from-background/80 bg-gradient-to-r to-transparent',
           'transition-opacity duration-200',
           canScrollLeft ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
         )}
-        aria-label="Scroll left"
+        style={{ width: EDGE_ZONE_WIDTH }}
       >
-        <div className="bg-background/80 border-border flex h-8 w-8 items-center justify-center rounded-full border shadow-sm backdrop-blur-sm">
-          <ChevronLeft size={16} className="text-muted-foreground" />
+        <div className="flex h-full w-full items-center justify-center">
+          <div className="bg-background/80 border-border flex h-7 w-7 items-center justify-center rounded-full border shadow-sm backdrop-blur-sm">
+            <ChevronLeft size={14} className="text-muted-foreground" />
+          </div>
         </div>
-      </button>
+      </div>
 
-      {/* Right scroll arrow */}
-      <button
-        type="button"
-        onClick={() => scrollBy('right')}
+      {/* Right edge hover zone — auto-scrolls right on mouse enter */}
+      <div
+        onMouseEnter={() => canScrollRight && startAutoScroll('right')}
+        onMouseLeave={stopAutoScroll}
         className={cn(
-          'absolute top-0 right-0 z-20 flex h-full w-8 items-center justify-center',
-          'from-background/90 bg-gradient-to-l to-transparent',
+          'absolute top-0 right-0 z-20 flex h-full items-center',
+          'from-background/80 bg-gradient-to-l to-transparent',
           'transition-opacity duration-200',
           canScrollRight ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
         )}
-        aria-label="Scroll right"
+        style={{ width: EDGE_ZONE_WIDTH }}
       >
-        <div className="bg-background/80 border-border flex h-8 w-8 items-center justify-center rounded-full border shadow-sm backdrop-blur-sm">
-          <ChevronRight size={16} className="text-muted-foreground" />
+        <div className="flex h-full w-full items-center justify-center">
+          <div className="bg-background/80 border-border flex h-7 w-7 items-center justify-center rounded-full border shadow-sm backdrop-blur-sm">
+            <ChevronRight size={14} className="text-muted-foreground" />
+          </div>
         </div>
-      </button>
+      </div>
 
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2">
         <div
