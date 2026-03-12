@@ -10,7 +10,6 @@ import {
   MessageSquare,
   ArrowRight,
   Trash2,
-  AlertTriangle,
   Globe,
   Link2,
   LayoutGrid,
@@ -201,24 +200,11 @@ export function LeadSheet({
               )}
             </div>
             <div className="flex gap-2">
-              {!isTerminal && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-500 hover:bg-red-500/10"
-                    onClick={() => onStatusChange(lead.id, 'SPAM')}
-                  >
-                    <AlertTriangle size={14} className="mr-1" />
-                    Spam
-                  </Button>
-                  {lead.status === 'MQL' && onConvertToDeal && (
-                    <Button size="sm" onClick={() => onConvertToDeal(lead)}>
-                      <ArrowRight size={14} className="mr-1" />
-                      Convert to Deal
-                    </Button>
-                  )}
-                </>
+              {!isTerminal && lead.status === 'MQL' && onConvertToDeal && (
+                <Button size="sm" onClick={() => onConvertToDeal(lead)}>
+                  <ArrowRight size={14} className="mr-1" />
+                  Convert to Deal
+                </Button>
               )}
             </div>
           </div>
