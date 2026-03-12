@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface KanbanColumn<T> {
@@ -19,6 +20,8 @@ interface KanbanBoardProps<T> {
   emptyMessage?: string;
 }
 
+const SCROLL_AMOUNT = 300;
+
 export function KanbanBoard<T>({
   columns,
   renderCard,
@@ -31,6 +34,39 @@ export function KanbanBoard<T>({
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
   const prevItemsRef = useRef<Map<string, string>>(new Map());
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateScrollState = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    updateScrollState();
+    el.addEventListener('scroll', updateScrollState, { passive: true });
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
+
+    return () => {
+      el.removeEventListener('scroll', updateScrollState);
+      ro.disconnect();
+    };
+  }, [updateScrollState, columns]);
+
+  const scrollBy = useCallback((direction: 'left' | 'right') => {
+    scrollRef.current?.scrollBy({
+      left: direction === 'left' ? -SCROLL_AMOUNT : SCROLL_AMOUNT,
+      behavior: 'smooth',
+    });
+  }, []);
 
   useEffect(() => {
     const currentMap = new Map<string, string>();
@@ -81,8 +117,42 @@ export function KanbanBoard<T>({
   );
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2">
+    <div className="relative flex h-full flex-col">
+      {/* Left scroll arrow */}
+      <button
+        type="button"
+        onClick={() => scrollBy('left')}
+        className={cn(
+          'absolute top-0 left-0 z-20 flex h-full w-8 items-center justify-center',
+          'from-background/90 bg-gradient-to-r to-transparent',
+          'transition-opacity duration-200',
+          canScrollLeft ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+        )}
+        aria-label="Scroll left"
+      >
+        <div className="bg-background/80 border-border flex h-8 w-8 items-center justify-center rounded-full border shadow-sm backdrop-blur-sm">
+          <ChevronLeft size={16} className="text-muted-foreground" />
+        </div>
+      </button>
+
+      {/* Right scroll arrow */}
+      <button
+        type="button"
+        onClick={() => scrollBy('right')}
+        className={cn(
+          'absolute top-0 right-0 z-20 flex h-full w-8 items-center justify-center',
+          'from-background/90 bg-gradient-to-l to-transparent',
+          'transition-opacity duration-200',
+          canScrollRight ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+        )}
+        aria-label="Scroll right"
+      >
+        <div className="bg-background/80 border-border flex h-8 w-8 items-center justify-center rounded-full border shadow-sm backdrop-blur-sm">
+          <ChevronRight size={16} className="text-muted-foreground" />
+        </div>
+      </button>
+
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2">
         <div
           className="flex h-full gap-4"
           style={{ minWidth: `${columns.length * (columnWidth + 16)}px` }}

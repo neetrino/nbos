@@ -62,30 +62,57 @@ export default function LeadsPipelinePage() {
   }, [fetchLeads]);
 
   const handleStatusChange = async (id: string, status: string) => {
+    const previousLeads = leads;
+    const previousSelected = selectedLead;
+
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+    if (selectedLead?.id === id) {
+      setSelectedLead((prev) => (prev ? { ...prev, status } : prev));
+    }
+
     try {
       await leadsApi.updateStatus(id, status);
-      await fetchLeads();
-      if (selectedLead?.id === id) {
-        const updated = await leadsApi.getById(id);
-        setSelectedLead(updated);
-      }
     } catch {
-      /* handled by API layer */
+      setLeads(previousLeads);
+      if (selectedLead?.id === id) {
+        setSelectedLead(previousSelected);
+      }
     }
   };
 
   const handleUpdate = async (id: string, data: Partial<Lead>) => {
-    await leadsApi.update(id, data);
-    await fetchLeads();
-    const updated = await leadsApi.getById(id);
-    setSelectedLead(updated);
+    const previousLeads = leads;
+    const previousSelected = selectedLead;
+
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, ...data } : l)));
+    if (selectedLead?.id === id) {
+      setSelectedLead((prev) => (prev ? { ...prev, ...data } : prev));
+    }
+
+    try {
+      const updated = await leadsApi.update(id, data);
+      setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
+      if (selectedLead?.id === id) {
+        setSelectedLead(updated);
+      }
+    } catch {
+      setLeads(previousLeads);
+      setSelectedLead(previousSelected);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    await leadsApi.delete(id);
+    const previousLeads = leads;
+
     setSheetOpen(false);
     setSelectedLead(null);
-    await fetchLeads();
+    setLeads((prev) => prev.filter((l) => l.id !== id));
+
+    try {
+      await leadsApi.delete(id);
+    } catch {
+      setLeads(previousLeads);
+    }
   };
 
   const handleCardClick = (lead: Lead) => {
@@ -93,8 +120,8 @@ export default function LeadsPipelinePage() {
     setSheetOpen(true);
   };
 
-  const handleMove = async (itemId: string, _from: string, toColumn: string) => {
-    await handleStatusChange(itemId, toColumn);
+  const handleMove = (itemId: string, _from: string, toColumn: string) => {
+    handleStatusChange(itemId, toColumn);
   };
 
   const kanbanColumns: KanbanColumn<Lead>[] = LEAD_STAGES.map((stage) => ({
