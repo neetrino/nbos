@@ -234,10 +234,10 @@ export default function DealsPipelinePage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Name</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Payment</TableHead>
                 <TableHead>Stage</TableHead>
                 <TableHead>Seller</TableHead>
                 <TableHead>Created</TableHead>
@@ -254,11 +254,12 @@ export default function DealsPipelinePage() {
                   >
                     <TableCell>
                       <div>
-                        <p className="font-medium">
-                          {deal.contact?.firstName} {deal.contact?.lastName}
-                        </p>
+                        <p className="font-medium">{deal.name || deal.code}</p>
                         <p className="text-muted-foreground text-xs">{deal.code}</p>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : '—'}
                     </TableCell>
                     <TableCell className="font-semibold">{formatAmount(deal.amount)}</TableCell>
                     <TableCell>
@@ -266,9 +267,6 @@ export default function DealsPipelinePage() {
                         label={deal.type.replace(/_/g, ' ')}
                         variant={deal.type === 'EXTENSION' ? 'blue' : 'default'}
                       />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {deal.paymentType?.replace(/_/g, ' ') ?? '—'}
                     </TableCell>
                     <TableCell>
                       {stage && (

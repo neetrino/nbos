@@ -41,6 +41,7 @@ export function CreateDealDialog({
 }: CreateDealDialogProps) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
+    name: '',
     contactId: prefill?.contactId ?? ('' as string),
     type: 'NEW_CLIENT',
     amount: '',
@@ -57,6 +58,7 @@ export function CreateDealDialog({
     setLoading(true);
     try {
       await dealsApi.create({
+        name: form.name || undefined,
         leadId: prefill?.leadId,
         contactId: form.contactId,
         type: form.type,
@@ -86,6 +88,15 @@ export function CreateDealDialog({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label>Deal Name</Label>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="e.g. Website redesign, Mobile app"
+            />
+          </div>
+
           {!prefill?.contactId && (
             <div>
               <Label>Contact ID *</Label>

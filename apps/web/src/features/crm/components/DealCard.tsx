@@ -1,6 +1,6 @@
 'use client';
 
-import { DollarSign, User, Briefcase, Calendar, MoreHorizontal, Link2 } from 'lucide-react';
+import { DollarSign, User, Briefcase, MoreHorizontal, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -38,7 +38,7 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
             {isExtension && <StatusBadge label="Extension" variant="blue" className="text-[9px]" />}
           </div>
           <h4 className="text-foreground mt-0.5 truncate text-sm font-semibold">
-            {deal.contact?.firstName} {deal.contact?.lastName}
+            {deal.name || deal.code}
           </h4>
         </div>
         <DropdownMenu>
@@ -78,6 +78,14 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
       </div>
 
       <div className="mt-2.5 space-y-1">
+        {deal.contact && (
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            <User size={11} />
+            <span>
+              {deal.contact.firstName} {deal.contact.lastName}
+            </span>
+          </div>
+        )}
         <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
           <Briefcase size={11} />
           <span>{deal.type.replace(/_/g, ' ')}</span>
@@ -86,14 +94,6 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
           <div className="text-foreground flex items-center gap-1.5 text-sm font-semibold">
             <DollarSign size={13} className="text-accent" />
             <span>{formatAmount(deal.amount)}</span>
-          </div>
-        )}
-        {deal.seller && (
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <User size={11} />
-            <span>
-              {deal.seller.firstName} {deal.seller.lastName}
-            </span>
           </div>
         )}
       </div>
