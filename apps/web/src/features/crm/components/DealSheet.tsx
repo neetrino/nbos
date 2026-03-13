@@ -80,7 +80,7 @@ export function DealSheet({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[92vw] sm:max-w-[1400px]"
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[90vw] sm:max-w-none"
       >
         {/* ── Header ── */}
         <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
