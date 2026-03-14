@@ -7,7 +7,6 @@ import {
   RefreshCcw,
   FolderKanban,
   LayoutDashboard,
-  Box,
   ListChecks,
   Ticket,
   KeyRound,
@@ -20,7 +19,6 @@ import { StatusBadge } from '@/components/shared';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { getProjectType } from '@/features/projects/constants/projects';
 import { OverviewTab } from '@/features/projects/components/tabs/OverviewTab';
-import { ProductsTab } from '@/features/projects/components/tabs/ProductsTab';
 import { TasksTab } from '@/features/projects/components/tabs/TasksTab';
 import { SupportTab } from '@/features/projects/components/tabs/SupportTab';
 import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
@@ -28,7 +26,6 @@ import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { value: 'products', label: 'Products', icon: Box },
   { value: 'tasks', label: 'Tasks', icon: ListChecks },
   { value: 'support', label: 'Support', icon: Ticket },
   { value: 'credentials', label: 'Credentials', icon: KeyRound },
@@ -109,22 +106,6 @@ export default function ProjectDetailPage() {
             <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
               <tab.icon size={14} />
               <span className="hidden sm:inline">{tab.label}</span>
-              {tab.value === 'tasks' && project.tasks.length > 0 && (
-                <span className="bg-muted ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-                  {
-                    project.tasks.filter((t) => t.status !== 'DONE' && t.status !== 'CANCELLED')
-                      .length
-                  }
-                </span>
-              )}
-              {tab.value === 'support' && project.tickets.length > 0 && (
-                <span className="bg-muted ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
-                  {
-                    project.tickets.filter((t) => t.status !== 'CLOSED' && t.status !== 'RESOLVED')
-                      .length
-                  }
-                </span>
-              )}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -133,12 +114,8 @@ export default function ProjectDetailPage() {
           <OverviewTab project={project} />
         </TabsContent>
 
-        <TabsContent value="products" className="mt-5">
-          <ProductsTab products={project.products} extensions={project.extensions} />
-        </TabsContent>
-
         <TabsContent value="tasks" className="mt-5">
-          <TasksTab tasks={project.tasks} />
+          <TasksTab projectId={project.id} />
         </TabsContent>
 
         <TabsContent value="support" className="mt-5">

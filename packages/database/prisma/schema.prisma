@@ -71,7 +71,7 @@ model Company {
   @@map("companies")
 }
 
-// ─── PROJECT & PRODUCT ────────────────────────────────────
+// ─── PROJECT ──────────────────────────────────────────────
 
 enum ProjectType {
   WHITE_LABEL
@@ -98,97 +98,16 @@ model Project {
   company       Company?       @relation(fields: [companyId], references: [id])
   seller        Employee?      @relation("ProjectSeller", fields: [sellerId], references: [id])
   pm            Employee?      @relation("ProjectPM", fields: [pmId], references: [id])
-  products      Product[]
-  extensions    Extension[]
   orders        Order[]
   subscriptions Subscription[]
   credentials   Credential[]
   domains       Domain[]
-  tasks         Task[]
   tickets       SupportTicket[]
   expenses      Expense[]
   bonusEntries  BonusEntry[]
   auditLogs     AuditLog[]
 
   @@map("projects")
-}
-
-enum ProductTypeEnum {
-  WEBSITE
-  MOBILE_APP
-  CRM
-  LOGO
-  SMM
-  SEO
-  OTHER
-}
-
-enum ProductStatusEnum {
-  NEW
-  CREATING
-  DEVELOPMENT
-  QA
-  TRANSFER
-  ON_HOLD
-  DONE
-  LOST
-}
-
-model Product {
-  id                  String            @id @default(uuid())
-  projectId           String            @map("project_id")
-  name                String
-  productType         ProductTypeEnum   @map("product_type")
-  status              ProductStatusEnum @default(NEW)
-  pmId                String?           @map("pm_id")
-  deadline            DateTime?
-  checklistTemplateId String?           @map("checklist_template_id")
-  createdAt           DateTime          @default(now()) @map("created_at")
-  updatedAt           DateTime          @updatedAt @map("updated_at")
-
-  project    Project        @relation(fields: [projectId], references: [id])
-  pm         Employee?      @relation("ProductPM", fields: [pmId], references: [id])
-  order      Order?
-  extensions Extension[]
-  tasks      Task[]
-  tickets    SupportTicket[]
-
-  @@map("products")
-}
-
-enum ExtensionSize {
-  MICRO
-  SMALL
-  MEDIUM
-  LARGE
-}
-
-enum ExtensionStatus {
-  NEW
-  IN_PROGRESS
-  REVIEW
-  DONE
-  CANCELLED
-}
-
-model Extension {
-  id         String          @id @default(uuid())
-  projectId  String          @map("project_id")
-  productId  String?         @map("product_id")
-  name       String
-  size       ExtensionSize   @default(SMALL)
-  status     ExtensionStatus @default(NEW)
-  assignedTo String?         @map("assigned_to")
-  createdAt  DateTime        @default(now()) @map("created_at")
-  updatedAt  DateTime        @updatedAt @map("updated_at")
-
-  project  Project   @relation(fields: [projectId], references: [id])
-  product  Product?  @relation(fields: [productId], references: [id])
-  assignee Employee? @relation("ExtensionAssignee", fields: [assignedTo], references: [id])
-  order    Order?
-  tasks    Task[]
-
-  @@map("extensions")
 }
 
 // ─── CRM ──────────────────────────────────────────────────
@@ -276,6 +195,9 @@ model Deal {
   sourcePartnerId  String?           @map("source_partner_id")
   sourceContactId  String?           @map("source_contact_id")
   notes            String?
+  productType      String?           @map("product_type")
+  pmId             String?           @map("pm_id")
+  deadline         DateTime?
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
 
@@ -283,6 +205,7 @@ model Deal {
   contact       Contact  @relation(fields: [contactId], references: [id])
   company       Company? @relation(fields: [companyId], references: [id])
   seller        Employee @relation("DealSeller", fields: [sellerId], references: [id])
+  pm            Employee? @relation("DealPM", fields: [pmId], references: [id])
   sourcePartner Partner? @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
   sourceContact Contact? @relation("DealSourceContact", fields: [sourceContactId], references: [id])
   orders        Order[]
@@ -315,8 +238,6 @@ model Order {
   code                 String           @unique
   projectId            String           @map("project_id")
   dealId               String?          @map("deal_id")
-  productId            String?          @unique @map("product_id")
-  extensionId          String?          @unique @map("extension_id")
   type                 OrderTypeEnum
   paymentType          PaymentTypeEnum  @map("payment_type")
   totalAmount          Decimal          @map("total_amount") @db.Decimal(12, 2)
@@ -333,8 +254,6 @@ model Order {
 
   project      Project      @relation(fields: [projectId], references: [id])
   deal         Deal?        @relation(fields: [dealId], references: [id])
-  product      Product?     @relation(fields: [productId], references: [id])
-  extension    Extension?   @relation(fields: [extensionId], references: [id])
   partner      Partner?     @relation(fields: [partnerId], references: [id])
   invoices     Invoice[]
   bonusEntries BonusEntry[]
@@ -535,14 +454,13 @@ model BonusEntry {
   @@map("bonus_entries")
 }
 
-// ─── TASKS & SUPPORT ──────────────────────────────────────
+// ─── TASKS ────────────────────────────────────────────────
 
 enum TaskStatusEnum {
-  BACKLOG
-  TODO
+  NEW
   IN_PROGRESS
-  REVIEW
   DONE
+  DEFERRED
   CANCELLED
 }
 
@@ -554,33 +472,121 @@ enum TaskPriorityEnum {
 }
 
 model Task {
-  id           String           @id @default(uuid())
-  code         String           @unique
-  title        String
-  description  String?
-  projectId    String           @map("project_id")
-  productId    String?          @map("product_id")
-  extensionId  String?          @map("extension_id")
-  creatorId    String           @map("creator_id")
-  assigneeId   String?          @map("assignee_id")
-  coAssignees  String[]         @map("co_assignees")
-  observers    String[]
-  status       TaskStatusEnum   @default(BACKLOG)
-  priority     TaskPriorityEnum @default(NORMAL)
-  sprintId     String?          @map("sprint_id")
-  dueDate      DateTime?        @map("due_date")
-  hasChat      Boolean          @default(false) @map("has_chat")
-  createdAt    DateTime         @default(now()) @map("created_at")
-  updatedAt    DateTime         @updatedAt @map("updated_at")
+  id              String           @id @default(uuid())
+  code            String           @unique
+  title           String
+  description     String?
+  creatorId       String           @map("creator_id")
+  assigneeId      String?          @map("assignee_id")
+  coAssignees     String[]         @map("co_assignees")
+  observers       String[]
+  status          TaskStatusEnum   @default(NEW)
+  priority        TaskPriorityEnum @default(NORMAL)
+  startDate       DateTime?        @map("start_date")
+  dueDate         DateTime?        @map("due_date")
+  completedAt     DateTime?        @map("completed_at")
+  parentId        String?          @map("parent_id")
+  kanbanStageId   String?          @map("kanban_stage_id")
+  myPlanStageId   String?          @map("my_plan_stage_id")
+  myPlanSortOrder Int              @default(0) @map("my_plan_sort_order")
+  chatId          String?          @unique @map("chat_id")
+  isRecurring     Boolean          @default(false) @map("is_recurring")
+  templateTaskId  String?          @map("template_task_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
 
-  project   Project    @relation(fields: [projectId], references: [id])
-  product   Product?   @relation(fields: [productId], references: [id])
-  extension Extension? @relation(fields: [extensionId], references: [id])
-  creator   Employee   @relation("TaskCreator", fields: [creatorId], references: [id])
-  assignee  Employee?  @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  creator    Employee        @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee   Employee?       @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  parent     Task?           @relation("TaskSubtasks", fields: [parentId], references: [id])
+  subtasks   Task[]          @relation("TaskSubtasks")
+  links      TaskLink[]
+  checklists TaskChecklist[]
 
   @@map("tasks")
 }
+
+model TaskLink {
+  id         String   @id @default(uuid())
+  taskId     String   @map("task_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, entityType, entityId])
+  @@index([entityType, entityId])
+  @@map("task_links")
+}
+
+model TaskChecklist {
+  id        String   @id @default(uuid())
+  taskId    String   @map("task_id")
+  title     String   @default("Checklist")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task  Task                @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  items TaskChecklistItem[]
+
+  @@map("task_checklists")
+}
+
+model TaskChecklistItem {
+  id          String  @id @default(uuid())
+  checklistId String  @map("checklist_id")
+  text        String
+  checked     Boolean @default(false)
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  checklist TaskChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@map("task_checklist_items")
+}
+
+model TaskBoardStage {
+  id        String   @id @default(uuid())
+  ownerId   String?  @map("owner_id")
+  boardType String   @map("board_type")
+  title     String
+  color     String   @default("#3B82F6")
+  sortOrder Int      @default(0) @map("sort_order")
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([ownerId, boardType, title])
+  @@index([ownerId, boardType])
+  @@map("task_board_stages")
+}
+
+model RecurringTaskTemplate {
+  id            String           @id @default(uuid())
+  title         String
+  description   String?
+  assigneeId    String?          @map("assignee_id")
+  creatorId     String           @map("creator_id")
+  priority      TaskPriorityEnum @default(NORMAL)
+  frequency     String
+  interval      Int              @default(1)
+  daysOfWeek    String[]         @map("days_of_week")
+  dayOfMonth    Int?             @map("day_of_month")
+  startDate     DateTime         @map("start_date")
+  endDate       DateTime?        @map("end_date")
+  dueDateOffset Int?             @map("due_date_offset")
+  isActive      Boolean          @default(true) @map("is_active")
+  lastCreatedAt DateTime?        @map("last_created_at")
+  nextCreateAt  DateTime?        @map("next_create_at")
+  checklistData Json?            @map("checklist_data")
+  linksData     Json?            @map("links_data")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  creator  Employee  @relation("RecurringTaskCreator", fields: [creatorId], references: [id])
+  assignee Employee? @relation("RecurringTaskAssignee", fields: [assigneeId], references: [id])
+
+  @@map("recurring_task_templates")
+}
+
+// ─── SUPPORT ──────────────────────────────────────────────
 
 enum TicketCategoryEnum {
   INCIDENT
@@ -609,7 +615,6 @@ model SupportTicket {
   id                  String              @id @default(uuid())
   code                String              @unique
   projectId           String              @map("project_id")
-  productId           String?             @map("product_id")
   contactId           String?             @map("contact_id")
   category            TicketCategoryEnum
   priority            TicketPriorityEnum  @default(P3)
@@ -624,7 +629,6 @@ model SupportTicket {
   updatedAt           DateTime            @updatedAt @map("updated_at")
 
   project  Project   @relation(fields: [projectId], references: [id])
-  product  Product?  @relation(fields: [productId], references: [id])
   contact  Contact?  @relation(fields: [contactId], references: [id])
   assignee Employee? @relation("TicketAssignee", fields: [assignedTo], references: [id])
 
@@ -745,17 +749,18 @@ model Employee {
   createdAt    DateTime           @default(now()) @map("created_at")
   updatedAt    DateTime           @updatedAt @map("updated_at")
 
-  projectsSelling     Project[]       @relation("ProjectSeller")
-  projectsManaging    Project[]       @relation("ProjectPM")
-  productsManaging    Product[]       @relation("ProductPM")
-  extensionsAssigned  Extension[]     @relation("ExtensionAssignee")
-  leadsAssigned       Lead[]          @relation("LeadAssignee")
-  dealsSelling        Deal[]          @relation("DealSeller")
-  paymentsConfirmed   Payment[]       @relation("PaymentConfirmer")
-  tasksCreated        Task[]          @relation("TaskCreator")
-  tasksAssigned       Task[]          @relation("TaskAssignee")
-  ticketsAssigned     SupportTicket[] @relation("TicketAssignee")
-  bonusEntries        BonusEntry[]
+  projectsSelling            Project[]               @relation("ProjectSeller")
+  projectsManaging           Project[]               @relation("ProjectPM")
+  leadsAssigned              Lead[]                  @relation("LeadAssignee")
+  dealsSelling               Deal[]                  @relation("DealSeller")
+  dealsPM                    Deal[]                  @relation("DealPM")
+  paymentsConfirmed          Payment[]               @relation("PaymentConfirmer")
+  tasksCreated               Task[]                  @relation("TaskCreator")
+  tasksAssigned              Task[]                  @relation("TaskAssignee")
+  ticketsAssigned            SupportTicket[]         @relation("TicketAssignee")
+  bonusEntries               BonusEntry[]
+  recurringTasksCreated      RecurringTaskTemplate[] @relation("RecurringTaskCreator")
+  recurringTasksAssigned     RecurringTaskTemplate[] @relation("RecurringTaskAssignee")
 
   @@map("employees")
 }
@@ -814,4 +819,21 @@ model AuditLog {
   @@index([userId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ─── SYSTEM LISTS (reference data: product types, deal types, etc.) ───
+
+model SystemListOption {
+  id        String   @id @default(uuid())
+  listKey   String   @map("list_key")
+  code      String
+  label     String
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([listKey, code])
+  @@index([listKey])
+  @@map("system_list_options")
 }

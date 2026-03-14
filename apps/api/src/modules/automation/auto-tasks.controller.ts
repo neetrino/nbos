@@ -12,8 +12,12 @@ export class AutoTasksController {
   @Post('generate-tasks')
   @Public()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Generate tasks for a product based on its type template' })
-  async generateTasks(@Body() body: { productId: string; creatorId: string }) {
-    return this.autoTasksService.generateTasksForProduct(body.productId, body.creatorId);
+  @ApiOperation({ summary: 'Generate tasks for a deal based on product type template' })
+  async generateTasks(@Body() body: { dealId: string; productType: string; creatorId: string }) {
+    return this.autoTasksService.generateTasksForDeal(
+      body.dealId,
+      body.productType,
+      body.creatorId,
+    );
   }
 }

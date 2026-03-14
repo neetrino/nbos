@@ -40,50 +40,6 @@ export const ProjectType = {
 
 export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType];
 
-export const ProductTypeEnum = {
-  WEBSITE: 'WEBSITE',
-  MOBILE_APP: 'MOBILE_APP',
-  CRM: 'CRM',
-  LOGO: 'LOGO',
-  SMM: 'SMM',
-  SEO: 'SEO',
-  OTHER: 'OTHER',
-} as const;
-
-export type ProductTypeEnum = (typeof ProductTypeEnum)[keyof typeof ProductTypeEnum];
-
-export const ProductStatusEnum = {
-  NEW: 'NEW',
-  CREATING: 'CREATING',
-  DEVELOPMENT: 'DEVELOPMENT',
-  QA: 'QA',
-  TRANSFER: 'TRANSFER',
-  ON_HOLD: 'ON_HOLD',
-  DONE: 'DONE',
-  LOST: 'LOST',
-} as const;
-
-export type ProductStatusEnum = (typeof ProductStatusEnum)[keyof typeof ProductStatusEnum];
-
-export const ExtensionSize = {
-  MICRO: 'MICRO',
-  SMALL: 'SMALL',
-  MEDIUM: 'MEDIUM',
-  LARGE: 'LARGE',
-} as const;
-
-export type ExtensionSize = (typeof ExtensionSize)[keyof typeof ExtensionSize];
-
-export const ExtensionStatus = {
-  NEW: 'NEW',
-  IN_PROGRESS: 'IN_PROGRESS',
-  REVIEW: 'REVIEW',
-  DONE: 'DONE',
-  CANCELLED: 'CANCELLED',
-} as const;
-
-export type ExtensionStatus = (typeof ExtensionStatus)[keyof typeof ExtensionStatus];
-
 export const LeadStatusEnum = {
   NEW: 'NEW',
   DIDNT_GET_THROUGH: 'DIDNT_GET_THROUGH',
@@ -259,11 +215,10 @@ export const BonusStatusEnum = {
 export type BonusStatusEnum = (typeof BonusStatusEnum)[keyof typeof BonusStatusEnum];
 
 export const TaskStatusEnum = {
-  BACKLOG: 'BACKLOG',
-  TODO: 'TODO',
+  NEW: 'NEW',
   IN_PROGRESS: 'IN_PROGRESS',
-  REVIEW: 'REVIEW',
   DONE: 'DONE',
+  DEFERRED: 'DEFERRED',
   CANCELLED: 'CANCELLED',
 } as const;
 

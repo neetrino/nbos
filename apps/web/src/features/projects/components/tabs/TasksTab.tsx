@@ -1,47 +1,63 @@
 'use client';
 
-import { useState } from 'react';
-import { LayoutGrid, List, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { LayoutGrid, List, AlertTriangle, Play, Check, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
-import type { ProjectTask } from '@/lib/api/projects';
+import { tasksApi, type Task } from '@/lib/api/tasks';
+import { getTaskStatus, getTaskPriority } from '@/features/tasks/constants/tasks';
 
 interface TasksTabProps {
-  tasks: ProjectTask[];
+  projectId: string;
 }
 
-const TASK_STATUS_MAP: Record<
-  string,
-  { label: string; variant: 'gray' | 'blue' | 'purple' | 'amber' | 'green' | 'red' }
-> = {
-  BACKLOG: { label: 'Backlog', variant: 'gray' },
-  TODO: { label: 'To Do', variant: 'blue' },
-  IN_PROGRESS: { label: 'In Progress', variant: 'purple' },
-  REVIEW: { label: 'Review', variant: 'amber' },
-  DONE: { label: 'Done', variant: 'green' },
-  CANCELLED: { label: 'Cancelled', variant: 'red' },
-};
+const KANBAN_COLUMNS = ['NEW', 'IN_PROGRESS', 'DONE', 'DEFERRED'];
 
-const PRIORITY_MAP: Record<string, { label: string; variant: 'red' | 'orange' | 'blue' | 'gray' }> =
-  {
-    CRITICAL: { label: 'Critical', variant: 'red' },
-    HIGH: { label: 'High', variant: 'orange' },
-    NORMAL: { label: 'Normal', variant: 'blue' },
-    LOW: { label: 'Low', variant: 'gray' },
+export function TasksTab({ projectId }: TasksTabProps) {
+  const [view, setView] = useState<'kanban' | 'list'>('kanban');
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchTasks = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await tasksApi.getByEntity('PROJECT', projectId);
+      setTasks(data);
+    } catch {
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+  const handleAction = async (taskId: string, action: 'start' | 'complete' | 'reopen') => {
+    try {
+      const updated = await tasksApi[action](taskId);
+      setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    } catch {
+      /* ignore */
+    }
   };
 
-const KANBAN_COLUMNS = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'];
-
-export function TasksTab({ tasks }: TasksTabProps) {
-  const [view, setView] = useState<'kanban' | 'list'>('kanban');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-
   const activeTasks = tasks.filter((t) => t.status !== 'CANCELLED');
-  const filteredTasks =
-    statusFilter === 'all' ? activeTasks : activeTasks.filter((t) => t.status === statusFilter);
-
   const doneTasks = tasks.filter((t) => t.status === 'DONE').length;
   const totalActive = activeTasks.length;
+
+  if (loading) {
+    return <div className="text-muted-foreground py-12 text-center text-sm">Loading tasks...</div>;
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <div className="text-muted-foreground py-12 text-center text-sm">
+        No tasks linked to this project yet.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -81,23 +97,14 @@ export function TasksTab({ tasks }: TasksTabProps) {
         <div className="flex gap-3 overflow-x-auto pb-4">
           {KANBAN_COLUMNS.map((col) => {
             const colTasks = tasks.filter((t) => t.status === col);
-            const st = TASK_STATUS_MAP[col];
+            const st = getTaskStatus(col);
             return (
               <div key={col} className="bg-muted/30 min-w-[220px] flex-1 rounded-xl p-3">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div
-                      className={`h-2 w-2 rounded-full ${
-                        col === 'DONE'
-                          ? 'bg-green-500'
-                          : col === 'IN_PROGRESS'
-                            ? 'bg-purple-500'
-                            : col === 'REVIEW'
-                              ? 'bg-amber-500'
-                              : col === 'TODO'
-                                ? 'bg-blue-500'
-                                : 'bg-gray-400'
-                      }`}
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: st?.color?.replace('bg-', '') ?? '#888' }}
                     />
                     <span className="text-xs font-semibold">{st?.label ?? col}</span>
                   </div>
@@ -107,7 +114,7 @@ export function TasksTab({ tasks }: TasksTabProps) {
                 </div>
                 <div className="space-y-2">
                   {colTasks.map((task) => {
-                    const pr = PRIORITY_MAP[task.priority];
+                    const pr = getTaskPriority(task.priority);
                     return (
                       <div key={task.id} className="bg-card border-border rounded-lg border p-3">
                         <div className="flex items-start justify-between gap-2">
@@ -131,11 +138,38 @@ export function TasksTab({ tasks }: TasksTabProps) {
                             </span>
                           </div>
                         )}
-                        {task.product && (
-                          <p className="text-muted-foreground mt-1 text-[10px]">
-                            {task.product.name}
-                          </p>
-                        )}
+                        <div className="mt-2 flex gap-1">
+                          {task.status === 'NEW' && (
+                            <Button
+                              size="icon-sm"
+                              variant="ghost"
+                              onClick={() => handleAction(task.id, 'start')}
+                              title="Start"
+                            >
+                              <Play size={10} />
+                            </Button>
+                          )}
+                          {task.status === 'IN_PROGRESS' && (
+                            <Button
+                              size="icon-sm"
+                              variant="ghost"
+                              onClick={() => handleAction(task.id, 'complete')}
+                              title="Complete"
+                            >
+                              <Check size={10} />
+                            </Button>
+                          )}
+                          {task.status === 'DONE' && (
+                            <Button
+                              size="icon-sm"
+                              variant="ghost"
+                              onClick={() => handleAction(task.id, 'reopen')}
+                              title="Reopen"
+                            >
+                              <RotateCcw size={10} />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -153,14 +187,13 @@ export function TasksTab({ tasks }: TasksTabProps) {
                 <th className="px-4 py-2 text-left font-medium">Status</th>
                 <th className="px-4 py-2 text-left font-medium">Priority</th>
                 <th className="px-4 py-2 text-left font-medium">Assignee</th>
-                <th className="px-4 py-2 text-left font-medium">Product</th>
                 <th className="px-4 py-2 text-left font-medium">Due</th>
               </tr>
             </thead>
             <tbody>
-              {filteredTasks.map((task) => {
-                const st = TASK_STATUS_MAP[task.status];
-                const pr = PRIORITY_MAP[task.priority];
+              {activeTasks.map((task) => {
+                const st = getTaskStatus(task.status);
+                const pr = getTaskPriority(task.priority);
                 return (
                   <tr key={task.id} className="border-border border-t">
                     <td className="px-4 py-2">
@@ -174,11 +207,12 @@ export function TasksTab({ tasks }: TasksTabProps) {
                       {pr && <StatusBadge label={pr.label} variant={pr.variant} />}
                     </td>
                     <td className="text-muted-foreground px-4 py-2">
-                      {task.assignee ? `${task.assignee.firstName} ${task.assignee.lastName}` : '—'}
+                      {task.assignee
+                        ? `${task.assignee.firstName} ${task.assignee.lastName}`
+                        : '\u2014'}
                     </td>
-                    <td className="text-muted-foreground px-4 py-2">{task.product?.name ?? '—'}</td>
                     <td className="text-muted-foreground px-4 py-2">
-                      {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '—'}
+                      {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '\u2014'}
                     </td>
                   </tr>
                 );

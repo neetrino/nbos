@@ -1,5 +1,5 @@
-import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaClient, type Prisma } from '@nbos/database';
+import { Injectable, Inject, Logger } from '@nestjs/common';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 
 type ProductType = 'WEB_APP' | 'MOBILE_APP' | 'DESIGN' | 'ERP_MODULE' | 'INTEGRATION' | 'OTHER';
@@ -55,23 +55,18 @@ export class AutoTasksService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
   ) {}
 
-  /** Ստեղծում է task-եր delays product-ի տիպի template- delays */
-  async generateTasksForProduct(
-    productId: string,
+  /**
+   * Генерирует задачи для Deal на основе productType.
+   * При необходимости привязывает через TaskLink к указанному entityType/entityId.
+   */
+  async generateTasksForDeal(
+    dealId: string,
+    productType: string,
     creatorId: string,
   ): Promise<{ created: number }> {
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-      select: { id: true, projectId: true, productType: true, name: true },
-    });
-
-    if (!product) {
-      throw new NotFoundException(`Product ${productId} not found`);
-    }
-
-    const titles = this.getTemplateByProductType(product.productType);
+    const titles = this.getTemplateByProductType(productType);
     this.logger.log(
-      `Generating ${titles.length} tasks for product "${product.name}" (${product.productType})`,
+      `Generating ${titles.length} tasks for deal ${dealId} (productType=${productType})`,
     );
 
     let created = 0;
@@ -81,16 +76,17 @@ export class AutoTasksService {
         data: {
           code,
           title,
-          projectId: product.projectId,
-          productId: product.id,
           creatorId,
-          priority: 'MEDIUM' as Prisma.TaskCreateInput['priority'],
+          priority: 'NORMAL',
+          links: {
+            create: { entityType: 'DEAL', entityId: dealId },
+          },
         },
       });
       created++;
     }
 
-    this.logger.log(`Created ${created} tasks for product ${product.name}`);
+    this.logger.log(`Created ${created} tasks for deal ${dealId}`);
     return { created };
   }
 

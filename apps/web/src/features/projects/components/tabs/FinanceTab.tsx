@@ -115,8 +115,6 @@ export function FinanceTab({ orders, subscriptions, expenses, domains }: Finance
                       </div>
                       <p className="text-muted-foreground text-xs">
                         {order.type} &middot; {order.paymentType.replace(/_/g, ' ')}
-                        {order.product && ` → ${order.product.name}`}
-                        {order.extension && ` → ${order.extension.name}`}
                       </p>
                     </div>
                     <p className="text-lg font-bold">{formatAmount(order.totalAmount)}</p>

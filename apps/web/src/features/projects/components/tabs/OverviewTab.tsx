@@ -1,16 +1,8 @@
 'use client';
 
-import {
-  FolderKanban,
-  FileText,
-  ListChecks,
-  Ticket,
-  KeyRound,
-  DollarSign,
-  Clock,
-} from 'lucide-react';
+import { FileText, Ticket, KeyRound, DollarSign, Clock } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
-import { getProjectType, getProductStatus } from '../../constants/projects';
+import { getProjectType } from '../../constants/projects';
 import type { FullProject } from '@/lib/api/projects';
 
 interface OverviewTabProps {
@@ -45,9 +37,6 @@ function StatCard({
 
 export function OverviewTab({ project }: OverviewTabProps) {
   const projType = getProjectType(project.type);
-  const activeTasks = project.tasks.filter(
-    (t) => t.status !== 'DONE' && t.status !== 'CANCELLED',
-  ).length;
   const openTickets = project.tickets.filter(
     (t) => t.status !== 'CLOSED' && t.status !== 'RESOLVED',
   ).length;
@@ -55,24 +44,12 @@ export function OverviewTab({ project }: OverviewTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
-        <StatCard
-          icon={FolderKanban}
-          label="Products"
-          value={project._count.products}
-          color="bg-blue-500"
-        />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           icon={FileText}
           label="Orders"
           value={project._count.orders}
           color="bg-emerald-500"
-        />
-        <StatCard
-          icon={ListChecks}
-          label="Active Tasks"
-          value={activeTasks}
-          color="bg-purple-500"
         />
         <StatCard icon={Ticket} label="Open Tickets" value={openTickets} color="bg-amber-500" />
         <StatCard
@@ -90,37 +67,6 @@ export function OverviewTab({ project }: OverviewTabProps) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="bg-card border-border rounded-xl border p-5">
-          <h3 className="mb-4 text-sm font-semibold">Products</h3>
-          {project.products.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No products yet</p>
-          ) : (
-            <div className="space-y-3">
-              {project.products.map((product) => {
-                const st = getProductStatus(product.status);
-                const tasksDone = product._count.tasks;
-                return (
-                  <div
-                    key={product.id}
-                    className="border-border flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`h-2 w-2 rounded-full ${st?.color ?? 'bg-gray-400'}`} />
-                      <div>
-                        <p className="text-sm font-medium">{product.name}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {product.productType} &middot; {tasksDone} tasks
-                        </p>
-                      </div>
-                    </div>
-                    {st && <StatusBadge label={st.label} variant={st.variant} />}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
         <section className="bg-card border-border rounded-xl border p-5">
           <h3 className="mb-4 text-sm font-semibold">Project Details</h3>
           <div className="space-y-3 text-sm">
@@ -172,14 +118,14 @@ export function OverviewTab({ project }: OverviewTabProps) {
             </div>
           </div>
         </section>
-      </div>
 
-      {project.description && (
-        <section className="bg-card border-border rounded-xl border p-5">
-          <h3 className="mb-2 text-sm font-semibold">Description</h3>
-          <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
-        </section>
-      )}
+        {project.description && (
+          <section className="bg-card border-border rounded-xl border p-5">
+            <h3 className="mb-2 text-sm font-semibold">Description</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
+          </section>
+        )}
+      </div>
 
       {project.auditLogs.length > 0 && (
         <section className="bg-card border-border rounded-xl border p-5">

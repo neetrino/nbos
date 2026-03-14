@@ -22,7 +22,7 @@ const FEATURES = [
   {
     icon: FolderKanban,
     title: 'Projects',
-    desc: 'Track projects, products, and extensions from start to delivery.',
+    desc: 'Track projects, deals, and deliverables from start to finish.',
   },
   {
     icon: DollarSign,

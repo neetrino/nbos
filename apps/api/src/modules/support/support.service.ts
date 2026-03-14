@@ -19,7 +19,6 @@ interface CreateTicketDto {
   projectId: string;
   category: string;
   description?: string;
-  productId?: string;
   contactId?: string;
   priority?: string;
   billable?: boolean;
@@ -30,7 +29,6 @@ interface UpdateTicketDto {
   title?: string;
   description?: string;
   projectId?: string;
-  productId?: string;
   contactId?: string;
   category?: string;
   priority?: string;
@@ -97,7 +95,6 @@ export class SupportService {
       where: { id },
       include: {
         project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true, productType: true } },
         contact: {
           select: { id: true, firstName: true, lastName: true, phone: true, email: true },
         },
@@ -120,7 +117,6 @@ export class SupportService {
         projectId: data.projectId,
         category: data.category as TicketCategoryEnum,
         description: data.description,
-        productId: data.productId,
         contactId: data.contactId,
         priority,
         billable: data.billable ?? false,
@@ -143,9 +139,6 @@ export class SupportService {
       ...(data.title && { title: data.title }),
       ...(data.description !== undefined && { description: data.description }),
       ...(data.projectId && { project: { connect: { id: data.projectId } } }),
-      ...(data.productId !== undefined && {
-        product: data.productId ? { connect: { id: data.productId } } : { disconnect: true },
-      }),
       ...(data.contactId !== undefined && {
         contact: data.contactId ? { connect: { id: data.contactId } } : { disconnect: true },
       }),

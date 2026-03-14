@@ -1,16 +1,20 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
 export const TASK_STATUSES = [
-  { value: 'BACKLOG', label: 'Backlog', variant: 'gray' as StatusVariant, color: 'bg-gray-400' },
-  { value: 'TODO', label: 'To Do', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
+  { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
   {
     value: 'IN_PROGRESS',
     label: 'In Progress',
     variant: 'purple' as StatusVariant,
     color: 'bg-purple-500',
   },
-  { value: 'REVIEW', label: 'Review', variant: 'amber' as StatusVariant, color: 'bg-amber-500' },
   { value: 'DONE', label: 'Done', variant: 'green' as StatusVariant, color: 'bg-green-500' },
+  {
+    value: 'DEFERRED',
+    label: 'Deferred',
+    variant: 'amber' as StatusVariant,
+    color: 'bg-amber-500',
+  },
   { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant, color: 'bg-red-400' },
 ] as const;
 

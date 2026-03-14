@@ -6,7 +6,6 @@ export interface SupportTicket {
   title: string;
   description: string | null;
   projectId: string;
-  productId: string | null;
   category: string;
   priority: string;
   status: string;
@@ -15,7 +14,6 @@ export interface SupportTicket {
   createdAt: string;
   updatedAt: string;
   project: { id: string; code: string; name: string };
-  product: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   assignee: { id: string; firstName: string; lastName: string } | null;
 }

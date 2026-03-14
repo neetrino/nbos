@@ -103,7 +103,7 @@ export const TERMINAL_DEAL_STAGES = DEAL_STAGES.filter((s) => s.terminal);
 
 export const DEAL_TYPES = [
   { value: 'NEW_CLIENT', label: 'Product', description: 'New IT product or service' },
-  { value: 'EXTENSION', label: 'Extension', description: 'Extension to an existing product' },
+  { value: 'EXTENSION', label: 'Extension', description: 'Extension to an existing deal' },
   { value: 'UPSELL', label: 'Outsource', description: 'Outsourced to a partner' },
 ] as const;
 

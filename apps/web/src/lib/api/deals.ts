@@ -35,6 +35,7 @@ export interface Deal {
   sourcePartnerId: string | null;
   sourceContactId: string | null;
   notes: string | null;
+  productType: string | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;

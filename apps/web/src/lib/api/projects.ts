@@ -22,29 +22,7 @@ export interface Project {
   contact: { id: string; firstName: string; lastName: string };
   pm: EmployeeRef | null;
   seller: EmployeeRef | null;
-  _count: { products: number; orders: number };
-}
-
-export interface ProjectProduct {
-  id: string;
-  name: string;
-  productType: string;
-  status: string;
-  deadline: string | null;
-  createdAt: string;
-  pm: EmployeeRef | null;
-  extensions: ProjectExtension[];
-  _count: { tasks: number };
-}
-
-export interface ProjectExtension {
-  id: string;
-  name: string;
-  size: string;
-  status: string;
-  assignedTo: string | null;
-  product?: { id: string; name: string } | null;
-  assignee?: EmployeeRef | null;
+  _count: { orders: number };
 }
 
 export interface ProjectOrder {
@@ -56,8 +34,6 @@ export interface ProjectOrder {
   currency: string;
   status: string;
   createdAt: string;
-  product: { id: string; name: string } | null;
-  extension: { id: string; name: string } | null;
   invoices: ProjectInvoice[];
 }
 
@@ -69,20 +45,6 @@ export interface ProjectInvoice {
   type: string;
   dueDate: string | null;
   paidDate: string | null;
-}
-
-export interface ProjectTask {
-  id: string;
-  code: string;
-  title: string;
-  description: string | null;
-  status: string;
-  priority: string;
-  dueDate: string | null;
-  createdAt: string;
-  assignee: EmployeeRef | null;
-  product: { id: string; name: string } | null;
-  extension: { id: string; name: string } | null;
 }
 
 export interface ProjectTicket {
@@ -157,10 +119,7 @@ export interface ProjectAuditLog {
 }
 
 export interface FullProject extends Project {
-  products: ProjectProduct[];
-  extensions: ProjectExtension[];
   orders: ProjectOrder[];
-  tasks: ProjectTask[];
   tickets: ProjectTicket[];
   credentials: ProjectCredential[];
   subscriptions: ProjectSubscription[];
@@ -168,9 +127,7 @@ export interface FullProject extends Project {
   expenses: ProjectExpense[];
   auditLogs: ProjectAuditLog[];
   _count: {
-    products: number;
     orders: number;
-    tasks: number;
     tickets: number;
     credentials: number;
     expenses: number;

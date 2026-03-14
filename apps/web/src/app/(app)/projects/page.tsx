@@ -206,8 +206,6 @@ export default function ProjectsPage() {
                 <div className="mt-4 flex items-center justify-between">
                   {projType && <StatusBadge label={projType.label} variant={projType.variant} />}
                   <div className="text-muted-foreground flex items-center gap-2 text-[10px]">
-                    <span>{project._count.products} products</span>
-                    <span>&middot;</span>
                     <span>{project._count.orders} orders</span>
                   </div>
                 </div>
@@ -241,7 +239,7 @@ export default function ProjectsPage() {
                 <TableHead>Company</TableHead>
                 <TableHead>PM</TableHead>
                 <TableHead>Seller</TableHead>
-                <TableHead className="text-center">Products</TableHead>
+                <TableHead className="text-center">Orders</TableHead>
                 <TableHead>Deadline</TableHead>
               </TableRow>
             </TableHeader>
@@ -285,7 +283,7 @@ export default function ProjectsPage() {
                         : '—'}
                     </TableCell>
                     <TableCell className="text-center font-medium">
-                      {project._count.products}
+                      {project._count.orders}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {project.deadline ? new Date(project.deadline).toLocaleDateString() : '—'}

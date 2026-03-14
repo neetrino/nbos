@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   DollarSign,
   User,
@@ -34,6 +34,7 @@ import { projectsApi } from '@/lib/api/projects';
 import { partnersApi } from '@/lib/api/partners';
 import { invoicesApi, ordersApi } from '@/lib/api/finance';
 import { tasksApi } from '@/lib/api/tasks';
+import { systemListsApi } from '@/lib/api/systemLists';
 
 const PARTNER_PERCENT = 30;
 
@@ -81,6 +82,18 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
   const [creatingTask, setCreatingTask] = useState(false);
+  const [productTypeOptions, setProductTypeOptions] = useState<
+    Array<{ value: string; label: string }>
+  >(PRODUCT_TYPES.map((p) => ({ value: p.value, label: p.label })));
+
+  useEffect(() => {
+    systemListsApi
+      .getOptionsByKey('PRODUCT_TYPE')
+      .then((opts) => setProductTypeOptions(opts.map((o) => ({ value: o.code, label: o.label }))))
+      .catch(() => {
+        /* keep PRODUCT_TYPES fallback */
+      });
+  }, []);
 
   const firstOrder = deal.orders?.[0];
   const projectId = deal.projectId ?? firstOrder?.projectId;
@@ -331,22 +344,30 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
             {deal.type === 'NEW_CLIENT' && (
               <InlineField
                 label="Product Type"
-                value={null}
+                value={deal.productType ?? null}
+                displayValue={
+                  deal.productType ? (
+                    <span className="text-foreground text-sm font-medium">
+                      {productTypeOptions.find((p) => p.value === deal.productType)?.label ??
+                        deal.productType}
+                    </span>
+                  ) : undefined
+                }
                 type="select"
-                options={PRODUCT_TYPES.map((p) => ({ value: p.value, label: p.label }))}
+                options={productTypeOptions}
                 placeholder="Select product type..."
                 icon={<Tag size={12} />}
-                onSave={() => Promise.resolve()}
+                onSave={(v) => saveField('productType', v)}
               />
             )}
 
             {isExtension && (
               <InlineField
-                label="Extend Product"
+                label="Extend Deal"
                 value={null}
                 type="select"
                 options={[]}
-                placeholder="Select product to extend..."
+                placeholder="Select deal to extend..."
                 icon={<Layers size={12} />}
                 onSave={() => Promise.resolve()}
               />

@@ -1211,6 +1211,40 @@ async function main() {
 
   console.log('  ✓ Audit logs (2)');
 
+  // System list options (reference data for dropdowns: Product Type, Deal Type, etc.)
+  const listOptionsCount = await prisma.systemListOption.count();
+  if (listOptionsCount === 0) {
+    const systemListOptions = [
+      // PRODUCT_TYPE
+      { listKey: 'PRODUCT_TYPE', code: 'WEBSITE', label: 'Website', sortOrder: 0 },
+      { listKey: 'PRODUCT_TYPE', code: 'MOBILE_APP', label: 'Mobile App', sortOrder: 1 },
+      { listKey: 'PRODUCT_TYPE', code: 'WEB_APP', label: 'Web Application', sortOrder: 2 },
+      { listKey: 'PRODUCT_TYPE', code: 'CRM', label: 'CRM System', sortOrder: 3 },
+      { listKey: 'PRODUCT_TYPE', code: 'ECOMMERCE', label: 'E-Commerce', sortOrder: 4 },
+      { listKey: 'PRODUCT_TYPE', code: 'SAAS', label: 'SaaS Platform', sortOrder: 5 },
+      { listKey: 'PRODUCT_TYPE', code: 'LANDING', label: 'Landing Page', sortOrder: 6 },
+      { listKey: 'PRODUCT_TYPE', code: 'ERP', label: 'ERP System', sortOrder: 7 },
+      { listKey: 'PRODUCT_TYPE', code: 'LOGO', label: 'Logo', sortOrder: 8 },
+      { listKey: 'PRODUCT_TYPE', code: 'SMM', label: 'SMM', sortOrder: 9 },
+      { listKey: 'PRODUCT_TYPE', code: 'SEO', label: 'SEO', sortOrder: 10 },
+      { listKey: 'PRODUCT_TYPE', code: 'OTHER', label: 'Other', sortOrder: 99 },
+      // DEAL_TYPE
+      { listKey: 'DEAL_TYPE', code: 'NEW_CLIENT', label: 'Product', sortOrder: 0 },
+      { listKey: 'DEAL_TYPE', code: 'EXTENSION', label: 'Extension', sortOrder: 1 },
+      { listKey: 'DEAL_TYPE', code: 'UPSELL', label: 'Outsource', sortOrder: 2 },
+      // PAYMENT_TYPE
+      { listKey: 'PAYMENT_TYPE', code: 'CLASSIC', label: 'Classic', sortOrder: 0 },
+      { listKey: 'PAYMENT_TYPE', code: 'SUBSCRIPTION', label: 'Subscription', sortOrder: 1 },
+      // EXTENSION_SIZE
+      { listKey: 'EXTENSION_SIZE', code: 'MICRO', label: 'Micro', sortOrder: 0 },
+      { listKey: 'EXTENSION_SIZE', code: 'SMALL', label: 'Small', sortOrder: 1 },
+      { listKey: 'EXTENSION_SIZE', code: 'MEDIUM', label: 'Medium', sortOrder: 2 },
+      { listKey: 'EXTENSION_SIZE', code: 'LARGE', label: 'Large', sortOrder: 3 },
+    ];
+    await prisma.systemListOption.createMany({ data: systemListOptions });
+    console.log('  ✓ System list options (Product Type, Deal Type, Payment Type, Extension Size)');
+  }
+
   console.log('\n✅ Seed completed successfully!');
   await prisma.$disconnect();
 }

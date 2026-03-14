@@ -49,8 +49,6 @@ export interface Order {
   status: string;
   createdAt: string;
   project: { id: string; code: string; name: string };
-  product: { id: string; name: string } | null;
-  extension: { id: string; name: string } | null;
   invoices: Array<{ id: string; code: string; status: string; amount: string }>;
 }
 

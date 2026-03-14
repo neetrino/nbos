@@ -71,7 +71,7 @@ export class ProjectsService {
           contact: { select: { id: true, firstName: true, lastName: true } },
           pm: { select: { id: true, firstName: true, lastName: true } },
           seller: { select: { id: true, firstName: true, lastName: true } },
-          _count: { select: { products: true, orders: true } },
+          _count: { select: { orders: true } },
         },
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * pageSize,
@@ -94,23 +94,6 @@ export class ProjectsService {
         contact: true,
         pm: { select: { id: true, firstName: true, lastName: true, email: true, role: true } },
         seller: { select: { id: true, firstName: true, lastName: true, email: true, role: true } },
-        products: {
-          include: {
-            pm: { select: { id: true, firstName: true, lastName: true } },
-            extensions: {
-              select: { id: true, name: true, size: true, status: true, assignedTo: true },
-            },
-            _count: { select: { tasks: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        extensions: {
-          include: {
-            product: { select: { id: true, name: true } },
-            assignee: { select: { id: true, firstName: true, lastName: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
         orders: {
           include: {
             invoices: {
@@ -124,16 +107,6 @@ export class ProjectsService {
                 paidDate: true,
               },
             },
-            product: { select: { id: true, name: true } },
-            extension: { select: { id: true, name: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        tasks: {
-          include: {
-            assignee: { select: { id: true, firstName: true, lastName: true } },
-            product: { select: { id: true, name: true } },
-            extension: { select: { id: true, name: true } },
           },
           orderBy: { createdAt: 'desc' },
         },
@@ -174,9 +147,7 @@ export class ProjectsService {
         },
         _count: {
           select: {
-            products: true,
             orders: true,
-            tasks: true,
             tickets: true,
             credentials: true,
             expenses: true,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -84,7 +84,15 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Calendar', href: '/calendar', icon: <Calendar size={20} /> },
   { label: 'Drive', href: '/drive', icon: <HardDrive size={20} /> },
   { label: 'Credentials', href: '/credentials', icon: <KeyRound size={20} /> },
-  { label: 'Settings', href: '/settings', icon: <Settings size={20} /> },
+  {
+    label: 'Settings',
+    href: '/settings',
+    icon: <Settings size={20} />,
+    children: [
+      { label: 'General', href: '/settings' },
+      { label: 'Lists', href: '/settings/lists' },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -93,6 +101,12 @@ export function Sidebar() {
   const { user } = useUser();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (pathname.startsWith('/settings')) {
+      setExpandedItems((prev) => new Set(prev).add('Settings'));
+    }
+  }, [pathname]);
 
   const toggleExpanded = (label: string) => {
     setExpandedItems((prev) => {

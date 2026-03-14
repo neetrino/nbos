@@ -1,18 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  FolderKanban,
-  User,
-  Building2,
-  Calendar,
-  Clock,
-  Archive,
-  MessageCircle,
-  CheckSquare,
-  FileText,
-  Trash2,
-} from 'lucide-react';
+import { User, Building2, Calendar, Clock, FileText, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -73,7 +62,6 @@ export function ProjectSheet({ project, open, onOpenChange, onDelete }: ProjectS
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="w-full justify-start">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
         </TabsList>
 
@@ -145,12 +133,7 @@ export function ProjectSheet({ project, open, onOpenChange, onDelete }: ProjectS
             <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Summary
             </h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-secondary/50 rounded-lg p-3 text-center">
-                <FolderKanban size={16} className="text-muted-foreground mx-auto" />
-                <p className="mt-1 text-lg font-bold">{project._count.products}</p>
-                <p className="text-muted-foreground text-[10px]">Products</p>
-              </div>
+            <div className="grid grid-cols-1 gap-3">
               <div className="bg-secondary/50 rounded-lg p-3 text-center">
                 <FileText size={16} className="text-muted-foreground mx-auto" />
                 <p className="mt-1 text-lg font-bold">{project._count.orders}</p>
@@ -158,15 +141,6 @@ export function ProjectSheet({ project, open, onOpenChange, onDelete }: ProjectS
               </div>
             </div>
           </section>
-        </TabsContent>
-
-        <TabsContent value="products" className="mt-4 space-y-3">
-          <div className="border-border rounded-lg border border-dashed p-8 text-center">
-            <CheckSquare size={32} className="text-muted-foreground/30 mx-auto" />
-            <p className="text-muted-foreground mt-2 text-sm">
-              Products will be displayed here when connected to the API
-            </p>
-          </div>
         </TabsContent>
 
         <TabsContent value="team" className="mt-4 space-y-4">

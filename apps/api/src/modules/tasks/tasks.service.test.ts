@@ -20,8 +20,7 @@ describe('TasksService', () => {
 
     it('applies filters', async () => {
       await service.findAll({
-        projectId: 'p1',
-        status: 'TODO',
+        status: 'NEW',
         priority: 'HIGH',
         assigneeId: 'a1',
         search: 'test',
@@ -40,7 +39,7 @@ describe('TasksService', () => {
     it('generates code T-YYYY-NNNN', async () => {
       prisma.task.findFirst.mockResolvedValue(null);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
-      const result = await service.create({ title: 'Test', projectId: 'p1', creatorId: 'c1' });
+      const result = await service.create({ title: 'Test', creatorId: 'c1' });
       expect(result.code).toMatch(/^T-\d{4}-\d{4}$/);
     });
   });
@@ -58,11 +57,20 @@ describe('TasksService', () => {
     });
   });
 
-  describe('updateStatus', () => {
-    it('updates status', async () => {
-      prisma.task.findUnique.mockResolvedValue({ id: '1' });
+  describe('start', () => {
+    it('starts a task', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'NEW' });
+      prisma.task.update.mockResolvedValue({ id: '1', status: 'IN_PROGRESS' });
+      const result = await service.start('1');
+      expect(result.status).toBe('IN_PROGRESS');
+    });
+  });
+
+  describe('complete', () => {
+    it('completes a task', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'IN_PROGRESS' });
       prisma.task.update.mockResolvedValue({ id: '1', status: 'DONE' });
-      const result = await service.updateStatus('1', 'DONE');
+      const result = await service.complete('1');
       expect(result.status).toBe('DONE');
     });
   });

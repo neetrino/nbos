@@ -51,8 +51,6 @@ export const ModelName = {
   Contact: 'Contact',
   Company: 'Company',
   Project: 'Project',
-  Product: 'Product',
-  Extension: 'Extension',
   Lead: 'Lead',
   Deal: 'Deal',
   Order: 'Order',
@@ -62,12 +60,18 @@ export const ModelName = {
   Expense: 'Expense',
   BonusEntry: 'BonusEntry',
   Task: 'Task',
+  TaskLink: 'TaskLink',
+  TaskChecklist: 'TaskChecklist',
+  TaskChecklistItem: 'TaskChecklistItem',
+  TaskBoardStage: 'TaskBoardStage',
+  RecurringTaskTemplate: 'RecurringTaskTemplate',
   SupportTicket: 'SupportTicket',
   Credential: 'Credential',
   Domain: 'Domain',
   Employee: 'Employee',
   Partner: 'Partner',
   AuditLog: 'AuditLog',
+  SystemListOption: 'SystemListOption',
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -138,37 +142,6 @@ export const ProjectScalarFieldEnum = {
 export type ProjectScalarFieldEnum =
   (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
 
-export const ProductScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  name: 'name',
-  productType: 'productType',
-  status: 'status',
-  pmId: 'pmId',
-  deadline: 'deadline',
-  checklistTemplateId: 'checklistTemplateId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ProductScalarFieldEnum =
-  (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
-
-export const ExtensionScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  productId: 'productId',
-  name: 'name',
-  size: 'size',
-  status: 'status',
-  assignedTo: 'assignedTo',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ExtensionScalarFieldEnum =
-  (typeof ExtensionScalarFieldEnum)[keyof typeof ExtensionScalarFieldEnum];
-
 export const LeadScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -209,6 +182,9 @@ export const DealScalarFieldEnum = {
   sourcePartnerId: 'sourcePartnerId',
   sourceContactId: 'sourceContactId',
   notes: 'notes',
+  productType: 'productType',
+  pmId: 'pmId',
+  deadline: 'deadline',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
@@ -220,8 +196,6 @@ export const OrderScalarFieldEnum = {
   code: 'code',
   projectId: 'projectId',
   dealId: 'dealId',
-  productId: 'productId',
-  extensionId: 'extensionId',
   type: 'type',
   paymentType: 'paymentType',
   totalAmount: 'totalAmount',
@@ -340,29 +314,104 @@ export const TaskScalarFieldEnum = {
   code: 'code',
   title: 'title',
   description: 'description',
-  projectId: 'projectId',
-  productId: 'productId',
-  extensionId: 'extensionId',
   creatorId: 'creatorId',
   assigneeId: 'assigneeId',
   coAssignees: 'coAssignees',
   observers: 'observers',
   status: 'status',
   priority: 'priority',
-  sprintId: 'sprintId',
+  startDate: 'startDate',
   dueDate: 'dueDate',
-  hasChat: 'hasChat',
+  completedAt: 'completedAt',
+  parentId: 'parentId',
+  kanbanStageId: 'kanbanStageId',
+  myPlanStageId: 'myPlanStageId',
+  myPlanSortOrder: 'myPlanSortOrder',
+  chatId: 'chatId',
+  isRecurring: 'isRecurring',
+  templateTaskId: 'templateTaskId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
 
 export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum];
 
+export const TaskLinkScalarFieldEnum = {
+  id: 'id',
+  taskId: 'taskId',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  createdAt: 'createdAt',
+} as const;
+
+export type TaskLinkScalarFieldEnum =
+  (typeof TaskLinkScalarFieldEnum)[keyof typeof TaskLinkScalarFieldEnum];
+
+export const TaskChecklistScalarFieldEnum = {
+  id: 'id',
+  taskId: 'taskId',
+  title: 'title',
+  createdAt: 'createdAt',
+} as const;
+
+export type TaskChecklistScalarFieldEnum =
+  (typeof TaskChecklistScalarFieldEnum)[keyof typeof TaskChecklistScalarFieldEnum];
+
+export const TaskChecklistItemScalarFieldEnum = {
+  id: 'id',
+  checklistId: 'checklistId',
+  text: 'text',
+  checked: 'checked',
+  sortOrder: 'sortOrder',
+} as const;
+
+export type TaskChecklistItemScalarFieldEnum =
+  (typeof TaskChecklistItemScalarFieldEnum)[keyof typeof TaskChecklistItemScalarFieldEnum];
+
+export const TaskBoardStageScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  boardType: 'boardType',
+  title: 'title',
+  color: 'color',
+  sortOrder: 'sortOrder',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt',
+} as const;
+
+export type TaskBoardStageScalarFieldEnum =
+  (typeof TaskBoardStageScalarFieldEnum)[keyof typeof TaskBoardStageScalarFieldEnum];
+
+export const RecurringTaskTemplateScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  assigneeId: 'assigneeId',
+  creatorId: 'creatorId',
+  priority: 'priority',
+  frequency: 'frequency',
+  interval: 'interval',
+  daysOfWeek: 'daysOfWeek',
+  dayOfMonth: 'dayOfMonth',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  dueDateOffset: 'dueDateOffset',
+  isActive: 'isActive',
+  lastCreatedAt: 'lastCreatedAt',
+  nextCreateAt: 'nextCreateAt',
+  checklistData: 'checklistData',
+  linksData: 'linksData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type RecurringTaskTemplateScalarFieldEnum =
+  (typeof RecurringTaskTemplateScalarFieldEnum)[keyof typeof RecurringTaskTemplateScalarFieldEnum];
+
 export const SupportTicketScalarFieldEnum = {
   id: 'id',
   code: 'code',
   projectId: 'projectId',
-  productId: 'productId',
   contactId: 'contactId',
   category: 'category',
   priority: 'priority',
@@ -466,6 +515,20 @@ export const AuditLogScalarFieldEnum = {
 
 export type AuditLogScalarFieldEnum =
   (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum];
+
+export const SystemListOptionScalarFieldEnum = {
+  id: 'id',
+  listKey: 'listKey',
+  code: 'code',
+  label: 'label',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type SystemListOptionScalarFieldEnum =
+  (typeof SystemListOptionScalarFieldEnum)[keyof typeof SystemListOptionScalarFieldEnum];
 
 export const SortOrder = {
   asc: 'asc',

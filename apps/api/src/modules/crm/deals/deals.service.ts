@@ -15,6 +15,9 @@ interface CreateDealDto {
   projectId?: string;
   source?: string;
   notes?: string;
+  productType?: string | null;
+  pmId?: string | null;
+  deadline?: string | null;
 }
 
 interface UpdateDealDto {
@@ -32,6 +35,9 @@ interface UpdateDealDto {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string;
+  productType?: string | null;
+  pmId?: string | null;
+  deadline?: string | null;
 }
 
 interface DealQueryParams {
@@ -89,6 +95,7 @@ export class DealsService {
           contact: { select: { id: true, firstName: true, lastName: true, email: true } },
           company: { select: { id: true, name: true } },
           seller: { select: { id: true, firstName: true, lastName: true } },
+          pm: { select: { id: true, firstName: true, lastName: true } },
           orders: {
             select: {
               id: true,
@@ -136,6 +143,7 @@ export class DealsService {
         contact: true,
         company: { select: { id: true, name: true } },
         seller: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: { id: true, firstName: true, lastName: true } },
         orders: {
           include: {
             invoices: {
@@ -176,6 +184,9 @@ export class DealsService {
         sellerId: data.sellerId,
         source: data.source as Prisma.DealCreateInput['source'],
         notes: data.notes,
+        productType: data.productType ?? undefined,
+        pmId: data.pmId ?? undefined,
+        deadline: data.deadline ? new Date(data.deadline) : undefined,
       },
       include: {
         contact: { select: { id: true, firstName: true, lastName: true } },
@@ -206,12 +217,18 @@ export class DealsService {
         ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
         ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
         ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.productType !== undefined && { productType: data.productType }),
+        ...(data.pmId !== undefined && { pmId: data.pmId }),
+        ...(data.deadline !== undefined && {
+          deadline: data.deadline ? new Date(data.deadline) : null,
+        }),
       },
       include: {
         lead: { select: { id: true, code: true, contactName: true } },
         contact: { select: { id: true, firstName: true, lastName: true, email: true } },
         company: { select: { id: true, name: true } },
         seller: { select: { id: true, firstName: true, lastName: true } },
+        pm: { select: { id: true, firstName: true, lastName: true } },
         orders: {
           select: {
             id: true,

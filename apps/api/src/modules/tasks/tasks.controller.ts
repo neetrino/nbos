@@ -26,20 +26,24 @@ export class TasksController {
   @ApiOperation({ summary: 'Get all tasks with filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
-  @ApiQuery({ name: 'projectId', required: false })
-  @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'priority', required: false })
   @ApiQuery({ name: 'assigneeId', required: false })
+  @ApiQuery({ name: 'creatorId', required: false })
+  @ApiQuery({ name: 'entityType', required: false })
+  @ApiQuery({ name: 'entityId', required: false })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
-    @Query('projectId') projectId?: string,
-    @Query('productId') productId?: string,
     @Query('status') status?: string,
     @Query('priority') priority?: string,
     @Query('assigneeId') assigneeId?: string,
+    @Query('creatorId') creatorId?: string,
+    @Query('parentId') parentId?: string,
+    @Query('hasParent') hasParent?: string,
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
@@ -47,11 +51,14 @@ export class TasksController {
     return this.tasksService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
-      projectId,
-      productId,
       status,
       priority,
       assigneeId,
+      creatorId,
+      parentId,
+      hasParent: hasParent === 'false' ? false : undefined,
+      entityType,
+      entityId,
       search,
       sortBy,
       sortOrder,
@@ -63,6 +70,13 @@ export class TasksController {
   @ApiOperation({ summary: 'Get task statistics' })
   async getStats() {
     return this.tasksService.getStats();
+  }
+
+  @Get('by-entity/:entityType/:entityId')
+  @Public()
+  @ApiOperation({ summary: 'Get tasks linked to an entity' })
+  async findByEntity(@Param('entityType') entityType: string, @Param('entityId') entityId: string) {
+    return this.tasksService.findByEntity(entityType, entityId);
   }
 
   @Get(':id')
@@ -79,17 +93,16 @@ export class TasksController {
     @Body()
     body: {
       title: string;
-      projectId: string;
       creatorId: string;
       description?: string;
-      productId?: string;
-      extensionId?: string;
       assigneeId?: string;
       coAssignees?: string[];
       observers?: string[];
       priority?: string;
-      sprintId?: string;
+      startDate?: string;
       dueDate?: string;
+      parentId?: string;
+      links?: Array<{ entityType: string; entityId: string }>;
     },
   ) {
     return this.tasksService.create(body);
@@ -104,25 +117,47 @@ export class TasksController {
     body: {
       title?: string;
       description?: string;
-      projectId?: string;
-      productId?: string;
-      extensionId?: string;
-      assigneeId?: string;
+      assigneeId?: string | null;
       coAssignees?: string[];
       observers?: string[];
       priority?: string;
-      sprintId?: string;
-      dueDate?: string;
+      startDate?: string | null;
+      dueDate?: string | null;
+      parentId?: string | null;
+      kanbanStageId?: string | null;
+      myPlanStageId?: string | null;
+      myPlanSortOrder?: number;
     },
   ) {
     return this.tasksService.update(id, body);
   }
 
-  @Patch(':id/status')
+  @Patch(':id/start')
   @Public()
-  @ApiOperation({ summary: 'Update task status' })
-  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
-    return this.tasksService.updateStatus(id, status);
+  @ApiOperation({ summary: 'Start task' })
+  async start(@Param('id') id: string) {
+    return this.tasksService.start(id);
+  }
+
+  @Patch(':id/complete')
+  @Public()
+  @ApiOperation({ summary: 'Complete task' })
+  async complete(@Param('id') id: string) {
+    return this.tasksService.complete(id);
+  }
+
+  @Patch(':id/reopen')
+  @Public()
+  @ApiOperation({ summary: 'Reopen task' })
+  async reopen(@Param('id') id: string) {
+    return this.tasksService.reopen(id);
+  }
+
+  @Patch(':id/defer')
+  @Public()
+  @ApiOperation({ summary: 'Defer task' })
+  async defer(@Param('id') id: string) {
+    return this.tasksService.defer(id);
   }
 
   @Delete(':id')
@@ -131,5 +166,64 @@ export class TasksController {
   @ApiOperation({ summary: 'Delete task' })
   async remove(@Param('id') id: string) {
     await this.tasksService.delete(id);
+  }
+
+  // ─── LINKS ───────────────────────────────────────────────
+
+  @Post(':id/links')
+  @Public()
+  @ApiOperation({ summary: 'Add link to entity' })
+  async addLink(@Param('id') id: string, @Body() body: { entityType: string; entityId: string }) {
+    return this.tasksService.addLink(id, body.entityType, body.entityId);
+  }
+
+  @Delete(':taskId/links/:linkId')
+  @Public()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remove link' })
+  async removeLink(@Param('taskId') taskId: string, @Param('linkId') linkId: string) {
+    await this.tasksService.removeLink(taskId, linkId);
+  }
+
+  // ─── CHECKLISTS ──────────────────────────────────────────
+
+  @Post(':id/checklists')
+  @Public()
+  @ApiOperation({ summary: 'Create checklist' })
+  async createChecklist(@Param('id') id: string, @Body() body: { title?: string }) {
+    return this.tasksService.createChecklist(id, body.title ?? 'Checklist');
+  }
+
+  @Post('checklists/:checklistId/items')
+  @Public()
+  @ApiOperation({ summary: 'Add checklist item' })
+  async addChecklistItem(
+    @Param('checklistId') checklistId: string,
+    @Body() body: { text: string },
+  ) {
+    return this.tasksService.addChecklistItem(checklistId, body.text);
+  }
+
+  @Patch('checklist-items/:itemId/toggle')
+  @Public()
+  @ApiOperation({ summary: 'Toggle checklist item' })
+  async toggleChecklistItem(@Param('itemId') itemId: string) {
+    return this.tasksService.toggleChecklistItem(itemId);
+  }
+
+  @Delete('checklist-items/:itemId')
+  @Public()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete checklist item' })
+  async deleteChecklistItem(@Param('itemId') itemId: string) {
+    await this.tasksService.deleteChecklistItem(itemId);
+  }
+
+  @Delete('checklists/:checklistId')
+  @Public()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete checklist' })
+  async deleteChecklist(@Param('checklistId') checklistId: string) {
+    await this.tasksService.deleteChecklist(checklistId);
   }
 }

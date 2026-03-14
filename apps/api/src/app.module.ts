@@ -21,6 +21,7 @@ import { AutomationModule } from './modules/automation/automation.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MessengerModule } from './modules/messenger/messenger.module';
 import { PartnersModule } from './modules/partners/partners.module';
+import { SystemListsModule } from './modules/system-lists/system-lists.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
@@ -51,6 +52,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     SchedulerModule,
     PartnersModule,
     MessengerModule,
+    SystemListsModule,
   ],
   controllers: [HealthController],
   providers: [

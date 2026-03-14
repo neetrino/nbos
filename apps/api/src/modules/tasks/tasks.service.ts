@@ -9,45 +9,60 @@ import { PRISMA_TOKEN } from '../../database.module';
 
 interface CreateTaskDto {
   title: string;
-  projectId: string;
   creatorId: string;
   description?: string;
-  productId?: string;
-  extensionId?: string;
   assigneeId?: string;
   coAssignees?: string[];
   observers?: string[];
   priority?: string;
-  sprintId?: string;
+  startDate?: string;
   dueDate?: string;
+  parentId?: string;
+  links?: Array<{ entityType: string; entityId: string }>;
 }
 
 interface UpdateTaskDto {
   title?: string;
   description?: string;
-  projectId?: string;
-  productId?: string;
-  extensionId?: string;
-  assigneeId?: string;
+  assigneeId?: string | null;
   coAssignees?: string[];
   observers?: string[];
   priority?: string;
-  sprintId?: string;
-  dueDate?: string;
+  startDate?: string | null;
+  dueDate?: string | null;
+  parentId?: string | null;
+  kanbanStageId?: string | null;
+  myPlanStageId?: string | null;
+  myPlanSortOrder?: number;
 }
 
 interface TaskQueryParams {
   page?: number;
   pageSize?: number;
-  projectId?: string;
-  productId?: string;
   status?: string;
   priority?: string;
   assigneeId?: string;
+  creatorId?: string;
+  parentId?: string;
+  hasParent?: boolean;
+  entityType?: string;
+  entityId?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+const TASK_INCLUDE = {
+  creator: { select: { id: true, firstName: true, lastName: true } },
+  assignee: { select: { id: true, firstName: true, lastName: true } },
+  links: true,
+  checklists: { include: { items: { orderBy: { sortOrder: 'asc' as const } } } },
+  subtasks: {
+    select: { id: true, code: true, title: true, status: true, assigneeId: true },
+    orderBy: { createdAt: 'asc' as const },
+  },
+  _count: { select: { subtasks: true, checklists: true } },
+} satisfies Prisma.TaskInclude;
 
 @Injectable()
 export class TasksService {
@@ -57,26 +72,40 @@ export class TasksService {
     const {
       page = 1,
       pageSize = 20,
-      projectId,
-      productId,
       status,
       priority,
       assigneeId,
+      creatorId,
+      parentId,
+      hasParent,
+      entityType,
+      entityId,
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = params;
 
-    const where = this.buildWhere({ projectId, productId, status, priority, assigneeId, search });
+    const where: Prisma.TaskWhereInput = {};
+    if (status) where.status = status as TaskStatusEnum;
+    if (priority) where.priority = priority as TaskPriorityEnum;
+    if (assigneeId) where.assigneeId = assigneeId;
+    if (creatorId) where.creatorId = creatorId;
+    if (parentId) where.parentId = parentId;
+    if (hasParent === false) where.parentId = null;
+    if (entityType && entityId) {
+      where.links = { some: { entityType, entityId } };
+    }
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } },
+      ];
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.task.findMany({
         where,
-        include: {
-          project: { select: { id: true, code: true, name: true } },
-          creator: { select: { id: true, firstName: true, lastName: true } },
-          assignee: { select: { id: true, firstName: true, lastName: true } },
-        },
+        include: TASK_INCLUDE,
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -94,41 +123,51 @@ export class TasksService {
     const task = await this.prisma.task.findUnique({
       where: { id },
       include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true, productType: true } },
-        extension: { select: { id: true, name: true } },
-        creator: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+        ...TASK_INCLUDE,
+        parent: { select: { id: true, code: true, title: true } },
       },
     });
     if (!task) throw new NotFoundException(`Task ${id} not found`);
     return task;
   }
 
+  async findByEntity(entityType: string, entityId: string) {
+    return this.prisma.task.findMany({
+      where: { links: { some: { entityType, entityId } } },
+      include: TASK_INCLUDE,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async create(data: CreateTaskDto) {
     const code = await this.generateCode();
-    return this.prisma.task.create({
+    const task = await this.prisma.task.create({
       data: {
         code,
         title: data.title,
-        projectId: data.projectId,
         creatorId: data.creatorId,
         description: data.description,
-        productId: data.productId,
-        extensionId: data.extensionId,
         assigneeId: data.assigneeId,
         coAssignees: data.coAssignees ?? [],
         observers: data.observers ?? [],
         priority: (data.priority as TaskPriorityEnum) ?? 'NORMAL',
-        sprintId: data.sprintId,
+        startDate: data.startDate ? new Date(data.startDate) : undefined,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        parentId: data.parentId,
+        ...(data.links?.length && {
+          links: {
+            createMany: {
+              data: data.links.map((l) => ({
+                entityType: l.entityType,
+                entityId: l.entityId,
+              })),
+            },
+          },
+        }),
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        creator: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-      },
+      include: TASK_INCLUDE,
     });
+    return task;
   }
 
   async update(id: string, data: UpdateTaskDto) {
@@ -138,31 +177,71 @@ export class TasksService {
       data: {
         ...(data.title && { title: data.title }),
         ...(data.description !== undefined && { description: data.description }),
-        ...(data.projectId && { projectId: data.projectId }),
-        ...(data.productId !== undefined && { productId: data.productId || null }),
-        ...(data.extensionId !== undefined && { extensionId: data.extensionId || null }),
-        ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId || null }),
+        ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId }),
         ...(data.coAssignees && { coAssignees: data.coAssignees }),
         ...(data.observers && { observers: data.observers }),
         ...(data.priority && { priority: data.priority as TaskPriorityEnum }),
-        ...(data.sprintId !== undefined && { sprintId: data.sprintId || null }),
+        ...(data.startDate !== undefined && {
+          startDate: data.startDate ? new Date(data.startDate) : null,
+        }),
         ...(data.dueDate !== undefined && {
           dueDate: data.dueDate ? new Date(data.dueDate) : null,
         }),
+        ...(data.parentId !== undefined && { parentId: data.parentId }),
+        ...(data.kanbanStageId !== undefined && { kanbanStageId: data.kanbanStageId }),
+        ...(data.myPlanStageId !== undefined && { myPlanStageId: data.myPlanStageId }),
+        ...(data.myPlanSortOrder !== undefined && { myPlanSortOrder: data.myPlanSortOrder }),
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        creator: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-      },
+      include: TASK_INCLUDE,
     });
   }
 
-  async updateStatus(id: string, status: string) {
+  /** Начать задачу */
+  async start(id: string) {
+    const task = await this.findById(id);
+    if (task.status === 'DONE' || task.status === 'CANCELLED') {
+      throw new NotFoundException('Cannot start a completed/cancelled task');
+    }
+    return this.prisma.task.update({
+      where: { id },
+      data: { status: 'IN_PROGRESS' as TaskStatusEnum },
+      include: TASK_INCLUDE,
+    });
+  }
+
+  /** Завершить задачу */
+  async complete(id: string) {
     await this.findById(id);
     return this.prisma.task.update({
       where: { id },
-      data: { status: status as TaskStatusEnum },
+      data: {
+        status: 'DONE' as TaskStatusEnum,
+        completedAt: new Date(),
+      },
+      include: TASK_INCLUDE,
+    });
+  }
+
+  /** Возобновить задачу */
+  async reopen(id: string) {
+    await this.findById(id);
+    return this.prisma.task.update({
+      where: { id },
+      data: {
+        status: 'NEW' as TaskStatusEnum,
+        completedAt: null,
+      },
+      include: TASK_INCLUDE,
+    });
+  }
+
+  /** Отложить задачу */
+  async defer(id: string) {
+    await this.findById(id);
+    return this.prisma.task.update({
+      where: { id },
+      data: { status: 'DEFERRED' as TaskStatusEnum },
+      include: TASK_INCLUDE,
     });
   }
 
@@ -171,30 +250,70 @@ export class TasksService {
     return this.prisma.task.delete({ where: { id } });
   }
 
+  // ─── LINKS ───────────────────────────────────────────────
+
+  async addLink(taskId: string, entityType: string, entityId: string) {
+    await this.findById(taskId);
+    return this.prisma.taskLink.create({
+      data: { taskId, entityType, entityId },
+    });
+  }
+
+  async removeLink(taskId: string, linkId: string) {
+    return this.prisma.taskLink.delete({
+      where: { id: linkId, taskId },
+    });
+  }
+
+  // ─── CHECKLISTS ──────────────────────────────────────────
+
+  async createChecklist(taskId: string, title: string) {
+    await this.findById(taskId);
+    return this.prisma.taskChecklist.create({
+      data: { taskId, title },
+      include: { items: true },
+    });
+  }
+
+  async addChecklistItem(checklistId: string, text: string) {
+    const maxOrder = await this.prisma.taskChecklistItem.aggregate({
+      where: { checklistId },
+      _max: { sortOrder: true },
+    });
+    return this.prisma.taskChecklistItem.create({
+      data: {
+        checklistId,
+        text,
+        sortOrder: (maxOrder._max.sortOrder ?? -1) + 1,
+      },
+    });
+  }
+
+  async toggleChecklistItem(itemId: string) {
+    const item = await this.prisma.taskChecklistItem.findUnique({ where: { id: itemId } });
+    if (!item) throw new NotFoundException(`Checklist item ${itemId} not found`);
+    return this.prisma.taskChecklistItem.update({
+      where: { id: itemId },
+      data: { checked: !item.checked },
+    });
+  }
+
+  async deleteChecklistItem(itemId: string) {
+    return this.prisma.taskChecklistItem.delete({ where: { id: itemId } });
+  }
+
+  async deleteChecklist(checklistId: string) {
+    return this.prisma.taskChecklist.delete({ where: { id: checklistId } });
+  }
+
+  // ─── STATS ───────────────────────────────────────────────
+
   async getStats() {
     const [byStatus, byPriority] = await Promise.all([
       this.prisma.task.groupBy({ by: ['status'], _count: true }),
       this.prisma.task.groupBy({ by: ['priority'], _count: true }),
     ]);
     return { byStatus, byPriority };
-  }
-
-  private buildWhere(
-    filters: Omit<TaskQueryParams, 'page' | 'pageSize' | 'sortBy' | 'sortOrder'>,
-  ): Prisma.TaskWhereInput {
-    const where: Prisma.TaskWhereInput = {};
-    if (filters.projectId) where.projectId = filters.projectId;
-    if (filters.productId) where.productId = filters.productId;
-    if (filters.status) where.status = filters.status as TaskStatusEnum;
-    if (filters.priority) where.priority = filters.priority as TaskPriorityEnum;
-    if (filters.assigneeId) where.assigneeId = filters.assigneeId;
-    if (filters.search) {
-      where.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { code: { contains: filters.search, mode: 'insensitive' } },
-      ];
-    }
-    return where;
   }
 
   private async generateCode(): Promise<string> {

@@ -82,7 +82,6 @@ export class SupportController {
       projectId: string;
       category: string;
       description?: string;
-      productId?: string;
       contactId?: string;
       priority?: string;
       billable?: boolean;
@@ -102,7 +101,6 @@ export class SupportController {
       title?: string;
       description?: string;
       projectId?: string;
-      productId?: string;
       contactId?: string;
       category?: string;
       priority?: string;

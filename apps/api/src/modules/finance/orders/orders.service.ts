@@ -11,8 +11,6 @@ import { PRISMA_TOKEN } from '../../../database.module';
 interface CreateOrderDto {
   projectId: string;
   dealId?: string;
-  productId?: string;
-  extensionId?: string;
   type: string;
   paymentType: string;
   totalAmount: number;
@@ -72,8 +70,6 @@ export class OrdersService {
       include: {
         project: true,
         deal: true,
-        product: true,
-        extension: true,
         partner: true,
         invoices: { include: { payments: true } },
       },
@@ -89,8 +85,6 @@ export class OrdersService {
         code,
         projectId: data.projectId,
         dealId: data.dealId,
-        productId: data.productId,
-        extensionId: data.extensionId,
         type: data.type as OrderTypeEnum,
         paymentType: data.paymentType as PaymentTypeEnum,
         totalAmount: data.totalAmount,
