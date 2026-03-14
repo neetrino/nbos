@@ -58,6 +58,41 @@ function getDeadlineColumn(task: Task): string {
   return 'later';
 }
 
+/** Возвращает дату для столбца Deadline (или null для no-date). Границы: today=0, this-week=1..7, next-week=8..14, later=15+. */
+function getDueDateForDeadlineColumn(columnKey: string): string | null {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  switch (columnKey) {
+    case 'overdue': {
+      const d = new Date(today);
+      d.setDate(d.getDate() - 1);
+      return d.toISOString();
+    }
+    case 'today':
+      return today.toISOString();
+    case 'this-week': {
+      const d = new Date(today);
+      d.setDate(d.getDate() + 3);
+      return d.toISOString();
+    }
+    case 'next-week': {
+      const d = new Date(today);
+      d.setDate(d.getDate() + 8);
+      return d.toISOString();
+    }
+    case 'later': {
+      const d = new Date(today);
+      d.setDate(d.getDate() + 15);
+      return d.toISOString();
+    }
+    case 'no-date':
+      return null;
+    default:
+      return null;
+  }
+}
+
 const KANBAN_STATUS_MAP: Record<string, string> = {
   New: 'NEW',
   'In Progress': 'IN_PROGRESS',
@@ -299,6 +334,51 @@ export default function TasksPage() {
     }
   };
 
+  /* ─── Deadline move: update due date (or complete when dropping on "done") ─── */
+  const handleDeadlineMove = async (taskId: string, _from: string, toColumnKey: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    const prevTasks = tasks;
+
+    if (toColumnKey === 'done') {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: 'DONE' as const } : t)),
+      );
+      try {
+        await tasksApi.complete(taskId);
+      } catch {
+        setTasks(prevTasks);
+      }
+      return;
+    }
+
+    const newDueDate = getDueDateForDeadlineColumn(toColumnKey);
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              dueDate: newDueDate,
+              status: task.status === 'DONE' ? ('NEW' as const) : t.status,
+            }
+          : t,
+      ),
+    );
+
+    try {
+      const updates: Record<string, unknown> = { dueDate: newDueDate };
+      if (task.status === 'DONE') {
+        await tasksApi.reopen(taskId);
+        await tasksApi.update(taskId, updates);
+      } else {
+        await tasksApi.update(taskId, updates);
+      }
+    } catch {
+      setTasks(prevTasks);
+    }
+  };
+
   /* ─── My Plan stage management ─── */
   const handleAddMyPlanStage = async (title: string, color: string, _afterKey?: string) => {
     try {
@@ -426,6 +506,7 @@ export default function TasksPage() {
             columns={buildDeadlineColumns()}
             renderCard={renderCard}
             getItemId={(t) => t.id}
+            onMove={handleDeadlineMove}
             columnWidth={240}
             emptyMessage="No tasks"
           />
@@ -472,15 +553,15 @@ export default function TasksPage() {
           <Button variant="outline" size="icon" onClick={fetchTasks}>
             <RefreshCcw size={16} />
           </Button>
-          <div className="border-border bg-muted/40 flex rounded-lg border p-0.5">
+          <div className="border-border bg-muted/50 flex rounded-lg border p-0.5">
             <button
               type="button"
               onClick={() => setBoardView('deadline')}
               className={cn(
                 'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
                 boardView === 'deadline'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60',
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
             >
               <Clock size={14} />
@@ -492,8 +573,8 @@ export default function TasksPage() {
               className={cn(
                 'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
                 boardView === 'my-plan'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60',
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
             >
               <User size={14} />
@@ -505,8 +586,8 @@ export default function TasksPage() {
               className={cn(
                 'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
                 boardView === 'kanban'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60',
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
             >
               <LayoutGrid size={14} />
