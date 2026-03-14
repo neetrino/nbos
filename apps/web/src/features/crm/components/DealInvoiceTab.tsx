@@ -45,7 +45,7 @@ export function DealInvoiceTab({ deal, onRefresh }: DealInvoiceTabProps) {
     try {
       await invoicesApi.create({
         orderId: firstOrder.id,
-        projectId: '',
+        projectId: firstOrder.projectId,
         amount,
         type: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'DEVELOPMENT',
       });

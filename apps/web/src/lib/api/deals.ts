@@ -14,6 +14,7 @@ export interface DealOrder {
   code: string;
   status: string;
   totalAmount: number | null;
+  projectId: string;
   invoices: DealInvoice[];
 }
 
@@ -25,6 +26,7 @@ export interface Deal {
   type: string;
   amount: number | null;
   paymentType: string | null;
+  projectId: string | null;
   source: string | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;

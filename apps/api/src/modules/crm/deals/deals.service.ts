@@ -90,6 +90,7 @@ export class DealsService {
               code: true,
               status: true,
               totalAmount: true,
+              projectId: true,
               invoices: {
                 select: {
                   id: true,

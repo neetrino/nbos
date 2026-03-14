@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Trash2, LayoutGrid, History, FileText, Phone } from 'lucide-react';
+import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,14 @@ import { DealGeneralTab } from './DealGeneralTab';
 import { DealHistoryTab } from './DealHistoryTab';
 import { DealInvoiceTab } from './DealInvoiceTab';
 import { DealCallsTab } from './DealCallsTab';
+import { DealTasksTab } from './DealTasksTab';
 import type { Deal } from '@/lib/api/deals';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
   { value: 'history', label: 'History', icon: History },
   { value: 'invoice', label: 'Invoice', icon: FileText },
+  { value: 'task', label: 'Task', icon: CheckSquare },
   { value: 'calls', label: 'Calls', icon: Phone },
 ] as const;
 
@@ -147,9 +149,17 @@ export function DealSheet({
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="px-7 py-5">
-            {activeTab === 'general' && <DealGeneralTab deal={deal} onUpdate={onUpdate} />}
+            {activeTab === 'general' && (
+              <DealGeneralTab
+                deal={deal}
+                onUpdate={onUpdate}
+                onRefresh={onRefresh}
+                onOpenTaskTab={() => setActiveTab('task')}
+              />
+            )}
             {activeTab === 'history' && <DealHistoryTab />}
             {activeTab === 'invoice' && <DealInvoiceTab deal={deal} onRefresh={onRefresh} />}
+            {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
             {activeTab === 'calls' && <DealCallsTab />}
           </div>
         </ScrollArea>
