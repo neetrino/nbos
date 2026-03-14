@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,8 @@ interface QuickCreateTaskDialogProps {
   onOpenChange: (open: boolean) => void;
   creatorId: string;
   defaultLink?: { entityType: string; entityId: string };
+  /** Prefill due date when opening from a column (e.g. Deadline view) */
+  defaultDueDate?: string | null;
   onCreated?: (task: Task) => void;
   onOpenFull?: () => void;
 }
@@ -37,6 +39,7 @@ export function QuickCreateTaskDialog({
   onOpenChange,
   creatorId,
   defaultLink,
+  defaultDueDate,
   onCreated,
   onOpenFull,
 }: QuickCreateTaskDialogProps) {
@@ -46,6 +49,10 @@ export function QuickCreateTaskDialog({
   const [priority, setPriority] = useState('NORMAL');
   const [dueDate, setDueDate] = useState('');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open) setDueDate(defaultDueDate ?? '');
+  }, [open, defaultDueDate]);
 
   const reset = () => {
     setTitle('');

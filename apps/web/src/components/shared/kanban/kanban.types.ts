@@ -20,6 +20,9 @@ export interface KanbanBoardProps<T> {
   onAddColumn?: (title: string, color: string, afterColumnKey?: string) => void;
   onRenameColumn?: (columnKey: string, newTitle: string, newColor: string) => void;
   onDeleteColumn?: (columnKey: string) => void;
+  /** "+" button at top of each column: on click open create form; label shown on hover */
+  onAddItemInColumn?: (columnKey: string) => void;
+  addButtonLabel?: string;
 }
 
 export const SCROLL_SPEED = 6;

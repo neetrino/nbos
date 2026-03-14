@@ -227,6 +227,7 @@ export default function TasksPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [defaultCreateDueDate, setDefaultCreateDueDate] = useState<string | null>(null);
 
   const CURRENT_USER_ID = 'current-user';
 
@@ -332,6 +333,13 @@ export default function TasksPage() {
     } catch {
       setTasks(prevTasks);
     }
+  };
+
+  const handleAddTaskInColumn = (columnKey: string) => {
+    setDefaultCreateDueDate(
+      boardView === 'deadline' ? (getDueDateForDeadlineColumn(columnKey) ?? null) : null,
+    );
+    setQuickCreateOpen(true);
   };
 
   /* ─── Deadline move: update due date (or complete when dropping on "done") ─── */
@@ -507,6 +515,8 @@ export default function TasksPage() {
             renderCard={renderCard}
             getItemId={(t) => t.id}
             onMove={handleDeadlineMove}
+            onAddItemInColumn={handleAddTaskInColumn}
+            addButtonLabel="Quick"
             columnWidth={240}
             emptyMessage="No tasks"
           />
@@ -522,6 +532,8 @@ export default function TasksPage() {
             renderCard={renderCard}
             getItemId={(t) => t.id}
             onMove={handleKanbanMove}
+            onAddItemInColumn={handleAddTaskInColumn}
+            addButtonLabel="Quick"
             columnWidth={270}
             emptyMessage="No tasks"
           />
@@ -539,6 +551,8 @@ export default function TasksPage() {
           onAddColumn={handleAddMyPlanStage}
           onRenameColumn={handleRenameMyPlanStage}
           onDeleteColumn={handleDeleteMyPlanStage}
+          onAddItemInColumn={handleAddTaskInColumn}
+          addButtonLabel="Quick"
           columnWidth={270}
           emptyMessage="No tasks"
         />
@@ -643,8 +657,12 @@ export default function TasksPage() {
 
       <QuickCreateTaskDialog
         open={quickCreateOpen}
-        onOpenChange={setQuickCreateOpen}
+        onOpenChange={(open) => {
+          setQuickCreateOpen(open);
+          if (!open) setDefaultCreateDueDate(null);
+        }}
         creatorId={CURRENT_USER_ID}
+        defaultDueDate={defaultCreateDueDate}
         onCreated={handleTaskCreated}
       />
     </div>

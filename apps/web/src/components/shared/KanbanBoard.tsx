@@ -26,6 +26,8 @@ export function KanbanBoard<T>({
   onAddColumn,
   onRenameColumn,
   onDeleteColumn,
+  onAddItemInColumn,
+  addButtonLabel = 'Quick',
 }: KanbanBoardProps<T>) {
   const editable = !!(onAddColumn || onRenameColumn || onDeleteColumn);
 
@@ -275,6 +277,20 @@ export function KanbanBoard<T>({
 
                 <div className="min-h-0 flex-1 overflow-y-auto pr-1">
                   <div className="space-y-3">
+                    {onAddItemInColumn && (
+                      <div className="group/add-btn flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => onAddItemInColumn(column.key)}
+                          className="border-border hover:bg-muted text-muted-foreground hover:text-foreground flex h-8 min-w-[2rem] items-center justify-center gap-1.5 rounded-lg border border-dashed px-3 text-xs font-medium transition-colors"
+                        >
+                          <Plus size={14} />
+                          <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity] duration-200 group-hover/add-btn:max-w-[5rem] group-hover/add-btn:opacity-100">
+                            {addButtonLabel}
+                          </span>
+                        </button>
+                      </div>
+                    )}
                     {column.items.map((item) => {
                       const id = getItemId(item);
                       return (
