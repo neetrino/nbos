@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   RotateCcw,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -471,34 +472,46 @@ export default function TasksPage() {
           <Button variant="outline" size="icon" onClick={fetchTasks}>
             <RefreshCcw size={16} />
           </Button>
-          <div className="border-border flex rounded-lg border">
-            <Button
-              variant={boardView === 'deadline' ? 'secondary' : 'ghost'}
-              size="sm"
+          <div className="border-border bg-muted/40 flex rounded-lg border p-0.5">
+            <button
+              type="button"
               onClick={() => setBoardView('deadline')}
-              className="gap-1 rounded-r-none text-xs"
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
+                boardView === 'deadline'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60',
+              )}
             >
               <Clock size={14} />
               Deadline
-            </Button>
-            <Button
-              variant={boardView === 'my-plan' ? 'secondary' : 'ghost'}
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => setBoardView('my-plan')}
-              className="gap-1 rounded-none text-xs"
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
+                boardView === 'my-plan'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60',
+              )}
             >
               <User size={14} />
               My Plan
-            </Button>
-            <Button
-              variant={boardView === 'kanban' ? 'secondary' : 'ghost'}
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => setBoardView('kanban')}
-              className="gap-1 rounded-l-none text-xs"
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
+                boardView === 'kanban'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/60',
+              )}
             >
               <LayoutGrid size={14} />
               Board
-            </Button>
+            </button>
           </div>
           <Button onClick={() => setQuickCreateOpen(true)}>
             <Plus size={16} />

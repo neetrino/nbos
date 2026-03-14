@@ -94,7 +94,7 @@ export function KanbanColumnHeader<T>({
 
     return (
       <div
-        className="flex w-full items-center gap-1.5 rounded-lg px-3 py-1.5"
+        className="group/bar flex w-full items-center gap-1.5 rounded-lg px-3 py-1.5"
         style={{ backgroundColor: hex }}
       >
         <span className="min-w-0 truncate text-sm font-bold" style={{ color: textColor }}>
@@ -109,7 +109,7 @@ export function KanbanColumnHeader<T>({
         </span>
 
         {editable && !column.readonly && (
-          <div className="ml-auto flex shrink-0 items-center gap-0.5">
+          <div className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/bar:opacity-100">
             {onRenameColumn && (
               <button
                 onClick={startRename}
@@ -139,7 +139,7 @@ export function KanbanColumnHeader<T>({
   }
 
   return (
-    <div className="flex w-full items-center gap-2">
+    <div className="group/bar flex w-full items-center gap-2">
       <div className={cn('h-2.5 w-2.5 shrink-0 rounded-full', column.color)} />
       <h3 className="text-foreground min-w-0 truncate text-sm font-bold">{column.label}</h3>
 
@@ -148,7 +148,7 @@ export function KanbanColumnHeader<T>({
       </span>
 
       {editable && !column.readonly && (
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/bar:opacity-100">
           {onRenameColumn && (
             <button onClick={startRename} className="hover:bg-muted rounded p-0.5" title="Rename">
               <Pencil size={12} className="text-muted-foreground" />
