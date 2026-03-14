@@ -43,7 +43,7 @@ function computeFinance(deal: Deal) {
   const total = isSubscription ? amount * 12 : amount;
 
   const isFromPartner = deal.source === 'PARTNER';
-  const partnerAmount = isFromPartner ? Math.round(total * (PARTNER_PERCENT / 100)) : 0;
+  const partnerAmount = isFromPartner ? Math.round(amount * (PARTNER_PERCENT / 100)) : 0;
   const revenue = total - partnerAmount;
 
   const paidInvoiceTotal = (deal.orders ?? []).reduce((sum, order) => {
