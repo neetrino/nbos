@@ -26,6 +26,7 @@ interface DealSheetProps {
   onUpdate: (id: string, data: Partial<Deal>) => Promise<void>;
   onStatusChange: (id: string, status: string) => Promise<void>;
   onDelete?: (id: string) => void;
+  onRefresh?: () => void;
 }
 
 export function DealSheet({
@@ -35,6 +36,7 @@ export function DealSheet({
   onUpdate,
   onStatusChange,
   onDelete,
+  onRefresh,
 }: DealSheetProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
@@ -147,7 +149,7 @@ export function DealSheet({
           <div className="px-7 py-5">
             {activeTab === 'general' && <DealGeneralTab deal={deal} onUpdate={onUpdate} />}
             {activeTab === 'history' && <DealHistoryTab />}
-            {activeTab === 'invoice' && <DealInvoiceTab deal={deal} />}
+            {activeTab === 'invoice' && <DealInvoiceTab deal={deal} onRefresh={onRefresh} />}
             {activeTab === 'calls' && <DealCallsTab />}
           </div>
         </ScrollArea>

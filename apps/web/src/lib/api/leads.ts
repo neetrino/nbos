@@ -8,6 +8,9 @@ export interface Lead {
   phone: string | null;
   email: string | null;
   source: string;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
   status: string;
   assignedTo: string | null;
   contactId: string | null;
@@ -15,6 +18,8 @@ export interface Lead {
   createdAt: string;
   updatedAt: string;
   assignee: { id: string; firstName: string; lastName: string } | null;
+  sourcePartner: { id: string; name: string } | null;
+  sourceContact: { id: string; firstName: string; lastName: string } | null;
   deal: { id: string; code: string; status: string } | null;
 }
 

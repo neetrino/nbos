@@ -40,14 +40,28 @@ export const ACTIVE_LEAD_STAGES = LEAD_STAGES.filter((s) => !('terminal' in s));
 export const TERMINAL_LEAD_STAGES = LEAD_STAGES.filter((s) => 'terminal' in s);
 
 export const LEAD_SOURCES = [
-  { value: 'WEBSITE', label: 'Website', icon: '🌐' },
-  { value: 'INSTAGRAM', label: 'Instagram', icon: '📸' },
-  { value: 'FACEBOOK', label: 'Facebook', icon: '📘' },
-  { value: 'LINKEDIN', label: 'LinkedIn', icon: '💼' },
-  { value: 'REFERRAL', label: 'Referral', icon: '🤝' },
-  { value: 'COLD_CALL', label: 'Cold Call', icon: '📞' },
+  { value: 'MARKETING', label: 'Marketing', icon: '📣' },
+  { value: 'SALES', label: 'Sales', icon: '📞' },
   { value: 'PARTNER', label: 'Partner', icon: '🏢' },
-  { value: 'OTHER', label: 'Other', icon: '📋' },
+  { value: 'CLIENT', label: 'Client', icon: '🤝' },
+] as const;
+
+export const SALES_CHANNELS = [
+  { value: 'COLD_CALL', label: 'Cold Call' },
+  { value: 'COLD_DM_IG', label: 'Cold DM (Instagram)' },
+  { value: 'COLD_DM_FB', label: 'Cold DM (Facebook)' },
+  { value: 'COLD_DM_LINKEDIN', label: 'Cold DM (LinkedIn)' },
+  { value: 'COLD_EMAIL', label: 'Cold Email' },
+  { value: 'NETWORKING', label: 'Networking' },
+] as const;
+
+export const MARKETING_CHANNELS = [
+  { value: 'SMM', label: 'SMM' },
+  { value: 'WEBSITE', label: 'Website' },
+  { value: 'LIST_AM', label: 'List.am' },
+  { value: 'GOOGLE_ADS', label: 'Google Ads' },
+  { value: 'META_ADS', label: 'Meta Ads' },
+  { value: 'CONTENT', label: 'Content Marketing' },
 ] as const;
 
 export const INTEREST_TYPES = [

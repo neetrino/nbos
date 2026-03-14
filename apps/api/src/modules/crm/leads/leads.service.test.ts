@@ -87,7 +87,7 @@ describe('LeadsService', () => {
       prisma.lead.findFirst.mockResolvedValue({ code: 'L-2026-0005' });
       prisma.lead.create.mockImplementation(({ data }) => Promise.resolve({ id: '2', ...data }));
 
-      await service.create({ contactName: 'Jane', source: 'INSTAGRAM' });
+      await service.create({ contactName: 'Jane', source: 'MARKETING' });
 
       const createCall = prisma.lead.create.mock.calls[0][0];
       expect(createCall.data.code).toBe('L-2026-0006');

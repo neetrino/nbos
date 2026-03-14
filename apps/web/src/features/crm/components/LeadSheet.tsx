@@ -14,14 +14,26 @@ import {
   Link2,
   LayoutGrid,
   History,
+  Megaphone,
+  ExternalLink,
+  Building2,
 } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { StatusBadge, InlineField } from '@/components/shared';
+import { StatusBadge, InlineField, SearchField } from '@/components/shared';
 import { LeadPipelineStages } from './LeadPipelineStages';
-import { LEAD_SOURCES, LEAD_STAGES, getLeadSource } from '../constants/leadPipeline';
+import {
+  LEAD_SOURCES,
+  LEAD_STAGES,
+  SALES_CHANNELS,
+  MARKETING_CHANNELS,
+  getLeadSource,
+} from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
+import { partnersApi } from '@/lib/api/partners';
+import { contactsApi } from '@/lib/api/clients';
+import { useCallback } from 'react';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -225,6 +237,34 @@ interface LeadGeneralContentProps {
 }
 
 function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps) {
+  const saveMultipleFields = async (fields: Record<string, string | null>) => {
+    for (const [key, val] of Object.entries(fields)) {
+      await saveField(key, val ?? '');
+    }
+  };
+
+  const searchPartners = useCallback(async (query: string) => {
+    const data = await partnersApi.getAll({ pageSize: 5, search: query || undefined });
+    return data.items.map((p) => ({ value: p.id, label: p.name }));
+  }, []);
+
+  const searchContacts = useCallback(async (query: string) => {
+    const data = await contactsApi.getAll({ pageSize: 5, search: query || undefined });
+    return data.items.map((c) => ({
+      value: c.id,
+      label: `${c.firstName} ${c.lastName}`,
+      subtitle: c.email ?? undefined,
+    }));
+  }, []);
+
+  const whereOptions = (() => {
+    if (lead.source === 'SALES')
+      return SALES_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
+    if (lead.source === 'MARKETING')
+      return MARKETING_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
+    return [];
+  })();
+
   return (
     <div className="space-y-8">
       {/* Contact Information */}
@@ -282,9 +322,18 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
             icon={<Mail size={12} />}
             onSave={(v) => saveField('email', v)}
           />
+        </div>
+      </div>
 
+      {/* Marketing */}
+      <div>
+        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+          <Megaphone size={13} />
+          Marketing
+        </h3>
+        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
           <InlineField
-            label="Source"
+            label="From"
             value={lead.source}
             displayValue={
               source ? (
@@ -300,9 +349,80 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               label: s.label,
               icon: <span>{s.icon}</span>,
             }))}
-            icon={<Globe size={12} />}
-            onSave={(v) => saveField('source', v)}
+            icon={<Megaphone size={12} />}
+            onSave={async (v) => {
+              await saveMultipleFields({
+                source: v as string,
+                sourceDetail: null,
+                sourcePartnerId: null,
+                sourceContactId: null,
+              });
+            }}
           />
+
+          {(lead.source === 'SALES' || lead.source === 'MARKETING') && (
+            <InlineField
+              label="Where?"
+              value={lead.sourceDetail}
+              displayValue={
+                lead.sourceDetail ? (
+                  <span className="text-foreground text-sm font-medium">
+                    {whereOptions.find((o) => o.value === lead.sourceDetail)?.label ??
+                      lead.sourceDetail}
+                  </span>
+                ) : undefined
+              }
+              type="select"
+              options={whereOptions}
+              placeholder="Select channel..."
+              icon={<ExternalLink size={12} />}
+              onSave={(v) => saveField('sourceDetail', v)}
+            />
+          )}
+
+          {lead.source === 'PARTNER' && (
+            <SearchField
+              label="Which Partner?"
+              value={lead.sourcePartner?.name ?? null}
+              displayValue={
+                lead.sourcePartner ? (
+                  <span className="text-foreground text-sm font-medium">
+                    {lead.sourcePartner.name}
+                  </span>
+                ) : undefined
+              }
+              placeholder="Search partners..."
+              icon={<Building2 size={12} />}
+              onSearch={searchPartners}
+              onSave={async (v) => {
+                await saveField('sourcePartnerId', v);
+              }}
+            />
+          )}
+
+          {lead.source === 'CLIENT' && (
+            <SearchField
+              label="Which Client?"
+              value={
+                lead.sourceContact
+                  ? `${lead.sourceContact.firstName} ${lead.sourceContact.lastName}`
+                  : null
+              }
+              displayValue={
+                lead.sourceContact ? (
+                  <span className="text-foreground text-sm font-medium">
+                    {lead.sourceContact.firstName} {lead.sourceContact.lastName}
+                  </span>
+                ) : undefined
+              }
+              placeholder="Search contacts..."
+              icon={<User size={12} />}
+              onSearch={searchContacts}
+              onSave={async (v) => {
+                await saveField('sourceContactId', v);
+              }}
+            />
+          )}
         </div>
       </div>
 

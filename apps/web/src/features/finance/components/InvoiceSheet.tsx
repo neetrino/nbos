@@ -45,7 +45,7 @@ export function InvoiceSheet({ invoice, open, onOpenChange }: InvoiceSheetProps)
   const stage = getInvoiceStage(invoice.status);
   const amount = parseFloat(invoice.amount);
   const isOverdue =
-    invoice.status === 'OVERDUE' ||
+    invoice.status === 'DELAYED' ||
     (invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.status !== 'PAID');
 
   return (

@@ -81,7 +81,7 @@ describe('Schemas', () => {
     it('accepts optional fields', () => {
       const result = createLeadSchema.parse({
         contactName: 'John Doe',
-        source: 'INSTAGRAM',
+        source: 'MARKETING',
         phone: '+37499123456',
         email: 'john@example.com',
         notes: 'Test notes',

@@ -30,7 +30,7 @@ describe('LeadConversionService', () => {
   const convertDto = {
     dealType: 'NEW_CLIENT',
     amount: 50000,
-    paymentType: 'CLASSIC_50_50',
+    paymentType: 'CLASSIC',
     sellerId: 'seller-1',
   };
 

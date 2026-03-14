@@ -34,18 +34,18 @@ export const PRODUCT_STATUSES = [
 ] as const;
 
 export const INVOICE_STATUSES = [
-  'NEW',
-  'CREATED_IN_GOV',
-  'SENT',
-  'OVERDUE',
+  'THIS_MONTH',
+  'CREATE_INVOICE',
+  'WAITING',
+  'DELAYED',
   'ON_HOLD',
+  'FAIL',
   'PAID',
-  'UNPAID',
 ] as const;
 
 export const ORDER_STATUSES = ['ACTIVE', 'PARTIALLY_PAID', 'FULLY_PAID', 'CLOSED'] as const;
 
-export const PAYMENT_TYPES = ['CLASSIC_50_50', 'CLASSIC_30_30_40', 'SUBSCRIPTION'] as const;
+export const PAYMENT_TYPES = ['CLASSIC', 'SUBSCRIPTION'] as const;
 
 export const SUBSCRIPTION_STATUSES = ['ACTIVE', 'PAUSED', 'CANCELLED'] as const;
 
@@ -155,14 +155,7 @@ export const PRODUCT_TYPES = [
   'OTHER',
 ] as const;
 
-export const LEAD_SOURCES = [
-  'INSTAGRAM',
-  'FACEBOOK',
-  'WEBSITE',
-  'COLD_CALL',
-  'PARTNER',
-  'REFERRAL',
-] as const;
+export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT'] as const;
 
 export const DEAL_TYPES = ['NEW_CLIENT', 'EXTENSION', 'UPSELL'] as const;
 

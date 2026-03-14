@@ -18,6 +18,9 @@ interface UpdateLeadDto {
   phone?: string;
   email?: string;
   source?: string;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   status?: string;
   assignedTo?: string;
   notes?: string;
@@ -75,6 +78,8 @@ export class LeadsService {
         where,
         include: {
           assignee: { select: { id: true, firstName: true, lastName: true } },
+          sourcePartner: { select: { id: true, name: true } },
+          sourceContact: { select: { id: true, firstName: true, lastName: true } },
           deal: { select: { id: true, code: true, status: true } },
         },
         orderBy: { [sortBy]: sortOrder },
@@ -100,6 +105,8 @@ export class LeadsService {
       where: { id },
       include: {
         assignee: { select: { id: true, firstName: true, lastName: true } },
+        sourcePartner: { select: { id: true, name: true } },
+        sourceContact: { select: { id: true, firstName: true, lastName: true } },
         contact: true,
         deal: true,
       },
@@ -140,12 +147,17 @@ export class LeadsService {
         ...(data.phone !== undefined && { phone: data.phone }),
         ...(data.email !== undefined && { email: data.email }),
         ...(data.source && { source: data.source as Prisma.LeadUpdateInput['source'] }),
+        ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
+        ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
+        ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
         ...(data.status && { status: data.status as Prisma.LeadUpdateInput['status'] }),
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.notes !== undefined && { notes: data.notes }),
       },
       include: {
         assignee: { select: { id: true, firstName: true, lastName: true } },
+        sourcePartner: { select: { id: true, name: true } },
+        sourceContact: { select: { id: true, firstName: true, lastName: true } },
         deal: { select: { id: true, code: true, status: true } },
       },
     });

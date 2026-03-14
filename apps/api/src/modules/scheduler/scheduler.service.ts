@@ -44,7 +44,7 @@ export class SchedulerService {
     const overdueInvoices = await this.prisma.invoice.findMany({
       where: {
         status: {
-          notIn: ['PAID', 'CANCELLED', 'OVERDUE'] as Prisma.EnumInvoiceStatusEnumFilter['notIn'],
+          notIn: ['PAID', 'FAIL', 'DELAYED'] as Prisma.EnumInvoiceStatusEnumFilter['notIn'],
         },
         dueDate: { lt: now },
       },
@@ -59,7 +59,7 @@ export class SchedulerService {
     const ids = overdueInvoices.map((inv) => inv.id);
     await this.prisma.invoice.updateMany({
       where: { id: { in: ids } },
-      data: { status: 'OVERDUE' as Prisma.InvoiceUpdateManyMutationInput['status'] },
+      data: { status: 'DELAYED' as Prisma.InvoiceUpdateManyMutationInput['status'] },
     });
 
     this.logger.log(

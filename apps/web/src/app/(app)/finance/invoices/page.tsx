@@ -94,7 +94,7 @@ export default function InvoicesPage() {
     .filter((inv) => inv.status === 'PAID')
     .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
   const overdueAmount = invoices
-    .filter((inv) => inv.status === 'OVERDUE')
+    .filter((inv) => inv.status === 'DELAYED')
     .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
 
   const filterConfigs = [
@@ -111,17 +111,16 @@ export default function InvoicesPage() {
   ];
 
   const STAGE_COLORS: Record<string, string> = {
-    NEW: 'bg-blue-500',
-    GOV_SYSTEM: 'bg-indigo-500',
-    SEND_MESSAGE: 'bg-purple-500',
-    OVERDUE: 'bg-red-500',
+    THIS_MONTH: 'bg-blue-500',
+    CREATE_INVOICE: 'bg-indigo-500',
+    WAITING: 'bg-purple-500',
+    DELAYED: 'bg-orange-500',
     ON_HOLD: 'bg-gray-400',
+    FAIL: 'bg-red-500',
     PAID: 'bg-green-500',
   };
 
-  const kanbanColumns = INVOICE_STAGES.filter((s) =>
-    ['NEW', 'GOV_SYSTEM', 'SEND_MESSAGE', 'OVERDUE', 'ON_HOLD', 'PAID'].includes(s.value),
-  ).map((stage) => ({
+  const kanbanColumns = INVOICE_STAGES.map((stage) => ({
     key: stage.value,
     label: stage.label,
     color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',

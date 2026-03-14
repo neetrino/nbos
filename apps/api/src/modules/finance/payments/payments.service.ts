@@ -130,7 +130,7 @@ export class PaymentsService {
     await this.prisma.invoice.update({
       where: { id: invoiceId },
       data: {
-        status: isPaid ? 'PAID' : 'NEW',
+        status: isPaid ? 'PAID' : 'THIS_MONTH',
         paidDate: isPaid ? new Date() : null,
       },
     });

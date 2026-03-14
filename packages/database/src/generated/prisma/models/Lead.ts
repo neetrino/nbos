@@ -31,6 +31,9 @@ export type LeadMinAggregateOutputType = {
   phone: string | null;
   email: string | null;
   source: $Enums.LeadSourceEnum | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
   status: $Enums.LeadStatusEnum | null;
   assignedTo: string | null;
   contactId: string | null;
@@ -47,6 +50,9 @@ export type LeadMaxAggregateOutputType = {
   phone: string | null;
   email: string | null;
   source: $Enums.LeadSourceEnum | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
   status: $Enums.LeadStatusEnum | null;
   assignedTo: string | null;
   contactId: string | null;
@@ -63,6 +69,9 @@ export type LeadCountAggregateOutputType = {
   phone: number;
   email: number;
   source: number;
+  sourceDetail: number;
+  sourcePartnerId: number;
+  sourceContactId: number;
   status: number;
   assignedTo: number;
   contactId: number;
@@ -80,6 +89,9 @@ export type LeadMinAggregateInputType = {
   phone?: true;
   email?: true;
   source?: true;
+  sourceDetail?: true;
+  sourcePartnerId?: true;
+  sourceContactId?: true;
   status?: true;
   assignedTo?: true;
   contactId?: true;
@@ -96,6 +108,9 @@ export type LeadMaxAggregateInputType = {
   phone?: true;
   email?: true;
   source?: true;
+  sourceDetail?: true;
+  sourcePartnerId?: true;
+  sourceContactId?: true;
   status?: true;
   assignedTo?: true;
   contactId?: true;
@@ -112,6 +127,9 @@ export type LeadCountAggregateInputType = {
   phone?: true;
   email?: true;
   source?: true;
+  sourceDetail?: true;
+  sourcePartnerId?: true;
+  sourceContactId?: true;
   status?: true;
   assignedTo?: true;
   contactId?: true;
@@ -202,6 +220,9 @@ export type LeadGroupByOutputType = {
   phone: string | null;
   email: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
   status: $Enums.LeadStatusEnum;
   assignedTo: string | null;
   contactId: string | null;
@@ -236,6 +257,9 @@ export type LeadWhereInput = {
   phone?: Prisma.StringNullableFilter<'Lead'> | string | null;
   email?: Prisma.StringNullableFilter<'Lead'> | string | null;
   source?: Prisma.EnumLeadSourceEnumFilter<'Lead'> | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.StringNullableFilter<'Lead'> | string | null;
+  sourcePartnerId?: Prisma.StringNullableFilter<'Lead'> | string | null;
+  sourceContactId?: Prisma.StringNullableFilter<'Lead'> | string | null;
   status?: Prisma.EnumLeadStatusEnumFilter<'Lead'> | $Enums.LeadStatusEnum;
   assignedTo?: Prisma.StringNullableFilter<'Lead'> | string | null;
   contactId?: Prisma.StringNullableFilter<'Lead'> | string | null;
@@ -246,6 +270,14 @@ export type LeadWhereInput = {
   assignee?: Prisma.XOR<
     Prisma.EmployeeNullableScalarRelationFilter,
     Prisma.EmployeeWhereInput
+  > | null;
+  sourcePartner?: Prisma.XOR<
+    Prisma.PartnerNullableScalarRelationFilter,
+    Prisma.PartnerWhereInput
+  > | null;
+  sourceContact?: Prisma.XOR<
+    Prisma.ContactNullableScalarRelationFilter,
+    Prisma.ContactWhereInput
   > | null;
   deal?: Prisma.XOR<Prisma.DealNullableScalarRelationFilter, Prisma.DealWhereInput> | null;
 };
@@ -258,6 +290,9 @@ export type LeadOrderByWithRelationInput = {
   phone?: Prisma.SortOrderInput | Prisma.SortOrder;
   email?: Prisma.SortOrderInput | Prisma.SortOrder;
   source?: Prisma.SortOrder;
+  sourceDetail?: Prisma.SortOrderInput | Prisma.SortOrder;
+  sourcePartnerId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  sourceContactId?: Prisma.SortOrderInput | Prisma.SortOrder;
   status?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
   contactId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -266,6 +301,8 @@ export type LeadOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder;
   contact?: Prisma.ContactOrderByWithRelationInput;
   assignee?: Prisma.EmployeeOrderByWithRelationInput;
+  sourcePartner?: Prisma.PartnerOrderByWithRelationInput;
+  sourceContact?: Prisma.ContactOrderByWithRelationInput;
   deal?: Prisma.DealOrderByWithRelationInput;
 };
 
@@ -281,6 +318,9 @@ export type LeadWhereUniqueInput = Prisma.AtLeast<
     phone?: Prisma.StringNullableFilter<'Lead'> | string | null;
     email?: Prisma.StringNullableFilter<'Lead'> | string | null;
     source?: Prisma.EnumLeadSourceEnumFilter<'Lead'> | $Enums.LeadSourceEnum;
+    sourceDetail?: Prisma.StringNullableFilter<'Lead'> | string | null;
+    sourcePartnerId?: Prisma.StringNullableFilter<'Lead'> | string | null;
+    sourceContactId?: Prisma.StringNullableFilter<'Lead'> | string | null;
     status?: Prisma.EnumLeadStatusEnumFilter<'Lead'> | $Enums.LeadStatusEnum;
     assignedTo?: Prisma.StringNullableFilter<'Lead'> | string | null;
     contactId?: Prisma.StringNullableFilter<'Lead'> | string | null;
@@ -295,6 +335,14 @@ export type LeadWhereUniqueInput = Prisma.AtLeast<
       Prisma.EmployeeNullableScalarRelationFilter,
       Prisma.EmployeeWhereInput
     > | null;
+    sourcePartner?: Prisma.XOR<
+      Prisma.PartnerNullableScalarRelationFilter,
+      Prisma.PartnerWhereInput
+    > | null;
+    sourceContact?: Prisma.XOR<
+      Prisma.ContactNullableScalarRelationFilter,
+      Prisma.ContactWhereInput
+    > | null;
     deal?: Prisma.XOR<Prisma.DealNullableScalarRelationFilter, Prisma.DealWhereInput> | null;
   },
   'id' | 'code'
@@ -308,6 +356,9 @@ export type LeadOrderByWithAggregationInput = {
   phone?: Prisma.SortOrderInput | Prisma.SortOrder;
   email?: Prisma.SortOrderInput | Prisma.SortOrder;
   source?: Prisma.SortOrder;
+  sourceDetail?: Prisma.SortOrderInput | Prisma.SortOrder;
+  sourcePartnerId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  sourceContactId?: Prisma.SortOrderInput | Prisma.SortOrder;
   status?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
   contactId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -330,6 +381,9 @@ export type LeadScalarWhereWithAggregatesInput = {
   phone?: Prisma.StringNullableWithAggregatesFilter<'Lead'> | string | null;
   email?: Prisma.StringNullableWithAggregatesFilter<'Lead'> | string | null;
   source?: Prisma.EnumLeadSourceEnumWithAggregatesFilter<'Lead'> | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.StringNullableWithAggregatesFilter<'Lead'> | string | null;
+  sourcePartnerId?: Prisma.StringNullableWithAggregatesFilter<'Lead'> | string | null;
+  sourceContactId?: Prisma.StringNullableWithAggregatesFilter<'Lead'> | string | null;
   status?: Prisma.EnumLeadStatusEnumWithAggregatesFilter<'Lead'> | $Enums.LeadStatusEnum;
   assignedTo?: Prisma.StringNullableWithAggregatesFilter<'Lead'> | string | null;
   contactId?: Prisma.StringNullableWithAggregatesFilter<'Lead'> | string | null;
@@ -346,12 +400,15 @@ export type LeadCreateInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
   status?: $Enums.LeadStatusEnum;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutLeadsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutLeadsAssignedInput;
+  sourcePartner?: Prisma.PartnerCreateNestedOneWithoutLeadsAsSourceInput;
+  sourceContact?: Prisma.ContactCreateNestedOneWithoutLeadsAsSourceInput;
   deal?: Prisma.DealCreateNestedOneWithoutLeadInput;
 };
 
@@ -363,6 +420,9 @@ export type LeadUncheckedCreateInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   status?: $Enums.LeadStatusEnum;
   assignedTo?: string | null;
   contactId?: string | null;
@@ -380,12 +440,15 @@ export type LeadUpdateInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutLeadsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutLeadsAssignedNestedInput;
+  sourcePartner?: Prisma.PartnerUpdateOneWithoutLeadsAsSourceNestedInput;
+  sourceContact?: Prisma.ContactUpdateOneWithoutLeadsAsSourceNestedInput;
   deal?: Prisma.DealUpdateOneWithoutLeadNestedInput;
 };
 
@@ -397,6 +460,9 @@ export type LeadUncheckedUpdateInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -414,6 +480,9 @@ export type LeadCreateManyInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   status?: $Enums.LeadStatusEnum;
   assignedTo?: string | null;
   contactId?: string | null;
@@ -430,6 +499,7 @@ export type LeadUpdateManyMutationInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -444,6 +514,9 @@ export type LeadUncheckedUpdateManyInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -470,6 +543,9 @@ export type LeadCountOrderByAggregateInput = {
   phone?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
+  sourceDetail?: Prisma.SortOrder;
+  sourcePartnerId?: Prisma.SortOrder;
+  sourceContactId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
@@ -486,6 +562,9 @@ export type LeadMaxOrderByAggregateInput = {
   phone?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
+  sourceDetail?: Prisma.SortOrder;
+  sourcePartnerId?: Prisma.SortOrder;
+  sourceContactId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
@@ -502,6 +581,9 @@ export type LeadMinOrderByAggregateInput = {
   phone?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
+  sourceDetail?: Prisma.SortOrder;
+  sourcePartnerId?: Prisma.SortOrder;
+  sourceContactId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
@@ -530,6 +612,21 @@ export type LeadCreateNestedManyWithoutContactInput = {
   connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
 };
 
+export type LeadCreateNestedManyWithoutSourceContactInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.LeadCreateWithoutSourceContactInput,
+        Prisma.LeadUncheckedCreateWithoutSourceContactInput
+      >
+    | Prisma.LeadCreateWithoutSourceContactInput[]
+    | Prisma.LeadUncheckedCreateWithoutSourceContactInput[];
+  connectOrCreate?:
+    | Prisma.LeadCreateOrConnectWithoutSourceContactInput
+    | Prisma.LeadCreateOrConnectWithoutSourceContactInput[];
+  createMany?: Prisma.LeadCreateManySourceContactInputEnvelope;
+  connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+};
+
 export type LeadUncheckedCreateNestedManyWithoutContactInput = {
   create?:
     | Prisma.XOR<
@@ -542,6 +639,21 @@ export type LeadUncheckedCreateNestedManyWithoutContactInput = {
     | Prisma.LeadCreateOrConnectWithoutContactInput
     | Prisma.LeadCreateOrConnectWithoutContactInput[];
   createMany?: Prisma.LeadCreateManyContactInputEnvelope;
+  connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+};
+
+export type LeadUncheckedCreateNestedManyWithoutSourceContactInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.LeadCreateWithoutSourceContactInput,
+        Prisma.LeadUncheckedCreateWithoutSourceContactInput
+      >
+    | Prisma.LeadCreateWithoutSourceContactInput[]
+    | Prisma.LeadUncheckedCreateWithoutSourceContactInput[];
+  connectOrCreate?:
+    | Prisma.LeadCreateOrConnectWithoutSourceContactInput
+    | Prisma.LeadCreateOrConnectWithoutSourceContactInput[];
+  createMany?: Prisma.LeadCreateManySourceContactInputEnvelope;
   connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
 };
 
@@ -573,6 +685,34 @@ export type LeadUpdateManyWithoutContactNestedInput = {
   deleteMany?: Prisma.LeadScalarWhereInput | Prisma.LeadScalarWhereInput[];
 };
 
+export type LeadUpdateManyWithoutSourceContactNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.LeadCreateWithoutSourceContactInput,
+        Prisma.LeadUncheckedCreateWithoutSourceContactInput
+      >
+    | Prisma.LeadCreateWithoutSourceContactInput[]
+    | Prisma.LeadUncheckedCreateWithoutSourceContactInput[];
+  connectOrCreate?:
+    | Prisma.LeadCreateOrConnectWithoutSourceContactInput
+    | Prisma.LeadCreateOrConnectWithoutSourceContactInput[];
+  upsert?:
+    | Prisma.LeadUpsertWithWhereUniqueWithoutSourceContactInput
+    | Prisma.LeadUpsertWithWhereUniqueWithoutSourceContactInput[];
+  createMany?: Prisma.LeadCreateManySourceContactInputEnvelope;
+  set?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  disconnect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  delete?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  update?:
+    | Prisma.LeadUpdateWithWhereUniqueWithoutSourceContactInput
+    | Prisma.LeadUpdateWithWhereUniqueWithoutSourceContactInput[];
+  updateMany?:
+    | Prisma.LeadUpdateManyWithWhereWithoutSourceContactInput
+    | Prisma.LeadUpdateManyWithWhereWithoutSourceContactInput[];
+  deleteMany?: Prisma.LeadScalarWhereInput | Prisma.LeadScalarWhereInput[];
+};
+
 export type LeadUncheckedUpdateManyWithoutContactNestedInput = {
   create?:
     | Prisma.XOR<
@@ -598,6 +738,34 @@ export type LeadUncheckedUpdateManyWithoutContactNestedInput = {
   updateMany?:
     | Prisma.LeadUpdateManyWithWhereWithoutContactInput
     | Prisma.LeadUpdateManyWithWhereWithoutContactInput[];
+  deleteMany?: Prisma.LeadScalarWhereInput | Prisma.LeadScalarWhereInput[];
+};
+
+export type LeadUncheckedUpdateManyWithoutSourceContactNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.LeadCreateWithoutSourceContactInput,
+        Prisma.LeadUncheckedCreateWithoutSourceContactInput
+      >
+    | Prisma.LeadCreateWithoutSourceContactInput[]
+    | Prisma.LeadUncheckedCreateWithoutSourceContactInput[];
+  connectOrCreate?:
+    | Prisma.LeadCreateOrConnectWithoutSourceContactInput
+    | Prisma.LeadCreateOrConnectWithoutSourceContactInput[];
+  upsert?:
+    | Prisma.LeadUpsertWithWhereUniqueWithoutSourceContactInput
+    | Prisma.LeadUpsertWithWhereUniqueWithoutSourceContactInput[];
+  createMany?: Prisma.LeadCreateManySourceContactInputEnvelope;
+  set?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  disconnect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  delete?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  update?:
+    | Prisma.LeadUpdateWithWhereUniqueWithoutSourceContactInput
+    | Prisma.LeadUpdateWithWhereUniqueWithoutSourceContactInput[];
+  updateMany?:
+    | Prisma.LeadUpdateManyWithWhereWithoutSourceContactInput
+    | Prisma.LeadUpdateManyWithWhereWithoutSourceContactInput[];
   deleteMany?: Prisma.LeadScalarWhereInput | Prisma.LeadScalarWhereInput[];
 };
 
@@ -720,6 +888,92 @@ export type LeadUncheckedUpdateManyWithoutAssigneeNestedInput = {
   deleteMany?: Prisma.LeadScalarWhereInput | Prisma.LeadScalarWhereInput[];
 };
 
+export type LeadCreateNestedManyWithoutSourcePartnerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.LeadCreateWithoutSourcePartnerInput,
+        Prisma.LeadUncheckedCreateWithoutSourcePartnerInput
+      >
+    | Prisma.LeadCreateWithoutSourcePartnerInput[]
+    | Prisma.LeadUncheckedCreateWithoutSourcePartnerInput[];
+  connectOrCreate?:
+    | Prisma.LeadCreateOrConnectWithoutSourcePartnerInput
+    | Prisma.LeadCreateOrConnectWithoutSourcePartnerInput[];
+  createMany?: Prisma.LeadCreateManySourcePartnerInputEnvelope;
+  connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+};
+
+export type LeadUncheckedCreateNestedManyWithoutSourcePartnerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.LeadCreateWithoutSourcePartnerInput,
+        Prisma.LeadUncheckedCreateWithoutSourcePartnerInput
+      >
+    | Prisma.LeadCreateWithoutSourcePartnerInput[]
+    | Prisma.LeadUncheckedCreateWithoutSourcePartnerInput[];
+  connectOrCreate?:
+    | Prisma.LeadCreateOrConnectWithoutSourcePartnerInput
+    | Prisma.LeadCreateOrConnectWithoutSourcePartnerInput[];
+  createMany?: Prisma.LeadCreateManySourcePartnerInputEnvelope;
+  connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+};
+
+export type LeadUpdateManyWithoutSourcePartnerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.LeadCreateWithoutSourcePartnerInput,
+        Prisma.LeadUncheckedCreateWithoutSourcePartnerInput
+      >
+    | Prisma.LeadCreateWithoutSourcePartnerInput[]
+    | Prisma.LeadUncheckedCreateWithoutSourcePartnerInput[];
+  connectOrCreate?:
+    | Prisma.LeadCreateOrConnectWithoutSourcePartnerInput
+    | Prisma.LeadCreateOrConnectWithoutSourcePartnerInput[];
+  upsert?:
+    | Prisma.LeadUpsertWithWhereUniqueWithoutSourcePartnerInput
+    | Prisma.LeadUpsertWithWhereUniqueWithoutSourcePartnerInput[];
+  createMany?: Prisma.LeadCreateManySourcePartnerInputEnvelope;
+  set?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  disconnect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  delete?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  update?:
+    | Prisma.LeadUpdateWithWhereUniqueWithoutSourcePartnerInput
+    | Prisma.LeadUpdateWithWhereUniqueWithoutSourcePartnerInput[];
+  updateMany?:
+    | Prisma.LeadUpdateManyWithWhereWithoutSourcePartnerInput
+    | Prisma.LeadUpdateManyWithWhereWithoutSourcePartnerInput[];
+  deleteMany?: Prisma.LeadScalarWhereInput | Prisma.LeadScalarWhereInput[];
+};
+
+export type LeadUncheckedUpdateManyWithoutSourcePartnerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.LeadCreateWithoutSourcePartnerInput,
+        Prisma.LeadUncheckedCreateWithoutSourcePartnerInput
+      >
+    | Prisma.LeadCreateWithoutSourcePartnerInput[]
+    | Prisma.LeadUncheckedCreateWithoutSourcePartnerInput[];
+  connectOrCreate?:
+    | Prisma.LeadCreateOrConnectWithoutSourcePartnerInput
+    | Prisma.LeadCreateOrConnectWithoutSourcePartnerInput[];
+  upsert?:
+    | Prisma.LeadUpsertWithWhereUniqueWithoutSourcePartnerInput
+    | Prisma.LeadUpsertWithWhereUniqueWithoutSourcePartnerInput[];
+  createMany?: Prisma.LeadCreateManySourcePartnerInputEnvelope;
+  set?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  disconnect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  delete?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  connect?: Prisma.LeadWhereUniqueInput | Prisma.LeadWhereUniqueInput[];
+  update?:
+    | Prisma.LeadUpdateWithWhereUniqueWithoutSourcePartnerInput
+    | Prisma.LeadUpdateWithWhereUniqueWithoutSourcePartnerInput[];
+  updateMany?:
+    | Prisma.LeadUpdateManyWithWhereWithoutSourcePartnerInput
+    | Prisma.LeadUpdateManyWithWhereWithoutSourcePartnerInput[];
+  deleteMany?: Prisma.LeadScalarWhereInput | Prisma.LeadScalarWhereInput[];
+};
+
 export type LeadCreateWithoutContactInput = {
   id?: string;
   code: string;
@@ -728,11 +982,14 @@ export type LeadCreateWithoutContactInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
   status?: $Enums.LeadStatusEnum;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutLeadsAssignedInput;
+  sourcePartner?: Prisma.PartnerCreateNestedOneWithoutLeadsAsSourceInput;
+  sourceContact?: Prisma.ContactCreateNestedOneWithoutLeadsAsSourceInput;
   deal?: Prisma.DealCreateNestedOneWithoutLeadInput;
 };
 
@@ -744,6 +1001,9 @@ export type LeadUncheckedCreateWithoutContactInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   status?: $Enums.LeadStatusEnum;
   assignedTo?: string | null;
   notes?: string | null;
@@ -762,6 +1022,57 @@ export type LeadCreateOrConnectWithoutContactInput = {
 
 export type LeadCreateManyContactInputEnvelope = {
   data: Prisma.LeadCreateManyContactInput | Prisma.LeadCreateManyContactInput[];
+  skipDuplicates?: boolean;
+};
+
+export type LeadCreateWithoutSourceContactInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  contactName: string;
+  phone?: string | null;
+  email?: string | null;
+  source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  status?: $Enums.LeadStatusEnum;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutLeadsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutLeadsAssignedInput;
+  sourcePartner?: Prisma.PartnerCreateNestedOneWithoutLeadsAsSourceInput;
+  deal?: Prisma.DealCreateNestedOneWithoutLeadInput;
+};
+
+export type LeadUncheckedCreateWithoutSourceContactInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  contactName: string;
+  phone?: string | null;
+  email?: string | null;
+  source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  status?: $Enums.LeadStatusEnum;
+  assignedTo?: string | null;
+  contactId?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deal?: Prisma.DealUncheckedCreateNestedOneWithoutLeadInput;
+};
+
+export type LeadCreateOrConnectWithoutSourceContactInput = {
+  where: Prisma.LeadWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.LeadCreateWithoutSourceContactInput,
+    Prisma.LeadUncheckedCreateWithoutSourceContactInput
+  >;
+};
+
+export type LeadCreateManySourceContactInputEnvelope = {
+  data: Prisma.LeadCreateManySourceContactInput | Prisma.LeadCreateManySourceContactInput[];
   skipDuplicates?: boolean;
 };
 
@@ -804,12 +1115,43 @@ export type LeadScalarWhereInput = {
   phone?: Prisma.StringNullableFilter<'Lead'> | string | null;
   email?: Prisma.StringNullableFilter<'Lead'> | string | null;
   source?: Prisma.EnumLeadSourceEnumFilter<'Lead'> | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.StringNullableFilter<'Lead'> | string | null;
+  sourcePartnerId?: Prisma.StringNullableFilter<'Lead'> | string | null;
+  sourceContactId?: Prisma.StringNullableFilter<'Lead'> | string | null;
   status?: Prisma.EnumLeadStatusEnumFilter<'Lead'> | $Enums.LeadStatusEnum;
   assignedTo?: Prisma.StringNullableFilter<'Lead'> | string | null;
   contactId?: Prisma.StringNullableFilter<'Lead'> | string | null;
   notes?: Prisma.StringNullableFilter<'Lead'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Lead'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Lead'> | Date | string;
+};
+
+export type LeadUpsertWithWhereUniqueWithoutSourceContactInput = {
+  where: Prisma.LeadWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.LeadUpdateWithoutSourceContactInput,
+    Prisma.LeadUncheckedUpdateWithoutSourceContactInput
+  >;
+  create: Prisma.XOR<
+    Prisma.LeadCreateWithoutSourceContactInput,
+    Prisma.LeadUncheckedCreateWithoutSourceContactInput
+  >;
+};
+
+export type LeadUpdateWithWhereUniqueWithoutSourceContactInput = {
+  where: Prisma.LeadWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.LeadUpdateWithoutSourceContactInput,
+    Prisma.LeadUncheckedUpdateWithoutSourceContactInput
+  >;
+};
+
+export type LeadUpdateManyWithWhereWithoutSourceContactInput = {
+  where: Prisma.LeadScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.LeadUpdateManyMutationInput,
+    Prisma.LeadUncheckedUpdateManyWithoutSourceContactInput
+  >;
 };
 
 export type LeadCreateWithoutDealInput = {
@@ -820,12 +1162,15 @@ export type LeadCreateWithoutDealInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
   status?: $Enums.LeadStatusEnum;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutLeadsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutLeadsAssignedInput;
+  sourcePartner?: Prisma.PartnerCreateNestedOneWithoutLeadsAsSourceInput;
+  sourceContact?: Prisma.ContactCreateNestedOneWithoutLeadsAsSourceInput;
 };
 
 export type LeadUncheckedCreateWithoutDealInput = {
@@ -836,6 +1181,9 @@ export type LeadUncheckedCreateWithoutDealInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   status?: $Enums.LeadStatusEnum;
   assignedTo?: string | null;
   contactId?: string | null;
@@ -868,12 +1216,15 @@ export type LeadUpdateWithoutDealInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutLeadsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutLeadsAssignedNestedInput;
+  sourcePartner?: Prisma.PartnerUpdateOneWithoutLeadsAsSourceNestedInput;
+  sourceContact?: Prisma.ContactUpdateOneWithoutLeadsAsSourceNestedInput;
 };
 
 export type LeadUncheckedUpdateWithoutDealInput = {
@@ -884,6 +1235,9 @@ export type LeadUncheckedUpdateWithoutDealInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -900,11 +1254,14 @@ export type LeadCreateWithoutAssigneeInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
   status?: $Enums.LeadStatusEnum;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutLeadsInput;
+  sourcePartner?: Prisma.PartnerCreateNestedOneWithoutLeadsAsSourceInput;
+  sourceContact?: Prisma.ContactCreateNestedOneWithoutLeadsAsSourceInput;
   deal?: Prisma.DealCreateNestedOneWithoutLeadInput;
 };
 
@@ -916,6 +1273,9 @@ export type LeadUncheckedCreateWithoutAssigneeInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   status?: $Enums.LeadStatusEnum;
   contactId?: string | null;
   notes?: string | null;
@@ -965,6 +1325,85 @@ export type LeadUpdateManyWithWhereWithoutAssigneeInput = {
   >;
 };
 
+export type LeadCreateWithoutSourcePartnerInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  contactName: string;
+  phone?: string | null;
+  email?: string | null;
+  source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  status?: $Enums.LeadStatusEnum;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutLeadsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutLeadsAssignedInput;
+  sourceContact?: Prisma.ContactCreateNestedOneWithoutLeadsAsSourceInput;
+  deal?: Prisma.DealCreateNestedOneWithoutLeadInput;
+};
+
+export type LeadUncheckedCreateWithoutSourcePartnerInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  contactName: string;
+  phone?: string | null;
+  email?: string | null;
+  source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourceContactId?: string | null;
+  status?: $Enums.LeadStatusEnum;
+  assignedTo?: string | null;
+  contactId?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deal?: Prisma.DealUncheckedCreateNestedOneWithoutLeadInput;
+};
+
+export type LeadCreateOrConnectWithoutSourcePartnerInput = {
+  where: Prisma.LeadWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.LeadCreateWithoutSourcePartnerInput,
+    Prisma.LeadUncheckedCreateWithoutSourcePartnerInput
+  >;
+};
+
+export type LeadCreateManySourcePartnerInputEnvelope = {
+  data: Prisma.LeadCreateManySourcePartnerInput | Prisma.LeadCreateManySourcePartnerInput[];
+  skipDuplicates?: boolean;
+};
+
+export type LeadUpsertWithWhereUniqueWithoutSourcePartnerInput = {
+  where: Prisma.LeadWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.LeadUpdateWithoutSourcePartnerInput,
+    Prisma.LeadUncheckedUpdateWithoutSourcePartnerInput
+  >;
+  create: Prisma.XOR<
+    Prisma.LeadCreateWithoutSourcePartnerInput,
+    Prisma.LeadUncheckedCreateWithoutSourcePartnerInput
+  >;
+};
+
+export type LeadUpdateWithWhereUniqueWithoutSourcePartnerInput = {
+  where: Prisma.LeadWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.LeadUpdateWithoutSourcePartnerInput,
+    Prisma.LeadUncheckedUpdateWithoutSourcePartnerInput
+  >;
+};
+
+export type LeadUpdateManyWithWhereWithoutSourcePartnerInput = {
+  where: Prisma.LeadScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.LeadUpdateManyMutationInput,
+    Prisma.LeadUncheckedUpdateManyWithoutSourcePartnerInput
+  >;
+};
+
 export type LeadCreateManyContactInput = {
   id?: string;
   code: string;
@@ -973,8 +1412,29 @@ export type LeadCreateManyContactInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   status?: $Enums.LeadStatusEnum;
   assignedTo?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type LeadCreateManySourceContactInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  contactName: string;
+  phone?: string | null;
+  email?: string | null;
+  source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  status?: $Enums.LeadStatusEnum;
+  assignedTo?: string | null;
+  contactId?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -988,11 +1448,14 @@ export type LeadUpdateWithoutContactInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   assignee?: Prisma.EmployeeUpdateOneWithoutLeadsAssignedNestedInput;
+  sourcePartner?: Prisma.PartnerUpdateOneWithoutLeadsAsSourceNestedInput;
+  sourceContact?: Prisma.ContactUpdateOneWithoutLeadsAsSourceNestedInput;
   deal?: Prisma.DealUpdateOneWithoutLeadNestedInput;
 };
 
@@ -1004,6 +1467,9 @@ export type LeadUncheckedUpdateWithoutContactInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1020,8 +1486,67 @@ export type LeadUncheckedUpdateManyWithoutContactInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type LeadUpdateWithoutSourceContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutLeadsNestedInput;
+  assignee?: Prisma.EmployeeUpdateOneWithoutLeadsAssignedNestedInput;
+  sourcePartner?: Prisma.PartnerUpdateOneWithoutLeadsAsSourceNestedInput;
+  deal?: Prisma.DealUpdateOneWithoutLeadNestedInput;
+};
+
+export type LeadUncheckedUpdateWithoutSourceContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  deal?: Prisma.DealUncheckedUpdateOneWithoutLeadNestedInput;
+};
+
+export type LeadUncheckedUpdateManyWithoutSourceContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1035,6 +1560,9 @@ export type LeadCreateManyAssigneeInput = {
   phone?: string | null;
   email?: string | null;
   source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   status?: $Enums.LeadStatusEnum;
   contactId?: string | null;
   notes?: string | null;
@@ -1050,11 +1578,14 @@ export type LeadUpdateWithoutAssigneeInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutLeadsNestedInput;
+  sourcePartner?: Prisma.PartnerUpdateOneWithoutLeadsAsSourceNestedInput;
+  sourceContact?: Prisma.ContactUpdateOneWithoutLeadsAsSourceNestedInput;
   deal?: Prisma.DealUpdateOneWithoutLeadNestedInput;
 };
 
@@ -1066,6 +1597,9 @@ export type LeadUncheckedUpdateWithoutAssigneeInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1082,7 +1616,84 @@ export type LeadUncheckedUpdateManyWithoutAssigneeInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type LeadCreateManySourcePartnerInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  contactName: string;
+  phone?: string | null;
+  email?: string | null;
+  source: $Enums.LeadSourceEnum;
+  sourceDetail?: string | null;
+  sourceContactId?: string | null;
+  status?: $Enums.LeadStatusEnum;
+  assignedTo?: string | null;
+  contactId?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type LeadUpdateWithoutSourcePartnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutLeadsNestedInput;
+  assignee?: Prisma.EmployeeUpdateOneWithoutLeadsAssignedNestedInput;
+  sourceContact?: Prisma.ContactUpdateOneWithoutLeadsAsSourceNestedInput;
+  deal?: Prisma.DealUpdateOneWithoutLeadNestedInput;
+};
+
+export type LeadUncheckedUpdateWithoutSourcePartnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  deal?: Prisma.DealUncheckedUpdateOneWithoutLeadNestedInput;
+};
+
+export type LeadUncheckedUpdateManyWithoutSourcePartnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  source?: Prisma.EnumLeadSourceEnumFieldUpdateOperationsInput | $Enums.LeadSourceEnum;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumLeadStatusEnumFieldUpdateOperationsInput | $Enums.LeadStatusEnum;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1100,6 +1711,9 @@ export type LeadSelect<
     phone?: boolean;
     email?: boolean;
     source?: boolean;
+    sourceDetail?: boolean;
+    sourcePartnerId?: boolean;
+    sourceContactId?: boolean;
     status?: boolean;
     assignedTo?: boolean;
     contactId?: boolean;
@@ -1108,6 +1722,8 @@ export type LeadSelect<
     updatedAt?: boolean;
     contact?: boolean | Prisma.Lead$contactArgs<ExtArgs>;
     assignee?: boolean | Prisma.Lead$assigneeArgs<ExtArgs>;
+    sourcePartner?: boolean | Prisma.Lead$sourcePartnerArgs<ExtArgs>;
+    sourceContact?: boolean | Prisma.Lead$sourceContactArgs<ExtArgs>;
     deal?: boolean | Prisma.Lead$dealArgs<ExtArgs>;
   },
   ExtArgs['result']['lead']
@@ -1124,6 +1740,9 @@ export type LeadSelectCreateManyAndReturn<
     phone?: boolean;
     email?: boolean;
     source?: boolean;
+    sourceDetail?: boolean;
+    sourcePartnerId?: boolean;
+    sourceContactId?: boolean;
     status?: boolean;
     assignedTo?: boolean;
     contactId?: boolean;
@@ -1132,6 +1751,8 @@ export type LeadSelectCreateManyAndReturn<
     updatedAt?: boolean;
     contact?: boolean | Prisma.Lead$contactArgs<ExtArgs>;
     assignee?: boolean | Prisma.Lead$assigneeArgs<ExtArgs>;
+    sourcePartner?: boolean | Prisma.Lead$sourcePartnerArgs<ExtArgs>;
+    sourceContact?: boolean | Prisma.Lead$sourceContactArgs<ExtArgs>;
   },
   ExtArgs['result']['lead']
 >;
@@ -1147,6 +1768,9 @@ export type LeadSelectUpdateManyAndReturn<
     phone?: boolean;
     email?: boolean;
     source?: boolean;
+    sourceDetail?: boolean;
+    sourcePartnerId?: boolean;
+    sourceContactId?: boolean;
     status?: boolean;
     assignedTo?: boolean;
     contactId?: boolean;
@@ -1155,6 +1779,8 @@ export type LeadSelectUpdateManyAndReturn<
     updatedAt?: boolean;
     contact?: boolean | Prisma.Lead$contactArgs<ExtArgs>;
     assignee?: boolean | Prisma.Lead$assigneeArgs<ExtArgs>;
+    sourcePartner?: boolean | Prisma.Lead$sourcePartnerArgs<ExtArgs>;
+    sourceContact?: boolean | Prisma.Lead$sourceContactArgs<ExtArgs>;
   },
   ExtArgs['result']['lead']
 >;
@@ -1167,6 +1793,9 @@ export type LeadSelectScalar = {
   phone?: boolean;
   email?: boolean;
   source?: boolean;
+  sourceDetail?: boolean;
+  sourcePartnerId?: boolean;
+  sourceContactId?: boolean;
   status?: boolean;
   assignedTo?: boolean;
   contactId?: boolean;
@@ -1185,6 +1814,9 @@ export type LeadOmit<
   | 'phone'
   | 'email'
   | 'source'
+  | 'sourceDetail'
+  | 'sourcePartnerId'
+  | 'sourceContactId'
   | 'status'
   | 'assignedTo'
   | 'contactId'
@@ -1198,6 +1830,8 @@ export type LeadInclude<
 > = {
   contact?: boolean | Prisma.Lead$contactArgs<ExtArgs>;
   assignee?: boolean | Prisma.Lead$assigneeArgs<ExtArgs>;
+  sourcePartner?: boolean | Prisma.Lead$sourcePartnerArgs<ExtArgs>;
+  sourceContact?: boolean | Prisma.Lead$sourceContactArgs<ExtArgs>;
   deal?: boolean | Prisma.Lead$dealArgs<ExtArgs>;
 };
 export type LeadIncludeCreateManyAndReturn<
@@ -1205,12 +1839,16 @@ export type LeadIncludeCreateManyAndReturn<
 > = {
   contact?: boolean | Prisma.Lead$contactArgs<ExtArgs>;
   assignee?: boolean | Prisma.Lead$assigneeArgs<ExtArgs>;
+  sourcePartner?: boolean | Prisma.Lead$sourcePartnerArgs<ExtArgs>;
+  sourceContact?: boolean | Prisma.Lead$sourceContactArgs<ExtArgs>;
 };
 export type LeadIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   contact?: boolean | Prisma.Lead$contactArgs<ExtArgs>;
   assignee?: boolean | Prisma.Lead$assigneeArgs<ExtArgs>;
+  sourcePartner?: boolean | Prisma.Lead$sourcePartnerArgs<ExtArgs>;
+  sourceContact?: boolean | Prisma.Lead$sourceContactArgs<ExtArgs>;
 };
 
 export type $LeadPayload<
@@ -1220,6 +1858,8 @@ export type $LeadPayload<
   objects: {
     contact: Prisma.$ContactPayload<ExtArgs> | null;
     assignee: Prisma.$EmployeePayload<ExtArgs> | null;
+    sourcePartner: Prisma.$PartnerPayload<ExtArgs> | null;
+    sourceContact: Prisma.$ContactPayload<ExtArgs> | null;
     deal: Prisma.$DealPayload<ExtArgs> | null;
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
@@ -1231,6 +1871,9 @@ export type $LeadPayload<
       phone: string | null;
       email: string | null;
       source: $Enums.LeadSourceEnum;
+      sourceDetail: string | null;
+      sourcePartnerId: string | null;
+      sourceContactId: string | null;
       status: $Enums.LeadStatusEnum;
       assignedTo: string | null;
       contactId: string | null;
@@ -1773,6 +2416,32 @@ export interface Prisma__LeadClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  sourcePartner<T extends Prisma.Lead$sourcePartnerArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Lead$sourcePartnerArgs<ExtArgs>>,
+  ): Prisma.Prisma__PartnerClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$PartnerPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  sourceContact<T extends Prisma.Lead$sourceContactArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Lead$sourceContactArgs<ExtArgs>>,
+  ): Prisma.Prisma__ContactClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$ContactPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   deal<T extends Prisma.Lead$dealArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Lead$dealArgs<ExtArgs>>,
   ): Prisma.Prisma__DealClient<
@@ -1824,6 +2493,9 @@ export interface LeadFieldRefs {
   readonly phone: Prisma.FieldRef<'Lead', 'String'>;
   readonly email: Prisma.FieldRef<'Lead', 'String'>;
   readonly source: Prisma.FieldRef<'Lead', 'LeadSourceEnum'>;
+  readonly sourceDetail: Prisma.FieldRef<'Lead', 'String'>;
+  readonly sourcePartnerId: Prisma.FieldRef<'Lead', 'String'>;
+  readonly sourceContactId: Prisma.FieldRef<'Lead', 'String'>;
   readonly status: Prisma.FieldRef<'Lead', 'LeadStatusEnum'>;
   readonly assignedTo: Prisma.FieldRef<'Lead', 'String'>;
   readonly contactId: Prisma.FieldRef<'Lead', 'String'>;
@@ -2292,6 +2964,48 @@ export type Lead$assigneeArgs<
    */
   include?: Prisma.EmployeeInclude<ExtArgs> | null;
   where?: Prisma.EmployeeWhereInput;
+};
+
+/**
+ * Lead.sourcePartner
+ */
+export type Lead$sourcePartnerArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Partner
+   */
+  select?: Prisma.PartnerSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Partner
+   */
+  omit?: Prisma.PartnerOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerInclude<ExtArgs> | null;
+  where?: Prisma.PartnerWhereInput;
+};
+
+/**
+ * Lead.sourceContact
+ */
+export type Lead$sourceContactArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Contact
+   */
+  select?: Prisma.ContactSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Contact
+   */
+  omit?: Prisma.ContactOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContactInclude<ExtArgs> | null;
+  where?: Prisma.ContactWhereInput;
 };
 
 /**

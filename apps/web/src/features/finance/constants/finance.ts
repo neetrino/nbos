@@ -8,13 +8,13 @@ export const INVOICE_TYPES = [
 ] as const;
 
 export const INVOICE_STAGES = [
-  { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant },
-  { value: 'GOV_SYSTEM', label: 'Gov System', variant: 'indigo' as StatusVariant },
-  { value: 'SEND_MESSAGE', label: 'Send Message', variant: 'purple' as StatusVariant },
-  { value: 'OVERDUE', label: 'Overdue', variant: 'red' as StatusVariant },
+  { value: 'THIS_MONTH', label: 'This Month', variant: 'blue' as StatusVariant },
+  { value: 'CREATE_INVOICE', label: 'Create Invoice', variant: 'indigo' as StatusVariant },
+  { value: 'WAITING', label: 'Waiting', variant: 'purple' as StatusVariant },
+  { value: 'DELAYED', label: 'Delayed', variant: 'orange' as StatusVariant },
   { value: 'ON_HOLD', label: 'On Hold', variant: 'gray' as StatusVariant },
+  { value: 'FAIL', label: 'Fail', variant: 'red' as StatusVariant },
   { value: 'PAID', label: 'Paid', variant: 'green' as StatusVariant },
-  { value: 'UNPAID', label: 'Unpaid', variant: 'red' as StatusVariant },
 ] as const;
 
 export const EXPENSE_STAGES = [

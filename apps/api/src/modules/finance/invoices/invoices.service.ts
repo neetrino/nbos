@@ -96,17 +96,48 @@ export class InvoicesService {
   }
 
   async updateStatus(id: string, status: string) {
-    await this.findById(id);
+    const invoice = await this.findById(id);
     const updateData: Prisma.InvoiceUpdateInput = {
       status: status as InvoiceStatusEnum,
     };
     if (status === 'PAID') {
       updateData.paidDate = new Date();
     }
-    return this.prisma.invoice.update({
+    const updated = await this.prisma.invoice.update({
       where: { id },
       data: updateData,
     });
+
+    if (status === 'PAID' && invoice.orderId) {
+      await this.checkAndPromoteDeal(invoice.orderId);
+    }
+
+    return updated;
+  }
+
+  private async checkAndPromoteDeal(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        deal: true,
+        invoices: { select: { status: true, amount: true } },
+      },
+    });
+    if (!order?.deal || order.deal.status === 'WON' || order.deal.status === 'FAILED') return;
+
+    const allPaid =
+      order.invoices.length > 0 && order.invoices.every((inv) => inv.status === 'PAID');
+    if (!allPaid) return;
+
+    const paidTotal = order.invoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
+    const dealAmount = Number(order.deal.amount ?? 0);
+
+    if (dealAmount > 0 && paidTotal >= dealAmount) {
+      await this.prisma.deal.update({
+        where: { id: order.deal.id },
+        data: { status: 'WON' },
+      });
+    }
   }
 
   async delete(id: string) {

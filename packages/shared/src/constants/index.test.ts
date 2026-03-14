@@ -77,8 +77,8 @@ describe('Constants', () => {
   });
 
   it('LEAD_SOURCES are valid', () => {
-    expect(LEAD_SOURCES).toContain('INSTAGRAM');
-    expect(LEAD_SOURCES).toContain('WEBSITE');
+    expect(LEAD_SOURCES).toContain('MARKETING');
+    expect(LEAD_SOURCES).toContain('SALES');
     expect(LEAD_SOURCES.length).toBeGreaterThan(0);
   });
 

@@ -297,6 +297,7 @@ export default function DealsPipelinePage() {
         onUpdate={handleUpdate}
         onStatusChange={handleStatusChange}
         onDelete={handleDelete}
+        onRefresh={fetchDeals}
       />
     </div>
   );

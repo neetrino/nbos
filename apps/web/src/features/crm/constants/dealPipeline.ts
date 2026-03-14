@@ -120,11 +120,8 @@ export const PRODUCT_TYPES = [
 ] as const;
 
 export const PAYMENT_TYPES = [
-  { value: 'UPFRONT', label: 'Upfront (100%)' },
-  { value: 'SPLIT_50_50', label: '50/50' },
-  { value: 'SPLIT_30_30_40', label: '30/30/40' },
+  { value: 'CLASSIC', label: 'Classic' },
   { value: 'SUBSCRIPTION', label: 'Subscription' },
-  { value: 'MILESTONE', label: 'Milestone-based' },
 ] as const;
 
 export function getDealStage(key: string): DealStage | undefined {

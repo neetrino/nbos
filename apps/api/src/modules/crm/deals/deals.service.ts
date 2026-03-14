@@ -23,6 +23,10 @@ interface UpdateDealDto {
   paymentType?: string;
   contactId?: string;
   projectId?: string | null;
+  source?: string;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
   notes?: string;
 }
 
@@ -80,7 +84,25 @@ export class DealsService {
           lead: { select: { id: true, code: true, contactName: true } },
           contact: { select: { id: true, firstName: true, lastName: true, email: true } },
           seller: { select: { id: true, firstName: true, lastName: true } },
-          orders: { select: { id: true, code: true, status: true, totalAmount: true } },
+          orders: {
+            select: {
+              id: true,
+              code: true,
+              status: true,
+              totalAmount: true,
+              invoices: {
+                select: {
+                  id: true,
+                  code: true,
+                  status: true,
+                  amount: true,
+                  payments: { select: { id: true, amount: true } },
+                },
+              },
+            },
+          },
+          sourcePartner: { select: { id: true, name: true } },
+          sourceContact: { select: { id: true, firstName: true, lastName: true } },
         },
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * pageSize,
@@ -109,9 +131,20 @@ export class DealsService {
         seller: { select: { id: true, firstName: true, lastName: true } },
         orders: {
           include: {
-            invoices: { select: { id: true, code: true, status: true, amount: true } },
+            invoices: {
+              select: {
+                id: true,
+                code: true,
+                status: true,
+                amount: true,
+                paidDate: true,
+                payments: { select: { id: true, amount: true, paymentDate: true } },
+              },
+            },
           },
         },
+        sourcePartner: { select: { id: true, name: true } },
+        sourceContact: { select: { id: true, firstName: true, lastName: true } },
       },
     });
     if (!deal) {
@@ -157,13 +190,35 @@ export class DealsService {
         }),
         ...(data.contactId && { contactId: data.contactId }),
         ...(data.projectId !== undefined && { projectId: data.projectId }),
+        ...(data.source && { source: data.source as Prisma.DealUpdateInput['source'] }),
+        ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
+        ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
+        ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
         ...(data.notes !== undefined && { notes: data.notes }),
       },
       include: {
         lead: { select: { id: true, code: true, contactName: true } },
         contact: { select: { id: true, firstName: true, lastName: true, email: true } },
         seller: { select: { id: true, firstName: true, lastName: true } },
-        orders: { select: { id: true, code: true, status: true, totalAmount: true } },
+        orders: {
+          select: {
+            id: true,
+            code: true,
+            status: true,
+            totalAmount: true,
+            invoices: {
+              select: {
+                id: true,
+                code: true,
+                status: true,
+                amount: true,
+                payments: { select: { id: true, amount: true } },
+              },
+            },
+          },
+        },
+        sourcePartner: { select: { id: true, name: true } },
+        sourceContact: { select: { id: true, firstName: true, lastName: true } },
       },
     });
   }

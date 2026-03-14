@@ -96,12 +96,10 @@ export const LeadStatusEnum = {
 export type LeadStatusEnum = (typeof LeadStatusEnum)[keyof typeof LeadStatusEnum];
 
 export const LeadSourceEnum = {
-  INSTAGRAM: 'INSTAGRAM',
-  FACEBOOK: 'FACEBOOK',
-  WEBSITE: 'WEBSITE',
-  COLD_CALL: 'COLD_CALL',
+  MARKETING: 'MARKETING',
+  SALES: 'SALES',
   PARTNER: 'PARTNER',
-  REFERRAL: 'REFERRAL',
+  CLIENT: 'CLIENT',
 } as const;
 
 export type LeadSourceEnum = (typeof LeadSourceEnum)[keyof typeof LeadSourceEnum];
@@ -140,8 +138,7 @@ export const OrderTypeEnum = {
 export type OrderTypeEnum = (typeof OrderTypeEnum)[keyof typeof OrderTypeEnum];
 
 export const PaymentTypeEnum = {
-  CLASSIC_50_50: 'CLASSIC_50_50',
-  CLASSIC_30_30_40: 'CLASSIC_30_30_40',
+  CLASSIC: 'CLASSIC',
   SUBSCRIPTION: 'SUBSCRIPTION',
 } as const;
 
@@ -167,13 +164,13 @@ export const InvoiceTypeEnum = {
 export type InvoiceTypeEnum = (typeof InvoiceTypeEnum)[keyof typeof InvoiceTypeEnum];
 
 export const InvoiceStatusEnum = {
-  NEW: 'NEW',
-  CREATED_IN_GOV: 'CREATED_IN_GOV',
-  SENT: 'SENT',
-  OVERDUE: 'OVERDUE',
+  THIS_MONTH: 'THIS_MONTH',
+  CREATE_INVOICE: 'CREATE_INVOICE',
+  WAITING: 'WAITING',
+  DELAYED: 'DELAYED',
   ON_HOLD: 'ON_HOLD',
+  FAIL: 'FAIL',
   PAID: 'PAID',
-  UNPAID: 'UNPAID',
 } as const;
 
 export type InvoiceStatusEnum = (typeof InvoiceStatusEnum)[keyof typeof InvoiceStatusEnum];

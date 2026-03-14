@@ -1,5 +1,22 @@
 import { api } from '../api';
 
+export interface DealInvoice {
+  id: string;
+  code: string;
+  status: string;
+  amount: number;
+  paidDate?: string | null;
+  payments: Array<{ id: string; amount: number; paymentDate?: string }>;
+}
+
+export interface DealOrder {
+  id: string;
+  code: string;
+  status: string;
+  totalAmount: number | null;
+  invoices: DealInvoice[];
+}
+
 export interface Deal {
   id: string;
   code: string;
@@ -9,13 +26,18 @@ export interface Deal {
   amount: number | null;
   paymentType: string | null;
   source: string | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
   contact: { id: string; firstName: string; lastName: string; email: string | null };
   seller: { id: string; firstName: string; lastName: string };
-  orders: Array<{ id: string; code: string; status: string; totalAmount: number | null }>;
+  orders: DealOrder[];
+  sourcePartner: { id: string; name: string } | null;
+  sourceContact: { id: string; firstName: string; lastName: string } | null;
 }
 
 export interface DealListData {

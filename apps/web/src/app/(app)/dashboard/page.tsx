@@ -96,7 +96,7 @@ export default function DashboardPage() {
       const employees = employeesData?.items ?? employeesData ?? [];
 
       const pendingInvoices = invoices.filter(
-        (inv: { status: string }) => inv.status === 'PENDING' || inv.status === 'SENT',
+        (inv: { status: string }) => inv.status === 'WAITING' || inv.status === 'CREATE_INVOICE',
       );
       const pendingAmount = pendingInvoices.reduce(
         (sum: number, inv: { amount: string | number }) => sum + Number(inv.amount || 0),

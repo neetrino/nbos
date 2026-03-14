@@ -101,6 +101,10 @@ export class DealsController {
       paymentType?: string;
       contactId?: string;
       projectId?: string | null;
+      source?: string;
+      sourceDetail?: string | null;
+      sourcePartnerId?: string | null;
+      sourceContactId?: string | null;
       notes?: string;
     },
   ) {
