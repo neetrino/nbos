@@ -14,6 +14,7 @@ export interface KanbanColumn<T> {
 interface KanbanBoardProps<T> {
   columns: KanbanColumn<T>[];
   renderCard: (item: T, columnKey: string) => ReactNode;
+  renderColumnHeader?: (column: KanbanColumn<T>) => ReactNode;
   onMove?: (itemId: string, fromColumn: string, toColumn: string) => void;
   getItemId: (item: T) => string;
   columnWidth?: number;
@@ -26,6 +27,7 @@ const EDGE_ZONE_WIDTH = 48;
 export function KanbanBoard<T>({
   columns,
   renderCard,
+  renderColumnHeader,
   onMove,
   getItemId,
   columnWidth = 280,
@@ -195,12 +197,15 @@ export function KanbanBoard<T>({
               onDragLeave={handleDragLeave}
               onDrop={() => handleDrop(column.key)}
             >
-              <div className="mb-3 flex shrink-0 items-center gap-2">
-                <div className={cn('h-2 w-2 rounded-full', column.color)} />
-                <h3 className="text-foreground text-sm font-semibold">{column.label}</h3>
-                <span className="bg-secondary text-muted-foreground ml-auto rounded-md px-2 py-0.5 text-xs font-medium tabular-nums transition-all duration-200">
-                  {column.items.length}
-                </span>
+              <div className="mb-3 shrink-0 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className={cn('h-2 w-2 rounded-full', column.color)} />
+                  <h3 className="text-foreground text-sm font-semibold">{column.label}</h3>
+                  <span className="bg-secondary text-muted-foreground ml-auto rounded-md px-2 py-0.5 text-xs font-medium tabular-nums transition-all duration-200">
+                    {column.items.length}
+                  </span>
+                </div>
+                {renderColumnHeader?.(column)}
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto pr-1">

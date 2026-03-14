@@ -21,7 +21,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge, KanbanBoard } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  StatusBadge,
+  KanbanBoard,
+  type KanbanColumn,
+} from '@/components/shared';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import {
   INVOICE_TYPES,
@@ -29,26 +36,7 @@ import {
   getInvoiceStage,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { api } from '@/lib/api';
-
-interface Invoice {
-  id: string;
-  code: string;
-  amount: string;
-  currency: string;
-  status: string;
-  type: string;
-  taxStatus: string;
-  dueDate: string | null;
-  paidDate: string | null;
-  createdAt: string;
-  description: string | null;
-  order: { id: string; code: string } | null;
-  company: { id: string; name: string } | null;
-  project: { id: string; name: string } | null;
-  contact: { id: string; firstName: string; lastName: string } | null;
-  _count: { payments: number };
-}
+import { invoicesApi, type Invoice } from '@/lib/api/finance';
 
 type ViewMode = 'kanban' | 'list';
 
@@ -57,22 +45,20 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setView] = useState<ViewMode>('list');
+  const [view, setView] = useState<ViewMode>('kanban');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/finance/invoices', {
-        params: {
-          pageSize: 100,
-          search: search || undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-          type: filters.type && filters.type !== 'all' ? filters.type : undefined,
-        },
+      const data = await invoicesApi.getAll({
+        pageSize: 200,
+        search: search || undefined,
+        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        type: filters.type && filters.type !== 'all' ? filters.type : undefined,
       });
-      setInvoices(resp.data.items ?? resp.data ?? []);
+      setInvoices(data.items);
     } catch {
       /* handled */
     } finally {
@@ -87,6 +73,22 @@ export default function InvoicesPage() {
   const handleClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setSheetOpen(true);
+  };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    const previousInvoices = invoices;
+
+    setInvoices((prev) => prev.map((inv) => (inv.id === id ? { ...inv, status } : inv)));
+
+    try {
+      await invoicesApi.updateStatus(id, status);
+    } catch {
+      setInvoices(previousInvoices);
+    }
+  };
+
+  const handleMove = (itemId: string, _from: string, toColumn: string) => {
+    handleStatusChange(itemId, toColumn);
   };
 
   const totalAmount = invoices.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
@@ -135,26 +137,22 @@ export default function InvoicesPage() {
         </Button>
         <div className="border-border flex rounded-lg border">
           <Button
-            variant={view === 'list' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('list')}
-            className="rounded-r-none"
-          >
-            <List size={14} />
-          </Button>
-          <Button
             variant={view === 'kanban' ? 'secondary' : 'ghost'}
             size="icon-sm"
             onClick={() => setView('kanban')}
-            className="rounded-l-none"
+            className="rounded-r-none"
           >
             <LayoutGrid size={14} />
           </Button>
+          <Button
+            variant={view === 'list' ? 'secondary' : 'ghost'}
+            size="icon-sm"
+            onClick={() => setView('list')}
+            className="rounded-l-none"
+          >
+            <List size={14} />
+          </Button>
         </div>
-        <Button>
-          <Plus size={16} />
-          New Invoice
-        </Button>
       </PageHeader>
 
       <div className="grid grid-cols-3 gap-4">
@@ -172,15 +170,23 @@ export default function InvoicesPage() {
         </div>
       </div>
 
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by invoice number, company..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
-      />
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <FilterBar
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by invoice number, company..."
+            filters={filterConfigs}
+            filterValues={filters}
+            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+            onClearFilters={() => setFilters({})}
+          />
+        </div>
+        <Button className="shrink-0">
+          <Plus size={16} />
+          New Invoice
+        </Button>
+      </div>
 
       {loading ? (
         <div className="space-y-2">
@@ -201,34 +207,50 @@ export default function InvoicesPage() {
           }
         />
       ) : view === 'kanban' ? (
-        <KanbanBoard
-          columns={kanbanColumns}
-          getItemId={(inv: Invoice) => inv.id}
-          renderCard={(invoice: Invoice) => (
-            <div
-              className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
-              onClick={() => handleClick(invoice)}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-xs font-medium">{invoice.code}</span>
-                {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
+        <div className="min-h-0 flex-1">
+          <KanbanBoard
+            columns={kanbanColumns}
+            getItemId={(inv: Invoice) => inv.id}
+            onMove={handleMove}
+            columnWidth={270}
+            emptyMessage="No invoices"
+            renderColumnHeader={(column: KanbanColumn<Invoice>) => {
+              const columnTotal = column.items.reduce(
+                (sum, inv) => sum + parseFloat(inv.amount),
+                0,
+              );
+              return (
+                <p className="text-foreground text-lg font-bold tabular-nums">
+                  {formatAmount(columnTotal)}
+                </p>
+              );
+            }}
+            renderCard={(invoice: Invoice) => (
+              <div
+                className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+                onClick={() => handleClick(invoice)}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-xs font-medium">{invoice.code}</span>
+                  {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
+                </div>
+                <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
+                {invoice.company && (
+                  <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                    <Building2 size={10} />
+                    {invoice.company.name}
+                  </div>
+                )}
+                {invoice.dueDate && (
+                  <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                    <Calendar size={10} />
+                    {new Date(invoice.dueDate).toLocaleDateString()}
+                  </div>
+                )}
               </div>
-              <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
-              {invoice.company && (
-                <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                  <Building2 size={10} />
-                  {invoice.company.name}
-                </div>
-              )}
-              {invoice.dueDate && (
-                <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                  <Calendar size={10} />
-                  {new Date(invoice.dueDate).toLocaleDateString()}
-                </div>
-              )}
-            </div>
-          )}
-        />
+            )}
+          />
+        </div>
       ) : (
         <div className="border-border overflow-hidden rounded-xl border">
           <Table>

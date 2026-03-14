@@ -8,16 +8,21 @@ export interface Invoice {
   projectId: string;
   companyId: string | null;
   amount: string;
+  currency: string;
   taxStatus: string;
   type: string;
   status: string;
   dueDate: string | null;
   paidDate: string | null;
   govInvoiceId: string | null;
+  description: string | null;
   createdAt: string;
   order: { id: string; code: string } | null;
   company: { id: string; name: string } | null;
+  project: { id: string; name: string } | null;
+  contact: { id: string; firstName: string; lastName: string } | null;
   payments: Payment[];
+  _count: { payments: number };
 }
 
 export interface Payment {
