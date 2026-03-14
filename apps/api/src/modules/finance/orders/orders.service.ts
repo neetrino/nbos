@@ -95,6 +95,7 @@ export class OrdersService {
         paymentType: data.paymentType as PaymentTypeEnum,
         totalAmount: data.totalAmount,
         currency: data.currency ?? 'AMD',
+        taxStatus: (data.taxStatus as Prisma.OrderCreateInput['taxStatus']) ?? 'TAX',
         partnerId: data.partnerId,
         partnerPercent: data.partnerPercent,
       },

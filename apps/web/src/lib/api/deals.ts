@@ -27,6 +27,9 @@ export interface Deal {
   amount: number | null;
   paymentType: string | null;
   projectId: string | null;
+  taxStatus?: string;
+  companyId?: string | null;
+  company?: { id: string; name: string } | null;
   source: string | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;

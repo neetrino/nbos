@@ -78,6 +78,8 @@ export class DealsController {
       type: string;
       amount?: number;
       paymentType?: string;
+      taxStatus?: string;
+      companyId?: string | null;
       sellerId: string;
       projectId?: string;
       source?: string;
@@ -99,6 +101,8 @@ export class DealsController {
       type?: string;
       amount?: number;
       paymentType?: string;
+      taxStatus?: string;
+      companyId?: string | null;
       contactId?: string;
       projectId?: string | null;
       source?: string;

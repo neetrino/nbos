@@ -43,11 +43,13 @@ export function DealInvoiceTab({ deal, onRefresh }: DealInvoiceTabProps) {
 
     setCreating(true);
     try {
+      const taxStatus = deal.taxStatus ?? 'TAX';
       await invoicesApi.create({
         orderId: firstOrder.id,
         projectId: firstOrder.projectId,
         amount,
         type: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'DEVELOPMENT',
+        ...(taxStatus === 'TAX' && deal.companyId && { companyId: deal.companyId }),
       });
       setShowForm(false);
       setInvoiceAmount('');

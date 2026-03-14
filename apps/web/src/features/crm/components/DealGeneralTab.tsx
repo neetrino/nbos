@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Megaphone,
   Plus,
+  Receipt,
   FileText,
   CheckSquare,
   Check,
@@ -28,13 +29,18 @@ import { InlineField, SearchField, StatusBadge } from '@/components/shared';
 import { DEAL_TYPES, PRODUCT_TYPES, PAYMENT_TYPES, formatAmount } from '../constants/dealPipeline';
 import { LEAD_SOURCES, SALES_CHANNELS, MARKETING_CHANNELS } from '../constants/leadPipeline';
 import type { Deal } from '@/lib/api/deals';
-import { contactsApi } from '@/lib/api/clients';
+import { contactsApi, companiesApi } from '@/lib/api/clients';
 import { projectsApi } from '@/lib/api/projects';
 import { partnersApi } from '@/lib/api/partners';
-import { invoicesApi } from '@/lib/api/finance';
+import { invoicesApi, ordersApi } from '@/lib/api/finance';
 import { tasksApi } from '@/lib/api/tasks';
 
 const PARTNER_PERCENT = 30;
+
+const TAX_STATUS_OPTIONS = [
+  { value: 'TAX', label: 'Tax' },
+  { value: 'TAX_FREE', label: 'Tax Free' },
+] as const;
 
 interface DealGeneralTabProps {
   deal: Deal;
@@ -78,6 +84,16 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
 
   const firstOrder = deal.orders?.[0];
   const projectId = deal.projectId ?? firstOrder?.projectId;
+  const taxStatus = deal.taxStatus ?? 'TAX';
+
+  const canCreateInvoice =
+    deal.amount != null &&
+    Number(deal.amount) > 0 &&
+    deal.paymentType &&
+    deal.projectId &&
+    deal.type &&
+    taxStatus &&
+    (taxStatus !== 'TAX' || !!deal.companyId);
 
   const saveField = async (field: string, value: string | number | null) => {
     const payload: Record<string, unknown> = {};
@@ -112,6 +128,14 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
     return data.items.map((p) => ({ value: p.id, label: p.name }));
   }, []);
 
+  const searchCompanies = useCallback(async (query: string) => {
+    const data = await companiesApi.getAll({
+      pageSize: 10,
+      ...(query && { search: query }),
+    });
+    return data.items.map((c) => ({ value: c.id, label: c.name }));
+  }, []);
+
   const dealTypeLabel = DEAL_TYPES.find((t) => t.value === deal.type)?.label ?? deal.type;
   const isExtension = deal.type === 'EXTENSION';
   const finance = computeFinance(deal);
@@ -128,16 +152,35 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
 
   const handleCreateInvoice = async () => {
     const amount = Number(invoiceAmount);
-    if (!amount || amount <= 0 || !firstOrder) return;
-    const projectIdForInvoice = firstOrder.projectId ?? deal.projectId;
-    if (!projectIdForInvoice) return;
+    if (!amount || amount <= 0 || !canCreateInvoice || !projectId) return;
     setCreatingInvoice(true);
     try {
+      let orderId = firstOrder?.id;
+      if (!orderId) {
+        const orderType =
+          deal.type === 'EXTENSION'
+            ? 'EXTENSION'
+            : deal.paymentType === 'SUBSCRIPTION'
+              ? 'SUBSCRIPTION'
+              : 'PRODUCT';
+        const newOrder = await ordersApi.create({
+          projectId: deal.projectId!,
+          dealId: deal.id,
+          type: orderType,
+          paymentType: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'CLASSIC',
+          totalAmount: amount,
+          taxStatus: taxStatus,
+        });
+        orderId = newOrder.id;
+      }
+      const projectIdForInvoice = firstOrder?.projectId ?? deal.projectId;
+      if (!projectIdForInvoice) return;
       await invoicesApi.create({
-        orderId: firstOrder.id,
+        orderId,
         projectId: projectIdForInvoice,
         amount,
         type: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'DEVELOPMENT',
+        ...(taxStatus === 'TAX' && deal.companyId && { companyId: deal.companyId }),
       });
       setShowInvoiceForm(false);
       setInvoiceAmount('');
@@ -210,6 +253,23 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
               placeholder="Select payment type..."
               icon={<CreditCard size={12} />}
               onSave={(v) => saveField('paymentType', v)}
+            />
+
+            <InlineField
+              label="Tax Status"
+              value={deal.taxStatus ?? 'TAX'}
+              displayValue={
+                <span className="text-foreground text-sm font-medium">
+                  {TAX_STATUS_OPTIONS.find((t) => t.value === (deal.taxStatus ?? 'TAX'))?.label ??
+                    deal.taxStatus ??
+                    'TAX'}
+                </span>
+              }
+              type="select"
+              options={TAX_STATUS_OPTIONS.map((t) => ({ value: t.value, label: t.label }))}
+              placeholder="Tax / Tax Free"
+              icon={<Receipt size={12} />}
+              onSave={(v) => saveField('taxStatus', v)}
             />
 
             <SearchField
@@ -289,6 +349,22 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
                 placeholder="Select product to extend..."
                 icon={<Layers size={12} />}
                 onSave={() => Promise.resolve()}
+              />
+            )}
+
+            {(deal.taxStatus ?? 'TAX') === 'TAX' && (
+              <SearchField
+                label="Company"
+                value={deal.companyId ?? null}
+                displayValue={
+                  deal.company ? (
+                    <span className="text-foreground text-sm font-medium">{deal.company.name}</span>
+                  ) : undefined
+                }
+                placeholder="Search company..."
+                icon={<Building2 size={12} />}
+                onSearch={searchCompanies}
+                onSave={(v) => saveField('companyId', v)}
               />
             )}
           </div>
@@ -547,8 +623,8 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
             Actions
           </h4>
           <div className="space-y-3">
-            {/* Create Invoice: enter amount, Create → invoice from deal appears in Invoices and on Invoice tab */}
-            {firstOrder ? (
+            {/* Create Invoice: only when Cost, Payment Type, Project, Deal Type, Tax Status (and Company if Tax) filled */}
+            {canCreateInvoice ? (
               showInvoiceForm ? (
                 <div className="space-y-2 rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 dark:border-emerald-800 dark:bg-emerald-950/20">
                   <label className="text-muted-foreground block text-[11px] font-medium">
@@ -604,7 +680,7 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
                 size="sm"
                 className="w-full justify-center gap-1.5 border-stone-300 text-stone-500 dark:border-stone-600 dark:text-stone-400"
                 disabled
-                title="Create an order for this deal first"
+                title="Fill required: Cost, Payment Type, Project, Deal Type, Tax Status; if Tax then Company"
               >
                 <Plus size={14} />
                 Create Invoice

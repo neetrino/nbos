@@ -66,6 +66,7 @@ model Company {
   contact  Contact   @relation(fields: [contactId], references: [id])
   projects Project[]
   invoices Invoice[]
+  deals    Deal[]
 
   @@map("companies")
 }
@@ -261,23 +262,26 @@ model Deal {
   code             String          @unique
   name             String?
   leadId           String?         @unique @map("lead_id")
-  contactId        String          @map("contact_id")
-  projectId        String?         @map("project_id")
+  contactId        String            @map("contact_id")
+  projectId        String?           @map("project_id")
+  companyId        String?           @map("company_id")
   type             DealTypeEnum
-  status           DealStatusEnum  @default(START_CONVERSATION)
-  amount           Decimal?        @db.Decimal(12, 2)
-  paymentType      PaymentTypeEnum? @map("payment_type")
-  sellerId         String          @map("seller_id")
+  status           DealStatusEnum    @default(START_CONVERSATION)
+  amount           Decimal?          @db.Decimal(12, 2)
+  paymentType      PaymentTypeEnum?  @map("payment_type")
+  taxStatus        TaxStatus         @default(TAX) @map("tax_status")
+  sellerId         String            @map("seller_id")
   source           LeadSourceEnum?
-  sourceDetail     String?         @map("source_detail")
-  sourcePartnerId  String?         @map("source_partner_id")
-  sourceContactId  String?         @map("source_contact_id")
+  sourceDetail     String?           @map("source_detail")
+  sourcePartnerId  String?           @map("source_partner_id")
+  sourceContactId  String?           @map("source_contact_id")
   notes            String?
-  createdAt        DateTime        @default(now()) @map("created_at")
-  updatedAt        DateTime        @updatedAt @map("updated_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
 
   lead          Lead?    @relation(fields: [leadId], references: [id])
   contact       Contact  @relation(fields: [contactId], references: [id])
+  company       Company? @relation(fields: [companyId], references: [id])
   seller        Employee @relation("DealSeller", fields: [sellerId], references: [id])
   sourcePartner Partner? @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
   sourceContact Contact? @relation("DealSourceContact", fields: [sourceContactId], references: [id])

@@ -40,10 +40,12 @@ export type DealMinAggregateOutputType = {
   leadId: string | null;
   contactId: string | null;
   projectId: string | null;
+  companyId: string | null;
   type: $Enums.DealTypeEnum | null;
   status: $Enums.DealStatusEnum | null;
   amount: runtime.Decimal | null;
   paymentType: $Enums.PaymentTypeEnum | null;
+  taxStatus: $Enums.TaxStatus | null;
   sellerId: string | null;
   source: $Enums.LeadSourceEnum | null;
   sourceDetail: string | null;
@@ -61,10 +63,12 @@ export type DealMaxAggregateOutputType = {
   leadId: string | null;
   contactId: string | null;
   projectId: string | null;
+  companyId: string | null;
   type: $Enums.DealTypeEnum | null;
   status: $Enums.DealStatusEnum | null;
   amount: runtime.Decimal | null;
   paymentType: $Enums.PaymentTypeEnum | null;
+  taxStatus: $Enums.TaxStatus | null;
   sellerId: string | null;
   source: $Enums.LeadSourceEnum | null;
   sourceDetail: string | null;
@@ -82,10 +86,12 @@ export type DealCountAggregateOutputType = {
   leadId: number;
   contactId: number;
   projectId: number;
+  companyId: number;
   type: number;
   status: number;
   amount: number;
   paymentType: number;
+  taxStatus: number;
   sellerId: number;
   source: number;
   sourceDetail: number;
@@ -112,10 +118,12 @@ export type DealMinAggregateInputType = {
   leadId?: true;
   contactId?: true;
   projectId?: true;
+  companyId?: true;
   type?: true;
   status?: true;
   amount?: true;
   paymentType?: true;
+  taxStatus?: true;
   sellerId?: true;
   source?: true;
   sourceDetail?: true;
@@ -133,10 +141,12 @@ export type DealMaxAggregateInputType = {
   leadId?: true;
   contactId?: true;
   projectId?: true;
+  companyId?: true;
   type?: true;
   status?: true;
   amount?: true;
   paymentType?: true;
+  taxStatus?: true;
   sellerId?: true;
   source?: true;
   sourceDetail?: true;
@@ -154,10 +164,12 @@ export type DealCountAggregateInputType = {
   leadId?: true;
   contactId?: true;
   projectId?: true;
+  companyId?: true;
   type?: true;
   status?: true;
   amount?: true;
   paymentType?: true;
+  taxStatus?: true;
   sellerId?: true;
   source?: true;
   sourceDetail?: true;
@@ -263,10 +275,12 @@ export type DealGroupByOutputType = {
   leadId: string | null;
   contactId: string;
   projectId: string | null;
+  companyId: string | null;
   type: $Enums.DealTypeEnum;
   status: $Enums.DealStatusEnum;
   amount: runtime.Decimal | null;
   paymentType: $Enums.PaymentTypeEnum | null;
+  taxStatus: $Enums.TaxStatus;
   sellerId: string;
   source: $Enums.LeadSourceEnum | null;
   sourceDetail: string | null;
@@ -304,6 +318,7 @@ export type DealWhereInput = {
   leadId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   contactId?: Prisma.StringFilter<'Deal'> | string;
   projectId?: Prisma.StringNullableFilter<'Deal'> | string | null;
+  companyId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   type?: Prisma.EnumDealTypeEnumFilter<'Deal'> | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFilter<'Deal'> | $Enums.DealStatusEnum;
   amount?:
@@ -314,6 +329,7 @@ export type DealWhereInput = {
     | string
     | null;
   paymentType?: Prisma.EnumPaymentTypeEnumNullableFilter<'Deal'> | $Enums.PaymentTypeEnum | null;
+  taxStatus?: Prisma.EnumTaxStatusFilter<'Deal'> | $Enums.TaxStatus;
   sellerId?: Prisma.StringFilter<'Deal'> | string;
   source?: Prisma.EnumLeadSourceEnumNullableFilter<'Deal'> | $Enums.LeadSourceEnum | null;
   sourceDetail?: Prisma.StringNullableFilter<'Deal'> | string | null;
@@ -324,6 +340,7 @@ export type DealWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<'Deal'> | Date | string;
   lead?: Prisma.XOR<Prisma.LeadNullableScalarRelationFilter, Prisma.LeadWhereInput> | null;
   contact?: Prisma.XOR<Prisma.ContactScalarRelationFilter, Prisma.ContactWhereInput>;
+  company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null;
   seller?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
   sourcePartner?: Prisma.XOR<
     Prisma.PartnerNullableScalarRelationFilter,
@@ -343,10 +360,12 @@ export type DealOrderByWithRelationInput = {
   leadId?: Prisma.SortOrderInput | Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  companyId?: Prisma.SortOrderInput | Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   amount?: Prisma.SortOrderInput | Prisma.SortOrder;
   paymentType?: Prisma.SortOrderInput | Prisma.SortOrder;
+  taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
   source?: Prisma.SortOrderInput | Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -357,6 +376,7 @@ export type DealOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder;
   lead?: Prisma.LeadOrderByWithRelationInput;
   contact?: Prisma.ContactOrderByWithRelationInput;
+  company?: Prisma.CompanyOrderByWithRelationInput;
   seller?: Prisma.EmployeeOrderByWithRelationInput;
   sourcePartner?: Prisma.PartnerOrderByWithRelationInput;
   sourceContact?: Prisma.ContactOrderByWithRelationInput;
@@ -374,6 +394,7 @@ export type DealWhereUniqueInput = Prisma.AtLeast<
     name?: Prisma.StringNullableFilter<'Deal'> | string | null;
     contactId?: Prisma.StringFilter<'Deal'> | string;
     projectId?: Prisma.StringNullableFilter<'Deal'> | string | null;
+    companyId?: Prisma.StringNullableFilter<'Deal'> | string | null;
     type?: Prisma.EnumDealTypeEnumFilter<'Deal'> | $Enums.DealTypeEnum;
     status?: Prisma.EnumDealStatusEnumFilter<'Deal'> | $Enums.DealStatusEnum;
     amount?:
@@ -384,6 +405,7 @@ export type DealWhereUniqueInput = Prisma.AtLeast<
       | string
       | null;
     paymentType?: Prisma.EnumPaymentTypeEnumNullableFilter<'Deal'> | $Enums.PaymentTypeEnum | null;
+    taxStatus?: Prisma.EnumTaxStatusFilter<'Deal'> | $Enums.TaxStatus;
     sellerId?: Prisma.StringFilter<'Deal'> | string;
     source?: Prisma.EnumLeadSourceEnumNullableFilter<'Deal'> | $Enums.LeadSourceEnum | null;
     sourceDetail?: Prisma.StringNullableFilter<'Deal'> | string | null;
@@ -394,6 +416,10 @@ export type DealWhereUniqueInput = Prisma.AtLeast<
     updatedAt?: Prisma.DateTimeFilter<'Deal'> | Date | string;
     lead?: Prisma.XOR<Prisma.LeadNullableScalarRelationFilter, Prisma.LeadWhereInput> | null;
     contact?: Prisma.XOR<Prisma.ContactScalarRelationFilter, Prisma.ContactWhereInput>;
+    company?: Prisma.XOR<
+      Prisma.CompanyNullableScalarRelationFilter,
+      Prisma.CompanyWhereInput
+    > | null;
     seller?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
     sourcePartner?: Prisma.XOR<
       Prisma.PartnerNullableScalarRelationFilter,
@@ -415,10 +441,12 @@ export type DealOrderByWithAggregationInput = {
   leadId?: Prisma.SortOrderInput | Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  companyId?: Prisma.SortOrderInput | Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   amount?: Prisma.SortOrderInput | Prisma.SortOrder;
   paymentType?: Prisma.SortOrderInput | Prisma.SortOrder;
+  taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
   source?: Prisma.SortOrderInput | Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -444,6 +472,7 @@ export type DealScalarWhereWithAggregatesInput = {
   leadId?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
   contactId?: Prisma.StringWithAggregatesFilter<'Deal'> | string;
   projectId?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
+  companyId?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
   type?: Prisma.EnumDealTypeEnumWithAggregatesFilter<'Deal'> | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumWithAggregatesFilter<'Deal'> | $Enums.DealStatusEnum;
   amount?:
@@ -457,6 +486,7 @@ export type DealScalarWhereWithAggregatesInput = {
     | Prisma.EnumPaymentTypeEnumNullableWithAggregatesFilter<'Deal'>
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusWithAggregatesFilter<'Deal'> | $Enums.TaxStatus;
   sellerId?: Prisma.StringWithAggregatesFilter<'Deal'> | string;
   source?:
     | Prisma.EnumLeadSourceEnumNullableWithAggregatesFilter<'Deal'>
@@ -479,6 +509,7 @@ export type DealCreateInput = {
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
@@ -486,6 +517,7 @@ export type DealCreateInput = {
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
@@ -499,10 +531,12 @@ export type DealUncheckedCreateInput = {
   leadId?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -532,6 +566,7 @@ export type DealUpdateInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -542,6 +577,7 @@ export type DealUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
@@ -555,6 +591,7 @@ export type DealUncheckedUpdateInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -568,6 +605,7 @@ export type DealUncheckedUpdateInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -589,10 +627,12 @@ export type DealCreateManyInput = {
   leadId?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -621,6 +661,7 @@ export type DealUpdateManyMutationInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -638,6 +679,7 @@ export type DealUncheckedUpdateManyInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -651,6 +693,7 @@ export type DealUncheckedUpdateManyInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -686,10 +729,12 @@ export type DealCountOrderByAggregateInput = {
   leadId?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
+  companyId?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
   paymentType?: Prisma.SortOrder;
+  taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrder;
@@ -711,10 +756,12 @@ export type DealMaxOrderByAggregateInput = {
   leadId?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
+  companyId?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
   paymentType?: Prisma.SortOrder;
+  taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrder;
@@ -732,10 +779,12 @@ export type DealMinOrderByAggregateInput = {
   leadId?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
+  companyId?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
   paymentType?: Prisma.SortOrder;
+  taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrder;
@@ -919,6 +968,92 @@ export type DealUncheckedUpdateManyWithoutSourceContactNestedInput = {
   updateMany?:
     | Prisma.DealUpdateManyWithWhereWithoutSourceContactInput
     | Prisma.DealUpdateManyWithWhereWithoutSourceContactInput[];
+  deleteMany?: Prisma.DealScalarWhereInput | Prisma.DealScalarWhereInput[];
+};
+
+export type DealCreateNestedManyWithoutCompanyInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DealCreateWithoutCompanyInput,
+        Prisma.DealUncheckedCreateWithoutCompanyInput
+      >
+    | Prisma.DealCreateWithoutCompanyInput[]
+    | Prisma.DealUncheckedCreateWithoutCompanyInput[];
+  connectOrCreate?:
+    | Prisma.DealCreateOrConnectWithoutCompanyInput
+    | Prisma.DealCreateOrConnectWithoutCompanyInput[];
+  createMany?: Prisma.DealCreateManyCompanyInputEnvelope;
+  connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+};
+
+export type DealUncheckedCreateNestedManyWithoutCompanyInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DealCreateWithoutCompanyInput,
+        Prisma.DealUncheckedCreateWithoutCompanyInput
+      >
+    | Prisma.DealCreateWithoutCompanyInput[]
+    | Prisma.DealUncheckedCreateWithoutCompanyInput[];
+  connectOrCreate?:
+    | Prisma.DealCreateOrConnectWithoutCompanyInput
+    | Prisma.DealCreateOrConnectWithoutCompanyInput[];
+  createMany?: Prisma.DealCreateManyCompanyInputEnvelope;
+  connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+};
+
+export type DealUpdateManyWithoutCompanyNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DealCreateWithoutCompanyInput,
+        Prisma.DealUncheckedCreateWithoutCompanyInput
+      >
+    | Prisma.DealCreateWithoutCompanyInput[]
+    | Prisma.DealUncheckedCreateWithoutCompanyInput[];
+  connectOrCreate?:
+    | Prisma.DealCreateOrConnectWithoutCompanyInput
+    | Prisma.DealCreateOrConnectWithoutCompanyInput[];
+  upsert?:
+    | Prisma.DealUpsertWithWhereUniqueWithoutCompanyInput
+    | Prisma.DealUpsertWithWhereUniqueWithoutCompanyInput[];
+  createMany?: Prisma.DealCreateManyCompanyInputEnvelope;
+  set?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  disconnect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  delete?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  update?:
+    | Prisma.DealUpdateWithWhereUniqueWithoutCompanyInput
+    | Prisma.DealUpdateWithWhereUniqueWithoutCompanyInput[];
+  updateMany?:
+    | Prisma.DealUpdateManyWithWhereWithoutCompanyInput
+    | Prisma.DealUpdateManyWithWhereWithoutCompanyInput[];
+  deleteMany?: Prisma.DealScalarWhereInput | Prisma.DealScalarWhereInput[];
+};
+
+export type DealUncheckedUpdateManyWithoutCompanyNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DealCreateWithoutCompanyInput,
+        Prisma.DealUncheckedCreateWithoutCompanyInput
+      >
+    | Prisma.DealCreateWithoutCompanyInput[]
+    | Prisma.DealUncheckedCreateWithoutCompanyInput[];
+  connectOrCreate?:
+    | Prisma.DealCreateOrConnectWithoutCompanyInput
+    | Prisma.DealCreateOrConnectWithoutCompanyInput[];
+  upsert?:
+    | Prisma.DealUpsertWithWhereUniqueWithoutCompanyInput
+    | Prisma.DealUpsertWithWhereUniqueWithoutCompanyInput[];
+  createMany?: Prisma.DealCreateManyCompanyInputEnvelope;
+  set?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  disconnect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  delete?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  update?:
+    | Prisma.DealUpdateWithWhereUniqueWithoutCompanyInput
+    | Prisma.DealUpdateWithWhereUniqueWithoutCompanyInput[];
+  updateMany?:
+    | Prisma.DealUpdateManyWithWhereWithoutCompanyInput
+    | Prisma.DealUpdateManyWithWhereWithoutCompanyInput[];
   deleteMany?: Prisma.DealScalarWhereInput | Prisma.DealScalarWhereInput[];
 };
 
@@ -1193,12 +1328,14 @@ export type DealCreateWithoutContactInput = {
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
@@ -1211,10 +1348,12 @@ export type DealUncheckedCreateWithoutContactInput = {
   name?: string | null;
   leadId?: string | null;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -1248,6 +1387,7 @@ export type DealCreateWithoutSourceContactInput = {
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
@@ -1255,6 +1395,7 @@ export type DealCreateWithoutSourceContactInput = {
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
   orders?: Prisma.OrderCreateNestedManyWithoutDealInput;
@@ -1267,10 +1408,12 @@ export type DealUncheckedCreateWithoutSourceContactInput = {
   leadId?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -1332,6 +1475,7 @@ export type DealScalarWhereInput = {
   leadId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   contactId?: Prisma.StringFilter<'Deal'> | string;
   projectId?: Prisma.StringNullableFilter<'Deal'> | string | null;
+  companyId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   type?: Prisma.EnumDealTypeEnumFilter<'Deal'> | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFilter<'Deal'> | $Enums.DealStatusEnum;
   amount?:
@@ -1342,6 +1486,7 @@ export type DealScalarWhereInput = {
     | string
     | null;
   paymentType?: Prisma.EnumPaymentTypeEnumNullableFilter<'Deal'> | $Enums.PaymentTypeEnum | null;
+  taxStatus?: Prisma.EnumTaxStatusFilter<'Deal'> | $Enums.TaxStatus;
   sellerId?: Prisma.StringFilter<'Deal'> | string;
   source?: Prisma.EnumLeadSourceEnumNullableFilter<'Deal'> | $Enums.LeadSourceEnum | null;
   sourceDetail?: Prisma.StringNullableFilter<'Deal'> | string | null;
@@ -1380,6 +1525,93 @@ export type DealUpdateManyWithWhereWithoutSourceContactInput = {
   >;
 };
 
+export type DealCreateWithoutCompanyInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  projectId?: string | null;
+  type: $Enums.DealTypeEnum;
+  status?: $Enums.DealStatusEnum;
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
+  source?: $Enums.LeadSourceEnum | null;
+  sourceDetail?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
+  contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
+  seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
+  sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutDealInput;
+};
+
+export type DealUncheckedCreateWithoutCompanyInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  leadId?: string | null;
+  contactId: string;
+  projectId?: string | null;
+  type: $Enums.DealTypeEnum;
+  status?: $Enums.DealStatusEnum;
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
+  sellerId: string;
+  source?: $Enums.LeadSourceEnum | null;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
+};
+
+export type DealCreateOrConnectWithoutCompanyInput = {
+  where: Prisma.DealWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.DealCreateWithoutCompanyInput,
+    Prisma.DealUncheckedCreateWithoutCompanyInput
+  >;
+};
+
+export type DealCreateManyCompanyInputEnvelope = {
+  data: Prisma.DealCreateManyCompanyInput | Prisma.DealCreateManyCompanyInput[];
+  skipDuplicates?: boolean;
+};
+
+export type DealUpsertWithWhereUniqueWithoutCompanyInput = {
+  where: Prisma.DealWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.DealUpdateWithoutCompanyInput,
+    Prisma.DealUncheckedUpdateWithoutCompanyInput
+  >;
+  create: Prisma.XOR<
+    Prisma.DealCreateWithoutCompanyInput,
+    Prisma.DealUncheckedCreateWithoutCompanyInput
+  >;
+};
+
+export type DealUpdateWithWhereUniqueWithoutCompanyInput = {
+  where: Prisma.DealWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.DealUpdateWithoutCompanyInput,
+    Prisma.DealUncheckedUpdateWithoutCompanyInput
+  >;
+};
+
+export type DealUpdateManyWithWhereWithoutCompanyInput = {
+  where: Prisma.DealScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.DealUpdateManyMutationInput,
+    Prisma.DealUncheckedUpdateManyWithoutCompanyInput
+  >;
+};
+
 export type DealCreateWithoutLeadInput = {
   id?: string;
   code: string;
@@ -1389,12 +1621,14 @@ export type DealCreateWithoutLeadInput = {
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
@@ -1407,10 +1641,12 @@ export type DealUncheckedCreateWithoutLeadInput = {
   name?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -1456,6 +1692,7 @@ export type DealUpdateWithoutLeadInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -1465,6 +1702,7 @@ export type DealUpdateWithoutLeadInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
@@ -1477,6 +1715,7 @@ export type DealUncheckedUpdateWithoutLeadInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -1490,6 +1729,7 @@ export type DealUncheckedUpdateWithoutLeadInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -1513,6 +1753,7 @@ export type DealCreateWithoutOrdersInput = {
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
@@ -1520,6 +1761,7 @@ export type DealCreateWithoutOrdersInput = {
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
@@ -1532,10 +1774,12 @@ export type DealUncheckedCreateWithoutOrdersInput = {
   leadId?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -1592,6 +1836,7 @@ export type DealUpdateWithoutOrdersInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -1602,6 +1847,7 @@ export type DealUpdateWithoutOrdersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
@@ -1614,6 +1860,7 @@ export type DealUncheckedUpdateWithoutOrdersInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -1627,6 +1874,7 @@ export type DealUncheckedUpdateWithoutOrdersInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -1649,6 +1897,7 @@ export type DealCreateWithoutSellerInput = {
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
@@ -1656,6 +1905,7 @@ export type DealCreateWithoutSellerInput = {
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
   orders?: Prisma.OrderCreateNestedManyWithoutDealInput;
@@ -1668,10 +1918,12 @@ export type DealUncheckedCreateWithoutSellerInput = {
   leadId?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -1732,6 +1984,7 @@ export type DealCreateWithoutSourcePartnerInput = {
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
@@ -1739,6 +1992,7 @@ export type DealCreateWithoutSourcePartnerInput = {
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
   orders?: Prisma.OrderCreateNestedManyWithoutDealInput;
@@ -1751,10 +2005,12 @@ export type DealUncheckedCreateWithoutSourcePartnerInput = {
   leadId?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -1812,10 +2068,12 @@ export type DealCreateManyContactInput = {
   name?: string | null;
   leadId?: string | null;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -1833,10 +2091,12 @@ export type DealCreateManySourceContactInput = {
   leadId?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -1864,6 +2124,7 @@ export type DealUpdateWithoutContactInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -1873,6 +2134,7 @@ export type DealUpdateWithoutContactInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
@@ -1885,6 +2147,7 @@ export type DealUncheckedUpdateWithoutContactInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -1898,6 +2161,7 @@ export type DealUncheckedUpdateWithoutContactInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -1918,6 +2182,7 @@ export type DealUncheckedUpdateManyWithoutContactInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -1931,6 +2196,7 @@ export type DealUncheckedUpdateManyWithoutContactInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -1962,6 +2228,7 @@ export type DealUpdateWithoutSourceContactInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -1972,6 +2239,7 @@ export type DealUpdateWithoutSourceContactInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutDealNestedInput;
@@ -1984,6 +2252,7 @@ export type DealUncheckedUpdateWithoutSourceContactInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -1997,6 +2266,7 @@ export type DealUncheckedUpdateWithoutSourceContactInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -2017,6 +2287,7 @@ export type DealUncheckedUpdateManyWithoutSourceContactInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -2030,6 +2301,7 @@ export type DealUncheckedUpdateManyWithoutSourceContactInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -2042,7 +2314,7 @@ export type DealUncheckedUpdateManyWithoutSourceContactInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type DealCreateManySellerInput = {
+export type DealCreateManyCompanyInput = {
   id?: string;
   code: string;
   name?: string | null;
@@ -2053,6 +2325,134 @@ export type DealCreateManySellerInput = {
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
+  sellerId: string;
+  source?: $Enums.LeadSourceEnum | null;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type DealUpdateWithoutCompanyInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
+  amount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  paymentType?:
+    | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
+    | $Enums.PaymentTypeEnum
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  source?:
+    | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
+    | $Enums.LeadSourceEnum
+    | null;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
+  seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
+  sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutDealNestedInput;
+};
+
+export type DealUncheckedUpdateWithoutCompanyInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
+  amount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  paymentType?:
+    | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
+    | $Enums.PaymentTypeEnum
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  source?:
+    | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
+    | $Enums.LeadSourceEnum
+    | null;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
+};
+
+export type DealUncheckedUpdateManyWithoutCompanyInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
+  amount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  paymentType?:
+    | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
+    | $Enums.PaymentTypeEnum
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  source?:
+    | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
+    | $Enums.LeadSourceEnum
+    | null;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type DealCreateManySellerInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  leadId?: string | null;
+  contactId: string;
+  projectId?: string | null;
+  companyId?: string | null;
+  type: $Enums.DealTypeEnum;
+  status?: $Enums.DealStatusEnum;
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -2080,6 +2480,7 @@ export type DealUpdateWithoutSellerInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -2090,6 +2491,7 @@ export type DealUpdateWithoutSellerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutDealNestedInput;
@@ -2102,6 +2504,7 @@ export type DealUncheckedUpdateWithoutSellerInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -2115,6 +2518,7 @@ export type DealUncheckedUpdateWithoutSellerInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -2135,6 +2539,7 @@ export type DealUncheckedUpdateManyWithoutSellerInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -2148,6 +2553,7 @@ export type DealUncheckedUpdateManyWithoutSellerInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -2167,10 +2573,12 @@ export type DealCreateManySourcePartnerInput = {
   leadId?: string | null;
   contactId: string;
   projectId?: string | null;
+  companyId?: string | null;
   type: $Enums.DealTypeEnum;
   status?: $Enums.DealStatusEnum;
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
   sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
@@ -2198,6 +2606,7 @@ export type DealUpdateWithoutSourcePartnerInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -2208,6 +2617,7 @@ export type DealUpdateWithoutSourcePartnerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutDealNestedInput;
@@ -2220,6 +2630,7 @@ export type DealUncheckedUpdateWithoutSourcePartnerInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -2233,6 +2644,7 @@ export type DealUncheckedUpdateWithoutSourcePartnerInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -2253,6 +2665,7 @@ export type DealUncheckedUpdateManyWithoutSourcePartnerInput = {
   leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
   amount?:
@@ -2266,6 +2679,7 @@ export type DealUncheckedUpdateManyWithoutSourcePartnerInput = {
     | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
     | $Enums.PaymentTypeEnum
     | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
@@ -2323,10 +2737,12 @@ export type DealSelect<
     leadId?: boolean;
     contactId?: boolean;
     projectId?: boolean;
+    companyId?: boolean;
     type?: boolean;
     status?: boolean;
     amount?: boolean;
     paymentType?: boolean;
+    taxStatus?: boolean;
     sellerId?: boolean;
     source?: boolean;
     sourceDetail?: boolean;
@@ -2337,6 +2753,7 @@ export type DealSelect<
     updatedAt?: boolean;
     lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+    company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
     seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
     sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
     sourceContact?: boolean | Prisma.Deal$sourceContactArgs<ExtArgs>;
@@ -2356,10 +2773,12 @@ export type DealSelectCreateManyAndReturn<
     leadId?: boolean;
     contactId?: boolean;
     projectId?: boolean;
+    companyId?: boolean;
     type?: boolean;
     status?: boolean;
     amount?: boolean;
     paymentType?: boolean;
+    taxStatus?: boolean;
     sellerId?: boolean;
     source?: boolean;
     sourceDetail?: boolean;
@@ -2370,6 +2789,7 @@ export type DealSelectCreateManyAndReturn<
     updatedAt?: boolean;
     lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+    company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
     seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
     sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
     sourceContact?: boolean | Prisma.Deal$sourceContactArgs<ExtArgs>;
@@ -2387,10 +2807,12 @@ export type DealSelectUpdateManyAndReturn<
     leadId?: boolean;
     contactId?: boolean;
     projectId?: boolean;
+    companyId?: boolean;
     type?: boolean;
     status?: boolean;
     amount?: boolean;
     paymentType?: boolean;
+    taxStatus?: boolean;
     sellerId?: boolean;
     source?: boolean;
     sourceDetail?: boolean;
@@ -2401,6 +2823,7 @@ export type DealSelectUpdateManyAndReturn<
     updatedAt?: boolean;
     lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+    company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
     seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
     sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
     sourceContact?: boolean | Prisma.Deal$sourceContactArgs<ExtArgs>;
@@ -2415,10 +2838,12 @@ export type DealSelectScalar = {
   leadId?: boolean;
   contactId?: boolean;
   projectId?: boolean;
+  companyId?: boolean;
   type?: boolean;
   status?: boolean;
   amount?: boolean;
   paymentType?: boolean;
+  taxStatus?: boolean;
   sellerId?: boolean;
   source?: boolean;
   sourceDetail?: boolean;
@@ -2438,10 +2863,12 @@ export type DealOmit<
   | 'leadId'
   | 'contactId'
   | 'projectId'
+  | 'companyId'
   | 'type'
   | 'status'
   | 'amount'
   | 'paymentType'
+  | 'taxStatus'
   | 'sellerId'
   | 'source'
   | 'sourceDetail'
@@ -2457,6 +2884,7 @@ export type DealInclude<
 > = {
   lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+  company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
   seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
   sourceContact?: boolean | Prisma.Deal$sourceContactArgs<ExtArgs>;
@@ -2468,6 +2896,7 @@ export type DealIncludeCreateManyAndReturn<
 > = {
   lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+  company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
   seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
   sourceContact?: boolean | Prisma.Deal$sourceContactArgs<ExtArgs>;
@@ -2477,6 +2906,7 @@ export type DealIncludeUpdateManyAndReturn<
 > = {
   lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+  company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
   seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
   sourceContact?: boolean | Prisma.Deal$sourceContactArgs<ExtArgs>;
@@ -2489,6 +2919,7 @@ export type $DealPayload<
   objects: {
     lead: Prisma.$LeadPayload<ExtArgs> | null;
     contact: Prisma.$ContactPayload<ExtArgs>;
+    company: Prisma.$CompanyPayload<ExtArgs> | null;
     seller: Prisma.$EmployeePayload<ExtArgs>;
     sourcePartner: Prisma.$PartnerPayload<ExtArgs> | null;
     sourceContact: Prisma.$ContactPayload<ExtArgs> | null;
@@ -2502,10 +2933,12 @@ export type $DealPayload<
       leadId: string | null;
       contactId: string;
       projectId: string | null;
+      companyId: string | null;
       type: $Enums.DealTypeEnum;
       status: $Enums.DealStatusEnum;
       amount: runtime.Decimal | null;
       paymentType: $Enums.PaymentTypeEnum | null;
+      taxStatus: $Enums.TaxStatus;
       sellerId: string;
       source: $Enums.LeadSourceEnum | null;
       sourceDetail: string | null;
@@ -3051,6 +3484,19 @@ export interface Prisma__DealClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  company<T extends Prisma.Deal$companyArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Deal$companyArgs<ExtArgs>>,
+  ): Prisma.Prisma__CompanyClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$CompanyPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   seller<T extends Prisma.EmployeeDefaultArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.EmployeeDefaultArgs<ExtArgs>>,
   ): Prisma.Prisma__EmployeeClient<
@@ -3139,10 +3585,12 @@ export interface DealFieldRefs {
   readonly leadId: Prisma.FieldRef<'Deal', 'String'>;
   readonly contactId: Prisma.FieldRef<'Deal', 'String'>;
   readonly projectId: Prisma.FieldRef<'Deal', 'String'>;
+  readonly companyId: Prisma.FieldRef<'Deal', 'String'>;
   readonly type: Prisma.FieldRef<'Deal', 'DealTypeEnum'>;
   readonly status: Prisma.FieldRef<'Deal', 'DealStatusEnum'>;
   readonly amount: Prisma.FieldRef<'Deal', 'Decimal'>;
   readonly paymentType: Prisma.FieldRef<'Deal', 'PaymentTypeEnum'>;
+  readonly taxStatus: Prisma.FieldRef<'Deal', 'TaxStatus'>;
   readonly sellerId: Prisma.FieldRef<'Deal', 'String'>;
   readonly source: Prisma.FieldRef<'Deal', 'LeadSourceEnum'>;
   readonly sourceDetail: Prisma.FieldRef<'Deal', 'String'>;
@@ -3592,6 +4040,27 @@ export type Deal$leadArgs<
    */
   include?: Prisma.LeadInclude<ExtArgs> | null;
   where?: Prisma.LeadWhereInput;
+};
+
+/**
+ * Deal.company
+ */
+export type Deal$companyArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Company
+   */
+  select?: Prisma.CompanySelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Company
+   */
+  omit?: Prisma.CompanyOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CompanyInclude<ExtArgs> | null;
+  where?: Prisma.CompanyWhereInput;
 };
 
 /**

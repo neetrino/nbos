@@ -59,6 +59,7 @@ export class OrdersController {
       paymentType: string;
       totalAmount: number;
       currency?: string;
+      taxStatus?: string;
       partnerId?: string;
       partnerPercent?: number;
     },

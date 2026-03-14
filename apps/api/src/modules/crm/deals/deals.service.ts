@@ -9,6 +9,8 @@ interface CreateDealDto {
   type: string;
   amount?: number;
   paymentType?: string;
+  taxStatus?: string;
+  companyId?: string | null;
   sellerId: string;
   projectId?: string;
   source?: string;
@@ -21,6 +23,8 @@ interface UpdateDealDto {
   type?: string;
   amount?: number;
   paymentType?: string;
+  taxStatus?: string;
+  companyId?: string | null;
   contactId?: string;
   projectId?: string | null;
   source?: string;
@@ -83,6 +87,7 @@ export class DealsService {
         include: {
           lead: { select: { id: true, code: true, contactName: true } },
           contact: { select: { id: true, firstName: true, lastName: true, email: true } },
+          company: { select: { id: true, name: true } },
           seller: { select: { id: true, firstName: true, lastName: true } },
           orders: {
             select: {
@@ -129,6 +134,7 @@ export class DealsService {
       include: {
         lead: true,
         contact: true,
+        company: { select: { id: true, name: true } },
         seller: { select: { id: true, firstName: true, lastName: true } },
         orders: {
           include: {
@@ -165,6 +171,8 @@ export class DealsService {
         type: data.type as Prisma.DealCreateInput['type'],
         amount: data.amount,
         paymentType: data.paymentType as Prisma.DealCreateInput['paymentType'],
+        taxStatus: (data.taxStatus as Prisma.DealCreateInput['taxStatus']) ?? 'TAX',
+        companyId: data.companyId ?? undefined,
         sellerId: data.sellerId,
         source: data.source as Prisma.DealCreateInput['source'],
         notes: data.notes,
@@ -189,6 +197,8 @@ export class DealsService {
         ...(data.paymentType && {
           paymentType: data.paymentType as Prisma.DealUpdateInput['paymentType'],
         }),
+        ...(data.taxStatus && { taxStatus: data.taxStatus as Prisma.DealUpdateInput['taxStatus'] }),
+        ...(data.companyId !== undefined && { companyId: data.companyId }),
         ...(data.contactId && { contactId: data.contactId }),
         ...(data.projectId !== undefined && { projectId: data.projectId }),
         ...(data.source && { source: data.source as Prisma.DealUpdateInput['source'] }),
@@ -200,6 +210,7 @@ export class DealsService {
       include: {
         lead: { select: { id: true, code: true, contactName: true } },
         contact: { select: { id: true, firstName: true, lastName: true, email: true } },
+        company: { select: { id: true, name: true } },
         seller: { select: { id: true, firstName: true, lastName: true } },
         orders: {
           select: {
@@ -207,6 +218,7 @@ export class DealsService {
             code: true,
             status: true,
             totalAmount: true,
+            projectId: true,
             invoices: {
               select: {
                 id: true,
