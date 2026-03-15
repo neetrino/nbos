@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, Inject } from '@nestjs/common';
+import { Controller, Get, Put, Body, Inject, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { PrismaClient } from '@nbos/database';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
@@ -24,10 +24,13 @@ export class MeController {
   @Get()
   @ApiOperation({ summary: 'Get current employee profile with role, permissions, and departments' })
   async getMe(@CurrentUser() user: CurrentUserPayload) {
+    if (!user?.id) {
+      throw new NotFoundException('Employee record not found for this user');
+    }
     const employee = await this.employeesService.findById(user.id);
     return {
       ...employee,
-      permissions: user.permissions,
+      permissions: user.permissions ?? {},
     };
   }
 

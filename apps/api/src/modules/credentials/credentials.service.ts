@@ -192,7 +192,7 @@ export class CredentialsService {
       {
         accessLevel: 'PROJECT_TEAM',
         project: {
-          OR: [{ salesManagerId: employeeId }, { projectManagerId: employeeId }],
+          OR: [{ sellerId: employeeId }, { pmId: employeeId }],
         },
       },
       { accessLevel: 'SECRET', allowedEmployees: { has: employeeId } },
