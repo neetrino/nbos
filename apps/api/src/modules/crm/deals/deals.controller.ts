@@ -12,7 +12,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../../common/decorators';
 import { DealsService } from './deals.service';
 
 @ApiTags('CRM / Deals')
@@ -22,7 +21,6 @@ export class DealsController {
   constructor(private readonly dealsService: DealsService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all deals with filters and pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
@@ -53,21 +51,18 @@ export class DealsController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get deals statistics' })
   async getStats() {
     return this.dealsService.getStats();
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get deal by ID' })
   async findOne(@Param('id') id: string) {
     return this.dealsService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create a new deal' })
   async create(
     @Body()
@@ -90,7 +85,6 @@ export class DealsController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update deal' })
   async update(
     @Param('id') id: string,
@@ -116,14 +110,12 @@ export class DealsController {
   }
 
   @Patch(':id/status')
-  @Public()
   @ApiOperation({ summary: 'Update deal status (pipeline move)' })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.dealsService.updateStatus(id, body.status);
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete deal' })
   async remove(@Param('id') id: string) {

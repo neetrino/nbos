@@ -24,11 +24,13 @@ import {
 } from 'lucide-react';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
+import { usePermission } from '@/lib/permissions';
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  permission?: { module: string; action: string };
   children?: { label: string; href: string }[];
 }
 
@@ -38,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
     label: 'CRM',
     href: '/crm',
     icon: <Users size={20} />,
+    permission: { module: 'CRM_LEADS', action: 'VIEW' },
     children: [
       { label: 'Dashboard', href: '/crm/dashboard' },
       { label: 'Leads', href: '/crm/leads' },
@@ -48,17 +51,24 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Projects',
     href: '/projects',
     icon: <FolderKanban size={20} />,
+    permission: { module: 'PROJECTS', action: 'VIEW' },
     children: [
       { label: 'All Projects', href: '/projects' },
       { label: 'Development', href: '/projects?filter=development' },
       { label: 'Maintenance', href: '/projects?filter=maintenance' },
     ],
   },
-  { label: 'Tasks', href: '/tasks', icon: <CheckSquare size={20} /> },
+  {
+    label: 'Tasks',
+    href: '/tasks',
+    icon: <CheckSquare size={20} />,
+    permission: { module: 'TASKS', action: 'VIEW' },
+  },
   {
     label: 'Finance',
     href: '/finance',
     icon: <DollarSign size={20} />,
+    permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
     children: [
       { label: 'Dashboard', href: '/finance/dashboard' },
       { label: 'Invoices', href: '/finance/invoices' },
@@ -68,7 +78,12 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Orders', href: '/finance/orders' },
     ],
   },
-  { label: 'Support', href: '/support', icon: <Headphones size={20} /> },
+  {
+    label: 'Support',
+    href: '/support',
+    icon: <Headphones size={20} />,
+    permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
+  },
   {
     label: 'Clients',
     href: '/clients',
@@ -78,12 +93,42 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Contacts', href: '/clients/contacts' },
     ],
   },
-  { label: 'Partners', href: '/partners', icon: <Handshake size={20} /> },
-  { label: 'Team', href: '/team', icon: <Users2 size={20} /> },
-  { label: 'Messenger', href: '/messenger', icon: <MessageCircle size={20} /> },
-  { label: 'Calendar', href: '/calendar', icon: <Calendar size={20} /> },
-  { label: 'Drive', href: '/drive', icon: <HardDrive size={20} /> },
-  { label: 'Credentials', href: '/credentials', icon: <KeyRound size={20} /> },
+  {
+    label: 'Partners',
+    href: '/partners',
+    icon: <Handshake size={20} />,
+    permission: { module: 'PARTNERS', action: 'VIEW' },
+  },
+  {
+    label: 'Team',
+    href: '/team',
+    icon: <Users2 size={20} />,
+    permission: { module: 'COMPANY', action: 'VIEW' },
+  },
+  {
+    label: 'Messenger',
+    href: '/messenger',
+    icon: <MessageCircle size={20} />,
+    permission: { module: 'MESSENGER', action: 'VIEW' },
+  },
+  {
+    label: 'Calendar',
+    href: '/calendar',
+    icon: <Calendar size={20} />,
+    permission: { module: 'CALENDAR', action: 'VIEW' },
+  },
+  {
+    label: 'Drive',
+    href: '/drive',
+    icon: <HardDrive size={20} />,
+    permission: { module: 'DRIVE', action: 'VIEW' },
+  },
+  {
+    label: 'Credentials',
+    href: '/credentials',
+    icon: <KeyRound size={20} />,
+    permission: { module: 'CREDENTIALS', action: 'VIEW' },
+  },
   {
     label: 'Settings',
     href: '/settings',
@@ -91,6 +136,8 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: 'General', href: '/settings' },
       { label: 'Lists', href: '/settings/lists' },
+      { label: 'Roles', href: '/settings/roles' },
+      { label: 'Departments', href: '/settings/departments' },
     ],
   },
 ];
@@ -99,8 +146,16 @@ export function Sidebar() {
   const pathname = usePathname();
   const { signOut } = useClerk();
   const { user } = useUser();
+  const { can, isLoading: permsLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  const visibleItems = permsLoading
+    ? NAV_ITEMS
+    : NAV_ITEMS.filter((item) => {
+        if (!item.permission) return true;
+        return can(item.permission.action, item.permission.module);
+      });
 
   useEffect(() => {
     if (pathname.startsWith('/settings')) {
@@ -162,7 +217,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-3">
         <ul className="space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {visibleItems.map((item) => {
             const active = isActive(item.href);
             const expanded = expandedItems.has(item.label);
 

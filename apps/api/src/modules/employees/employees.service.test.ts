@@ -53,7 +53,7 @@ describe('EmployeesService', () => {
         email: 'john@test.com',
         firstName: 'John',
         lastName: 'Doe',
-        role: 'DEVELOPER',
+        roleId: 'role-observer',
       });
 
       const result = await service.upsertFromClerk({
@@ -61,9 +61,10 @@ describe('EmployeesService', () => {
         email: 'john@test.com',
         firstName: 'John',
         lastName: 'Doe',
+        roleId: 'role-observer',
       });
 
-      expect(result.role).toBe('DEVELOPER');
+      expect(result.roleId).toBe('role-observer');
       expect(prisma.employee.upsert).toHaveBeenCalled();
     });
   });

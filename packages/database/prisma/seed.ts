@@ -10,7 +10,7 @@ async function main() {
 
   console.log('Seeding database...');
 
-  // Employees
+  // Employees (roleId references roles seeded in migration)
   const ceo = await prisma.employee.upsert({
     where: { email: 'suren@neetrino.com' },
     update: {},
@@ -18,9 +18,8 @@ async function main() {
       firstName: 'Suren',
       lastName: 'Babajanyan',
       email: 'suren@neetrino.com',
-      role: 'CEO',
+      roleId: 'role-ceo',
       level: 'HEAD',
-      department: 'Management',
       status: 'ACTIVE',
     },
   });
@@ -32,9 +31,8 @@ async function main() {
       firstName: 'Anna',
       lastName: 'Petrosyan',
       email: 'anna@neetrino.com',
-      role: 'SELLER',
+      roleId: 'role-seller',
       level: 'SENIOR',
-      department: 'Sales',
       status: 'ACTIVE',
     },
   });
@@ -46,9 +44,8 @@ async function main() {
       firstName: 'Artur',
       lastName: 'Hakobyan',
       email: 'artur@neetrino.com',
-      role: 'PM',
+      roleId: 'role-pm',
       level: 'SENIOR',
-      department: 'Delivery',
       status: 'ACTIVE',
     },
   });
@@ -60,9 +57,8 @@ async function main() {
       firstName: 'Karen',
       lastName: 'Sargsyan',
       email: 'karen@neetrino.com',
-      role: 'DEVELOPER',
+      roleId: 'role-developer',
       level: 'MIDDLE',
-      department: 'Development',
       status: 'ACTIVE',
     },
   });
@@ -74,9 +70,8 @@ async function main() {
       firstName: 'Nare',
       lastName: 'Grigoryan',
       email: 'nare@neetrino.com',
-      role: 'DESIGNER',
+      roleId: 'role-designer',
       level: 'MIDDLE',
-      department: 'Design',
       status: 'ACTIVE',
     },
   });

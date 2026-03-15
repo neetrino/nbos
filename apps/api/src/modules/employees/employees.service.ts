@@ -4,12 +4,27 @@ import { PRISMA_TOKEN } from '../../database.module';
 
 interface EmployeeQueryParams {
   search?: string;
-  role?: string;
+  roleId?: string;
   status?: string;
-  department?: string;
+  departmentId?: string;
   page?: number;
   pageSize?: number;
 }
+
+const EMPLOYEE_INCLUDE = {
+  role: { select: { id: true, name: true, slug: true, level: true } },
+  departments: {
+    include: { department: { select: { id: true, name: true, slug: true } } },
+  },
+  _count: {
+    select: {
+      projectsSelling: true,
+      projectsManaging: true,
+      tasksAssigned: true,
+      tasksCreated: true,
+    },
+  },
+} as const;
 
 @Injectable()
 export class EmployeesService {
@@ -17,12 +32,13 @@ export class EmployeesService {
 
   async findAll() {
     return this.prisma.employee.findMany({
+      include: EMPLOYEE_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findAllWithFilters(params: EmployeeQueryParams) {
-    const { search, role, status, department, page = 1, pageSize = 50 } = params;
+    const { search, roleId, status, departmentId, page = 1, pageSize = 50 } = params;
     const where: Prisma.EmployeeWhereInput = {};
 
     if (search) {
@@ -32,23 +48,16 @@ export class EmployeesService {
         { email: { contains: search, mode: 'insensitive' } },
       ];
     }
-    if (role) where.role = role as Prisma.EmployeeWhereInput['role'];
+    if (roleId) where.roleId = roleId;
     if (status) where.status = status as Prisma.EmployeeWhereInput['status'];
-    if (department) where.department = { contains: department, mode: 'insensitive' };
+    if (departmentId) {
+      where.departments = { some: { departmentId } };
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.employee.findMany({
         where,
-        include: {
-          _count: {
-            select: {
-              projectsSelling: true,
-              projectsManaging: true,
-              tasksAssigned: true,
-              tasksCreated: true,
-            },
-          },
-        },
+        include: EMPLOYEE_INCLUDE,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -63,7 +72,10 @@ export class EmployeesService {
   }
 
   async findById(id: string) {
-    const employee = await this.prisma.employee.findUnique({ where: { id } });
+    const employee = await this.prisma.employee.findUnique({
+      where: { id },
+      include: EMPLOYEE_INCLUDE,
+    });
     if (!employee) {
       throw new NotFoundException(`Employee ${id} not found`);
     }
@@ -71,11 +83,17 @@ export class EmployeesService {
   }
 
   async findByClerkUserId(clerkUserId: string) {
-    return this.prisma.employee.findUnique({ where: { clerkUserId } });
+    return this.prisma.employee.findUnique({
+      where: { clerkUserId },
+      include: EMPLOYEE_INCLUDE,
+    });
   }
 
   async findByEmail(email: string) {
-    return this.prisma.employee.findUnique({ where: { email } });
+    return this.prisma.employee.findUnique({
+      where: { email },
+      include: EMPLOYEE_INCLUDE,
+    });
   }
 
   async upsertFromClerk(data: {
@@ -83,6 +101,7 @@ export class EmployeesService {
     email: string;
     firstName: string;
     lastName: string;
+    roleId: string;
   }) {
     return this.prisma.employee.upsert({
       where: { clerkUserId: data.clerkUserId },
@@ -96,8 +115,9 @@ export class EmployeesService {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
-        role: 'DEVELOPER',
+        roleId: data.roleId,
       },
+      include: EMPLOYEE_INCLUDE,
     });
   }
 }

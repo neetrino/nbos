@@ -12,7 +12,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../../common/decorators';
 import { LeadsService } from './leads.service';
 import { LeadConversionService } from './lead-conversion.service';
 
@@ -26,7 +25,6 @@ export class LeadsController {
   ) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all leads with filters and pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
@@ -59,21 +57,18 @@ export class LeadsController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get leads statistics' })
   async getStats() {
     return this.leadsService.getStats();
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get lead by ID' })
   async findOne(@Param('id') id: string) {
     return this.leadsService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create a new lead' })
   async create(
     @Body()
@@ -91,7 +86,6 @@ export class LeadsController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update lead' })
   async update(
     @Param('id') id: string,
@@ -111,14 +105,12 @@ export class LeadsController {
   }
 
   @Patch(':id/status')
-  @Public()
   @ApiOperation({ summary: 'Update lead status' })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.leadsService.updateStatus(id, body.status);
   }
 
   @Post(':id/convert')
-  @Public()
   @ApiOperation({ summary: 'Convert lead to deal (CRM-03 automation)' })
   async convertToDeal(
     @Param('id') id: string,
@@ -134,7 +126,6 @@ export class LeadsController {
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete lead' })
   async remove(@Param('id') id: string) {

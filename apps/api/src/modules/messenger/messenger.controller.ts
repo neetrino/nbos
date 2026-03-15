@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { MessengerService } from './messenger.service';
 
 @ApiTags('Messenger')
@@ -10,14 +9,12 @@ export class MessengerController {
   constructor(private readonly messengerService: MessengerService) {}
 
   @Get('channels')
-  @Public()
   @ApiOperation({ summary: 'List all channels' })
   getChannels() {
     return this.messengerService.getChannels();
   }
 
   @Post('channels')
-  @Public()
   @ApiOperation({ summary: 'Create a channel' })
   createChannel(
     @Body()
@@ -31,7 +28,6 @@ export class MessengerController {
   }
 
   @Get('channels/:id/messages')
-  @Public()
   @ApiOperation({ summary: 'Get messages in a channel' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -47,7 +43,6 @@ export class MessengerController {
   }
 
   @Post('channels/:id/messages')
-  @Public()
   @ApiOperation({ summary: 'Send a message to a channel' })
   sendMessage(
     @Param('id') id: string,
@@ -57,14 +52,12 @@ export class MessengerController {
   }
 
   @Get('dm/conversations/:userId')
-  @Public()
   @ApiOperation({ summary: 'List DM conversations for a user' })
   getConversations(@Param('userId') userId: string) {
     return this.messengerService.getDirectConversations(userId);
   }
 
   @Get('dm/:userId1/:userId2')
-  @Public()
   @ApiOperation({ summary: 'Get direct messages between two users' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -81,7 +74,6 @@ export class MessengerController {
   }
 
   @Post('dm')
-  @Public()
   @ApiOperation({ summary: 'Send a direct message' })
   sendDirectMessage(
     @Body()

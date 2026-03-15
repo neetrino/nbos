@@ -11,7 +11,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { ExpensesService } from './expenses.service';
 
 @ApiTags('Expenses')
@@ -21,7 +20,6 @@ export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all expenses with filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -58,21 +56,18 @@ export class ExpensesController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get expense statistics' })
   async getStats() {
     return this.expensesService.getStats();
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get expense by ID' })
   async findOne(@Param('id') id: string) {
     return this.expensesService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create expense' })
   async create(
     @Body()
@@ -94,7 +89,6 @@ export class ExpensesController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update expense' })
   async update(
     @Param('id') id: string,
@@ -117,7 +111,6 @@ export class ExpensesController {
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete expense' })
   async remove(@Param('id') id: string) {

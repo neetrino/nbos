@@ -1,19 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
-export const EMPLOYEE_ROLES = [
-  { value: 'CEO', label: 'CEO' },
-  { value: 'FINANCE_DIRECTOR', label: 'Finance Director' },
-  { value: 'HR_DIRECTOR', label: 'HR Director' },
-  { value: 'HEAD_OF_SALES', label: 'Head of Sales' },
-  { value: 'SELLER', label: 'Seller' },
-  { value: 'PM', label: 'Project Manager' },
-  { value: 'DEVELOPER', label: 'Developer' },
-  { value: 'DESIGNER', label: 'Designer' },
-  { value: 'QA', label: 'QA Engineer' },
-  { value: 'TECH_SPECIALIST', label: 'Tech Specialist' },
-  { value: 'MARKETING', label: 'Marketing' },
-] as const;
-
 export const EMPLOYEE_LEVELS = [
   { value: 'JUNIOR', label: 'Junior', variant: 'gray' as StatusVariant },
   { value: 'MIDDLE', label: 'Middle', variant: 'blue' as StatusVariant },

@@ -39,10 +39,17 @@ export type EmployeeMinAggregateOutputType = {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
-  role: $Enums.EmployeeRoleEnum | null;
-  department: string | null;
+  phone: string | null;
+  telegram: string | null;
+  avatar: string | null;
+  birthday: Date | null;
+  notes: string | null;
+  position: string | null;
+  roleId: string | null;
   level: $Enums.EmployeeLevelEnum | null;
   baseSalary: runtime.Decimal | null;
+  hireDate: Date | null;
+  fireDate: Date | null;
   status: $Enums.EmployeeStatusEnum | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -54,10 +61,17 @@ export type EmployeeMaxAggregateOutputType = {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
-  role: $Enums.EmployeeRoleEnum | null;
-  department: string | null;
+  phone: string | null;
+  telegram: string | null;
+  avatar: string | null;
+  birthday: Date | null;
+  notes: string | null;
+  position: string | null;
+  roleId: string | null;
   level: $Enums.EmployeeLevelEnum | null;
   baseSalary: runtime.Decimal | null;
+  hireDate: Date | null;
+  fireDate: Date | null;
   status: $Enums.EmployeeStatusEnum | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -69,11 +83,18 @@ export type EmployeeCountAggregateOutputType = {
   firstName: number;
   lastName: number;
   email: number;
-  role: number;
-  department: number;
+  phone: number;
+  telegram: number;
+  avatar: number;
+  birthday: number;
+  notes: number;
+  position: number;
+  roleId: number;
   level: number;
   baseSalary: number;
   workSchedule: number;
+  hireDate: number;
+  fireDate: number;
   status: number;
   createdAt: number;
   updatedAt: number;
@@ -94,10 +115,17 @@ export type EmployeeMinAggregateInputType = {
   firstName?: true;
   lastName?: true;
   email?: true;
-  role?: true;
-  department?: true;
+  phone?: true;
+  telegram?: true;
+  avatar?: true;
+  birthday?: true;
+  notes?: true;
+  position?: true;
+  roleId?: true;
   level?: true;
   baseSalary?: true;
+  hireDate?: true;
+  fireDate?: true;
   status?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -109,10 +137,17 @@ export type EmployeeMaxAggregateInputType = {
   firstName?: true;
   lastName?: true;
   email?: true;
-  role?: true;
-  department?: true;
+  phone?: true;
+  telegram?: true;
+  avatar?: true;
+  birthday?: true;
+  notes?: true;
+  position?: true;
+  roleId?: true;
   level?: true;
   baseSalary?: true;
+  hireDate?: true;
+  fireDate?: true;
   status?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -124,11 +159,18 @@ export type EmployeeCountAggregateInputType = {
   firstName?: true;
   lastName?: true;
   email?: true;
-  role?: true;
-  department?: true;
+  phone?: true;
+  telegram?: true;
+  avatar?: true;
+  birthday?: true;
+  notes?: true;
+  position?: true;
+  roleId?: true;
   level?: true;
   baseSalary?: true;
   workSchedule?: true;
+  hireDate?: true;
+  fireDate?: true;
   status?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -230,11 +272,18 @@ export type EmployeeGroupByOutputType = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department: string | null;
+  phone: string | null;
+  telegram: string | null;
+  avatar: string | null;
+  birthday: Date | null;
+  notes: string | null;
+  position: string | null;
+  roleId: string;
   level: $Enums.EmployeeLevelEnum | null;
   baseSalary: runtime.Decimal | null;
   workSchedule: runtime.JsonValue | null;
+  hireDate: Date | null;
+  fireDate: Date | null;
   status: $Enums.EmployeeStatusEnum;
   createdAt: Date;
   updatedAt: Date;
@@ -266,8 +315,13 @@ export type EmployeeWhereInput = {
   firstName?: Prisma.StringFilter<'Employee'> | string;
   lastName?: Prisma.StringFilter<'Employee'> | string;
   email?: Prisma.StringFilter<'Employee'> | string;
-  role?: Prisma.EnumEmployeeRoleEnumFilter<'Employee'> | $Enums.EmployeeRoleEnum;
-  department?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  phone?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  telegram?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  avatar?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  birthday?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
+  notes?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  position?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  roleId?: Prisma.StringFilter<'Employee'> | string;
   level?: Prisma.EnumEmployeeLevelEnumNullableFilter<'Employee'> | $Enums.EmployeeLevelEnum | null;
   baseSalary?:
     | Prisma.DecimalNullableFilter<'Employee'>
@@ -277,9 +331,13 @@ export type EmployeeWhereInput = {
     | string
     | null;
   workSchedule?: Prisma.JsonNullableFilter<'Employee'>;
+  hireDate?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
+  fireDate?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFilter<'Employee'> | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFilter<'Employee'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Employee'> | Date | string;
+  role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
+  departments?: Prisma.EmployeeDepartmentListRelationFilter;
   projectsSelling?: Prisma.ProjectListRelationFilter;
   projectsManaging?: Prisma.ProjectListRelationFilter;
   leadsAssigned?: Prisma.LeadListRelationFilter;
@@ -292,6 +350,12 @@ export type EmployeeWhereInput = {
   bonusEntries?: Prisma.BonusEntryListRelationFilter;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateListRelationFilter;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateListRelationFilter;
+  invitationsSent?: Prisma.InvitationListRelationFilter;
+  invitationReceived?: Prisma.XOR<
+    Prisma.InvitationNullableScalarRelationFilter,
+    Prisma.InvitationWhereInput
+  > | null;
+  credentialsOwned?: Prisma.CredentialListRelationFilter;
 };
 
 export type EmployeeOrderByWithRelationInput = {
@@ -300,14 +364,23 @@ export type EmployeeOrderByWithRelationInput = {
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
-  role?: Prisma.SortOrder;
-  department?: Prisma.SortOrderInput | Prisma.SortOrder;
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder;
+  telegram?: Prisma.SortOrderInput | Prisma.SortOrder;
+  avatar?: Prisma.SortOrderInput | Prisma.SortOrder;
+  birthday?: Prisma.SortOrderInput | Prisma.SortOrder;
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder;
+  position?: Prisma.SortOrderInput | Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
   level?: Prisma.SortOrderInput | Prisma.SortOrder;
   baseSalary?: Prisma.SortOrderInput | Prisma.SortOrder;
   workSchedule?: Prisma.SortOrderInput | Prisma.SortOrder;
+  hireDate?: Prisma.SortOrderInput | Prisma.SortOrder;
+  fireDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   status?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  role?: Prisma.RoleOrderByWithRelationInput;
+  departments?: Prisma.EmployeeDepartmentOrderByRelationAggregateInput;
   projectsSelling?: Prisma.ProjectOrderByRelationAggregateInput;
   projectsManaging?: Prisma.ProjectOrderByRelationAggregateInput;
   leadsAssigned?: Prisma.LeadOrderByRelationAggregateInput;
@@ -320,6 +393,9 @@ export type EmployeeOrderByWithRelationInput = {
   bonusEntries?: Prisma.BonusEntryOrderByRelationAggregateInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateOrderByRelationAggregateInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateOrderByRelationAggregateInput;
+  invitationsSent?: Prisma.InvitationOrderByRelationAggregateInput;
+  invitationReceived?: Prisma.InvitationOrderByWithRelationInput;
+  credentialsOwned?: Prisma.CredentialOrderByRelationAggregateInput;
 };
 
 export type EmployeeWhereUniqueInput = Prisma.AtLeast<
@@ -332,8 +408,13 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
     NOT?: Prisma.EmployeeWhereInput | Prisma.EmployeeWhereInput[];
     firstName?: Prisma.StringFilter<'Employee'> | string;
     lastName?: Prisma.StringFilter<'Employee'> | string;
-    role?: Prisma.EnumEmployeeRoleEnumFilter<'Employee'> | $Enums.EmployeeRoleEnum;
-    department?: Prisma.StringNullableFilter<'Employee'> | string | null;
+    phone?: Prisma.StringNullableFilter<'Employee'> | string | null;
+    telegram?: Prisma.StringNullableFilter<'Employee'> | string | null;
+    avatar?: Prisma.StringNullableFilter<'Employee'> | string | null;
+    birthday?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
+    notes?: Prisma.StringNullableFilter<'Employee'> | string | null;
+    position?: Prisma.StringNullableFilter<'Employee'> | string | null;
+    roleId?: Prisma.StringFilter<'Employee'> | string;
     level?:
       | Prisma.EnumEmployeeLevelEnumNullableFilter<'Employee'>
       | $Enums.EmployeeLevelEnum
@@ -346,9 +427,13 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
       | string
       | null;
     workSchedule?: Prisma.JsonNullableFilter<'Employee'>;
+    hireDate?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
+    fireDate?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
     status?: Prisma.EnumEmployeeStatusEnumFilter<'Employee'> | $Enums.EmployeeStatusEnum;
     createdAt?: Prisma.DateTimeFilter<'Employee'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Employee'> | Date | string;
+    role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
+    departments?: Prisma.EmployeeDepartmentListRelationFilter;
     projectsSelling?: Prisma.ProjectListRelationFilter;
     projectsManaging?: Prisma.ProjectListRelationFilter;
     leadsAssigned?: Prisma.LeadListRelationFilter;
@@ -361,6 +446,12 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
     bonusEntries?: Prisma.BonusEntryListRelationFilter;
     recurringTasksCreated?: Prisma.RecurringTaskTemplateListRelationFilter;
     recurringTasksAssigned?: Prisma.RecurringTaskTemplateListRelationFilter;
+    invitationsSent?: Prisma.InvitationListRelationFilter;
+    invitationReceived?: Prisma.XOR<
+      Prisma.InvitationNullableScalarRelationFilter,
+      Prisma.InvitationWhereInput
+    > | null;
+    credentialsOwned?: Prisma.CredentialListRelationFilter;
   },
   'id' | 'clerkUserId' | 'email'
 >;
@@ -371,11 +462,18 @@ export type EmployeeOrderByWithAggregationInput = {
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
-  role?: Prisma.SortOrder;
-  department?: Prisma.SortOrderInput | Prisma.SortOrder;
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder;
+  telegram?: Prisma.SortOrderInput | Prisma.SortOrder;
+  avatar?: Prisma.SortOrderInput | Prisma.SortOrder;
+  birthday?: Prisma.SortOrderInput | Prisma.SortOrder;
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder;
+  position?: Prisma.SortOrderInput | Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
   level?: Prisma.SortOrderInput | Prisma.SortOrder;
   baseSalary?: Prisma.SortOrderInput | Prisma.SortOrder;
   workSchedule?: Prisma.SortOrderInput | Prisma.SortOrder;
+  hireDate?: Prisma.SortOrderInput | Prisma.SortOrder;
+  fireDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   status?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -399,8 +497,13 @@ export type EmployeeScalarWhereWithAggregatesInput = {
   firstName?: Prisma.StringWithAggregatesFilter<'Employee'> | string;
   lastName?: Prisma.StringWithAggregatesFilter<'Employee'> | string;
   email?: Prisma.StringWithAggregatesFilter<'Employee'> | string;
-  role?: Prisma.EnumEmployeeRoleEnumWithAggregatesFilter<'Employee'> | $Enums.EmployeeRoleEnum;
-  department?: Prisma.StringNullableWithAggregatesFilter<'Employee'> | string | null;
+  phone?: Prisma.StringNullableWithAggregatesFilter<'Employee'> | string | null;
+  telegram?: Prisma.StringNullableWithAggregatesFilter<'Employee'> | string | null;
+  avatar?: Prisma.StringNullableWithAggregatesFilter<'Employee'> | string | null;
+  birthday?: Prisma.DateTimeNullableWithAggregatesFilter<'Employee'> | Date | string | null;
+  notes?: Prisma.StringNullableWithAggregatesFilter<'Employee'> | string | null;
+  position?: Prisma.StringNullableWithAggregatesFilter<'Employee'> | string | null;
+  roleId?: Prisma.StringWithAggregatesFilter<'Employee'> | string;
   level?:
     | Prisma.EnumEmployeeLevelEnumNullableWithAggregatesFilter<'Employee'>
     | $Enums.EmployeeLevelEnum
@@ -413,6 +516,8 @@ export type EmployeeScalarWhereWithAggregatesInput = {
     | string
     | null;
   workSchedule?: Prisma.JsonNullableWithAggregatesFilter<'Employee'>;
+  hireDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Employee'> | Date | string | null;
+  fireDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Employee'> | Date | string | null;
   status?:
     | Prisma.EnumEmployeeStatusEnumWithAggregatesFilter<'Employee'>
     | $Enums.EmployeeStatusEnum;
@@ -426,14 +531,22 @@ export type EmployeeCreateInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -446,6 +559,9 @@ export type EmployeeCreateInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateInput = {
@@ -454,14 +570,22 @@ export type EmployeeUncheckedCreateInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -474,6 +598,9 @@ export type EmployeeUncheckedCreateInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUpdateInput = {
@@ -482,8 +609,12 @@ export type EmployeeUpdateInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -496,9 +627,13 @@ export type EmployeeUpdateInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -511,6 +646,9 @@ export type EmployeeUpdateInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateInput = {
@@ -519,8 +657,13 @@ export type EmployeeUncheckedUpdateInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -533,9 +676,12 @@ export type EmployeeUncheckedUpdateInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -548,6 +694,9 @@ export type EmployeeUncheckedUpdateInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateManyInput = {
@@ -556,11 +705,18 @@ export type EmployeeCreateManyInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -572,8 +728,12 @@ export type EmployeeUpdateManyMutationInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -586,6 +746,8 @@ export type EmployeeUpdateManyMutationInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -597,8 +759,13 @@ export type EmployeeUncheckedUpdateManyInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -611,6 +778,8 @@ export type EmployeeUncheckedUpdateManyInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -626,17 +795,34 @@ export type EmployeeScalarRelationFilter = {
   isNot?: Prisma.EmployeeWhereInput;
 };
 
+export type EmployeeListRelationFilter = {
+  every?: Prisma.EmployeeWhereInput;
+  some?: Prisma.EmployeeWhereInput;
+  none?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
+};
+
 export type EmployeeCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   clerkUserId?: Prisma.SortOrder;
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
-  role?: Prisma.SortOrder;
-  department?: Prisma.SortOrder;
+  phone?: Prisma.SortOrder;
+  telegram?: Prisma.SortOrder;
+  avatar?: Prisma.SortOrder;
+  birthday?: Prisma.SortOrder;
+  notes?: Prisma.SortOrder;
+  position?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
   level?: Prisma.SortOrder;
   baseSalary?: Prisma.SortOrder;
   workSchedule?: Prisma.SortOrder;
+  hireDate?: Prisma.SortOrder;
+  fireDate?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -652,10 +838,17 @@ export type EmployeeMaxOrderByAggregateInput = {
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
-  role?: Prisma.SortOrder;
-  department?: Prisma.SortOrder;
+  phone?: Prisma.SortOrder;
+  telegram?: Prisma.SortOrder;
+  avatar?: Prisma.SortOrder;
+  birthday?: Prisma.SortOrder;
+  notes?: Prisma.SortOrder;
+  position?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
   level?: Prisma.SortOrder;
   baseSalary?: Prisma.SortOrder;
+  hireDate?: Prisma.SortOrder;
+  fireDate?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -667,10 +860,17 @@ export type EmployeeMinOrderByAggregateInput = {
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
-  role?: Prisma.SortOrder;
-  department?: Prisma.SortOrder;
+  phone?: Prisma.SortOrder;
+  telegram?: Prisma.SortOrder;
+  avatar?: Prisma.SortOrder;
+  birthday?: Prisma.SortOrder;
+  notes?: Prisma.SortOrder;
+  position?: Prisma.SortOrder;
+  roleId?: Prisma.SortOrder;
   level?: Prisma.SortOrder;
   baseSalary?: Prisma.SortOrder;
+  hireDate?: Prisma.SortOrder;
+  fireDate?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -1008,8 +1208,198 @@ export type EmployeeUpdateOneWithoutTicketsAssignedNestedInput = {
   >;
 };
 
-export type EnumEmployeeRoleEnumFieldUpdateOperationsInput = {
-  set?: $Enums.EmployeeRoleEnum;
+export type EmployeeCreateNestedOneWithoutCredentialsOwnedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutCredentialsOwnedInput,
+    Prisma.EmployeeUncheckedCreateWithoutCredentialsOwnedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutCredentialsOwnedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeUpdateOneWithoutCredentialsOwnedNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutCredentialsOwnedInput,
+    Prisma.EmployeeUncheckedCreateWithoutCredentialsOwnedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutCredentialsOwnedInput;
+  upsert?: Prisma.EmployeeUpsertWithoutCredentialsOwnedInput;
+  disconnect?: Prisma.EmployeeWhereInput | boolean;
+  delete?: Prisma.EmployeeWhereInput | boolean;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutCredentialsOwnedInput,
+      Prisma.EmployeeUpdateWithoutCredentialsOwnedInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutCredentialsOwnedInput
+  >;
+};
+
+export type EmployeeCreateNestedOneWithoutDepartmentsInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutDepartmentsInput,
+    Prisma.EmployeeUncheckedCreateWithoutDepartmentsInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutDepartmentsInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeUpdateOneRequiredWithoutDepartmentsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutDepartmentsInput,
+    Prisma.EmployeeUncheckedCreateWithoutDepartmentsInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutDepartmentsInput;
+  upsert?: Prisma.EmployeeUpsertWithoutDepartmentsInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutDepartmentsInput,
+      Prisma.EmployeeUpdateWithoutDepartmentsInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutDepartmentsInput
+  >;
+};
+
+export type EmployeeCreateNestedManyWithoutRoleInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.EmployeeCreateWithoutRoleInput,
+        Prisma.EmployeeUncheckedCreateWithoutRoleInput
+      >
+    | Prisma.EmployeeCreateWithoutRoleInput[]
+    | Prisma.EmployeeUncheckedCreateWithoutRoleInput[];
+  connectOrCreate?:
+    | Prisma.EmployeeCreateOrConnectWithoutRoleInput
+    | Prisma.EmployeeCreateOrConnectWithoutRoleInput[];
+  createMany?: Prisma.EmployeeCreateManyRoleInputEnvelope;
+  connect?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+};
+
+export type EmployeeUncheckedCreateNestedManyWithoutRoleInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.EmployeeCreateWithoutRoleInput,
+        Prisma.EmployeeUncheckedCreateWithoutRoleInput
+      >
+    | Prisma.EmployeeCreateWithoutRoleInput[]
+    | Prisma.EmployeeUncheckedCreateWithoutRoleInput[];
+  connectOrCreate?:
+    | Prisma.EmployeeCreateOrConnectWithoutRoleInput
+    | Prisma.EmployeeCreateOrConnectWithoutRoleInput[];
+  createMany?: Prisma.EmployeeCreateManyRoleInputEnvelope;
+  connect?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+};
+
+export type EmployeeUpdateManyWithoutRoleNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.EmployeeCreateWithoutRoleInput,
+        Prisma.EmployeeUncheckedCreateWithoutRoleInput
+      >
+    | Prisma.EmployeeCreateWithoutRoleInput[]
+    | Prisma.EmployeeUncheckedCreateWithoutRoleInput[];
+  connectOrCreate?:
+    | Prisma.EmployeeCreateOrConnectWithoutRoleInput
+    | Prisma.EmployeeCreateOrConnectWithoutRoleInput[];
+  upsert?:
+    | Prisma.EmployeeUpsertWithWhereUniqueWithoutRoleInput
+    | Prisma.EmployeeUpsertWithWhereUniqueWithoutRoleInput[];
+  createMany?: Prisma.EmployeeCreateManyRoleInputEnvelope;
+  set?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+  disconnect?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+  delete?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+  connect?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+  update?:
+    | Prisma.EmployeeUpdateWithWhereUniqueWithoutRoleInput
+    | Prisma.EmployeeUpdateWithWhereUniqueWithoutRoleInput[];
+  updateMany?:
+    | Prisma.EmployeeUpdateManyWithWhereWithoutRoleInput
+    | Prisma.EmployeeUpdateManyWithWhereWithoutRoleInput[];
+  deleteMany?: Prisma.EmployeeScalarWhereInput | Prisma.EmployeeScalarWhereInput[];
+};
+
+export type EmployeeUncheckedUpdateManyWithoutRoleNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.EmployeeCreateWithoutRoleInput,
+        Prisma.EmployeeUncheckedCreateWithoutRoleInput
+      >
+    | Prisma.EmployeeCreateWithoutRoleInput[]
+    | Prisma.EmployeeUncheckedCreateWithoutRoleInput[];
+  connectOrCreate?:
+    | Prisma.EmployeeCreateOrConnectWithoutRoleInput
+    | Prisma.EmployeeCreateOrConnectWithoutRoleInput[];
+  upsert?:
+    | Prisma.EmployeeUpsertWithWhereUniqueWithoutRoleInput
+    | Prisma.EmployeeUpsertWithWhereUniqueWithoutRoleInput[];
+  createMany?: Prisma.EmployeeCreateManyRoleInputEnvelope;
+  set?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+  disconnect?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+  delete?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+  connect?: Prisma.EmployeeWhereUniqueInput | Prisma.EmployeeWhereUniqueInput[];
+  update?:
+    | Prisma.EmployeeUpdateWithWhereUniqueWithoutRoleInput
+    | Prisma.EmployeeUpdateWithWhereUniqueWithoutRoleInput[];
+  updateMany?:
+    | Prisma.EmployeeUpdateManyWithWhereWithoutRoleInput
+    | Prisma.EmployeeUpdateManyWithWhereWithoutRoleInput[];
+  deleteMany?: Prisma.EmployeeScalarWhereInput | Prisma.EmployeeScalarWhereInput[];
+};
+
+export type EmployeeCreateNestedOneWithoutInvitationsSentInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInvitationsSentInput,
+    Prisma.EmployeeUncheckedCreateWithoutInvitationsSentInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutInvitationsSentInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeCreateNestedOneWithoutInvitationReceivedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInvitationReceivedInput,
+    Prisma.EmployeeUncheckedCreateWithoutInvitationReceivedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutInvitationReceivedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeUpdateOneRequiredWithoutInvitationsSentNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInvitationsSentInput,
+    Prisma.EmployeeUncheckedCreateWithoutInvitationsSentInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutInvitationsSentInput;
+  upsert?: Prisma.EmployeeUpsertWithoutInvitationsSentInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutInvitationsSentInput,
+      Prisma.EmployeeUpdateWithoutInvitationsSentInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutInvitationsSentInput
+  >;
+};
+
+export type EmployeeUpdateOneWithoutInvitationReceivedNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInvitationReceivedInput,
+    Prisma.EmployeeUncheckedCreateWithoutInvitationReceivedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutInvitationReceivedInput;
+  upsert?: Prisma.EmployeeUpsertWithoutInvitationReceivedInput;
+  disconnect?: Prisma.EmployeeWhereInput | boolean;
+  delete?: Prisma.EmployeeWhereInput | boolean;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutInvitationReceivedInput,
+      Prisma.EmployeeUpdateWithoutInvitationReceivedInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutInvitationReceivedInput
+  >;
 };
 
 export type NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput = {
@@ -1026,14 +1416,22 @@ export type EmployeeCreateWithoutProjectsSellingInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
@@ -1045,6 +1443,9 @@ export type EmployeeCreateWithoutProjectsSellingInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutProjectsSellingInput = {
@@ -1053,14 +1454,22 @@ export type EmployeeUncheckedCreateWithoutProjectsSellingInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
@@ -1072,6 +1481,9 @@ export type EmployeeUncheckedCreateWithoutProjectsSellingInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutProjectsSellingInput = {
@@ -1088,14 +1500,22 @@ export type EmployeeCreateWithoutProjectsManagingInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
@@ -1107,6 +1527,9 @@ export type EmployeeCreateWithoutProjectsManagingInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutProjectsManagingInput = {
@@ -1115,14 +1538,22 @@ export type EmployeeUncheckedCreateWithoutProjectsManagingInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
@@ -1134,6 +1565,9 @@ export type EmployeeUncheckedCreateWithoutProjectsManagingInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutProjectsManagingInput = {
@@ -1170,8 +1604,12 @@ export type EmployeeUpdateWithoutProjectsSellingInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1184,9 +1622,13 @@ export type EmployeeUpdateWithoutProjectsSellingInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
@@ -1198,6 +1640,9 @@ export type EmployeeUpdateWithoutProjectsSellingInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutProjectsSellingInput = {
@@ -1206,8 +1651,13 @@ export type EmployeeUncheckedUpdateWithoutProjectsSellingInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1220,9 +1670,12 @@ export type EmployeeUncheckedUpdateWithoutProjectsSellingInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
@@ -1234,6 +1687,9 @@ export type EmployeeUncheckedUpdateWithoutProjectsSellingInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUpsertWithoutProjectsManagingInput = {
@@ -1262,8 +1718,12 @@ export type EmployeeUpdateWithoutProjectsManagingInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1276,9 +1736,13 @@ export type EmployeeUpdateWithoutProjectsManagingInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
@@ -1290,6 +1754,9 @@ export type EmployeeUpdateWithoutProjectsManagingInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutProjectsManagingInput = {
@@ -1298,8 +1765,13 @@ export type EmployeeUncheckedUpdateWithoutProjectsManagingInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1312,9 +1784,12 @@ export type EmployeeUncheckedUpdateWithoutProjectsManagingInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
@@ -1326,6 +1801,9 @@ export type EmployeeUncheckedUpdateWithoutProjectsManagingInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateWithoutLeadsAssignedInput = {
@@ -1334,14 +1812,22 @@ export type EmployeeCreateWithoutLeadsAssignedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
@@ -1353,6 +1839,9 @@ export type EmployeeCreateWithoutLeadsAssignedInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
@@ -1361,14 +1850,22 @@ export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
@@ -1380,6 +1877,9 @@ export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutLeadsAssignedInput = {
@@ -1416,8 +1916,12 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1430,9 +1934,13 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
@@ -1444,6 +1952,9 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
@@ -1452,8 +1963,13 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1466,9 +1982,12 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
@@ -1480,6 +1999,9 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateWithoutDealsSellingInput = {
@@ -1488,14 +2010,22 @@ export type EmployeeCreateWithoutDealsSellingInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -1507,6 +2037,9 @@ export type EmployeeCreateWithoutDealsSellingInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
@@ -1515,14 +2048,22 @@ export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -1534,6 +2075,9 @@ export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDealsSellingInput = {
@@ -1550,14 +2094,22 @@ export type EmployeeCreateWithoutDealsPMInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -1569,6 +2121,9 @@ export type EmployeeCreateWithoutDealsPMInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDealsPMInput = {
@@ -1577,14 +2132,22 @@ export type EmployeeUncheckedCreateWithoutDealsPMInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -1596,6 +2159,9 @@ export type EmployeeUncheckedCreateWithoutDealsPMInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDealsPMInput = {
@@ -1632,8 +2198,12 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1646,9 +2216,13 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -1660,6 +2234,9 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
@@ -1668,8 +2245,13 @@ export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1682,9 +2264,12 @@ export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -1696,6 +2281,9 @@ export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUpsertWithoutDealsPMInput = {
@@ -1724,8 +2312,12 @@ export type EmployeeUpdateWithoutDealsPMInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1738,9 +2330,13 @@ export type EmployeeUpdateWithoutDealsPMInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -1752,6 +2348,9 @@ export type EmployeeUpdateWithoutDealsPMInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
@@ -1760,8 +2359,13 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1774,9 +2378,12 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -1788,6 +2395,9 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateWithoutPaymentsConfirmedInput = {
@@ -1796,14 +2406,22 @@ export type EmployeeCreateWithoutPaymentsConfirmedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -1815,6 +2433,9 @@ export type EmployeeCreateWithoutPaymentsConfirmedInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
@@ -1823,14 +2444,22 @@ export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -1842,6 +2471,9 @@ export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPaymentsConfirmedInput = {
@@ -1878,8 +2510,12 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1892,9 +2528,13 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -1906,6 +2546,9 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
@@ -1914,8 +2557,13 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -1928,9 +2576,12 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -1942,6 +2593,9 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateWithoutBonusEntriesInput = {
@@ -1950,14 +2604,22 @@ export type EmployeeCreateWithoutBonusEntriesInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -1969,6 +2631,9 @@ export type EmployeeCreateWithoutBonusEntriesInput = {
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
@@ -1977,14 +2642,22 @@ export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -1996,6 +2669,9 @@ export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutBonusEntriesInput = {
@@ -2032,8 +2708,12 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2046,9 +2726,13 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -2060,6 +2744,9 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
@@ -2068,8 +2755,13 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2082,9 +2774,12 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -2096,6 +2791,9 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateWithoutTasksCreatedInput = {
@@ -2104,14 +2802,22 @@ export type EmployeeCreateWithoutTasksCreatedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -2123,6 +2829,9 @@ export type EmployeeCreateWithoutTasksCreatedInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
@@ -2131,14 +2840,22 @@ export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -2150,6 +2867,9 @@ export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTasksCreatedInput = {
@@ -2166,14 +2886,22 @@ export type EmployeeCreateWithoutTasksAssignedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -2185,6 +2913,9 @@ export type EmployeeCreateWithoutTasksAssignedInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
@@ -2193,14 +2924,22 @@ export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -2212,6 +2951,9 @@ export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTasksAssignedInput = {
@@ -2248,8 +2990,12 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2262,9 +3008,13 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -2276,6 +3026,9 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
@@ -2284,8 +3037,13 @@ export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2298,9 +3056,12 @@ export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -2312,6 +3073,9 @@ export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUpsertWithoutTasksAssignedInput = {
@@ -2340,8 +3104,12 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2354,9 +3122,13 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -2368,6 +3140,9 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
@@ -2376,8 +3151,13 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2390,9 +3170,12 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -2404,6 +3187,9 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
@@ -2412,14 +3198,22 @@ export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -2431,6 +3225,9 @@ export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
@@ -2439,14 +3236,22 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -2458,6 +3263,9 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutRecurringTasksCreatedInput = {
@@ -2474,14 +3282,22 @@ export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -2493,6 +3309,9 @@ export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
@@ -2501,14 +3320,22 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -2520,6 +3347,9 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutRecurringTasksAssignedInput = {
@@ -2556,8 +3386,12 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2570,9 +3404,13 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -2584,6 +3422,9 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
@@ -2592,8 +3433,13 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2606,9 +3452,12 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -2620,6 +3469,9 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUpsertWithoutRecurringTasksAssignedInput = {
@@ -2648,8 +3500,12 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2662,9 +3518,13 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -2676,6 +3536,9 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
@@ -2684,8 +3547,13 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2698,9 +3566,12 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -2712,6 +3583,9 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateWithoutTicketsAssignedInput = {
@@ -2720,14 +3594,22 @@ export type EmployeeCreateWithoutTicketsAssignedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
@@ -2739,6 +3621,9 @@ export type EmployeeCreateWithoutTicketsAssignedInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
@@ -2747,14 +3632,22 @@ export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
   firstName: string;
   lastName: string;
   email: string;
-  role: $Enums.EmployeeRoleEnum;
-  department?: string | null;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
   level?: $Enums.EmployeeLevelEnum | null;
   baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
   status?: $Enums.EmployeeStatusEnum;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
   projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
@@ -2766,6 +3659,9 @@ export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTicketsAssignedInput = {
@@ -2802,8 +3698,12 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2816,9 +3716,13 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
@@ -2830,6 +3734,9 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
@@ -2838,8 +3745,13 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
-  role?: Prisma.EnumEmployeeRoleEnumFieldUpdateOperationsInput | $Enums.EmployeeRoleEnum;
-  department?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
   level?:
     | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
     | $Enums.EmployeeLevelEnum
@@ -2852,9 +3764,12 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
     | string
     | null;
   workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
   projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
@@ -2866,6 +3781,1097 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
   recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeCreateWithoutCredentialsOwnedInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+};
+
+export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+};
+
+export type EmployeeCreateOrConnectWithoutCredentialsOwnedInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutCredentialsOwnedInput,
+    Prisma.EmployeeUncheckedCreateWithoutCredentialsOwnedInput
+  >;
+};
+
+export type EmployeeUpsertWithoutCredentialsOwnedInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutCredentialsOwnedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutCredentialsOwnedInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutCredentialsOwnedInput,
+    Prisma.EmployeeUncheckedCreateWithoutCredentialsOwnedInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutCredentialsOwnedInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutCredentialsOwnedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutCredentialsOwnedInput
+  >;
+};
+
+export type EmployeeUpdateWithoutCredentialsOwnedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+};
+
+export type EmployeeCreateWithoutDepartmentsInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeCreateOrConnectWithoutDepartmentsInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutDepartmentsInput,
+    Prisma.EmployeeUncheckedCreateWithoutDepartmentsInput
+  >;
+};
+
+export type EmployeeUpsertWithoutDepartmentsInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutDepartmentsInput,
+    Prisma.EmployeeUncheckedUpdateWithoutDepartmentsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutDepartmentsInput,
+    Prisma.EmployeeUncheckedCreateWithoutDepartmentsInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutDepartmentsInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutDepartmentsInput,
+    Prisma.EmployeeUncheckedUpdateWithoutDepartmentsInput
+  >;
+};
+
+export type EmployeeUpdateWithoutDepartmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeCreateWithoutRoleInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeUncheckedCreateWithoutRoleInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeCreateOrConnectWithoutRoleInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutRoleInput,
+    Prisma.EmployeeUncheckedCreateWithoutRoleInput
+  >;
+};
+
+export type EmployeeCreateManyRoleInputEnvelope = {
+  data: Prisma.EmployeeCreateManyRoleInput | Prisma.EmployeeCreateManyRoleInput[];
+  skipDuplicates?: boolean;
+};
+
+export type EmployeeUpsertWithWhereUniqueWithoutRoleInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutRoleInput,
+    Prisma.EmployeeUncheckedUpdateWithoutRoleInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutRoleInput,
+    Prisma.EmployeeUncheckedCreateWithoutRoleInput
+  >;
+};
+
+export type EmployeeUpdateWithWhereUniqueWithoutRoleInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutRoleInput,
+    Prisma.EmployeeUncheckedUpdateWithoutRoleInput
+  >;
+};
+
+export type EmployeeUpdateManyWithWhereWithoutRoleInput = {
+  where: Prisma.EmployeeScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateManyMutationInput,
+    Prisma.EmployeeUncheckedUpdateManyWithoutRoleInput
+  >;
+};
+
+export type EmployeeScalarWhereInput = {
+  AND?: Prisma.EmployeeScalarWhereInput | Prisma.EmployeeScalarWhereInput[];
+  OR?: Prisma.EmployeeScalarWhereInput[];
+  NOT?: Prisma.EmployeeScalarWhereInput | Prisma.EmployeeScalarWhereInput[];
+  id?: Prisma.StringFilter<'Employee'> | string;
+  clerkUserId?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  firstName?: Prisma.StringFilter<'Employee'> | string;
+  lastName?: Prisma.StringFilter<'Employee'> | string;
+  email?: Prisma.StringFilter<'Employee'> | string;
+  phone?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  telegram?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  avatar?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  birthday?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
+  notes?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  position?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  roleId?: Prisma.StringFilter<'Employee'> | string;
+  level?: Prisma.EnumEmployeeLevelEnumNullableFilter<'Employee'> | $Enums.EmployeeLevelEnum | null;
+  baseSalary?:
+    | Prisma.DecimalNullableFilter<'Employee'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.JsonNullableFilter<'Employee'>;
+  hireDate?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
+  fireDate?: Prisma.DateTimeNullableFilter<'Employee'> | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFilter<'Employee'> | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFilter<'Employee'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Employee'> | Date | string;
+};
+
+export type EmployeeCreateWithoutInvitationsSentInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeCreateOrConnectWithoutInvitationsSentInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInvitationsSentInput,
+    Prisma.EmployeeUncheckedCreateWithoutInvitationsSentInput
+  >;
+};
+
+export type EmployeeCreateWithoutInvitationReceivedInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  projectsSelling?: Prisma.ProjectCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  projectsSelling?: Prisma.ProjectUncheckedCreateNestedManyWithoutSellerInput;
+  projectsManaging?: Prisma.ProjectUncheckedCreateNestedManyWithoutPmInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeCreateOrConnectWithoutInvitationReceivedInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInvitationReceivedInput,
+    Prisma.EmployeeUncheckedCreateWithoutInvitationReceivedInput
+  >;
+};
+
+export type EmployeeUpsertWithoutInvitationsSentInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutInvitationsSentInput,
+    Prisma.EmployeeUncheckedUpdateWithoutInvitationsSentInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInvitationsSentInput,
+    Prisma.EmployeeUncheckedCreateWithoutInvitationsSentInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutInvitationsSentInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutInvitationsSentInput,
+    Prisma.EmployeeUncheckedUpdateWithoutInvitationsSentInput
+  >;
+};
+
+export type EmployeeUpdateWithoutInvitationsSentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUpsertWithoutInvitationReceivedInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutInvitationReceivedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutInvitationReceivedInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInvitationReceivedInput,
+    Prisma.EmployeeUncheckedCreateWithoutInvitationReceivedInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutInvitationReceivedInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutInvitationReceivedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutInvitationReceivedInput
+  >;
+};
+
+export type EmployeeUpdateWithoutInvitationReceivedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeCreateManyRoleInput = {
+  id?: string;
+  clerkUserId?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type EmployeeUpdateWithoutRoleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  projectsSelling?: Prisma.ProjectUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutRoleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  projectsSelling?: Prisma.ProjectUncheckedUpdateManyWithoutSellerNestedInput;
+  projectsManaging?: Prisma.ProjectUncheckedUpdateManyWithoutPmNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUncheckedUpdateManyWithoutRoleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 /**
@@ -2873,6 +4879,7 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
  */
 
 export type EmployeeCountOutputType = {
+  departments: number;
   projectsSelling: number;
   projectsManaging: number;
   leadsAssigned: number;
@@ -2885,11 +4892,14 @@ export type EmployeeCountOutputType = {
   bonusEntries: number;
   recurringTasksCreated: number;
   recurringTasksAssigned: number;
+  invitationsSent: number;
+  credentialsOwned: number;
 };
 
 export type EmployeeCountOutputTypeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
+  departments?: boolean | EmployeeCountOutputTypeCountDepartmentsArgs;
   projectsSelling?: boolean | EmployeeCountOutputTypeCountProjectsSellingArgs;
   projectsManaging?: boolean | EmployeeCountOutputTypeCountProjectsManagingArgs;
   leadsAssigned?: boolean | EmployeeCountOutputTypeCountLeadsAssignedArgs;
@@ -2902,6 +4912,8 @@ export type EmployeeCountOutputTypeSelect<
   bonusEntries?: boolean | EmployeeCountOutputTypeCountBonusEntriesArgs;
   recurringTasksCreated?: boolean | EmployeeCountOutputTypeCountRecurringTasksCreatedArgs;
   recurringTasksAssigned?: boolean | EmployeeCountOutputTypeCountRecurringTasksAssignedArgs;
+  invitationsSent?: boolean | EmployeeCountOutputTypeCountInvitationsSentArgs;
+  credentialsOwned?: boolean | EmployeeCountOutputTypeCountCredentialsOwnedArgs;
 };
 
 /**
@@ -2914,6 +4926,15 @@ export type EmployeeCountOutputTypeDefaultArgs<
    * Select specific fields to fetch from the EmployeeCountOutputType
    */
   select?: Prisma.EmployeeCountOutputTypeSelect<ExtArgs> | null;
+};
+
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountDepartmentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.EmployeeDepartmentWhereInput;
 };
 
 /**
@@ -3024,6 +5045,24 @@ export type EmployeeCountOutputTypeCountRecurringTasksAssignedArgs<
   where?: Prisma.RecurringTaskTemplateWhereInput;
 };
 
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountInvitationsSentArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.InvitationWhereInput;
+};
+
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountCredentialsOwnedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.CredentialWhereInput;
+};
+
 export type EmployeeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -3033,14 +5072,23 @@ export type EmployeeSelect<
     firstName?: boolean;
     lastName?: boolean;
     email?: boolean;
-    role?: boolean;
-    department?: boolean;
+    phone?: boolean;
+    telegram?: boolean;
+    avatar?: boolean;
+    birthday?: boolean;
+    notes?: boolean;
+    position?: boolean;
+    roleId?: boolean;
     level?: boolean;
     baseSalary?: boolean;
     workSchedule?: boolean;
+    hireDate?: boolean;
+    fireDate?: boolean;
     status?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
+    departments?: boolean | Prisma.Employee$departmentsArgs<ExtArgs>;
     projectsSelling?: boolean | Prisma.Employee$projectsSellingArgs<ExtArgs>;
     projectsManaging?: boolean | Prisma.Employee$projectsManagingArgs<ExtArgs>;
     leadsAssigned?: boolean | Prisma.Employee$leadsAssignedArgs<ExtArgs>;
@@ -3053,6 +5101,9 @@ export type EmployeeSelect<
     bonusEntries?: boolean | Prisma.Employee$bonusEntriesArgs<ExtArgs>;
     recurringTasksCreated?: boolean | Prisma.Employee$recurringTasksCreatedArgs<ExtArgs>;
     recurringTasksAssigned?: boolean | Prisma.Employee$recurringTasksAssignedArgs<ExtArgs>;
+    invitationsSent?: boolean | Prisma.Employee$invitationsSentArgs<ExtArgs>;
+    invitationReceived?: boolean | Prisma.Employee$invitationReceivedArgs<ExtArgs>;
+    credentialsOwned?: boolean | Prisma.Employee$credentialsOwnedArgs<ExtArgs>;
     _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['employee']
@@ -3067,14 +5118,22 @@ export type EmployeeSelectCreateManyAndReturn<
     firstName?: boolean;
     lastName?: boolean;
     email?: boolean;
-    role?: boolean;
-    department?: boolean;
+    phone?: boolean;
+    telegram?: boolean;
+    avatar?: boolean;
+    birthday?: boolean;
+    notes?: boolean;
+    position?: boolean;
+    roleId?: boolean;
     level?: boolean;
     baseSalary?: boolean;
     workSchedule?: boolean;
+    hireDate?: boolean;
+    fireDate?: boolean;
     status?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['employee']
 >;
@@ -3088,14 +5147,22 @@ export type EmployeeSelectUpdateManyAndReturn<
     firstName?: boolean;
     lastName?: boolean;
     email?: boolean;
-    role?: boolean;
-    department?: boolean;
+    phone?: boolean;
+    telegram?: boolean;
+    avatar?: boolean;
+    birthday?: boolean;
+    notes?: boolean;
+    position?: boolean;
+    roleId?: boolean;
     level?: boolean;
     baseSalary?: boolean;
     workSchedule?: boolean;
+    hireDate?: boolean;
+    fireDate?: boolean;
     status?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['employee']
 >;
@@ -3106,11 +5173,18 @@ export type EmployeeSelectScalar = {
   firstName?: boolean;
   lastName?: boolean;
   email?: boolean;
-  role?: boolean;
-  department?: boolean;
+  phone?: boolean;
+  telegram?: boolean;
+  avatar?: boolean;
+  birthday?: boolean;
+  notes?: boolean;
+  position?: boolean;
+  roleId?: boolean;
   level?: boolean;
   baseSalary?: boolean;
   workSchedule?: boolean;
+  hireDate?: boolean;
+  fireDate?: boolean;
   status?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
@@ -3124,11 +5198,18 @@ export type EmployeeOmit<
   | 'firstName'
   | 'lastName'
   | 'email'
-  | 'role'
-  | 'department'
+  | 'phone'
+  | 'telegram'
+  | 'avatar'
+  | 'birthday'
+  | 'notes'
+  | 'position'
+  | 'roleId'
   | 'level'
   | 'baseSalary'
   | 'workSchedule'
+  | 'hireDate'
+  | 'fireDate'
   | 'status'
   | 'createdAt'
   | 'updatedAt',
@@ -3137,6 +5218,8 @@ export type EmployeeOmit<
 export type EmployeeInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
+  role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
+  departments?: boolean | Prisma.Employee$departmentsArgs<ExtArgs>;
   projectsSelling?: boolean | Prisma.Employee$projectsSellingArgs<ExtArgs>;
   projectsManaging?: boolean | Prisma.Employee$projectsManagingArgs<ExtArgs>;
   leadsAssigned?: boolean | Prisma.Employee$leadsAssignedArgs<ExtArgs>;
@@ -3149,20 +5232,29 @@ export type EmployeeInclude<
   bonusEntries?: boolean | Prisma.Employee$bonusEntriesArgs<ExtArgs>;
   recurringTasksCreated?: boolean | Prisma.Employee$recurringTasksCreatedArgs<ExtArgs>;
   recurringTasksAssigned?: boolean | Prisma.Employee$recurringTasksAssignedArgs<ExtArgs>;
+  invitationsSent?: boolean | Prisma.Employee$invitationsSentArgs<ExtArgs>;
+  invitationReceived?: boolean | Prisma.Employee$invitationReceivedArgs<ExtArgs>;
+  credentialsOwned?: boolean | Prisma.Employee$credentialsOwnedArgs<ExtArgs>;
   _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type EmployeeIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {};
+> = {
+  role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
+};
 export type EmployeeIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {};
+> = {
+  role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
+};
 
 export type $EmployeePayload<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   name: 'Employee';
   objects: {
+    role: Prisma.$RolePayload<ExtArgs>;
+    departments: Prisma.$EmployeeDepartmentPayload<ExtArgs>[];
     projectsSelling: Prisma.$ProjectPayload<ExtArgs>[];
     projectsManaging: Prisma.$ProjectPayload<ExtArgs>[];
     leadsAssigned: Prisma.$LeadPayload<ExtArgs>[];
@@ -3175,6 +5267,9 @@ export type $EmployeePayload<
     bonusEntries: Prisma.$BonusEntryPayload<ExtArgs>[];
     recurringTasksCreated: Prisma.$RecurringTaskTemplatePayload<ExtArgs>[];
     recurringTasksAssigned: Prisma.$RecurringTaskTemplatePayload<ExtArgs>[];
+    invitationsSent: Prisma.$InvitationPayload<ExtArgs>[];
+    invitationReceived: Prisma.$InvitationPayload<ExtArgs> | null;
+    credentialsOwned: Prisma.$CredentialPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -3183,11 +5278,18 @@ export type $EmployeePayload<
       firstName: string;
       lastName: string;
       email: string;
-      role: $Enums.EmployeeRoleEnum;
-      department: string | null;
+      phone: string | null;
+      telegram: string | null;
+      avatar: string | null;
+      birthday: Date | null;
+      notes: string | null;
+      position: string | null;
+      roleId: string;
       level: $Enums.EmployeeLevelEnum | null;
       baseSalary: runtime.Decimal | null;
       workSchedule: runtime.JsonValue | null;
+      hireDate: Date | null;
+      fireDate: Date | null;
       status: $Enums.EmployeeStatusEnum;
       createdAt: Date;
       updatedAt: Date;
@@ -3726,6 +5828,31 @@ export interface Prisma__EmployeeClient<
   GlobalOmitOptions = {},
 > extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: 'PrismaPromise';
+  role<T extends Prisma.RoleDefaultArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.RoleDefaultArgs<ExtArgs>>,
+  ): Prisma.Prisma__RoleClient<
+    | runtime.Types.Result.GetResult<
+        Prisma.$RolePayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >
+    | Null,
+    Null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  departments<T extends Prisma.Employee$departmentsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$departmentsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$EmployeeDepartmentPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   projectsSelling<T extends Prisma.Employee$projectsSellingArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Employee$projectsSellingArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -3833,6 +5960,41 @@ export interface Prisma__EmployeeClient<
       >
     | Null
   >;
+  invitationsSent<T extends Prisma.Employee$invitationsSentArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$invitationsSentArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$InvitationPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  invitationReceived<T extends Prisma.Employee$invitationReceivedArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$invitationReceivedArgs<ExtArgs>>,
+  ): Prisma.Prisma__InvitationClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$InvitationPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  credentialsOwned<T extends Prisma.Employee$credentialsOwnedArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$credentialsOwnedArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$CredentialPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3869,11 +6031,18 @@ export interface EmployeeFieldRefs {
   readonly firstName: Prisma.FieldRef<'Employee', 'String'>;
   readonly lastName: Prisma.FieldRef<'Employee', 'String'>;
   readonly email: Prisma.FieldRef<'Employee', 'String'>;
-  readonly role: Prisma.FieldRef<'Employee', 'EmployeeRoleEnum'>;
-  readonly department: Prisma.FieldRef<'Employee', 'String'>;
+  readonly phone: Prisma.FieldRef<'Employee', 'String'>;
+  readonly telegram: Prisma.FieldRef<'Employee', 'String'>;
+  readonly avatar: Prisma.FieldRef<'Employee', 'String'>;
+  readonly birthday: Prisma.FieldRef<'Employee', 'DateTime'>;
+  readonly notes: Prisma.FieldRef<'Employee', 'String'>;
+  readonly position: Prisma.FieldRef<'Employee', 'String'>;
+  readonly roleId: Prisma.FieldRef<'Employee', 'String'>;
   readonly level: Prisma.FieldRef<'Employee', 'EmployeeLevelEnum'>;
   readonly baseSalary: Prisma.FieldRef<'Employee', 'Decimal'>;
   readonly workSchedule: Prisma.FieldRef<'Employee', 'Json'>;
+  readonly hireDate: Prisma.FieldRef<'Employee', 'DateTime'>;
+  readonly fireDate: Prisma.FieldRef<'Employee', 'DateTime'>;
   readonly status: Prisma.FieldRef<'Employee', 'EmployeeStatusEnum'>;
   readonly createdAt: Prisma.FieldRef<'Employee', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Employee', 'DateTime'>;
@@ -4082,6 +6251,11 @@ export type EmployeeFindManyArgs<
    * Skip the first `n` Employees.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of Employees.
+   */
   distinct?: Prisma.EmployeeScalarFieldEnum | Prisma.EmployeeScalarFieldEnum[];
 };
 
@@ -4141,6 +6315,10 @@ export type EmployeeCreateManyAndReturnArgs<
    */
   data: Prisma.EmployeeCreateManyInput | Prisma.EmployeeCreateManyInput[];
   skipDuplicates?: boolean;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeIncludeCreateManyAndReturn<ExtArgs> | null;
 };
 
 /**
@@ -4217,6 +6395,10 @@ export type EmployeeUpdateManyAndReturnArgs<
    * Limit how many Employees to update.
    */
   limit?: number;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeIncludeUpdateManyAndReturn<ExtArgs> | null;
 };
 
 /**
@@ -4289,6 +6471,34 @@ export type EmployeeDeleteManyArgs<
    * Limit how many Employees to delete.
    */
   limit?: number;
+};
+
+/**
+ * Employee.departments
+ */
+export type Employee$departmentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the EmployeeDepartment
+   */
+  select?: Prisma.EmployeeDepartmentSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the EmployeeDepartment
+   */
+  omit?: Prisma.EmployeeDepartmentOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeDepartmentInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeDepartmentWhereInput;
+  orderBy?:
+    | Prisma.EmployeeDepartmentOrderByWithRelationInput
+    | Prisma.EmployeeDepartmentOrderByWithRelationInput[];
+  cursor?: Prisma.EmployeeDepartmentWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.EmployeeDepartmentScalarFieldEnum | Prisma.EmployeeDepartmentScalarFieldEnum[];
 };
 
 /**
@@ -4611,6 +6821,79 @@ export type Employee$recurringTasksAssignedArgs<
   distinct?:
     | Prisma.RecurringTaskTemplateScalarFieldEnum
     | Prisma.RecurringTaskTemplateScalarFieldEnum[];
+};
+
+/**
+ * Employee.invitationsSent
+ */
+export type Employee$invitationsSentArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Invitation
+   */
+  select?: Prisma.InvitationSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Invitation
+   */
+  omit?: Prisma.InvitationOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvitationInclude<ExtArgs> | null;
+  where?: Prisma.InvitationWhereInput;
+  orderBy?: Prisma.InvitationOrderByWithRelationInput | Prisma.InvitationOrderByWithRelationInput[];
+  cursor?: Prisma.InvitationWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.InvitationScalarFieldEnum | Prisma.InvitationScalarFieldEnum[];
+};
+
+/**
+ * Employee.invitationReceived
+ */
+export type Employee$invitationReceivedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Invitation
+   */
+  select?: Prisma.InvitationSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Invitation
+   */
+  omit?: Prisma.InvitationOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvitationInclude<ExtArgs> | null;
+  where?: Prisma.InvitationWhereInput;
+};
+
+/**
+ * Employee.credentialsOwned
+ */
+export type Employee$credentialsOwnedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Credential
+   */
+  select?: Prisma.CredentialSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Credential
+   */
+  omit?: Prisma.CredentialOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CredentialInclude<ExtArgs> | null;
+  where?: Prisma.CredentialWhereInput;
+  orderBy?: Prisma.CredentialOrderByWithRelationInput | Prisma.CredentialOrderByWithRelationInput[];
+  cursor?: Prisma.CredentialWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.CredentialScalarFieldEnum | Prisma.CredentialScalarFieldEnum[];
 };
 
 /**

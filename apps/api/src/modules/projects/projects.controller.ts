@@ -11,7 +11,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { ProjectsService } from './projects.service';
 
 @ApiTags('Projects')
@@ -21,7 +20,6 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all projects with filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -49,21 +47,18 @@ export class ProjectsController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get project statistics' })
   async getStats() {
     return this.projectsService.getStats();
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get project by ID' })
   async findOne(@Param('id') id: string) {
     return this.projectsService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create project' })
   async create(
     @Body()
@@ -82,7 +77,6 @@ export class ProjectsController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update project' })
   async update(
     @Param('id') id: string,
@@ -103,7 +97,6 @@ export class ProjectsController {
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete project' })
   async remove(@Param('id') id: string) {

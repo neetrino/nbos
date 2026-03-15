@@ -10,7 +10,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Public } from '../../../common/decorators';
 import { PaymentsService } from './payments.service';
 
 @ApiTags('Finance / Payments')
@@ -20,7 +19,6 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all payments' })
   async findAll(
     @Query('page') page?: string,
@@ -41,14 +39,12 @@ export class PaymentsController {
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get payment by ID' })
   async findOne(@Param('id') id: string) {
     return this.paymentsService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create payment' })
   async create(
     @Body()
@@ -65,7 +61,6 @@ export class PaymentsController {
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete payment' })
   async remove(@Param('id') id: string) {

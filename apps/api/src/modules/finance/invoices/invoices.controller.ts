@@ -11,7 +11,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Public } from '../../../common/decorators';
 import { InvoicesService } from './invoices.service';
 
 @ApiTags('Finance / Invoices')
@@ -21,7 +20,6 @@ export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all invoices' })
   async findAll(
     @Query('page') page?: string,
@@ -40,21 +38,18 @@ export class InvoicesController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get invoice statistics' })
   async getStats() {
     return this.invoicesService.getStats();
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get invoice by ID' })
   async findOne(@Param('id') id: string) {
     return this.invoicesService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create invoice' })
   async create(
     @Body()
@@ -72,14 +67,12 @@ export class InvoicesController {
   }
 
   @Patch(':id/status')
-  @Public()
   @ApiOperation({ summary: 'Update invoice status' })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.invoicesService.updateStatus(id, body.status);
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete invoice' })
   async remove(@Param('id') id: string) {

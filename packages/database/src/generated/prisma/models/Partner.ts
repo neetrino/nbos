@@ -2031,6 +2031,11 @@ export type PartnerFindManyArgs<
    * Skip the first `n` Partners.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of Partners.
+   */
   distinct?: Prisma.PartnerScalarFieldEnum | Prisma.PartnerScalarFieldEnum[];
 };
 

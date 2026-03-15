@@ -271,6 +271,7 @@ export const CredentialCategoryEnum = {
   MAIL: 'MAIL',
   API_KEY: 'API_KEY',
   DATABASE: 'DATABASE',
+  OTHER: 'OTHER',
 } as const;
 
 export type CredentialCategoryEnum =
@@ -281,6 +282,7 @@ export const CredentialAccessLevelEnum = {
   PROJECT_TEAM: 'PROJECT_TEAM',
   DEPARTMENT: 'DEPARTMENT',
   ALL: 'ALL',
+  PERSONAL: 'PERSONAL',
 } as const;
 
 export type CredentialAccessLevelEnum =
@@ -294,23 +296,6 @@ export const DomainStatusEnum = {
 } as const;
 
 export type DomainStatusEnum = (typeof DomainStatusEnum)[keyof typeof DomainStatusEnum];
-
-export const EmployeeRoleEnum = {
-  CEO: 'CEO',
-  SELLER: 'SELLER',
-  PM: 'PM',
-  DEVELOPER: 'DEVELOPER',
-  JUNIOR_DEVELOPER: 'JUNIOR_DEVELOPER',
-  DESIGNER: 'DESIGNER',
-  QA: 'QA',
-  TECH_SPECIALIST: 'TECH_SPECIALIST',
-  FINANCE_DIRECTOR: 'FINANCE_DIRECTOR',
-  MARKETING: 'MARKETING',
-  HEAD_SALES: 'HEAD_SALES',
-  HEAD_DELIVERY: 'HEAD_DELIVERY',
-} as const;
-
-export type EmployeeRoleEnum = (typeof EmployeeRoleEnum)[keyof typeof EmployeeRoleEnum];
 
 export const EmployeeLevelEnum = {
   JUNIOR: 'JUNIOR',
@@ -326,7 +311,7 @@ export const EmployeeStatusEnum = {
   ACTIVE: 'ACTIVE',
   PROBATION: 'PROBATION',
   ON_LEAVE: 'ON_LEAVE',
-  FIRED: 'FIRED',
+  TERMINATED: 'TERMINATED',
 } as const;
 
 export type EmployeeStatusEnum = (typeof EmployeeStatusEnum)[keyof typeof EmployeeStatusEnum];

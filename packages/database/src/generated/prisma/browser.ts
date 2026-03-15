@@ -117,6 +117,36 @@ export type Credential = Prisma.CredentialModel;
  */
 export type Domain = Prisma.DomainModel;
 /**
+ * Model Department
+ *
+ */
+export type Department = Prisma.DepartmentModel;
+/**
+ * Model EmployeeDepartment
+ *
+ */
+export type EmployeeDepartment = Prisma.EmployeeDepartmentModel;
+/**
+ * Model Role
+ *
+ */
+export type Role = Prisma.RoleModel;
+/**
+ * Model Permission
+ *
+ */
+export type Permission = Prisma.PermissionModel;
+/**
+ * Model RolePermission
+ *
+ */
+export type RolePermission = Prisma.RolePermissionModel;
+/**
+ * Model Invitation
+ *
+ */
+export type Invitation = Prisma.InvitationModel;
+/**
  * Model Employee
  *
  */

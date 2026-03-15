@@ -1451,6 +1451,11 @@ export type TaskChecklistItemFindManyArgs<
    * Skip the first `n` TaskChecklistItems.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of TaskChecklistItems.
+   */
   distinct?: Prisma.TaskChecklistItemScalarFieldEnum | Prisma.TaskChecklistItemScalarFieldEnum[];
 };
 

@@ -1,6 +1,5 @@
 import { Controller, Get, Query, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { AuditService } from './audit.service';
 
 @ApiTags('Audit')
@@ -10,7 +9,6 @@ export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get audit trail for an entity' })
   @ApiQuery({ name: 'entityType', required: true })
   @ApiQuery({ name: 'entityId', required: true })
@@ -29,7 +27,6 @@ export class AuditController {
   }
 
   @Get('user/:userId')
-  @Public()
   @ApiOperation({ summary: 'Get audit trail for a user' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })

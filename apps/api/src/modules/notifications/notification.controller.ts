@@ -1,6 +1,5 @@
 import { Controller, Get, Patch, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { NotificationService } from './notification.service';
 
 @ApiTags('Notifications')
@@ -10,7 +9,6 @@ export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get current user notifications' })
   @ApiQuery({ name: 'userId', required: true, description: 'Recipient user ID' })
   @ApiQuery({ name: 'page', required: false })
@@ -27,7 +25,6 @@ export class NotificationController {
   }
 
   @Get('unread-count')
-  @Public()
   @ApiOperation({ summary: 'Get unread notifications count' })
   @ApiQuery({ name: 'userId', required: true })
   async getUnreadCount(@Query('userId') userId: string) {
@@ -35,7 +32,6 @@ export class NotificationController {
   }
 
   @Patch(':id/read')
-  @Public()
   @ApiOperation({ summary: 'Mark notification as read' })
   @ApiQuery({ name: 'userId', required: true })
   async markAsRead(@Param('id') id: string, @Query('userId') userId: string) {
@@ -43,7 +39,6 @@ export class NotificationController {
   }
 
   @Patch('read-all')
-  @Public()
   @ApiOperation({ summary: 'Mark all notifications as read' })
   @ApiQuery({ name: 'userId', required: true })
   async markAllAsRead(@Query('userId') userId: string) {

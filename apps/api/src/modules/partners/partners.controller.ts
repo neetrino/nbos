@@ -11,7 +11,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { PartnersService } from './partners.service';
 
 @ApiTags('Partners')
@@ -21,7 +20,6 @@ export class PartnersController {
   constructor(private readonly partnersService: PartnersService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all partners with filters and pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
@@ -39,21 +37,18 @@ export class PartnersController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get partners statistics' })
   async getStats() {
     return this.partnersService.getStats();
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get partner by ID' })
   async findOne(@Param('id') id: string) {
     return this.partnersService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create a new partner' })
   async create(
     @Body()
@@ -70,7 +65,6 @@ export class PartnersController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update partner' })
   async update(
     @Param('id') id: string,
@@ -88,7 +82,6 @@ export class PartnersController {
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete partner' })
   async remove(@Param('id') id: string) {

@@ -11,7 +11,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { RecurringTasksService } from './recurring-tasks.service';
 
 @ApiTags('Recurring Tasks')
@@ -21,21 +20,18 @@ export class RecurringTasksController {
   constructor(private readonly recurringService: RecurringTasksService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all recurring task templates' })
   async findAll(@Query('creatorId') creatorId?: string) {
     return this.recurringService.findAll(creatorId);
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get recurring template by ID' })
   async findOne(@Param('id') id: string) {
     return this.recurringService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create recurring task template' })
   async create(
     @Body()
@@ -60,7 +56,6 @@ export class RecurringTasksController {
   }
 
   @Patch(':id')
-  @Public()
   @ApiOperation({ summary: 'Update recurring template' })
   async update(
     @Param('id') id: string,
@@ -86,7 +81,6 @@ export class RecurringTasksController {
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete recurring template' })
   async remove(@Param('id') id: string) {

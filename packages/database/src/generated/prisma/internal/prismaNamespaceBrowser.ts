@@ -68,6 +68,12 @@ export const ModelName = {
   SupportTicket: 'SupportTicket',
   Credential: 'Credential',
   Domain: 'Domain',
+  Department: 'Department',
+  EmployeeDepartment: 'EmployeeDepartment',
+  Role: 'Role',
+  Permission: 'Permission',
+  RolePermission: 'RolePermission',
+  Invitation: 'Invitation',
   Employee: 'Employee',
   Partner: 'Partner',
   AuditLog: 'AuditLog',
@@ -432,6 +438,8 @@ export type SupportTicketScalarFieldEnum =
 export const CredentialScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
+  departmentId: 'departmentId',
+  ownerId: 'ownerId',
   category: 'category',
   provider: 'provider',
   name: 'name',
@@ -440,6 +448,8 @@ export const CredentialScalarFieldEnum = {
   password: 'password',
   apiKey: 'apiKey',
   envData: 'envData',
+  phone: 'phone',
+  notes: 'notes',
   accessLevel: 'accessLevel',
   allowedEmployees: 'allowedEmployees',
   createdAt: 'createdAt',
@@ -467,17 +477,99 @@ export const DomainScalarFieldEnum = {
 export type DomainScalarFieldEnum =
   (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum];
 
+export const DepartmentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  parentId: 'parentId',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DepartmentScalarFieldEnum =
+  (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum];
+
+export const EmployeeDepartmentScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  departmentId: 'departmentId',
+  deptRole: 'deptRole',
+  isPrimary: 'isPrimary',
+  joinedAt: 'joinedAt',
+} as const;
+
+export type EmployeeDepartmentScalarFieldEnum =
+  (typeof EmployeeDepartmentScalarFieldEnum)[keyof typeof EmployeeDepartmentScalarFieldEnum];
+
+export const RoleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  level: 'level',
+  isSystem: 'isSystem',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum];
+
+export const PermissionScalarFieldEnum = {
+  id: 'id',
+  module: 'module',
+  action: 'action',
+  description: 'description',
+} as const;
+
+export type PermissionScalarFieldEnum =
+  (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum];
+
+export const RolePermissionScalarFieldEnum = {
+  id: 'id',
+  roleId: 'roleId',
+  permissionId: 'permissionId',
+  scope: 'scope',
+} as const;
+
+export type RolePermissionScalarFieldEnum =
+  (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum];
+
+export const InvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  roleId: 'roleId',
+  departmentId: 'departmentId',
+  invitedById: 'invitedById',
+  status: 'status',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  employeeId: 'employeeId',
+  createdAt: 'createdAt',
+} as const;
+
+export type InvitationScalarFieldEnum =
+  (typeof InvitationScalarFieldEnum)[keyof typeof InvitationScalarFieldEnum];
+
 export const EmployeeScalarFieldEnum = {
   id: 'id',
   clerkUserId: 'clerkUserId',
   firstName: 'firstName',
   lastName: 'lastName',
   email: 'email',
-  role: 'role',
-  department: 'department',
+  phone: 'phone',
+  telegram: 'telegram',
+  avatar: 'avatar',
+  birthday: 'birthday',
+  notes: 'notes',
+  position: 'position',
+  roleId: 'roleId',
   level: 'level',
   baseSalary: 'baseSalary',
   workSchedule: 'workSchedule',
+  hireDate: 'hireDate',
+  fireDate: 'fireDate',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

@@ -8,6 +8,8 @@ import { encrypt, decrypt } from '../../common/utils/crypto';
 const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData'] as const;
 type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
 
+type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
+
 interface CredentialQueryParams {
   page?: number;
   pageSize?: number;
@@ -15,10 +17,15 @@ interface CredentialQueryParams {
   category?: string;
   accessLevel?: string;
   search?: string;
+  tab?: CredentialTab;
+  employeeId?: string;
+  departmentIds?: string[];
 }
 
 interface CreateCredentialDto {
   projectId?: string;
+  departmentId?: string;
+  ownerId?: string;
   category: string;
   provider?: string;
   name: string;
@@ -27,12 +34,15 @@ interface CreateCredentialDto {
   password?: string;
   apiKey?: string;
   envData?: string;
+  phone?: string;
+  notes?: string;
   accessLevel?: string;
   allowedEmployees?: string[];
 }
 
 interface UpdateCredentialDto {
   projectId?: string;
+  departmentId?: string;
   category?: string;
   provider?: string;
   name?: string;
@@ -41,6 +51,8 @@ interface UpdateCredentialDto {
   password?: string;
   apiKey?: string;
   envData?: string;
+  phone?: string;
+  notes?: string;
   accessLevel?: string;
   allowedEmployees?: string[];
 }
@@ -60,7 +72,18 @@ export class CredentialsService {
   }
 
   async findAll(params: CredentialQueryParams) {
-    const { page = 1, pageSize = 20, projectId, category, accessLevel, search } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      projectId,
+      category,
+      accessLevel,
+      search,
+      tab,
+      employeeId,
+      departmentIds = [],
+    } = params;
+
     const where: Prisma.CredentialWhereInput = {};
 
     if (projectId) where.projectId = projectId;
@@ -74,22 +97,33 @@ export class CredentialsService {
       ];
     }
 
+    if (tab && employeeId) {
+      this.applyTabFilter(where, tab, employeeId, departmentIds);
+    } else if (employeeId) {
+      this.applyVisibilityFilter(where, employeeId, departmentIds);
+    }
+
     const [items, total] = await Promise.all([
       this.prisma.credential.findMany({
         where,
         select: {
           id: true,
           projectId: true,
+          departmentId: true,
+          ownerId: true,
           category: true,
           provider: true,
           name: true,
           url: true,
           login: true,
+          phone: true,
           accessLevel: true,
           allowedEmployees: true,
           createdAt: true,
           updatedAt: true,
           project: { select: { id: true, name: true } },
+          department: { select: { id: true, name: true } },
+          owner: { select: { id: true, firstName: true, lastName: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
@@ -102,6 +136,67 @@ export class CredentialsService {
       items,
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
+  }
+
+  /**
+   * Tab-based filtering: shows only credentials matching the selected tab.
+   */
+  private applyTabFilter(
+    where: Prisma.CredentialWhereInput,
+    tab: CredentialTab,
+    employeeId: string,
+    departmentIds: string[],
+  ) {
+    switch (tab) {
+      case 'personal':
+        where.accessLevel = 'PERSONAL';
+        where.ownerId = employeeId;
+        break;
+      case 'department':
+        where.accessLevel = 'DEPARTMENT';
+        if (departmentIds.length > 0) {
+          where.departmentId = { in: departmentIds };
+        }
+        break;
+      case 'secret':
+        where.accessLevel = 'SECRET';
+        where.allowedEmployees = { has: employeeId };
+        break;
+      case 'all':
+      default:
+        this.applyVisibilityFilter(where, employeeId, departmentIds);
+        break;
+    }
+  }
+
+  /**
+   * General visibility: user sees credentials they have access to.
+   * - ALL → everyone
+   * - PERSONAL → only owner
+   * - DEPARTMENT → same department
+   * - PROJECT_TEAM → same project team (via project membership)
+   * - SECRET → only allowedEmployees
+   */
+  private applyVisibilityFilter(
+    where: Prisma.CredentialWhereInput,
+    employeeId: string,
+    departmentIds: string[],
+  ) {
+    where.OR = [
+      ...(where.OR ?? []),
+      { accessLevel: 'ALL' },
+      { accessLevel: 'PERSONAL', ownerId: employeeId },
+      ...(departmentIds.length > 0
+        ? [{ accessLevel: 'DEPARTMENT' as const, departmentId: { in: departmentIds } }]
+        : []),
+      {
+        accessLevel: 'PROJECT_TEAM',
+        project: {
+          OR: [{ salesManagerId: employeeId }, { projectManagerId: employeeId }],
+        },
+      },
+      { accessLevel: 'SECRET', allowedEmployees: { has: employeeId } },
+    ];
   }
 
   async findById(id: string, userId: string) {
@@ -128,6 +223,8 @@ export class CredentialsService {
     const credential = await this.prisma.credential.create({
       data: {
         projectId: data.projectId,
+        departmentId: data.departmentId,
+        ownerId: data.ownerId,
         category: data.category as Prisma.CredentialCreateInput['category'],
         provider: data.provider,
         name: data.name,
@@ -136,6 +233,8 @@ export class CredentialsService {
         password: encrypted.password,
         apiKey: encrypted.apiKey,
         envData: encrypted.envData,
+        phone: data.phone,
+        notes: data.notes,
         accessLevel:
           (data.accessLevel as Prisma.CredentialCreateInput['accessLevel']) ?? 'PROJECT_TEAM',
         allowedEmployees: data.allowedEmployees ?? [],
@@ -165,6 +264,7 @@ export class CredentialsService {
       where: { id },
       data: {
         ...(data.projectId !== undefined && { projectId: data.projectId }),
+        ...(data.departmentId !== undefined && { departmentId: data.departmentId }),
         ...(data.category && {
           category: data.category as Prisma.CredentialUpdateInput['category'],
         }),
@@ -175,6 +275,8 @@ export class CredentialsService {
         ...(data.password !== undefined && { password: encrypted.password }),
         ...(data.apiKey !== undefined && { apiKey: encrypted.apiKey }),
         ...(data.envData !== undefined && { envData: encrypted.envData }),
+        ...(data.phone !== undefined && { phone: data.phone }),
+        ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.accessLevel && {
           accessLevel: data.accessLevel as Prisma.CredentialUpdateInput['accessLevel'],
         }),

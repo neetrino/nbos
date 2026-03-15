@@ -13,14 +13,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { Public } from '../../common/decorators';
-import type { CurrentUserPayload } from '../../common/decorators';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CredentialsService } from './credentials.service';
-
-function extractUserId(req: Request): string {
-  const user = (req as Request & { user?: CurrentUserPayload }).user;
-  return user?.clerkUserId ?? 'system';
-}
 
 @ApiTags('Credentials')
 @ApiBearerAuth()
@@ -29,21 +23,24 @@ export class CredentialsController {
   constructor(private readonly credentialsService: CredentialsService) {}
 
   @Get()
-  @Public()
-  @ApiOperation({ summary: 'List credentials (sensitive fields masked)' })
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'List credentials filtered by access level and user context' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'accessLevel', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'tab', required: false, enum: ['all', 'personal', 'department', 'secret'] })
   async findAll(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
     @Query('category') category?: string,
     @Query('accessLevel') accessLevel?: string,
     @Query('search') search?: string,
+    @Query('tab') tab?: string,
   ) {
     return this.credentialsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -52,23 +49,27 @@ export class CredentialsController {
       category,
       accessLevel,
       search,
+      tab: (tab as 'all' | 'personal' | 'department' | 'secret') || undefined,
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
     });
   }
 
   @Get(':id')
-  @Public()
+  @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({ summary: 'Get credential by ID with decrypted fields (audit logged)' })
-  async findOne(@Param('id') id: string, @Req() req: Request) {
-    return this.credentialsService.findById(id, extractUserId(req));
+  async findOne(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.findById(id, user.clerkUserId);
   }
 
   @Post()
-  @Public()
+  @RequirePermission('CREDENTIALS', 'ADD')
   @ApiOperation({ summary: 'Create credential' })
   async create(
     @Body()
     body: {
       projectId?: string;
+      departmentId?: string;
       category: string;
       provider?: string;
       name: string;
@@ -77,22 +78,25 @@ export class CredentialsController {
       password?: string;
       apiKey?: string;
       envData?: string;
+      phone?: string;
+      notes?: string;
       accessLevel?: string;
       allowedEmployees?: string[];
     },
-    @Req() req: Request,
+    @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.create(body, extractUserId(req));
+    return this.credentialsService.create({ ...body, ownerId: user.id }, user.clerkUserId);
   }
 
   @Put(':id')
-  @Public()
+  @RequirePermission('CREDENTIALS', 'EDIT')
   @ApiOperation({ summary: 'Update credential' })
   async update(
     @Param('id') id: string,
     @Body()
     body: {
       projectId?: string;
+      departmentId?: string;
       category?: string;
       provider?: string;
       name?: string;
@@ -101,19 +105,21 @@ export class CredentialsController {
       password?: string;
       apiKey?: string;
       envData?: string;
+      phone?: string;
+      notes?: string;
       accessLevel?: string;
       allowedEmployees?: string[];
     },
-    @Req() req: Request,
+    @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.update(id, body, extractUserId(req));
+    return this.credentialsService.update(id, body, user.clerkUserId);
   }
 
   @Delete(':id')
-  @Public()
+  @RequirePermission('CREDENTIALS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete credential' })
-  async remove(@Param('id') id: string, @Req() req: Request) {
-    await this.credentialsService.delete(id, extractUserId(req));
+  async remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.credentialsService.delete(id, user.clerkUserId);
   }
 }

@@ -12,7 +12,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { SupportService } from './support.service';
 
 @ApiTags('Support')
@@ -22,7 +21,6 @@ export class SupportController {
   constructor(private readonly supportService: SupportService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all support tickets with filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -59,21 +57,18 @@ export class SupportController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get support ticket statistics' })
   async getStats() {
     return this.supportService.getStats();
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get support ticket by ID' })
   async findOne(@Param('id') id: string) {
     return this.supportService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create support ticket' })
   async create(
     @Body()
@@ -92,7 +87,6 @@ export class SupportController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update support ticket' })
   async update(
     @Param('id') id: string,
@@ -112,14 +106,12 @@ export class SupportController {
   }
 
   @Patch(':id/status')
-  @Public()
   @ApiOperation({ summary: 'Update support ticket status' })
   async updateStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.supportService.updateStatus(id, status);
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete support ticket' })
   async remove(@Param('id') id: string) {

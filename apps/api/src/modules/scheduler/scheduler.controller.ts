@@ -1,6 +1,5 @@
 import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { SchedulerService } from './scheduler.service';
 
 @ApiTags('Scheduler')
@@ -10,7 +9,6 @@ export class SchedulerController {
   constructor(private readonly schedulerService: SchedulerService) {}
 
   @Post('billing')
-  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Trigger monthly billing (external cron)' })
   async runBilling() {
@@ -18,7 +16,6 @@ export class SchedulerController {
   }
 
   @Post('expenses')
-  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Trigger monthly expenses generation (external cron)' })
   async runExpenses() {
@@ -26,7 +23,6 @@ export class SchedulerController {
   }
 
   @Post('overdue-invoices')
-  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark overdue invoices (external cron)' })
   async markOverdueInvoices() {

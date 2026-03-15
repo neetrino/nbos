@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Put, Patch, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Public } from '../../../common/decorators';
 import { SubscriptionsService } from './subscriptions.service';
 
 @ApiTags('Finance / Subscriptions')
@@ -10,7 +9,6 @@ export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all subscriptions' })
   async findAll(
     @Query('page') page?: string,
@@ -29,21 +27,18 @@ export class SubscriptionsController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get subscription statistics' })
   async getStats() {
     return this.subscriptionsService.getStats();
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get subscription by ID' })
   async findOne(@Param('id') id: string) {
     return this.subscriptionsService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create subscription' })
   async create(
     @Body()
@@ -62,7 +57,6 @@ export class SubscriptionsController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update subscription' })
   async update(
     @Param('id') id: string,
@@ -81,7 +75,6 @@ export class SubscriptionsController {
   }
 
   @Patch(':id/status')
-  @Public()
   @ApiOperation({ summary: 'Update subscription status' })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.subscriptionsService.updateStatus(id, body.status);

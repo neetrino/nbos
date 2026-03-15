@@ -30,6 +30,7 @@
     "pino-http": "^10.4.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
+    "svix": "^1.88.0",
     "zod": "^3.25.7"
   },
   "devDependencies": {

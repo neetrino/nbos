@@ -11,7 +11,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../../common/decorators';
 import { CompaniesService } from './companies.service';
 
 @ApiTags('Clients / Companies')
@@ -21,7 +20,6 @@ export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all companies' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -39,14 +37,12 @@ export class CompaniesController {
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get company by ID' })
   async findOne(@Param('id') id: string) {
     return this.companiesService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create company' })
   async create(
     @Body()
@@ -64,7 +60,6 @@ export class CompaniesController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update company' })
   async update(
     @Param('id') id: string,
@@ -83,7 +78,6 @@ export class CompaniesController {
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete company' })
   async remove(@Param('id') id: string) {

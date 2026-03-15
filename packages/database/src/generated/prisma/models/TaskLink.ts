@@ -1385,6 +1385,11 @@ export type TaskLinkFindManyArgs<
    * Skip the first `n` TaskLinks.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of TaskLinks.
+   */
   distinct?: Prisma.TaskLinkScalarFieldEnum | Prisma.TaskLinkScalarFieldEnum[];
 };
 

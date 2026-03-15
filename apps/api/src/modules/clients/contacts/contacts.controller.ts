@@ -11,7 +11,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../../common/decorators';
 import { ContactsService } from './contacts.service';
 
 @ApiTags('Clients / Contacts')
@@ -21,7 +20,6 @@ export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all contacts' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -42,14 +40,12 @@ export class ContactsController {
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get contact by ID' })
   async findOne(@Param('id') id: string) {
     return this.contactsService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create contact' })
   async create(
     @Body()
@@ -66,7 +62,6 @@ export class ContactsController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update contact' })
   async update(
     @Param('id') id: string,
@@ -84,7 +79,6 @@ export class ContactsController {
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete contact' })
   async remove(@Param('id') id: string) {

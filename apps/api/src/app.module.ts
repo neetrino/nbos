@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from './database.module';
 import { HealthController } from './health.controller';
 import { EmployeesModule } from './modules/employees/employees.module';
@@ -22,8 +22,15 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MessengerModule } from './modules/messenger/messenger.module';
 import { PartnersModule } from './modules/partners/partners.module';
 import { SystemListsModule } from './modules/system-lists/system-lists.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
+import { InvitationsModule } from './modules/invitations/invitations.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { EmployeeInterceptor } from './common/interceptors/employee.interceptor';
+import { AuthGuard } from './common/guards/auth.guard';
+import { PermissionGuard } from './common/guards/permission.guard';
 
 @Module({
   imports: [
@@ -53,12 +60,28 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     PartnersModule,
     MessengerModule,
     SystemListsModule,
+    WebhooksModule,
+    RolesModule,
+    DepartmentsModule,
+    InvitationsModule,
   ],
   controllers: [HealthController],
   providers: [
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: EmployeeInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
     },
     {
       provide: APP_INTERCEPTOR,

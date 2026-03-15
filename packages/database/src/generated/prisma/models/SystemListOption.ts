@@ -1282,6 +1282,11 @@ export type SystemListOptionFindManyArgs<
    * Skip the first `n` SystemListOptions.
    */
   skip?: number;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   *
+   * Filter by unique combinations of SystemListOptions.
+   */
   distinct?: Prisma.SystemListOptionScalarFieldEnum | Prisma.SystemListOptionScalarFieldEnum[];
 };
 

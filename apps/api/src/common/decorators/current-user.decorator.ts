@@ -6,8 +6,11 @@ export interface CurrentUserPayload {
   clerkUserId: string;
   email: string;
   role: string;
+  roleLevel: number;
+  departmentIds: string[];
   firstName: string;
   lastName: string;
+  permissions: Record<string, string>;
 }
 
 export const CurrentUser = createParamDecorator(

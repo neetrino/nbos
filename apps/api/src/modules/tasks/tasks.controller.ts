@@ -12,7 +12,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
@@ -22,7 +21,6 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all tasks with filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -66,28 +64,24 @@ export class TasksController {
   }
 
   @Get('stats')
-  @Public()
   @ApiOperation({ summary: 'Get task statistics' })
   async getStats() {
     return this.tasksService.getStats();
   }
 
   @Get('by-entity/:entityType/:entityId')
-  @Public()
   @ApiOperation({ summary: 'Get tasks linked to an entity' })
   async findByEntity(@Param('entityType') entityType: string, @Param('entityId') entityId: string) {
     return this.tasksService.findByEntity(entityType, entityId);
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get task by ID' })
   async findOne(@Param('id') id: string) {
     return this.tasksService.findById(id);
   }
 
   @Post()
-  @Public()
   @ApiOperation({ summary: 'Create task' })
   async create(
     @Body()
@@ -109,7 +103,6 @@ export class TasksController {
   }
 
   @Put(':id')
-  @Public()
   @ApiOperation({ summary: 'Update task' })
   async update(
     @Param('id') id: string,
@@ -133,35 +126,30 @@ export class TasksController {
   }
 
   @Patch(':id/start')
-  @Public()
   @ApiOperation({ summary: 'Start task' })
   async start(@Param('id') id: string) {
     return this.tasksService.start(id);
   }
 
   @Patch(':id/complete')
-  @Public()
   @ApiOperation({ summary: 'Complete task' })
   async complete(@Param('id') id: string) {
     return this.tasksService.complete(id);
   }
 
   @Patch(':id/reopen')
-  @Public()
   @ApiOperation({ summary: 'Reopen task' })
   async reopen(@Param('id') id: string) {
     return this.tasksService.reopen(id);
   }
 
   @Patch(':id/defer')
-  @Public()
   @ApiOperation({ summary: 'Defer task' })
   async defer(@Param('id') id: string) {
     return this.tasksService.defer(id);
   }
 
   @Delete(':id')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete task' })
   async remove(@Param('id') id: string) {
@@ -171,14 +159,12 @@ export class TasksController {
   // ─── LINKS ───────────────────────────────────────────────
 
   @Post(':id/links')
-  @Public()
   @ApiOperation({ summary: 'Add link to entity' })
   async addLink(@Param('id') id: string, @Body() body: { entityType: string; entityId: string }) {
     return this.tasksService.addLink(id, body.entityType, body.entityId);
   }
 
   @Delete(':taskId/links/:linkId')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove link' })
   async removeLink(@Param('taskId') taskId: string, @Param('linkId') linkId: string) {
@@ -188,14 +174,12 @@ export class TasksController {
   // ─── CHECKLISTS ──────────────────────────────────────────
 
   @Post(':id/checklists')
-  @Public()
   @ApiOperation({ summary: 'Create checklist' })
   async createChecklist(@Param('id') id: string, @Body() body: { title?: string }) {
     return this.tasksService.createChecklist(id, body.title ?? 'Checklist');
   }
 
   @Post('checklists/:checklistId/items')
-  @Public()
   @ApiOperation({ summary: 'Add checklist item' })
   async addChecklistItem(
     @Param('checklistId') checklistId: string,
@@ -205,14 +189,12 @@ export class TasksController {
   }
 
   @Patch('checklist-items/:itemId/toggle')
-  @Public()
   @ApiOperation({ summary: 'Toggle checklist item' })
   async toggleChecklistItem(@Param('itemId') itemId: string) {
     return this.tasksService.toggleChecklistItem(itemId);
   }
 
   @Delete('checklist-items/:itemId')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete checklist item' })
   async deleteChecklistItem(@Param('itemId') itemId: string) {
@@ -220,7 +202,6 @@ export class TasksController {
   }
 
   @Delete('checklists/:checklistId')
-  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete checklist' })
   async deleteChecklist(@Param('checklistId') checklistId: string) {
