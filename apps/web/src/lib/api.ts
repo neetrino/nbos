@@ -13,6 +13,26 @@ export const api = axios.create({
   timeout: 15_000,
 });
 
+/**
+ * Singleton: stores the getToken function from Clerk's useAuth().
+ * Set by AuthTokenProvider at app root level.
+ */
+let _getToken: (() => Promise<string | null>) | null = null;
+
+export function setAuthTokenGetter(getter: () => Promise<string | null>) {
+  _getToken = getter;
+}
+
+api.interceptors.request.use(async (config) => {
+  if (_getToken) {
+    const token = await _getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => {
     if (response.data && 'data' in response.data && 'timestamp' in response.data) {

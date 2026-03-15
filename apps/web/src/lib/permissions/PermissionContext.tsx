@@ -1,9 +1,9 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import type { MeResponse, PermissionMap, PermissionScope } from './types';
-import { api } from '@/lib/api';
+import { api, setAuthTokenGetter } from '@/lib/api';
 
 interface PermissionContextValue {
   me: MeResponse | null;
@@ -25,6 +25,14 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   const { isSignedIn, getToken } = useAuth();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const tokenRegistered = useRef(false);
+
+  useEffect(() => {
+    if (!tokenRegistered.current && getToken) {
+      setAuthTokenGetter(getToken);
+      tokenRegistered.current = true;
+    }
+  }, [getToken]);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -36,10 +44,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
 
     async function fetchMe() {
       try {
-        const token = await getToken();
-        const res = await api.get<MeResponse>('/api/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get<MeResponse>('/api/me');
         if (!cancelled) {
           setMe(res.data);
         }
@@ -54,7 +59,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isSignedIn, getToken]);
+  }, [isSignedIn]);
 
   const permissions = me?.permissions ?? {};
 

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { User, Building2, Bell, Shield, Camera, Smartphone, Monitor } from 'lucide-react';
-
-/* ───────── Types ───────── */
+import { api } from '@/lib/api';
+import { usePermission } from '@/lib/permissions';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type TabId = 'profile' | 'company' | 'notifications' | 'security';
 
@@ -13,8 +15,6 @@ interface Tab {
   icon: React.ComponentType<{ size?: number }>;
 }
 
-/* ───────── Tabs config ───────── */
-
 const TABS: Tab[] = [
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'company', label: 'Company', icon: Building2 },
@@ -22,24 +22,42 @@ const TABS: Tab[] = [
   { id: 'security', label: 'Security', icon: Shield },
 ];
 
-/* ───────── Shared components ───────── */
+interface ProfileData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  telegram: string | null;
+  avatar: string | null;
+  birthday: string | null;
+  position: string | null;
+  role: { name: string; slug: string } | null;
+}
 
 function InputField({
   label,
   value,
+  onChange,
   type = 'text',
+  disabled = false,
 }: {
   label: string;
   value: string;
+  onChange?: (value: string) => void;
   type?: string;
+  disabled?: boolean;
 }) {
   return (
     <div>
       <label className="text-foreground mb-1.5 block text-sm font-medium">{label}</label>
       <input
         type={type}
-        defaultValue={value}
-        className="border-border bg-secondary/30 text-foreground w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#E5A84B]/40"
+        value={value}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+        readOnly={!onChange}
+        disabled={disabled}
+        className="border-border bg-secondary/30 text-foreground w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#E5A84B]/40 disabled:opacity-50"
       />
     </div>
   );
@@ -78,44 +96,127 @@ function Toggle({
   );
 }
 
-/* ───────── Tab panels ───────── */
-
 function ProfileTab() {
+  const { me } = usePermission();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [telegram, setTelegram] = useState('');
+  const [birthday, setBirthday] = useState('');
+
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get<ProfileData>('/api/me');
+      const data = res.data;
+      setProfile(data);
+      setFirstName(data.firstName ?? '');
+      setLastName(data.lastName ?? '');
+      setPhone(data.phone ?? '');
+      setTelegram(data.telegram ?? '');
+      setBirthday(data.birthday ? data.birthday.slice(0, 10) : '');
+    } catch {
+      toast.error('Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.put('/api/me/profile', {
+        phone: phone || undefined,
+        telegram: telegram || undefined,
+        birthday: birthday || null,
+      });
+      toast.success('Profile updated');
+    } catch {
+      toast.error('Failed to save profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-5">
+          <Skeleton className="h-20 w-20 rounded-2xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return <div className="text-muted-foreground text-sm">Could not load profile data.</div>;
+  }
+
+  const initials =
+    (profile.firstName?.[0] ?? '') + (profile.lastName?.[0] ?? '') ||
+    profile.email?.[0]?.toUpperCase() ||
+    '?';
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-5">
         <div className="relative">
           <div className="bg-secondary text-muted-foreground flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-semibold">
-            AH
+            {initials}
           </div>
           <button className="absolute -right-1 -bottom-1 rounded-lg bg-[#E5A84B] p-1.5 text-white shadow">
             <Camera size={12} />
           </button>
         </div>
         <div>
-          <p className="text-foreground text-lg font-semibold">Armen Hakobyan</p>
-          <p className="text-muted-foreground text-sm">Admin</p>
+          <p className="text-foreground text-lg font-semibold">
+            {profile.firstName} {profile.lastName}
+          </p>
+          <p className="text-muted-foreground text-sm">{profile.role?.name ?? 'No role'}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <InputField label="First Name" value="Armen" />
-        <InputField label="Last Name" value="Hakobyan" />
-        <InputField label="Email" value="armen@nbos.am" type="email" />
-        <InputField label="Phone" value="+374 91 000111" type="tel" />
+        <InputField label="First Name" value={firstName} disabled />
+        <InputField label="Last Name" value={lastName} disabled />
+        <InputField label="Email" value={profile.email} type="email" disabled />
+        <InputField label="Phone" value={phone} onChange={setPhone} type="tel" />
+        <InputField label="Telegram" value={telegram} onChange={setTelegram} />
+        <InputField label="Birthday" value={birthday} onChange={setBirthday} type="date" />
       </div>
 
       <div>
         <label className="text-foreground mb-1.5 block text-sm font-medium">Role</label>
-        <select className="border-border bg-secondary/30 text-foreground w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#E5A84B]/40 sm:max-w-xs">
-          <option>Admin</option>
-          <option>Manager</option>
-          <option>Developer</option>
-          <option>Viewer</option>
-        </select>
+        <div className="border-border bg-secondary/30 text-foreground w-full rounded-xl border px-4 py-2.5 text-sm sm:max-w-xs">
+          {profile.role?.name ?? '—'}
+        </div>
       </div>
 
-      <SaveButton />
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
+      >
+        {saving ? 'Saving...' : 'Save Changes'}
+      </button>
     </div>
   );
 }
@@ -132,7 +233,9 @@ function CompanyTab() {
         <InputField label="Country" value="Armenia" />
         <InputField label="City" value="Yerevan" />
       </div>
-      <SaveButton />
+      <button className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90">
+        Save Changes
+      </button>
     </div>
   );
 }
@@ -182,12 +285,10 @@ function SecurityTab() {
     <div className="space-y-8">
       <div className="space-y-4">
         <h3 className="text-foreground font-medium">Change Password</h3>
-        <div className="max-w-sm space-y-4">
-          <InputField label="Current Password" value="" type="password" />
-          <InputField label="New Password" value="" type="password" />
-          <InputField label="Confirm Password" value="" type="password" />
-        </div>
-        <SaveButton label="Update Password" />
+        <p className="text-muted-foreground text-sm">
+          Password management is handled through Clerk. Use the account menu to change your
+          password.
+        </p>
       </div>
 
       <div className="border-border border-t pt-6">
@@ -200,14 +301,7 @@ function SecurityTab() {
       <div className="border-border border-t pt-6">
         <h3 className="text-foreground font-medium">Active Sessions</h3>
         <div className="mt-4 space-y-3">
-          <SessionRow
-            icon={Monitor}
-            device="MacBook Pro — Yerevan"
-            time="Current session"
-            current
-          />
-          <SessionRow icon={Smartphone} device="iPhone 15 — Yerevan" time="2 hours ago" />
-          <SessionRow icon={Monitor} device="Windows PC — Gyumri" time="1 day ago" />
+          <SessionRow icon={Monitor} device="Current browser" time="Current session" current />
         </div>
       </div>
     </div>
@@ -244,16 +338,6 @@ function SessionRow({
     </div>
   );
 }
-
-function SaveButton({ label = 'Save Changes' }: { label?: string }) {
-  return (
-    <button className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90">
-      {label}
-    </button>
-  );
-}
-
-/* ───────── Page ───────── */
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabId>('profile');
