@@ -6,7 +6,7 @@ import { AcceptInviteDto } from './dto/accept-invite.dto';
 import { Public } from '../../common/decorators';
 
 @ApiTags('Auth')
-@Controller('auth')
+@Controller('v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

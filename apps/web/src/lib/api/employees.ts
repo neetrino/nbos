@@ -17,7 +17,6 @@ export interface EmployeeRole {
 
 export interface Employee {
   id: string;
-  clerkUserId: string | null;
   firstName: string;
   lastName: string;
   email: string;

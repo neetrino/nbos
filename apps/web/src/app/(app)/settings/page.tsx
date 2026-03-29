@@ -286,8 +286,8 @@ function SecurityTab() {
       <div className="space-y-4">
         <h3 className="text-foreground font-medium">Change Password</h3>
         <p className="text-muted-foreground text-sm">
-          Password management is handled through Clerk. Use the account menu to change your
-          password.
+          Password management is handled through the NBOS authentication system. Contact your
+          administrator if you need a password reset flow enabled.
         </p>
       </div>
 
