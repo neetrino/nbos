@@ -2458,11 +2458,6 @@ export type ContactFindManyArgs<
    * Skip the first `n` Contacts.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of Contacts.
-   */
   distinct?: Prisma.ContactScalarFieldEnum | Prisma.ContactScalarFieldEnum[];
 };
 

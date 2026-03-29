@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { currentUser } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import {
   LayoutDashboard,
   Users,
@@ -48,12 +48,13 @@ const FEATURES = [
 
 const HIGHLIGHTS = [
   { icon: Zap, text: 'Fast and modern — built with Next.js and NestJS' },
-  { icon: Shield, text: 'Secure — Clerk auth, encrypted credentials, role-based access' },
+  { icon: Shield, text: 'Secure — own auth, encrypted credentials, role-based access' },
   { icon: LayoutDashboard, text: 'All-in-one — CRM, Finance, Projects, Tasks, Support, Drive' },
 ];
 
 export default async function LandingPage() {
-  const user = await currentUser();
+  const session = await auth();
+  const user = session?.user ?? null;
 
   return (
     <div className="bg-background text-foreground min-h-screen">

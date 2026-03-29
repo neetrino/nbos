@@ -1653,11 +1653,6 @@ export type EmployeeDepartmentFindManyArgs<
    * Skip the first `n` EmployeeDepartments.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of EmployeeDepartments.
-   */
   distinct?: Prisma.EmployeeDepartmentScalarFieldEnum | Prisma.EmployeeDepartmentScalarFieldEnum[];
 };
 

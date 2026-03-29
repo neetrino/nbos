@@ -35,7 +35,7 @@ export type EmployeeSumAggregateOutputType = {
 
 export type EmployeeMinAggregateOutputType = {
   id: string | null;
-  clerkUserId: string | null;
+  passwordHash: string | null;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
@@ -57,7 +57,7 @@ export type EmployeeMinAggregateOutputType = {
 
 export type EmployeeMaxAggregateOutputType = {
   id: string | null;
-  clerkUserId: string | null;
+  passwordHash: string | null;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
@@ -79,7 +79,7 @@ export type EmployeeMaxAggregateOutputType = {
 
 export type EmployeeCountAggregateOutputType = {
   id: number;
-  clerkUserId: number;
+  passwordHash: number;
   firstName: number;
   lastName: number;
   email: number;
@@ -111,7 +111,7 @@ export type EmployeeSumAggregateInputType = {
 
 export type EmployeeMinAggregateInputType = {
   id?: true;
-  clerkUserId?: true;
+  passwordHash?: true;
   firstName?: true;
   lastName?: true;
   email?: true;
@@ -133,7 +133,7 @@ export type EmployeeMinAggregateInputType = {
 
 export type EmployeeMaxAggregateInputType = {
   id?: true;
-  clerkUserId?: true;
+  passwordHash?: true;
   firstName?: true;
   lastName?: true;
   email?: true;
@@ -155,7 +155,7 @@ export type EmployeeMaxAggregateInputType = {
 
 export type EmployeeCountAggregateInputType = {
   id?: true;
-  clerkUserId?: true;
+  passwordHash?: true;
   firstName?: true;
   lastName?: true;
   email?: true;
@@ -268,7 +268,7 @@ export type EmployeeGroupByArgs<
 
 export type EmployeeGroupByOutputType = {
   id: string;
-  clerkUserId: string | null;
+  passwordHash: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -311,7 +311,7 @@ export type EmployeeWhereInput = {
   OR?: Prisma.EmployeeWhereInput[];
   NOT?: Prisma.EmployeeWhereInput | Prisma.EmployeeWhereInput[];
   id?: Prisma.StringFilter<'Employee'> | string;
-  clerkUserId?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  passwordHash?: Prisma.StringNullableFilter<'Employee'> | string | null;
   firstName?: Prisma.StringFilter<'Employee'> | string;
   lastName?: Prisma.StringFilter<'Employee'> | string;
   email?: Prisma.StringFilter<'Employee'> | string;
@@ -360,7 +360,7 @@ export type EmployeeWhereInput = {
 
 export type EmployeeOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
-  clerkUserId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder;
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
@@ -401,11 +401,11 @@ export type EmployeeOrderByWithRelationInput = {
 export type EmployeeWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string;
-    clerkUserId?: string;
     email?: string;
     AND?: Prisma.EmployeeWhereInput | Prisma.EmployeeWhereInput[];
     OR?: Prisma.EmployeeWhereInput[];
     NOT?: Prisma.EmployeeWhereInput | Prisma.EmployeeWhereInput[];
+    passwordHash?: Prisma.StringNullableFilter<'Employee'> | string | null;
     firstName?: Prisma.StringFilter<'Employee'> | string;
     lastName?: Prisma.StringFilter<'Employee'> | string;
     phone?: Prisma.StringNullableFilter<'Employee'> | string | null;
@@ -453,12 +453,12 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
     > | null;
     credentialsOwned?: Prisma.CredentialListRelationFilter;
   },
-  'id' | 'clerkUserId' | 'email'
+  'id' | 'email'
 >;
 
 export type EmployeeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
-  clerkUserId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrderInput | Prisma.SortOrder;
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
@@ -493,7 +493,7 @@ export type EmployeeScalarWhereWithAggregatesInput = {
     | Prisma.EmployeeScalarWhereWithAggregatesInput
     | Prisma.EmployeeScalarWhereWithAggregatesInput[];
   id?: Prisma.StringWithAggregatesFilter<'Employee'> | string;
-  clerkUserId?: Prisma.StringNullableWithAggregatesFilter<'Employee'> | string | null;
+  passwordHash?: Prisma.StringNullableWithAggregatesFilter<'Employee'> | string | null;
   firstName?: Prisma.StringWithAggregatesFilter<'Employee'> | string;
   lastName?: Prisma.StringWithAggregatesFilter<'Employee'> | string;
   email?: Prisma.StringWithAggregatesFilter<'Employee'> | string;
@@ -527,7 +527,7 @@ export type EmployeeScalarWhereWithAggregatesInput = {
 
 export type EmployeeCreateInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -566,7 +566,7 @@ export type EmployeeCreateInput = {
 
 export type EmployeeUncheckedCreateInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -605,7 +605,7 @@ export type EmployeeUncheckedCreateInput = {
 
 export type EmployeeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -653,7 +653,7 @@ export type EmployeeUpdateInput = {
 
 export type EmployeeUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -701,7 +701,7 @@ export type EmployeeUncheckedUpdateInput = {
 
 export type EmployeeCreateManyInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -724,7 +724,7 @@ export type EmployeeCreateManyInput = {
 
 export type EmployeeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -755,7 +755,7 @@ export type EmployeeUpdateManyMutationInput = {
 
 export type EmployeeUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -807,7 +807,7 @@ export type EmployeeOrderByRelationAggregateInput = {
 
 export type EmployeeCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
-  clerkUserId?: Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrder;
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
@@ -834,7 +834,7 @@ export type EmployeeAvgOrderByAggregateInput = {
 
 export type EmployeeMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
-  clerkUserId?: Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrder;
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
@@ -856,7 +856,7 @@ export type EmployeeMaxOrderByAggregateInput = {
 
 export type EmployeeMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
-  clerkUserId?: Prisma.SortOrder;
+  passwordHash?: Prisma.SortOrder;
   firstName?: Prisma.SortOrder;
   lastName?: Prisma.SortOrder;
   email?: Prisma.SortOrder;
@@ -1412,7 +1412,7 @@ export type EnumEmployeeStatusEnumFieldUpdateOperationsInput = {
 
 export type EmployeeCreateWithoutProjectsSellingInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -1450,7 +1450,7 @@ export type EmployeeCreateWithoutProjectsSellingInput = {
 
 export type EmployeeUncheckedCreateWithoutProjectsSellingInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -1496,7 +1496,7 @@ export type EmployeeCreateOrConnectWithoutProjectsSellingInput = {
 
 export type EmployeeCreateWithoutProjectsManagingInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -1534,7 +1534,7 @@ export type EmployeeCreateWithoutProjectsManagingInput = {
 
 export type EmployeeUncheckedCreateWithoutProjectsManagingInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -1600,7 +1600,7 @@ export type EmployeeUpdateToOneWithWhereWithoutProjectsSellingInput = {
 
 export type EmployeeUpdateWithoutProjectsSellingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1647,7 +1647,7 @@ export type EmployeeUpdateWithoutProjectsSellingInput = {
 
 export type EmployeeUncheckedUpdateWithoutProjectsSellingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1714,7 +1714,7 @@ export type EmployeeUpdateToOneWithWhereWithoutProjectsManagingInput = {
 
 export type EmployeeUpdateWithoutProjectsManagingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1761,7 +1761,7 @@ export type EmployeeUpdateWithoutProjectsManagingInput = {
 
 export type EmployeeUncheckedUpdateWithoutProjectsManagingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1808,7 +1808,7 @@ export type EmployeeUncheckedUpdateWithoutProjectsManagingInput = {
 
 export type EmployeeCreateWithoutLeadsAssignedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -1846,7 +1846,7 @@ export type EmployeeCreateWithoutLeadsAssignedInput = {
 
 export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -1912,7 +1912,7 @@ export type EmployeeUpdateToOneWithWhereWithoutLeadsAssignedInput = {
 
 export type EmployeeUpdateWithoutLeadsAssignedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1959,7 +1959,7 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
 
 export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2006,7 +2006,7 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
 
 export type EmployeeCreateWithoutDealsSellingInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2044,7 +2044,7 @@ export type EmployeeCreateWithoutDealsSellingInput = {
 
 export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2090,7 +2090,7 @@ export type EmployeeCreateOrConnectWithoutDealsSellingInput = {
 
 export type EmployeeCreateWithoutDealsPMInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2128,7 +2128,7 @@ export type EmployeeCreateWithoutDealsPMInput = {
 
 export type EmployeeUncheckedCreateWithoutDealsPMInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2194,7 +2194,7 @@ export type EmployeeUpdateToOneWithWhereWithoutDealsSellingInput = {
 
 export type EmployeeUpdateWithoutDealsSellingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2241,7 +2241,7 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
 
 export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2308,7 +2308,7 @@ export type EmployeeUpdateToOneWithWhereWithoutDealsPMInput = {
 
 export type EmployeeUpdateWithoutDealsPMInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2355,7 +2355,7 @@ export type EmployeeUpdateWithoutDealsPMInput = {
 
 export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2402,7 +2402,7 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
 
 export type EmployeeCreateWithoutPaymentsConfirmedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2440,7 +2440,7 @@ export type EmployeeCreateWithoutPaymentsConfirmedInput = {
 
 export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2506,7 +2506,7 @@ export type EmployeeUpdateToOneWithWhereWithoutPaymentsConfirmedInput = {
 
 export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2553,7 +2553,7 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
 
 export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2600,7 +2600,7 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
 
 export type EmployeeCreateWithoutBonusEntriesInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2638,7 +2638,7 @@ export type EmployeeCreateWithoutBonusEntriesInput = {
 
 export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2704,7 +2704,7 @@ export type EmployeeUpdateToOneWithWhereWithoutBonusEntriesInput = {
 
 export type EmployeeUpdateWithoutBonusEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2751,7 +2751,7 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
 
 export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2798,7 +2798,7 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
 
 export type EmployeeCreateWithoutTasksCreatedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2836,7 +2836,7 @@ export type EmployeeCreateWithoutTasksCreatedInput = {
 
 export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2882,7 +2882,7 @@ export type EmployeeCreateOrConnectWithoutTasksCreatedInput = {
 
 export type EmployeeCreateWithoutTasksAssignedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2920,7 +2920,7 @@ export type EmployeeCreateWithoutTasksAssignedInput = {
 
 export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -2986,7 +2986,7 @@ export type EmployeeUpdateToOneWithWhereWithoutTasksCreatedInput = {
 
 export type EmployeeUpdateWithoutTasksCreatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3033,7 +3033,7 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
 
 export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3100,7 +3100,7 @@ export type EmployeeUpdateToOneWithWhereWithoutTasksAssignedInput = {
 
 export type EmployeeUpdateWithoutTasksAssignedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3147,7 +3147,7 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
 
 export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3194,7 +3194,7 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
 
 export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -3232,7 +3232,7 @@ export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
 
 export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -3278,7 +3278,7 @@ export type EmployeeCreateOrConnectWithoutRecurringTasksCreatedInput = {
 
 export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -3316,7 +3316,7 @@ export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
 
 export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -3382,7 +3382,7 @@ export type EmployeeUpdateToOneWithWhereWithoutRecurringTasksCreatedInput = {
 
 export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3429,7 +3429,7 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
 
 export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3496,7 +3496,7 @@ export type EmployeeUpdateToOneWithWhereWithoutRecurringTasksAssignedInput = {
 
 export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3543,7 +3543,7 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
 
 export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3590,7 +3590,7 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
 
 export type EmployeeCreateWithoutTicketsAssignedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -3628,7 +3628,7 @@ export type EmployeeCreateWithoutTicketsAssignedInput = {
 
 export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -3694,7 +3694,7 @@ export type EmployeeUpdateToOneWithWhereWithoutTicketsAssignedInput = {
 
 export type EmployeeUpdateWithoutTicketsAssignedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3741,7 +3741,7 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
 
 export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3788,7 +3788,7 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
 
 export type EmployeeCreateWithoutCredentialsOwnedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -3826,7 +3826,7 @@ export type EmployeeCreateWithoutCredentialsOwnedInput = {
 
 export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -3892,7 +3892,7 @@ export type EmployeeUpdateToOneWithWhereWithoutCredentialsOwnedInput = {
 
 export type EmployeeUpdateWithoutCredentialsOwnedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3939,7 +3939,7 @@ export type EmployeeUpdateWithoutCredentialsOwnedInput = {
 
 export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3986,7 +3986,7 @@ export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
 
 export type EmployeeCreateWithoutDepartmentsInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4024,7 +4024,7 @@ export type EmployeeCreateWithoutDepartmentsInput = {
 
 export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4090,7 +4090,7 @@ export type EmployeeUpdateToOneWithWhereWithoutDepartmentsInput = {
 
 export type EmployeeUpdateWithoutDepartmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -4137,7 +4137,7 @@ export type EmployeeUpdateWithoutDepartmentsInput = {
 
 export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -4184,7 +4184,7 @@ export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
 
 export type EmployeeCreateWithoutRoleInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4222,7 +4222,7 @@ export type EmployeeCreateWithoutRoleInput = {
 
 export type EmployeeUncheckedCreateWithoutRoleInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4304,7 +4304,7 @@ export type EmployeeScalarWhereInput = {
   OR?: Prisma.EmployeeScalarWhereInput[];
   NOT?: Prisma.EmployeeScalarWhereInput | Prisma.EmployeeScalarWhereInput[];
   id?: Prisma.StringFilter<'Employee'> | string;
-  clerkUserId?: Prisma.StringNullableFilter<'Employee'> | string | null;
+  passwordHash?: Prisma.StringNullableFilter<'Employee'> | string | null;
   firstName?: Prisma.StringFilter<'Employee'> | string;
   lastName?: Prisma.StringFilter<'Employee'> | string;
   email?: Prisma.StringFilter<'Employee'> | string;
@@ -4333,7 +4333,7 @@ export type EmployeeScalarWhereInput = {
 
 export type EmployeeCreateWithoutInvitationsSentInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4371,7 +4371,7 @@ export type EmployeeCreateWithoutInvitationsSentInput = {
 
 export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4417,7 +4417,7 @@ export type EmployeeCreateOrConnectWithoutInvitationsSentInput = {
 
 export type EmployeeCreateWithoutInvitationReceivedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4455,7 +4455,7 @@ export type EmployeeCreateWithoutInvitationReceivedInput = {
 
 export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4521,7 +4521,7 @@ export type EmployeeUpdateToOneWithWhereWithoutInvitationsSentInput = {
 
 export type EmployeeUpdateWithoutInvitationsSentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -4568,7 +4568,7 @@ export type EmployeeUpdateWithoutInvitationsSentInput = {
 
 export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -4635,7 +4635,7 @@ export type EmployeeUpdateToOneWithWhereWithoutInvitationReceivedInput = {
 
 export type EmployeeUpdateWithoutInvitationReceivedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -4682,7 +4682,7 @@ export type EmployeeUpdateWithoutInvitationReceivedInput = {
 
 export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -4729,7 +4729,7 @@ export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
 
 export type EmployeeCreateManyRoleInput = {
   id?: string;
-  clerkUserId?: string | null;
+  passwordHash?: string | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -4751,7 +4751,7 @@ export type EmployeeCreateManyRoleInput = {
 
 export type EmployeeUpdateWithoutRoleInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -4798,7 +4798,7 @@ export type EmployeeUpdateWithoutRoleInput = {
 
 export type EmployeeUncheckedUpdateWithoutRoleInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -4845,7 +4845,7 @@ export type EmployeeUncheckedUpdateWithoutRoleInput = {
 
 export type EmployeeUncheckedUpdateManyWithoutRoleInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  clerkUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   firstName?: Prisma.StringFieldUpdateOperationsInput | string;
   lastName?: Prisma.StringFieldUpdateOperationsInput | string;
   email?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -5068,7 +5068,7 @@ export type EmployeeSelect<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean;
-    clerkUserId?: boolean;
+    passwordHash?: boolean;
     firstName?: boolean;
     lastName?: boolean;
     email?: boolean;
@@ -5114,7 +5114,7 @@ export type EmployeeSelectCreateManyAndReturn<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean;
-    clerkUserId?: boolean;
+    passwordHash?: boolean;
     firstName?: boolean;
     lastName?: boolean;
     email?: boolean;
@@ -5143,7 +5143,7 @@ export type EmployeeSelectUpdateManyAndReturn<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean;
-    clerkUserId?: boolean;
+    passwordHash?: boolean;
     firstName?: boolean;
     lastName?: boolean;
     email?: boolean;
@@ -5169,7 +5169,7 @@ export type EmployeeSelectUpdateManyAndReturn<
 
 export type EmployeeSelectScalar = {
   id?: boolean;
-  clerkUserId?: boolean;
+  passwordHash?: boolean;
   firstName?: boolean;
   lastName?: boolean;
   email?: boolean;
@@ -5194,7 +5194,7 @@ export type EmployeeOmit<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetOmit<
   | 'id'
-  | 'clerkUserId'
+  | 'passwordHash'
   | 'firstName'
   | 'lastName'
   | 'email'
@@ -5274,7 +5274,7 @@ export type $EmployeePayload<
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
       id: string;
-      clerkUserId: string | null;
+      passwordHash: string | null;
       firstName: string;
       lastName: string;
       email: string;
@@ -6027,7 +6027,7 @@ export interface Prisma__EmployeeClient<
  */
 export interface EmployeeFieldRefs {
   readonly id: Prisma.FieldRef<'Employee', 'String'>;
-  readonly clerkUserId: Prisma.FieldRef<'Employee', 'String'>;
+  readonly passwordHash: Prisma.FieldRef<'Employee', 'String'>;
   readonly firstName: Prisma.FieldRef<'Employee', 'String'>;
   readonly lastName: Prisma.FieldRef<'Employee', 'String'>;
   readonly email: Prisma.FieldRef<'Employee', 'String'>;
@@ -6251,11 +6251,6 @@ export type EmployeeFindManyArgs<
    * Skip the first `n` Employees.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of Employees.
-   */
   distinct?: Prisma.EmployeeScalarFieldEnum | Prisma.EmployeeScalarFieldEnum[];
 };
 

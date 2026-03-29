@@ -554,7 +554,7 @@ export type InvitationScalarFieldEnum =
 
 export const EmployeeScalarFieldEnum = {
   id: 'id',
-  clerkUserId: 'clerkUserId',
+  passwordHash: 'passwordHash',
   firstName: 'firstName',
   lastName: 'lastName',
   email: 'email',

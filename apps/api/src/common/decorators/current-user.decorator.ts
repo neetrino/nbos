@@ -3,7 +3,6 @@ import type { Request } from 'express';
 
 export interface CurrentUserPayload {
   id: string;
-  clerkUserId: string;
   email: string;
   role: string;
   roleLevel: number;

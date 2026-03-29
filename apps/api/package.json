@@ -12,7 +12,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@clerk/backend": "^3.2.0",
     "@nbos/database": "workspace:*",
     "@nbos/shared": "workspace:*",
     "@nestjs/common": "^11.1.16",
@@ -30,7 +29,8 @@
     "pino-http": "^10.4.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "svix": "^1.88.0",
+    "argon2": "^0.43.0",
+    "jsonwebtoken": "^9.0.2",
     "zod": "^3.25.7"
   },
   "devDependencies": {
@@ -40,6 +40,7 @@
     "@nestjs/cli": "^11.0.7",
     "@nestjs/schematics": "^11.0.4",
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.29",
     "@types/pg": "^8.18.0",
     "typescript": "^5.9.3"

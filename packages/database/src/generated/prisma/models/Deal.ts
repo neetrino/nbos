@@ -4323,11 +4323,6 @@ export type DealFindManyArgs<
    * Skip the first `n` Deals.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of Deals.
-   */
   distinct?: Prisma.DealScalarFieldEnum | Prisma.DealScalarFieldEnum[];
 };
 

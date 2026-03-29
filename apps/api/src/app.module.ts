@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from './database.module';
 import { HealthController } from './health.controller';
+import { AuthModule } from './modules/auth/auth.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { CrmModule } from './modules/crm/crm.module';
 import { ProjectsModule } from './modules/projects/projects.module';
@@ -22,7 +23,6 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MessengerModule } from './modules/messenger/messenger.module';
 import { PartnersModule } from './modules/partners/partners.module';
 import { SystemListsModule } from './modules/system-lists/system-lists.module';
-import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
@@ -42,6 +42,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),
     DatabaseModule,
+    AuthModule,
     EmployeesModule,
     CrmModule,
     ProjectsModule,
@@ -60,7 +61,6 @@ import { PermissionGuard } from './common/guards/permission.guard';
     PartnersModule,
     MessengerModule,
     SystemListsModule,
-    WebhooksModule,
     RolesModule,
     DepartmentsModule,
     InvitationsModule,

@@ -22,7 +22,7 @@ import {
   Search,
   LogOut,
 } from 'lucide-react';
-import { useClerk, useUser } from '@clerk/nextjs';
+import { signOut, useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
 
@@ -144,8 +144,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { signOut } = useClerk();
-  const { user } = useUser();
+  const { data: session } = useSession();
   const { can, isLoading: permsLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -289,25 +288,23 @@ export function Sidebar() {
 
       {/* User + Sign Out */}
       <div className="border-sidebar-border border-t px-3 py-3">
-        {!collapsed && user && (
+        {!collapsed && session?.user && (
           <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
             <div className="bg-accent text-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold">
-              {user.firstName?.[0] ??
-                user.emailAddresses[0]?.emailAddress?.[0]?.toUpperCase() ??
-                'U'}
+              {session.user.firstName?.[0] ?? session.user.email?.[0]?.toUpperCase() ?? 'U'}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sidebar-foreground truncate text-sm font-medium">
-                {user.fullName ?? user.emailAddresses[0]?.emailAddress ?? 'User'}
+                {session.user.firstName && session.user.lastName
+                  ? `${session.user.firstName} ${session.user.lastName}`
+                  : (session.user.email ?? 'User')}
               </p>
-              <p className="text-sidebar-muted truncate text-[10px]">
-                {user.emailAddresses[0]?.emailAddress ?? ''}
-              </p>
+              <p className="text-sidebar-muted truncate text-[10px]">{session.user.email ?? ''}</p>
             </div>
           </div>
         )}
         <button
-          onClick={() => signOut({ redirectUrl: '/sign-in' })}
+          onClick={() => signOut({ callbackUrl: '/sign-in' })}
           className="text-sidebar-muted flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-red-500/10 hover:text-red-500"
         >
           <LogOut size={18} />

@@ -1,4 +1,4 @@
-export type PermissionScope = 'OWN' | 'DEPARTMENT' | 'ALL';
+export type PermissionScope = 'OWN' | 'DEPARTMENT' | 'ALL' | 'NONE';
 
 export interface PermissionMap {
   [moduleAction: string]: PermissionScope;
@@ -6,7 +6,6 @@ export interface PermissionMap {
 
 export interface MeResponse {
   id: string;
-  clerkUserId: string;
   firstName: string;
   lastName: string;
   email: string;

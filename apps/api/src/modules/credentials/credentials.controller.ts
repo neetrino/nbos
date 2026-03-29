@@ -59,7 +59,7 @@ export class CredentialsController {
   @RequirePermission('CREDENTIALS', 'VIEW')
   @ApiOperation({ summary: 'Get credential by ID with decrypted fields (audit logged)' })
   async findOne(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    return this.credentialsService.findById(id, user.clerkUserId);
+    return this.credentialsService.findById(id, user.id);
   }
 
   @Post()
@@ -85,7 +85,7 @@ export class CredentialsController {
     },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.create({ ...body, ownerId: user.id }, user.clerkUserId);
+    return this.credentialsService.create({ ...body, ownerId: user.id }, user.id);
   }
 
   @Put(':id')
@@ -112,7 +112,7 @@ export class CredentialsController {
     },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.update(id, body, user.clerkUserId);
+    return this.credentialsService.update(id, body, user.id);
   }
 
   @Delete(':id')
@@ -120,6 +120,6 @@ export class CredentialsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete credential' })
   async remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    await this.credentialsService.delete(id, user.clerkUserId);
+    await this.credentialsService.delete(id, user.id);
   }
 }

@@ -827,7 +827,7 @@ enum EmployeeStatusEnum {
 
 model Employee {
   id           String              @id @default(uuid())
-  clerkUserId  String?             @unique @map("clerk_user_id")
+  passwordHash String?             @map("password_hash")
   firstName    String              @map("first_name")
   lastName     String              @map("last_name")
   email        String              @unique

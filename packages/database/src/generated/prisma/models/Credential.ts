@@ -2477,11 +2477,6 @@ export type CredentialFindManyArgs<
    * Skip the first `n` Credentials.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of Credentials.
-   */
   distinct?: Prisma.CredentialScalarFieldEnum | Prisma.CredentialScalarFieldEnum[];
 };
 

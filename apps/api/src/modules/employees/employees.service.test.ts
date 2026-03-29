@@ -32,40 +32,17 @@ describe('EmployeesService', () => {
     });
   });
 
-  describe('findByClerkUserId', () => {
-    it('returns employee by clerk id', async () => {
-      prisma.employee.findUnique.mockResolvedValue({ id: '1', clerkUserId: 'clerk_1' });
-      const result = await service.findByClerkUserId('clerk_1');
-      expect(result?.clerkUserId).toBe('clerk_1');
+  describe('findByEmail', () => {
+    it('returns employee by email', async () => {
+      prisma.employee.findUnique.mockResolvedValue({ id: '1', email: 'john@test.com' });
+      const result = await service.findByEmail('john@test.com');
+      expect(result?.email).toBe('john@test.com');
     });
 
     it('returns null when not found', async () => {
-      const result = await service.findByClerkUserId('missing');
+      prisma.employee.findUnique.mockResolvedValue(null);
+      const result = await service.findByEmail('missing@test.com');
       expect(result).toBeNull();
-    });
-  });
-
-  describe('upsertFromClerk', () => {
-    it('creates or updates employee', async () => {
-      prisma.employee.upsert.mockResolvedValue({
-        id: '1',
-        clerkUserId: 'clerk_1',
-        email: 'john@test.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        roleId: 'role-observer',
-      });
-
-      const result = await service.upsertFromClerk({
-        clerkUserId: 'clerk_1',
-        email: 'john@test.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        roleId: 'role-observer',
-      });
-
-      expect(result.roleId).toBe('role-observer');
-      expect(prisma.employee.upsert).toHaveBeenCalled();
     });
   });
 });

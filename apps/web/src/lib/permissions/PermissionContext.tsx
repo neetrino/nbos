@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useSession } from 'next-auth/react';
 import type { MeResponse, PermissionMap, PermissionScope } from './types';
 import { api, setAuthTokenGetter } from '@/lib/api';
 
@@ -22,20 +22,19 @@ const PermissionCtx = createContext<PermissionContextValue>({
 });
 
 export function PermissionProvider({ children }: { children: ReactNode }) {
-  const { isSignedIn, getToken } = useAuth();
+  const { data: session, status } = useSession();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const tokenRegistered = useRef(false);
 
   useEffect(() => {
-    if (!tokenRegistered.current && getToken) {
-      setAuthTokenGetter(getToken);
-      tokenRegistered.current = true;
-    }
-  }, [getToken]);
+    const accessToken = session?.accessToken ?? null;
+    setAuthTokenGetter(async () => accessToken);
+  }, [session?.accessToken]);
 
   useEffect(() => {
-    if (!isSignedIn) {
+    if (status === 'loading') return;
+
+    if (!session) {
       setIsLoading(false);
       return;
     }
@@ -49,7 +48,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
           setMe(res.data);
         }
       } catch {
-        /* noop — user might not have employee record yet */
+        /* noop */
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -59,7 +58,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [isSignedIn]);
+  }, [session, status]);
 
   const permissions = me?.permissions ?? {};
 

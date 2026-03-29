@@ -5,22 +5,29 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { verifyToken } from '@clerk/backend';
 import { ConfigService } from '@nestjs/config';
+import * as jwt from 'jsonwebtoken';
 import { IS_PUBLIC_KEY } from '../decorators';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  iat: number;
+  exp: number;
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private readonly secretKey: string;
+  private readonly jwtSecret: string;
 
   constructor(
     private readonly reflector: Reflector,
     private readonly configService: ConfigService,
   ) {
-    this.secretKey = this.configService.get<string>('CLERK_SECRET_KEY') ?? '';
+    this.jwtSecret = this.configService.getOrThrow<string>('JWT_SECRET');
   }
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -43,14 +50,11 @@ export class AuthGuard implements CanActivate {
     const token = authHeader.substring(7);
 
     try {
-      const payload = await verifyToken(token, {
-        secretKey: this.secretKey,
-      });
+      const payload = jwt.verify(token, this.jwtSecret) as JwtPayload;
 
       request.user = {
-        clerkUserId: payload.sub,
-        email: (payload as Record<string, unknown>)['email'] as string | undefined,
-        sessionId: payload.sid,
+        employeeId: payload.sub,
+        email: payload.email,
       };
 
       return true;

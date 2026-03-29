@@ -82,41 +82,9 @@ export class EmployeesService {
     return employee;
   }
 
-  async findByClerkUserId(clerkUserId: string) {
-    return this.prisma.employee.findUnique({
-      where: { clerkUserId },
-      include: EMPLOYEE_INCLUDE,
-    });
-  }
-
   async findByEmail(email: string) {
     return this.prisma.employee.findUnique({
       where: { email },
-      include: EMPLOYEE_INCLUDE,
-    });
-  }
-
-  async upsertFromClerk(data: {
-    clerkUserId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    roleId: string;
-  }) {
-    return this.prisma.employee.upsert({
-      where: { clerkUserId: data.clerkUserId },
-      update: {
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-      },
-      create: {
-        clerkUserId: data.clerkUserId,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        roleId: data.roleId,
-      },
       include: EMPLOYEE_INCLUDE,
     });
   }

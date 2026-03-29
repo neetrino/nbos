@@ -3257,11 +3257,6 @@ export type TaskFindManyArgs<
    * Skip the first `n` Tasks.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of Tasks.
-   */
   distinct?: Prisma.TaskScalarFieldEnum | Prisma.TaskScalarFieldEnum[];
 };
 

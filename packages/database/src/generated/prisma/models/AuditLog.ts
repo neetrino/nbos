@@ -1522,11 +1522,6 @@ export type AuditLogFindManyArgs<
    * Skip the first `n` AuditLogs.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of AuditLogs.
-   */
   distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[];
 };
 

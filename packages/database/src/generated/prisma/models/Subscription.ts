@@ -2290,11 +2290,6 @@ export type SubscriptionFindManyArgs<
    * Skip the first `n` Subscriptions.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of Subscriptions.
-   */
   distinct?: Prisma.SubscriptionScalarFieldEnum | Prisma.SubscriptionScalarFieldEnum[];
 };
 

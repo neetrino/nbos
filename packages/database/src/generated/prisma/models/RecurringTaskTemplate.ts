@@ -2354,11 +2354,6 @@ export type RecurringTaskTemplateFindManyArgs<
    * Skip the first `n` RecurringTaskTemplates.
    */
   skip?: number;
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-   *
-   * Filter by unique combinations of RecurringTaskTemplates.
-   */
   distinct?:
     | Prisma.RecurringTaskTemplateScalarFieldEnum
     | Prisma.RecurringTaskTemplateScalarFieldEnum[];
