@@ -1,11 +1,14 @@
-import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 
 const INVITATION_EXPIRY_DAYS = 7;
+const RESEND_API_URL = 'https://api.resend.com/emails';
 
 @Injectable()
 export class InvitationsService {
+  private readonly logger = new Logger(InvitationsService.name);
+
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async create(data: {
@@ -31,7 +34,7 @@ export class InvitationsService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
 
-    return this.prisma.invitation.create({
+    const invitation = await this.prisma.invitation.create({
       data: {
         email: data.email.toLowerCase().trim(),
         roleId: data.roleId,
@@ -45,6 +48,10 @@ export class InvitationsService {
         department: true,
       },
     });
+
+    await this.sendInvitationEmail(invitation.email, invitation.id, invitation.expiresAt);
+
+    return invitation;
   }
 
   async findAll() {
@@ -72,7 +79,7 @@ export class InvitationsService {
   }
 
   async cancel(id: string) {
-    const invitation = await this.findById(id);
+    await this.findById(id);
     return this.prisma.invitation.update({
       where: { id },
       data: { status: 'CANCELLED' },
@@ -88,7 +95,7 @@ export class InvitationsService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS);
 
-    return this.prisma.invitation.update({
+    const invitation = await this.prisma.invitation.update({
       where: { id },
       data: { status: 'PENDING', expiresAt },
       include: {
@@ -96,5 +103,48 @@ export class InvitationsService {
         department: true,
       },
     });
+
+    await this.sendInvitationEmail(invitation.email, invitation.id, invitation.expiresAt);
+
+    return invitation;
+  }
+
+  private async sendInvitationEmail(email: string, invitationId: string, expiresAt: Date) {
+    const apiKey = process.env.RESEND_API_KEY;
+    const fromEmail = process.env.RESEND_FROM_EMAIL;
+
+    if (!apiKey || !fromEmail) {
+      return;
+    }
+
+    const appUrl = process.env.APP_URL ?? 'http://localhost:3000';
+    const inviteLink = `${appUrl}/accept-invite?invitationId=${invitationId}`;
+    const replyTo = process.env.RESEND_ADMIN_EMAIL;
+    const expiresAtDate = expiresAt.toISOString().split('T')[0] ?? '';
+
+    try {
+      const response = await fetch(RESEND_API_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [email],
+          reply_to: replyTo ? [replyTo] : undefined,
+          subject: 'You are invited to NBOS',
+          html: `<p>You have been invited to NBOS.</p><p>Accept invitation: <a href="${inviteLink}">${inviteLink}</a></p><p>Invitation expires on: ${expiresAtDate}</p>`,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.warn(`Failed to send invitation email to ${email}: ${errorText}`);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(`Resend request failed for ${email}: ${message}`);
+    }
   }
 }
