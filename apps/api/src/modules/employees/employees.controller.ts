@@ -26,6 +26,7 @@ export class EmployeesController {
   ) {}
 
   @Get()
+  @RequirePermission('COMPANY', 'VIEW')
   @ApiOperation({ summary: 'Get all employees with filters' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'roleId', required: false })
@@ -52,6 +53,7 @@ export class EmployeesController {
   }
 
   @Get(':id')
+  @RequirePermission('COMPANY', 'VIEW')
   @ApiOperation({ summary: 'Get employee by ID' })
   async findOne(@Param('id') id: string) {
     return this.employeesService.findById(id);

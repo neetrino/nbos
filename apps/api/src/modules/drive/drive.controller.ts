@@ -10,6 +10,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { RequirePermission } from '../../common/decorators';
 import { DriveService } from './drive.service';
 
 @ApiTags('Drive')
@@ -19,6 +20,7 @@ export class DriveController {
   constructor(private readonly driveService: DriveService) {}
 
   @Get(':projectId')
+  @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'List files in project folder' })
   @ApiQuery({ name: 'prefix', required: false, description: 'Subfolder prefix to list' })
   async listFiles(@Param('projectId') projectId: string, @Query('prefix') prefix?: string) {
@@ -26,12 +28,14 @@ export class DriveController {
   }
 
   @Get(':projectId/structure')
+  @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'Get full folder structure for a project' })
   async getStructure(@Param('projectId') projectId: string) {
     return this.driveService.getProjectStructure(projectId);
   }
 
   @Post(':projectId/upload-url')
+  @RequirePermission('DRIVE', 'ADD')
   @ApiOperation({ summary: 'Get presigned upload URL' })
   async getUploadUrl(
     @Param('projectId') projectId: string,
@@ -41,6 +45,7 @@ export class DriveController {
   }
 
   @Get(':projectId/download-url')
+  @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'Get presigned download URL' })
   @ApiQuery({ name: 'path', required: true, description: 'File path within the project' })
   async getDownloadUrl(@Param('projectId') projectId: string, @Query('path') filePath: string) {
@@ -48,6 +53,7 @@ export class DriveController {
   }
 
   @Delete(':projectId')
+  @RequirePermission('DRIVE', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a file from project storage' })
   @ApiQuery({ name: 'path', required: true, description: 'File path to delete' })
