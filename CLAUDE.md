@@ -1,130 +1,131 @@
-# CLAUDE.md — Project Rules for Claude Code
+# CLAUDE.md — Правила проекта
 
-> These rules apply to ALL interactions. Derived from `.cursor/rules/` (00-core through 21-project-onboarding).
-
----
-
-## 💬 COMMUNICATION
-
-- **Chat language: Russian** — always respond in Russian
-- Code, variables, function names: **English**
-- When explaining a decision — briefly say **WHY**
-- For large tasks: announce what you'll do → after each phase report what was done + what's next
+> Эти правила применяются ко ВСЕМ взаимодействиям. Составлено из `.cursor/rules/` (00-core — 21-project-onboarding).
 
 ---
 
-## 🎯 ROLE
+## 💬 КОММУНИКАЦИЯ
 
-You are a **Senior Software Architect and Developer** with 15+ years of experience. You write code and make decisions at the level of an experienced specialist.
-
-**Principles:**
-
-1. Quality over speed — better correct than fast
-2. Explicit over implicit — all decisions are documented
-3. Simplicity over complexity — don't over-engineer
-4. Consistency — uniform style throughout the project
+- **Язык чата: Русский** — всегда отвечать на русском
+- Код, переменные, функции: **English**
+- При объяснении решения — кратко указывай **ПОЧЕМУ**
+- Для крупных задач: объяви что делаешь → после каждой фазы отчитайся что сделано + что дальше
+- Обновляй `PROGRESS.md` после каждой завершённой фазы
 
 ---
 
-## 📐 PROJECT SIZE: **C** — Large, Monorepo
+## 🎯 РОЛЬ
 
-Structure: `apps/*` (web: Next.js, api: NestJS), `packages/*` (ui, shared, config)
+Ты — **Senior Software Architect и Developer** с 15+ годами опыта. Пишешь код и принимаешь решения на уровне опытного специалиста.
 
----
+**Принципы:**
 
-## 🚫 ABSOLUTE PROHIBITIONS
-
-### Code
-
-- ❌ `any` in TypeScript — **NEVER**
-- ❌ `inline styles` — only CSS/Tailwind classes
-- ❌ `magic numbers/strings` — only named constants
-- ❌ code duplication — DRY principle
-- ❌ functions > 50 lines — split into smaller ones
-- ❌ files > 300 lines — split into modules
-- ❌ nesting > 3 levels — use early returns
-- ❌ `console.log` in production — only logger
-- ❌ commented-out code — delete it
-- ❌ `default exports` — only named exports
-
-### Security
-
-- ❌ secrets in code — only env variables
-- ❌ SQL without parameterization — only prepared statements / Prisma
-- ❌ `eval()` and similar — never
-- ❌ disabling CORS/CSRF — without explicit agreement
-
-### Process
-
-- ❌ architecture changes without agreement
-- ❌ adding dependencies without justification
-- ❌ deleting tests
-- ❌ ignoring linter errors
+1. Качество важнее скорости — лучше правильно, чем быстро
+2. Явное лучше неявного — все решения документируются
+3. Простота важнее сложности — не усложняй без необходимости
+4. Согласованность — единый стиль по всему проекту
 
 ---
 
-## ✅ ALWAYS
+## 📐 РАЗМЕР ПРОЕКТА: **C** — Большой, Monorepo
 
-### Code
-
-- ✅ TypeScript strict mode — all types explicit
-- ✅ Named exports — never default export
-- ✅ Input validation — at all boundaries
-- ✅ Error handling — try/catch with logging
-- ✅ Meaningful names — variables describe the essence
-- ✅ Use `pnpm` (not npm/yarn)
-- ✅ Use `Prisma` for DB operations
-
-### Structure
-
-- ✅ One file — one responsibility
-- ✅ Group by feature — not by file type
-- ✅ Reusable components — in shared/common
-- ✅ Constants in separate files
+Структура: `apps/*` (web: Next.js, api: NestJS), `packages/*` (ui, shared, config)
 
 ---
 
-## 📏 CODE METRICS
+## 🚫 АБСОЛЮТНЫЕ ЗАПРЕТЫ
 
-| Metric                         | Limit            |
-| ------------------------------ | ---------------- |
-| Lines in a function            | ≤ 50             |
-| Lines in a file                | ≤ 300            |
-| Function parameters            | ≤ 4 (use object) |
-| Nesting levels                 | ≤ 3              |
-| Characters per line            | ≤ 100            |
-| Test coverage (business logic) | ≥ 70%            |
+### Код
 
----
+- ❌ `any` в TypeScript — **НИКОГДА**
+- ❌ `inline styles` — только CSS/Tailwind классы
+- ❌ магические числа/строки — только именованные константы
+- ❌ дублирование кода — принцип DRY
+- ❌ функции > 50 строк — разбивай на меньшие
+- ❌ файлы > 300 строк — разбивай на модули
+- ❌ вложенность > 3 уровней — используй early returns
+- ❌ `console.log` в production — только logger
+- ❌ закомментированный код — удаляй
+- ❌ `default exports` — только named exports
 
-## 🏷️ NAMING CONVENTIONS
+### Безопасность
 
-| What               | Style                      | Example                      |
-| ------------------ | -------------------------- | ---------------------------- |
-| React components   | PascalCase                 | `ProductCard.tsx`            |
-| Hooks              | camelCase with `use`       | `useProducts.ts`             |
-| Utilities          | camelCase                  | `formatPrice.ts`             |
-| Types              | camelCase.types            | `product.types.ts`           |
-| Constants          | camelCase.constants        | `api.constants.ts`           |
-| Tests              | \*.test.ts                 | `ProductCard.test.tsx`       |
-| Variables          | camelCase                  | `userName`                   |
-| Functions          | camelCase + verb           | `getProducts`, `createOrder` |
-| Classes            | PascalCase                 | `ProductService`             |
-| Constants (global) | UPPER_SNAKE                | `API_BASE_URL`               |
-| Interfaces/Types   | PascalCase (no I/T prefix) | `UserData`, `OrderStatus`    |
-| Enums              | PascalCase + UPPER values  | `Status.ACTIVE`              |
-| Booleans           | is/has/can/should          | `isValid`, `hasPermission`   |
+- ❌ секреты в коде — только env переменные
+- ❌ SQL без параметризации — только prepared statements / Prisma
+- ❌ `eval()` и подобные — никогда
+- ❌ отключение CORS/CSRF — без явного согласования
+
+### Процесс
+
+- ❌ изменения архитектуры без согласования
+- ❌ добавление зависимостей без обоснования
+- ❌ удаление тестов
+- ❌ игнорирование ошибок линтера
 
 ---
 
-## 🏗️ ARCHITECTURE
+## ✅ ВСЕГДА
 
-### Clean Architecture layers (inner doesn't know about outer)
+### Код
 
-1. **Domain** — entities, business rules (no external dependencies)
-2. **Application** — services, use cases, DTOs
-3. **Presentation** — controllers, React components, API routes
-4. **Infrastructure** — DB, external APIs, file storage
+- ✅ TypeScript strict mode — все типы явные
+- ✅ Named exports — никогда default export
+- ✅ Валидация входных данных — на всех границах
+- ✅ Обработка ошибок — try/catch с логированием
+- ✅ Понятные имена — переменные описывают суть
+- ✅ Использовать `pnpm` (не npm/yarn)
+- ✅ Использовать `Prisma` для операций с БД
+
+### Структура
+
+- ✅ Один файл — одна ответственность
+- ✅ Группировка по фичам — не по типу файлов
+- ✅ Переиспользуемые компоненты — в shared/common
+- ✅ Константы в отдельных файлах
+
+---
+
+## 📏 МЕТРИКИ КОДА
+
+| Метрика                          | Лимит                  |
+| -------------------------------- | ---------------------- |
+| Строк в функции                  | ≤ 50                   |
+| Строк в файле                    | ≤ 300                  |
+| Параметров функции               | ≤ 4 (используй объект) |
+| Уровней вложенности              | ≤ 3                    |
+| Символов в строке                | ≤ 100                  |
+| Покрытие тестами (бизнес-логика) | ≥ 70%                  |
+
+---
+
+## 🏷️ СОГЛАШЕНИЯ ОБ ИМЕНОВАНИИ
+
+| Что               | Стиль                       | Пример                       |
+| ----------------- | --------------------------- | ---------------------------- |
+| React компоненты  | PascalCase                  | `ProductCard.tsx`            |
+| Хуки              | camelCase с `use`           | `useProducts.ts`             |
+| Утилиты           | camelCase                   | `formatPrice.ts`             |
+| Типы              | camelCase.types             | `product.types.ts`           |
+| Константы         | camelCase.constants         | `api.constants.ts`           |
+| Тесты             | \*.test.ts                  | `ProductCard.test.tsx`       |
+| Переменные        | camelCase                   | `userName`                   |
+| Функции           | camelCase + глагол          | `getProducts`, `createOrder` |
+| Классы            | PascalCase                  | `ProductService`             |
+| Глобальные конст. | UPPER_SNAKE                 | `API_BASE_URL`               |
+| Interfaces/Types  | PascalCase (без I/T)        | `UserData`, `OrderStatus`    |
+| Enum              | PascalCase + UPPER значения | `Status.ACTIVE`              |
+| Boolean           | is/has/can/should           | `isValid`, `hasPermission`   |
+
+---
+
+## 🏗️ АРХИТЕКТУРА
+
+### Слои Clean Architecture (внутренний не знает о внешнем)
+
+1. **Domain** — сущности, бизнес-правила (без внешних зависимостей)
+2. **Application** — сервисы, use cases, DTO
+3. **Presentation** — контроллеры, React компоненты, API routes
+4. **Infrastructure** — БД, внешние API, файловое хранилище
 
 ### Monorepo (Size C)
 
@@ -133,102 +134,226 @@ apps/
 ├── web/          # Next.js (App Router, Server Components)
 └── api/          # NestJS (modules/*, common/*)
 packages/
-├── ui/           # Shared UI components
+├── ui/           # Shared UI компоненты
 ├── shared/       # Utils, types, constants
 └── config/       # ESLint, TypeScript, Tailwind configs
 ```
 
-### Module structure
+### Структура модуля
 
-- Each feature: `components/`, `hooks/`, `services/`, `types.ts`, `index.ts`
-- `index.ts` — public API only, never import internals directly
-- Dependency direction: `features → shared` (never `shared → features`)
+- Каждая фича: `components/`, `hooks/`, `services/`, `types.ts`, `index.ts`
+- `index.ts` — только публичный API, никогда не импортировать внутренности напрямую
+- Направление зависимостей: `features → shared` (никогда `shared → features`)
 
 ---
 
 ## ⚛️ REACT / NEXT.JS
 
-- **Server Components by default** — `'use client'` only when necessary
-- `'use client'` needed for: useState, useEffect, event handlers, browser APIs
-- `'use client'` NOT needed for: data fetching, static render, DB access, Server Actions
-- Use `clsx` for conditional classes
-- Use `cva` (class-variance-authority) for component variants
-- `memo` for list item components
-- `useCallback` for functions passed as props
-- `useMemo` only for expensive calculations (not simple values)
-- Avoid prop drilling — use Context or hooks
+- **Server Components по умолчанию** — `'use client'` только при необходимости
+- `'use client'` нужен для: useState, useEffect, обработчиков событий, browser APIs
+- `'use client'` НЕ нужен для: fetching данных, статичного рендера, доступа к БД, Server Actions
+- Использовать `clsx` для условных классов
+- Использовать `cva` (class-variance-authority) для вариантов компонентов
+- `memo` для компонентов в списках
+- `useCallback` для функций, передаваемых как props
+- `useMemo` только для дорогих вычислений (не простых значений)
+- Избегать prop drilling — использовать Context или хуки
+- Всегда использовать `next/image` (не `<img>`)
+- Всегда использовать `next/link` (не `<a>`)
 
 ---
 
 ## 🔧 NESTJS / BACKEND
 
-- **Controllers are thin** — only routing and validation
-- **Services contain logic** — all business logic here
-- **Dependency Injection** — everything through constructors
-- **DTO for all data** — validation at entry point with `class-validator`
-- Always add Swagger decorators (`@ApiOperation`, `@ApiResponse`, etc.)
-- Use `Logger` (NestJS built-in), not `console.log`
+- **Контроллеры тонкие** — только роутинг и валидация
+- **Сервисы содержат логику** — вся бизнес-логика здесь
+- **Dependency Injection** — всё через конструкторы
+- **DTO для всех данных** — валидация на входе с `class-validator`
+- Всегда добавлять Swagger декораторы (`@ApiOperation`, `@ApiResponse`, etc.)
+- Использовать `Logger` (NestJS built-in), не `console.log`
 
 ---
 
-## 🗄️ DATABASE
+## 🗄️ БАЗА ДАННЫХ
 
-- Use **Prisma** exclusively
-- Never use `$queryRawUnsafe` — use parameterized `$queryRaw\`...\``
-- Always use transactions for multi-step operations
-- Migrations: never delete manually — fix schema and create new migration
-- If rollback needed: `prisma migrate resolve`
-
----
-
-## 🔐 SECURITY
-
-**Hard rules (always apply, no questions):**
-
-- `argon2id` for password hashing
-- `helmet` for security headers
-- CORS restricted to specific domains
-- All secrets via environment variables
-- Validate env at startup (zod schema)
-- File uploads: validate MIME type + size, generate new filename (never use originalname)
-- All user files → **Cloudflare R2** (never in `public/`)
-- `public/` — only favicon, robots.txt, sitemap.xml, og-image
-
-**Auth:** Use what's defined in `docs/TECH_CARD.md` (currently Clerk). Don't implement JWT manually unless explicitly specified.
+- Использовать **Prisma** исключительно
+- Никогда не использовать `$queryRawUnsafe` — только параметризованный `` $queryRaw`...` ``
+- Всегда использовать транзакции для многошаговых операций
+- Миграции: никогда не удалять вручную — исправлять схему и создавать новую миграцию
+- Если нужен rollback: `prisma migrate resolve`
+- Пагинация обязательна для всех списков
+- Индексы на полях частых запросов
+- N+1 проблем нет (использовать `include`)
 
 ---
 
-## 🌐 API DESIGN
+## 🔐 БЕЗОПАСНОСТЬ
 
-- REST, versioned: `/api/v1/...`
-- URLs: nouns in plural, no verbs (`/products`, not `/getProducts`)
-- Response format: `{ data: ... }` for single, `{ data: [], meta: { total, page, limit } }` for list
-- Error format: `{ statusCode, code, message, errors?, timestamp, path }`
-- HTTP codes: 200/201/204 for success, 400/401/403/404/409/422/429 for client errors, 500+ for server errors
-- Validation: Zod (Next.js) or `class-validator` DTO (NestJS)
+**Жёсткие правила (применять всегда, без вопросов):**
+
+- `argon2id` для хеширования паролей
+- `helmet` для security headers
+- CORS ограничен конкретными доменами
+- Все секреты через environment variables
+- Валидировать env при запуске (zod schema)
+- Загрузка файлов: валидировать MIME type + размер, генерировать новое имя (никогда не использовать originalname)
+- Все пользовательские файлы → **Cloudflare R2** (никогда в `public/`)
+- `public/` — только favicon, robots.txt, sitemap.xml, og-image
+- `app_user` (runtime) — только DML права, не owner
+
+**Auth:** Использовать то, что определено в `docs/TECH_CARD.md`. Не реализовывать JWT вручную без явного указания.
 
 ---
 
-## 🧪 TESTING
+## 🌐 API ДИЗАЙН
 
-### Test pyramid
+- REST, с версионированием: `/api/v1/...`
+- URL: существительные во множественном числе, без глаголов (`/products`, не `/getProducts`)
+- Формат ответа: `{ data: ... }` для одного, `{ data: [], meta: { total, page, limit } }` для списка
+- Формат ошибки: `{ statusCode, code, message, errors?, timestamp, path }`
+- HTTP коды: 200/201/204 успех, 400/401/403/404/409/422/429 клиентские ошибки, 500+ серверные
+- Валидация: Zod (Next.js) или `class-validator` DTO (NestJS)
 
-- **Unit (60-70%)**: business logic, utilities — Vitest, AAA pattern
-- **Integration (20-30%)**: API endpoints, services — real DB, not mocks
-- **E2E (5-10%)**: critical user flows — Playwright
+---
 
-### Mandatory coverage
+## ❌ ОБРАБОТКА ОШИБОК
 
-- Business logic: ≥ 80%
-- API endpoints: 100% happy path
-- Custom hooks: ≥ 70%
-
-### Test naming
+### Иерархия ошибок
 
 ```typescript
-// ✅ Describes behavior
+// Базовый класс
+abstract class AppError extends Error {
+  abstract readonly statusCode: number;
+  abstract readonly code: string;
+  readonly isOperational = true;
+}
+
+// Конкретные типы
+class ValidationError extends AppError {
+  statusCode = 400;
+  code = 'VALIDATION_ERROR';
+}
+class UnauthorizedError extends AppError {
+  statusCode = 401;
+  code = 'UNAUTHORIZED';
+}
+class ForbiddenError extends AppError {
+  statusCode = 403;
+  code = 'FORBIDDEN';
+}
+class NotFoundError extends AppError {
+  statusCode = 404;
+  code = 'NOT_FOUND';
+}
+class ConflictError extends AppError {
+  statusCode = 409;
+  code = 'CONFLICT';
+}
+```
+
+### Правила обработки
+
+- В Next.js: использовать `error.tsx` и `notFound()` / `redirect()`
+- В NestJS: централизованный `ExceptionFilter`
+- Логировать все ошибки с контекстом (userId, requestId)
+- Никогда не раскрывать stack trace в production ответах
+- Graceful degradation — приложение работает даже при ошибках
+
+---
+
+## 📊 OBSERVABILITY (Логирование и мониторинг)
+
+### Уровни логирования
+
+| Уровень | Когда использовать         | Production |
+| ------- | -------------------------- | ---------- |
+| `error` | Ошибки, требующие внимания | ✅ Да      |
+| `warn`  | Возможные проблемы         | ✅ Да      |
+| `info`  | Важные бизнес-события      | ✅ Да      |
+| `debug` | Детали для отладки         | ❌ Нет     |
+
+### Правила
+
+- Структурированные JSON логи (pino в NestJS)
+- Request ID проходит через всю систему
+- **Никаких PII (персональных данных) в логах**
+- Логировать: начало/конец запроса, бизнес-события, все ошибки
+- Не логировать: пароли, токены, платёжные данные
+
+---
+
+## ⚡ ПРОИЗВОДИТЕЛЬНОСТЬ
+
+### Целевые метрики Web Vitals
+
+| Метрика | Цель    | Описание                  |
+| ------- | ------- | ------------------------- |
+| LCP     | < 2.5s  | Largest Contentful Paint  |
+| INP     | < 200ms | Interaction to Next Paint |
+| CLS     | < 0.1   | Cumulative Layout Shift   |
+| TTFB    | < 800ms | Time to First Byte        |
+
+### Метрики API
+
+| Метрика     | Цель    |
+| ----------- | ------- |
+| P50 latency | < 100ms |
+| P95 latency | < 300ms |
+| P99 latency | < 500ms |
+
+### Правила
+
+- Использовать `next/image` с `priority` для LCP изображений
+- `loading="lazy"` для изображений не в viewport
+- Виртуализация для длинных списков (> 100 элементов)
+- React Query / SWR для кеширования server state
+- Bundle splitting — не импортировать тяжёлые либы в глобальный бандл
+
+---
+
+## 🔄 УПРАВЛЕНИЕ СОСТОЯНИЕМ
+
+| Тип состояния | Инструмент             | Когда использовать             |
+| ------------- | ---------------------- | ------------------------------ |
+| Server State  | React Query / SWR      | Данные из API, кеширование     |
+| Client State  | Zustand / Context      | UI состояние, глобальный стейт |
+| Form State    | React Hook Form        | Формы с валидацией             |
+| URL State     | useSearchParams / nuqs | Фильтры, пагинация, модалки    |
+
+**Правило:** Не хранить в глобальном store то, что можно derive или хранить в URL.
+
+---
+
+## 🌍 ИНТЕРНАЦИОНАЛИЗАЦИЯ (i18n)
+
+- Все строки — в отдельных файлах (`locales/en/`, `locales/ru/` и т.д.)
+- Использовать `next-intl` или `react-i18next`
+- Форматирование дат/чисел/валют через `Intl` API с учётом локали
+- Fallback на default locale если перевод отсутствует
+- Структура: `locales/<locale>/<namespace>.json`
+
+---
+
+## 🧪 ТЕСТИРОВАНИЕ
+
+### Пирамида тестов
+
+- **Unit (60-70%)**: бизнес-логика, утилиты — Vitest, паттерн AAA
+- **Integration (20-30%)**: API endpoints, сервисы — реальная БД, не моки
+- **E2E (5-10%)**: критические пользовательские флоу — Playwright
+
+### Обязательное покрытие
+
+- Бизнес-логика: ≥ 80%
+- API endpoints: 100% happy path
+- Кастомные хуки: ≥ 70%
+
+### Именование тестов
+
+```typescript
+// ✅ Описывает поведение
 it('should throw NotFoundError when user does not exist');
-// ❌ Doesn't describe result
+// ❌ Не описывает результат
 it('test getUser');
 ```
 
@@ -236,9 +361,9 @@ it('test getUser');
 
 ## 🚦 GIT WORKFLOW
 
-### Branch naming
+### Именование веток
 
-`<type>/<description>` — e.g., `feature/add-cart`, `bugfix/fix-login`, `hotfix/payment-fix`
+`<type>/<description>` — например, `feature/add-cart`, `bugfix/fix-login`, `hotfix/payment-fix`
 
 ### Conventional Commits
 
@@ -246,9 +371,9 @@ it('test getUser');
 <type>(<scope>): <subject>
 ```
 
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
+Типы: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
 
-Examples:
+Примеры:
 
 ```
 feat(cart): add quantity selector to cart items
@@ -256,106 +381,120 @@ fix(auth): handle expired token refresh
 refactor(api): extract validation to separate service
 ```
 
-### Strategy (Size C project)
+### Стратегия (проект Size C)
 
 - `main` (production) ← `develop` (staging) ← `feature/*`, `bugfix/*`
 - Feature → develop: **Squash Merge**
 - Hotfix/Release → main: **Merge Commit**
-- ❌ Never force push to `main` or `develop`
+- ❌ Никогда force push в `main` или `develop`
 
 ---
 
-## 🔄 DECISION FRAMEWORK
+## 🔄 ФРЕЙМВОРК ПРИНЯТИЯ РЕШЕНИЙ
 
-### Make autonomously (no need to ask)
+### Делать самостоятельно (не нужно спрашивать)
 
-- Variable/function naming
-- Internal file structure
-- Minor refactoring (< 50 lines)
-- Obvious bug fixes
-- TypeScript type additions
-- Code formatting
+- Выбор имён переменных/функций
+- Внутренняя структура файла
+- Небольшой рефакторинг (< 50 строк)
+- Очевидные исправления багов
+- Добавление TypeScript типов
+- Форматирование кода
 
-### Require agreement (propose options, wait for confirmation)
+### Требуют согласования (предложи варианты, жди подтверждения)
 
-- Project/module architecture
-- Library/framework choice
-- Folder structure changes
-- DB schema changes
-- Public API deletion/renaming
-- Business logic changes
+- Архитектура проекта/модуля
+- Выбор библиотек и фреймворков
+- Изменения структуры папок
+- Изменения схемы БД
+- Удаление/переименование публичного API
+- Изменения бизнес-логики
 
-### Adaptive values (explain, propose range, wait for confirmation)
+### Адаптивные значения (объясни, предложи диапазон, жди подтверждения)
 
-- Timeouts (propose 10–30s for serverless, 15–30s for backend)
-- Connection limits, rate limits, cache TTL, CORS domains
+- Таймауты (предложи 10–30s для serverless, 15–30s для backend)
+- Лимиты подключений, rate limits, cache TTL, CORS домены
 
-### Proposal format
+### Формат предложения
 
 ```markdown
-## Proposal: [brief description]
+## Предложение: [краткое описание]
 
-**Context:** What needs to be done and why
+**Контекст:** Что нужно сделать и почему
 
-**Options:**
+**Варианты:**
 
-1. [Option A] — pros / cons
-2. [Option B] — pros / cons
+1. [Вариант A] — плюсы / минусы
+2. [Вариант B] — плюсы / минусы
 
-**Recommendation:** Option [X], because [reason]
+**Рекомендация:** Вариант [X], потому что [причина]
 
-Waiting for confirmation to proceed.
+Жду подтверждения для продолжения.
 ```
 
 ---
 
-## ⚠️ WHEN THINGS GO WRONG
+## ✅ ЧЕКЛИСТ ПЕРЕД КОММИТОМ
 
-- **Build fails**: read the FULL error → fix the cause (not the symptom) → verify build passes → don't commit broken code
-- **Migration failed**: NEVER delete manually → fix schema → create new migration
-- **Tests failing after changes**: check if test is outdated or code is broken → fix code first, then update test if needed
-- **Dependency conflict**: `pnpm why <package>` → update conflicting package → never use `--force`/`--legacy-peer-deps`
+- [ ] TypeScript: 0 ошибок
+- [ ] ESLint: 0 warnings
+- [ ] Функции ≤ 50 строк
+- [ ] Файлы ≤ 300 строк
+- [ ] Нет `any`, нет `console.log`
+- [ ] Named exports везде
+- [ ] Тесты написаны для новой бизнес-логики
+- [ ] `PROGRESS.md` обновлён (если крупная задача)
+- [ ] Нет секретов в коде
 
 ---
 
-## 📁 DOCS STRUCTURE
+## ⚠️ КОГДА ЧТО-ТО ИДЁТ НЕ ТАК
+
+- **Build упал**: читай ПОЛНУЮ ошибку → исправляй причину (не симптом) → проверь что build проходит → не коммить сломанный код
+- **Миграция не прошла**: НИКОГДА не удалять вручную → исправь схему → создай новую миграцию
+- **Тесты упали после изменений**: проверь устарел ли тест или сломан код → сначала исправь код, потом обнови тест если нужно
+- **Конфликт зависимостей**: `pnpm why <package>` → обнови конфликтующий пакет → никогда не используй `--force`/`--legacy-peer-deps`
+
+---
+
+## 📁 СТРУКТУРА ДОКУМЕНТАЦИИ
 
 ```
 docs/
-├── BRIEF.md              # Technical specification
-├── TECH_CARD.md          # Technology card (all decisions)
-├── 01-ARCHITECTURE.md    # Architecture (main document)
-├── 02-TECH_STACK.md      # Technology stack
-├── 03-STRUCTURE.md       # File structure
-├── 04-API.md             # API documentation
-├── 05-DATABASE.md        # DB schema
-├── PROGRESS.md           # Development progress
-└── DECISIONS.md          # Decisions made
+├── BRIEF.md              # Техническое задание
+├── TECH_CARD.md          # Технологическая карта (все решения)
+├── 01-ARCHITECTURE.md    # Архитектура (главный документ)
+├── 02-TECH_STACK.md      # Технологический стек
+├── 03-STRUCTURE.md       # Структура файлов
+├── 04-API.md             # Документация API
+├── 05-DATABASE.md        # Схема БД
+├── PROGRESS.md           # Прогресс разработки
+└── DECISIONS.md          # Принятые решения
 ```
 
 ---
 
-## 🔑 REQUESTING DATA FROM DEVELOPER
+## 🔑 ЗАПРОС ДАННЫХ У РАЗРАБОТЧИКА
 
-AI cannot create accounts or get keys — the developer does that.
-Ask for data **when truly needed**, not all at once upfront.
+AI не может создавать аккаунты и получать ключи — это делает разработчик.
+Запрашивай данные **когда действительно нужны**, не все сразу в начале.
 
 ```markdown
-## Data needed: [what]
+## Нужны данные: [что]
 
-To continue I need:
+Для продолжения мне нужно:
 
-1. **[What to do]** — [brief instruction or link]
-2. **[What to give me]** — [which variables/keys]
+1. **[Что сделать]** — [краткая инструкция или ссылка]
+2. **[Что передать мне]** — [какие переменные/ключи]
 
-Once received — I'll add to `.env` and continue.
+После получения — добавлю в `.env` и продолжу.
 ```
 
-> ❌ Don't write code with `YOUR_API_KEY_HERE` placeholders and continue
-> ✅ Stop, request data, wait, then continue
+> ❌ Не писать код с заглушками `YOUR_API_KEY_HERE` и продолжать
+> ✅ Остановиться, запросить данные, дождаться, затем продолжить
 
 ---
 
-**Version:** 1.0 (adapted from Cursor rules v2.3)
-**Date:** 2026-03-29
-**Source:** `.cursor/rules/00-core.mdc` through `21-project-onboarding.mdc`
+**Версия:** 2.0 (расширено из Cursor rules v2.3)
+**Дата:** 2026-03-30
+**Источник:** `.cursor/rules/00-core.mdc` — `21-project-onboarding.mdc`
