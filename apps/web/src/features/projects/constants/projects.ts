@@ -54,10 +54,48 @@ export const PRODUCT_STATUSES = [
   { value: 'LOST', label: 'Lost', variant: 'red' as StatusVariant, color: 'bg-red-500' },
 ] as const;
 
+export const EXTENSION_STATUSES = [
+  { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
+  {
+    value: 'DEVELOPMENT',
+    label: 'Development',
+    variant: 'purple' as StatusVariant,
+    color: 'bg-purple-500',
+  },
+  { value: 'QA', label: 'QA', variant: 'amber' as StatusVariant, color: 'bg-amber-500' },
+  {
+    value: 'TRANSFER',
+    label: 'Transfer',
+    variant: 'orange' as StatusVariant,
+    color: 'bg-orange-500',
+  },
+  { value: 'DONE', label: 'Done', variant: 'green' as StatusVariant, color: 'bg-green-500' },
+  { value: 'LOST', label: 'Lost', variant: 'red' as StatusVariant, color: 'bg-red-500' },
+] as const;
+
+export const EXTENSION_SIZES = [
+  { value: 'MICRO', label: 'Micro', variant: 'gray' as StatusVariant },
+  { value: 'SMALL', label: 'Small', variant: 'blue' as StatusVariant },
+  { value: 'MEDIUM', label: 'Medium', variant: 'purple' as StatusVariant },
+  { value: 'LARGE', label: 'Large', variant: 'orange' as StatusVariant },
+] as const;
+
 export function getProjectType(value: string) {
   return PROJECT_TYPES.find((t) => t.value === value);
 }
 
+export function getProductType(value: string) {
+  return PRODUCT_TYPES.find((t) => t.value === value);
+}
+
 export function getProductStatus(value: string) {
   return PRODUCT_STATUSES.find((s) => s.value === value);
+}
+
+export function getExtensionStatus(value: string) {
+  return EXTENSION_STATUSES.find((s) => s.value === value);
+}
+
+export function getExtensionSize(value: string) {
+  return EXTENSION_SIZES.find((s) => s.value === value);
 }

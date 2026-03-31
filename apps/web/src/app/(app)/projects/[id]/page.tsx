@@ -8,6 +8,8 @@ import {
   FolderKanban,
   LayoutDashboard,
   ListChecks,
+  Package,
+  Puzzle,
   Ticket,
   KeyRound,
   DollarSign,
@@ -20,12 +22,18 @@ import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { getProjectType } from '@/features/projects/constants/projects';
 import { OverviewTab } from '@/features/projects/components/tabs/OverviewTab';
 import { TasksTab } from '@/features/projects/components/tabs/TasksTab';
+import { ProductsTab } from '@/features/projects/components/tabs/ProductsTab';
+import { ExtensionsTab } from '@/features/projects/components/tabs/ExtensionsTab';
 import { SupportTab } from '@/features/projects/components/tabs/SupportTab';
 import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
+import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
+import { CreateExtensionDialog } from '@/features/projects/components/CreateExtensionDialog';
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { value: 'products', label: 'Products', icon: Package },
+  { value: 'extensions', label: 'Extensions', icon: Puzzle },
   { value: 'tasks', label: 'Tasks', icon: ListChecks },
   { value: 'support', label: 'Support', icon: Ticket },
   { value: 'credentials', label: 'Credentials', icon: KeyRound },
@@ -38,6 +46,10 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<FullProject | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showCreateProduct, setShowCreateProduct] = useState(false);
+  const [showCreateExtension, setShowCreateExtension] = useState(false);
+  const [productsKey, setProductsKey] = useState(0);
+  const [extensionsKey, setExtensionsKey] = useState(0);
 
   const fetchProject = useCallback(async () => {
     if (!params.id) return;
@@ -114,6 +126,22 @@ export default function ProjectDetailPage() {
           <OverviewTab project={project} />
         </TabsContent>
 
+        <TabsContent value="products" className="mt-5">
+          <ProductsTab
+            key={productsKey}
+            projectId={project.id}
+            onCreateClick={() => setShowCreateProduct(true)}
+          />
+        </TabsContent>
+
+        <TabsContent value="extensions" className="mt-5">
+          <ExtensionsTab
+            key={extensionsKey}
+            projectId={project.id}
+            onCreateClick={() => setShowCreateExtension(true)}
+          />
+        </TabsContent>
+
         <TabsContent value="tasks" className="mt-5">
           <TasksTab projectId={project.id} />
         </TabsContent>
@@ -135,6 +163,20 @@ export default function ProjectDetailPage() {
           />
         </TabsContent>
       </Tabs>
+
+      <CreateProductDialog
+        open={showCreateProduct}
+        onOpenChange={setShowCreateProduct}
+        onCreated={() => setProductsKey((k) => k + 1)}
+        projectId={project.id}
+      />
+
+      <CreateExtensionDialog
+        open={showCreateExtension}
+        onOpenChange={setShowCreateExtension}
+        onCreated={() => setExtensionsKey((k) => k + 1)}
+        projectId={project.id}
+      />
     </div>
   );
 }
