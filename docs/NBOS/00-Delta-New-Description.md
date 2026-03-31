@@ -149,6 +149,17 @@
 
 ---
 
-**Версия:** 1.0  
+## 5. Открытые вопросы и решения после обсуждения с владельцем (2026-03-31)
+
+Актуальный список **принятых формулировок** и **намеренно открытых** пунктов (Creating Product+Extension, бонусы, Extension MVP-связь с Product, MAINTENANCE, доска maintenance vs сущность БД, связь с Subscription):
+
+- **`New-Description/00-Open-Questions-and-Decisions.md`**
+- **Q1 закрыт (2026-03-31):** сущность **Product** нужна; **Project Hub** — продукто-центричная навигация — см. **`New-Description/Project-Hub-Product-Centric-Navigation.md`**, в `docs` — § 0 в `05-UI-Specifications/03-Project-Hub-Pages.md`.
+
+Детальные правила полей **Deal Type = MAINTENANCE** уточнять в `docs/` после стабилизации экранов Product.
+
+---
+
+**Версия:** 1.2  
 **Дата:** 2026-03-31  
 **Проходов сверки:** 2+ (общая карта этапа 1 + детальное чтение CRM/BL/Finance/Hub/Credentials + точечный grep)
