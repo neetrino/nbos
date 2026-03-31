@@ -137,8 +137,9 @@
 5. **Бонусы продаж:** правило **80/20** и два обязательных поля — вынести в `03-Bonus-Payroll-Logic` и Deal Card (или зафиксировать отказ от модели).
 6. **Remember Client Payments** — новый подмодуль или раздел Finance + связь с Credentials.
 7. **Subscription:** пауза при задержке; доска всех подписок — проверить `04-Subscription-Billing-Logic` и UI.
-8. **Project Hub / Creating / Scrum** — выровнять термины и табы с длинным описанием из `Project Hub & Creating.md`.
-9. **Переименование Product Type → Service Type** в UI — опционально; в доках допустимо оставить «Product Type» при явной отсылке к § 1.1.
+8. ~~**Project Hub / Creating / Scrum**~~ — целевая модель навигации и сущность **Product** зафиксированы: `New-Description/Project-Hub-Product-Centric-Navigation.md`, § 0 в `05-UI-Specifications/03-Project-Hub-Pages.md`.
+
+Детальное выравнивание с `Project Hub & Creating.md` (табы, скрам) — в бэклоге при приведении модулей к § 0. 9. **Переименование Product Type → Service Type** в UI — опционально; в доках допустимо оставить «Product Type» при явной отсылке к § 1.1.
 
 ---
 
@@ -160,6 +161,6 @@
 
 ---
 
-**Версия:** 1.2  
+**Версия:** 1.3  
 **Дата:** 2026-03-31  
 **Проходов сверки:** 2+ (общая карта этапа 1 + детальное чтение CRM/BL/Finance/Hub/Credentials + точечный grep)
