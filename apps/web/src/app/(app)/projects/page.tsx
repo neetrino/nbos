@@ -85,7 +85,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Projects Hub" description={`${projects.length} projects total`}>
+      <PageHeader title="Project Hub" description={`${projects.length} projects total`}>
         <Button variant="outline" size="icon" onClick={fetchProjects}>
           <RefreshCcw size={16} />
         </Button>

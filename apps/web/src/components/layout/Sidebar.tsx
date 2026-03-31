@@ -48,7 +48,7 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-    label: 'Projects',
+    label: 'Project Hub',
     href: '/projects',
     icon: <FolderKanban size={20} />,
     permission: { module: 'PROJECTS', action: 'VIEW' },
@@ -142,12 +142,22 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+function getPathFromHref(href: string): string {
+  return href.split('?')[0] ?? href;
+}
+
+function isChildRouteActive(pathname: string, childHref: string): boolean {
+  const path = getPathFromHref(childHref);
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { can, isLoading: permsLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  /** At most one section with children is expanded (accordion). */
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const visibleItems = permsLoading
     ? NAV_ITEMS
@@ -157,21 +167,19 @@ export function Sidebar() {
       });
 
   useEffect(() => {
-    if (pathname.startsWith('/settings')) {
-      setExpandedItems((prev) => new Set(prev).add('Settings'));
-    }
+    const match = NAV_ITEMS.find(
+      (item) =>
+        item.children && item.children.some((child) => isChildRouteActive(pathname, child.href)),
+    );
+    setExpandedSection(match?.label ?? null);
   }, [pathname]);
 
   const toggleExpanded = (label: string) => {
-    setExpandedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(label)) {
-        next.delete(label);
-      } else {
-        next.add(label);
-      }
-      return next;
-    });
+    setExpandedSection((current) => (current === label ? null : label));
+  };
+
+  const expandOnly = (label: string) => {
+    setExpandedSection(label);
   };
 
   const isActive = (href: string) => pathname.startsWith(href);
@@ -218,50 +226,88 @@ export function Sidebar() {
         <ul className="space-y-1">
           {visibleItems.map((item) => {
             const active = isActive(item.href);
-            const expanded = expandedItems.has(item.label);
+            const expanded = expandedSection === item.label;
 
             return (
               <li key={item.label}>
                 {item.children ? (
                   <>
-                    <button
-                      onClick={() => toggleExpanded(item.label)}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                        active
-                          ? 'bg-sidebar-accent text-sidebar-foreground'
-                          : 'text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground',
-                        collapsed && 'justify-center px-2',
-                      )}
-                    >
-                      {item.icon}
-                      {!collapsed && (
-                        <>
-                          <span>{item.label}</span>
+                    {collapsed ? (
+                      <Link
+                        href={item.children[0].href}
+                        onClick={() => expandOnly(item.label)}
+                        title={item.label}
+                        className={cn(
+                          'flex w-full items-center justify-center rounded-lg px-2 py-2 text-sm font-medium transition-colors',
+                          active
+                            ? 'bg-sidebar-accent text-sidebar-foreground'
+                            : 'text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground',
+                        )}
+                      >
+                        {item.icon}
+                      </Link>
+                    ) : (
+                      <div
+                        className={cn(
+                          'flex w-full items-stretch gap-0 overflow-hidden rounded-lg',
+                          active && 'bg-sidebar-accent text-sidebar-foreground',
+                        )}
+                      >
+                        <Link
+                          href={item.children[0].href}
+                          onClick={() => expandOnly(item.label)}
+                          className={cn(
+                            'flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-sm font-medium transition-colors',
+                            active
+                              ? 'text-sidebar-foreground'
+                              : 'text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground',
+                          )}
+                        >
+                          {item.icon}
+                          <span className="truncate">{item.label}</span>
+                        </Link>
+                        <button
+                          type="button"
+                          aria-expanded={expanded}
+                          aria-label={expanded ? 'Collapse submenu' : 'Expand submenu'}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleExpanded(item.label);
+                          }}
+                          className={cn(
+                            'text-sidebar-muted hover:text-sidebar-foreground flex shrink-0 items-center px-2 transition-colors',
+                            active && 'text-sidebar-foreground',
+                          )}
+                        >
                           <ChevronLeft
                             size={14}
-                            className={cn('ml-auto transition-transform', expanded && '-rotate-90')}
+                            className={cn('transition-transform', expanded && '-rotate-90')}
                           />
-                        </>
-                      )}
-                    </button>
+                        </button>
+                      </div>
+                    )}
                     {!collapsed && expanded && (
                       <ul className="mt-1 ml-8 space-y-0.5">
-                        {item.children.map((child) => (
-                          <li key={child.href}>
-                            <Link
-                              href={child.href}
-                              className={cn(
-                                'block rounded-md px-3 py-1.5 text-sm transition-colors',
-                                pathname === child.href
-                                  ? 'text-sidebar-foreground font-medium'
-                                  : 'text-sidebar-muted hover:text-sidebar-foreground',
-                              )}
-                            >
-                              {child.label}
-                            </Link>
-                          </li>
-                        ))}
+                        {item.children.map((child) => {
+                          const childPath = getPathFromHref(child.href);
+                          const childActive =
+                            pathname === childPath || pathname.startsWith(`${childPath}/`);
+                          return (
+                            <li key={child.href}>
+                              <Link
+                                href={child.href}
+                                className={cn(
+                                  'block rounded-md px-3 py-1.5 text-sm transition-colors',
+                                  childActive
+                                    ? 'text-sidebar-foreground font-medium'
+                                    : 'text-sidebar-muted hover:text-sidebar-foreground',
+                                )}
+                              >
+                                {child.label}
+                              </Link>
+                            </li>
+                          );
+                        })}
                       </ul>
                     )}
                   </>
