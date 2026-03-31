@@ -99,6 +99,25 @@ git show 02e2575~1:apps/web/src/features/projects/components/tabs/ProductsTab.ts
 
 ---
 
+---
+
+## 6. Статус восстановления
+
+> **Фаза B выполнена** (коммит `eb32366`, 2026-03-31).
+
+Подход: «restoration forward» — **без** `git revert`.
+
+- Модели `Product` и `Extension` восстановлены в `schema.prisma`
+- DealTypeEnum / OrderTypeEnum приведены к канону (4 типа)
+- Связи Order ↔ Product/Extension, Task → Product/Extension, SupportTicket → Product
+- Seeds, constants, API, Web — обновлены
+- Build проходит без ошибок
+
+**Следующий шаг:** Фаза C — API модули products/extensions в NestJS.
+
+---
+
 **Связь:** общий указатель документации — [00-Documentation-Hub.md](./00-Documentation-Hub.md).
 
-**Версия:** 1.1
+**Версия:** 1.2  
+**Дата обновления:** 2026-03-31

@@ -295,11 +295,55 @@
 
 ---
 
-## Следующие шаги (Фаза 5)
+### Фаза B — Восстановление Product & Extension (Data Model)
 
-1. **Миграция из Bitrix24** → импорт данных (~2000 записей)
-2. **Маппинг полей** → Bitrix → NBOS
-3. **Параллельная работа** → оба инструмента одновременно
+> Восстановление сущностей Product и Extension по Core Entities
+> (`03-Core-Entities-and-Data-Model.md`), удалённых в коммите `02e2575`.
+> Подход: «restoration forward» — новая миграция, не git revert.
+
+#### B.1 — Prisma Schema ✅ (eb32366, 2026-03-31)
+
+- [x] Модель `Product` (projectId, name, productType, status, pmId,
+      deadline, description, checklistTemplateId)
+- [x] Модель `Extension` (projectId, productId?, name, size, status,
+      assignedTo, description)
+- [x] Enums: ProductTypeEnum, ProductStatusEnum, ExtensionSizeEnum,
+      ExtensionStatusEnum
+- [x] DealTypeEnum: `NEW_CLIENT→PRODUCT`, `UPSELL→OUTSOURCE`,
+      добавлен `MAINTENANCE` (канон 4 типа)
+- [x] OrderTypeEnum: `SUBSCRIPTION→MAINTENANCE` + `OUTSOURCE`
+- [x] Order: FK `productId` (unique), `extensionId` (unique)
+- [x] Task: опциональные FK `productId`, `extensionId`
+      (параллельно с TaskLink)
+- [x] SupportTicket: FK `productId`
+- [x] Employee: relations `productsManaging`, `extensionsAssigned`
+- [x] Project: relations `products[]`, `extensions[]`
+- [x] Seeds и constants обновлены
+- [x] Build: 0 TS ошибок, pnpm build проходит
+
+#### B.2 — API модули Products / Extensions ⏳
+
+- [ ] Products CRUD (NestJS модуль) — Фаза C
+- [ ] Extensions CRUD (NestJS модуль) — Фаза C
+
+#### B.3 — Frontend Product Hub ⏳
+
+- [ ] Product-centric навигация в Project — Фаза D
+- [ ] Products / Extensions UI — Фаза D
+
+---
+
+## Следующие шаги
+
+**Ближайшее (Фаза C):**
+
+1. Создать Prisma миграцию (`prisma migrate dev`)
+2. Восстановить API модули products / extensions в NestJS
+3. Привязка задач к Product/Extension через API
+
+**Далее (Фаза D):** 4. Frontend: Product Hub навигация в Project 5. Products / Extensions страницы
+
+**Потом (Фаза 5):** 6. Миграция из Bitrix24 → импорт данных (~2000 записей) 7. Маппинг полей Bitrix → NBOS 8. Параллельная работа обоих инструментов
 
 ---
 
