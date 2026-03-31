@@ -8,9 +8,35 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 async function main() {
   const prisma = createPrismaClient() as InstanceType<PrismaClientType>;
 
+  console.log('Cleaning existing data...');
+  await prisma.auditLog.deleteMany();
+  await prisma.taskLink.deleteMany();
+  await prisma.taskChecklistItem.deleteMany();
+  await prisma.taskChecklist.deleteMany();
+  await prisma.bonusEntry.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.invoice.deleteMany();
+  await prisma.subscription.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.expense.deleteMany();
+  await prisma.credential.deleteMany();
+  await prisma.domain.deleteMany();
+  await prisma.supportTicket.deleteMany();
+  await prisma.task.deleteMany();
+  await prisma.extension.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.deal.deleteMany();
+  await prisma.lead.deleteMany();
+  await prisma.project.deleteMany();
+  await prisma.partner.deleteMany();
+  await prisma.company.deleteMany();
+  await prisma.contact.deleteMany();
+  await prisma.systemListOption.deleteMany();
+  console.log('  ✓ Cleaned');
+
   console.log('Seeding database...');
 
-  // Employees (roleId references roles seeded in migration)
+  // Employees (roleId references roles seeded in migration — NOT deleted)
   const ceo = await prisma.employee.upsert({
     where: { email: 'suren@neetrino.com' },
     update: {},
@@ -412,7 +438,17 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Extensions (3)');
+  await prisma.extension.create({
+    data: {
+      projectId: project2.id,
+      productId: '00000000-0000-0000-0000-000000000022',
+      name: 'Offline mode',
+      size: 'LARGE',
+      status: 'NEW',
+    },
+  });
+
+  console.log('  ✓ Extensions (4)');
 
   // Leads
   await prisma.lead.upsert({
@@ -528,6 +564,11 @@ async function main() {
       paymentType: 'CLASSIC',
       sellerId: seller.id,
       source: 'MARKETING',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      pmId: pm.id,
+      deadline: new Date('2026-06-15'),
+      projectId: project1.id,
     },
   });
 
@@ -543,6 +584,12 @@ async function main() {
       paymentType: 'CLASSIC',
       sellerId: seller.id,
       source: 'MARKETING',
+      productCategory: 'CODE',
+      productType: 'MOBILE_APP',
+      pmId: pm.id,
+      deadline: new Date('2026-08-01'),
+      companyId: company2.id,
+      projectId: project2.id,
     },
   });
 
@@ -557,6 +604,8 @@ async function main() {
       amount: 8000000,
       paymentType: 'SUBSCRIPTION',
       sellerId: ceo.id,
+      productCategory: 'CODE',
+      productType: 'CRM',
     },
   });
 
@@ -572,6 +621,9 @@ async function main() {
       paymentType: 'CLASSIC',
       sellerId: seller.id,
       source: 'MARKETING',
+      productCategory: 'CODE',
+      productType: 'WEB_APP',
+      companyId: company5.id,
     },
   });
 
@@ -587,10 +639,42 @@ async function main() {
       paymentType: 'CLASSIC',
       sellerId: seller.id,
       source: 'PARTNER',
+      existingProductId: '00000000-0000-0000-0000-000000000020',
+      companyId: company6.id,
     },
   });
 
-  console.log('  ✓ Deals (5)');
+  await prisma.deal.upsert({
+    where: { code: 'D-2026-0006' },
+    update: {},
+    create: {
+      code: 'D-2026-0006',
+      contactId: contact3.id,
+      type: 'MAINTENANCE',
+      status: 'DEPOSIT_AND_CONTRACT',
+      amount: 150000,
+      paymentType: 'SUBSCRIPTION',
+      sellerId: ceo.id,
+    },
+  });
+
+  await prisma.deal.upsert({
+    where: { code: 'D-2026-0007' },
+    update: {},
+    create: {
+      code: 'D-2026-0007',
+      contactId: contact5.id,
+      type: 'OUTSOURCE',
+      status: 'GET_ANSWER',
+      amount: 400000,
+      paymentType: 'CLASSIC',
+      sellerId: seller.id,
+      productCategory: 'MARKETING',
+      productType: 'SEO',
+    },
+  });
+
+  console.log('  ✓ Deals (7)');
 
   // Orders
   const order1 = await prisma.order.upsert({
@@ -639,7 +723,21 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Orders (3)');
+  await prisma.order.upsert({
+    where: { code: 'ORD-2026-0004' },
+    update: {},
+    create: {
+      code: 'ORD-2026-0004',
+      projectId: project1.id,
+      type: 'MAINTENANCE',
+      paymentType: 'SUBSCRIPTION',
+      totalAmount: 150000,
+      currency: 'AMD',
+      status: 'ACTIVE',
+    },
+  });
+
+  console.log('  ✓ Orders (4)');
 
   // Invoices
   await prisma.invoice.upsert({
@@ -745,6 +843,7 @@ async function main() {
       assigneeId: designer.id,
       status: 'DONE',
       priority: 'HIGH',
+      productId: '00000000-0000-0000-0000-000000000020',
     },
   });
   await prisma.taskLink.upsert({
@@ -784,6 +883,7 @@ async function main() {
       assigneeId: dev.id,
       status: 'IN_PROGRESS',
       priority: 'CRITICAL',
+      productId: '00000000-0000-0000-0000-000000000020',
     },
   });
   await prisma.taskLink.upsert({
@@ -832,6 +932,7 @@ async function main() {
       assigneeId: designer.id,
       status: 'IN_PROGRESS',
       priority: 'HIGH',
+      productId: '00000000-0000-0000-0000-000000000022',
     },
   });
   await prisma.taskLink.upsert({
@@ -877,6 +978,7 @@ async function main() {
       title: 'Contact form not sending emails',
       description: 'Users report that the contact form submissions are not being delivered.',
       assignedTo: dev.id,
+      productId: '00000000-0000-0000-0000-000000000020',
     },
   });
 
