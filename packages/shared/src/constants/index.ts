@@ -15,9 +15,6 @@ export const DEAL_STATUSES = [
   'SEND_OFFER',
   'GET_ANSWER',
   'DEPOSIT_AND_CONTRACT',
-  'CREATING',
-  'GET_FINAL_PAY',
-  'MAINTENANCE_OFFER',
   'FAILED',
   'WON',
 ] as const;

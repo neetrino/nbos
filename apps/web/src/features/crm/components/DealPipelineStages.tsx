@@ -11,9 +11,6 @@ const STAGE_HEX: Record<string, string> = {
   SEND_OFFER: '#7c3aed',
   GET_ANSWER: '#8b5cf6',
   DEPOSIT_AND_CONTRACT: '#a855f7',
-  CREATING: '#d946ef',
-  GET_FINAL_PAY: '#eab308',
-  MAINTENANCE_OFFER: '#14b8a6',
   FAILED: '#ef4444',
   WON: '#22c55e',
 };

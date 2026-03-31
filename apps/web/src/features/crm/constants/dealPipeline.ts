@@ -60,27 +60,6 @@ export const DEAL_STAGES: DealStage[] = [
     color: 'bg-amber-500',
   },
   {
-    key: 'CREATING',
-    label: 'Creating',
-    shortLabel: 'Creating',
-    variant: 'orange',
-    color: 'bg-orange-500',
-  },
-  {
-    key: 'GET_FINAL_PAY',
-    label: 'Get Final Pay',
-    shortLabel: 'Final Pay',
-    variant: 'emerald',
-    color: 'bg-emerald-500',
-  },
-  {
-    key: 'MAINTENANCE_OFFER',
-    label: 'Maintenance Offer',
-    shortLabel: 'Maintenance',
-    variant: 'teal',
-    color: 'bg-teal-500',
-  },
-  {
     key: 'FAILED',
     label: 'Failed',
     shortLabel: 'Failed',
