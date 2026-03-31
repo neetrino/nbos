@@ -38,26 +38,46 @@
 - [x] Навигация: /projects → /projects/[id] → /projects/[id]/products/[productId]
 - [x] Build: 0 ошибок, 296 тестов проходят
 
-## Фаза E — Регрессия и чистка ← ТЕКУЩАЯ
+## Фаза E — ProductCategory + каскадный выбор ✅
 
-- [ ] Удалить deprecated поля Deal (pmId, deadline, productType) из схемы и кода
-- [ ] Обновить документацию (PROGRESS.md, roadmap, Delta)
-- [ ] Build + тесты: финальная проверка
-- [ ] Prisma migrate dev — создать миграцию перед деплоем
+> Коммит: `d85dacc` (2026-03-31)
+
+- [x] ProductCategoryEnum (CODE, WORDPRESS, SHOPIFY, MARKETING, OTHER) в Prisma schema
+- [x] Обновлённый ProductTypeEnum (16 значений: +BUSINESS_CARD_WEBSITE, COMPANY_WEBSITE, BRANDING, DESIGN, PPC)
+- [x] Каскадный маппинг PRODUCT_TYPES_BY_CATEGORY (shared + frontend)
+- [x] productCategory на Deal (optional) и Product (required)
+- [x] Каскадный UI: DealGeneralTab, CreateDealDialog, CreateProductDialog
+- [x] Обновлены auto-tasks templates, seeds, system lists
+- [x] Prisma migration создана (20260331180000_add_product_category_cascade)
+- [x] Build: 0 ошибок, 296 тестов проходят
+
+## Фаза F — List-Driven Behavior ← ТЕКУЩАЯ
+
+> Поведение системы на основе значений списков (DealType, ProductCategory, ProductType)
+
+### F.1 — Deal Won → Auto-create Product
+
+- [ ] При переходе Deal в WON: автоматически создать Product из Deal
+- [ ] Копирование полей: productCategory, productType, pmId, deadline → Product
+- [ ] Автоматическое создание Project (если нет) и привязка
+- [ ] Генерация авто-задач для Product по productType
+
+### F.2 — Extension Deal → Product Link
+
+- [ ] EXTENSION deal: UI для выбора существующего Product
+- [ ] При Won: создать Extension привязанный к выбранному Product
+- [ ] API: поле existingProductId на Deal
+
+### F.3 — Stage Gate Required Fields
+
+- [ ] Обязательные поля при переходе стадий Deal (зависят от DealType)
+- [ ] PRODUCT deal: productCategory + productType обязательны при SEND_OFFER
+- [ ] PM + Deadline обязательны при DEPOSIT_AND_CONTRACT
+- [ ] Amount + PaymentType обязательны при SEND_OFFER
 
 ---
 
-## Бэклог — List-Driven Behavior (поведенческое влияние списков)
-
-> См. docs/NBOS/01-Platform-Overview/03-Core-Entities-and-Data-Model.md § 4
-
-### Deal Type → поведение
-
-- [ ] Stage gates: разные обязательные поля при переходе стадий для разных DealType
-- [ ] PRODUCT → показывать Product Type, при Won создавать Product
-- [ ] EXTENSION → показывать связку с существующим Product, при Won создавать Extension
-- [ ] MAINTENANCE → специфичные поля (будущее)
-- [ ] OUTSOURCE → специфичные поля (будущее)
+## Бэклог
 
 ### Product Type → обязательные поля и автоматика
 
@@ -75,6 +95,13 @@
 
 - [ ] SUBSCRIPTION → авто-генерация Invoice, контроль пауз
 - [ ] CLASSIC → минимум первого инвойса (правило 10%)
+
+### Фаза 5 — Миграция Bitrix
+
+- [ ] Импорт данных из Bitrix24 (~2000 записей)
+- [ ] Маппинг полей Bitrix → NBOS
+- [ ] Параллельная работа обоих инструментов
+- [ ] Переключение
 
 ## Открытые вопросы (для обсуждения по мере продвижения)
 

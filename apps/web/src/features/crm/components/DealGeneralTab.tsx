@@ -39,6 +39,7 @@ import type { Deal } from '@/lib/api/deals';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
 import { projectsApi } from '@/lib/api/projects';
 import { partnersApi } from '@/lib/api/partners';
+import { productsApi } from '@/lib/api/products';
 import { invoicesApi, ordersApi } from '@/lib/api/finance';
 import { tasksApi } from '@/lib/api/tasks';
 import { systemListsApi } from '@/lib/api/systemLists';
@@ -154,6 +155,15 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
   const searchPartners = useCallback(async (query: string) => {
     const data = await partnersApi.getAll({ pageSize: 5, search: query || undefined });
     return data.items.map((p) => ({ value: p.id, label: p.name }));
+  }, []);
+
+  const searchProducts = useCallback(async (query: string) => {
+    const data = await productsApi.getAll({ pageSize: 10, search: query || undefined });
+    return data.items.map((p) => ({
+      value: p.id,
+      label: p.name,
+      subtitle: p.productType,
+    }));
   }, []);
 
   const searchCompanies = useCallback(async (query: string) => {
@@ -414,14 +424,20 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
             )}
 
             {isExtension && (
-              <InlineField
-                label="Extend Deal"
-                value={null}
-                type="select"
-                options={[]}
-                placeholder="Select deal to extend..."
+              <SearchField
+                label="Existing Product"
+                value={deal.existingProductId ?? null}
+                displayValue={
+                  deal.existingProduct ? (
+                    <span className="text-foreground text-sm font-medium">
+                      {deal.existingProduct.name}
+                    </span>
+                  ) : undefined
+                }
+                placeholder="Search products..."
                 icon={<Layers size={12} />}
-                onSave={() => Promise.resolve()}
+                onSearch={searchProducts}
+                onSave={(v) => saveField('existingProductId', v)}
               />
             )}
 

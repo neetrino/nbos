@@ -228,6 +228,7 @@ export const DealScalarFieldEnum = {
   productType: 'productType',
   pmId: 'pmId',
   deadline: 'deadline',
+  existingProductId: 'existingProductId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;

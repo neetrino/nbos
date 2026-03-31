@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { DealsService } from './deals.service';
+import { DealWonHandler } from './deal-won.handler';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
 
@@ -9,7 +10,8 @@ describe('DealsService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new DealsService(prisma as never);
+    const wonHandler = new DealWonHandler(prisma as never);
+    service = new DealsService(prisma as never, wonHandler);
   });
 
   describe('findAll', () => {
@@ -61,9 +63,55 @@ describe('DealsService', () => {
   });
 
   describe('updateStatus', () => {
-    it('updates deal status', async () => {
-      prisma.deal.findUnique.mockResolvedValue({ id: '1' });
-      prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON' });
+    it('updates deal status for early stage (no gate)', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        type: 'PRODUCT',
+        amount: null,
+        paymentType: null,
+        productCategory: null,
+        productType: null,
+        pmId: null,
+        deadline: null,
+        existingProductId: null,
+      });
+      prisma.deal.update.mockResolvedValue({ id: '1', status: 'MEETING' });
+      const result = await service.updateStatus('1', 'MEETING');
+      expect(result.status).toBe('MEETING');
+    });
+
+    it('blocks WON when required fields missing', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        type: 'PRODUCT',
+        amount: null,
+        paymentType: null,
+        productCategory: null,
+        productType: null,
+        pmId: null,
+        deadline: null,
+        existingProductId: null,
+      });
+      await expect(service.updateStatus('1', 'WON')).rejects.toThrow('missing required fields');
+    });
+
+    it('allows WON when all required fields present', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        type: 'PRODUCT',
+        amount: 5000,
+        paymentType: 'CLASSIC',
+        productCategory: 'CODE',
+        productType: 'COMPANY_WEBSITE',
+        pmId: 'pm-1',
+        deadline: new Date(),
+        existingProductId: null,
+      });
+      prisma.deal.update.mockResolvedValue({
+        id: '1',
+        status: 'WON',
+        type: 'PRODUCT',
+      });
       const result = await service.updateStatus('1', 'WON');
       expect(result.status).toBe('WON');
     });

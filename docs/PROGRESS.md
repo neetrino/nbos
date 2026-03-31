@@ -1,8 +1,8 @@
 # Ход разработки NBOS Platform
 
 **Проект.** NBOS Platform  
-**Текущая фаза.** Фаза 4 — Расширенное  
-**Общий прогресс.** 85%
+**Текущая фаза.** Фаза F — List-Driven Behavior  
+**Общий прогресс.** 90%
 
 **Последнее обновление.** 2026-03-31
 
@@ -321,29 +321,65 @@
 - [x] Seeds и constants обновлены
 - [x] Build: 0 TS ошибок, pnpm build проходит
 
-#### B.2 — API модули Products / Extensions ⏳
+#### B.2 — API модули Products / Extensions ✅ (Фаза C)
 
-- [ ] Products CRUD (NestJS модуль) — Фаза C
-- [ ] Extensions CRUD (NestJS модуль) — Фаза C
+> Коммит: `acde752` (2026-03-31)
 
-#### B.3 — Frontend Product Hub ⏳
+- [x] Products CRUD (NestJS модуль): controller, service, DTO, тесты
+- [x] Extensions CRUD (NestJS модуль): controller, service, DTO, тесты
+- [x] Stage gate валидация Product и Extension
+- [x] Авто-задачи при создании Product (шаблоны по ProductType)
 
-- [ ] Product-centric навигация в Project — Фаза D
-- [ ] Products / Extensions UI — Фаза D
+#### B.3 — Frontend Product Hub ✅ (Фаза D)
+
+> Коммит: `959761d` (2026-03-31)
+
+- [x] API клиенты Products / Extensions (lib/api)
+- [x] Products tab, Extensions tab в Project page
+- [x] Create Product / Extension диалоги
+- [x] Product detail page (Overview, Tasks, Extensions, Tickets)
+- [x] Stage Gate панель, навигация
+
+---
+
+### Фаза E — ProductCategory + каскадный выбор ✅
+
+> Коммит: `d85dacc` (2026-03-31)
+> Миграция: `20260331180000_add_product_category_cascade`
+
+- [x] `ProductCategoryEnum` (CODE, WORDPRESS, SHOPIFY, MARKETING, OTHER) — критичное бизнес-поле
+- [x] Обновлённый `ProductTypeEnum` (16 значений), каскадная фильтрация по категории
+- [x] `PRODUCT_TYPES_BY_CATEGORY` маппинг (shared + frontend)
+- [x] Поле `productCategory` на Deal (optional) и Product (required)
+- [x] Каскадный UI: Deal Type → ProductCategory → ProductType
+- [x] Обновлены auto-tasks, seeds, system lists, API clients
+- [x] Все 296 тестов проходят, build OK
+
+---
+
+### Фаза F — List-Driven Behavior ← ТЕКУЩАЯ
+
+> Поведение системы на основе значений списков
+
+- [ ] Deal Won → автоматическое создание Product (копирование полей из Deal)
+- [ ] EXTENSION deal → связка с существующим Product
+- [ ] Stage gate required fields (обязательные поля по стадиям/типам)
 
 ---
 
 ## Следующие шаги
 
-**Ближайшее (Фаза C):**
+**Ближайшее (Фаза F — List-Driven Behavior):**
 
-1. Создать Prisma миграцию (`prisma migrate dev`)
-2. Восстановить API модули products / extensions в NestJS
-3. Привязка задач к Product/Extension через API
+1. Deal Won → Auto-create Product (productCategory, productType, pmId, deadline)
+2. Extension Deal → Product Link UI + API
+3. Stage gate required fields по DealType
 
-**Далее (Фаза D):** 4. Frontend: Product Hub навигация в Project 5. Products / Extensions страницы
+**Далее (Фаза 5 — Миграция Bitrix):**
 
-**Потом (Фаза 5):** 6. Миграция из Bitrix24 → импорт данных (~2000 записей) 7. Маппинг полей Bitrix → NBOS 8. Параллельная работа обоих инструментов
+4. Импорт данных из Bitrix24 (~2000 записей)
+5. Маппинг полей Bitrix → NBOS
+6. Параллельная работа, переключение
 
 ---
 

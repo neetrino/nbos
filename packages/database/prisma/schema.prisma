@@ -170,6 +170,7 @@ model Product {
   extensions Extension[]
   tasks      Task[]
   tickets    SupportTicket[]
+  dealsLinked Deal[]         @relation("DealExistingProduct")
 
   @@map("products")
 }
@@ -293,21 +294,23 @@ model Deal {
   sourceDetail     String?           @map("source_detail")
   sourcePartnerId  String?           @map("source_partner_id")
   sourceContactId  String?           @map("source_contact_id")
-  notes            String?
-  productCategory  ProductCategoryEnum? @map("product_category")
-  productType      String?              @map("product_type")
-  pmId             String?              @map("pm_id")
-  deadline         DateTime?
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
+  notes              String?
+  productCategory    ProductCategoryEnum? @map("product_category")
+  productType        String?              @map("product_type")
+  pmId               String?              @map("pm_id")
+  deadline           DateTime?
+  existingProductId  String?              @map("existing_product_id")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
 
-  lead          Lead?    @relation(fields: [leadId], references: [id])
-  contact       Contact  @relation(fields: [contactId], references: [id])
-  company       Company? @relation(fields: [companyId], references: [id])
-  seller        Employee @relation("DealSeller", fields: [sellerId], references: [id])
-  pm            Employee? @relation("DealPM", fields: [pmId], references: [id])
-  sourcePartner Partner? @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
-  sourceContact Contact? @relation("DealSourceContact", fields: [sourceContactId], references: [id])
+  lead            Lead?    @relation(fields: [leadId], references: [id])
+  contact         Contact  @relation(fields: [contactId], references: [id])
+  company         Company? @relation(fields: [companyId], references: [id])
+  seller          Employee @relation("DealSeller", fields: [sellerId], references: [id])
+  pm              Employee? @relation("DealPM", fields: [pmId], references: [id])
+  existingProduct Product? @relation("DealExistingProduct", fields: [existingProductId], references: [id])
+  sourcePartner   Partner? @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
+  sourceContact   Contact? @relation("DealSourceContact", fields: [sourceContactId], references: [id])
   orders        Order[]
 
   @@map("deals")

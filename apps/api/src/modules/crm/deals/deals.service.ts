@@ -1,6 +1,8 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { DealWonHandler } from './deal-won.handler';
+import { validateDealStageGate } from './deal-stage-gate';
 
 interface CreateDealDto {
   name?: string;
@@ -19,6 +21,7 @@ interface CreateDealDto {
   productType?: string | null;
   pmId?: string | null;
   deadline?: string | null;
+  existingProductId?: string | null;
 }
 
 interface UpdateDealDto {
@@ -40,6 +43,7 @@ interface UpdateDealDto {
   productType?: string | null;
   pmId?: string | null;
   deadline?: string | null;
+  existingProductId?: string | null;
 }
 
 interface DealQueryParams {
@@ -55,7 +59,10 @@ interface DealQueryParams {
 
 @Injectable()
 export class DealsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly dealWonHandler: DealWonHandler,
+  ) {}
 
   async findAll(params: DealQueryParams) {
     const {
@@ -116,6 +123,7 @@ export class DealsService {
               },
             },
           },
+          existingProduct: { select: { id: true, name: true, productType: true } },
           sourcePartner: { select: { id: true, name: true } },
           sourceContact: { select: { id: true, firstName: true, lastName: true } },
         },
@@ -160,6 +168,7 @@ export class DealsService {
             },
           },
         },
+        existingProduct: { select: { id: true, name: true, productType: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
       },
@@ -191,6 +200,7 @@ export class DealsService {
         productType: data.productType ?? undefined,
         pmId: data.pmId ?? undefined,
         deadline: data.deadline ? new Date(data.deadline) : undefined,
+        existingProductId: data.existingProductId ?? undefined,
       },
       include: {
         contact: { select: { id: true, firstName: true, lastName: true } },
@@ -229,6 +239,9 @@ export class DealsService {
         ...(data.deadline !== undefined && {
           deadline: data.deadline ? new Date(data.deadline) : null,
         }),
+        ...(data.existingProductId !== undefined && {
+          existingProductId: data.existingProductId,
+        }),
       },
       include: {
         lead: { select: { id: true, code: true, contactName: true } },
@@ -254,6 +267,7 @@ export class DealsService {
             },
           },
         },
+        existingProduct: { select: { id: true, name: true, productType: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
       },
@@ -261,7 +275,16 @@ export class DealsService {
   }
 
   async updateStatus(id: string, status: string) {
-    return this.update(id, { status });
+    const current = await this.findById(id);
+    validateDealStageGate(current, status);
+
+    const deal = await this.update(id, { status });
+
+    if (status === 'WON') {
+      await this.dealWonHandler.handle(deal);
+    }
+
+    return deal;
   }
 
   async delete(id: string) {
