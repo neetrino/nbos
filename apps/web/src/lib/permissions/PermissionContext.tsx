@@ -26,10 +26,10 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const accessToken = session?.accessToken ?? null;
-    setAuthTokenGetter(async () => accessToken);
-  }, [session?.accessToken]);
+  // Sync before child useEffects run: nested passive effects run inner-to-outer,
+  // so axios must already have the token getter when pages like /dashboard fetch.
+  const accessToken = session?.accessToken ?? null;
+  setAuthTokenGetter(async () => accessToken);
 
   useEffect(() => {
     if (status === 'loading') return;

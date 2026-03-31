@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       // before the rewrite rule is evaluated — no conflict.
       afterFiles: [
         {
+          source: '/favicon.ico',
+          destination: '/favicon.svg',
+        },
+        {
           // Exclude Auth.js routes from backend proxying.
           // Otherwise /api/auth/* gets forwarded to Nest and breaks session parsing in the client.
           source: '/api/:path((?!auth(?:/|$)).*)',

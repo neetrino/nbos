@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import {
   DollarSign,
   FolderKanban,
@@ -65,7 +66,26 @@ function formatCurrency(n: number): string {
   return `֏${n}`;
 }
 
+function DashboardLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Welcome back</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Loading dashboard data...</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-32 rounded-2xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
+  const { status: sessionStatus } = useSession();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -198,25 +218,20 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+    if (sessionStatus !== 'authenticated') return;
+    void fetchDashboard();
+  }, [sessionStatus, fetchDashboard]);
+
+  if (sessionStatus === 'loading') {
+    return <DashboardLoadingSkeleton />;
+  }
+
+  if (sessionStatus !== 'authenticated') {
+    return null;
+  }
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Welcome back</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Loading dashboard data...</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-2xl" />
-          ))}
-        </div>
-      </div>
-    );
+    return <DashboardLoadingSkeleton />;
   }
 
   if (!data) {
