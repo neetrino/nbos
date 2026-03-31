@@ -1,14 +1,12 @@
 import {
   Injectable,
-  type NestInterceptor,
+  type CanActivate,
   type ExecutionContext,
-  type CallHandler,
   Inject,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { Observable } from 'rxjs';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { IS_PUBLIC_KEY } from '../decorators';
@@ -30,25 +28,26 @@ const CACHE_TTL_MS = 60_000;
 /**
  * Загружает полные данные Employee (роль, отделы, permissions) в request.user
  * после того, как AuthGuard уже верифицировал JWT и положил employeeId.
+ * Зарегистрирован как APP_GUARD между AuthGuard и PermissionGuard.
  */
 @Injectable()
-export class EmployeeInterceptor implements NestInterceptor {
+export class EmployeeGuard implements CanActivate {
   private cache = new Map<string, CachedEmployee>();
-  private readonly logger = new Logger(EmployeeInterceptor.name);
+  private readonly logger = new Logger(EmployeeGuard.name);
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly reflector: Reflector,
   ) {}
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
     if (isPublic) {
-      return next.handle();
+      return true;
     }
 
     const request = context.switchToHttp().getRequest<{
@@ -57,13 +56,13 @@ export class EmployeeInterceptor implements NestInterceptor {
 
     const employeeId = request.user?.employeeId as string | undefined;
     if (!employeeId) {
-      return next.handle();
+      return true;
     }
 
     const cached = this.cache.get(employeeId);
     if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
       request.user = { ...request.user, ...cached };
-      return next.handle();
+      return true;
     }
 
     const employee = await this.prisma.employee.findUnique({
@@ -105,6 +104,6 @@ export class EmployeeInterceptor implements NestInterceptor {
     this.cache.set(employeeId, enriched);
     request.user = { ...request.user, ...enriched };
 
-    return next.handle();
+    return true;
   }
 }

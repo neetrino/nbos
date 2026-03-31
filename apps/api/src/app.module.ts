@@ -28,8 +28,8 @@ import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
-import { EmployeeInterceptor } from './common/interceptors/employee.interceptor';
 import { AuthGuard } from './common/guards/auth.guard';
+import { EmployeeGuard } from './common/guards/employee.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
 
 @Module({
@@ -76,8 +76,8 @@ import { PermissionGuard } from './common/guards/permission.guard';
       useClass: AuthGuard,
     },
     {
-      provide: APP_INTERCEPTOR,
-      useClass: EmployeeInterceptor,
+      provide: APP_GUARD,
+      useClass: EmployeeGuard,
     },
     {
       provide: APP_GUARD,
