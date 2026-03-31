@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ExtensionsController } from './extensions.controller';
 import { ExtensionsService } from './extensions.service';
 
+/**
+ * Controllers are registered on {@link ProjectsModule} before {@link ProjectsController}
+ * so that `GET /api/projects/extensions` is not captured by `GET /api/projects/:id`.
+ */
 @Module({
-  controllers: [ExtensionsController],
   providers: [ExtensionsService],
   exports: [ExtensionsService],
 })
