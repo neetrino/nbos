@@ -18,15 +18,6 @@ describe('ProjectsService', () => {
       expect(result.items).toEqual([]);
       expect(result.meta.totalPages).toBe(0);
     });
-
-    it('applies type filter', async () => {
-      await service.findAll({ type: 'WHITE_LABEL' });
-      expect(prisma.project.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ type: 'WHITE_LABEL' }),
-        }),
-      );
-    });
   });
 
   describe('findById', () => {
@@ -44,15 +35,6 @@ describe('ProjectsService', () => {
   });
 
   describe('findAll (branch coverage)', () => {
-    it('applies pmId filter', async () => {
-      await service.findAll({ pmId: 'pm-1' });
-      expect(prisma.project.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ pmId: 'pm-1' }),
-        }),
-      );
-    });
-
     it('applies isArchived filter', async () => {
       await service.findAll({ isArchived: false });
       expect(prisma.project.findMany).toHaveBeenCalledWith(
@@ -82,31 +64,14 @@ describe('ProjectsService', () => {
   });
 
   describe('create (branch coverage)', () => {
-    it('creates project with default type', async () => {
+    it('creates project with name and contact', async () => {
       prisma.project.findFirst.mockResolvedValue(null);
       prisma.project.create.mockResolvedValue({ id: '1', code: 'P-2026-0001' });
 
       await service.create({ name: 'Test', contactId: 'c1' });
       expect(prisma.project.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ type: 'CUSTOM_CODE' }),
-        }),
-      );
-    });
-
-    it('creates project with custom type and deadline', async () => {
-      prisma.project.findFirst.mockResolvedValue(null);
-      prisma.project.create.mockResolvedValue({ id: '1', code: 'P-2026-0001' });
-
-      await service.create({
-        name: 'Test',
-        contactId: 'c1',
-        type: 'WHITE_LABEL',
-        deadline: '2026-12-31',
-      });
-      expect(prisma.project.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ type: 'WHITE_LABEL' }),
+          data: expect.objectContaining({ name: 'Test', contactId: 'c1' }),
         }),
       );
     });
@@ -127,12 +92,8 @@ describe('ProjectsService', () => {
       const result = await service.update('1', {
         name: 'Updated',
         description: 'Desc',
-        type: 'MIX',
         isArchived: true,
         companyId: '',
-        sellerId: '',
-        pmId: '',
-        deadline: '',
       });
       expect(result.name).toBe('Updated');
     });

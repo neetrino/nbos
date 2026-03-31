@@ -7,10 +7,6 @@ interface CreateProjectDto {
   contactId: string;
   description?: string;
   companyId?: string;
-  type?: string;
-  sellerId?: string;
-  pmId?: string;
-  deadline?: string;
 }
 
 interface UpdateProjectDto {
@@ -18,18 +14,12 @@ interface UpdateProjectDto {
   description?: string;
   companyId?: string;
   contactId?: string;
-  type?: string;
-  sellerId?: string;
-  pmId?: string;
-  deadline?: string;
   isArchived?: boolean;
 }
 
 interface ProjectQueryParams {
   page?: number;
   pageSize?: number;
-  type?: string;
-  pmId?: string;
   isArchived?: boolean;
   search?: string;
   sortBy?: string;
@@ -44,8 +34,6 @@ export class ProjectsService {
     const {
       page = 1,
       pageSize = 20,
-      type,
-      pmId,
       isArchived,
       search,
       sortBy = 'createdAt',
@@ -53,8 +41,6 @@ export class ProjectsService {
     } = params;
 
     const where: Prisma.ProjectWhereInput = {};
-    if (type) where.type = type as Prisma.EnumProjectTypeFilter['equals'];
-    if (pmId) where.pmId = pmId;
     if (isArchived !== undefined) where.isArchived = isArchived;
     if (search) {
       where.OR = [
@@ -69,8 +55,6 @@ export class ProjectsService {
         include: {
           company: { select: { id: true, name: true } },
           contact: { select: { id: true, firstName: true, lastName: true } },
-          pm: { select: { id: true, firstName: true, lastName: true } },
-          seller: { select: { id: true, firstName: true, lastName: true } },
           _count: { select: { orders: true } },
         },
         orderBy: { [sortBy]: sortOrder },
@@ -92,8 +76,6 @@ export class ProjectsService {
       include: {
         company: true,
         contact: true,
-        pm: { select: { id: true, firstName: true, lastName: true, email: true, role: true } },
-        seller: { select: { id: true, firstName: true, lastName: true, email: true, role: true } },
         orders: {
           include: {
             invoices: {
@@ -168,15 +150,10 @@ export class ProjectsService {
         contactId: data.contactId,
         description: data.description,
         companyId: data.companyId,
-        type: (data.type as Prisma.ProjectCreateInput['type']) ?? 'CUSTOM_CODE',
-        sellerId: data.sellerId,
-        pmId: data.pmId,
-        deadline: data.deadline ? new Date(data.deadline) : undefined,
       },
       include: {
         company: { select: { id: true, name: true } },
         contact: { select: { id: true, firstName: true, lastName: true } },
-        pm: { select: { id: true, firstName: true, lastName: true } },
       },
     });
   }
@@ -188,19 +165,13 @@ export class ProjectsService {
       data: {
         ...(data.name && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
-        ...(data.type && { type: data.type as Prisma.ProjectUpdateInput['type'] }),
         ...(data.companyId !== undefined && { companyId: data.companyId || null }),
         ...(data.contactId && { contactId: data.contactId }),
-        ...(data.sellerId !== undefined && { sellerId: data.sellerId || null }),
-        ...(data.pmId !== undefined && { pmId: data.pmId || null }),
-        ...(data.deadline !== undefined && {
-          deadline: data.deadline ? new Date(data.deadline) : null,
-        }),
         ...(data.isArchived !== undefined && { isArchived: data.isArchived }),
       },
       include: {
         company: { select: { id: true, name: true } },
-        pm: { select: { id: true, firstName: true, lastName: true } },
+        contact: { select: { id: true, firstName: true, lastName: true } },
       },
     });
   }
@@ -211,11 +182,8 @@ export class ProjectsService {
   }
 
   async getStats() {
-    const [total, byType] = await Promise.all([
-      this.prisma.project.count(),
-      this.prisma.project.groupBy({ by: ['type'], _count: true }),
-    ]);
-    return { total, byType };
+    const total = await this.prisma.project.count();
+    return { total };
   }
 
   private async generateCode(): Promise<string> {

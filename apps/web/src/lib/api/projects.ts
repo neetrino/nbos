@@ -12,16 +12,12 @@ export interface Project {
   id: string;
   code: string;
   name: string;
-  type: string;
   description: string | null;
   isArchived: boolean;
-  deadline: string | null;
   createdAt: string;
   updatedAt: string;
   company: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string };
-  pm: EmployeeRef | null;
-  seller: EmployeeRef | null;
   _count: { orders: number };
 }
 

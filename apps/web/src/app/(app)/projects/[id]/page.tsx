@@ -9,11 +9,10 @@ import {
   Plus,
   Package,
   ArrowRight,
-  Calendar,
-  User,
   Building2,
   UserCircle,
-  Users,
+  User,
+  Calendar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,7 +20,6 @@ import { StatusBadge } from '@/components/shared';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { productsApi, type Product } from '@/lib/api/products';
 import {
-  getProjectType,
   getProductStatus,
   getProductType,
   PRODUCT_STATUSES,
@@ -92,7 +90,6 @@ export default function ProjectDetailPage() {
 
   if (!project) return null;
 
-  const projType = getProjectType(project.type);
   const byStatus = (status: string) => products.filter((p) => p.status === status).length;
 
   return (
@@ -110,7 +107,6 @@ export default function ProjectDetailPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold">{project.name}</h1>
-                {projType && <StatusBadge label={projType.label} variant={projType.variant} />}
                 {project.isArchived && <StatusBadge label="Archived" variant="gray" />}
               </div>
               <p className="text-muted-foreground text-sm">{project.code}</p>
@@ -143,27 +139,6 @@ export default function ProjectDetailPage() {
             )}
             {project.company && (
               <InfoRow icon={Building2} label="Company" value={project.company.name} />
-            )}
-            {project.seller && (
-              <InfoRow
-                icon={User}
-                label="Seller"
-                value={`${project.seller.firstName} ${project.seller.lastName}`}
-              />
-            )}
-            {project.pm && (
-              <InfoRow
-                icon={Users}
-                label="PM"
-                value={`${project.pm.firstName} ${project.pm.lastName}`}
-              />
-            )}
-            {project.deadline && (
-              <InfoRow
-                icon={Calendar}
-                label="Deadline"
-                value={new Date(project.deadline).toLocaleDateString()}
-              />
             )}
           </div>
         </div>

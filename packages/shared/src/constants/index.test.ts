@@ -13,7 +13,6 @@ import {
   TICKET_PRIORITIES,
   LEAD_SOURCES,
   DEAL_TYPES,
-  PROJECT_TYPES,
   PRODUCT_TYPES,
   PAYMENT_TYPES,
 } from './index';
@@ -85,10 +84,6 @@ describe('Constants', () => {
 
   it('DEAL_TYPES has 4 canonical types', () => {
     expect(DEAL_TYPES).toEqual(['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE']);
-  });
-
-  it('PROJECT_TYPES are valid', () => {
-    expect(PROJECT_TYPES).toEqual(['WHITE_LABEL', 'MIX', 'CUSTOM_CODE']);
   });
 
   it('PRODUCT_TYPES has 16 types', () => {

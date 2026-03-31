@@ -261,12 +261,8 @@ async function main() {
     create: {
       code: 'P-2026-0001',
       name: 'ACME Corporate Website',
-      type: 'CUSTOM_CODE',
       contactId: contact1.id,
       companyId: company1.id,
-      sellerId: seller.id,
-      pmId: pm.id,
-      deadline: new Date('2026-06-15'),
       description: 'Full corporate website with CMS and blog',
     },
   });
@@ -276,12 +272,8 @@ async function main() {
     create: {
       code: 'P-2026-0002',
       name: 'TechStart Mobile App',
-      type: 'MIX',
       contactId: contact2.id,
       companyId: company2.id,
-      sellerId: seller.id,
-      pmId: pm.id,
-      deadline: new Date('2026-08-01'),
       description: 'Cross-platform mobile app (React Native)',
     },
   });
@@ -291,11 +283,7 @@ async function main() {
     create: {
       code: 'P-2026-0003',
       name: 'GlobalCorp CRM System',
-      type: 'WHITE_LABEL',
       contactId: contact3.id,
-      sellerId: ceo.id,
-      pmId: pm2.id,
-      deadline: new Date('2026-12-01'),
       description: 'White-label CRM for enterprise client',
     },
   });
@@ -305,12 +293,8 @@ async function main() {
     create: {
       code: 'P-2026-0004',
       name: 'MedTech Patient Portal',
-      type: 'CUSTOM_CODE',
       contactId: contact5.id,
       companyId: company3.id,
-      sellerId: seller.id,
-      pmId: pm.id,
-      deadline: new Date('2026-09-30'),
       description: 'Patient portal and appointment system',
     },
   });
@@ -320,12 +304,8 @@ async function main() {
     create: {
       code: 'P-2026-0005',
       name: 'Logistics Pro Dashboard',
-      type: 'MIX',
       contactId: contact6.id,
       companyId: company4.id,
-      sellerId: seller.id,
-      pmId: pm2.id,
-      deadline: new Date('2026-07-15'),
       description: 'Fleet and delivery management dashboard',
     },
   });

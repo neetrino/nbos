@@ -1,16 +1,9 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
-export const PROJECT_TYPES = [
-  { value: 'WHITE_LABEL', label: 'White Label', variant: 'blue' as StatusVariant },
-  { value: 'MIX', label: 'Mix', variant: 'purple' as StatusVariant },
-  { value: 'CUSTOM_CODE', label: 'Custom Code', variant: 'orange' as StatusVariant },
-] as const;
-
-export const PROJECT_TABS = [
-  { value: 'all', label: 'All Projects' },
-  { value: 'development', label: 'Development' },
-  { value: 'maintenance', label: 'Maintenance' },
-  { value: 'closed', label: 'Closed / Archived' },
+export const PROJECT_HUB_TABS = [
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'archived', label: 'Archived' },
 ] as const;
 
 export const PRODUCT_CATEGORIES = [
@@ -109,10 +102,6 @@ export const EXTENSION_SIZES = [
   { value: 'MEDIUM', label: 'Medium', variant: 'purple' as StatusVariant },
   { value: 'LARGE', label: 'Large', variant: 'orange' as StatusVariant },
 ] as const;
-
-export function getProjectType(value: string) {
-  return PROJECT_TYPES.find((t) => t.value === value);
-}
 
 export function getProductCategory(value: string) {
   return PRODUCT_CATEGORIES.find((c) => c.value === value);

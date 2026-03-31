@@ -29,10 +29,6 @@ export type ProjectMinAggregateOutputType = {
   name: string | null;
   contactId: string | null;
   companyId: string | null;
-  type: $Enums.ProjectType | null;
-  sellerId: string | null;
-  pmId: string | null;
-  deadline: Date | null;
   description: string | null;
   isArchived: boolean | null;
   createdAt: Date | null;
@@ -45,10 +41,6 @@ export type ProjectMaxAggregateOutputType = {
   name: string | null;
   contactId: string | null;
   companyId: string | null;
-  type: $Enums.ProjectType | null;
-  sellerId: string | null;
-  pmId: string | null;
-  deadline: Date | null;
   description: string | null;
   isArchived: boolean | null;
   createdAt: Date | null;
@@ -61,10 +53,6 @@ export type ProjectCountAggregateOutputType = {
   name: number;
   contactId: number;
   companyId: number;
-  type: number;
-  sellerId: number;
-  pmId: number;
-  deadline: number;
   description: number;
   isArchived: number;
   createdAt: number;
@@ -78,10 +66,6 @@ export type ProjectMinAggregateInputType = {
   name?: true;
   contactId?: true;
   companyId?: true;
-  type?: true;
-  sellerId?: true;
-  pmId?: true;
-  deadline?: true;
   description?: true;
   isArchived?: true;
   createdAt?: true;
@@ -94,10 +78,6 @@ export type ProjectMaxAggregateInputType = {
   name?: true;
   contactId?: true;
   companyId?: true;
-  type?: true;
-  sellerId?: true;
-  pmId?: true;
-  deadline?: true;
   description?: true;
   isArchived?: true;
   createdAt?: true;
@@ -110,10 +90,6 @@ export type ProjectCountAggregateInputType = {
   name?: true;
   contactId?: true;
   companyId?: true;
-  type?: true;
-  sellerId?: true;
-  pmId?: true;
-  deadline?: true;
   description?: true;
   isArchived?: true;
   createdAt?: true;
@@ -200,10 +176,6 @@ export type ProjectGroupByOutputType = {
   name: string;
   contactId: string;
   companyId: string | null;
-  type: $Enums.ProjectType;
-  sellerId: string | null;
-  pmId: string | null;
-  deadline: Date | null;
   description: string | null;
   isArchived: boolean;
   createdAt: Date;
@@ -234,21 +206,12 @@ export type ProjectWhereInput = {
   name?: Prisma.StringFilter<'Project'> | string;
   contactId?: Prisma.StringFilter<'Project'> | string;
   companyId?: Prisma.StringNullableFilter<'Project'> | string | null;
-  type?: Prisma.EnumProjectTypeFilter<'Project'> | $Enums.ProjectType;
-  sellerId?: Prisma.StringNullableFilter<'Project'> | string | null;
-  pmId?: Prisma.StringNullableFilter<'Project'> | string | null;
-  deadline?: Prisma.DateTimeNullableFilter<'Project'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Project'> | string | null;
   isArchived?: Prisma.BoolFilter<'Project'> | boolean;
   createdAt?: Prisma.DateTimeFilter<'Project'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Project'> | Date | string;
   contact?: Prisma.XOR<Prisma.ContactScalarRelationFilter, Prisma.ContactWhereInput>;
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null;
-  seller?: Prisma.XOR<
-    Prisma.EmployeeNullableScalarRelationFilter,
-    Prisma.EmployeeWhereInput
-  > | null;
-  pm?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
   products?: Prisma.ProductListRelationFilter;
   extensions?: Prisma.ExtensionListRelationFilter;
   orders?: Prisma.OrderListRelationFilter;
@@ -267,18 +230,12 @@ export type ProjectOrderByWithRelationInput = {
   name?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   companyId?: Prisma.SortOrderInput | Prisma.SortOrder;
-  type?: Prisma.SortOrder;
-  sellerId?: Prisma.SortOrderInput | Prisma.SortOrder;
-  pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
-  deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   isArchived?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   contact?: Prisma.ContactOrderByWithRelationInput;
   company?: Prisma.CompanyOrderByWithRelationInput;
-  seller?: Prisma.EmployeeOrderByWithRelationInput;
-  pm?: Prisma.EmployeeOrderByWithRelationInput;
   products?: Prisma.ProductOrderByRelationAggregateInput;
   extensions?: Prisma.ExtensionOrderByRelationAggregateInput;
   orders?: Prisma.OrderOrderByRelationAggregateInput;
@@ -301,10 +258,6 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<
     name?: Prisma.StringFilter<'Project'> | string;
     contactId?: Prisma.StringFilter<'Project'> | string;
     companyId?: Prisma.StringNullableFilter<'Project'> | string | null;
-    type?: Prisma.EnumProjectTypeFilter<'Project'> | $Enums.ProjectType;
-    sellerId?: Prisma.StringNullableFilter<'Project'> | string | null;
-    pmId?: Prisma.StringNullableFilter<'Project'> | string | null;
-    deadline?: Prisma.DateTimeNullableFilter<'Project'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Project'> | string | null;
     isArchived?: Prisma.BoolFilter<'Project'> | boolean;
     createdAt?: Prisma.DateTimeFilter<'Project'> | Date | string;
@@ -314,11 +267,6 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<
       Prisma.CompanyNullableScalarRelationFilter,
       Prisma.CompanyWhereInput
     > | null;
-    seller?: Prisma.XOR<
-      Prisma.EmployeeNullableScalarRelationFilter,
-      Prisma.EmployeeWhereInput
-    > | null;
-    pm?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
     products?: Prisma.ProductListRelationFilter;
     extensions?: Prisma.ExtensionListRelationFilter;
     orders?: Prisma.OrderListRelationFilter;
@@ -339,10 +287,6 @@ export type ProjectOrderByWithAggregationInput = {
   name?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   companyId?: Prisma.SortOrderInput | Prisma.SortOrder;
-  type?: Prisma.SortOrder;
-  sellerId?: Prisma.SortOrderInput | Prisma.SortOrder;
-  pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
-  deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   isArchived?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -365,10 +309,6 @@ export type ProjectScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<'Project'> | string;
   contactId?: Prisma.StringWithAggregatesFilter<'Project'> | string;
   companyId?: Prisma.StringNullableWithAggregatesFilter<'Project'> | string | null;
-  type?: Prisma.EnumProjectTypeWithAggregatesFilter<'Project'> | $Enums.ProjectType;
-  sellerId?: Prisma.StringNullableWithAggregatesFilter<'Project'> | string | null;
-  pmId?: Prisma.StringNullableWithAggregatesFilter<'Project'> | string | null;
-  deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Project'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Project'> | string | null;
   isArchived?: Prisma.BoolWithAggregatesFilter<'Project'> | boolean;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Project'> | Date | string;
@@ -379,16 +319,12 @@ export type ProjectCreateInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -407,10 +343,6 @@ export type ProjectUncheckedCreateInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -431,16 +363,12 @@ export type ProjectUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -459,10 +387,6 @@ export type ProjectUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -485,10 +409,6 @@ export type ProjectCreateManyInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -499,8 +419,6 @@ export type ProjectUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -513,10 +431,6 @@ export type ProjectUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -539,10 +453,6 @@ export type ProjectCountOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   companyId?: Prisma.SortOrder;
-  type?: Prisma.SortOrder;
-  sellerId?: Prisma.SortOrder;
-  pmId?: Prisma.SortOrder;
-  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   isArchived?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -555,10 +465,6 @@ export type ProjectMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   companyId?: Prisma.SortOrder;
-  type?: Prisma.SortOrder;
-  sellerId?: Prisma.SortOrder;
-  pmId?: Prisma.SortOrder;
-  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   isArchived?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -571,10 +477,6 @@ export type ProjectMinOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
   companyId?: Prisma.SortOrder;
-  type?: Prisma.SortOrder;
-  sellerId?: Prisma.SortOrder;
-  pmId?: Prisma.SortOrder;
-  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   isArchived?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -761,14 +663,6 @@ export type ProjectUncheckedUpdateManyWithoutCompanyNestedInput = {
     | Prisma.ProjectUpdateManyWithWhereWithoutCompanyInput
     | Prisma.ProjectUpdateManyWithWhereWithoutCompanyInput[];
   deleteMany?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[];
-};
-
-export type EnumProjectTypeFieldUpdateOperationsInput = {
-  set?: $Enums.ProjectType;
-};
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null;
 };
 
 export type BoolFieldUpdateOperationsInput = {
@@ -1013,166 +907,6 @@ export type ProjectUpdateOneRequiredWithoutDomainsNestedInput = {
   >;
 };
 
-export type ProjectCreateNestedManyWithoutSellerInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ProjectCreateWithoutSellerInput,
-        Prisma.ProjectUncheckedCreateWithoutSellerInput
-      >
-    | Prisma.ProjectCreateWithoutSellerInput[]
-    | Prisma.ProjectUncheckedCreateWithoutSellerInput[];
-  connectOrCreate?:
-    | Prisma.ProjectCreateOrConnectWithoutSellerInput
-    | Prisma.ProjectCreateOrConnectWithoutSellerInput[];
-  createMany?: Prisma.ProjectCreateManySellerInputEnvelope;
-  connect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-};
-
-export type ProjectCreateNestedManyWithoutPmInput = {
-  create?:
-    | Prisma.XOR<Prisma.ProjectCreateWithoutPmInput, Prisma.ProjectUncheckedCreateWithoutPmInput>
-    | Prisma.ProjectCreateWithoutPmInput[]
-    | Prisma.ProjectUncheckedCreateWithoutPmInput[];
-  connectOrCreate?:
-    | Prisma.ProjectCreateOrConnectWithoutPmInput
-    | Prisma.ProjectCreateOrConnectWithoutPmInput[];
-  createMany?: Prisma.ProjectCreateManyPmInputEnvelope;
-  connect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-};
-
-export type ProjectUncheckedCreateNestedManyWithoutSellerInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ProjectCreateWithoutSellerInput,
-        Prisma.ProjectUncheckedCreateWithoutSellerInput
-      >
-    | Prisma.ProjectCreateWithoutSellerInput[]
-    | Prisma.ProjectUncheckedCreateWithoutSellerInput[];
-  connectOrCreate?:
-    | Prisma.ProjectCreateOrConnectWithoutSellerInput
-    | Prisma.ProjectCreateOrConnectWithoutSellerInput[];
-  createMany?: Prisma.ProjectCreateManySellerInputEnvelope;
-  connect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-};
-
-export type ProjectUncheckedCreateNestedManyWithoutPmInput = {
-  create?:
-    | Prisma.XOR<Prisma.ProjectCreateWithoutPmInput, Prisma.ProjectUncheckedCreateWithoutPmInput>
-    | Prisma.ProjectCreateWithoutPmInput[]
-    | Prisma.ProjectUncheckedCreateWithoutPmInput[];
-  connectOrCreate?:
-    | Prisma.ProjectCreateOrConnectWithoutPmInput
-    | Prisma.ProjectCreateOrConnectWithoutPmInput[];
-  createMany?: Prisma.ProjectCreateManyPmInputEnvelope;
-  connect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-};
-
-export type ProjectUpdateManyWithoutSellerNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ProjectCreateWithoutSellerInput,
-        Prisma.ProjectUncheckedCreateWithoutSellerInput
-      >
-    | Prisma.ProjectCreateWithoutSellerInput[]
-    | Prisma.ProjectUncheckedCreateWithoutSellerInput[];
-  connectOrCreate?:
-    | Prisma.ProjectCreateOrConnectWithoutSellerInput
-    | Prisma.ProjectCreateOrConnectWithoutSellerInput[];
-  upsert?:
-    | Prisma.ProjectUpsertWithWhereUniqueWithoutSellerInput
-    | Prisma.ProjectUpsertWithWhereUniqueWithoutSellerInput[];
-  createMany?: Prisma.ProjectCreateManySellerInputEnvelope;
-  set?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  disconnect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  delete?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  connect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  update?:
-    | Prisma.ProjectUpdateWithWhereUniqueWithoutSellerInput
-    | Prisma.ProjectUpdateWithWhereUniqueWithoutSellerInput[];
-  updateMany?:
-    | Prisma.ProjectUpdateManyWithWhereWithoutSellerInput
-    | Prisma.ProjectUpdateManyWithWhereWithoutSellerInput[];
-  deleteMany?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[];
-};
-
-export type ProjectUpdateManyWithoutPmNestedInput = {
-  create?:
-    | Prisma.XOR<Prisma.ProjectCreateWithoutPmInput, Prisma.ProjectUncheckedCreateWithoutPmInput>
-    | Prisma.ProjectCreateWithoutPmInput[]
-    | Prisma.ProjectUncheckedCreateWithoutPmInput[];
-  connectOrCreate?:
-    | Prisma.ProjectCreateOrConnectWithoutPmInput
-    | Prisma.ProjectCreateOrConnectWithoutPmInput[];
-  upsert?:
-    | Prisma.ProjectUpsertWithWhereUniqueWithoutPmInput
-    | Prisma.ProjectUpsertWithWhereUniqueWithoutPmInput[];
-  createMany?: Prisma.ProjectCreateManyPmInputEnvelope;
-  set?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  disconnect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  delete?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  connect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  update?:
-    | Prisma.ProjectUpdateWithWhereUniqueWithoutPmInput
-    | Prisma.ProjectUpdateWithWhereUniqueWithoutPmInput[];
-  updateMany?:
-    | Prisma.ProjectUpdateManyWithWhereWithoutPmInput
-    | Prisma.ProjectUpdateManyWithWhereWithoutPmInput[];
-  deleteMany?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[];
-};
-
-export type ProjectUncheckedUpdateManyWithoutSellerNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ProjectCreateWithoutSellerInput,
-        Prisma.ProjectUncheckedCreateWithoutSellerInput
-      >
-    | Prisma.ProjectCreateWithoutSellerInput[]
-    | Prisma.ProjectUncheckedCreateWithoutSellerInput[];
-  connectOrCreate?:
-    | Prisma.ProjectCreateOrConnectWithoutSellerInput
-    | Prisma.ProjectCreateOrConnectWithoutSellerInput[];
-  upsert?:
-    | Prisma.ProjectUpsertWithWhereUniqueWithoutSellerInput
-    | Prisma.ProjectUpsertWithWhereUniqueWithoutSellerInput[];
-  createMany?: Prisma.ProjectCreateManySellerInputEnvelope;
-  set?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  disconnect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  delete?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  connect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  update?:
-    | Prisma.ProjectUpdateWithWhereUniqueWithoutSellerInput
-    | Prisma.ProjectUpdateWithWhereUniqueWithoutSellerInput[];
-  updateMany?:
-    | Prisma.ProjectUpdateManyWithWhereWithoutSellerInput
-    | Prisma.ProjectUpdateManyWithWhereWithoutSellerInput[];
-  deleteMany?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[];
-};
-
-export type ProjectUncheckedUpdateManyWithoutPmNestedInput = {
-  create?:
-    | Prisma.XOR<Prisma.ProjectCreateWithoutPmInput, Prisma.ProjectUncheckedCreateWithoutPmInput>
-    | Prisma.ProjectCreateWithoutPmInput[]
-    | Prisma.ProjectUncheckedCreateWithoutPmInput[];
-  connectOrCreate?:
-    | Prisma.ProjectCreateOrConnectWithoutPmInput
-    | Prisma.ProjectCreateOrConnectWithoutPmInput[];
-  upsert?:
-    | Prisma.ProjectUpsertWithWhereUniqueWithoutPmInput
-    | Prisma.ProjectUpsertWithWhereUniqueWithoutPmInput[];
-  createMany?: Prisma.ProjectCreateManyPmInputEnvelope;
-  set?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  disconnect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  delete?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  connect?: Prisma.ProjectWhereUniqueInput | Prisma.ProjectWhereUniqueInput[];
-  update?:
-    | Prisma.ProjectUpdateWithWhereUniqueWithoutPmInput
-    | Prisma.ProjectUpdateWithWhereUniqueWithoutPmInput[];
-  updateMany?:
-    | Prisma.ProjectUpdateManyWithWhereWithoutPmInput
-    | Prisma.ProjectUpdateManyWithWhereWithoutPmInput[];
-  deleteMany?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[];
-};
-
 export type ProjectCreateNestedOneWithoutAuditLogsInput = {
   create?: Prisma.XOR<
     Prisma.ProjectCreateWithoutAuditLogsInput,
@@ -1205,15 +939,11 @@ export type ProjectCreateWithoutContactInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -1231,10 +961,6 @@ export type ProjectUncheckedCreateWithoutContactInput = {
   code: string;
   name: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -1301,10 +1027,6 @@ export type ProjectScalarWhereInput = {
   name?: Prisma.StringFilter<'Project'> | string;
   contactId?: Prisma.StringFilter<'Project'> | string;
   companyId?: Prisma.StringNullableFilter<'Project'> | string | null;
-  type?: Prisma.EnumProjectTypeFilter<'Project'> | $Enums.ProjectType;
-  sellerId?: Prisma.StringNullableFilter<'Project'> | string | null;
-  pmId?: Prisma.StringNullableFilter<'Project'> | string | null;
-  deadline?: Prisma.DateTimeNullableFilter<'Project'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Project'> | string | null;
   isArchived?: Prisma.BoolFilter<'Project'> | boolean;
   createdAt?: Prisma.DateTimeFilter<'Project'> | Date | string;
@@ -1315,15 +1037,11 @@ export type ProjectCreateWithoutCompanyInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -1341,10 +1059,6 @@ export type ProjectUncheckedCreateWithoutCompanyInput = {
   code: string;
   name: string;
   contactId: string;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -1406,16 +1120,12 @@ export type ProjectCreateWithoutProductsInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
@@ -1433,10 +1143,6 @@ export type ProjectUncheckedCreateWithoutProductsInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -1484,16 +1190,12 @@ export type ProjectUpdateWithoutProductsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
@@ -1511,10 +1213,6 @@ export type ProjectUncheckedUpdateWithoutProductsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1534,16 +1232,12 @@ export type ProjectCreateWithoutExtensionsInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
@@ -1561,10 +1255,6 @@ export type ProjectUncheckedCreateWithoutExtensionsInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -1612,16 +1302,12 @@ export type ProjectUpdateWithoutExtensionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
@@ -1639,10 +1325,6 @@ export type ProjectUncheckedUpdateWithoutExtensionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1662,16 +1344,12 @@ export type ProjectCreateWithoutOrdersInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
@@ -1689,10 +1367,6 @@ export type ProjectUncheckedCreateWithoutOrdersInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -1740,16 +1414,12 @@ export type ProjectUpdateWithoutOrdersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
@@ -1767,10 +1437,6 @@ export type ProjectUncheckedUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1790,16 +1456,12 @@ export type ProjectCreateWithoutSubscriptionsInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -1817,10 +1479,6 @@ export type ProjectUncheckedCreateWithoutSubscriptionsInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -1868,16 +1526,12 @@ export type ProjectUpdateWithoutSubscriptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -1895,10 +1549,6 @@ export type ProjectUncheckedUpdateWithoutSubscriptionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1918,16 +1568,12 @@ export type ProjectCreateWithoutExpensesInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -1945,10 +1591,6 @@ export type ProjectUncheckedCreateWithoutExpensesInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -1996,16 +1638,12 @@ export type ProjectUpdateWithoutExpensesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -2023,10 +1661,6 @@ export type ProjectUncheckedUpdateWithoutExpensesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2046,16 +1680,12 @@ export type ProjectCreateWithoutBonusEntriesInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -2073,10 +1703,6 @@ export type ProjectUncheckedCreateWithoutBonusEntriesInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -2124,16 +1750,12 @@ export type ProjectUpdateWithoutBonusEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -2151,10 +1773,6 @@ export type ProjectUncheckedUpdateWithoutBonusEntriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2174,16 +1792,12 @@ export type ProjectCreateWithoutTicketsInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -2201,10 +1815,6 @@ export type ProjectUncheckedCreateWithoutTicketsInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -2252,16 +1862,12 @@ export type ProjectUpdateWithoutTicketsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -2279,10 +1885,6 @@ export type ProjectUncheckedUpdateWithoutTicketsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2302,16 +1904,12 @@ export type ProjectCreateWithoutCredentialsInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -2329,10 +1927,6 @@ export type ProjectUncheckedCreateWithoutCredentialsInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -2380,16 +1974,12 @@ export type ProjectUpdateWithoutCredentialsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -2407,10 +1997,6 @@ export type ProjectUncheckedUpdateWithoutCredentialsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2430,16 +2016,12 @@ export type ProjectCreateWithoutDomainsInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -2457,10 +2039,6 @@ export type ProjectUncheckedCreateWithoutDomainsInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -2508,16 +2086,12 @@ export type ProjectUpdateWithoutDomainsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -2535,10 +2109,6 @@ export type ProjectUncheckedUpdateWithoutDomainsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2554,199 +2124,16 @@ export type ProjectUncheckedUpdateWithoutDomainsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
-export type ProjectCreateWithoutSellerInput = {
-  id?: string;
-  code: string;
-  name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
-  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutSellerInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  type?: $Enums.ProjectType;
-  pmId?: string | null;
-  deadline?: Date | string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutSellerInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutSellerInput,
-    Prisma.ProjectUncheckedCreateWithoutSellerInput
-  >;
-};
-
-export type ProjectCreateManySellerInputEnvelope = {
-  data: Prisma.ProjectCreateManySellerInput | Prisma.ProjectCreateManySellerInput[];
-  skipDuplicates?: boolean;
-};
-
-export type ProjectCreateWithoutPmInput = {
-  id?: string;
-  code: string;
-  name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutPmInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  deadline?: Date | string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutPmInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutPmInput,
-    Prisma.ProjectUncheckedCreateWithoutPmInput
-  >;
-};
-
-export type ProjectCreateManyPmInputEnvelope = {
-  data: Prisma.ProjectCreateManyPmInput | Prisma.ProjectCreateManyPmInput[];
-  skipDuplicates?: boolean;
-};
-
-export type ProjectUpsertWithWhereUniqueWithoutSellerInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutSellerInput,
-    Prisma.ProjectUncheckedUpdateWithoutSellerInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutSellerInput,
-    Prisma.ProjectUncheckedCreateWithoutSellerInput
-  >;
-};
-
-export type ProjectUpdateWithWhereUniqueWithoutSellerInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutSellerInput,
-    Prisma.ProjectUncheckedUpdateWithoutSellerInput
-  >;
-};
-
-export type ProjectUpdateManyWithWhereWithoutSellerInput = {
-  where: Prisma.ProjectScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateManyMutationInput,
-    Prisma.ProjectUncheckedUpdateManyWithoutSellerInput
-  >;
-};
-
-export type ProjectUpsertWithWhereUniqueWithoutPmInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutPmInput,
-    Prisma.ProjectUncheckedUpdateWithoutPmInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutPmInput,
-    Prisma.ProjectUncheckedCreateWithoutPmInput
-  >;
-};
-
-export type ProjectUpdateWithWhereUniqueWithoutPmInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  data: Prisma.XOR<Prisma.ProjectUpdateWithoutPmInput, Prisma.ProjectUncheckedUpdateWithoutPmInput>;
-};
-
-export type ProjectUpdateManyWithWhereWithoutPmInput = {
-  where: Prisma.ProjectScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateManyMutationInput,
-    Prisma.ProjectUncheckedUpdateManyWithoutPmInput
-  >;
-};
-
 export type ProjectCreateWithoutAuditLogsInput = {
   id?: string;
   code: string;
   name: string;
-  type?: $Enums.ProjectType;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  seller?: Prisma.EmployeeCreateNestedOneWithoutProjectsSellingInput;
-  pm?: Prisma.EmployeeCreateNestedOneWithoutProjectsManagingInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
@@ -2764,10 +2151,6 @@ export type ProjectUncheckedCreateWithoutAuditLogsInput = {
   name: string;
   contactId: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -2815,16 +2198,12 @@ export type ProjectUpdateWithoutAuditLogsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -2842,10 +2221,6 @@ export type ProjectUncheckedUpdateWithoutAuditLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2866,10 +2241,6 @@ export type ProjectCreateManyContactInput = {
   code: string;
   name: string;
   companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -2880,15 +2251,11 @@ export type ProjectUpdateWithoutContactInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -2906,10 +2273,6 @@ export type ProjectUncheckedUpdateWithoutContactInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2931,10 +2294,6 @@ export type ProjectUncheckedUpdateManyWithoutContactInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2946,10 +2305,6 @@ export type ProjectCreateManyCompanyInput = {
   code: string;
   name: string;
   contactId: string;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  pmId?: string | null;
-  deadline?: Date | string | null;
   description?: string | null;
   isArchived?: boolean;
   createdAt?: Date | string;
@@ -2960,15 +2315,11 @@ export type ProjectUpdateWithoutCompanyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
@@ -2986,10 +2337,6 @@ export type ProjectUncheckedUpdateWithoutCompanyInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3011,170 +2358,6 @@ export type ProjectUncheckedUpdateManyWithoutCompanyInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type ProjectCreateManySellerInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  type?: $Enums.ProjectType;
-  pmId?: string | null;
-  deadline?: Date | string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type ProjectCreateManyPmInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  type?: $Enums.ProjectType;
-  sellerId?: string | null;
-  deadline?: Date | string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type ProjectUpdateWithoutSellerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  pm?: Prisma.EmployeeUpdateOneWithoutProjectsManagingNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutSellerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateManyWithoutSellerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type ProjectUpdateWithoutPmInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  seller?: Prisma.EmployeeUpdateOneWithoutProjectsSellingNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutPmInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateManyWithoutPmInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType;
-  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3324,18 +2507,12 @@ export type ProjectSelect<
     name?: boolean;
     contactId?: boolean;
     companyId?: boolean;
-    type?: boolean;
-    sellerId?: boolean;
-    pmId?: boolean;
-    deadline?: boolean;
     description?: boolean;
     isArchived?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
     company?: boolean | Prisma.Project$companyArgs<ExtArgs>;
-    seller?: boolean | Prisma.Project$sellerArgs<ExtArgs>;
-    pm?: boolean | Prisma.Project$pmArgs<ExtArgs>;
     products?: boolean | Prisma.Project$productsArgs<ExtArgs>;
     extensions?: boolean | Prisma.Project$extensionsArgs<ExtArgs>;
     orders?: boolean | Prisma.Project$ordersArgs<ExtArgs>;
@@ -3360,18 +2537,12 @@ export type ProjectSelectCreateManyAndReturn<
     name?: boolean;
     contactId?: boolean;
     companyId?: boolean;
-    type?: boolean;
-    sellerId?: boolean;
-    pmId?: boolean;
-    deadline?: boolean;
     description?: boolean;
     isArchived?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
     company?: boolean | Prisma.Project$companyArgs<ExtArgs>;
-    seller?: boolean | Prisma.Project$sellerArgs<ExtArgs>;
-    pm?: boolean | Prisma.Project$pmArgs<ExtArgs>;
   },
   ExtArgs['result']['project']
 >;
@@ -3385,18 +2556,12 @@ export type ProjectSelectUpdateManyAndReturn<
     name?: boolean;
     contactId?: boolean;
     companyId?: boolean;
-    type?: boolean;
-    sellerId?: boolean;
-    pmId?: boolean;
-    deadline?: boolean;
     description?: boolean;
     isArchived?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
     company?: boolean | Prisma.Project$companyArgs<ExtArgs>;
-    seller?: boolean | Prisma.Project$sellerArgs<ExtArgs>;
-    pm?: boolean | Prisma.Project$pmArgs<ExtArgs>;
   },
   ExtArgs['result']['project']
 >;
@@ -3407,10 +2572,6 @@ export type ProjectSelectScalar = {
   name?: boolean;
   contactId?: boolean;
   companyId?: boolean;
-  type?: boolean;
-  sellerId?: boolean;
-  pmId?: boolean;
-  deadline?: boolean;
   description?: boolean;
   isArchived?: boolean;
   createdAt?: boolean;
@@ -3425,10 +2586,6 @@ export type ProjectOmit<
   | 'name'
   | 'contactId'
   | 'companyId'
-  | 'type'
-  | 'sellerId'
-  | 'pmId'
-  | 'deadline'
   | 'description'
   | 'isArchived'
   | 'createdAt'
@@ -3440,8 +2597,6 @@ export type ProjectInclude<
 > = {
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
   company?: boolean | Prisma.Project$companyArgs<ExtArgs>;
-  seller?: boolean | Prisma.Project$sellerArgs<ExtArgs>;
-  pm?: boolean | Prisma.Project$pmArgs<ExtArgs>;
   products?: boolean | Prisma.Project$productsArgs<ExtArgs>;
   extensions?: boolean | Prisma.Project$extensionsArgs<ExtArgs>;
   orders?: boolean | Prisma.Project$ordersArgs<ExtArgs>;
@@ -3459,16 +2614,12 @@ export type ProjectIncludeCreateManyAndReturn<
 > = {
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
   company?: boolean | Prisma.Project$companyArgs<ExtArgs>;
-  seller?: boolean | Prisma.Project$sellerArgs<ExtArgs>;
-  pm?: boolean | Prisma.Project$pmArgs<ExtArgs>;
 };
 export type ProjectIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
   company?: boolean | Prisma.Project$companyArgs<ExtArgs>;
-  seller?: boolean | Prisma.Project$sellerArgs<ExtArgs>;
-  pm?: boolean | Prisma.Project$pmArgs<ExtArgs>;
 };
 
 export type $ProjectPayload<
@@ -3478,8 +2629,6 @@ export type $ProjectPayload<
   objects: {
     contact: Prisma.$ContactPayload<ExtArgs>;
     company: Prisma.$CompanyPayload<ExtArgs> | null;
-    seller: Prisma.$EmployeePayload<ExtArgs> | null;
-    pm: Prisma.$EmployeePayload<ExtArgs> | null;
     products: Prisma.$ProductPayload<ExtArgs>[];
     extensions: Prisma.$ExtensionPayload<ExtArgs>[];
     orders: Prisma.$OrderPayload<ExtArgs>[];
@@ -3498,10 +2647,6 @@ export type $ProjectPayload<
       name: string;
       contactId: string;
       companyId: string | null;
-      type: $Enums.ProjectType;
-      sellerId: string | null;
-      pmId: string | null;
-      deadline: Date | null;
       description: string | null;
       isArchived: boolean;
       createdAt: Date;
@@ -4048,32 +3193,6 @@ export interface Prisma__ProjectClient<
     ExtArgs,
     GlobalOmitOptions
   >;
-  seller<T extends Prisma.Project$sellerArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Project$sellerArgs<ExtArgs>>,
-  ): Prisma.Prisma__EmployeeClient<
-    runtime.Types.Result.GetResult<
-      Prisma.$EmployeePayload<ExtArgs>,
-      T,
-      'findUniqueOrThrow',
-      GlobalOmitOptions
-    > | null,
-    null,
-    ExtArgs,
-    GlobalOmitOptions
-  >;
-  pm<T extends Prisma.Project$pmArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Project$pmArgs<ExtArgs>>,
-  ): Prisma.Prisma__EmployeeClient<
-    runtime.Types.Result.GetResult<
-      Prisma.$EmployeePayload<ExtArgs>,
-      T,
-      'findUniqueOrThrow',
-      GlobalOmitOptions
-    > | null,
-    null,
-    ExtArgs,
-    GlobalOmitOptions
-  >;
   products<T extends Prisma.Project$productsArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Project$productsArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -4220,10 +3339,6 @@ export interface ProjectFieldRefs {
   readonly name: Prisma.FieldRef<'Project', 'String'>;
   readonly contactId: Prisma.FieldRef<'Project', 'String'>;
   readonly companyId: Prisma.FieldRef<'Project', 'String'>;
-  readonly type: Prisma.FieldRef<'Project', 'ProjectType'>;
-  readonly sellerId: Prisma.FieldRef<'Project', 'String'>;
-  readonly pmId: Prisma.FieldRef<'Project', 'String'>;
-  readonly deadline: Prisma.FieldRef<'Project', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Project', 'String'>;
   readonly isArchived: Prisma.FieldRef<'Project', 'Boolean'>;
   readonly createdAt: Prisma.FieldRef<'Project', 'DateTime'>;
@@ -4669,48 +3784,6 @@ export type Project$companyArgs<
    */
   include?: Prisma.CompanyInclude<ExtArgs> | null;
   where?: Prisma.CompanyWhereInput;
-};
-
-/**
- * Project.seller
- */
-export type Project$sellerArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Employee
-   */
-  select?: Prisma.EmployeeSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Employee
-   */
-  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.EmployeeInclude<ExtArgs> | null;
-  where?: Prisma.EmployeeWhereInput;
-};
-
-/**
- * Project.pm
- */
-export type Project$pmArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Employee
-   */
-  select?: Prisma.EmployeeSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Employee
-   */
-  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.EmployeeInclude<ExtArgs> | null;
-  where?: Prisma.EmployeeWhereInput;
 };
 
 /**

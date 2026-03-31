@@ -32,14 +32,6 @@ export const TaxStatus = {
 
 export type TaxStatus = (typeof TaxStatus)[keyof typeof TaxStatus];
 
-export const ProjectType = {
-  WHITE_LABEL: 'WHITE_LABEL',
-  MIX: 'MIX',
-  CUSTOM_CODE: 'CUSTOM_CODE',
-} as const;
-
-export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType];
-
 export const ProductCategoryEnum = {
   CODE: 'CODE',
   WORDPRESS: 'WORDPRESS',

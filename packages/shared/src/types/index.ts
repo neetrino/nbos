@@ -20,7 +20,6 @@ import type {
   CREDENTIAL_CATEGORIES,
   EXPENSE_TYPES,
   EXPENSE_CATEGORIES,
-  PROJECT_TYPES,
   PRODUCT_TYPES,
   LEAD_SOURCES,
   DEAL_TYPES,
@@ -50,7 +49,6 @@ export type CredentialAccessLevel = (typeof CREDENTIAL_ACCESS_LEVELS)[number];
 export type CredentialCategory = (typeof CREDENTIAL_CATEGORIES)[number];
 export type ExpenseType = (typeof EXPENSE_TYPES)[number];
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
-export type ProjectType = (typeof PROJECT_TYPES)[number];
 export type ProductType = (typeof PRODUCT_TYPES)[number];
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 export type DealType = (typeof DEAL_TYPES)[number];

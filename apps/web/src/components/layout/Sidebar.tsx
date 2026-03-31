@@ -52,11 +52,6 @@ const NAV_ITEMS: NavItem[] = [
     href: '/projects',
     icon: <FolderKanban size={20} />,
     permission: { module: 'PROJECTS', action: 'VIEW' },
-    children: [
-      { label: 'All Projects', href: '/projects' },
-      { label: 'Development', href: '/projects?filter=development' },
-      { label: 'Maintenance', href: '/projects?filter=maintenance' },
-    ],
   },
   {
     label: 'Tasks',
@@ -151,6 +146,10 @@ function isChildRouteActive(pathname: string, childHref: string): boolean {
   return pathname === path || pathname.startsWith(`${path}/`);
 }
 
+function getFirstChildHref(item: NavItem): string {
+  return item.children?.[0]?.href ?? item.href;
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -227,6 +226,7 @@ export function Sidebar() {
           {visibleItems.map((item) => {
             const active = isActive(item.href);
             const expanded = expandedSection === item.label;
+            const firstChildHref = getFirstChildHref(item);
 
             return (
               <li key={item.label}>
@@ -234,7 +234,7 @@ export function Sidebar() {
                   <>
                     {collapsed ? (
                       <Link
-                        href={item.children[0].href}
+                        href={firstChildHref}
                         onClick={() => expandOnly(item.label)}
                         title={item.label}
                         className={cn(
@@ -254,7 +254,7 @@ export function Sidebar() {
                         )}
                       >
                         <Link
-                          href={item.children[0].href}
+                          href={firstChildHref}
                           onClick={() => expandOnly(item.label)}
                           className={cn(
                             'flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-sm font-medium transition-colors',

@@ -133,8 +133,6 @@ export const EXPENSE_CATEGORIES = [
   'OTHER',
 ] as const;
 
-export const PROJECT_TYPES = ['WHITE_LABEL', 'MIX', 'CUSTOM_CODE'] as const;
-
 export const PRODUCT_CATEGORIES = ['CODE', 'WORDPRESS', 'SHOPIFY', 'MARKETING', 'OTHER'] as const;
 
 export const PRODUCT_TYPES = [

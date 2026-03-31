@@ -23,24 +23,21 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Get all projects with filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
-  @ApiQuery({ name: 'type', required: false })
-  @ApiQuery({ name: 'pmId', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'isArchived', required: false, type: Boolean })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
-    @Query('type') type?: string,
-    @Query('pmId') pmId?: string,
     @Query('search') search?: string,
+    @Query('isArchived') isArchived?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
     return this.projectsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
-      type,
-      pmId,
       search,
+      isArchived: isArchived === 'true' ? true : isArchived === 'false' ? false : undefined,
       sortBy,
       sortOrder,
     });
@@ -67,10 +64,6 @@ export class ProjectsController {
       contactId: string;
       description?: string;
       companyId?: string;
-      type?: string;
-      sellerId?: string;
-      pmId?: string;
-      deadline?: string;
     },
   ) {
     return this.projectsService.create(body);
@@ -86,10 +79,6 @@ export class ProjectsController {
       description?: string;
       companyId?: string;
       contactId?: string;
-      type?: string;
-      sellerId?: string;
-      pmId?: string;
-      deadline?: string;
       isArchived?: boolean;
     },
   ) {

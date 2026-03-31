@@ -61,7 +61,7 @@ export class CompaniesService {
       where: { id },
       include: {
         contact: true,
-        projects: { select: { id: true, code: true, name: true, type: true } },
+        projects: { select: { id: true, code: true, name: true } },
         invoices: { select: { id: true, code: true, status: true, amount: true } },
       },
     });

@@ -1,8 +1,6 @@
 'use client';
 
 import { FileText, Ticket, KeyRound, DollarSign, Clock } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
-import { getProjectType } from '../../constants/projects';
 import type { FullProject } from '@/lib/api/projects';
 
 interface OverviewTabProps {
@@ -36,7 +34,6 @@ function StatCard({
 }
 
 export function OverviewTab({ project }: OverviewTabProps) {
-  const projType = getProjectType(project.type);
   const openTickets = project.tickets.filter(
     (t) => t.status !== 'CLOSED' && t.status !== 'RESOLVED',
   ).length;
@@ -71,10 +68,6 @@ export function OverviewTab({ project }: OverviewTabProps) {
           <h3 className="mb-4 text-sm font-semibold">Project Details</h3>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Type</span>
-              {projType && <StatusBadge label={projType.label} variant={projType.variant} />}
-            </div>
-            <div className="flex justify-between">
               <span className="text-muted-foreground">Contact</span>
               <span className="font-medium">
                 {project.contact?.firstName} {project.contact?.lastName}
@@ -84,30 +77,6 @@ export function OverviewTab({ project }: OverviewTabProps) {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Company</span>
                 <span className="font-medium">{project.company.name}</span>
-              </div>
-            )}
-            {project.seller && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Seller</span>
-                <span className="font-medium">
-                  {project.seller.firstName} {project.seller.lastName}
-                </span>
-              </div>
-            )}
-            {project.pm && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">PM</span>
-                <span className="font-medium">
-                  {project.pm.firstName} {project.pm.lastName}
-                </span>
-              </div>
-            )}
-            {project.deadline && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Deadline</span>
-                <span className="font-medium">
-                  {new Date(project.deadline).toLocaleDateString()}
-                </span>
               </div>
             )}
             <div className="flex justify-between">

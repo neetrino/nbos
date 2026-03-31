@@ -73,31 +73,19 @@ model Company {
 
 // ─── PROJECT & PRODUCT ────────────────────────────────────
 
-enum ProjectType {
-  WHITE_LABEL
-  MIX
-  CUSTOM_CODE
-}
-
 model Project {
-  id          String      @id @default(uuid())
-  code        String      @unique
+  id          String   @id @default(uuid())
+  code        String   @unique
   name        String
-  contactId   String      @map("contact_id")
-  companyId   String?     @map("company_id")
-  type        ProjectType @default(CUSTOM_CODE)
-  sellerId    String?     @map("seller_id")
-  pmId        String?     @map("pm_id")
-  deadline    DateTime?
+  contactId   String   @map("contact_id")
+  companyId   String?  @map("company_id")
   description String?
-  isArchived  Boolean     @default(false) @map("is_archived")
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+  isArchived  Boolean  @default(false) @map("is_archived")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   contact       Contact        @relation(fields: [contactId], references: [id])
   company       Company?       @relation(fields: [companyId], references: [id])
-  seller        Employee?      @relation("ProjectSeller", fields: [sellerId], references: [id])
-  pm            Employee?      @relation("ProjectPM", fields: [pmId], references: [id])
   products      Product[]
   extensions    Extension[]
   orders        Order[]
@@ -963,8 +951,6 @@ model Employee {
   createdAt    DateTime            @default(now()) @map("created_at")
   updatedAt    DateTime            @updatedAt @map("updated_at")
 
-  projectsSelling            Project[]               @relation("ProjectSeller")
-  projectsManaging           Project[]               @relation("ProjectPM")
   productsManaging           Product[]               @relation("ProductPM")
   extensionsAssigned         Extension[]             @relation("ExtensionAssignee")
   leadsAssigned              Lead[]                  @relation("LeadAssignee")

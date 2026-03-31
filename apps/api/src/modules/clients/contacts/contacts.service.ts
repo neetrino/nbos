@@ -70,7 +70,7 @@ export class ContactsService {
       where: { id },
       include: {
         companies: true,
-        projects: { select: { id: true, code: true, name: true, type: true } },
+        projects: { select: { id: true, code: true, name: true } },
         leads: { select: { id: true, code: true, status: true } },
         deals: { select: { id: true, code: true, status: true, amount: true } },
       },

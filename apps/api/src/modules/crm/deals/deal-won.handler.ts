@@ -43,9 +43,6 @@ export class DealWonHandler {
           name: deal.name ?? `Project from ${deal.code}`,
           contactId: deal.contactId,
           companyId: deal.companyId ?? undefined,
-          sellerId: deal.sellerId,
-          pmId: deal.pmId ?? undefined,
-          deadline: deal.deadline ?? undefined,
         },
       });
       projectId = project.id;
