@@ -5,54 +5,33 @@
 
 ---
 
-## Фаза B.5 — Чистка списков (SystemList) ← ПЕРЕД ФАЗОЙ C
+## Фаза B.5 — Чистка списков (SystemList) ✅
 
-> Списки — не просто текст для dropdown. Каждый пункт списка — это параметр,
-> от которого зависит поведение системы (поля, валидация, автоматика).
-> Нужно привести списки в порядок, убрать лишнее, убрать свободное
-> редактирование из админки.
-
-### Проблемы сейчас
-
-1. **SystemListOption дублирует Prisma enum.** Deal Type, Payment Type,
-   Extension Size — уже зашиты как enum в БД. SystemList с теми же кодами —
-   лишняя копия. Рассинхрон неизбежен.
-2. **Product Type — рассинхрон.** Prisma enum: 7 значений (WEBSITE, MOBILE_APP,
-   CRM, LOGO, SMM, SEO, OTHER). SystemList seed: 12 значений (добавлены
-   WEB_APP, ECOMMERCE, SAAS, LANDING, ERP). Auto-tasks шаблоны: ключи WEB_APP,
-   MOBILE_APP, DESIGN, ERP_MODULE, INTEGRATION, OTHER — не совпадают ни с enum,
-   ни с seed.
-3. **Админка позволяет свободно добавлять/удалять/менять.** Это опасно: если
-   кто-то удалит PRODUCT из Deal Type, логика сломается. Списки с привязанным
-   поведением нельзя редактировать произвольно.
-
-### Задачи
-
-- [ ] **Решить: enum-only vs SystemList-only vs гибрид** для каждого списка
-  - Deal Type (4 значения, жёсткая логика) → скорее всего enum-only
-  - Payment Type (2 значения) → enum-only
-  - Extension Size (4 значения) → enum-only
-  - Product Type (расширяемый) → нужно решить
-- [ ] **Синхронизировать Product Type** — один источник правды:
-  - Выровнять Prisma enum, SystemList seed, auto-tasks шаблоны
-  - Решить: какие типы реально нужны (WEBSITE vs WEB_APP, нужен ли LANDING, ERP)
-- [ ] **Убрать из админки CRUD для системных списков** — списки с привязанным
-      поведением (Deal Type, Payment Type, Extension Size) не должны
-      редактироваться через UI. Максимум: менять label и sortOrder.
-- [ ] **Удалить из БД дубли** — если список = enum, записи SystemListOption
-      для него не нужны (или нужны только для UI labels)
-- [ ] **Документировать** — для каждого списка записать:
-      какие действия привязаны к каждому значению (карта из § 4 Core Entities)
+- [x] Аудит: собрать все enum + SystemList + constants + auto-tasks шаблоны
+- [x] Решить для каждого: DEAL_TYPE, PAYMENT_TYPE, EXTENSION_SIZE → enum-only
+      (удалены из SystemList). PRODUCT_TYPE → SystemList + Prisma enum (гибрид).
+- [x] Синхронизировать ProductType: Prisma enum расширен до 12 значений,
+      все constants (shared, dealPipeline, projects, leadPipeline INTEREST_TYPES)
+      приведены к единому набору
+- [x] Auto-tasks шаблоны: ключи приведены к ProductTypeEnum
+      (WEB_APP, WEBSITE, MOBILE_APP, CRM, ECOMMERCE, SAAS, LANDING, ERP,
+      LOGO, SMM, SEO, OTHER) — у каждого типа свой набор задач
+- [x] Ограничить админку: Settings → Lists показывает только PRODUCT_TYPE,
+      только редактирование label/sortOrder/active, без создания/удаления
+- [x] Удалить из seed: DEAL_TYPE, PAYMENT_TYPE, EXTENSION_SIZE записи
+- [x] Исправить рассинхрон TASK_STATUSES в shared constants
+      (было BACKLOG/TODO/REVIEW, стало NEW/IN_PROGRESS/DONE/DEFERRED/CANCELLED)
+- [x] Build: 0 TS ошибок, тесты 8/8 проходят
 
 ---
 
-## Фаза C — API
+## Фаза C — API ← СЛЕДУЮЩАЯ
 
 - [ ] Prisma migrate dev — создать миграцию для Product/Extension
 - [ ] Products CRUD модуль (NestJS): create, read, update, delete, stats
 - [ ] Extensions CRUD модуль (NestJS): create, read, update, delete
 - [ ] Stage gate валидация для Product (NEW→CREATING→DEVELOPMENT→QA→TRANSFER→DONE)
-- [ ] Stage gate валидация для Extension (NEW→DEVELOPMENT→REVIEW→DONE)
+- [ ] Stage gate валидация для Extension (NEW→DEVELOPMENT→QA→TRANSFER→DONE)
 - [ ] API: привязка задач к Product/Extension (через FK + TaskLink)
 - [ ] API: авто-задачи при создании Product (шаблоны по ProductType)
 
@@ -78,7 +57,6 @@
 
 - [ ] WEBSITE → при Creating обязателен домен, хостинг-credentials
 - [ ] MOBILE_APP → при Creating обязательны App Store / Play Store credentials
-- [ ] Auto-tasks: выровнять ключи шаблонов с ProductTypeEnum
 - [ ] Иконки/визуал продукта в Project Hub зависят от типа
 
 ### Marketing / Lead Source → действия
@@ -95,9 +73,7 @@
 ## Открытые вопросы (для обсуждения по мере продвижения)
 
 - [ ] Deal.productType/pmId/deadline — когда удалить deprecated поля (после Product UI)
-- [ ] ProductTypeEnum — оставить enum или перейти на чисто-справочный String + SystemList
 - [ ] Data migration: есть ли Orders с type=SUBSCRIPTION в текущей БД?
-- [ ] Auto-tasks ключи: WEB_APP в шаблонах vs WEBSITE в ProductTypeEnum — унифицировать
 - [ ] Бонусы: правило 80/20 (продажник/ассистент) vs текущая модель по KPI — решить
 - [ ] Remember Client Payments — новый подмодуль (не описан в коде)
 - [ ] Deal assistant (второй продажник) — не реализован

@@ -16,7 +16,12 @@ export const PROJECT_TABS = [
 export const PRODUCT_TYPES = [
   { value: 'WEBSITE', label: 'Website' },
   { value: 'MOBILE_APP', label: 'Mobile App' },
+  { value: 'WEB_APP', label: 'Web Application' },
   { value: 'CRM', label: 'CRM System' },
+  { value: 'ECOMMERCE', label: 'E-Commerce' },
+  { value: 'SAAS', label: 'SaaS Platform' },
+  { value: 'LANDING', label: 'Landing Page' },
+  { value: 'ERP', label: 'ERP System' },
   { value: 'LOGO', label: 'Logo / Branding' },
   { value: 'SMM', label: 'SMM' },
   { value: 'SEO', label: 'SEO' },

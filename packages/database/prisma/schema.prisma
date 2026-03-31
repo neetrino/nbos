@@ -115,7 +115,12 @@ model Project {
 enum ProductTypeEnum {
   WEBSITE
   MOBILE_APP
+  WEB_APP
   CRM
+  ECOMMERCE
+  SAAS
+  LANDING
+  ERP
   LOGO
   SMM
   SEO

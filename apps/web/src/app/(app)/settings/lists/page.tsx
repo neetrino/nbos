@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { List, Plus, Pencil, Trash2, RefreshCcw, ChevronDown, Tag } from 'lucide-react';
+import { List, Pencil, RefreshCcw, Tag, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
@@ -26,16 +26,13 @@ import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
 const LIST_KEY_LABELS: Record<string, string> = {
   PRODUCT_TYPE: 'Product Type',
-  DEAL_TYPE: 'Deal Type',
-  PAYMENT_TYPE: 'Payment Type',
-  EXTENSION_SIZE: 'Extension Size',
 };
 
 function getListKeyLabel(key: string): string {
   return LIST_KEY_LABELS[key] ?? key.replace(/_/g, ' ');
 }
 
-export default function SystemListsPage() {
+export function SystemListsPage() {
   const [listKeys, setListKeys] = useState<string[]>([]);
   const [options, setOptions] = useState<SystemListOption[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -44,7 +41,6 @@ export default function SystemListsPage() {
   const [includeInactive, setIncludeInactive] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOption, setEditingOption] = useState<SystemListOption | null>(null);
-  const [formCode, setFormCode] = useState('');
   const [formLabel, setFormLabel] = useState('');
   const [formSortOrder, setFormSortOrder] = useState(0);
   const [formActive, setFormActive] = useState(true);
@@ -55,9 +51,10 @@ export default function SystemListsPage() {
     setLoadingKeys(true);
     try {
       const data = await systemListsApi.getListKeys();
-      setListKeys(data.map((r) => r.listKey));
-      if (data.length > 0 && !selectedKey) {
-        setSelectedKey(data[0]!.listKey);
+      const managed = data.map((r) => r.listKey).filter((k) => k in LIST_KEY_LABELS);
+      setListKeys(managed);
+      if (managed.length > 0 && !selectedKey) {
+        setSelectedKey(managed[0]!);
       }
     } catch {
       setListKeys([]);
@@ -92,19 +89,8 @@ export default function SystemListsPage() {
     fetchOptions();
   }, [fetchOptions]);
 
-  const openCreate = () => {
-    setEditingOption(null);
-    setFormCode('');
-    setFormLabel('');
-    setFormSortOrder(options.length);
-    setFormActive(true);
-    setError(null);
-    setDialogOpen(true);
-  };
-
   const openEdit = (opt: SystemListOption) => {
     setEditingOption(opt);
-    setFormCode(opt.code);
     setFormLabel(opt.label);
     setFormSortOrder(opt.sortOrder);
     setFormActive(opt.isActive);
@@ -113,35 +99,22 @@ export default function SystemListsPage() {
   };
 
   const handleSave = async () => {
-    if (!selectedKey) return;
-    const code = formCode.trim().toUpperCase().replace(/\s+/g, '_');
+    if (!editingOption) return;
     const label = formLabel.trim();
-    if (!code || !label) {
-      setError('Code and label are required');
+    if (!label) {
+      setError('Label is required');
       return;
     }
     setSaving(true);
     setError(null);
     try {
-      if (editingOption) {
-        await systemListsApi.update(editingOption.id, {
-          code,
-          label,
-          sortOrder: formSortOrder,
-          isActive: formActive,
-        });
-      } else {
-        await systemListsApi.create({
-          listKey: selectedKey,
-          code,
-          label,
-          sortOrder: formSortOrder,
-          isActive: formActive,
-        });
-      }
+      await systemListsApi.update(editingOption.id, {
+        label,
+        sortOrder: formSortOrder,
+        isActive: formActive,
+      });
       setDialogOpen(false);
       fetchOptions();
-      fetchKeys();
     } catch (e: unknown) {
       const msg =
         e && typeof e === 'object' && 'response' in e
@@ -153,22 +126,11 @@ export default function SystemListsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this option? It may be used in Deals or other modules.')) return;
-    try {
-      await systemListsApi.delete(id);
-      fetchOptions();
-      fetchKeys();
-    } catch {
-      /* toast or setError */
-    }
-  };
-
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader
         title="System Lists"
-        description="Reference lists for Product Type, Deal Type, Payment Type, and others. Used in CRM, Finance, and across the app."
+        description="Product Type labels and display order. Codes are managed by the system and cannot be changed."
       >
         <Button
           variant="outline"
@@ -181,10 +143,6 @@ export default function SystemListsPage() {
           <RefreshCcw size={16} />
           Refresh
         </Button>
-        <Button size="sm" disabled={!selectedKey} onClick={openCreate}>
-          <Plus size={16} />
-          Add option
-        </Button>
       </PageHeader>
 
       <div className="border-border bg-card flex flex-col gap-4 rounded-xl border p-4">
@@ -192,6 +150,8 @@ export default function SystemListsPage() {
           <span className="text-muted-foreground text-sm font-medium">List:</span>
           {loadingKeys ? (
             <Skeleton className="h-9 w-48 rounded-lg" />
+          ) : listKeys.length === 0 ? (
+            <span className="text-muted-foreground text-sm">No configurable lists</span>
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {listKeys.map((key) => (
@@ -217,6 +177,15 @@ export default function SystemListsPage() {
           </label>
         </div>
 
+        <div className="bg-muted/50 flex items-start gap-2 rounded-lg px-3 py-2">
+          <ShieldAlert size={16} className="text-muted-foreground mt-0.5 shrink-0" />
+          <p className="text-muted-foreground text-xs">
+            You can edit <strong>labels</strong> and <strong>sort order</strong> for display
+            purposes. Codes are system-managed and tied to business logic (auto-tasks, validations,
+            workflows). To add or remove product types, contact a developer.
+          </p>
+        </div>
+
         {selectedKey && (
           <>
             <div className="border-border border-t pt-3">
@@ -235,12 +204,7 @@ export default function SystemListsPage() {
               <EmptyState
                 icon={List}
                 title="No options"
-                description={`Add options for ${getListKeyLabel(selectedKey)}. They will appear in dropdowns across the app.`}
-                action={
-                  <Button onClick={openCreate}>
-                    <Plus size={16} /> Add first option
-                  </Button>
-                }
+                description={`No options found for ${getListKeyLabel(selectedKey)}.`}
               />
             ) : (
               <div className="overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800">
@@ -251,13 +215,15 @@ export default function SystemListsPage() {
                       <TableHead>Label</TableHead>
                       <TableHead className="w-20">Order</TableHead>
                       <TableHead className="w-20">Active</TableHead>
-                      <TableHead className="w-24" />
+                      <TableHead className="w-16" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {options.map((opt) => (
                       <TableRow key={opt.id}>
-                        <TableCell className="font-mono text-sm">{opt.code}</TableCell>
+                        <TableCell className="font-mono text-xs text-stone-500">
+                          {opt.code}
+                        </TableCell>
                         <TableCell>{opt.label}</TableCell>
                         <TableCell>{opt.sortOrder}</TableCell>
                         <TableCell>
@@ -268,24 +234,14 @@ export default function SystemListsPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => openEdit(opt)}
-                            >
-                              <Pencil size={14} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-red-500 hover:text-red-600"
-                              onClick={() => handleDelete(opt.id)}
-                            >
-                              <Trash2 size={14} />
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => openEdit(opt)}
+                          >
+                            <Pencil size={14} />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -301,31 +257,15 @@ export default function SystemListsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingOption ? 'Edit option' : 'Add option'}
-              {selectedKey && (
+              Edit label
+              {editingOption && (
                 <span className="text-muted-foreground ml-2 text-sm font-normal">
-                  — {getListKeyLabel(selectedKey)}
+                  — {editingOption.code}
                 </span>
               )}
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="code">Code</Label>
-              <Input
-                id="code"
-                value={formCode}
-                onChange={(e) => setFormCode(e.target.value)}
-                placeholder="e.g. WEBSITE"
-                disabled={!!editingOption}
-                className="font-mono"
-              />
-              {editingOption && (
-                <p className="text-muted-foreground text-xs">
-                  Code cannot be changed when editing.
-                </p>
-              )}
-            </div>
             <div className="grid gap-2">
               <Label htmlFor="label">Label</Label>
               <Input
@@ -344,16 +284,14 @@ export default function SystemListsPage() {
                 onChange={(e) => setFormSortOrder(parseInt(e.target.value, 10) || 0)}
               />
             </div>
-            {editingOption && (
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formActive}
-                  onChange={(e) => setFormActive(e.target.checked)}
-                />
-                <span className="text-sm">Active (shown in dropdowns)</span>
-              </label>
-            )}
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formActive}
+                onChange={(e) => setFormActive(e.target.checked)}
+              />
+              <span className="text-sm">Active (shown in dropdowns)</span>
+            </label>
             {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
           <DialogFooter>
@@ -361,7 +299,7 @@ export default function SystemListsPage() {
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : editingOption ? 'Update' : 'Create'}
+              {saving ? 'Saving...' : 'Update'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -369,3 +307,5 @@ export default function SystemListsPage() {
     </div>
   );
 }
+
+export default SystemListsPage;

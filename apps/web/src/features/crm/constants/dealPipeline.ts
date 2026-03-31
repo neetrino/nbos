@@ -96,6 +96,9 @@ export const PRODUCT_TYPES = [
   { value: 'SAAS', label: 'SaaS Platform' },
   { value: 'LANDING', label: 'Landing Page' },
   { value: 'ERP', label: 'ERP System' },
+  { value: 'LOGO', label: 'Logo' },
+  { value: 'SMM', label: 'SMM' },
+  { value: 'SEO', label: 'SEO' },
   { value: 'OTHER', label: 'Other' },
 ] as const;
 

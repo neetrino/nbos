@@ -53,14 +53,7 @@ export const SUBSCRIPTION_TYPES = [
   'PARTNER_SERVICE',
 ] as const;
 
-export const TASK_STATUSES = [
-  'BACKLOG',
-  'TODO',
-  'IN_PROGRESS',
-  'REVIEW',
-  'DONE',
-  'CANCELLED',
-] as const;
+export const TASK_STATUSES = ['NEW', 'IN_PROGRESS', 'DONE', 'DEFERRED', 'CANCELLED'] as const;
 
 export const TASK_PRIORITIES = ['CRITICAL', 'HIGH', 'NORMAL', 'LOW'] as const;
 
@@ -145,7 +138,12 @@ export const PROJECT_TYPES = ['WHITE_LABEL', 'MIX', 'CUSTOM_CODE'] as const;
 export const PRODUCT_TYPES = [
   'WEBSITE',
   'MOBILE_APP',
+  'WEB_APP',
   'CRM',
+  'ECOMMERCE',
+  'SAAS',
+  'LANDING',
+  'ERP',
   'LOGO',
   'SMM',
   'SEO',

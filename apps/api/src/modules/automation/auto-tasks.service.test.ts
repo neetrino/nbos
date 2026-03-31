@@ -22,11 +22,19 @@ describe('AutoTasksService', () => {
       expect(prisma.task.create).toHaveBeenCalledTimes(8);
     });
 
-    it('should generate 5 tasks for DESIGN type', async () => {
+    it('should generate 7 tasks for WEBSITE type', async () => {
       prisma.task.findFirst.mockResolvedValue(null);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
 
-      const result = await service.generateTasksForDeal('deal-2', 'DESIGN', 'user-1');
+      const result = await service.generateTasksForDeal('deal-w', 'WEBSITE', 'user-1');
+      expect(result.created).toBe(7);
+    });
+
+    it('should generate 5 tasks for LOGO type', async () => {
+      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
+
+      const result = await service.generateTasksForDeal('deal-2', 'LOGO', 'user-1');
       expect(result.created).toBe(5);
     });
 
@@ -36,6 +44,22 @@ describe('AutoTasksService', () => {
 
       const result = await service.generateTasksForDeal('deal-3', 'MOBILE_APP', 'user-1');
       expect(result.created).toBe(8);
+    });
+
+    it('should generate 9 tasks for ECOMMERCE type', async () => {
+      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
+
+      const result = await service.generateTasksForDeal('deal-ec', 'ECOMMERCE', 'user-1');
+      expect(result.created).toBe(9);
+    });
+
+    it('should generate 6 tasks for SEO type', async () => {
+      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
+
+      const result = await service.generateTasksForDeal('deal-seo', 'SEO', 'user-1');
+      expect(result.created).toBe(6);
     });
 
     it('should fallback to OTHER template for unknown type', async () => {
@@ -50,7 +74,7 @@ describe('AutoTasksService', () => {
       prisma.task.findFirst.mockResolvedValue({ code: 'T-2026-0010' });
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0011' });
 
-      await service.generateTasksForDeal('deal-1', 'INTEGRATION', 'user-1');
+      await service.generateTasksForDeal('deal-1', 'WEBSITE', 'user-1');
 
       const firstCall = prisma.task.create.mock.calls[0]![0] as { data: { code: string } };
       expect(firstCall.data.code).toBe('T-2026-0011');

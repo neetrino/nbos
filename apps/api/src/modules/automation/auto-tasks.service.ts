@@ -2,9 +2,20 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 
-type ProductType = 'WEB_APP' | 'MOBILE_APP' | 'DESIGN' | 'ERP_MODULE' | 'INTEGRATION' | 'OTHER';
-
-const TASK_TEMPLATES: Record<ProductType, string[]> = {
+/**
+ * Ключи совпадают с ProductTypeEnum в Prisma schema.
+ * Типы без собственного шаблона используют fallback → OTHER.
+ */
+const TASK_TEMPLATES: Record<string, string[]> = {
+  WEBSITE: [
+    'Setup project repo',
+    'UI/UX design',
+    'Frontend development',
+    'Backend development',
+    'Testing & QA',
+    'Deployment & DNS',
+    'Client handover',
+  ],
   WEB_APP: [
     'Setup project repo',
     'UI/UX design',
@@ -25,14 +36,7 @@ const TASK_TEMPLATES: Record<ProductType, string[]> = {
     'Release',
     'Client handover',
   ],
-  DESIGN: [
-    'Client brief',
-    'Mood board & concepts',
-    'Design iterations',
-    'Final deliverables',
-    'Client handover',
-  ],
-  ERP_MODULE: [
+  CRM: [
     'Requirements analysis',
     'Database schema',
     'Backend development',
@@ -42,7 +46,69 @@ const TASK_TEMPLATES: Record<ProductType, string[]> = {
     'UAT',
     'Deployment',
   ],
-  INTEGRATION: ['API analysis', 'Technical design', 'Development', 'Testing', 'Deployment'],
+  ECOMMERCE: [
+    'Requirements analysis',
+    'UI/UX design',
+    'Product catalog setup',
+    'Payment integration',
+    'Frontend development',
+    'Backend development',
+    'Testing & QA',
+    'Deployment',
+    'Client handover',
+  ],
+  SAAS: [
+    'Setup project repo',
+    'Architecture design',
+    'UI/UX design',
+    'Frontend development',
+    'Backend development',
+    'API integration',
+    'Auth & billing setup',
+    'Testing & QA',
+    'Deployment',
+    'Client handover',
+  ],
+  LANDING: [
+    'Content & copy',
+    'UI/UX design',
+    'Frontend development',
+    'Testing & QA',
+    'Deployment & DNS',
+    'Client handover',
+  ],
+  ERP: [
+    'Requirements analysis',
+    'Database schema',
+    'Backend development',
+    'Frontend UI',
+    'Integration testing',
+    'Data migration',
+    'UAT',
+    'Deployment',
+  ],
+  LOGO: [
+    'Client brief',
+    'Mood board & concepts',
+    'Design iterations',
+    'Final deliverables',
+    'Client handover',
+  ],
+  SMM: [
+    'Strategy & content plan',
+    'Visual content creation',
+    'Account setup',
+    'Launch & monitoring',
+    'Monthly report',
+  ],
+  SEO: [
+    'Technical audit',
+    'Keyword research',
+    'On-page optimization',
+    'Content plan',
+    'Link building',
+    'Monthly report',
+  ],
   OTHER: ['Requirements', 'Development', 'Testing', 'Delivery'],
 };
 
@@ -91,7 +157,7 @@ export class AutoTasksService {
   }
 
   private getTemplateByProductType(type: string): string[] {
-    return TASK_TEMPLATES[type as ProductType] ?? TASK_TEMPLATES.OTHER;
+    return TASK_TEMPLATES[type] ?? TASK_TEMPLATES.OTHER;
   }
 
   private async generateCode(): Promise<string> {
