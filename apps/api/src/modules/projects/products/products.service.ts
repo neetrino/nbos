@@ -2,6 +2,7 @@ import { Injectable, Inject, NotFoundException, BadRequestException } from '@nes
 import {
   PrismaClient,
   type Prisma,
+  type ProductCategoryEnum,
   type ProductTypeEnum,
   type ProductStatusEnum,
 } from '@nbos/database';
@@ -32,6 +33,7 @@ const ALLOWED_TRANSITIONS: Record<ProductStatusEnum, ProductStatusEnum[]> = {
 interface CreateProductDto {
   projectId: string;
   name: string;
+  productCategory: string;
   productType: string;
   pmId?: string;
   deadline?: string;
@@ -41,6 +43,7 @@ interface CreateProductDto {
 
 interface UpdateProductDto {
   name?: string;
+  productCategory?: string;
   productType?: string;
   pmId?: string | null;
   deadline?: string | null;
@@ -53,6 +56,7 @@ interface ProductQueryParams {
   pageSize?: number;
   projectId?: string;
   status?: string;
+  productCategory?: string;
   productType?: string;
   pmId?: string;
   search?: string;
@@ -66,11 +70,21 @@ export class ProductsService {
   ) {}
 
   async findAll(params: ProductQueryParams) {
-    const { page = 1, pageSize = 20, projectId, status, productType, pmId, search } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      projectId,
+      status,
+      productCategory,
+      productType,
+      pmId,
+      search,
+    } = params;
     const where: Prisma.ProductWhereInput = {};
 
     if (projectId) where.projectId = projectId;
     if (status) where.status = status as ProductStatusEnum;
+    if (productCategory) where.productCategory = productCategory as ProductCategoryEnum;
     if (productType) where.productType = productType as ProductTypeEnum;
     if (pmId) where.pmId = pmId;
     if (search) {
@@ -139,6 +153,7 @@ export class ProductsService {
       data: {
         projectId: data.projectId,
         name: data.name,
+        productCategory: data.productCategory as ProductCategoryEnum,
         productType: data.productType as ProductTypeEnum,
         pmId: data.pmId,
         deadline: data.deadline ? new Date(data.deadline) : undefined,
@@ -158,6 +173,9 @@ export class ProductsService {
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
+        ...(data.productCategory !== undefined && {
+          productCategory: data.productCategory as ProductCategoryEnum,
+        }),
         ...(data.productType !== undefined && {
           productType: data.productType as ProductTypeEnum,
         }),

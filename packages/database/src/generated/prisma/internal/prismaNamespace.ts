@@ -2943,6 +2943,7 @@ export const ProductScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
   name: 'name',
+  productCategory: 'productCategory',
   productType: 'productType',
   status: 'status',
   pmId: 'pmId',
@@ -3012,6 +3013,7 @@ export const DealScalarFieldEnum = {
   sourcePartnerId: 'sourcePartnerId',
   sourceContactId: 'sourceContactId',
   notes: 'notes',
+  productCategory: 'productCategory',
   productType: 'productType',
   pmId: 'pmId',
   deadline: 'deadline',
@@ -3587,6 +3589,22 @@ export type ListEnumProjectTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>;
+
+/**
+ * Reference to a field of type 'ProductCategoryEnum'
+ */
+export type EnumProductCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductCategoryEnum'
+>;
+
+/**
+ * Reference to a field of type 'ProductCategoryEnum[]'
+ */
+export type ListEnumProductCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductCategoryEnum[]'
+>;
 
 /**
  * Reference to a field of type 'ProductTypeEnum'

@@ -19,7 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DEAL_TYPES, PAYMENT_TYPES } from '../constants/dealPipeline';
+import {
+  DEAL_TYPES,
+  PRODUCT_CATEGORIES,
+  PRODUCT_TYPES,
+  PRODUCT_TYPES_BY_CATEGORY,
+  PAYMENT_TYPES,
+} from '../constants/dealPipeline';
 import { dealsApi } from '@/lib/api/deals';
 
 interface CreateDealDialogProps {
@@ -44,11 +50,24 @@ export function CreateDealDialog({
     name: '',
     contactId: prefill?.contactId ?? ('' as string),
     type: 'PRODUCT',
+    productCategory: '',
+    productType: '',
     amount: '',
     paymentType: 'SPLIT_50_50',
     sellerId: '',
     notes: '',
   });
+
+  const showCategoryField = form.type === 'PRODUCT' || form.type === 'OUTSOURCE';
+
+  const filteredProductTypes = (() => {
+    if (!form.productCategory) return [];
+    const allowed = PRODUCT_TYPES_BY_CATEGORY[form.productCategory] ?? [];
+    if (allowed.length === 0) return PRODUCT_TYPES.map((t) => ({ value: t.value, label: t.label }));
+    return PRODUCT_TYPES.filter((t) => allowed.includes(t.value) || t.value === 'OTHER').map(
+      (t) => ({ value: t.value, label: t.label }),
+    );
+  })();
 
   const canSubmit = form.contactId && form.type && form.sellerId;
 
@@ -66,6 +85,8 @@ export function CreateDealDialog({
         paymentType: form.paymentType || undefined,
         sellerId: form.sellerId,
         notes: form.notes || undefined,
+        productCategory: form.productCategory || undefined,
+        productType: form.productType || undefined,
       });
       onCreated();
       onOpenChange(false);
@@ -146,6 +167,51 @@ export function CreateDealDialog({
               </Select>
             </div>
           </div>
+
+          {showCategoryField && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Product Category</Label>
+                <Select
+                  value={form.productCategory || undefined}
+                  onValueChange={(v) =>
+                    setForm({ ...form, productCategory: v ?? '', productType: '' })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {form.productCategory && (
+                <div>
+                  <Label>Product Type</Label>
+                  <Select
+                    value={form.productType || undefined}
+                    onValueChange={(v) => setForm({ ...form, productType: v ?? '' })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredProductTypes.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
 
           <div>
             <Label>Amount (AMD)</Label>

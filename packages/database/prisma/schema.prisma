@@ -112,8 +112,17 @@ model Project {
   @@map("projects")
 }
 
+enum ProductCategoryEnum {
+  CODE
+  WORDPRESS
+  SHOPIFY
+  MARKETING
+  OTHER
+}
+
 enum ProductTypeEnum {
-  WEBSITE
+  BUSINESS_CARD_WEBSITE
+  COMPANY_WEBSITE
   MOBILE_APP
   WEB_APP
   CRM
@@ -122,8 +131,11 @@ enum ProductTypeEnum {
   LANDING
   ERP
   LOGO
-  SMM
+  BRANDING
+  DESIGN
   SEO
+  PPC
+  SMM
   OTHER
 }
 
@@ -139,11 +151,12 @@ enum ProductStatusEnum {
 }
 
 model Product {
-  id                  String            @id @default(uuid())
-  projectId           String            @map("project_id")
+  id                  String              @id @default(uuid())
+  projectId           String              @map("project_id")
   name                String
-  productType         ProductTypeEnum   @map("product_type")
-  status              ProductStatusEnum @default(NEW)
+  productCategory     ProductCategoryEnum @map("product_category")
+  productType         ProductTypeEnum     @map("product_type")
+  status              ProductStatusEnum   @default(NEW)
   pmId                String?           @map("pm_id")
   deadline            DateTime?
   description         String?
@@ -281,8 +294,9 @@ model Deal {
   sourcePartnerId  String?           @map("source_partner_id")
   sourceContactId  String?           @map("source_contact_id")
   notes            String?
-  productType      String?           @map("product_type")
-  pmId             String?           @map("pm_id")
+  productCategory  ProductCategoryEnum? @map("product_category")
+  productType      String?              @map("product_type")
+  pmId             String?              @map("pm_id")
   deadline         DateTime?
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")

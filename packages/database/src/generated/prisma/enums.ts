@@ -40,13 +40,32 @@ export const ProjectType = {
 
 export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType];
 
+export const ProductCategoryEnum = {
+  CODE: 'CODE',
+  WORDPRESS: 'WORDPRESS',
+  SHOPIFY: 'SHOPIFY',
+  MARKETING: 'MARKETING',
+  OTHER: 'OTHER',
+} as const;
+
+export type ProductCategoryEnum = (typeof ProductCategoryEnum)[keyof typeof ProductCategoryEnum];
+
 export const ProductTypeEnum = {
-  WEBSITE: 'WEBSITE',
+  BUSINESS_CARD_WEBSITE: 'BUSINESS_CARD_WEBSITE',
+  COMPANY_WEBSITE: 'COMPANY_WEBSITE',
   MOBILE_APP: 'MOBILE_APP',
+  WEB_APP: 'WEB_APP',
   CRM: 'CRM',
+  ECOMMERCE: 'ECOMMERCE',
+  SAAS: 'SAAS',
+  LANDING: 'LANDING',
+  ERP: 'ERP',
   LOGO: 'LOGO',
-  SMM: 'SMM',
+  BRANDING: 'BRANDING',
+  DESIGN: 'DESIGN',
   SEO: 'SEO',
+  PPC: 'PPC',
+  SMM: 'SMM',
   OTHER: 'OTHER',
 } as const;
 

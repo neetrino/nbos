@@ -26,6 +26,7 @@ export class ProductsController {
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'productCategory', required: false })
   @ApiQuery({ name: 'productType', required: false })
   @ApiQuery({ name: 'pmId', required: false })
   @ApiQuery({ name: 'search', required: false })
@@ -34,6 +35,7 @@ export class ProductsController {
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
     @Query('status') status?: string,
+    @Query('productCategory') productCategory?: string,
     @Query('productType') productType?: string,
     @Query('pmId') pmId?: string,
     @Query('search') search?: string,
@@ -43,6 +45,7 @@ export class ProductsController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
       status,
+      productCategory,
       productType,
       pmId,
       search,
@@ -69,6 +72,7 @@ export class ProductsController {
     body: {
       projectId: string;
       name: string;
+      productCategory: string;
       productType: string;
       pmId?: string;
       deadline?: string;
@@ -86,6 +90,7 @@ export class ProductsController {
     @Body()
     body: {
       name?: string;
+      productCategory?: string;
       productType?: string;
       pmId?: string | null;
       deadline?: string | null;

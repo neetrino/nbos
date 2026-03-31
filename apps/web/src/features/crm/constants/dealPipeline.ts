@@ -87,8 +87,17 @@ export const DEAL_TYPES = [
   { value: 'OUTSOURCE', label: 'Outsource', description: 'Outsourced to a partner' },
 ] as const;
 
+export const PRODUCT_CATEGORIES = [
+  { value: 'CODE', label: 'Code' },
+  { value: 'WORDPRESS', label: 'WordPress' },
+  { value: 'SHOPIFY', label: 'Shopify' },
+  { value: 'MARKETING', label: 'Marketing' },
+  { value: 'OTHER', label: 'Other' },
+] as const;
+
 export const PRODUCT_TYPES = [
-  { value: 'WEBSITE', label: 'Website' },
+  { value: 'BUSINESS_CARD_WEBSITE', label: 'Business Card Website' },
+  { value: 'COMPANY_WEBSITE', label: 'Company Website' },
   { value: 'MOBILE_APP', label: 'Mobile App' },
   { value: 'WEB_APP', label: 'Web Application' },
   { value: 'CRM', label: 'CRM System' },
@@ -97,10 +106,31 @@ export const PRODUCT_TYPES = [
   { value: 'LANDING', label: 'Landing Page' },
   { value: 'ERP', label: 'ERP System' },
   { value: 'LOGO', label: 'Logo' },
-  { value: 'SMM', label: 'SMM' },
+  { value: 'BRANDING', label: 'Branding' },
+  { value: 'DESIGN', label: 'Design' },
   { value: 'SEO', label: 'SEO' },
+  { value: 'PPC', label: 'PPC' },
+  { value: 'SMM', label: 'SMM' },
   { value: 'OTHER', label: 'Other' },
 ] as const;
+
+export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
+  CODE: [
+    'BUSINESS_CARD_WEBSITE',
+    'COMPANY_WEBSITE',
+    'MOBILE_APP',
+    'WEB_APP',
+    'CRM',
+    'ECOMMERCE',
+    'SAAS',
+    'LANDING',
+    'ERP',
+  ],
+  WORDPRESS: ['BUSINESS_CARD_WEBSITE', 'COMPANY_WEBSITE', 'ECOMMERCE', 'LANDING'],
+  SHOPIFY: ['ECOMMERCE'],
+  MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
+  OTHER: [],
+};
 
 export const PAYMENT_TYPES = [
   { value: 'CLASSIC', label: 'Classic' },

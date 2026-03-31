@@ -11,6 +11,7 @@ export interface Product {
   id: string;
   projectId: string;
   name: string;
+  productCategory: string;
   productType: string;
   status: string;
   pmId: string | null;
@@ -83,6 +84,7 @@ interface ListData {
 export interface CreateProductData {
   projectId: string;
   name: string;
+  productCategory: string;
   productType: string;
   pmId?: string;
   deadline?: string;
@@ -92,6 +94,7 @@ export interface CreateProductData {
 
 export interface UpdateProductData {
   name?: string;
+  productCategory?: string;
   productType?: string;
   pmId?: string | null;
   deadline?: string | null;

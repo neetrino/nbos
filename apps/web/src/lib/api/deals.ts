@@ -35,7 +35,11 @@ export interface Deal {
   sourcePartnerId: string | null;
   sourceContactId: string | null;
   notes: string | null;
+  productCategory: string | null;
   productType: string | null;
+  pmId: string | null;
+  deadline: string | null;
+  pm: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
@@ -86,6 +90,10 @@ export const dealsApi = {
     sellerId: string;
     source?: string;
     notes?: string;
+    productCategory?: string;
+    productType?: string;
+    pmId?: string;
+    deadline?: string;
   }): Promise<Deal> {
     const resp = await api.post<Deal>('/api/crm/deals', data);
     return resp.data;

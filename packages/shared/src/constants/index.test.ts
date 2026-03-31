@@ -91,13 +91,17 @@ describe('Constants', () => {
     expect(PROJECT_TYPES).toEqual(['WHITE_LABEL', 'MIX', 'CUSTOM_CODE']);
   });
 
-  it('PRODUCT_TYPES has 12 types', () => {
-    expect(PRODUCT_TYPES).toHaveLength(12);
-    expect(PRODUCT_TYPES).toContain('WEBSITE');
+  it('PRODUCT_TYPES has 16 types', () => {
+    expect(PRODUCT_TYPES).toHaveLength(16);
+    expect(PRODUCT_TYPES).toContain('BUSINESS_CARD_WEBSITE');
+    expect(PRODUCT_TYPES).toContain('COMPANY_WEBSITE');
     expect(PRODUCT_TYPES).toContain('MOBILE_APP');
     expect(PRODUCT_TYPES).toContain('WEB_APP');
     expect(PRODUCT_TYPES).toContain('CRM');
     expect(PRODUCT_TYPES).toContain('ECOMMERCE');
+    expect(PRODUCT_TYPES).toContain('BRANDING');
+    expect(PRODUCT_TYPES).toContain('DESIGN');
+    expect(PRODUCT_TYPES).toContain('PPC');
     expect(PRODUCT_TYPES).toContain('OTHER');
   });
 

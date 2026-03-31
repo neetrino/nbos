@@ -52,6 +52,7 @@ export type DealMinAggregateOutputType = {
   sourcePartnerId: string | null;
   sourceContactId: string | null;
   notes: string | null;
+  productCategory: $Enums.ProductCategoryEnum | null;
   productType: string | null;
   pmId: string | null;
   deadline: Date | null;
@@ -78,6 +79,7 @@ export type DealMaxAggregateOutputType = {
   sourcePartnerId: string | null;
   sourceContactId: string | null;
   notes: string | null;
+  productCategory: $Enums.ProductCategoryEnum | null;
   productType: string | null;
   pmId: string | null;
   deadline: Date | null;
@@ -104,6 +106,7 @@ export type DealCountAggregateOutputType = {
   sourcePartnerId: number;
   sourceContactId: number;
   notes: number;
+  productCategory: number;
   productType: number;
   pmId: number;
   deadline: number;
@@ -139,6 +142,7 @@ export type DealMinAggregateInputType = {
   sourcePartnerId?: true;
   sourceContactId?: true;
   notes?: true;
+  productCategory?: true;
   productType?: true;
   pmId?: true;
   deadline?: true;
@@ -165,6 +169,7 @@ export type DealMaxAggregateInputType = {
   sourcePartnerId?: true;
   sourceContactId?: true;
   notes?: true;
+  productCategory?: true;
   productType?: true;
   pmId?: true;
   deadline?: true;
@@ -191,6 +196,7 @@ export type DealCountAggregateInputType = {
   sourcePartnerId?: true;
   sourceContactId?: true;
   notes?: true;
+  productCategory?: true;
   productType?: true;
   pmId?: true;
   deadline?: true;
@@ -305,6 +311,7 @@ export type DealGroupByOutputType = {
   sourcePartnerId: string | null;
   sourceContactId: string | null;
   notes: string | null;
+  productCategory: $Enums.ProductCategoryEnum | null;
   productType: string | null;
   pmId: string | null;
   deadline: Date | null;
@@ -357,6 +364,10 @@ export type DealWhereInput = {
   sourcePartnerId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   sourceContactId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   notes?: Prisma.StringNullableFilter<'Deal'> | string | null;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumNullableFilter<'Deal'>
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.StringNullableFilter<'Deal'> | string | null;
   pmId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
@@ -397,6 +408,7 @@ export type DealOrderByWithRelationInput = {
   sourcePartnerId?: Prisma.SortOrderInput | Prisma.SortOrder;
   sourceContactId?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
+  productCategory?: Prisma.SortOrderInput | Prisma.SortOrder;
   productType?: Prisma.SortOrderInput | Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -441,6 +453,10 @@ export type DealWhereUniqueInput = Prisma.AtLeast<
     sourcePartnerId?: Prisma.StringNullableFilter<'Deal'> | string | null;
     sourceContactId?: Prisma.StringNullableFilter<'Deal'> | string | null;
     notes?: Prisma.StringNullableFilter<'Deal'> | string | null;
+    productCategory?:
+      | Prisma.EnumProductCategoryEnumNullableFilter<'Deal'>
+      | $Enums.ProductCategoryEnum
+      | null;
     productType?: Prisma.StringNullableFilter<'Deal'> | string | null;
     pmId?: Prisma.StringNullableFilter<'Deal'> | string | null;
     deadline?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
@@ -486,6 +502,7 @@ export type DealOrderByWithAggregationInput = {
   sourcePartnerId?: Prisma.SortOrderInput | Prisma.SortOrder;
   sourceContactId?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
+  productCategory?: Prisma.SortOrderInput | Prisma.SortOrder;
   productType?: Prisma.SortOrderInput | Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -532,6 +549,10 @@ export type DealScalarWhereWithAggregatesInput = {
   sourcePartnerId?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
   sourceContactId?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
   notes?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumNullableWithAggregatesFilter<'Deal'>
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
   pmId?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
   deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Deal'> | Date | string | null;
@@ -552,6 +573,7 @@ export type DealCreateInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -585,6 +607,7 @@ export type DealUncheckedCreateInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -618,6 +641,10 @@ export type DealUpdateInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -663,6 +690,10 @@ export type DealUncheckedUpdateInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -690,6 +721,7 @@ export type DealCreateManyInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -722,6 +754,10 @@ export type DealUpdateManyMutationInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -759,6 +795,10 @@ export type DealUncheckedUpdateManyInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -800,6 +840,7 @@ export type DealCountOrderByAggregateInput = {
   sourcePartnerId?: Prisma.SortOrder;
   sourceContactId?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
+  productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
@@ -830,6 +871,7 @@ export type DealMaxOrderByAggregateInput = {
   sourcePartnerId?: Prisma.SortOrder;
   sourceContactId?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
+  productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
@@ -856,6 +898,7 @@ export type DealMinOrderByAggregateInput = {
   sourcePartnerId?: Prisma.SortOrder;
   sourceContactId?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
+  productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
@@ -1199,6 +1242,10 @@ export type NullableEnumLeadSourceEnumFieldUpdateOperationsInput = {
   set?: $Enums.LeadSourceEnum | null;
 };
 
+export type NullableEnumProductCategoryEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ProductCategoryEnum | null;
+};
+
 export type DealCreateNestedOneWithoutOrdersInput = {
   create?: Prisma.XOR<
     Prisma.DealCreateWithoutOrdersInput,
@@ -1474,6 +1521,7 @@ export type DealCreateWithoutContactInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -1505,6 +1553,7 @@ export type DealUncheckedCreateWithoutContactInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -1539,6 +1588,7 @@ export type DealCreateWithoutSourceContactInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -1570,6 +1620,7 @@ export type DealUncheckedCreateWithoutSourceContactInput = {
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -1647,6 +1698,10 @@ export type DealScalarWhereInput = {
   sourcePartnerId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   sourceContactId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   notes?: Prisma.StringNullableFilter<'Deal'> | string | null;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumNullableFilter<'Deal'>
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.StringNullableFilter<'Deal'> | string | null;
   pmId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
@@ -1695,6 +1750,7 @@ export type DealCreateWithoutCompanyInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -1726,6 +1782,7 @@ export type DealUncheckedCreateWithoutCompanyInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -1788,6 +1845,7 @@ export type DealCreateWithoutLeadInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -1819,6 +1877,7 @@ export type DealUncheckedCreateWithoutLeadInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -1868,6 +1927,10 @@ export type DealUpdateWithoutLeadInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1911,6 +1974,10 @@ export type DealUncheckedUpdateWithoutLeadInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1932,6 +1999,7 @@ export type DealCreateWithoutOrdersInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -1964,6 +2032,7 @@ export type DealUncheckedCreateWithoutOrdersInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -2024,6 +2093,10 @@ export type DealUpdateWithoutOrdersInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2068,6 +2141,10 @@ export type DealUncheckedUpdateWithoutOrdersInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2088,6 +2165,7 @@ export type DealCreateWithoutSellerInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -2119,6 +2197,7 @@ export type DealUncheckedCreateWithoutSellerInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -2153,6 +2232,7 @@ export type DealCreateWithoutPmInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -2185,6 +2265,7 @@ export type DealUncheckedCreateWithoutPmInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -2262,6 +2343,7 @@ export type DealCreateWithoutSourcePartnerInput = {
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -2293,6 +2375,7 @@ export type DealUncheckedCreateWithoutSourcePartnerInput = {
   sourceDetail?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -2360,6 +2443,7 @@ export type DealCreateManyContactInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -2385,6 +2469,7 @@ export type DealCreateManySourceContactInput = {
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -2417,6 +2502,10 @@ export type DealUpdateWithoutContactInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2460,6 +2549,10 @@ export type DealUncheckedUpdateWithoutContactInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2498,6 +2591,10 @@ export type DealUncheckedUpdateManyWithoutContactInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2530,6 +2627,10 @@ export type DealUpdateWithoutSourceContactInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2573,6 +2674,10 @@ export type DealUncheckedUpdateWithoutSourceContactInput = {
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2611,6 +2716,10 @@ export type DealUncheckedUpdateManyWithoutSourceContactInput = {
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2636,6 +2745,7 @@ export type DealCreateManyCompanyInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -2668,6 +2778,10 @@ export type DealUpdateWithoutCompanyInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2711,6 +2825,10 @@ export type DealUncheckedUpdateWithoutCompanyInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2749,6 +2867,10 @@ export type DealUncheckedUpdateManyWithoutCompanyInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2774,6 +2896,7 @@ export type DealCreateManySellerInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -2800,6 +2923,7 @@ export type DealCreateManyPmInput = {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   deadline?: Date | string | null;
   createdAt?: Date | string;
@@ -2831,6 +2955,10 @@ export type DealUpdateWithoutSellerInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2874,6 +3002,10 @@ export type DealUncheckedUpdateWithoutSellerInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2912,6 +3044,10 @@ export type DealUncheckedUpdateManyWithoutSellerInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2944,6 +3080,10 @@ export type DealUpdateWithoutPmInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2988,6 +3128,10 @@ export type DealUncheckedUpdateWithoutPmInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3026,6 +3170,10 @@ export type DealUncheckedUpdateManyWithoutPmInput = {
   sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3050,6 +3198,7 @@ export type DealCreateManySourcePartnerInput = {
   sourceDetail?: string | null;
   sourceContactId?: string | null;
   notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
@@ -3082,6 +3231,10 @@ export type DealUpdateWithoutSourcePartnerInput = {
     | null;
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3125,6 +3278,10 @@ export type DealUncheckedUpdateWithoutSourcePartnerInput = {
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3163,6 +3320,10 @@ export type DealUncheckedUpdateManyWithoutSourcePartnerInput = {
   sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
   productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3227,6 +3388,7 @@ export type DealSelect<
     sourcePartnerId?: boolean;
     sourceContactId?: boolean;
     notes?: boolean;
+    productCategory?: boolean;
     productType?: boolean;
     pmId?: boolean;
     deadline?: boolean;
@@ -3267,6 +3429,7 @@ export type DealSelectCreateManyAndReturn<
     sourcePartnerId?: boolean;
     sourceContactId?: boolean;
     notes?: boolean;
+    productCategory?: boolean;
     productType?: boolean;
     pmId?: boolean;
     deadline?: boolean;
@@ -3305,6 +3468,7 @@ export type DealSelectUpdateManyAndReturn<
     sourcePartnerId?: boolean;
     sourceContactId?: boolean;
     notes?: boolean;
+    productCategory?: boolean;
     productType?: boolean;
     pmId?: boolean;
     deadline?: boolean;
@@ -3340,6 +3504,7 @@ export type DealSelectScalar = {
   sourcePartnerId?: boolean;
   sourceContactId?: boolean;
   notes?: boolean;
+  productCategory?: boolean;
   productType?: boolean;
   pmId?: boolean;
   deadline?: boolean;
@@ -3368,6 +3533,7 @@ export type DealOmit<
   | 'sourcePartnerId'
   | 'sourceContactId'
   | 'notes'
+  | 'productCategory'
   | 'productType'
   | 'pmId'
   | 'deadline'
@@ -3445,6 +3611,7 @@ export type $DealPayload<
       sourcePartnerId: string | null;
       sourceContactId: string | null;
       notes: string | null;
+      productCategory: $Enums.ProductCategoryEnum | null;
       productType: string | null;
       pmId: string | null;
       deadline: Date | null;
@@ -4113,6 +4280,7 @@ export interface DealFieldRefs {
   readonly sourcePartnerId: Prisma.FieldRef<'Deal', 'String'>;
   readonly sourceContactId: Prisma.FieldRef<'Deal', 'String'>;
   readonly notes: Prisma.FieldRef<'Deal', 'String'>;
+  readonly productCategory: Prisma.FieldRef<'Deal', 'ProductCategoryEnum'>;
   readonly productType: Prisma.FieldRef<'Deal', 'String'>;
   readonly pmId: Prisma.FieldRef<'Deal', 'String'>;
   readonly deadline: Prisma.FieldRef<'Deal', 'DateTime'>;

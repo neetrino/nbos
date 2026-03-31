@@ -26,7 +26,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InlineField, SearchField, StatusBadge } from '@/components/shared';
-import { DEAL_TYPES, PRODUCT_TYPES, PAYMENT_TYPES, formatAmount } from '../constants/dealPipeline';
+import {
+  DEAL_TYPES,
+  PRODUCT_CATEGORIES,
+  PRODUCT_TYPES,
+  PRODUCT_TYPES_BY_CATEGORY,
+  PAYMENT_TYPES,
+  formatAmount,
+} from '../constants/dealPipeline';
 import { LEAD_SOURCES, SALES_CHANNELS, MARKETING_CHANNELS } from '../constants/leadPipeline';
 import type { Deal } from '@/lib/api/deals';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
@@ -94,6 +101,14 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
         /* keep PRODUCT_TYPES fallback */
       });
   }, []);
+
+  const filteredProductTypeOptions = (() => {
+    const category = deal.productCategory;
+    if (!category) return productTypeOptions;
+    const allowed = PRODUCT_TYPES_BY_CATEGORY[category] ?? [];
+    if (allowed.length === 0) return productTypeOptions;
+    return productTypeOptions.filter((opt) => allowed.includes(opt.value) || opt.value === 'OTHER');
+  })();
 
   const firstOrder = deal.orders?.[0];
   const projectId = deal.projectId ?? firstOrder?.projectId;
@@ -353,7 +368,32 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
               onSave={(v) => saveField('type', v)}
             />
 
-            {deal.type === 'PRODUCT' && (
+            {(deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE') && (
+              <InlineField
+                label="Product Category"
+                value={deal.productCategory ?? null}
+                displayValue={
+                  deal.productCategory ? (
+                    <StatusBadge
+                      label={
+                        PRODUCT_CATEGORIES.find((c) => c.value === deal.productCategory)?.label ??
+                        deal.productCategory
+                      }
+                      variant="purple"
+                    />
+                  ) : undefined
+                }
+                type="select"
+                options={PRODUCT_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
+                placeholder="Select category..."
+                icon={<Layers size={12} />}
+                onSave={async (v) => {
+                  await saveMultipleFields({ productCategory: v as string, productType: null });
+                }}
+              />
+            )}
+
+            {(deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE') && deal.productCategory && (
               <InlineField
                 label="Product Type"
                 value={deal.productType ?? null}
@@ -366,7 +406,7 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
                   ) : undefined
                 }
                 type="select"
-                options={productTypeOptions}
+                options={filteredProductTypeOptions}
                 placeholder="Select product type..."
                 icon={<Tag size={12} />}
                 onSave={(v) => saveField('productType', v)}

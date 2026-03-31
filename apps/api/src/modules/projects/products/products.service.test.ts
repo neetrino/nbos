@@ -38,10 +38,10 @@ describe('ProductsService', () => {
     });
 
     it('applies productType filter', async () => {
-      await service.findAll({ productType: 'WEBSITE' });
+      await service.findAll({ productType: 'COMPANY_WEBSITE' });
       expect(prisma.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ productType: 'WEBSITE' }),
+          where: expect.objectContaining({ productType: 'COMPANY_WEBSITE' }),
         }),
       );
     });
@@ -75,14 +75,16 @@ describe('ProductsService', () => {
       prisma.product.create.mockResolvedValue({
         id: 'p1',
         name: 'Website',
-        productType: 'WEBSITE',
+        productCategory: 'CODE',
+        productType: 'COMPANY_WEBSITE',
       });
       const result = await service.create({
         projectId: 'proj-1',
         name: 'Website',
-        productType: 'WEBSITE',
+        productCategory: 'CODE',
+        productType: 'COMPANY_WEBSITE',
       });
-      expect(result.productType).toBe('WEBSITE');
+      expect(result.productType).toBe('COMPANY_WEBSITE');
     });
 
     it('creates product with optional fields', async () => {
@@ -90,6 +92,7 @@ describe('ProductsService', () => {
       await service.create({
         projectId: 'proj-1',
         name: 'App',
+        productCategory: 'CODE',
         productType: 'MOBILE_APP',
         pmId: 'pm-1',
         deadline: '2026-12-31',

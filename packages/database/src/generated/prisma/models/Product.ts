@@ -27,6 +27,7 @@ export type ProductMinAggregateOutputType = {
   id: string | null;
   projectId: string | null;
   name: string | null;
+  productCategory: $Enums.ProductCategoryEnum | null;
   productType: $Enums.ProductTypeEnum | null;
   status: $Enums.ProductStatusEnum | null;
   pmId: string | null;
@@ -41,6 +42,7 @@ export type ProductMaxAggregateOutputType = {
   id: string | null;
   projectId: string | null;
   name: string | null;
+  productCategory: $Enums.ProductCategoryEnum | null;
   productType: $Enums.ProductTypeEnum | null;
   status: $Enums.ProductStatusEnum | null;
   pmId: string | null;
@@ -55,6 +57,7 @@ export type ProductCountAggregateOutputType = {
   id: number;
   projectId: number;
   name: number;
+  productCategory: number;
   productType: number;
   status: number;
   pmId: number;
@@ -70,6 +73,7 @@ export type ProductMinAggregateInputType = {
   id?: true;
   projectId?: true;
   name?: true;
+  productCategory?: true;
   productType?: true;
   status?: true;
   pmId?: true;
@@ -84,6 +88,7 @@ export type ProductMaxAggregateInputType = {
   id?: true;
   projectId?: true;
   name?: true;
+  productCategory?: true;
   productType?: true;
   status?: true;
   pmId?: true;
@@ -98,6 +103,7 @@ export type ProductCountAggregateInputType = {
   id?: true;
   projectId?: true;
   name?: true;
+  productCategory?: true;
   productType?: true;
   status?: true;
   pmId?: true;
@@ -186,6 +192,7 @@ export type ProductGroupByOutputType = {
   id: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status: $Enums.ProductStatusEnum;
   pmId: string | null;
@@ -218,6 +225,7 @@ export type ProductWhereInput = {
   id?: Prisma.StringFilter<'Product'> | string;
   projectId?: Prisma.StringFilter<'Product'> | string;
   name?: Prisma.StringFilter<'Product'> | string;
+  productCategory?: Prisma.EnumProductCategoryEnumFilter<'Product'> | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFilter<'Product'> | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFilter<'Product'> | $Enums.ProductStatusEnum;
   pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -238,6 +246,7 @@ export type ProductOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -262,6 +271,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     NOT?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[];
     projectId?: Prisma.StringFilter<'Product'> | string;
     name?: Prisma.StringFilter<'Product'> | string;
+    productCategory?: Prisma.EnumProductCategoryEnumFilter<'Product'> | $Enums.ProductCategoryEnum;
     productType?: Prisma.EnumProductTypeEnumFilter<'Product'> | $Enums.ProductTypeEnum;
     status?: Prisma.EnumProductStatusEnumFilter<'Product'> | $Enums.ProductStatusEnum;
     pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -284,6 +294,7 @@ export type ProductOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -308,6 +319,9 @@ export type ProductScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<'Product'> | string;
   projectId?: Prisma.StringWithAggregatesFilter<'Product'> | string;
   name?: Prisma.StringWithAggregatesFilter<'Product'> | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumWithAggregatesFilter<'Product'>
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumWithAggregatesFilter<'Product'> | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumWithAggregatesFilter<'Product'> | $Enums.ProductStatusEnum;
   pmId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
@@ -321,6 +335,7 @@ export type ProductScalarWhereWithAggregatesInput = {
 export type ProductCreateInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -340,6 +355,7 @@ export type ProductUncheckedCreateInput = {
   id?: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   pmId?: string | null;
@@ -357,6 +373,9 @@ export type ProductUncheckedCreateInput = {
 export type ProductUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -376,6 +395,9 @@ export type ProductUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -394,6 +416,7 @@ export type ProductCreateManyInput = {
   id?: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   pmId?: string | null;
@@ -407,6 +430,9 @@ export type ProductCreateManyInput = {
 export type ProductUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -420,6 +446,9 @@ export type ProductUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -444,6 +473,7 @@ export type ProductCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
@@ -458,6 +488,7 @@ export type ProductMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
@@ -472,6 +503,7 @@ export type ProductMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
+  productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
@@ -571,6 +603,10 @@ export type ProductUncheckedUpdateManyWithoutProjectNestedInput = {
     | Prisma.ProductUpdateManyWithWhereWithoutProjectInput
     | Prisma.ProductUpdateManyWithWhereWithoutProjectInput[];
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type EnumProductCategoryEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ProductCategoryEnum;
 };
 
 export type EnumProductTypeEnumFieldUpdateOperationsInput = {
@@ -770,6 +806,7 @@ export type ProductUncheckedUpdateManyWithoutPmNestedInput = {
 export type ProductCreateWithoutProjectInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -787,6 +824,7 @@ export type ProductCreateWithoutProjectInput = {
 export type ProductUncheckedCreateWithoutProjectInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   pmId?: string | null;
@@ -849,6 +887,7 @@ export type ProductScalarWhereInput = {
   id?: Prisma.StringFilter<'Product'> | string;
   projectId?: Prisma.StringFilter<'Product'> | string;
   name?: Prisma.StringFilter<'Product'> | string;
+  productCategory?: Prisma.EnumProductCategoryEnumFilter<'Product'> | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFilter<'Product'> | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFilter<'Product'> | $Enums.ProductStatusEnum;
   pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -862,6 +901,7 @@ export type ProductScalarWhereInput = {
 export type ProductCreateWithoutExtensionsInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -880,6 +920,7 @@ export type ProductUncheckedCreateWithoutExtensionsInput = {
   id?: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   pmId?: string | null;
@@ -924,6 +965,9 @@ export type ProductUpdateToOneWithWhereWithoutExtensionsInput = {
 export type ProductUpdateWithoutExtensionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -942,6 +986,9 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -958,6 +1005,7 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
 export type ProductCreateWithoutOrderInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -976,6 +1024,7 @@ export type ProductUncheckedCreateWithoutOrderInput = {
   id?: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   pmId?: string | null;
@@ -1020,6 +1069,9 @@ export type ProductUpdateToOneWithWhereWithoutOrderInput = {
 export type ProductUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1038,6 +1090,9 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1054,6 +1109,7 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
 export type ProductCreateWithoutTasksInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -1072,6 +1128,7 @@ export type ProductUncheckedCreateWithoutTasksInput = {
   id?: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   pmId?: string | null;
@@ -1116,6 +1173,9 @@ export type ProductUpdateToOneWithWhereWithoutTasksInput = {
 export type ProductUpdateWithoutTasksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1134,6 +1194,9 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1150,6 +1213,7 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
 export type ProductCreateWithoutTicketsInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -1168,6 +1232,7 @@ export type ProductUncheckedCreateWithoutTicketsInput = {
   id?: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   pmId?: string | null;
@@ -1212,6 +1277,9 @@ export type ProductUpdateToOneWithWhereWithoutTicketsInput = {
 export type ProductUpdateWithoutTicketsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1230,6 +1298,9 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1246,6 +1317,7 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
 export type ProductCreateWithoutPmInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -1264,6 +1336,7 @@ export type ProductUncheckedCreateWithoutPmInput = {
   id?: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -1318,6 +1391,7 @@ export type ProductUpdateManyWithWhereWithoutPmInput = {
 export type ProductCreateManyProjectInput = {
   id?: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   pmId?: string | null;
@@ -1331,6 +1405,9 @@ export type ProductCreateManyProjectInput = {
 export type ProductUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1348,6 +1425,9 @@ export type ProductUpdateWithoutProjectInput = {
 export type ProductUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1365,6 +1445,9 @@ export type ProductUncheckedUpdateWithoutProjectInput = {
 export type ProductUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1379,6 +1462,7 @@ export type ProductCreateManyPmInput = {
   id?: string;
   projectId: string;
   name: string;
+  productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
   deadline?: Date | string | null;
@@ -1391,6 +1475,9 @@ export type ProductCreateManyPmInput = {
 export type ProductUpdateWithoutPmInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1409,6 +1496,9 @@ export type ProductUncheckedUpdateWithoutPmInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1426,6 +1516,9 @@ export type ProductUncheckedUpdateManyWithoutPmInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1499,6 +1592,7 @@ export type ProductSelect<
     id?: boolean;
     projectId?: boolean;
     name?: boolean;
+    productCategory?: boolean;
     productType?: boolean;
     status?: boolean;
     pmId?: boolean;
@@ -1525,6 +1619,7 @@ export type ProductSelectCreateManyAndReturn<
     id?: boolean;
     projectId?: boolean;
     name?: boolean;
+    productCategory?: boolean;
     productType?: boolean;
     status?: boolean;
     pmId?: boolean;
@@ -1546,6 +1641,7 @@ export type ProductSelectUpdateManyAndReturn<
     id?: boolean;
     projectId?: boolean;
     name?: boolean;
+    productCategory?: boolean;
     productType?: boolean;
     status?: boolean;
     pmId?: boolean;
@@ -1564,6 +1660,7 @@ export type ProductSelectScalar = {
   id?: boolean;
   projectId?: boolean;
   name?: boolean;
+  productCategory?: boolean;
   productType?: boolean;
   status?: boolean;
   pmId?: boolean;
@@ -1580,6 +1677,7 @@ export type ProductOmit<
   | 'id'
   | 'projectId'
   | 'name'
+  | 'productCategory'
   | 'productType'
   | 'status'
   | 'pmId'
@@ -1631,6 +1729,7 @@ export type $ProductPayload<
       id: string;
       projectId: string;
       name: string;
+      productCategory: $Enums.ProductCategoryEnum;
       productType: $Enums.ProductTypeEnum;
       status: $Enums.ProductStatusEnum;
       pmId: string | null;
@@ -2256,6 +2355,7 @@ export interface ProductFieldRefs {
   readonly id: Prisma.FieldRef<'Product', 'String'>;
   readonly projectId: Prisma.FieldRef<'Product', 'String'>;
   readonly name: Prisma.FieldRef<'Product', 'String'>;
+  readonly productCategory: Prisma.FieldRef<'Product', 'ProductCategoryEnum'>;
   readonly productType: Prisma.FieldRef<'Product', 'ProductTypeEnum'>;
   readonly status: Prisma.FieldRef<'Product', 'ProductStatusEnum'>;
   readonly pmId: Prisma.FieldRef<'Product', 'String'>;

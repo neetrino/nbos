@@ -135,8 +135,11 @@ export const EXPENSE_CATEGORIES = [
 
 export const PROJECT_TYPES = ['WHITE_LABEL', 'MIX', 'CUSTOM_CODE'] as const;
 
+export const PRODUCT_CATEGORIES = ['CODE', 'WORDPRESS', 'SHOPIFY', 'MARKETING', 'OTHER'] as const;
+
 export const PRODUCT_TYPES = [
-  'WEBSITE',
+  'BUSINESS_CARD_WEBSITE',
+  'COMPANY_WEBSITE',
   'MOBILE_APP',
   'WEB_APP',
   'CRM',
@@ -145,10 +148,31 @@ export const PRODUCT_TYPES = [
   'LANDING',
   'ERP',
   'LOGO',
-  'SMM',
+  'BRANDING',
+  'DESIGN',
   'SEO',
+  'PPC',
+  'SMM',
   'OTHER',
 ] as const;
+
+export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
+  CODE: [
+    'BUSINESS_CARD_WEBSITE',
+    'COMPANY_WEBSITE',
+    'MOBILE_APP',
+    'WEB_APP',
+    'CRM',
+    'ECOMMERCE',
+    'SAAS',
+    'LANDING',
+    'ERP',
+  ],
+  WORDPRESS: ['BUSINESS_CARD_WEBSITE', 'COMPANY_WEBSITE', 'ECOMMERCE', 'LANDING'],
+  SHOPIFY: ['ECOMMERCE'],
+  MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
+  OTHER: [],
+} as const;
 
 export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT'] as const;
 

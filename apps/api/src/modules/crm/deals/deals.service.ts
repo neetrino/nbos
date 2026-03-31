@@ -15,6 +15,7 @@ interface CreateDealDto {
   projectId?: string;
   source?: string;
   notes?: string;
+  productCategory?: string | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: string | null;
@@ -35,6 +36,7 @@ interface UpdateDealDto {
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
   notes?: string;
+  productCategory?: string | null;
   productType?: string | null;
   pmId?: string | null;
   deadline?: string | null;
@@ -184,6 +186,8 @@ export class DealsService {
         sellerId: data.sellerId,
         source: data.source as Prisma.DealCreateInput['source'],
         notes: data.notes,
+        productCategory:
+          (data.productCategory as Prisma.DealCreateInput['productCategory']) ?? undefined,
         productType: data.productType ?? undefined,
         pmId: data.pmId ?? undefined,
         deadline: data.deadline ? new Date(data.deadline) : undefined,
@@ -217,6 +221,9 @@ export class DealsService {
         ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
         ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
         ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.productCategory !== undefined && {
+          productCategory: data.productCategory as Prisma.DealUpdateInput['productCategory'],
+        }),
         ...(data.productType !== undefined && { productType: data.productType }),
         ...(data.pmId !== undefined && { pmId: data.pmId }),
         ...(data.deadline !== undefined && {

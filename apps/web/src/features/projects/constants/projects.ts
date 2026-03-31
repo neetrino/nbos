@@ -13,8 +13,17 @@ export const PROJECT_TABS = [
   { value: 'closed', label: 'Closed / Archived' },
 ] as const;
 
+export const PRODUCT_CATEGORIES = [
+  { value: 'CODE', label: 'Code' },
+  { value: 'WORDPRESS', label: 'WordPress' },
+  { value: 'SHOPIFY', label: 'Shopify' },
+  { value: 'MARKETING', label: 'Marketing' },
+  { value: 'OTHER', label: 'Other' },
+] as const;
+
 export const PRODUCT_TYPES = [
-  { value: 'WEBSITE', label: 'Website' },
+  { value: 'BUSINESS_CARD_WEBSITE', label: 'Business Card Website' },
+  { value: 'COMPANY_WEBSITE', label: 'Company Website' },
   { value: 'MOBILE_APP', label: 'Mobile App' },
   { value: 'WEB_APP', label: 'Web Application' },
   { value: 'CRM', label: 'CRM System' },
@@ -22,11 +31,32 @@ export const PRODUCT_TYPES = [
   { value: 'SAAS', label: 'SaaS Platform' },
   { value: 'LANDING', label: 'Landing Page' },
   { value: 'ERP', label: 'ERP System' },
-  { value: 'LOGO', label: 'Logo / Branding' },
-  { value: 'SMM', label: 'SMM' },
+  { value: 'LOGO', label: 'Logo' },
+  { value: 'BRANDING', label: 'Branding' },
+  { value: 'DESIGN', label: 'Design' },
   { value: 'SEO', label: 'SEO' },
+  { value: 'PPC', label: 'PPC' },
+  { value: 'SMM', label: 'SMM' },
   { value: 'OTHER', label: 'Other' },
 ] as const;
+
+export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
+  CODE: [
+    'BUSINESS_CARD_WEBSITE',
+    'COMPANY_WEBSITE',
+    'MOBILE_APP',
+    'WEB_APP',
+    'CRM',
+    'ECOMMERCE',
+    'SAAS',
+    'LANDING',
+    'ERP',
+  ],
+  WORDPRESS: ['BUSINESS_CARD_WEBSITE', 'COMPANY_WEBSITE', 'ECOMMERCE', 'LANDING'],
+  SHOPIFY: ['ECOMMERCE'],
+  MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
+  OTHER: [],
+};
 
 export const PRODUCT_STATUSES = [
   { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
@@ -84,8 +114,22 @@ export function getProjectType(value: string) {
   return PROJECT_TYPES.find((t) => t.value === value);
 }
 
+export function getProductCategory(value: string) {
+  return PRODUCT_CATEGORIES.find((c) => c.value === value);
+}
+
 export function getProductType(value: string) {
   return PRODUCT_TYPES.find((t) => t.value === value);
+}
+
+/**
+ * Возвращает отфильтрованный список ProductType по категории.
+ * OTHER всегда добавляется в конец.
+ */
+export function getProductTypesForCategory(category: string) {
+  const allowed = PRODUCT_TYPES_BY_CATEGORY[category] ?? [];
+  const filtered = PRODUCT_TYPES.filter((t) => allowed.includes(t.value) || t.value === 'OTHER');
+  return filtered;
 }
 
 export function getProductStatus(value: string) {

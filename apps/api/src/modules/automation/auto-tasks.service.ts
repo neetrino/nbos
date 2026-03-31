@@ -7,11 +7,21 @@ import { PRISMA_TOKEN } from '../../database.module';
  * Типы без собственного шаблона используют fallback → OTHER.
  */
 const TASK_TEMPLATES: Record<string, string[]> = {
-  WEBSITE: [
+  BUSINESS_CARD_WEBSITE: [
+    'Setup project repo',
+    'UI/UX design',
+    'Frontend development',
+    'Content integration',
+    'Testing & QA',
+    'Deployment & DNS',
+    'Client handover',
+  ],
+  COMPANY_WEBSITE: [
     'Setup project repo',
     'UI/UX design',
     'Frontend development',
     'Backend development',
+    'Content integration',
     'Testing & QA',
     'Deployment & DNS',
     'Client handover',
@@ -94,12 +104,21 @@ const TASK_TEMPLATES: Record<string, string[]> = {
     'Final deliverables',
     'Client handover',
   ],
-  SMM: [
-    'Strategy & content plan',
-    'Visual content creation',
-    'Account setup',
-    'Launch & monitoring',
-    'Monthly report',
+  BRANDING: [
+    'Client brief',
+    'Brand strategy & research',
+    'Visual identity concepts',
+    'Design iterations',
+    'Brand guidelines',
+    'Final deliverables',
+    'Client handover',
+  ],
+  DESIGN: [
+    'Client brief',
+    'Mood board & concepts',
+    'Design iterations',
+    'Final deliverables',
+    'Client handover',
   ],
   SEO: [
     'Technical audit',
@@ -107,6 +126,21 @@ const TASK_TEMPLATES: Record<string, string[]> = {
     'On-page optimization',
     'Content plan',
     'Link building',
+    'Monthly report',
+  ],
+  PPC: [
+    'Account audit & setup',
+    'Keyword research & strategy',
+    'Ad copy creation',
+    'Campaign launch',
+    'Optimization & monitoring',
+    'Monthly report',
+  ],
+  SMM: [
+    'Strategy & content plan',
+    'Visual content creation',
+    'Account setup',
+    'Launch & monitoring',
     'Monthly report',
   ],
   OTHER: ['Requirements', 'Development', 'Testing', 'Delivery'],

@@ -65,7 +65,8 @@ export const MARKETING_CHANNELS = [
 ] as const;
 
 export const INTEREST_TYPES = [
-  { value: 'WEBSITE', label: 'Website' },
+  { value: 'BUSINESS_CARD_WEBSITE', label: 'Business Card Website' },
+  { value: 'COMPANY_WEBSITE', label: 'Company Website' },
   { value: 'MOBILE_APP', label: 'Mobile App' },
   { value: 'WEB_APP', label: 'Web Application' },
   { value: 'CRM', label: 'CRM System' },
@@ -73,9 +74,12 @@ export const INTEREST_TYPES = [
   { value: 'SAAS', label: 'SaaS Platform' },
   { value: 'LANDING', label: 'Landing Page' },
   { value: 'ERP', label: 'ERP System' },
-  { value: 'LOGO', label: 'Logo / Branding' },
-  { value: 'SMM', label: 'SMM' },
+  { value: 'LOGO', label: 'Logo' },
+  { value: 'BRANDING', label: 'Branding' },
+  { value: 'DESIGN', label: 'Design' },
   { value: 'SEO', label: 'SEO' },
+  { value: 'PPC', label: 'PPC' },
+  { value: 'SMM', label: 'SMM' },
   { value: 'MAINTENANCE', label: 'Maintenance & Support' },
   { value: 'EXTENSION', label: 'Extension / Enhancement' },
   { value: 'OTHER', label: 'Other' },

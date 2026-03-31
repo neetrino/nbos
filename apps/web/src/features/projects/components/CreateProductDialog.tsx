@@ -19,7 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PRODUCT_TYPES } from '@/features/projects/constants/projects';
+import {
+  PRODUCT_CATEGORIES,
+  PRODUCT_TYPES,
+  PRODUCT_TYPES_BY_CATEGORY,
+} from '@/features/projects/constants/projects';
 import { productsApi, type CreateProductData } from '@/lib/api/products';
 
 interface CreateProductDialogProps {
@@ -38,12 +42,22 @@ export function CreateProductDialog({
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: '',
+    productCategory: '',
     productType: '',
     description: '',
     deadline: '',
   });
 
-  const canSubmit = form.name.trim() && form.productType;
+  const filteredProductTypes = (() => {
+    if (!form.productCategory) return [];
+    const allowed = PRODUCT_TYPES_BY_CATEGORY[form.productCategory] ?? [];
+    if (allowed.length === 0) return PRODUCT_TYPES.map((t) => ({ value: t.value, label: t.label }));
+    return PRODUCT_TYPES.filter((t) => allowed.includes(t.value) || t.value === 'OTHER').map(
+      (t) => ({ value: t.value, label: t.label }),
+    );
+  })();
+
+  const canSubmit = form.name.trim() && form.productCategory && form.productType;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +67,7 @@ export function CreateProductDialog({
       const data: CreateProductData = {
         projectId,
         name: form.name.trim(),
+        productCategory: form.productCategory,
         productType: form.productType,
         description: form.description || undefined,
         deadline: form.deadline || undefined,
@@ -60,7 +75,7 @@ export function CreateProductDialog({
       await productsApi.create(data);
       onCreated();
       onOpenChange(false);
-      setForm({ name: '', productType: '', description: '', deadline: '' });
+      setForm({ name: '', productCategory: '', productType: '', description: '', deadline: '' });
     } finally {
       setLoading(false);
     }
@@ -83,23 +98,47 @@ export function CreateProductDialog({
             />
           </div>
 
-          <div>
-            <Label>Product Type *</Label>
-            <Select
-              value={form.productType || undefined}
-              onValueChange={(v) => setForm({ ...form, productType: v ?? '' })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                {PRODUCT_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Product Category *</Label>
+              <Select
+                value={form.productCategory || undefined}
+                onValueChange={(v) =>
+                  setForm({ ...form, productCategory: v ?? '', productType: '' })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRODUCT_CATEGORIES.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {form.productCategory && (
+              <div>
+                <Label>Product Type *</Label>
+                <Select
+                  value={form.productType || undefined}
+                  onValueChange={(v) => setForm({ ...form, productType: v ?? '' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredProductTypes.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div>
