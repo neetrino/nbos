@@ -114,9 +114,9 @@ export default function DashboardPage() {
       );
 
       const activeTasks = tasks.filter((t: { status: string }) => t.status !== 'DONE');
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split('T')[0] ?? '';
       const dueTodayTasks = activeTasks.filter(
-        (t: { dueDate: string | null }) => t.dueDate && t.dueDate.startsWith(today),
+        (t: { dueDate: string | null }) => t.dueDate && today && t.dueDate.startsWith(today),
       );
 
       const openTickets = tickets.filter(

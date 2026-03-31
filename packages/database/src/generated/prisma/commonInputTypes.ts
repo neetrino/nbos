@@ -283,6 +283,84 @@ export type BoolWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolFilter<$PrismaModel>;
 };
 
+export type EnumProductTypeEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductTypeEnum | Prisma.EnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ProductTypeEnum[] | Prisma.ListEnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ProductTypeEnum[] | Prisma.ListEnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumProductTypeEnumFilter<$PrismaModel> | $Enums.ProductTypeEnum;
+};
+
+export type EnumProductStatusEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductStatusEnum | Prisma.EnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ProductStatusEnum[] | Prisma.ListEnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ProductStatusEnum[] | Prisma.ListEnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel> | $Enums.ProductStatusEnum;
+};
+
+export type EnumProductTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductTypeEnum | Prisma.EnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ProductTypeEnum[] | Prisma.ListEnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ProductTypeEnum[] | Prisma.ListEnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumProductTypeEnumWithAggregatesFilter<$PrismaModel> | $Enums.ProductTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumProductTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumProductTypeEnumFilter<$PrismaModel>;
+};
+
+export type EnumProductStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductStatusEnum | Prisma.EnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ProductStatusEnum[] | Prisma.ListEnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ProductStatusEnum[] | Prisma.ListEnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumProductStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ProductStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel>;
+};
+
+export type EnumExtensionSizeEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExtensionSizeEnum | Prisma.EnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ExtensionSizeEnum[] | Prisma.ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ExtensionSizeEnum[] | Prisma.ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumExtensionSizeEnumFilter<$PrismaModel> | $Enums.ExtensionSizeEnum;
+};
+
+export type EnumExtensionStatusEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExtensionStatusEnum | Prisma.EnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ExtensionStatusEnum[] | Prisma.ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ExtensionStatusEnum[]
+    | Prisma.ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumExtensionStatusEnumFilter<$PrismaModel> | $Enums.ExtensionStatusEnum;
+};
+
+export type EnumExtensionSizeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExtensionSizeEnum | Prisma.EnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ExtensionSizeEnum[] | Prisma.ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ExtensionSizeEnum[] | Prisma.ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumExtensionSizeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ExtensionSizeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumExtensionSizeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumExtensionSizeEnumFilter<$PrismaModel>;
+};
+
+export type EnumExtensionStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExtensionStatusEnum | Prisma.EnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ExtensionStatusEnum[] | Prisma.ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ExtensionStatusEnum[]
+    | Prisma.ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumExtensionStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ExtensionStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumExtensionStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumExtensionStatusEnumFilter<$PrismaModel>;
+};
+
 export type EnumLeadSourceEnumFilter<$PrismaModel = never> = {
   equals?: $Enums.LeadSourceEnum | Prisma.EnumLeadSourceEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
@@ -1503,6 +1581,84 @@ export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedBoolFilter<$PrismaModel>;
   _max?: Prisma.NestedBoolFilter<$PrismaModel>;
+};
+
+export type NestedEnumProductTypeEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductTypeEnum | Prisma.EnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ProductTypeEnum[] | Prisma.ListEnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ProductTypeEnum[] | Prisma.ListEnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumProductTypeEnumFilter<$PrismaModel> | $Enums.ProductTypeEnum;
+};
+
+export type NestedEnumProductStatusEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductStatusEnum | Prisma.EnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ProductStatusEnum[] | Prisma.ListEnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ProductStatusEnum[] | Prisma.ListEnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel> | $Enums.ProductStatusEnum;
+};
+
+export type NestedEnumProductTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductTypeEnum | Prisma.EnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ProductTypeEnum[] | Prisma.ListEnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ProductTypeEnum[] | Prisma.ListEnumProductTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumProductTypeEnumWithAggregatesFilter<$PrismaModel> | $Enums.ProductTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumProductTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumProductTypeEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumProductStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProductStatusEnum | Prisma.EnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ProductStatusEnum[] | Prisma.ListEnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ProductStatusEnum[] | Prisma.ListEnumProductStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumProductStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ProductStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumExtensionSizeEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExtensionSizeEnum | Prisma.EnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ExtensionSizeEnum[] | Prisma.ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ExtensionSizeEnum[] | Prisma.ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumExtensionSizeEnumFilter<$PrismaModel> | $Enums.ExtensionSizeEnum;
+};
+
+export type NestedEnumExtensionStatusEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExtensionStatusEnum | Prisma.EnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ExtensionStatusEnum[] | Prisma.ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ExtensionStatusEnum[]
+    | Prisma.ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumExtensionStatusEnumFilter<$PrismaModel> | $Enums.ExtensionStatusEnum;
+};
+
+export type NestedEnumExtensionSizeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExtensionSizeEnum | Prisma.EnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ExtensionSizeEnum[] | Prisma.ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.ExtensionSizeEnum[] | Prisma.ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumExtensionSizeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ExtensionSizeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumExtensionSizeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumExtensionSizeEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumExtensionStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExtensionStatusEnum | Prisma.EnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.ExtensionStatusEnum[] | Prisma.ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ExtensionStatusEnum[]
+    | Prisma.ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumExtensionStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ExtensionStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumExtensionStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumExtensionStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumLeadSourceEnumFilter<$PrismaModel = never> = {

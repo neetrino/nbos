@@ -214,7 +214,7 @@ export default function DepartmentsPage() {
               <Label htmlFor="parent">Parent Department (optional)</Label>
               <Select
                 value={formParentId || 'none'}
-                onValueChange={(v) => setFormParentId(v === 'none' ? '' : v)}
+                onValueChange={(v) => setFormParentId(v === 'none' || !v ? '' : v)}
               >
                 <SelectTrigger id="parent">
                   <SelectValue placeholder="None" />

@@ -441,7 +441,7 @@ function CreateCredentialDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label>Category</Label>
-              <Select value={category} onValueChange={setCategory}>
+              <Select value={category} onValueChange={(v) => setCategory(v ?? '')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -456,7 +456,7 @@ function CreateCredentialDialog({
             </div>
             <div className="grid gap-2">
               <Label>Access Level</Label>
-              <Select value={accessLevel} onValueChange={setAccessLevel}>
+              <Select value={accessLevel} onValueChange={(v) => setAccessLevel(v ?? '')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

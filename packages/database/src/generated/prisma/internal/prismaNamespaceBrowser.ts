@@ -51,6 +51,8 @@ export const ModelName = {
   Contact: 'Contact',
   Company: 'Company',
   Project: 'Project',
+  Product: 'Product',
+  Extension: 'Extension',
   Lead: 'Lead',
   Deal: 'Deal',
   Order: 'Order',
@@ -148,6 +150,39 @@ export const ProjectScalarFieldEnum = {
 export type ProjectScalarFieldEnum =
   (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
 
+export const ProductScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  productType: 'productType',
+  status: 'status',
+  pmId: 'pmId',
+  deadline: 'deadline',
+  description: 'description',
+  checklistTemplateId: 'checklistTemplateId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductScalarFieldEnum =
+  (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
+
+export const ExtensionScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  name: 'name',
+  size: 'size',
+  status: 'status',
+  assignedTo: 'assignedTo',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ExtensionScalarFieldEnum =
+  (typeof ExtensionScalarFieldEnum)[keyof typeof ExtensionScalarFieldEnum];
+
 export const LeadScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -202,6 +237,8 @@ export const OrderScalarFieldEnum = {
   code: 'code',
   projectId: 'projectId',
   dealId: 'dealId',
+  productId: 'productId',
+  extensionId: 'extensionId',
   type: 'type',
   paymentType: 'paymentType',
   totalAmount: 'totalAmount',
@@ -320,6 +357,8 @@ export const TaskScalarFieldEnum = {
   code: 'code',
   title: 'title',
   description: 'description',
+  productId: 'productId',
+  extensionId: 'extensionId',
   creatorId: 'creatorId',
   assigneeId: 'assigneeId',
   coAssignees: 'coAssignees',
@@ -418,6 +457,7 @@ export const SupportTicketScalarFieldEnum = {
   id: 'id',
   code: 'code',
   projectId: 'projectId',
+  productId: 'productId',
   contactId: 'contactId',
   category: 'category',
   priority: 'priority',

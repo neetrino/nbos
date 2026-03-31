@@ -10,6 +10,8 @@
 export type * from './models/Contact';
 export type * from './models/Company';
 export type * from './models/Project';
+export type * from './models/Product';
+export type * from './models/Extension';
 export type * from './models/Lead';
 export type * from './models/Deal';
 export type * from './models/Order';

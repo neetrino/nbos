@@ -71,7 +71,7 @@ model Company {
   @@map("companies")
 }
 
-// ─── PROJECT ──────────────────────────────────────────────
+// ─── PROJECT & PRODUCT ────────────────────────────────────
 
 enum ProjectType {
   WHITE_LABEL
@@ -98,6 +98,8 @@ model Project {
   company       Company?       @relation(fields: [companyId], references: [id])
   seller        Employee?      @relation("ProjectSeller", fields: [sellerId], references: [id])
   pm            Employee?      @relation("ProjectPM", fields: [pmId], references: [id])
+  products      Product[]
+  extensions    Extension[]
   orders        Order[]
   subscriptions Subscription[]
   credentials   Credential[]
@@ -108,6 +110,87 @@ model Project {
   auditLogs     AuditLog[]
 
   @@map("projects")
+}
+
+enum ProductTypeEnum {
+  WEBSITE
+  MOBILE_APP
+  CRM
+  LOGO
+  SMM
+  SEO
+  OTHER
+}
+
+enum ProductStatusEnum {
+  NEW
+  CREATING
+  DEVELOPMENT
+  QA
+  TRANSFER
+  ON_HOLD
+  DONE
+  LOST
+}
+
+model Product {
+  id                  String            @id @default(uuid())
+  projectId           String            @map("project_id")
+  name                String
+  productType         ProductTypeEnum   @map("product_type")
+  status              ProductStatusEnum @default(NEW)
+  pmId                String?           @map("pm_id")
+  deadline            DateTime?
+  description         String?
+  checklistTemplateId String?           @map("checklist_template_id")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  project    Project         @relation(fields: [projectId], references: [id])
+  pm         Employee?       @relation("ProductPM", fields: [pmId], references: [id])
+  order      Order?
+  extensions Extension[]
+  tasks      Task[]
+  tickets    SupportTicket[]
+
+  @@map("products")
+}
+
+enum ExtensionSizeEnum {
+  MICRO
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ExtensionStatusEnum {
+  NEW
+  DEVELOPMENT
+  QA
+  TRANSFER
+  DONE
+  LOST
+}
+
+model Extension {
+  id          String              @id @default(uuid())
+  projectId   String              @map("project_id")
+  productId   String?             @map("product_id")
+  name        String
+  size        ExtensionSizeEnum   @default(SMALL)
+  status      ExtensionStatusEnum @default(NEW)
+  assignedTo  String?             @map("assigned_to")
+  description String?
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  project  Project   @relation(fields: [projectId], references: [id])
+  product  Product?  @relation(fields: [productId], references: [id])
+  assignee Employee? @relation("ExtensionAssignee", fields: [assignedTo], references: [id])
+  order    Order?
+  tasks    Task[]
+
+  @@map("extensions")
 }
 
 // ─── CRM ──────────────────────────────────────────────────
@@ -168,9 +251,10 @@ enum DealStatusEnum {
 }
 
 enum DealTypeEnum {
-  NEW_CLIENT
+  PRODUCT
   EXTENSION
-  UPSELL
+  MAINTENANCE
+  OUTSOURCE
 }
 
 model Deal {
@@ -215,7 +299,8 @@ model Deal {
 enum OrderTypeEnum {
   PRODUCT
   EXTENSION
-  SUBSCRIPTION
+  MAINTENANCE
+  OUTSOURCE
 }
 
 enum PaymentTypeEnum {
@@ -235,6 +320,8 @@ model Order {
   code                 String           @unique
   projectId            String           @map("project_id")
   dealId               String?          @map("deal_id")
+  productId            String?          @unique @map("product_id")
+  extensionId          String?          @unique @map("extension_id")
   type                 OrderTypeEnum
   paymentType          PaymentTypeEnum  @map("payment_type")
   totalAmount          Decimal          @map("total_amount") @db.Decimal(12, 2)
@@ -251,6 +338,8 @@ model Order {
 
   project      Project      @relation(fields: [projectId], references: [id])
   deal         Deal?        @relation(fields: [dealId], references: [id])
+  product      Product?     @relation(fields: [productId], references: [id])
+  extension    Extension?   @relation(fields: [extensionId], references: [id])
   partner      Partner?     @relation(fields: [partnerId], references: [id])
   invoices     Invoice[]
   bonusEntries BonusEntry[]
@@ -473,6 +562,8 @@ model Task {
   code            String           @unique
   title           String
   description     String?
+  productId       String?          @map("product_id")
+  extensionId     String?          @map("extension_id")
   creatorId       String           @map("creator_id")
   assigneeId      String?          @map("assignee_id")
   coAssignees     String[]         @map("co_assignees")
@@ -492,6 +583,8 @@ model Task {
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
 
+  product    Product?        @relation(fields: [productId], references: [id])
+  extension  Extension?      @relation(fields: [extensionId], references: [id])
   creator    Employee        @relation("TaskCreator", fields: [creatorId], references: [id])
   assignee   Employee?       @relation("TaskAssignee", fields: [assigneeId], references: [id])
   parent     Task?           @relation("TaskSubtasks", fields: [parentId], references: [id])
@@ -612,6 +705,7 @@ model SupportTicket {
   id                  String              @id @default(uuid())
   code                String              @unique
   projectId           String              @map("project_id")
+  productId           String?             @map("product_id")
   contactId           String?             @map("contact_id")
   category            TicketCategoryEnum
   priority            TicketPriorityEnum  @default(P3)
@@ -626,6 +720,7 @@ model SupportTicket {
   updatedAt           DateTime            @updatedAt @map("updated_at")
 
   project  Project   @relation(fields: [projectId], references: [id])
+  product  Product?  @relation(fields: [productId], references: [id])
   contact  Contact?  @relation(fields: [contactId], references: [id])
   assignee Employee? @relation("TicketAssignee", fields: [assignedTo], references: [id])
 
@@ -848,6 +943,8 @@ model Employee {
 
   projectsSelling            Project[]               @relation("ProjectSeller")
   projectsManaging           Project[]               @relation("ProjectPM")
+  productsManaging           Product[]               @relation("ProductPM")
+  extensionsAssigned         Extension[]             @relation("ExtensionAssignee")
   leadsAssigned              Lead[]                  @relation("LeadAssignee")
   dealsSelling               Deal[]                  @relation("DealSeller")
   dealsPM                    Deal[]                  @relation("DealPM")

@@ -57,7 +57,7 @@ export default function SystemListsPage() {
       const data = await systemListsApi.getListKeys();
       setListKeys(data.map((r) => r.listKey));
       if (data.length > 0 && !selectedKey) {
-        setSelectedKey(data[0].listKey);
+        setSelectedKey(data[0]!.listKey);
       }
     } catch {
       setListKeys([]);

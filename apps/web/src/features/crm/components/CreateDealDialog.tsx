@@ -43,7 +43,7 @@ export function CreateDealDialog({
   const [form, setForm] = useState({
     name: '',
     contactId: prefill?.contactId ?? ('' as string),
-    type: 'NEW_CLIENT',
+    type: 'PRODUCT',
     amount: '',
     paymentType: 'SPLIT_50_50',
     sellerId: '',

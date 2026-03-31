@@ -40,6 +40,51 @@ export const ProjectType = {
 
 export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType];
 
+export const ProductTypeEnum = {
+  WEBSITE: 'WEBSITE',
+  MOBILE_APP: 'MOBILE_APP',
+  CRM: 'CRM',
+  LOGO: 'LOGO',
+  SMM: 'SMM',
+  SEO: 'SEO',
+  OTHER: 'OTHER',
+} as const;
+
+export type ProductTypeEnum = (typeof ProductTypeEnum)[keyof typeof ProductTypeEnum];
+
+export const ProductStatusEnum = {
+  NEW: 'NEW',
+  CREATING: 'CREATING',
+  DEVELOPMENT: 'DEVELOPMENT',
+  QA: 'QA',
+  TRANSFER: 'TRANSFER',
+  ON_HOLD: 'ON_HOLD',
+  DONE: 'DONE',
+  LOST: 'LOST',
+} as const;
+
+export type ProductStatusEnum = (typeof ProductStatusEnum)[keyof typeof ProductStatusEnum];
+
+export const ExtensionSizeEnum = {
+  MICRO: 'MICRO',
+  SMALL: 'SMALL',
+  MEDIUM: 'MEDIUM',
+  LARGE: 'LARGE',
+} as const;
+
+export type ExtensionSizeEnum = (typeof ExtensionSizeEnum)[keyof typeof ExtensionSizeEnum];
+
+export const ExtensionStatusEnum = {
+  NEW: 'NEW',
+  DEVELOPMENT: 'DEVELOPMENT',
+  QA: 'QA',
+  TRANSFER: 'TRANSFER',
+  DONE: 'DONE',
+  LOST: 'LOST',
+} as const;
+
+export type ExtensionStatusEnum = (typeof ExtensionStatusEnum)[keyof typeof ExtensionStatusEnum];
+
 export const LeadStatusEnum = {
   NEW: 'NEW',
   DIDNT_GET_THROUGH: 'DIDNT_GET_THROUGH',
@@ -75,9 +120,10 @@ export const DealStatusEnum = {
 export type DealStatusEnum = (typeof DealStatusEnum)[keyof typeof DealStatusEnum];
 
 export const DealTypeEnum = {
-  NEW_CLIENT: 'NEW_CLIENT',
+  PRODUCT: 'PRODUCT',
   EXTENSION: 'EXTENSION',
-  UPSELL: 'UPSELL',
+  MAINTENANCE: 'MAINTENANCE',
+  OUTSOURCE: 'OUTSOURCE',
 } as const;
 
 export type DealTypeEnum = (typeof DealTypeEnum)[keyof typeof DealTypeEnum];
@@ -85,7 +131,8 @@ export type DealTypeEnum = (typeof DealTypeEnum)[keyof typeof DealTypeEnum];
 export const OrderTypeEnum = {
   PRODUCT: 'PRODUCT',
   EXTENSION: 'EXTENSION',
-  SUBSCRIPTION: 'SUBSCRIPTION',
+  MAINTENANCE: 'MAINTENANCE',
+  OUTSOURCE: 'OUTSOURCE',
 } as const;
 
 export type OrderTypeEnum = (typeof OrderTypeEnum)[keyof typeof OrderTypeEnum];

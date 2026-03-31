@@ -381,7 +381,7 @@ async function main() {
       productId: '00000000-0000-0000-0000-000000000020',
       name: 'Blog module',
       size: 'MEDIUM',
-      status: 'IN_PROGRESS',
+      status: 'DEVELOPMENT',
       assignedTo: dev.id,
     },
   });
@@ -419,7 +419,7 @@ async function main() {
       contactName: 'David Abrahamyan',
       phone: '+37491234567',
       email: 'david@acme.am',
-      source: 'WEBSITE',
+      source: 'MARKETING',
       status: 'SQL',
       contactId: contact1.id,
       assignedTo: seller.id,
@@ -472,7 +472,7 @@ async function main() {
       contactName: 'Anahit Martirosyan',
       phone: '+37477123456',
       email: 'anahit@medtech.am',
-      source: 'WEBSITE',
+      source: 'MARKETING',
       status: 'SQL',
       contactId: contact5.id,
       assignedTo: seller.id,
@@ -501,7 +501,7 @@ async function main() {
       code: 'L-2026-0007',
       contactName: 'Gayane Petrosyan',
       phone: '+37494112233',
-      source: 'FACEBOOK',
+      source: 'MARKETING',
       status: 'DIDNT_GET_THROUGH',
       assignedTo: seller.id,
     },
@@ -518,12 +518,12 @@ async function main() {
       code: 'D-2026-0001',
       leadId: lead1.id,
       contactId: contact1.id,
-      type: 'NEW_CLIENT',
+      type: 'PRODUCT',
       status: 'WON',
       amount: 2500000,
       paymentType: 'CLASSIC',
       sellerId: seller.id,
-      source: 'WEBSITE',
+      source: 'MARKETING',
     },
   });
 
@@ -533,7 +533,7 @@ async function main() {
     create: {
       code: 'D-2026-0002',
       contactId: contact2.id,
-      type: 'NEW_CLIENT',
+      type: 'PRODUCT',
       status: 'SEND_OFFER',
       amount: 3500000,
       paymentType: 'CLASSIC',
@@ -548,7 +548,7 @@ async function main() {
     create: {
       code: 'D-2026-0003',
       contactId: contact3.id,
-      type: 'NEW_CLIENT',
+      type: 'PRODUCT',
       status: 'MEETING',
       amount: 8000000,
       paymentType: 'SUBSCRIPTION',
@@ -562,12 +562,12 @@ async function main() {
     create: {
       code: 'D-2026-0004',
       contactId: contact5.id,
-      type: 'NEW_CLIENT',
+      type: 'PRODUCT',
       status: 'DISCUSS_NEEDS',
       amount: 1200000,
       paymentType: 'CLASSIC',
       sellerId: seller.id,
-      source: 'WEBSITE',
+      source: 'MARKETING',
     },
   });
 
@@ -663,7 +663,7 @@ async function main() {
       companyId: company1.id,
       amount: 1250000,
       type: 'DEVELOPMENT',
-      status: 'SENT',
+      status: 'WAITING',
       dueDate: new Date('2026-04-01'),
     },
   });
@@ -722,7 +722,7 @@ async function main() {
       companyId: company1.id,
       amount: 150000,
       type: 'SUBSCRIPTION',
-      status: 'SENT',
+      status: 'WAITING',
       dueDate: new Date('2026-03-10'),
       taxStatus: 'TAX',
     },
@@ -730,63 +730,130 @@ async function main() {
 
   console.log('  ✓ Invoices (3), Payments (1), Subscriptions (2)');
 
-  // Tasks
-  await prisma.task.upsert({
+  // Tasks (привязка к сущностям через TaskLink)
+  const task1 = await prisma.task.upsert({
     where: { code: 'T-2026-0001' },
     update: {},
     create: {
       code: 'T-2026-0001',
       title: 'Design homepage layout',
-      projectId: project1.id,
-      productId: '00000000-0000-0000-0000-000000000020',
       creatorId: pm.id,
       assigneeId: designer.id,
       status: 'DONE',
       priority: 'HIGH',
     },
   });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task1.id,
+        entityType: 'PROJECT',
+        entityId: project1.id,
+      },
+    },
+    update: {},
+    create: { taskId: task1.id, entityType: 'PROJECT', entityId: project1.id },
+  });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task1.id,
+        entityType: 'PRODUCT',
+        entityId: '00000000-0000-0000-0000-000000000020',
+      },
+    },
+    update: {},
+    create: {
+      taskId: task1.id,
+      entityType: 'PRODUCT',
+      entityId: '00000000-0000-0000-0000-000000000020',
+    },
+  });
 
-  await prisma.task.upsert({
+  const task2 = await prisma.task.upsert({
     where: { code: 'T-2026-0002' },
     update: {},
     create: {
       code: 'T-2026-0002',
       title: 'Implement REST API endpoints',
-      projectId: project1.id,
-      productId: '00000000-0000-0000-0000-000000000020',
       creatorId: pm.id,
       assigneeId: dev.id,
       status: 'IN_PROGRESS',
       priority: 'CRITICAL',
     },
   });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task2.id,
+        entityType: 'PROJECT',
+        entityId: project1.id,
+      },
+    },
+    update: {},
+    create: { taskId: task2.id, entityType: 'PROJECT', entityId: project1.id },
+  });
 
-  await prisma.task.upsert({
+  const task3 = await prisma.task.upsert({
     where: { code: 'T-2026-0003' },
     update: {},
     create: {
       code: 'T-2026-0003',
       title: 'Setup CI/CD pipeline',
-      projectId: project1.id,
       creatorId: ceo.id,
       assigneeId: dev.id,
-      status: 'TODO',
+      status: 'NEW',
       priority: 'NORMAL',
     },
   });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task3.id,
+        entityType: 'PROJECT',
+        entityId: project1.id,
+      },
+    },
+    update: {},
+    create: { taskId: task3.id, entityType: 'PROJECT', entityId: project1.id },
+  });
 
-  await prisma.task.upsert({
+  const task4 = await prisma.task.upsert({
     where: { code: 'T-2026-0004' },
     update: {},
     create: {
       code: 'T-2026-0004',
       title: 'Create mobile app wireframes',
-      projectId: project2.id,
-      productId: '00000000-0000-0000-0000-000000000022',
       creatorId: pm.id,
       assigneeId: designer.id,
       status: 'IN_PROGRESS',
       priority: 'HIGH',
+    },
+  });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task4.id,
+        entityType: 'PROJECT',
+        entityId: project2.id,
+      },
+    },
+    update: {},
+    create: { taskId: task4.id, entityType: 'PROJECT', entityId: project2.id },
+  });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task4.id,
+        entityType: 'PRODUCT',
+        entityId: '00000000-0000-0000-0000-000000000022',
+      },
+    },
+    update: {},
+    create: {
+      taskId: task4.id,
+      entityType: 'PRODUCT',
+      entityId: '00000000-0000-0000-0000-000000000022',
     },
   });
 
@@ -1010,46 +1077,74 @@ async function main() {
   console.log('  ✓ Domains (3)');
 
   // Extra tasks (all statuses/priorities)
-  await prisma.task.upsert({
+  const task5 = await prisma.task.upsert({
     where: { code: 'T-2026-0005' },
     update: {},
     create: {
       code: 'T-2026-0005',
       title: 'Backlog: Research analytics',
-      projectId: project3.id,
-      productId: '00000000-0000-0000-0000-000000000023',
       creatorId: pm.id,
-      status: 'BACKLOG',
+      status: 'NEW',
       priority: 'LOW',
     },
   });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task5.id,
+        entityType: 'PROJECT',
+        entityId: project3.id,
+      },
+    },
+    update: {},
+    create: { taskId: task5.id, entityType: 'PROJECT', entityId: project3.id },
+  });
 
-  await prisma.task.upsert({
+  const task6 = await prisma.task.upsert({
     where: { code: 'T-2026-0006' },
     update: {},
     create: {
       code: 'T-2026-0006',
       title: 'Review: Code review API',
-      projectId: project1.id,
-      productId: '00000000-0000-0000-0000-000000000020',
       creatorId: pm.id,
       assigneeId: dev.id,
-      status: 'REVIEW',
+      status: 'IN_PROGRESS',
       priority: 'HIGH',
     },
   });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task6.id,
+        entityType: 'PROJECT',
+        entityId: project1.id,
+      },
+    },
+    update: {},
+    create: { taskId: task6.id, entityType: 'PROJECT', entityId: project1.id },
+  });
 
-  await prisma.task.upsert({
+  const task7 = await prisma.task.upsert({
     where: { code: 'T-2026-0007' },
     update: {},
     create: {
       code: 'T-2026-0007',
       title: 'Cancelled: Old feature',
-      projectId: project1.id,
       creatorId: ceo.id,
       status: 'CANCELLED',
       priority: 'NORMAL',
     },
+  });
+  await prisma.taskLink.upsert({
+    where: {
+      taskId_entityType_entityId: {
+        taskId: task7.id,
+        entityType: 'PROJECT',
+        entityId: project1.id,
+      },
+    },
+    update: {},
+    create: { taskId: task7.id, entityType: 'PROJECT', entityId: project1.id },
   });
 
   console.log('  ✓ Tasks (7 total)');
@@ -1156,7 +1251,7 @@ async function main() {
       companyId: company2.id,
       amount: 1050000,
       type: 'DEVELOPMENT',
-      status: 'NEW',
+      status: 'THIS_MONTH',
       dueDate: new Date('2026-04-15'),
       taxStatus: 'TAX_FREE',
     },
@@ -1172,7 +1267,7 @@ async function main() {
       companyId: company1.id,
       amount: 225000,
       type: 'EXTENSION',
-      status: 'OVERDUE',
+      status: 'DELAYED',
       dueDate: new Date('2026-02-28'),
       taxStatus: 'TAX',
     },
@@ -1224,9 +1319,10 @@ async function main() {
       { listKey: 'PRODUCT_TYPE', code: 'SEO', label: 'SEO', sortOrder: 10 },
       { listKey: 'PRODUCT_TYPE', code: 'OTHER', label: 'Other', sortOrder: 99 },
       // DEAL_TYPE
-      { listKey: 'DEAL_TYPE', code: 'NEW_CLIENT', label: 'Product', sortOrder: 0 },
+      { listKey: 'DEAL_TYPE', code: 'PRODUCT', label: 'Product', sortOrder: 0 },
       { listKey: 'DEAL_TYPE', code: 'EXTENSION', label: 'Extension', sortOrder: 1 },
-      { listKey: 'DEAL_TYPE', code: 'UPSELL', label: 'Outsource', sortOrder: 2 },
+      { listKey: 'DEAL_TYPE', code: 'MAINTENANCE', label: 'Maintenance', sortOrder: 2 },
+      { listKey: 'DEAL_TYPE', code: 'OUTSOURCE', label: 'Outsource', sortOrder: 3 },
       // PAYMENT_TYPE
       { listKey: 'PAYMENT_TYPE', code: 'CLASSIC', label: 'Classic', sortOrder: 0 },
       { listKey: 'PAYMENT_TYPE', code: 'SUBSCRIPTION', label: 'Subscription', sortOrder: 1 },

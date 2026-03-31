@@ -32,6 +32,16 @@ export type Company = Prisma.CompanyModel;
  */
 export type Project = Prisma.ProjectModel;
 /**
+ * Model Product
+ *
+ */
+export type Product = Prisma.ProductModel;
+/**
+ * Model Extension
+ *
+ */
+export type Extension = Prisma.ExtensionModel;
+/**
  * Model Lead
  *
  */

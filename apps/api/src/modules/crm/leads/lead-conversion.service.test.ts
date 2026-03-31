@@ -20,7 +20,7 @@ describe('LeadConversionService', () => {
     code: 'L-2026-0001',
     contactName: 'John Doe',
     status: 'SQL',
-    source: 'WEBSITE',
+    source: 'MARKETING',
     phone: '+37499123456',
     email: 'john@example.com',
     contactId: null,
@@ -28,7 +28,7 @@ describe('LeadConversionService', () => {
   };
 
   const convertDto = {
-    dealType: 'NEW_CLIENT',
+    dealType: 'PRODUCT',
     amount: 50000,
     paymentType: 'CLASSIC',
     sellerId: 'seller-1',
@@ -41,7 +41,7 @@ describe('LeadConversionService', () => {
     prisma.deal.create.mockResolvedValue({
       id: 'deal-1',
       code: 'D-2026-0001',
-      type: 'NEW_CLIENT',
+      type: 'PRODUCT',
     });
 
     const result = await service.convertToDeal('lead-1', convertDto);

@@ -81,9 +81,10 @@ export const ACTIVE_DEAL_STAGES = DEAL_STAGES.filter((s) => !s.terminal);
 export const TERMINAL_DEAL_STAGES = DEAL_STAGES.filter((s) => s.terminal);
 
 export const DEAL_TYPES = [
-  { value: 'NEW_CLIENT', label: 'Product', description: 'New IT product or service' },
-  { value: 'EXTENSION', label: 'Extension', description: 'Extension to an existing deal' },
-  { value: 'UPSELL', label: 'Outsource', description: 'Outsourced to a partner' },
+  { value: 'PRODUCT', label: 'Product', description: 'New IT product development' },
+  { value: 'EXTENSION', label: 'Extension', description: 'Enhancement to an existing product' },
+  { value: 'MAINTENANCE', label: 'Maintenance', description: 'Technical support and maintenance' },
+  { value: 'OUTSOURCE', label: 'Outsource', description: 'Outsourced to a partner' },
 ] as const;
 
 export const PRODUCT_TYPES = [

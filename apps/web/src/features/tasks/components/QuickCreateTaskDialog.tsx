@@ -125,7 +125,7 @@ export function QuickCreateTaskDialog({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
+              <Select value={priority} onValueChange={(v) => setPriority(v ?? 'NORMAL')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

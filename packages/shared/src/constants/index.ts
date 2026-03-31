@@ -154,9 +154,13 @@ export const PRODUCT_TYPES = [
 
 export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT'] as const;
 
-export const DEAL_TYPES = ['NEW_CLIENT', 'EXTENSION', 'UPSELL'] as const;
+export const DEAL_TYPES = ['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE'] as const;
 
 export const EXTENSION_SIZES = ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'] as const;
+
+export const EXTENSION_STATUSES = ['NEW', 'DEVELOPMENT', 'QA', 'TRANSFER', 'DONE', 'LOST'] as const;
+
+export const ORDER_TYPES = ['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE'] as const;
 
 export const PARTNER_TYPES = ['REGULAR', 'PREMIUM'] as const;
 

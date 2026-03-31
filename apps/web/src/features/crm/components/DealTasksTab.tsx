@@ -30,7 +30,11 @@ export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
     }
     setLoading(true);
     try {
-      const data = await tasksApi.getAll({ projectId, pageSize: 50 });
+      const data = await tasksApi.getAll({
+        entityType: 'PROJECT',
+        entityId: projectId,
+        pageSize: 50,
+      });
       setTasks(data.items);
     } catch {
       setTasks([]);
@@ -49,11 +53,17 @@ export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
 
     setCreating(true);
     try {
+      const links: Array<{ entityType: string; entityId: string }> = [
+        { entityType: 'DEAL', entityId: deal.id },
+      ];
+      if (projectId) {
+        links.push({ entityType: 'PROJECT', entityId: projectId });
+      }
       await tasksApi.create({
         title,
-        projectId,
         creatorId: deal.seller.id,
         description: `Deal: ${deal.code} — ${deal.name ?? ''}`.trim(),
+        links,
       });
       setShowForm(false);
       setTaskTitle('');

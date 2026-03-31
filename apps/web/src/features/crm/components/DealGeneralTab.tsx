@@ -208,11 +208,17 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
     if (!title || !projectId || !deal.seller?.id) return;
     setCreatingTask(true);
     try {
+      const links: Array<{ entityType: string; entityId: string }> = [
+        { entityType: 'DEAL', entityId: deal.id },
+      ];
+      if (projectId) {
+        links.push({ entityType: 'PROJECT', entityId: projectId });
+      }
       await tasksApi.create({
         title,
-        projectId,
         creatorId: deal.seller.id,
         description: `Deal: ${deal.code} — ${deal.name ?? ''}`.trim(),
+        links,
       });
       setShowTaskForm(false);
       setTaskTitle('');
@@ -331,7 +337,13 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
                 <StatusBadge
                   label={dealTypeLabel}
                   variant={
-                    deal.type === 'EXTENSION' ? 'blue' : deal.type === 'UPSELL' ? 'purple' : 'amber'
+                    deal.type === 'EXTENSION'
+                      ? 'blue'
+                      : deal.type === 'OUTSOURCE'
+                        ? 'purple'
+                        : deal.type === 'MAINTENANCE'
+                          ? 'teal'
+                          : 'amber'
                   }
                 />
               }
@@ -341,7 +353,7 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
               onSave={(v) => saveField('type', v)}
             />
 
-            {deal.type === 'NEW_CLIENT' && (
+            {deal.type === 'PRODUCT' && (
               <InlineField
                 label="Product Type"
                 value={deal.productType ?? null}

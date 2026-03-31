@@ -51,6 +51,7 @@ export class OrdersController {
       projectId: string;
       dealId?: string;
       productId?: string;
+      extensionId?: string;
       type: string;
       paymentType: string;
       totalAmount: number;

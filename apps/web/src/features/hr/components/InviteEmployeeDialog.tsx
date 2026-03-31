@@ -149,7 +149,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
             <Label>Role *</Label>
             <Select
               value={form.roleId}
-              onValueChange={(v) => setForm({ ...form, roleId: v })}
+              onValueChange={(v) => setForm({ ...form, roleId: v ?? '' })}
               disabled={rolesLoading || loading}
             >
               <SelectTrigger className="w-full">
@@ -170,7 +170,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
             <Label>Department (optional)</Label>
             <Select
               value={form.departmentId || 'none'}
-              onValueChange={(v) => setForm({ ...form, departmentId: v === 'none' ? '' : v })}
+              onValueChange={(v) => setForm({ ...form, departmentId: v === 'none' || !v ? '' : v })}
               disabled={departmentsLoading || loading}
             >
               <SelectTrigger className="w-full">

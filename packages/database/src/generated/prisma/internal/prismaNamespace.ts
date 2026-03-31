@@ -378,6 +378,8 @@ export const ModelName = {
   Contact: 'Contact',
   Company: 'Company',
   Project: 'Project',
+  Product: 'Product',
+  Extension: 'Extension',
   Lead: 'Lead',
   Deal: 'Deal',
   Order: 'Order',
@@ -428,6 +430,8 @@ export type TypeMap<
       | 'contact'
       | 'company'
       | 'project'
+      | 'product'
+      | 'extension'
       | 'lead'
       | 'deal'
       | 'order'
@@ -677,6 +681,154 @@ export type TypeMap<
         count: {
           args: Prisma.ProjectCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.ProjectCountAggregateOutputType> | number;
+        };
+      };
+    };
+    Product: {
+      payload: Prisma.$ProductPayload<ExtArgs>;
+      fields: Prisma.ProductFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ProductFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ProductFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>;
+        };
+        findFirst: {
+          args: Prisma.ProductFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ProductFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>;
+        };
+        findMany: {
+          args: Prisma.ProductFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>[];
+        };
+        create: {
+          args: Prisma.ProductCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>;
+        };
+        createMany: {
+          args: Prisma.ProductCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ProductCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>[];
+        };
+        delete: {
+          args: Prisma.ProductDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>;
+        };
+        update: {
+          args: Prisma.ProductUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ProductDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ProductUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ProductUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>[];
+        };
+        upsert: {
+          args: Prisma.ProductUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductPayload>;
+        };
+        aggregate: {
+          args: Prisma.ProductAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProduct>;
+        };
+        groupBy: {
+          args: Prisma.ProductGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ProductGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ProductCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ProductCountAggregateOutputType> | number;
+        };
+      };
+    };
+    Extension: {
+      payload: Prisma.$ExtensionPayload<ExtArgs>;
+      fields: Prisma.ExtensionFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ExtensionFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ExtensionFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>;
+        };
+        findFirst: {
+          args: Prisma.ExtensionFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ExtensionFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>;
+        };
+        findMany: {
+          args: Prisma.ExtensionFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>[];
+        };
+        create: {
+          args: Prisma.ExtensionCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>;
+        };
+        createMany: {
+          args: Prisma.ExtensionCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ExtensionCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>[];
+        };
+        delete: {
+          args: Prisma.ExtensionDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>;
+        };
+        update: {
+          args: Prisma.ExtensionUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ExtensionDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ExtensionUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ExtensionUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>[];
+        };
+        upsert: {
+          args: Prisma.ExtensionUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionPayload>;
+        };
+        aggregate: {
+          args: Prisma.ExtensionAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExtension>;
+        };
+        groupBy: {
+          args: Prisma.ExtensionGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ExtensionGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ExtensionCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ExtensionCountAggregateOutputType> | number;
         };
       };
     };
@@ -2787,6 +2939,39 @@ export const ProjectScalarFieldEnum = {
 export type ProjectScalarFieldEnum =
   (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
 
+export const ProductScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  productType: 'productType',
+  status: 'status',
+  pmId: 'pmId',
+  deadline: 'deadline',
+  description: 'description',
+  checklistTemplateId: 'checklistTemplateId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductScalarFieldEnum =
+  (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
+
+export const ExtensionScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  name: 'name',
+  size: 'size',
+  status: 'status',
+  assignedTo: 'assignedTo',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ExtensionScalarFieldEnum =
+  (typeof ExtensionScalarFieldEnum)[keyof typeof ExtensionScalarFieldEnum];
+
 export const LeadScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -2841,6 +3026,8 @@ export const OrderScalarFieldEnum = {
   code: 'code',
   projectId: 'projectId',
   dealId: 'dealId',
+  productId: 'productId',
+  extensionId: 'extensionId',
   type: 'type',
   paymentType: 'paymentType',
   totalAmount: 'totalAmount',
@@ -2959,6 +3146,8 @@ export const TaskScalarFieldEnum = {
   code: 'code',
   title: 'title',
   description: 'description',
+  productId: 'productId',
+  extensionId: 'extensionId',
   creatorId: 'creatorId',
   assigneeId: 'assigneeId',
   coAssignees: 'coAssignees',
@@ -3057,6 +3246,7 @@ export const SupportTicketScalarFieldEnum = {
   id: 'id',
   code: 'code',
   projectId: 'projectId',
+  productId: 'productId',
   contactId: 'contactId',
   category: 'category',
   priority: 'priority',
@@ -3397,6 +3587,70 @@ export type ListEnumProjectTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>;
+
+/**
+ * Reference to a field of type 'ProductTypeEnum'
+ */
+export type EnumProductTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'ProductTypeEnum[]'
+ */
+export type ListEnumProductTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ProductStatusEnum'
+ */
+export type EnumProductStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'ProductStatusEnum[]'
+ */
+export type ListEnumProductStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ExtensionSizeEnum'
+ */
+export type EnumExtensionSizeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExtensionSizeEnum'
+>;
+
+/**
+ * Reference to a field of type 'ExtensionSizeEnum[]'
+ */
+export type ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExtensionSizeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ExtensionStatusEnum'
+ */
+export type EnumExtensionStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExtensionStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'ExtensionStatusEnum[]'
+ */
+export type ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExtensionStatusEnum[]'
+>;
 
 /**
  * Reference to a field of type 'LeadSourceEnum'
@@ -4014,6 +4268,8 @@ export type GlobalOmitConfig = {
   contact?: Prisma.ContactOmit;
   company?: Prisma.CompanyOmit;
   project?: Prisma.ProjectOmit;
+  product?: Prisma.ProductOmit;
+  extension?: Prisma.ExtensionOmit;
   lead?: Prisma.LeadOmit;
   deal?: Prisma.DealOmit;
   order?: Prisma.OrderOmit;
