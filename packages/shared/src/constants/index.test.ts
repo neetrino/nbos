@@ -19,16 +19,16 @@ import {
 } from './index';
 
 describe('Constants', () => {
-  it('LEAD_STATUSES has 7 statuses', () => {
-    expect(LEAD_STATUSES).toHaveLength(7);
+  it('LEAD_STATUSES has 6 statuses', () => {
+    expect(LEAD_STATUSES).toHaveLength(6);
     expect(LEAD_STATUSES[0]).toBe('NEW');
-    expect(LEAD_STATUSES[6]).toBe('SQL');
+    expect(LEAD_STATUSES[5]).toBe('SQL');
   });
 
-  it('DEAL_STATUSES has 12 statuses', () => {
-    expect(DEAL_STATUSES).toHaveLength(12);
+  it('DEAL_STATUSES has 9 statuses', () => {
+    expect(DEAL_STATUSES).toHaveLength(9);
     expect(DEAL_STATUSES[0]).toBe('START_CONVERSATION');
-    expect(DEAL_STATUSES[11]).toBe('WON');
+    expect(DEAL_STATUSES[8]).toBe('WON');
   });
 
   it('PRODUCT_STATUSES has 8 statuses', () => {
@@ -67,9 +67,10 @@ describe('Constants', () => {
     expect(BONUS_PERCENTAGES.HOLDBACK).toBe(20);
   });
 
-  it('TASK_STATUSES includes BACKLOG and DONE', () => {
-    expect(TASK_STATUSES).toContain('BACKLOG');
+  it('TASK_STATUSES includes NEW and DONE', () => {
+    expect(TASK_STATUSES).toContain('NEW');
     expect(TASK_STATUSES).toContain('DONE');
+    expect(TASK_STATUSES).toHaveLength(5);
   });
 
   it('TICKET_PRIORITIES has P1 P2 P3', () => {
@@ -79,26 +80,29 @@ describe('Constants', () => {
   it('LEAD_SOURCES are valid', () => {
     expect(LEAD_SOURCES).toContain('MARKETING');
     expect(LEAD_SOURCES).toContain('SALES');
-    expect(LEAD_SOURCES.length).toBeGreaterThan(0);
+    expect(LEAD_SOURCES).toHaveLength(4);
   });
 
-  it('DEAL_TYPES are valid', () => {
-    expect(DEAL_TYPES).toContain('NEW_CLIENT');
-    expect(DEAL_TYPES).toContain('EXTENSION');
+  it('DEAL_TYPES has 4 canonical types', () => {
+    expect(DEAL_TYPES).toEqual(['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE']);
   });
 
   it('PROJECT_TYPES are valid', () => {
     expect(PROJECT_TYPES).toEqual(['WHITE_LABEL', 'MIX', 'CUSTOM_CODE']);
   });
 
-  it('PRODUCT_TYPES includes common types', () => {
+  it('PRODUCT_TYPES has 12 types', () => {
+    expect(PRODUCT_TYPES).toHaveLength(12);
     expect(PRODUCT_TYPES).toContain('WEBSITE');
     expect(PRODUCT_TYPES).toContain('MOBILE_APP');
+    expect(PRODUCT_TYPES).toContain('WEB_APP');
     expect(PRODUCT_TYPES).toContain('CRM');
+    expect(PRODUCT_TYPES).toContain('ECOMMERCE');
+    expect(PRODUCT_TYPES).toContain('OTHER');
   });
 
   it('PAYMENT_TYPES are valid', () => {
-    expect(PAYMENT_TYPES).toHaveLength(3);
+    expect(PAYMENT_TYPES).toEqual(['CLASSIC', 'SUBSCRIPTION']);
   });
 
   it('all constants are arrays', () => {

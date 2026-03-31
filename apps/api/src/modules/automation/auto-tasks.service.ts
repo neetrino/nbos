@@ -123,16 +123,49 @@ export class AutoTasksService {
 
   /**
    * Генерирует задачи для Deal на основе productType.
-   * При необходимости привязывает через TaskLink к указанному entityType/entityId.
+   * Привязывает через TaskLink к DEAL.
    */
   async generateTasksForDeal(
     dealId: string,
     productType: string,
     creatorId: string,
   ): Promise<{ created: number }> {
-    const titles = this.getTemplateByProductType(productType);
+    return this.generateTasks({
+      productType,
+      creatorId,
+      linkType: 'DEAL',
+      linkId: dealId,
+    });
+  }
+
+  /**
+   * Генерирует задачи для Product на основе его productType.
+   * Привязывает через TaskLink к PRODUCT и через FK productId.
+   */
+  async generateTasksForProduct(
+    productId: string,
+    productType: string,
+    creatorId: string,
+  ): Promise<{ created: number }> {
+    return this.generateTasks({
+      productType,
+      creatorId,
+      linkType: 'PRODUCT',
+      linkId: productId,
+      productId,
+    });
+  }
+
+  private async generateTasks(params: {
+    productType: string;
+    creatorId: string;
+    linkType: string;
+    linkId: string;
+    productId?: string;
+  }): Promise<{ created: number }> {
+    const titles = this.getTemplateByProductType(params.productType);
     this.logger.log(
-      `Generating ${titles.length} tasks for deal ${dealId} (productType=${productType})`,
+      `Generating ${titles.length} tasks for ${params.linkType} ${params.linkId} (productType=${params.productType})`,
     );
 
     let created = 0;
@@ -142,17 +175,18 @@ export class AutoTasksService {
         data: {
           code,
           title,
-          creatorId,
+          creatorId: params.creatorId,
           priority: 'NORMAL',
+          productId: params.productId,
           links: {
-            create: { entityType: 'DEAL', entityId: dealId },
+            create: { entityType: params.linkType, entityId: params.linkId },
           },
         },
       });
       created++;
     }
 
-    this.logger.log(`Created ${created} tasks for deal ${dealId}`);
+    this.logger.log(`Created ${created} tasks for ${params.linkType} ${params.linkId}`);
     return { created };
   }
 

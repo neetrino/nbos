@@ -54,14 +54,14 @@ describe('Schemas', () => {
     it('validates valid lead', () => {
       const result = createLeadSchema.parse({
         contactName: 'John Doe',
-        source: 'WEBSITE',
+        source: 'MARKETING',
       });
       expect(result.contactName).toBe('John Doe');
-      expect(result.source).toBe('WEBSITE');
+      expect(result.source).toBe('MARKETING');
     });
 
     it('requires contactName', () => {
-      expect(() => createLeadSchema.parse({ source: 'WEBSITE' })).toThrow();
+      expect(() => createLeadSchema.parse({ source: 'MARKETING' })).toThrow();
     });
 
     it('requires source', () => {
@@ -72,7 +72,7 @@ describe('Schemas', () => {
       expect(() =>
         createLeadSchema.parse({
           contactName: 'John',
-          source: 'WEBSITE',
+          source: 'MARKETING',
           email: 'not-an-email',
         }),
       ).toThrow();
@@ -124,21 +124,21 @@ describe('Schemas', () => {
     it('validates valid deal', () => {
       const result = createDealSchema.parse({
         contactId: '550e8400-e29b-41d4-a716-446655440000',
-        type: 'NEW_CLIENT',
+        type: 'PRODUCT',
         sellerId: '550e8400-e29b-41d4-a716-446655440001',
       });
-      expect(result.type).toBe('NEW_CLIENT');
+      expect(result.type).toBe('PRODUCT');
     });
 
     it('requires contactId and sellerId', () => {
-      expect(() => createDealSchema.parse({ type: 'NEW_CLIENT' })).toThrow();
+      expect(() => createDealSchema.parse({ type: 'PRODUCT' })).toThrow();
     });
 
     it('validates positive amount', () => {
       expect(() =>
         createDealSchema.parse({
           contactId: '550e8400-e29b-41d4-a716-446655440000',
-          type: 'NEW_CLIENT',
+          type: 'PRODUCT',
           sellerId: '550e8400-e29b-41d4-a716-446655440001',
           amount: -100,
         }),
