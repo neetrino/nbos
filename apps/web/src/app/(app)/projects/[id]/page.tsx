@@ -6,50 +6,37 @@ import {
   ArrowLeft,
   RefreshCcw,
   FolderKanban,
-  LayoutDashboard,
-  ListChecks,
+  Plus,
   Package,
-  Puzzle,
-  Ticket,
-  KeyRound,
-  DollarSign,
+  ArrowRight,
+  Calendar,
+  User,
+  Building2,
+  UserCircle,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
-import { getProjectType } from '@/features/projects/constants/projects';
-import { OverviewTab } from '@/features/projects/components/tabs/OverviewTab';
-import { TasksTab } from '@/features/projects/components/tabs/TasksTab';
-import { ProductsTab } from '@/features/projects/components/tabs/ProductsTab';
-import { ExtensionsTab } from '@/features/projects/components/tabs/ExtensionsTab';
-import { SupportTab } from '@/features/projects/components/tabs/SupportTab';
-import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
-import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
+import { productsApi, type Product } from '@/lib/api/products';
+import {
+  getProjectType,
+  getProductStatus,
+  getProductType,
+  PRODUCT_STATUSES,
+} from '@/features/projects/constants/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
-import { CreateExtensionDialog } from '@/features/projects/components/CreateExtensionDialog';
-
-const TAB_ITEMS = [
-  { value: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { value: 'products', label: 'Products', icon: Package },
-  { value: 'extensions', label: 'Extensions', icon: Puzzle },
-  { value: 'tasks', label: 'Tasks', icon: ListChecks },
-  { value: 'support', label: 'Support', icon: Ticket },
-  { value: 'credentials', label: 'Credentials', icon: KeyRound },
-  { value: 'finance', label: 'Finance', icon: DollarSign },
-] as const;
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [project, setProject] = useState<FullProject | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [productsLoading, setProductsLoading] = useState(true);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
-  const [showCreateExtension, setShowCreateExtension] = useState(false);
-  const [productsKey, setProductsKey] = useState(0);
-  const [extensionsKey, setExtensionsKey] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const fetchProject = useCallback(async () => {
     if (!params.id) return;
@@ -64,17 +51,38 @@ export default function ProjectDetailPage() {
     }
   }, [params.id, router]);
 
+  const fetchProducts = useCallback(async () => {
+    if (!params.id) return;
+    setProductsLoading(true);
+    try {
+      const data = await productsApi.getAll({
+        projectId: params.id,
+        pageSize: 50,
+        ...(statusFilter ? { status: statusFilter } : {}),
+      });
+      setProducts(data.items);
+    } catch {
+      setProducts([]);
+    } finally {
+      setProductsLoading(false);
+    }
+  }, [params.id, statusFilter]);
+
   useEffect(() => {
     fetchProject();
   }, [fetchProject]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   if (loading) {
     return (
       <div className="flex h-full flex-col gap-5">
         <Skeleton className="h-12 w-72" />
-        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-40 w-full" />
         <div className="grid grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-32" />
           ))}
         </div>
@@ -85,9 +93,11 @@ export default function ProjectDetailPage() {
   if (!project) return null;
 
   const projType = getProjectType(project.type);
+  const byStatus = (status: string) => products.filter((p) => p.status === status).length;
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full flex-col gap-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push('/projects')}>
@@ -107,76 +117,207 @@ export default function ProjectDetailPage() {
             </div>
           </div>
         </div>
-        <Button variant="outline" size="icon" onClick={fetchProject}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => {
+            fetchProject();
+            fetchProducts();
+          }}
+        >
           <RefreshCcw size={16} />
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
-        <TabsList>
-          {TAB_ITEMS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
-              <tab.icon size={14} />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* Project Info Card */}
+      <div className="bg-card border-border grid gap-6 rounded-xl border p-5 md:grid-cols-2">
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold">Project Details</h3>
+          <div className="space-y-2">
+            {project.contact && (
+              <InfoRow
+                icon={UserCircle}
+                label="Contact"
+                value={`${project.contact.firstName} ${project.contact.lastName}`}
+              />
+            )}
+            {project.company && (
+              <InfoRow icon={Building2} label="Company" value={project.company.name} />
+            )}
+            {project.seller && (
+              <InfoRow
+                icon={User}
+                label="Seller"
+                value={`${project.seller.firstName} ${project.seller.lastName}`}
+              />
+            )}
+            {project.pm && (
+              <InfoRow
+                icon={Users}
+                label="PM"
+                value={`${project.pm.firstName} ${project.pm.lastName}`}
+              />
+            )}
+            {project.deadline && (
+              <InfoRow
+                icon={Calendar}
+                label="Deadline"
+                value={new Date(project.deadline).toLocaleDateString()}
+              />
+            )}
+          </div>
+        </div>
+        {project.description && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">Description</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed">{project.description}</p>
+          </div>
+        )}
+      </div>
 
-        <TabsContent value="overview" className="mt-5">
-          <OverviewTab project={project} />
-        </TabsContent>
+      {/* Products Section */}
+      <div className="flex-1 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold">Products</h2>
+            <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+              {products.length}
+            </span>
+            {products.length > 0 && (
+              <div className="flex gap-1">
+                <Button
+                  variant={statusFilter === null ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setStatusFilter(null)}
+                  className="h-7 text-xs"
+                >
+                  All
+                </Button>
+                {PRODUCT_STATUSES.filter((s) => byStatus(s.value) > 0).map((s) => (
+                  <Button
+                    key={s.value}
+                    variant={statusFilter === s.value ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setStatusFilter(s.value)}
+                    className="h-7 text-xs"
+                  >
+                    {s.label} ({byStatus(s.value)})
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+          <Button size="sm" onClick={() => setShowCreateProduct(true)} className="gap-1.5">
+            <Plus size={14} />
+            New Product
+          </Button>
+        </div>
 
-        <TabsContent value="products" className="mt-5">
-          <ProductsTab
-            key={productsKey}
-            projectId={project.id}
-            onCreateClick={() => setShowCreateProduct(true)}
-          />
-        </TabsContent>
+        {productsLoading ? (
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-36 rounded-xl" />
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-muted-foreground py-16 text-center">
+            <Package size={48} className="mx-auto mb-4 opacity-20" />
+            <p className="mb-1 text-sm font-medium">No products in this project yet</p>
+            <p className="mb-4 text-xs">Create a product to start tracking work</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCreateProduct(true)}
+              className="gap-1.5"
+            >
+              <Plus size={14} />
+              Create First Product
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => {
+              const st = getProductStatus(product.status);
+              const pt = getProductType(product.productType);
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => router.push(`/projects/${params.id}/products/${product.id}`)}
+                  className="bg-card border-border hover:border-accent/50 group cursor-pointer rounded-xl border p-4 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="truncate text-sm font-semibold">{product.name}</h4>
+                      {pt && <span className="text-muted-foreground text-xs">{pt.label}</span>}
+                    </div>
+                    {st && <StatusBadge label={st.label} variant={st.variant} />}
+                  </div>
 
-        <TabsContent value="extensions" className="mt-5">
-          <ExtensionsTab
-            key={extensionsKey}
-            projectId={project.id}
-            onCreateClick={() => setShowCreateExtension(true)}
-          />
-        </TabsContent>
+                  <div className="mt-3 space-y-1.5">
+                    {product.pm && (
+                      <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                        <User size={12} />
+                        <span>
+                          {product.pm.firstName} {product.pm.lastName}
+                        </span>
+                      </div>
+                    )}
+                    {product.deadline && (
+                      <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                        <Calendar size={12} />
+                        <span>{new Date(product.deadline).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
 
-        <TabsContent value="tasks" className="mt-5">
-          <TasksTab projectId={project.id} />
-        </TabsContent>
-
-        <TabsContent value="support" className="mt-5">
-          <SupportTab tickets={project.tickets} />
-        </TabsContent>
-
-        <TabsContent value="credentials" className="mt-5">
-          <CredentialsTab credentials={project.credentials} />
-        </TabsContent>
-
-        <TabsContent value="finance" className="mt-5">
-          <FinanceTab
-            orders={project.orders}
-            subscriptions={project.subscriptions}
-            expenses={project.expenses}
-            domains={project.domains}
-          />
-        </TabsContent>
-      </Tabs>
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="flex gap-3 text-[10px]">
+                      <span className="text-muted-foreground">{product._count.tasks} tasks</span>
+                      <span className="text-muted-foreground">
+                        {product._count.extensions} ext.
+                      </span>
+                      <span className="text-muted-foreground">
+                        {product._count.tickets} tickets
+                      </span>
+                    </div>
+                    <ArrowRight
+                      size={14}
+                      className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       <CreateProductDialog
         open={showCreateProduct}
         onOpenChange={setShowCreateProduct}
-        onCreated={() => setProductsKey((k) => k + 1)}
+        onCreated={fetchProducts}
         projectId={project.id}
       />
+    </div>
+  );
+}
 
-      <CreateExtensionDialog
-        open={showCreateExtension}
-        onOpenChange={setShowCreateExtension}
-        onCreated={() => setExtensionsKey((k) => k + 1)}
-        projectId={project.id}
-      />
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <div className="text-muted-foreground flex items-center gap-2">
+        <Icon size={14} />
+        <span>{label}</span>
+      </div>
+      <span className="font-medium">{value}</span>
     </div>
   );
 }
