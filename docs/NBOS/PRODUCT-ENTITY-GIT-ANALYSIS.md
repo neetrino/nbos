@@ -99,4 +99,6 @@ git show 02e2575~1:apps/web/src/features/projects/components/tabs/ProductsTab.ts
 
 ---
 
-**Версия:** 1.0
+**Связь:** общий указатель документации — [00-Documentation-Hub.md](./00-Documentation-Hub.md).
+
+**Версия:** 1.1

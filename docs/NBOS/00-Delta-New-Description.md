@@ -2,7 +2,7 @@
 
 **Назначение:** зафиксировать расхождения после **нескольких проходов** чтения источников и целевых файлов, чтобы ничего не потерять на этапе слияния.
 
-**Источник новой логики:** `New-Description/*.md`  
+**Источник новой логики:** `docs/archive/New-Description/*.md` (архив); канонические решения в `docs/NBOS/` — см. [00-Documentation-Hub.md](./00-Documentation-Hub.md).  
 **Сверка с:** `docs/NBOS/**`, в первую очередь CRM, Business Logic, Finance, Projects Hub, Credentials.
 
 **Легенда статусов:**
@@ -137,7 +137,7 @@
 5. **Бонусы продаж:** правило **80/20** и два обязательных поля — вынести в `03-Bonus-Payroll-Logic` и Deal Card (или зафиксировать отказ от модели).
 6. **Remember Client Payments** — новый подмодуль или раздел Finance + связь с Credentials.
 7. **Subscription:** пауза при задержке; доска всех подписок — проверить `04-Subscription-Billing-Logic` и UI.
-8. ~~**Project Hub / Creating / Scrum**~~ — целевая модель навигации и сущность **Product** зафиксированы: `New-Description/Project-Hub-Product-Centric-Navigation.md`, § 0 в `05-UI-Specifications/03-Project-Hub-Pages.md`.
+8. ~~**Project Hub / Creating / Scrum**~~ — целевая модель навигации и сущность **Product** зафиксированы: `02-Modules/02-Projects-Hub/05-Product-Centric-Navigation.md`, § 0 в `05-UI-Specifications/03-Project-Hub-Pages.md`.
 
 Детальное выравнивание с `Project Hub & Creating.md` (табы, скрам) — в бэклоге при приведении модулей к § 0. 9. **Переименование Product Type → Service Type** в UI — опционально; в доках допустимо оставить «Product Type» при явной отсылке к § 1.1.
 
@@ -154,13 +154,13 @@
 
 Актуальный список **принятых формулировок** и **намеренно открытых** пунктов (Creating Product+Extension, бонусы, Extension MVP-связь с Product, MAINTENANCE, доска maintenance vs сущность БД, связь с Subscription):
 
-- **`New-Description/00-Open-Questions-and-Decisions.md`**
-- **Q1 закрыт (2026-03-31):** сущность **Product** нужна; **Project Hub** — продукто-центричная навигация — см. **`New-Description/Project-Hub-Product-Centric-Navigation.md`**, в `docs` — § 0 в `05-UI-Specifications/03-Project-Hub-Pages.md`.
+- **`03-Business-Logic/08-Stakeholder-Decisions-Product-Extension-Maintenance.md`** (канон; архив: `docs/archive/New-Description/00-Open-Questions-and-Decisions.md`)
+- **Q1 закрыт (2026-03-31):** сущность **Product** нужна; **Project Hub** — продукто-центричная навигация — см. **`02-Modules/02-Projects-Hub/05-Product-Centric-Navigation.md`**, в UI-спеках — § 0 в `05-UI-Specifications/03-Project-Hub-Pages.md`.
 
 Детальные правила полей **Deal Type = MAINTENANCE** уточнять в `docs/` после стабилизации экранов Product.
 
 ---
 
-**Версия:** 1.3  
+**Версия:** 1.4  
 **Дата:** 2026-03-31  
 **Проходов сверки:** 2+ (общая карта этапа 1 + детальное чтение CRM/BL/Finance/Hub/Credentials + точечный grep)
