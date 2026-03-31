@@ -36,8 +36,8 @@ export interface Employee {
   createdAt: string;
   updatedAt: string;
   _count?: {
-    projectsSelling: number;
-    projectsManaging: number;
+    dealsSelling: number;
+    productsManaging: number;
     tasksAssigned: number;
     tasksCreated: number;
   };

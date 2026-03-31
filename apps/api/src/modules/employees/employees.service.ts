@@ -18,8 +18,8 @@ const EMPLOYEE_INCLUDE = {
   },
   _count: {
     select: {
-      projectsSelling: true,
-      projectsManaging: true,
+      dealsSelling: true,
+      productsManaging: true,
       tasksAssigned: true,
       tasksCreated: true,
     },
