@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
+import { Loader2 } from 'lucide-react';
 import type { MeResponse, PermissionMap, PermissionScope } from './types';
 import { api, setAuthTokenGetter } from '@/lib/api';
 
@@ -21,21 +22,35 @@ const PermissionCtx = createContext<PermissionContextValue>({
   scope: () => null,
 });
 
+function SessionGate({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession();
+
+  const accessToken = session?.accessToken ?? null;
+  setAuthTokenGetter(async () => accessToken);
+
+  if (status === 'loading') {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (status !== 'authenticated') {
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
 export function PermissionProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Sync before child useEffects run: nested passive effects run inner-to-outer,
-  // so axios must already have the token getter when pages like /dashboard fetch.
-  const accessToken = session?.accessToken ?? null;
-  setAuthTokenGetter(async () => accessToken);
-
   useEffect(() => {
-    if (status === 'loading') return;
-
-    if (!session) {
-      setIsLoading(false);
+    if (status === 'loading' || !session) {
+      if (status !== 'loading') setIsLoading(false);
       return;
     }
 
@@ -75,7 +90,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
 
   return (
     <PermissionCtx.Provider value={{ me, permissions, isLoading, can, scope }}>
-      {children}
+      <SessionGate>{children}</SessionGate>
     </PermissionCtx.Provider>
   );
 }

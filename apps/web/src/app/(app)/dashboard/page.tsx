@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import {
   DollarSign,
   FolderKanban,
@@ -85,7 +84,6 @@ function DashboardLoadingSkeleton() {
 }
 
 export default function DashboardPage() {
-  const { status: sessionStatus } = useSession();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -218,17 +216,8 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (sessionStatus !== 'authenticated') return;
-    void fetchDashboard();
-  }, [sessionStatus, fetchDashboard]);
-
-  if (sessionStatus === 'loading') {
-    return <DashboardLoadingSkeleton />;
-  }
-
-  if (sessionStatus !== 'authenticated') {
-    return null;
-  }
+    fetchDashboard();
+  }, [fetchDashboard]);
 
   if (loading) {
     return <DashboardLoadingSkeleton />;
