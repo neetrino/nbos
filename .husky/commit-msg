@@ -1,1 +1,14 @@
+#!/usr/bin/env sh
+set -e
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 1
+cd "$ROOT" || exit 1
+
+export PATH="$ROOT/node_modules/.bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  printf '%s\n' "husky(commit-msg): pnpm not found. Install pnpm or ensure Homebrew bins are on PATH." >&2
+  exit 1
+fi
+
 pnpm commitlint --edit "$1"
