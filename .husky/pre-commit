@@ -1,1 +1,15 @@
+#!/usr/bin/env sh
+set -e
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 1
+cd "$ROOT" || exit 1
+
+# Cursor / GUI Git often run hooks without a login shell, so PATH may omit Homebrew / pnpm.
+export PATH="$ROOT/node_modules/.bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  printf '%s\n' "husky(pre-commit): pnpm not found. Install pnpm (e.g. corepack enable && corepack prepare pnpm@8.15.0 --activate) or ensure /usr/local/bin and /opt/homebrew/bin are on PATH." >&2
+  exit 1
+fi
+
 pnpm lint-staged

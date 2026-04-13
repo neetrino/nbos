@@ -40,10 +40,10 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md,css}": [
-      "prettier --write"
+      "pnpm exec prettier --write --ignore-path .prettierignore"
     ],
     "*.{ts,tsx,js,jsx}": [
-      "eslint --fix"
+      "pnpm exec eslint --fix"
     ]
   }
 }
