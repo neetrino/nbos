@@ -73,7 +73,7 @@ Contact (человек)
 
 **Lead:** id, contact_name, phone, email, source (Instagram/Facebook/Website/Cold Call/Partner/Referral), status (New/Didn't Get Through/Contact Established/MQL/SPAM/Frozen/SQL)
 
-**Deal:** id, lead_id, project_id (for extensions), contact_id, type (New Client/Extension/Upsell), status (Start Conversation/Discuss Needs/Meeting/Can We Do It/Send Offer/Get Answer/Deposit & Contract/Creating/Get Final Pay/Maintenance Offer/Failed/Won), amount, payment_type, seller_id, source
+**Deal:** id, lead_id, project_id (for extensions), contact_id, type (New Client/Extension/Upsell), status (7 рабочих стадий Start Conversation … **Deposit & Contract**, затем **Failed** или **Deal Won** — без Creating / Get Final Pay / Maintenance Offer в CRM), amount, payment_type, seller_id, source
 
 **Support Ticket:** id, project_id, product_id, contact_id, category (Incident/Service Request/Change Request/Problem), priority (P1/P2/P3), status (New/Triaged/Assigned/In Progress/Resolved/Closed/Reopened), billable, assigned_to, sla_response_deadline, sla_resolve_deadline
 
@@ -115,6 +115,7 @@ Employee ──N:M──► Credential (access)
 ```
 
 **Правила целостности:**
+
 - Каждый Invoice привязан к Order ИЛИ Subscription (обязательно)
 - Каждый Bonus Entry привязан к Order (обязательно)
 - Payment triggers: смена статуса Order, создание Bonus Entry, создание Partner Payout (Expense)
@@ -127,28 +128,29 @@ Employee ──N:M──► Credential (access)
 
 ## 4. Список модулей платформы (14 модулей)
 
-| # | Модуль | Ключевой функционал |
-|---|--------|-------------------|
-| 1 | **CRM** | Lead Pipeline (7 стадий), Deal Pipeline (12 стадий), Extension Deals |
-| 2 | **Projects Hub** | Центральная сущность. Карточка проекта с 13 вкладками. Вычисляемые статусы. |
-| 3 | **Clients** | Companies + Contacts + Client Portfolio |
-| 4 | **Finance** | Invoices (автоматизированная воронка), Payments, Subscriptions (Grid View: проекты × месяцы), Expenses (planned + unplanned), Bonus Board, Salary Board, P&L Reports |
-| 5 | **Tasks** | Kanban/Scrum, множественные виды (List, My Plan, Timeline), роли (Creator/Assignee/Co-Assignee/Observer), чат в задачах, шаблоны по типу продукта |
-| 6 | **Support** | ITIL-lite тикеты (Incident/Request/Change/Problem), SLA (P1/P2/P3), Change Request → Extension Deal |
-| 7 | **My Company** | Оргструктура (EOS), команда, RBAC, KPI/Scorecard, SOP |
-| 8 | **Partners** | Двунаправленная модель: Inbound (30% партнёру) + Outbound (партнёр платит нам) |
-| 9 | **Messenger** | 3 области: клиентский омниканал (WhatsApp/Instagram/FB), проектные чаты с топиками, личные сообщения. Создание задач из чата. |
-| 10 | **Calendar** | Встречи (conflict detection), дедлайны (auto-populated), расписание команды, биллинг-календарь |
-| 11 | **Drive** | Файлы проектов (auto-структура), библиотека компании, Quick Attach |
-| 12 | **Credentials** | Встроенный password vault. AES-256 шифрование. 5 уровней доступа. Audit log на каждый view/edit. Encrypted backup/export. |
-| 13 | **Notifications** | Cross-module engine. Каналы: In-App, WhatsApp (клиенты), Telegram (команда), Email. Событийная модель. |
-| 14 | **Dashboards** | 8 дашбордов: CEO, Sales, Marketing, Delivery, Finance, Support, Subscription/MRR, Personal |
+| #   | Модуль            | Ключевой функционал                                                                                                                                                  |
+| --- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **CRM**           | Lead Pipeline (7 стадий), Deal Pipeline (12 стадий), Extension Deals                                                                                                 |
+| 2   | **Projects Hub**  | Центральная сущность. Карточка проекта с 13 вкладками. Вычисляемые статусы.                                                                                          |
+| 3   | **Clients**       | Companies + Contacts + Client Portfolio                                                                                                                              |
+| 4   | **Finance**       | Invoices (автоматизированная воронка), Payments, Subscriptions (Grid View: проекты × месяцы), Expenses (planned + unplanned), Bonus Board, Salary Board, P&L Reports |
+| 5   | **Tasks**         | Kanban/Scrum, множественные виды (List, My Plan, Timeline), роли (Creator/Assignee/Co-Assignee/Observer), чат в задачах, шаблоны по типу продукта                    |
+| 6   | **Support**       | ITIL-lite тикеты (Incident/Request/Change/Problem), SLA (P1/P2/P3), Change Request → Extension Deal                                                                  |
+| 7   | **My Company**    | Оргструктура (EOS), команда, RBAC, KPI/Scorecard, SOP                                                                                                                |
+| 8   | **Partners**      | Двунаправленная модель: Inbound (30% партнёру) + Outbound (партнёр платит нам)                                                                                       |
+| 9   | **Messenger**     | 3 области: клиентский омниканал (WhatsApp/Instagram/FB), проектные чаты с топиками, личные сообщения. Создание задач из чата.                                        |
+| 10  | **Calendar**      | Встречи (conflict detection), дедлайны (auto-populated), расписание команды, биллинг-календарь                                                                       |
+| 11  | **Drive**         | Файлы проектов (auto-структура), библиотека компании, Quick Attach                                                                                                   |
+| 12  | **Credentials**   | Встроенный password vault. AES-256 шифрование. 5 уровней доступа. Audit log на каждый view/edit. Encrypted backup/export.                                            |
+| 13  | **Notifications** | Cross-module engine. Каналы: In-App, WhatsApp (клиенты), Telegram (команда), Email. Событийная модель.                                                               |
+| 14  | **Dashboards**    | 8 дашбордов: CEO, Sales, Marketing, Delivery, Finance, Support, Subscription/MRR, Personal                                                                           |
 
 ---
 
 ## 5. Автоматизации (ключевые, всего 32+)
 
 ### Billing:
+
 - Subscription billing day → auto-create Invoice
 - Invoice stages auto-transition по таймерам (New → Create in Gov → Send → Overdue)
 - 1-го числа каждого месяца → auto-create Expense cards из Planned Expenses
@@ -156,23 +158,27 @@ Employee ──N:M──► Credential (access)
 - Subscription payment received → auto-create monthly Partner Payout
 
 ### Notifications (WhatsApp to clients):
+
 - Invoice created → "Ваш счёт готов"
 - Due date approaching → "Напоминание об оплате"
 - Overdue → "Просрочка" (до 3 эскалаций)
 - Domain renewal → "Срок домена истекает"
 
 ### Tasks:
+
 - New Product created → auto-generate tasks from template
 - Pass-through invoice paid → auto-create task "Купить домен/сервис"
 - Required fields not filled → auto-create task for responsible person
 
 ### Bonuses:
+
 - Invoice Paid (seller conditions met) → auto-create Seller Bonus
 - Work Done + Invoice Paid → auto-create Delivery Bonus
 - KPI gate check end of month → update bonus statuses
 - Holdback release (30 days after delivery) → move to Active
 
 ### Projects:
+
 - Product stage change → recalculate Project computed status
 - All Products closed → suggest archival
 
@@ -181,6 +187,7 @@ Employee ──N:M──► Credential (access)
 ## 6. Ключевые технические требования
 
 ### Безопасность:
+
 - **Шифрование полей:** AES-256 для credential fields (login, password, api_key, env_data)
 - **RBAC:** 3 уровня — модуль, проект, запись. 12 ролей с разными доступами.
 - **Audit Logs:** все изменения критических данных (финансы, пароли, статусы, доступы)
@@ -188,29 +195,35 @@ Employee ──N:M──► Credential (access)
 - **AI Data Policy:** Forbidden (пароли), Masked (финансы), Allowed (статусы, FAQ)
 
 ### Real-time:
+
 - Чаты (проектные, задачные, личные) — real-time messaging
 - Notifications — real-time push (in-app, optionally Telegram)
 - Dashboard метрики — live data (не кэшированные)
 
 ### Автоматизация:
+
 - Событийная архитектура: Payment → triggers (bonus, partner payout, order status)
 - Scheduled jobs: billing (по расписанию подписок), planned expenses (1-го числа), SLA timers
 - Автоматические стадийные переходы Invoice с таймерами
 
 ### Stage Gates:
+
 - Validation engine: при переходе стадий проверяет обязательные поля, задачи, чеклисты
 - Блокирует переход если условия не выполнены
 - Конфигурируется per product type
 
 ### Поиск:
+
 - Global search по всем сущностям (контакты, проекты, задачи, инвойсы, пароли по имени)
 - Фильтрация во всех списках и досках
 
 ### Мультивалютность:
+
 - Основная валюта: AMD
 - Поддержка USD, EUR (для отдельных заказов)
 
 ### Масштаб данных:
+
 - ~2000 существующих записей (миграция из Bitrix)
 - Рост: 20 → 50+ проектов, 100 → 300+ подписок
 - ~20 → 50+ пользователей
@@ -220,33 +233,33 @@ Employee ──N:M──► Credential (access)
 
 ## 7. Интеграции
 
-| Интеграция | Приоритет | Назначение |
-|-----------|-----------|-----------|
-| WhatsApp Business API | High (Phase 1) | Уведомления клиентам об оплате, напоминания |
-| Telegram Bot API | High (Phase 1) | Уведомления команде (задачи, дедлайны, SLA) |
-| Government Invoice System | High (Phase 1) | Создание налоговых счетов (manual → auto в будущем) |
-| Instagram / Facebook (Meta API) | Medium (Phase 2) | Входящие лиды и сообщения клиентов |
-| Google Drive | Medium (Phase 3) | Синхронизация файлов проектов |
-| GitHub | Low (Phase 3) | Привязка репозиториев к проектам |
-| Bank API | Low (Phase 3) | Автоматическая проверка поступлений |
-| Google Calendar | Low (Phase 4) | Синхронизация встреч |
+| Интеграция                      | Приоритет        | Назначение                                          |
+| ------------------------------- | ---------------- | --------------------------------------------------- |
+| WhatsApp Business API           | High (Phase 1)   | Уведомления клиентам об оплате, напоминания         |
+| Telegram Bot API                | High (Phase 1)   | Уведомления команде (задачи, дедлайны, SLA)         |
+| Government Invoice System       | High (Phase 1)   | Создание налоговых счетов (manual → auto в будущем) |
+| Instagram / Facebook (Meta API) | Medium (Phase 2) | Входящие лиды и сообщения клиентов                  |
+| Google Drive                    | Medium (Phase 3) | Синхронизация файлов проектов                       |
+| GitHub                          | Low (Phase 3)    | Привязка репозиториев к проектам                    |
+| Bank API                        | Low (Phase 3)    | Автоматическая проверка поступлений                 |
+| Google Calendar                 | Low (Phase 4)    | Синхронизация встреч                                |
 
 ---
 
 ## 8. Пользовательские роли и доступ
 
-| Роль | Основные модули | Количество |
-|------|----------------|-----------|
-| CEO / Founder | Всё | 1-2 |
-| Seller | CRM, Projects (частично), Finance (частично) | 2-3 |
-| PM | Projects, Tasks, Messenger, Calendar, Support | 3-5 |
-| Developer | Tasks, Credentials (project), Chat | 5-8 |
-| Junior Developer | Tasks (только свои), Credentials (minimal) | 2-4 |
-| Designer | Tasks, Drive | 1-2 |
-| QA | Tasks, Support | 1-2 |
-| Finance Director | Finance (всё), Invoices, Expenses, Subscriptions, Bonus | 1 |
-| Marketing | CRM (Leads), Dashboards | 1-2 |
-| Tech Specialist / Ops | Credentials, Domains, Drive | 1-2 |
+| Роль                  | Основные модули                                         | Количество |
+| --------------------- | ------------------------------------------------------- | ---------- |
+| CEO / Founder         | Всё                                                     | 1-2        |
+| Seller                | CRM, Projects (частично), Finance (частично)            | 2-3        |
+| PM                    | Projects, Tasks, Messenger, Calendar, Support           | 3-5        |
+| Developer             | Tasks, Credentials (project), Chat                      | 5-8        |
+| Junior Developer      | Tasks (только свои), Credentials (minimal)              | 2-4        |
+| Designer              | Tasks, Drive                                            | 1-2        |
+| QA                    | Tasks, Support                                          | 1-2        |
+| Finance Director      | Finance (всё), Invoices, Expenses, Subscriptions, Bonus | 1          |
+| Marketing             | CRM (Leads), Dashboards                                 | 1-2        |
+| Tech Specialist / Ops | Credentials, Domains, Drive                             | 1-2        |
 
 ---
 
@@ -265,13 +278,13 @@ Employee ──N:M──► Credential (access)
 
 ## 10. Фазы реализации
 
-| Фаза | Срок | Что входит |
-|------|------|-----------|
-| **Phase 1: MVP** | 2-3 мес | CRM (Leads + Deals), Projects Hub (basic), Clients, Finance (Invoices + Subscriptions), RBAC, Auth |
-| **Phase 2: Core** | 2-3 мес | Tasks (Kanban/Scrum), Support (tickets), Credentials Vault, Drive, Expenses, Bonus Board |
-| **Phase 3: Automation** | 1-2 мес | WhatsApp/Telegram notifications, Auto-billing, Auto-tasks, Notification engine |
-| **Phase 4: Advanced** | 2-3 мес | Messenger (project chats + omnichannel), Calendar, Dashboards/Analytics, Templates/Checklists |
-| **Phase 5: Migration** | 1-2 мес | Bitrix data import, parallel operation, cutover |
+| Фаза                    | Срок    | Что входит                                                                                         |
+| ----------------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| **Phase 1: MVP**        | 2-3 мес | CRM (Leads + Deals), Projects Hub (basic), Clients, Finance (Invoices + Subscriptions), RBAC, Auth |
+| **Phase 2: Core**       | 2-3 мес | Tasks (Kanban/Scrum), Support (tickets), Credentials Vault, Drive, Expenses, Bonus Board           |
+| **Phase 3: Automation** | 1-2 мес | WhatsApp/Telegram notifications, Auto-billing, Auto-tasks, Notification engine                     |
+| **Phase 4: Advanced**   | 2-3 мес | Messenger (project chats + omnichannel), Calendar, Dashboards/Analytics, Templates/Checklists      |
+| **Phase 5: Migration**  | 1-2 мес | Bitrix data import, parallel operation, cutover                                                    |
 
 ---
 
@@ -280,28 +293,33 @@ Employee ──N:M──► Credential (access)
 Все детальные документы находятся в папке `Docs/`:
 
 ### 01-Platform-Overview/
+
 - `01-Vision-and-Goals.md` — Видение, цели, принципы, целевые пользователи
 - `02-Platform-Architecture-Layers.md` — 5 слоёв архитектуры (Core → Control)
 - `03-Core-Entities-and-Data-Model.md` — Все 19 сущностей с полями и связями
 
 ### 02-Modules/01-CRM/
+
 - `01-CRM-Overview.md` — Обзор модуля CRM
 - `02-Lead-Pipeline.md` — Воронка лидов (7 стадий, поля, автоматизации)
 - `03-Deal-Pipeline.md` — Воронка сделок (12 стадий, Stage Gates, типы оплат)
 - `04-Offers-and-Handoff.md` — Коммерческие предложения, Kickoff Checklist (15 пунктов)
 
 ### 02-Modules/02-Projects-Hub/
+
 - `01-Project-Hub-Overview.md` — Центральный модуль, вычисляемые статусы
 - `02-Project-Card.md` — 13 вкладок карточки проекта (детально)
 - `03-Products-and-Extensions.md` — Продукты (8 стадий + Stage Gates), Доработки
 - `04-Project-Lifecycle.md` — Полный жизненный цикл (12 фаз от Lead до Archive)
 
 ### 02-Modules/03-Clients/
+
 - `01-Companies.md` — Компании, Tax/Tax-Free логика
 - `02-Contacts.md` — Контакты, связи, дедупликация
 - `03-Client-Portfolio.md` — Портфель клиента, LTV, MRR
 
 ### 02-Modules/04-Finance/
+
 - `01-Finance-Overview.md` — Обзор финансового модуля
 - `02-Invoices-and-Payments.md` — Воронка инвойсов, автоматизация, Payment triggers
 - `03-Subscriptions.md` — Подписки, Grid View, биллинг, churn
@@ -311,17 +329,20 @@ Employee ──N:M──► Credential (access)
 - `07-Domains-Hosting-Licenses.md` — Домены, хостинг, сервисы, lifecycle
 
 ### 02-Modules/05-Tasks/
+
 - `01-Task-System-Overview.md` — Система задач, роли, статусы, чат в задачах
 - `02-Boards-and-Views.md` — Kanban, Scrum, List, My Plan, Timeline
 - `03-Templates-and-Checklists.md` — Шаблоны по типам продуктов, Stage Gate чеклисты
 
 ### 02-Modules/06-Support/
+
 - `01-Support-Overview.md` — ITIL-lite, категории, SLA, abuse handling
 - `02-Ticket-Workflow.md` — Жизненный цикл тикета
 - `02-Ticket-Lifecycle.md` — Детальные стадии тикета
 - `03-Support-Workflow.md` — Рабочий процесс поддержки
 
 ### 02-Modules/07-My-Company/
+
 - `01-Org-Structure.md` — EOS Accountability Chart, 8 департаментов
 - `02-Team-Employees.md` — Профили сотрудников, onboarding/offboarding
 - `03-RBAC-Permissions.md` — 3 уровня доступов, credential access levels
@@ -329,27 +350,35 @@ Employee ──N:M──► Credential (access)
 - `05-SOP-Templates.md` — 12 must-have SOPs, template library
 
 ### 02-Modules/08-Partners/
+
 - `01-Partners-Overview.md` — Двунаправленная модель, Inbound/Outbound, Payout states
 
 ### 02-Modules/09-Messenger/
+
 - `01-Messenger-Overview.md` — 3 области коммуникаций, Telegram strategy, фазы
 
 ### 02-Modules/10-Calendar/
+
 - `01-Calendar-Overview.md` — 4 вкладки: Meetings, Deadlines, Schedule, Billing
 
 ### 02-Modules/11-Drive/
+
 - `01-Drive-Overview.md` — Файловое хранилище, auto-структура, Quick Attach
 
 ### 02-Modules/12-Credentials/
+
 - `01-Credentials-Vault.md` — Password vault, шифрование, backup, audit
 
 ### 02-Modules/13-Notifications/
+
 - `01-Notifications-System.md` — Event-driven уведомления, 6 категорий, 4 канала
 
 ### 02-Modules/14-Dashboards/
+
 - `01-Dashboards-Analytics.md` — 8 дашбордов, метрики, drill-down, phased rollout
 
 ### 03-Business-Logic/
+
 - `01-Lead-to-Cash-Process.md` — Полный процесс от лида до денег
 - `02-Order-to-Delivery-Process.md` — От заказа до сдачи проекта
 - `03-Bonus-Payroll-Logic.md` — Бонусная система: формулы, KPI gates, holdback
@@ -358,10 +387,12 @@ Employee ──N:M──► Credential (access)
 - `06-Entity-Relationships.md` — Карта связей, trigger chains
 
 ### 04-Roles-and-Access/
+
 - `01-Role-Definitions.md` — 12 ролей: цели, KPI, доступы
 - `02-Access-Matrix.md` — RBAC матрица (27 модулей × 12 ролей)
 
 ### 05-UI-Specifications/
+
 - `01-Navigation-Structure.md` — Sidebar, Top Bar, Breadcrumbs, RBAC visibility
 - `02-CRM-Pages.md` — Lead List, Deal Pipeline, Deal Card, Sales Analytics
 - `03-Project-Hub-Pages.md` — Projects List, Project Detail (13 tabs)
@@ -369,6 +400,7 @@ Employee ──N:M──► Credential (access)
 - `05-Task-and-Support-Pages.md` — My Plan, Task Detail, Task Board, Tickets
 
 ### 06-Integrations/
+
 - `01-WhatsApp-Integration.md` — Client notifications, message templates
 - `02-Telegram-Integration.md` — Team notifications, 3 approaches
 - `03-Bank-Integration.md` — Payment verification, matching logic
@@ -376,6 +408,7 @@ Employee ──N:M──► Credential (access)
 - `05-Automation-Scenarios.md` — Полный реестр 32+ автоматизаций
 
 ### 07-Migration/
+
 - `01-Bitrix-Migration-Plan.md` — 5 фаз миграции, маппинг данных, риски
 
 ---
@@ -385,6 +418,7 @@ Employee ──N:M──► Credential (access)
 Эти вопросы нужно решить на этапе технической архитектуры:
 
 ### Стек технологий:
+
 1. Frontend framework: Next.js / React + Vite / другое?
 2. Backend: Node.js (Express/Fastify/NestJS) / Go / Python (FastAPI)?
 3. Database: PostgreSQL / MySQL? Нужен ли отдельный document store?
@@ -395,12 +429,14 @@ Employee ──N:M──► Credential (access)
 8. Search: PostgreSQL full-text / Elasticsearch / Meilisearch?
 
 ### Архитектура:
+
 9. Монолит или микросервисы? (для 20-50 пользователей скорее монолит)
 10. API design: REST / GraphQL / tRPC?
 11. Event system: простая очередь событий или полноценный message broker (RabbitMQ/Redis Streams)?
 12. Background jobs: cron + queue system / node-cron / Bull/BullMQ?
 
 ### Инфраструктура:
+
 13. Hosting: VPS (DigitalOcean/Hetzner) / Cloud (AWS/GCP)? Self-hosted обязательно (пароли!).
 14. CI/CD: GitHub Actions / другое?
 15. Containerization: Docker + Docker Compose?
@@ -408,15 +444,18 @@ Employee ──N:M──► Credential (access)
 17. Backup strategy: database + credentials + files
 
 ### Безопасность:
+
 18. Authentication: JWT / Session-based? OAuth (Google)?
 19. Encryption at rest: field-level (credentials) + database-level?
 20. Rate limiting, CORS, CSP headers
 21. Credential encryption key management: где хранить master key?
 
 ### Мобильность:
+
 22. Responsive web only? Или PWA? Или native mobile app позже?
 
 ---
 
+```
 
 ```

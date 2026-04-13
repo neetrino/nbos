@@ -20,8 +20,8 @@
 | 1.1 | Նախագծի չափ | A / B / C | ⬜ | |
 | 1.2 | Ճարտարապետություն | Պարզ / Feature-based / Monorepo | ⬜ | |
 | 1.3 | Package manager | pnpm | ⬜ | ստանդարտ |
-| 1.4 | Node.js | 20.x LTS | ⬜ | |
-| 1.5 | TypeScript | 5.x, strict: true | ⬜ | |
+| 1.4 | Node.js | 24.x LTS | ⬜ | Active LTS |
+| 1.5 | TypeScript | 5.9, strict: true | ⬜ | |
 | 1.6 | Monorepo գործիք | — / Turborepo | ⬜ | միայն C-ի համար |
 | 1.7 | Git ստրատեգիա | trunk-based / feature branches | ⬜ | |
 | 1.8 | Commit կոնվենցիա | Conventional Commits | ⬜ | ստանդարտ |
@@ -32,7 +32,7 @@
 
 | # | Պարամետր | Որոշում | Ստատուս | Նշում |
 |---|----------|---------|---------|-------|
-| 2.1 | Framework | Next.js 15.x (App Router) | ⬜ | |
+| 2.1 | Framework | Next.js 16.x (App Router) | ⬜ | Turbopack, proxy.ts |
 | 2.2 | Ոճեր | Tailwind CSS 4.x | ⬜ | |
 | 2.3 | UI Kit | shadcn/ui / custom / պետք չէ | ⬜ | |
 | 2.4 | State management | useState / Zustand 5.x | ⬜ | |
@@ -65,7 +65,7 @@
 | # | Պարամետր | Որոշում | Ստատուս | Նշում |
 |---|----------|---------|---------|-------|
 | 4.1 | ՍՈՒԲԴ | PostgreSQL 17 (Neon) | ⬜ | |
-| 4.2 | ORM | Prisma 6.x | ⬜ | |
+| 4.2 | ORM | Prisma 7.x | ⬜ | |
 | 4.3 | ԲԴ դերեր | app_user + readonly_user | ⬜ | ստանդարտ |
 | 4.4 | Connection limit | [ադապտիվ — քննարկել] | ⬜ | |
 | 4.5 | statement_timeout | [ադապտիվ — քննարկել] | ⬜ | |
@@ -81,7 +81,7 @@
 
 | # | Պարամետր | Որոշում | Ստատուս | Նշում |
 |---|----------|---------|---------|-------|
-| 5.1 | Լուծում | Auth.js 5.x / Clerk | ⬜ | Auth.js — ստանդարտ |
+| 5.1 | Լուծում | Auth.js 5.x / Clerk (Core 3) | ⬜ | Auth.js — ստանդարտ |
 | 5.2 | Մատակարարներ | GitHub, Google, Email... | ⬜ | |
 | 5.3 | Սեսիաների ստրատեգիա | JWT / Database sessions | ⬜ | |
 | 5.4 | Դերեր / RBAC | պետք չէ / USER, ADMIN, ... | ⬜ | |

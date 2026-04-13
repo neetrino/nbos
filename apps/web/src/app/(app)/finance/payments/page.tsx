@@ -1,0 +1,193 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import {
+  RefreshCcw,
+  CreditCard,
+  DollarSign,
+  FileText,
+  FolderKanban,
+  Building2,
+  Calendar,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
+import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import { formatAmount } from '@/features/finance/constants/finance';
+import { api } from '@/lib/api';
+
+interface Payment {
+  id: string;
+  amount: string;
+  currency: string;
+  paymentDate: string;
+  paymentMethod: string;
+  createdAt: string;
+  invoice: {
+    id: string;
+    code: string;
+    type: string;
+  } | null;
+  project: { id: string; name: string } | null;
+  company: { id: string; name: string } | null;
+  confirmedBy: { id: string; firstName: string; lastName: string } | null;
+}
+
+export default function PaymentsPage() {
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  const fetchPayments = useCallback(async () => {
+    setLoading(true);
+    try {
+      const resp = await api.get('/api/finance/payments', {
+        params: { pageSize: 100, search: search || undefined },
+      });
+      setPayments(resp.data.items ?? resp.data ?? []);
+    } catch {
+      /* handled */
+    } finally {
+      setLoading(false);
+    }
+  }, [search]);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
+
+  const totalCollected = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+  const currentMonth = new Date().getMonth();
+  const thisMonthPayments = payments.filter(
+    (p) => new Date(p.paymentDate).getMonth() === currentMonth,
+  );
+  const thisMonthTotal = thisMonthPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+  return (
+    <div className="flex h-full flex-col gap-5">
+      <PageHeader title="Payments" description={`${payments.length} payments`}>
+        <Button variant="outline" size="icon" onClick={fetchPayments}>
+          <RefreshCcw size={16} />
+        </Button>
+      </PageHeader>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Total Collected</p>
+          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(totalCollected)}</p>
+        </div>
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">This Month</p>
+          <p className="mt-1 text-xl font-bold">{formatAmount(thisMonthTotal)}</p>
+        </div>
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Total Payments</p>
+          <p className="mt-1 text-xl font-bold">{payments.length}</p>
+        </div>
+      </div>
+
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by invoice, project..."
+        filters={[]}
+        filterValues={{}}
+        onFilterChange={() => {}}
+        onClearFilters={() => {}}
+      />
+
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-lg" />
+          ))}
+        </div>
+      ) : payments.length === 0 ? (
+        <EmptyState
+          icon={CreditCard}
+          title="No payments yet"
+          description="Payments appear when invoices are marked as paid"
+        />
+      ) : (
+        <div className="border-border overflow-hidden rounded-xl border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Payment Date</TableHead>
+                <TableHead>Invoice</TableHead>
+                <TableHead>Project</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Method</TableHead>
+                <TableHead>Confirmed By</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {payments.map((payment) => (
+                <TableRow key={payment.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5 text-sm font-medium">
+                      <Calendar size={13} className="text-muted-foreground" />
+                      {new Date(payment.paymentDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {payment.invoice ? (
+                      <div className="flex items-center gap-1.5 text-sm">
+                        <FileText size={12} className="text-muted-foreground" />
+                        <span>{payment.invoice.code}</span>
+                        <StatusBadge label={payment.invoice.type} variant="blue" />
+                      </div>
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {payment.project ? (
+                      <div className="flex items-center gap-1.5 text-sm">
+                        <FolderKanban size={12} className="text-muted-foreground" />
+                        {payment.project.name}
+                      </div>
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {payment.company?.name ?? '—'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <span className="flex items-center justify-end gap-1 font-semibold text-green-600">
+                      <DollarSign size={12} />
+                      {formatAmount(parseFloat(payment.amount))}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
+                    {payment.paymentMethod ?? '—'}
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    {payment.confirmedBy
+                      ? `${payment.confirmedBy.firstName} ${payment.confirmedBy.lastName}`
+                      : '—'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+}

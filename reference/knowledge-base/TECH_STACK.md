@@ -20,14 +20,14 @@
 
 | Կատեգորիա | Տեխնոլոգիա | Տարբերակ | Նշանակություն |
 |------------|-------------|-----------|----------------|
-| **Framework** | Next.js | 15.x | Full-stack React |
-| **Language** | TypeScript | 5.x | Տիպացում |
+| **Framework** | Next.js | 16.x | Full-stack React |
+| **Language** | TypeScript | 5.9 | Տիպացում |
 | **Styling** | Tailwind CSS | 4.x | Utility-first ոճեր |
 | **UI Components** | shadcn/ui | - | Կոմպոնենտներ |
 | **State** | Zustand | 5.x | Գլոբալ state |
 | **Forms** | React Hook Form | 7.x | Ձևեր |
 | **Validation** | Zod | 3.x | Սխեմաների վալիդացիա |
-| **ORM** | Prisma | 6.x | Աշխատանք ԲԴ-ի հետ |
+| **ORM** | Prisma | 7.x | Աշխատանք ԲԴ-ի հետ |
 | **Database** | PostgreSQL | 17.x | Հիմնական ԲԴ |
 | **Auth** | Auth.js (NextAuth v5) | 5.x | Ինքնություն հաստատում |
 | **Icons** | Lucide React | - | Իկոններ |
@@ -55,8 +55,8 @@
 | Կատեգորիա | Տեխնոլոգիա | Տարբերակ | Նշանակություն |
 |------------|-------------|-----------|----------------|
 | **Framework** | NestJS | 11.x | Backend framework |
-| **Language** | TypeScript | 5.x | Տիպացում |
-| **ORM** | Prisma | 6.x | Աշխատանք ԲԴ-ի հետ |
+| **Language** | TypeScript | 5.9 | Տիպացում |
+| **ORM** | Prisma | 7.x | Աշխատանք ԲԴ-ի հետ |
 | **Validation** | class-validator | 0.14.x | DTO վալիդացիա |
 | **Transform** | class-transformer | 0.5.x | Տրանսֆորմացիա |
 | **Auth** | Passport | 0.7.x | Ինքնություն հաստատում |
