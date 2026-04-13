@@ -1,105 +1,27 @@
 ---
-description: Նախագծի չափի որոշման ձեռնարկ։ Կարդացվում է ՄԻԱՅՆ երբ պետք է որոշել կամ վերանայել չափը։
+description: How to choose project size (A/B/C). Read when size is unset or must be revised.
 globs: []
 alwaysApply: false
 ---
 
-# ՁԵՌՆԱՐԿ. Նախագծի չափի որոշում
+# Project size decision
 
-> Այս ֆայլը ձեռնարկ է։ Կարդա՛ այն միայն երբ `00-core.mdc`-ում նշված է «ՉԱՓԸ ՉԷ ՈՐՈՇՎԵԼ» կամ օգտատերը խնդրում է վերանայել չափը։
+Read when `00-core.mdc` still says size is **not set**, or the team asks to revisit size.
 
----
+## Criteria (rule of thumb)
 
-## 📊 Չափի որոշման չափանիշներ
+| Size | Timeline | Team | Features (rough) | Layout |
+|------|----------|------|-------------------|--------|
+| **A** | 1–3 mo | 1–2 | ~5–15 | Simple (`app`, `components`, `lib`) |
+| **B** | 3–6 mo | 2–5 | ~15–50 | Feature-based (`features/*`, `shared/*`) |
+| **C** | 6+ mo | 5+ | 50+ | Monorepo (`apps/*`, `packages/*`) |
 
-| Չափ | Ժամկետ | Թիմ | Ֆիչեր | Բարդություն | Կառուցվածք |
-|-----|--------|-----|-------|--------------|-------------|
-| **A (փոքր)** | 1-3 ամիս | 1-2 մարդ | 5-15 | Ցածր | Պարզ |
-| **B (միջին)** | 3-6 ամիս | 2-5 մարդ | 15-50 | Միջին | Feature-based |
-| **C (մեծ)** | 6+ ամիս | 5+ մարդ | 50+ | Բարձր | Monorepo |
+## Proposal format
 
----
+State: timeline, complexity, feature count → recommended **A/B/C** + **folder layout** + short rationale → **wait for confirmation**.
 
-## 📝 Չափի առաջարկի ձևաչափ
+## After approval
 
-```markdown
-## Առաջարկ. Նախագծի չափ
+Update the project size line in **`00-core.mdc`** (replace the “NOT SET” placeholder with e.g. `Size: B — medium, layout: feature-based`).
 
-**Գնահատական.**
-- Ժամկետ. [X ամիս]
-- Բարդություն. [ցածր/միջին/բարձր]
-- Մոտավոր ֆիչերի քանակ. [X]
-
-**Խորհուրդ տրվող չափ.** [A/B/C] — [փոքր/միջին/մեծ]
-
-**Հիմնավորում.** [ինչու հենց այդ չափը]
-
-**Նախագծի կառուցվածք.** [պարզ / feature-based / monorepo]
-
-Հաստատի՛ր չափը շարունակելու համար։
-```
-
----
-
-## ✅ Հաստատում ստանալուց հետո
-
-**ԹԱՐՄԱՑՐՈՒ՛ տողը `00-core.mdc`-ում** («ՆԱԽԱԳԾԻ ՉԱՓԸ» բաժին).
-
-Փոխարինի՛ր.
-```
-🔴 **ՉԱՓԸ ՉԷ ՈՐՈՇՎԵԼ** — կարդա՛ 99-project-size.mdc...
-```
-
-Մեկով.
-```
-✅ **ՉԱՓԸ. A** — փոքր, կառուցվածք. պարզ (src/app, components, lib)
-✅ **ՉԱՓԸ. B** — միջին, կառուցվածք. feature-based (src/features/*, src/shared/*)
-✅ **ՉԱՓԸ. C** — մեծ, կառուցվածք. monorepo (apps/*, packages/*)
-```
-
----
-
-## 📁 Թղթապանակների կառուցվածքը ըստ չափի
-
-### Չափ A (փոքր)
-```
-src/
-├── app/           # Next.js էջեր
-├── components/    # Բոլոր կոմպոնենտներ
-├── lib/           # Ուտիլիտաներ
-└── types/         # Տիպեր
-```
-
-### Չափ B (միջին)
-```
-src/
-├── app/           # Next.js էջեր
-├── features/      # Ֆիչեր (auth/, products/, orders/)
-├── shared/        # Ընդհանուր կոդ (components/ui/, hooks/, lib/)
-└── config/        # Կոնֆիգուրացիա
-```
-
-### Չափ C (մեծ)
-```
-apps/
-├── web/           # Frontend
-└── api/           # Backend
-packages/
-├── ui/            # UI գրադարան
-├── domain/        # Բիզնես-լոգիկա
-└── shared/        # Ընդհանուր ուտիլիտաներ
-```
-
----
-
-## 📄 Փաստաթղթեր ըստ չափի
-
-| Չափ | Պարտադիր փաստաթղթեր |
-|-----|----------------------|
-| A | README.md, docs/01-ARCHITECTURE.md, docs/PROGRESS.md |
-| B | + 02-TECH_STACK.md, 04-API.md, 05-DATABASE.md, DECISIONS.md |
-| C | + ADR, guides/, ամբողջական փաստաթղթավորում |
-
----
-
-**Այս ֆայլը չի փոխվում։ Չափը ամրագրվում է `00-core.mdc`-ում։**
+Details and folder trees: [`project-sizes/size-a-small.mdc`](project-sizes/size-a-small.mdc), [`size-b-medium.mdc`](project-sizes/size-b-medium.mdc), [`size-c-large.mdc`](project-sizes/size-c-large.mdc).
