@@ -16,7 +16,7 @@
     "@nbos/shared": "workspace:*",
     "@nestjs/common": "^11.1.16",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.1.16",
+    "@nestjs/core": "^11.1.18",
     "@nestjs/platform-express": "^11.1.16",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.5.0",
