@@ -3,7 +3,6 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { PrismaClient } from '@nbos/database';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { PRISMA_TOKEN } from '../../database.module';
-import { EmployeesService } from './employees.service';
 
 interface UpdateProfileBody {
   phone?: string;
@@ -12,14 +11,26 @@ interface UpdateProfileBody {
   birthday?: string | null;
 }
 
+const ME_SELECT = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  telegram: true,
+  avatar: true,
+  position: true,
+  role: { select: { id: true, name: true, slug: true, level: true } },
+  departments: {
+    include: { department: { select: { id: true, name: true, slug: true } } },
+  },
+} as const;
+
 @ApiTags('Me')
 @ApiBearerAuth()
 @Controller('me')
 export class MeController {
-  constructor(
-    private readonly employeesService: EmployeesService,
-    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-  ) {}
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   @Get()
   @ApiOperation({ summary: 'Get current employee profile with role, permissions, and departments' })
@@ -27,7 +38,16 @@ export class MeController {
     if (!user?.id) {
       throw new NotFoundException('Employee record not found for this user');
     }
-    const employee = await this.employeesService.findById(user.id);
+
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: user.id },
+      select: ME_SELECT,
+    });
+
+    if (!employee) {
+      throw new NotFoundException('Employee record not found for this user');
+    }
+
     return {
       ...employee,
       permissions: user.permissions ?? {},

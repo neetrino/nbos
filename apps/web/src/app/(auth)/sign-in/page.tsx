@@ -53,7 +53,6 @@ function SignInForm() {
     }
 
     router.push(callbackUrl);
-    router.refresh();
   }
 
   return (

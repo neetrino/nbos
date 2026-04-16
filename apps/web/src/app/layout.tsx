@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <SessionProvider>
+    <SessionProvider refetchOnWindowFocus={false}>
       <html lang="en" suppressHydrationWarning className={cn('font-sans', geist.variable)}>
         <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
           {children}
