@@ -1,8 +1,17 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { NextConfig } from 'next';
+
+/** Monorepo root (apps/web → ../..). Turbopack must resolve `next` from the pnpm layout at the workspace root. */
+const MONOREPO_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const API_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: MONOREPO_ROOT,
+  turbopack: {
+    root: MONOREPO_ROOT,
+  },
   async rewrites() {
     return {
       beforeFiles: [],

@@ -26,13 +26,14 @@ interface CachedEmployee {
 const CACHE_TTL_MS = 60_000;
 
 /**
- * Загружает полные данные Employee (роль, отделы, permissions) в request.user
- * после того, как AuthGuard уже верифицировал JWT и положил employeeId.
- * Зарегистрирован как APP_GUARD между AuthGuard и PermissionGuard.
+ * Loads full Employee data (role, departments, permissions) into request.user
+ * after AuthGuard has already verified the JWT and set employeeId.
+ * Registered as APP_GUARD between AuthGuard and PermissionGuard.
  */
 @Injectable()
 export class EmployeeGuard implements CanActivate {
   private cache = new Map<string, CachedEmployee>();
+  private inflight = new Map<string, Promise<CachedEmployee>>();
   private readonly logger = new Logger(EmployeeGuard.name);
 
   constructor(
@@ -65,6 +66,27 @@ export class EmployeeGuard implements CanActivate {
       return true;
     }
 
+    const enriched = await this.loadEmployee(employeeId);
+    request.user = { ...request.user, ...enriched };
+
+    return true;
+  }
+
+  private async loadEmployee(employeeId: string): Promise<CachedEmployee> {
+    const existing = this.inflight.get(employeeId);
+    if (existing) return existing;
+
+    const promise = this.fetchAndCache(employeeId);
+    this.inflight.set(employeeId, promise);
+
+    try {
+      return await promise;
+    } finally {
+      this.inflight.delete(employeeId);
+    }
+  }
+
+  private async fetchAndCache(employeeId: string): Promise<CachedEmployee> {
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
       include: {
@@ -102,8 +124,6 @@ export class EmployeeGuard implements CanActivate {
     };
 
     this.cache.set(employeeId, enriched);
-    request.user = { ...request.user, ...enriched };
-
-    return true;
+    return enriched;
   }
 }

@@ -1,8 +1,7 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
-import { Loader2 } from 'lucide-react';
 import type { MeResponse, PermissionMap, PermissionScope } from './types';
 import { api, setAuthTokenGetter } from '@/lib/api';
 
@@ -22,39 +21,33 @@ const PermissionCtx = createContext<PermissionContextValue>({
   scope: () => null,
 });
 
-function SessionGate({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
-
-  const accessToken = session?.accessToken ?? null;
-  setAuthTokenGetter(async () => accessToken);
-
-  if (status === 'loading') {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (status !== 'authenticated') {
-    return null;
-  }
-
-  return <>{children}</>;
-}
-
 export function PermissionProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const prevUserIdRef = useRef<string | undefined>();
+
+  const accessToken = session?.accessToken ?? null;
+  const userId = session?.user?.id;
 
   useEffect(() => {
-    if (status === 'loading' || !session) {
-      if (status !== 'loading') setIsLoading(false);
+    setAuthTokenGetter(async () => accessToken);
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+
+    if (status !== 'authenticated' || !userId) {
+      setIsLoading(false);
+      setMe(null);
       return;
     }
 
+    if (prevUserIdRef.current === userId && me) return;
+    prevUserIdRef.current = userId;
+
     let cancelled = false;
+    setIsLoading(true);
 
     async function fetchMe() {
       try {
@@ -73,7 +66,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [session, status]);
+  }, [userId, status]);
 
   const permissions = me?.permissions ?? {};
 
@@ -90,7 +83,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
 
   return (
     <PermissionCtx.Provider value={{ me, permissions, isLoading, can, scope }}>
-      <SessionGate>{children}</SessionGate>
+      {children}
     </PermissionCtx.Provider>
   );
 }
