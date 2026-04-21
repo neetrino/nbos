@@ -1,33 +1,72 @@
 'use client';
 
-import { Bell, Plus, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Bell, ChevronDown, LogOut, Plus, UserCircle2 } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import { usePermission } from '@/lib/permissions';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function Topbar() {
+  const router = useRouter();
+  const { me } = usePermission();
+  const displayName =
+    me?.firstName && me?.lastName
+      ? `${me.firstName} ${me.lastName}`
+      : (me?.firstName ?? me?.email ?? 'My Account');
+  const initials = me?.firstName?.[0] ?? me?.email?.[0]?.toUpperCase() ?? 'U';
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 px-6 backdrop-blur-sm">
+    <header className="border-border bg-card/80 sticky top-0 z-30 flex h-16 items-center justify-between border-b px-6 backdrop-blur-sm">
       {/* Page title area */}
       <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-foreground">Dashboard</h1>
+        <h1 className="text-foreground text-lg font-semibold">Dashboard</h1>
       </div>
 
       {/* Actions */}
       <div className="flex items-center gap-2">
         {/* Quick Add */}
-        <button className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+        <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors">
           <Plus size={16} />
           <span className="hidden sm:inline">Create</span>
         </button>
 
         {/* Notifications */}
-        <button className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+        <button className="text-muted-foreground hover:bg-secondary hover:text-foreground relative rounded-lg p-2 transition-colors">
           <Bell size={20} />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-accent" />
+          <span className="bg-accent absolute top-1.5 right-1.5 h-2 w-2 rounded-full" />
         </button>
 
-        {/* User Avatar */}
-        <button className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-muted-foreground transition-colors hover:text-foreground">
-          <User size={18} />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="hover:bg-secondary flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors">
+            <span className="bg-secondary text-muted-foreground flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
+              {initials}
+            </span>
+            <span className="text-foreground hidden max-w-[160px] truncate text-sm font-medium md:inline">
+              {displayName}
+            </span>
+            <ChevronDown size={16} className="text-muted-foreground hidden md:block" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem onClick={() => router.push('/settings')}>
+              <UserCircle2 size={16} />
+              <span>My Account</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => signOut({ callbackUrl: '/sign-in' })}
+              className="text-red-600 focus:text-red-600"
+            >
+              <LogOut size={16} />
+              <span>Sign Out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

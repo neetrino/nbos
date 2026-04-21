@@ -21,9 +21,7 @@ import {
   Settings,
   ChevronLeft,
   Search,
-  LogOut,
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
 
@@ -153,7 +151,7 @@ function getFirstChildHref(item: NavItem): string {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { me, can, isLoading: permsLoading } = usePermission();
+  const { can, isLoading: permsLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
   /** At most one section with children is expanded (accordion). */
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -328,32 +326,6 @@ export function Sidebar() {
           })}
         </ul>
       </nav>
-
-      {/* User + Sign Out */}
-      <div className="border-sidebar-border border-t px-3 py-3">
-        {!collapsed && me && (
-          <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
-            <div className="bg-accent text-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold">
-              {me.firstName?.[0] ?? me.email?.[0]?.toUpperCase() ?? 'U'}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sidebar-foreground truncate text-sm font-medium">
-                {me.firstName && me.lastName
-                  ? `${me.firstName} ${me.lastName}`
-                  : (me.email ?? 'User')}
-              </p>
-              <p className="text-sidebar-muted truncate text-[10px]">{me.email ?? ''}</p>
-            </div>
-          </div>
-        )}
-        <button
-          onClick={() => signOut({ callbackUrl: '/sign-in' })}
-          className="text-sidebar-muted flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-red-500/10 hover:text-red-500"
-        >
-          <LogOut size={18} />
-          {!collapsed && <span>Sign Out</span>}
-        </button>
-      </div>
 
       {/* Collapse toggle */}
       <div className="border-sidebar-border border-t p-3">

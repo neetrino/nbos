@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { User, Building2, Bell, Shield, Camera, Smartphone, Monitor } from 'lucide-react';
+import { User, Building2, Bell, Shield, Camera, Smartphone, Monitor, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 import { api } from '@/lib/api';
-import { usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -97,7 +97,6 @@ function Toggle({
 }
 
 function ProfileTab() {
-  const { me } = usePermission();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -210,13 +209,22 @@ function ProfileTab() {
         </div>
       </div>
 
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
-      >
-        {saving ? 'Saving...' : 'Save Changes'}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
+        >
+          {saving ? 'Saving...' : 'Save Changes'}
+        </button>
+        <button
+          onClick={() => signOut({ callbackUrl: '/sign-in' })}
+          className="border-border text-foreground hover:bg-secondary inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors"
+        >
+          <LogOut size={16} />
+          <span>Sign Out</span>
+        </button>
+      </div>
     </div>
   );
 }
