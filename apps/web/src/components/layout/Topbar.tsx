@@ -53,7 +53,7 @@ export function Topbar() {
             <ChevronDown size={16} className="text-muted-foreground hidden md:block" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem onClick={() => router.push('/settings')}>
+            <DropdownMenuItem onClick={() => router.push('/my-account')}>
               <UserCircle2 size={16} />
               <span>My Account</span>
             </DropdownMenuItem>

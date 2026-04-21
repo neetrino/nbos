@@ -128,6 +128,7 @@ const NAV_ITEMS: NavItem[] = [
     href: '/settings',
     icon: <Settings size={20} />,
     children: [
+      { label: 'My Account', href: '/my-account' },
       { label: 'General', href: '/settings' },
       { label: 'Lists', href: '/settings/lists' },
       { label: 'Roles', href: '/settings/roles' },
