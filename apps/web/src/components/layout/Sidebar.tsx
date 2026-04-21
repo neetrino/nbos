@@ -194,13 +194,7 @@ export function Sidebar() {
       <div className="border-sidebar-border flex h-16 items-center justify-between border-b px-4">
         {!collapsed && (
           <Link href="/dashboard" className="flex items-center">
-            <Image
-              src="/logo/logo-w.png"
-              alt="NBOS"
-              width={140}
-              height={24}
-              className="h-6 w-auto"
-            />
+            <Image src="/logo/logo.svg" alt="NBOS" width={140} height={24} className="h-6 w-auto" />
           </Link>
         )}
         {collapsed && (
