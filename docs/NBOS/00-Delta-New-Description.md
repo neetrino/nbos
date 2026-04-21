@@ -44,6 +44,17 @@
 
 **Статус:** **Частично.** Логика близка, но в `New-Description` сильнее подчёркнуты сценарии привязки к проекту и типы оплаты; нужно свести в одну таблицу переходов.
 
+### 1.4. Employee Wallet и Finance Core (вариант B)
+
+**Решение:** зафиксированы канонические документы:
+
+- `02-Modules/04-Finance/08-Employee-Wallet.md` — read-only кошелёк сотрудника (проекция Bonus + Payroll; маппинг полной цепочки состояний бонуса в группы UI).
+- `02-Modules/04-Finance/09-Finance-Core-Architecture.md` — целевая архитектура операционного журнала (single-entry vB, idempotency, accrual/cash, period close, multi-currency, путь к double-entry), границы модуля Finance.
+
+Связанные точечные правки в `01-Finance-Overview.md`, `05-Bonus-and-Payroll.md`, `03-Bonus-Payroll-Logic.md`, `07-My-Company/02-Team-Employees.md`, `00-Documentation-Hub.md`.
+
+**Дата:** 2026-04-21.
+
 ---
 
 ## 2. Матрица по файлам `New-Description`
