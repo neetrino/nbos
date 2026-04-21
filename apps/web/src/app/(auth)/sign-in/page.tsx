@@ -64,8 +64,9 @@ function SignInForm() {
           <div className="mb-4 flex justify-center">
             <Image src="/logo/logo.svg" alt="NBOS" width={172} height={28} className="h-7 w-auto" />
           </div>
-          <h1 className="text-foreground text-2xl font-semibold tracking-tight">Sign in to NBOS</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Enter your credentials to continue</p>
+          <p className="text-muted-foreground text-base font-medium">
+            Enter your credentials and sing in
+          </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
