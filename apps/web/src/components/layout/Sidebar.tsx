@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -192,16 +193,19 @@ export function Sidebar() {
       {/* Logo */}
       <div className="border-sidebar-border flex h-16 items-center justify-between border-b px-4">
         {!collapsed && (
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="bg-accent flex h-8 w-8 items-center justify-center rounded-lg">
-              <span className="text-accent-foreground text-sm font-bold">N</span>
-            </div>
-            <span className="text-sidebar-foreground text-lg font-semibold">NBOS</span>
+          <Link href="/dashboard" className="flex items-center">
+            <Image
+              src="/logo/logo-w.png"
+              alt="NBOS"
+              width={140}
+              height={24}
+              className="h-6 w-auto"
+            />
           </Link>
         )}
         {collapsed && (
-          <div className="bg-accent mx-auto flex h-8 w-8 items-center justify-center rounded-lg">
-            <span className="text-accent-foreground text-sm font-bold">N</span>
+          <div className="mx-auto flex h-8 w-8 items-center justify-center">
+            <Image src="/logo/logo.png" alt="NBOS" width={32} height={32} className="h-8 w-8" />
           </div>
         )}
       </div>
