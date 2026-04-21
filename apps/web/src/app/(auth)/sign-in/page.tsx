@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
@@ -60,11 +61,12 @@ function SignInForm() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="bg-accent mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-            <span className="text-accent-foreground text-lg font-bold">N</span>
+          <div className="mb-4 flex justify-center">
+            <Image src="/logo/logo.svg" alt="NBOS" width={172} height={28} className="h-7 w-auto" />
           </div>
-          <h1 className="text-foreground text-2xl font-semibold tracking-tight">Sign in to NBOS</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Enter your credentials to continue</p>
+          <p className="text-muted-foreground text-base font-medium">
+            Enter your credentials and sing in
+          </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

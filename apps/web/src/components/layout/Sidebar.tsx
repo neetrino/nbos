@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -20,9 +21,7 @@ import {
   Settings,
   ChevronLeft,
   Search,
-  LogOut,
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
 
@@ -129,6 +128,7 @@ const NAV_ITEMS: NavItem[] = [
     href: '/settings',
     icon: <Settings size={20} />,
     children: [
+      { label: 'My Account', href: '/my-account' },
       { label: 'General', href: '/settings' },
       { label: 'Lists', href: '/settings/lists' },
       { label: 'Roles', href: '/settings/roles' },
@@ -152,7 +152,7 @@ function getFirstChildHref(item: NavItem): string {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { me, can, isLoading: permsLoading } = usePermission();
+  const { can, isLoading: permsLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
   /** At most one section with children is expanded (accordion). */
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -192,16 +192,13 @@ export function Sidebar() {
       {/* Logo */}
       <div className="border-sidebar-border flex h-16 items-center justify-between border-b px-4">
         {!collapsed && (
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="bg-accent flex h-8 w-8 items-center justify-center rounded-lg">
-              <span className="text-accent-foreground text-sm font-bold">N</span>
-            </div>
-            <span className="text-sidebar-foreground text-lg font-semibold">NBOS</span>
+          <Link href="/dashboard" className="flex items-center">
+            <Image src="/logo/logo.svg" alt="NBOS" width={140} height={24} className="h-6 w-auto" />
           </Link>
         )}
         {collapsed && (
-          <div className="bg-accent mx-auto flex h-8 w-8 items-center justify-center rounded-lg">
-            <span className="text-accent-foreground text-sm font-bold">N</span>
+          <div className="mx-auto flex h-8 w-8 items-center justify-center">
+            <Image src="/logo/logo.png" alt="NBOS" width={32} height={32} className="h-8 w-8" />
           </div>
         )}
       </div>
@@ -330,32 +327,6 @@ export function Sidebar() {
           })}
         </ul>
       </nav>
-
-      {/* User + Sign Out */}
-      <div className="border-sidebar-border border-t px-3 py-3">
-        {!collapsed && me && (
-          <div className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2">
-            <div className="bg-accent text-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold">
-              {me.firstName?.[0] ?? me.email?.[0]?.toUpperCase() ?? 'U'}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sidebar-foreground truncate text-sm font-medium">
-                {me.firstName && me.lastName
-                  ? `${me.firstName} ${me.lastName}`
-                  : (me.email ?? 'User')}
-              </p>
-              <p className="text-sidebar-muted truncate text-[10px]">{me.email ?? ''}</p>
-            </div>
-          </div>
-        )}
-        <button
-          onClick={() => signOut({ callbackUrl: '/sign-in' })}
-          className="text-sidebar-muted flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-red-500/10 hover:text-red-500"
-        >
-          <LogOut size={18} />
-          {!collapsed && <span>Sign Out</span>}
-        </button>
-      </div>
 
       {/* Collapse toggle */}
       <div className="border-sidebar-border border-t p-3">
