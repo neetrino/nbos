@@ -16,6 +16,7 @@ export class SubscriptionsController {
     @Query('projectId') projectId?: string,
     @Query('status') status?: string,
     @Query('type') type?: string,
+    @Query('search') search?: string,
   ) {
     return this.subscriptionsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -23,6 +24,7 @@ export class SubscriptionsController {
       projectId,
       status,
       type,
+      search,
     });
   }
 

@@ -1,15 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  RefreshCcw,
-  CreditCard,
-  DollarSign,
-  FileText,
-  FolderKanban,
-  Building2,
-  Calendar,
-} from 'lucide-react';
+import { RefreshCcw, CreditCard, DollarSign, FileText, FolderKanban, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -22,24 +14,7 @@ import {
 } from '@/components/ui/table';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { api } from '@/lib/api';
-
-interface Payment {
-  id: string;
-  amount: string;
-  currency: string;
-  paymentDate: string;
-  paymentMethod: string;
-  createdAt: string;
-  invoice: {
-    id: string;
-    code: string;
-    type: string;
-  } | null;
-  project: { id: string; name: string } | null;
-  company: { id: string; name: string } | null;
-  confirmedBy: { id: string; firstName: string; lastName: string } | null;
-}
+import { paymentsApi, type Payment } from '@/lib/api/finance';
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -49,10 +24,11 @@ export default function PaymentsPage() {
   const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/finance/payments', {
-        params: { pageSize: 100, search: search || undefined },
+      const data = await paymentsApi.getAll({
+        pageSize: 100,
+        search: search || undefined,
       });
-      setPayments(resp.data.items ?? resp.data ?? []);
+      setPayments(data.items);
     } catch {
       /* handled */
     } finally {
@@ -149,7 +125,9 @@ export default function PaymentsPage() {
                       <div className="flex items-center gap-1.5 text-sm">
                         <FileText size={12} className="text-muted-foreground" />
                         <span>{payment.invoice.code}</span>
-                        <StatusBadge label={payment.invoice.type} variant="blue" />
+                        {payment.invoice.type ? (
+                          <StatusBadge label={payment.invoice.type} variant="blue" />
+                        ) : null}
                       </div>
                     ) : (
                       '—'
@@ -178,8 +156,8 @@ export default function PaymentsPage() {
                     {payment.paymentMethod ?? '—'}
                   </TableCell>
                   <TableCell className="text-xs">
-                    {payment.confirmedBy
-                      ? `${payment.confirmedBy.firstName} ${payment.confirmedBy.lastName}`
+                    {payment.confirmer
+                      ? `${payment.confirmer.firstName} ${payment.confirmer.lastName}`
                       : '—'}
                   </TableCell>
                 </TableRow>

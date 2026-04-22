@@ -1,15 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  RefreshCcw,
-  ShoppingCart,
-  DollarSign,
-  FolderKanban,
-  User,
-  Building2,
-} from 'lucide-react';
+import { Plus, RefreshCcw, ShoppingCart, DollarSign, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
@@ -23,23 +15,7 @@ import {
 } from '@/components/ui/table';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { api } from '@/lib/api';
-
-interface Order {
-  id: string;
-  code: string;
-  type: string;
-  amount: string;
-  paidAmount: string;
-  currency: string;
-  status: string;
-  paymentType: string;
-  createdAt: string;
-  project: { id: string; name: string } | null;
-  company: { id: string; name: string } | null;
-  contact: { id: string; firstName: string; lastName: string } | null;
-  _count: { invoices: number };
-}
+import { ordersApi, type Order } from '@/lib/api/finance';
 
 const ORDER_STATUSES: Record<
   string,
@@ -62,14 +38,12 @@ export default function OrdersPage() {
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/finance/orders', {
-        params: {
-          pageSize: 100,
-          search: search || undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-        },
+      const data = await ordersApi.getAll({
+        pageSize: 100,
+        search: search || undefined,
+        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
       });
-      setOrders(resp.data.items ?? resp.data ?? []);
+      setOrders(data.items);
     } catch {
       /* handled */
     } finally {
@@ -81,8 +55,8 @@ export default function OrdersPage() {
     fetchOrders();
   }, [fetchOrders]);
 
-  const totalOrders = orders.reduce((sum, o) => sum + parseFloat(o.amount), 0);
-  const totalPaid = orders.reduce((sum, o) => sum + parseFloat(o.paidAmount ?? '0'), 0);
+  const totalOrders = orders.reduce((sum, order) => sum + parseFloat(order.amount ?? '0'), 0);
+  const totalPaid = orders.reduce((sum, order) => sum + Number(order.paidAmount ?? 0), 0);
 
   const filterConfigs = [
     {
@@ -170,8 +144,8 @@ export default function OrdersPage() {
             <TableBody>
               {orders.map((order) => {
                 const statusCfg = ORDER_STATUSES[order.status];
-                const total = parseFloat(order.amount);
-                const paid = parseFloat(order.paidAmount ?? '0');
+                const total = parseFloat(order.amount ?? '0');
+                const paid = Number(order.paidAmount ?? 0);
                 const paidPercent = total > 0 ? Math.round((paid / total) * 100) : 0;
                 return (
                   <TableRow key={order.id}>
@@ -211,7 +185,7 @@ export default function OrdersPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-center font-medium">
-                      {order._count.invoices}
+                      {order._count?.invoices ?? 0}
                     </TableCell>
                   </TableRow>
                 );

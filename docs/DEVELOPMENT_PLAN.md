@@ -188,6 +188,9 @@ Current status:
 - Finance aggregate contracts are being formalized for dashboard reads:
   - `InvoicesService.getStats()` now exposes explicit `outstanding` and `overdue` totals
   - finance dashboard KPI rendering is shifting from list-endpoint recalculation toward stats-endpoint reads
+- Finance web pages are being normalized onto shared typed API contracts:
+  - `orders`, `payments`, and `subscriptions` pages now reuse shared finance API types instead of maintaining page-local response shapes
+  - recurring billing search is now wired end-to-end for subscriptions instead of being a dead UI filter
 
 ### M4 - Tasks and Support operational flow
 
@@ -287,6 +290,7 @@ Exit criteria:
   - aligned finance API order/payment payloads with UI aggregate needs to reduce dashboard/list drift
   - replaced finance dashboard mock data with live finance aggregates on the web app
   - expanded invoice stats contracts for cleaner dashboard aggregate reads
+  - normalized finance web pages onto shared typed contracts and removed dead subscription search behavior
 
 ---
 

@@ -34,6 +34,7 @@ interface SubscriptionQueryParams {
   projectId?: string;
   status?: string;
   type?: string;
+  search?: string;
 }
 
 @Injectable()
@@ -44,12 +45,18 @@ export class SubscriptionsService {
   ) {}
 
   async findAll(params: SubscriptionQueryParams) {
-    const { page = 1, pageSize = 20, projectId, status, type } = params;
+    const { page = 1, pageSize = 20, projectId, status, type, search } = params;
     const where: Prisma.SubscriptionWhereInput = {};
 
     if (projectId) where.projectId = projectId;
     if (status) where.status = status as SubscriptionStatusEnum;
     if (type) where.type = type as SubscriptionTypeEnum;
+    if (search) {
+      where.OR = [
+        { code: { contains: search, mode: 'insensitive' } },
+        { project: { name: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.subscription.findMany({

@@ -1,15 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  RefreshCcw,
-  RefreshCw,
-  DollarSign,
-  FolderKanban,
-  Calendar,
-  Building2,
-} from 'lucide-react';
+import { Plus, RefreshCcw, RefreshCw, DollarSign, FolderKanban, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -28,23 +20,7 @@ import {
   getSubscriptionStatus,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { api } from '@/lib/api';
-
-interface Subscription {
-  id: string;
-  type: string;
-  status: string;
-  amount: string;
-  currency: string;
-  billingDay: number;
-  startDate: string;
-  endDate: string | null;
-  taxStatus: string;
-  project: { id: string; name: string } | null;
-  company: { id: string; name: string } | null;
-  contact: { id: string; firstName: string; lastName: string } | null;
-  createdAt: string;
-}
+import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 
 export default function SubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -55,15 +31,13 @@ export default function SubscriptionsPage() {
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/finance/subscriptions', {
-        params: {
-          pageSize: 100,
-          search: search || undefined,
-          type: filters.type && filters.type !== 'all' ? filters.type : undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-        },
+      const data = await subscriptionsApi.getAll({
+        pageSize: 100,
+        search: search || undefined,
+        type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
       });
-      setSubscriptions(resp.data.items ?? resp.data ?? []);
+      setSubscriptions(data.items);
     } catch {
       /* handled */
     } finally {

@@ -56,6 +56,7 @@ export interface Order {
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; status: string; amount: string }>;
+  _count?: { invoices: number };
 }
 
 export interface Subscription {
@@ -71,6 +72,8 @@ export interface Subscription {
   endDate: string | null;
   createdAt: string;
   project: { id: string; code: string; name: string };
+  company?: { id: string; name: string } | null;
+  contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; status: string; amount: string }>;
 }
 

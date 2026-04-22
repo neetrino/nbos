@@ -22,6 +22,20 @@ describe('SubscriptionsService', () => {
       await service.findAll({ projectId: 'p1', status: 'ACTIVE', type: 'MAINTENANCE_ONLY' });
       expect(prisma.subscription.findMany).toHaveBeenCalled();
     });
+
+    it('applies search filter', async () => {
+      await service.findAll({ search: 'acme' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            OR: [
+              { code: { contains: 'acme', mode: 'insensitive' } },
+              { project: { name: { contains: 'acme', mode: 'insensitive' } } },
+            ],
+          }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {
