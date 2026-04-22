@@ -1,4 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
+import type { FinanceDateRangeParams } from '@/lib/api/finance';
 
 export const INVOICE_TYPES = [
   { value: 'DEVELOPMENT', label: 'Development' },
@@ -53,6 +54,15 @@ export const SUBSCRIPTION_STATUSES = [
   { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant },
 ] as const;
 
+export const FINANCE_PERIOD_OPTIONS = [
+  { value: 'month', label: 'Month' },
+  { value: 'quarter', label: 'Quarter' },
+  { value: 'year', label: 'Year' },
+  { value: 'all', label: 'All' },
+] as const;
+
+export type FinancePeriod = (typeof FINANCE_PERIOD_OPTIONS)[number]['value'];
+
 export function getInvoiceStage(value: string) {
   return INVOICE_STAGES.find((s) => s.value === value);
 }
@@ -76,4 +86,32 @@ export function formatAmount(amount: number, currency = 'AMD'): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function toApiDate(date: Date): string {
+  return date.toISOString();
+}
+
+export function getFinancePeriodParams(period: FinancePeriod): FinanceDateRangeParams | undefined {
+  if (period === 'all') {
+    return undefined;
+  }
+
+  const now = new Date();
+  const start = new Date(now);
+
+  if (period === 'month') {
+    start.setDate(1);
+  } else if (period === 'quarter') {
+    start.setMonth(Math.floor(now.getMonth() / 3) * 3, 1);
+  } else {
+    start.setMonth(0, 1);
+  }
+
+  start.setHours(0, 0, 0, 0);
+
+  return {
+    dateFrom: toApiDate(start),
+    dateTo: toApiDate(now),
+  };
 }

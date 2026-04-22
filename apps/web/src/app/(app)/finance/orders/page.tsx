@@ -14,7 +14,12 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  FINANCE_PERIOD_OPTIONS,
+  getFinancePeriodParams,
+  type FinancePeriod,
+  formatAmount,
+} from '@/features/finance/constants/finance';
 import { ordersApi, type Order, type OrderStats } from '@/lib/api/finance';
 
 const ORDER_STATUSES: Record<
@@ -35,17 +40,20 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [period, setPeriod] = useState<FinancePeriod>('month');
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
+      const periodParams = getFinancePeriodParams(period);
       const [data, orderStats] = await Promise.all([
         ordersApi.getAll({
           pageSize: 100,
           search: search || undefined,
           status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+          ...periodParams,
         }),
-        ordersApi.getStats(),
+        ordersApi.getStats(periodParams),
       ]);
       setOrders(data.items);
       setStats(orderStats);
@@ -54,7 +62,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, period]);
 
   useEffect(() => {
     fetchOrders();
@@ -78,6 +86,18 @@ export default function OrdersPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Orders" description={`${orders.length} orders`}>
+        <div className="border-border flex rounded-lg border p-1">
+          {FINANCE_PERIOD_OPTIONS.map((option) => (
+            <Button
+              key={option.value}
+              variant={period === option.value ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setPeriod(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
         <Button variant="outline" size="icon" onClick={fetchOrders}>
           <RefreshCcw size={16} />
         </Button>

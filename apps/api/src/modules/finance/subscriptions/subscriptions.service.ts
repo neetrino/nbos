@@ -35,6 +35,8 @@ interface SubscriptionQueryParams {
   status?: string;
   type?: string;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 interface SubscriptionStatsParams {
@@ -50,7 +52,7 @@ export class SubscriptionsService {
   ) {}
 
   async findAll(params: SubscriptionQueryParams) {
-    const { page = 1, pageSize = 20, projectId, status, type, search } = params;
+    const { page = 1, pageSize = 20, projectId, status, type, search, dateFrom, dateTo } = params;
     const where: Prisma.SubscriptionWhereInput = {};
 
     if (projectId) where.projectId = projectId;
@@ -61,6 +63,11 @@ export class SubscriptionsService {
         { code: { contains: search, mode: 'insensitive' } },
         { project: { name: { contains: search, mode: 'insensitive' } } },
       ];
+    }
+
+    const createdAt = this.buildDateRange(dateFrom, dateTo);
+    if (createdAt) {
+      where.createdAt = createdAt;
     }
 
     const [items, total] = await Promise.all([

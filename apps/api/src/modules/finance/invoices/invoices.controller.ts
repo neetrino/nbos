@@ -27,6 +27,8 @@ export class InvoicesController {
     @Query('status') status?: string,
     @Query('projectId') projectId?: string,
     @Query('search') search?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ) {
     return this.invoicesService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -34,6 +36,8 @@ export class InvoicesController {
       status,
       projectId,
       search,
+      dateFrom,
+      dateTo,
     });
   }
 

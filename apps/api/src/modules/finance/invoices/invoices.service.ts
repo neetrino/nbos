@@ -23,6 +23,8 @@ interface InvoiceQueryParams {
   status?: string;
   projectId?: string;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 interface InvoiceStatsParams {
@@ -35,13 +37,18 @@ export class InvoicesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: InvoiceQueryParams) {
-    const { page = 1, pageSize = 20, status, projectId, search } = params;
+    const { page = 1, pageSize = 20, status, projectId, search, dateFrom, dateTo } = params;
     const where: Prisma.InvoiceWhereInput = {};
 
     if (status) where.status = status as InvoiceStatusEnum;
     if (projectId) where.projectId = projectId;
     if (search) {
       where.code = { contains: search, mode: 'insensitive' };
+    }
+
+    const createdAt = this.buildDateRange(dateFrom, dateTo);
+    if (createdAt) {
+      where.createdAt = createdAt;
     }
 
     const [items, total] = await Promise.all([

@@ -13,7 +13,12 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  FINANCE_PERIOD_OPTIONS,
+  getFinancePeriodParams,
+  type FinancePeriod,
+  formatAmount,
+} from '@/features/finance/constants/finance';
 import { paymentsApi, type Payment, type PaymentStats } from '@/lib/api/finance';
 
 export default function PaymentsPage() {
@@ -21,16 +26,19 @@ export default function PaymentsPage() {
   const [stats, setStats] = useState<PaymentStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [period, setPeriod] = useState<FinancePeriod>('month');
 
   const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
+      const periodParams = getFinancePeriodParams(period);
       const [data, paymentStats] = await Promise.all([
         paymentsApi.getAll({
           pageSize: 100,
           search: search || undefined,
+          ...periodParams,
         }),
-        paymentsApi.getStats(),
+        paymentsApi.getStats(periodParams),
       ]);
       setPayments(data.items);
       setStats(paymentStats);
@@ -39,7 +47,7 @@ export default function PaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, period]);
 
   useEffect(() => {
     fetchPayments();
@@ -52,6 +60,18 @@ export default function PaymentsPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Payments" description={`${payments.length} payments`}>
+        <div className="border-border flex rounded-lg border p-1">
+          {FINANCE_PERIOD_OPTIONS.map((option) => (
+            <Button
+              key={option.value}
+              variant={period === option.value ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setPeriod(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
         <Button variant="outline" size="icon" onClick={fetchPayments}>
           <RefreshCcw size={16} />
         </Button>

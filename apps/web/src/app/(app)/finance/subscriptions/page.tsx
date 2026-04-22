@@ -14,8 +14,11 @@ import {
 } from '@/components/ui/table';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
 import {
+  FINANCE_PERIOD_OPTIONS,
   SUBSCRIPTION_TYPES,
   SUBSCRIPTION_STATUSES,
+  getFinancePeriodParams,
+  type FinancePeriod,
   getSubscriptionType,
   getSubscriptionStatus,
   formatAmount,
@@ -28,18 +31,21 @@ export default function SubscriptionsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [period, setPeriod] = useState<FinancePeriod>('month');
 
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
     try {
+      const periodParams = getFinancePeriodParams(period);
       const [data, subscriptionStats] = await Promise.all([
         subscriptionsApi.getAll({
           pageSize: 100,
           search: search || undefined,
           type: filters.type && filters.type !== 'all' ? filters.type : undefined,
           status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+          ...periodParams,
         }),
-        subscriptionsApi.getStats(),
+        subscriptionsApi.getStats(periodParams),
       ]);
       setSubscriptions(data.items);
       setStats(subscriptionStats);
@@ -48,7 +54,7 @@ export default function SubscriptionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, period]);
 
   useEffect(() => {
     fetchSubscriptions();
@@ -86,6 +92,18 @@ export default function SubscriptionsPage() {
         title="Subscriptions"
         description={`${activeSubscriptions} active, MRR ${formatAmount(totalMRR)}`}
       >
+        <div className="border-border flex rounded-lg border p-1">
+          {FINANCE_PERIOD_OPTIONS.map((option) => (
+            <Button
+              key={option.value}
+              variant={period === option.value ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setPeriod(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
         <Button variant="outline" size="icon" onClick={fetchSubscriptions}>
           <RefreshCcw size={16} />
         </Button>

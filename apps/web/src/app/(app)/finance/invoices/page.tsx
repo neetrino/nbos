@@ -31,8 +31,11 @@ import {
 } from '@/components/shared';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import {
+  FINANCE_PERIOD_OPTIONS,
   INVOICE_TYPES,
   INVOICE_STAGES,
+  getFinancePeriodParams,
+  type FinancePeriod,
   getInvoiceStage,
   formatAmount,
 } from '@/features/finance/constants/finance';
@@ -49,18 +52,21 @@ export default function InvoicesPage() {
   const [view, setView] = useState<ViewMode>('kanban');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [period, setPeriod] = useState<FinancePeriod>('month');
 
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
+      const periodParams = getFinancePeriodParams(period);
       const [data, invoiceStats] = await Promise.all([
         invoicesApi.getAll({
           pageSize: 200,
           search: search || undefined,
           status: filters.status && filters.status !== 'all' ? filters.status : undefined,
           type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+          ...periodParams,
         }),
-        invoicesApi.getStats(),
+        invoicesApi.getStats(periodParams),
       ]);
       setInvoices(data.items);
       setStats(invoiceStats);
@@ -69,7 +75,7 @@ export default function InvoicesPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, period]);
 
   useEffect(() => {
     fetchInvoices();
@@ -134,6 +140,18 @@ export default function InvoicesPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Invoices" description={`${invoices.length} total`}>
+        <div className="border-border flex rounded-lg border p-1">
+          {FINANCE_PERIOD_OPTIONS.map((option) => (
+            <Button
+              key={option.value}
+              variant={period === option.value ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setPeriod(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
         <Button variant="outline" size="icon" onClick={fetchInvoices}>
           <RefreshCcw size={16} />
         </Button>

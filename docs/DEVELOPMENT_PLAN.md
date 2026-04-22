@@ -205,6 +205,10 @@ Current status:
   - finance stats endpoints now accept optional `dateFrom/dateTo` filters
   - finance dashboard summary endpoint now supports bounded reporting periods and the web dashboard exposes period presets
   - active subscription metrics are evaluated against the selected reporting end date instead of only "now"
+- Finance list reads are now aligning rows with reporting periods, not just top-card summaries:
+  - invoice, order, and subscription list endpoints now accept optional `dateFrom/dateTo` filters on backend reads
+  - finance list pages now share the same `Month / Quarter / Year / All` presets for both row queries and summary cards
+  - dashboard and list-period logic now reuse a single typed finance period helper instead of duplicating date-range mapping in each screen
 
 ### M4 - Tasks and Support operational flow
 

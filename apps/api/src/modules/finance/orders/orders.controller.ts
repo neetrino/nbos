@@ -27,6 +27,8 @@ export class OrdersController {
     @Query('status') status?: string,
     @Query('projectId') projectId?: string,
     @Query('search') search?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ) {
     return this.ordersService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -34,6 +36,8 @@ export class OrdersController {
       status,
       projectId,
       search,
+      dateFrom,
+      dateTo,
     });
   }
 

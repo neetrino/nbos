@@ -36,6 +36,24 @@ describe('SubscriptionsService', () => {
         }),
       );
     });
+
+    it('applies createdAt date range filter', async () => {
+      await service.findAll({
+        dateFrom: '2026-04-01T00:00:00.000Z',
+        dateTo: '2026-04-30T23:59:59.999Z',
+      });
+
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: expect.objectContaining({
+              gte: expect.any(Date),
+              lte: expect.any(Date),
+            }),
+          }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

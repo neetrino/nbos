@@ -28,6 +28,8 @@ interface OrderQueryParams {
   status?: string;
   projectId?: string;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 interface OrderStatsParams {
@@ -40,13 +42,18 @@ export class OrdersService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: OrderQueryParams) {
-    const { page = 1, pageSize = 20, status, projectId, search } = params;
+    const { page = 1, pageSize = 20, status, projectId, search, dateFrom, dateTo } = params;
     const where: Prisma.OrderWhereInput = {};
 
     if (status) where.status = status as OrderStatusEnum;
     if (projectId) where.projectId = projectId;
     if (search) {
       where.code = { contains: search, mode: 'insensitive' };
+    }
+
+    const createdAt = this.buildDateRange(dateFrom, dateTo);
+    if (createdAt) {
+      where.createdAt = createdAt;
     }
 
     const [orders, total] = await Promise.all([

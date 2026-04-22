@@ -11,12 +11,13 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatAmount } from '@/features/finance/constants/finance';
 import {
-  financeSummaryApi,
-  type FinanceDashboardSummary,
-  type FinanceDateRangeParams,
-} from '@/lib/api/finance';
+  FINANCE_PERIOD_OPTIONS,
+  getFinancePeriodParams,
+  type FinancePeriod,
+  formatAmount,
+} from '@/features/finance/constants/finance';
+import { financeSummaryApi, type FinanceDashboardSummary } from '@/lib/api/finance';
 
 interface FinanceDashboardData {
   totalRevenue: number;
@@ -62,8 +63,6 @@ interface UpcomingInvoiceItem {
   daysLeft: number;
 }
 
-type DashboardPeriod = 'month' | 'quarter' | 'year' | 'all';
-
 const INVOICE_STATUS_META: Record<string, { label: string; color: string }> = {
   PAID: { label: 'Paid', color: 'bg-emerald-500' },
   WAITING: { label: 'Waiting', color: 'bg-violet-500' },
@@ -100,33 +99,6 @@ function getDaysLeft(dueDate: string): number {
   const today = startOfToday();
   const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate());
   return Math.ceil((targetDay.getTime() - today.getTime()) / 86_400_000);
-}
-
-function toApiDate(date: Date): string {
-  return date.toISOString();
-}
-
-function getPeriodParams(period: DashboardPeriod): FinanceDateRangeParams | undefined {
-  if (period === 'all') {
-    return undefined;
-  }
-
-  const now = new Date();
-  let startDate: Date;
-
-  if (period === 'month') {
-    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-  } else if (period === 'quarter') {
-    const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
-    startDate = new Date(now.getFullYear(), quarterStartMonth, 1);
-  } else {
-    startDate = new Date(now.getFullYear(), 0, 1);
-  }
-
-  return {
-    dateFrom: toApiDate(startDate),
-    dateTo: toApiDate(now),
-  };
 }
 
 function buildFinanceDashboardData(summary: FinanceDashboardSummary): FinanceDashboardData {
@@ -340,12 +312,12 @@ function UpcomingInvoices({ items }: { items: UpcomingInvoiceItem[] }) {
 export default function FinanceDashboardPage() {
   const [data, setData] = useState<FinanceDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<DashboardPeriod>('month');
+  const [period, setPeriod] = useState<FinancePeriod>('month');
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
     try {
-      const summary = await financeSummaryApi.getDashboard(getPeriodParams(period));
+      const summary = await financeSummaryApi.getDashboard(getFinancePeriodParams(period));
       setData(buildFinanceDashboardData(summary));
     } catch {
       setData(null);
@@ -420,14 +392,7 @@ export default function FinanceDashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <div className="border-border flex rounded-lg border p-1">
-            {(
-              [
-                { value: 'month', label: 'Month' },
-                { value: 'quarter', label: 'Quarter' },
-                { value: 'year', label: 'Year' },
-                { value: 'all', label: 'All' },
-              ] as const
-            ).map((option) => (
+            {FINANCE_PERIOD_OPTIONS.map((option) => (
               <Button
                 key={option.value}
                 variant={period === option.value ? 'secondary' : 'ghost'}
