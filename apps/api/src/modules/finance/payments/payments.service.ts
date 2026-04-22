@@ -1,5 +1,5 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { PrismaClient, type Prisma } from '@nbos/database';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { PrismaClient, type Prisma, type InvoiceStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 
 interface CreatePaymentDto {
@@ -80,9 +80,34 @@ export class PaymentsService {
   async create(data: CreatePaymentDto) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: data.invoiceId },
-      select: { id: true, orderId: true },
+      select: {
+        id: true,
+        orderId: true,
+        amount: true,
+        status: true,
+        dueDate: true,
+        payments: { select: { amount: true } },
+      },
     });
     if (!invoice) throw new NotFoundException(`Invoice ${data.invoiceId} not found`);
+
+    if (data.amount <= 0) {
+      throw new BadRequestException('Payment amount must be greater than zero');
+    }
+
+    const currentPaid = invoice.payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+    const nextPaid = currentPaid + data.amount;
+    const invoiceAmount = Number(invoice.amount);
+
+    if (invoice.status === 'PAID' || currentPaid >= invoiceAmount) {
+      throw new BadRequestException(`Invoice ${data.invoiceId} is already fully paid`);
+    }
+
+    if (nextPaid > invoiceAmount) {
+      throw new BadRequestException(
+        `Payment amount exceeds outstanding invoice balance of ${invoiceAmount - currentPaid}`,
+      );
+    }
 
     const payment = await this.prisma.payment.create({
       data: {
@@ -120,18 +145,28 @@ export class PaymentsService {
   private async syncInvoiceStatus(invoiceId: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
-      select: { amount: true, payments: { select: { amount: true } } },
+      select: {
+        amount: true,
+        dueDate: true,
+        status: true,
+        payments: { select: { amount: true } },
+      },
     });
     if (!invoice) return;
 
     const paid = invoice.payments.reduce((sum, p) => sum + Number(p.amount), 0);
-    const isPaid = paid >= Number(invoice.amount);
+    const status = this.resolveInvoiceStatus({
+      amount: Number(invoice.amount),
+      paid,
+      dueDate: invoice.dueDate,
+      currentStatus: invoice.status,
+    });
 
     await this.prisma.invoice.update({
       where: { id: invoiceId },
       data: {
-        status: isPaid ? 'PAID' : 'THIS_MONTH',
-        paidDate: isPaid ? new Date() : null,
+        status,
+        paidDate: status === 'PAID' ? new Date() : null,
       },
     });
   }
@@ -139,12 +174,18 @@ export class PaymentsService {
   private async syncOrderStatus(orderId: string) {
     const invoices = await this.prisma.invoice.findMany({
       where: { orderId },
-      select: { status: true },
+      select: {
+        status: true,
+        amount: true,
+        payments: { select: { amount: true } },
+      },
     });
     if (invoices.length === 0) return;
 
     const allPaid = invoices.every((inv) => inv.status === 'PAID');
-    const somePaid = invoices.some((inv) => inv.status === 'PAID');
+    const somePaid = invoices.some((inv) =>
+      inv.payments.some((payment) => Number(payment.amount) > 0),
+    );
 
     let status: 'FULLY_PAID' | 'PARTIALLY_PAID' | 'ACTIVE' = 'ACTIVE';
     if (allPaid) status = 'FULLY_PAID';
@@ -154,5 +195,28 @@ export class PaymentsService {
       where: { id: orderId },
       data: { status },
     });
+  }
+
+  private resolveInvoiceStatus(args: {
+    amount: number;
+    paid: number;
+    dueDate: Date | null;
+    currentStatus: InvoiceStatusEnum;
+  }): InvoiceStatusEnum {
+    const { amount, paid, dueDate, currentStatus } = args;
+
+    if (paid >= amount) {
+      return 'PAID';
+    }
+
+    if (currentStatus === 'ON_HOLD' || currentStatus === 'FAIL') {
+      return currentStatus;
+    }
+
+    if (!dueDate) {
+      return paid > 0 ? 'WAITING' : 'THIS_MONTH';
+    }
+
+    return dueDate.getTime() < Date.now() ? 'DELAYED' : 'WAITING';
   }
 }

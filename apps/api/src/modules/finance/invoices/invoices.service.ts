@@ -77,6 +77,8 @@ export class InvoicesService {
 
   async create(data: CreateInvoiceDto) {
     const code = await this.generateCode();
+    const taxStatus = await this.resolveTaxStatus(data);
+
     return this.prisma.invoice.create({
       data: {
         code,
@@ -85,6 +87,7 @@ export class InvoicesService {
         projectId: data.projectId,
         companyId: data.companyId,
         amount: data.amount,
+        taxStatus,
         type: data.type as InvoiceTypeEnum,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
       },
@@ -169,5 +172,41 @@ export class InvoicesService {
     });
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `INV-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private async resolveTaxStatus(
+    data: CreateInvoiceDto,
+  ): Promise<Prisma.InvoiceCreateInput['taxStatus']> {
+    if (data.orderId) {
+      const order = await this.prisma.order.findUnique({
+        where: { id: data.orderId },
+        select: { taxStatus: true },
+      });
+      if (order?.taxStatus) {
+        return order.taxStatus as Prisma.InvoiceCreateInput['taxStatus'];
+      }
+    }
+
+    if (data.subscriptionId) {
+      const subscription = await this.prisma.subscription.findUnique({
+        where: { id: data.subscriptionId },
+        select: { taxStatus: true },
+      });
+      if (subscription?.taxStatus) {
+        return subscription.taxStatus as Prisma.InvoiceCreateInput['taxStatus'];
+      }
+    }
+
+    if (data.companyId) {
+      const company = await this.prisma.company.findUnique({
+        where: { id: data.companyId },
+        select: { taxStatus: true },
+      });
+      if (company?.taxStatus) {
+        return company.taxStatus as Prisma.InvoiceCreateInput['taxStatus'];
+      }
+    }
+
+    return 'TAX';
   }
 }

@@ -35,6 +35,31 @@ describe('InvoicesService', () => {
       });
       expect(result.code).toMatch(/^INV-\d{4}-\d{4}$/);
     });
+
+    it('inherits tax status from order when orderId is provided', async () => {
+      prisma.order.findUnique.mockResolvedValue({ taxStatus: 'TAX_FREE' });
+      prisma.invoice.create.mockResolvedValue({
+        id: '2',
+        code: 'INV-2026-0002',
+        taxStatus: 'TAX_FREE',
+      });
+
+      await service.create({
+        orderId: 'ord-1',
+        projectId: 'p1',
+        amount: 50000,
+        type: 'DEVELOPMENT',
+      });
+
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            orderId: 'ord-1',
+            taxStatus: 'TAX_FREE',
+          }),
+        }),
+      );
+    });
   });
 
   describe('updateStatus', () => {

@@ -168,6 +168,17 @@ Exit criteria:
 - Scheduled billing and payment side effects are idempotent.
 - Key finance dashboards show consistent aggregates vs API data.
 
+Current status:
+
+- `PaymentsService` now prevents zero-amount payments, duplicate full-payment writes, and overpayment beyond invoice balance.
+- `Payment -> Invoice -> Order` synchronization now distinguishes active partial payment from full payment:
+  - invoice remains `WAITING` before due date when not fully covered
+  - invoice moves to `DELAYED` after due date when still not fully covered
+  - order moves to `PARTIALLY_PAID` on any confirmed collected amount, not only on fully paid invoices
+- `InvoicesService.create` now inherits `taxStatus` from `Order`, `Subscription`, or fallback `Company`.
+- `BillingService.runMonthlyBilling` now propagates subscription `taxStatus` to generated invoices and uses the billing target date year when generating invoice codes.
+- Focused finance regression tests were added for partial/full payment sync, overpayment rejection, invoice tax inheritance, and billing idempotency/year-bound code generation.
+
 ### M4 - Tasks and Support operational flow
 
 Scope:
@@ -258,6 +269,11 @@ Exit criteria:
   - aligned project detail UI to derive product/extension metrics from project source data
 - Strengthened finance transition coverage:
   - added tests for partial/full payment synchronization outcomes
+- Started M3 Finance core correctness:
+  - made `Payment -> Invoice -> Order` synchronization deterministic for partial, delayed, and full-payment paths
+  - blocked overpayment and repeated full-payment writes in `PaymentsService`
+  - enforced invoice `taxStatus` inheritance from finance source entities
+  - aligned monthly billing invoice generation with subscription tax status and target billing year
 
 ---
 
