@@ -109,4 +109,22 @@ describe('OrdersService', () => {
       expect(result.status).toBe('COMPLETED');
     });
   });
+
+  describe('getStats', () => {
+    it('returns aggregate order totals', async () => {
+      prisma.order.count.mockResolvedValue(4);
+      prisma.order.aggregate.mockResolvedValue({ _sum: { totalAmount: 250000 } });
+      prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: 150000 } });
+
+      const stats = await service.getStats();
+
+      expect(stats).toMatchObject({
+        totalOrders: 4,
+        totalAmount: 250000,
+        collectedAmount: 150000,
+        outstandingAmount: 100000,
+      });
+      expect(prisma.order.groupBy).toHaveBeenCalled();
+    });
+  });
 });

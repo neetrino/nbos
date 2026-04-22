@@ -126,6 +126,24 @@ export interface SubscriptionStats {
   monthlyRevenue: number | null;
 }
 
+export interface OrderStats {
+  totalOrders: number;
+  totalAmount: number | null;
+  collectedAmount: number | null;
+  outstandingAmount: number;
+  byStatus: Array<{
+    status: string;
+    _count: number;
+    _sum: { totalAmount: number | null };
+  }>;
+}
+
+export interface PaymentStats {
+  totalPayments: number;
+  totalCollected: number | null;
+  thisMonthCollected: number | null;
+}
+
 export interface FinanceDashboardSummary {
   kpis: {
     totalRevenue: number | null;
@@ -204,6 +222,10 @@ export const paymentsApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/payments/${id}`);
   },
+  async getStats(): Promise<PaymentStats> {
+    const resp = await api.get<PaymentStats>('/api/finance/payments/stats');
+    return resp.data;
+  },
 };
 
 export const ordersApi = {
@@ -225,6 +247,10 @@ export const ordersApi = {
   },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/orders/${id}`);
+  },
+  async getStats(): Promise<OrderStats> {
+    const resp = await api.get<OrderStats>('/api/finance/orders/stats');
+    return resp.data;
   },
 };
 

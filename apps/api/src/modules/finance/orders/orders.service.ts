@@ -178,6 +178,39 @@ export class OrdersService {
     return this.prisma.order.delete({ where: { id } });
   }
 
+  async getStats() {
+    const [totalOrders, totalAmount, byStatus, collected] = await Promise.all([
+      this.prisma.order.count(),
+      this.prisma.order.aggregate({
+        _sum: { totalAmount: true },
+      }),
+      this.prisma.order.groupBy({
+        by: ['status'],
+        _count: true,
+        _sum: { totalAmount: true },
+      }),
+      this.prisma.payment.aggregate({
+        where: {
+          invoice: {
+            orderId: { not: null },
+          },
+        },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    const totalAmountValue = Number(totalAmount._sum.totalAmount ?? 0);
+    const collectedAmount = Number(collected._sum.amount ?? 0);
+
+    return {
+      totalOrders,
+      totalAmount: totalAmount._sum.totalAmount,
+      collectedAmount: collected._sum.amount,
+      outstandingAmount: totalAmountValue - collectedAmount,
+      byStatus,
+    };
+  }
+
   private async generateCode(): Promise<string> {
     const year = new Date().getFullYear();
     const last = await this.prisma.order.findFirst({

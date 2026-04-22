@@ -38,6 +38,12 @@ export class PaymentsController {
     });
   }
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Get payment statistics' })
+  async getStats() {
+    return this.paymentsService.getStats();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get payment by ID' })
   async findOne(@Param('id') id: string) {

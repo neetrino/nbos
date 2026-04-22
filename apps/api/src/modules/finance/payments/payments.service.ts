@@ -184,6 +184,33 @@ export class PaymentsService {
     }
   }
 
+  async getStats() {
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const [totalPayments, totalCollected, thisMonthCollected] = await Promise.all([
+      this.prisma.payment.count(),
+      this.prisma.payment.aggregate({
+        _sum: { amount: true },
+      }),
+      this.prisma.payment.aggregate({
+        where: {
+          paymentDate: {
+            gte: monthStart,
+          },
+        },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    return {
+      totalPayments,
+      totalCollected: totalCollected._sum.amount,
+      thisMonthCollected: thisMonthCollected._sum.amount,
+    };
+  }
+
   private async syncInvoiceStatus(invoiceId: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },

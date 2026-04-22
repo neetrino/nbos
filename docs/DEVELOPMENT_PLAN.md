@@ -194,6 +194,10 @@ Current status:
 - Finance dashboard summary contract now exists as a dedicated backend read model:
   - `GET /finance/summary/dashboard` centralizes KPI, invoice-status, recent-payment, and upcoming-deadline data
   - web dashboard no longer composes multiple finance requests just to render a single summary screen
+- Orders and payments list summaries are moving to backend-owned stats contracts:
+  - `GET /finance/orders/stats` now exposes total, collected, outstanding, and status aggregates for order views
+  - `GET /finance/payments/stats` now exposes total collected, current-month collected, and payment count for payment views
+  - finance list pages no longer calculate top-card totals purely from the currently loaded page slice
 
 ### M4 - Tasks and Support operational flow
 
@@ -295,6 +299,7 @@ Exit criteria:
   - expanded invoice stats contracts for cleaner dashboard aggregate reads
   - normalized finance web pages onto shared typed contracts and removed dead subscription search behavior
   - introduced a dedicated finance dashboard summary endpoint to reduce client-side aggregation drift
+  - moved order/payment page summary cards onto backend stats endpoints instead of client-side list recalculation
 
 ---
 

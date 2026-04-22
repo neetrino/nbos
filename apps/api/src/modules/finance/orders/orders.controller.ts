@@ -37,6 +37,12 @@ export class OrdersController {
     });
   }
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Get order statistics' })
+  async getStats() {
+    return this.ordersService.getStats();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get order by ID' })
   async findOne(@Param('id') id: string) {

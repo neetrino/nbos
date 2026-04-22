@@ -228,4 +228,21 @@ describe('PaymentsService', () => {
       expect(prisma.payment.delete).toHaveBeenCalled();
     });
   });
+
+  describe('getStats', () => {
+    it('returns aggregate payment totals', async () => {
+      prisma.payment.count.mockResolvedValue(7);
+      prisma.payment.aggregate
+        .mockResolvedValueOnce({ _sum: { amount: 210000 } })
+        .mockResolvedValueOnce({ _sum: { amount: 50000 } });
+
+      const stats = await service.getStats();
+
+      expect(stats).toEqual({
+        totalPayments: 7,
+        totalCollected: 210000,
+        thisMonthCollected: 50000,
+      });
+    });
+  });
 });

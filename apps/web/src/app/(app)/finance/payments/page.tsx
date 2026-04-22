@@ -14,21 +14,26 @@ import {
 } from '@/components/ui/table';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { paymentsApi, type Payment } from '@/lib/api/finance';
+import { paymentsApi, type Payment, type PaymentStats } from '@/lib/api/finance';
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [stats, setStats] = useState<PaymentStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
   const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await paymentsApi.getAll({
-        pageSize: 100,
-        search: search || undefined,
-      });
+      const [data, paymentStats] = await Promise.all([
+        paymentsApi.getAll({
+          pageSize: 100,
+          search: search || undefined,
+        }),
+        paymentsApi.getStats(),
+      ]);
       setPayments(data.items);
+      setStats(paymentStats);
     } catch {
       /* handled */
     } finally {
@@ -40,13 +45,9 @@ export default function PaymentsPage() {
     fetchPayments();
   }, [fetchPayments]);
 
-  const totalCollected = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-
-  const currentMonth = new Date().getMonth();
-  const thisMonthPayments = payments.filter(
-    (p) => new Date(p.paymentDate).getMonth() === currentMonth,
-  );
-  const thisMonthTotal = thisMonthPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  const totalCollected = Number(stats?.totalCollected ?? 0);
+  const thisMonthTotal = Number(stats?.thisMonthCollected ?? 0);
+  const totalPayments = stats?.totalPayments ?? payments.length;
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -67,7 +68,7 @@ export default function PaymentsPage() {
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Total Payments</p>
-          <p className="mt-1 text-xl font-bold">{payments.length}</p>
+          <p className="mt-1 text-xl font-bold">{totalPayments}</p>
         </div>
       </div>
 

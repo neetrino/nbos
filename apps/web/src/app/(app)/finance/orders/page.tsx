@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { ordersApi, type Order } from '@/lib/api/finance';
+import { ordersApi, type Order, type OrderStats } from '@/lib/api/finance';
 
 const ORDER_STATUSES: Record<
   string,
@@ -31,6 +31,7 @@ const ORDER_STATUSES: Record<
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [stats, setStats] = useState<OrderStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -38,12 +39,16 @@ export default function OrdersPage() {
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await ordersApi.getAll({
-        pageSize: 100,
-        search: search || undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-      });
+      const [data, orderStats] = await Promise.all([
+        ordersApi.getAll({
+          pageSize: 100,
+          search: search || undefined,
+          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        }),
+        ordersApi.getStats(),
+      ]);
       setOrders(data.items);
+      setStats(orderStats);
     } catch {
       /* handled */
     } finally {
@@ -55,8 +60,9 @@ export default function OrdersPage() {
     fetchOrders();
   }, [fetchOrders]);
 
-  const totalOrders = orders.reduce((sum, order) => sum + parseFloat(order.amount ?? '0'), 0);
-  const totalPaid = orders.reduce((sum, order) => sum + Number(order.paidAmount ?? 0), 0);
+  const totalOrders = Number(stats?.totalAmount ?? 0);
+  const totalPaid = Number(stats?.collectedAmount ?? 0);
+  const outstandingAmount = Number(stats?.outstandingAmount ?? 0);
 
   const filterConfigs = [
     {
@@ -92,9 +98,7 @@ export default function OrdersPage() {
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Outstanding</p>
-          <p className="mt-1 text-xl font-bold text-amber-500">
-            {formatAmount(totalOrders - totalPaid)}
-          </p>
+          <p className="mt-1 text-xl font-bold text-amber-500">{formatAmount(outstandingAmount)}</p>
         </div>
       </div>
 
