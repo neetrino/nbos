@@ -76,6 +76,8 @@
 
 **Files:** `employee.guard.ts`, `me.controller.ts`, `employees.service.ts` (`findById`).
 
+**Status update (2026-04-22):** ✅ Resolved. `MeController.getMe` now returns profile from `request.user.meProfile` populated by `EmployeeGuard`; no second `findUnique` remains in `/me` handler.
+
 ### 2. `PermissionProvider` can refetch `/api/me` whenever `session` reference changes (high)
 
 **Code:** `useEffect(..., [session, status])` runs `api.get('/api/me')` when dependencies change.
@@ -83,6 +85,8 @@
 **Interaction:** `SessionProvider` (next-auth `react.js`) defaults to **`refetchOnWindowFocus = true`**. On tab focus, `_getSession` refetches `GET /api/auth/session`, updates React `session` state (typically **new object** even if payload unchanged), which can **retrigger** the effect and **another** `GET /api/me`.
 
 **Files:** `PermissionContext.tsx`; `next-auth` `SessionProvider` implementation (`refetchOnWindowFocus` default).
+
+**Status update (2026-04-22):** ✅ Mitigated. `SessionProvider` is configured with `refetchOnWindowFocus={false}` and `PermissionProvider` effect uses stable deps (`userId`, `status`) instead of full `session`.
 
 ### 3. Authenticated shell blocked on client session + sequential “me” load (medium–high)
 
@@ -105,6 +109,8 @@
 **Observed consumer:** Dashboard page fires **6 parallel** `api.get` calls on load — amplifies this on cold cache.
 
 **Files:** `employee.guard.ts`; `apps/web/.../dashboard/page.tsx` (`Promise.allSettled`).
+
+**Status update (2026-04-22):** ✅ Resolved for concurrent cache misses via in-flight promise dedupe map in `EmployeeGuard`.
 
 ### 6. Landing page forces dynamic work via server `auth()` (low–medium)
 
@@ -158,12 +164,21 @@
 
 ---
 
-## Safe code changes to apply first (recommendations only; not applied in this audit)
+## Implementation status (2026-04-22)
 
-- `app/layout.tsx`: `SessionProvider` with `refetchOnWindowFocus={false}` (verify tab/role update expectations).
-- `PermissionContext.tsx`: narrow `useEffect` deps + optional React Query for `/api/me`.
-- `sign-in/page.tsx`: optional removal of redundant `router.refresh()` after validation.
-- `me.controller.ts` + `employee.guard.ts`: single source of truth for employee payload on `GET /me`.
+- ✅ `app/layout.tsx`: `SessionProvider` now uses `refetchOnWindowFocus={false}`.
+- ✅ `PermissionContext.tsx`: `/api/me` fetch effect depends on stable auth identity (`userId`) and status.
+- ✅ `sign-in/page.tsx`: redundant `router.refresh()` removed.
+- ✅ `employee.guard.ts`: in-flight dedupe implemented for concurrent cold requests.
+- ✅ `me.controller.ts`: duplicate employee read removed; `/me` now reuses guard-enriched profile payload.
+
+### Code-backed before/after metrics (`GET /api/me`)
+
+| Metric                                                                | Before   | After                                | Delta     |
+| --------------------------------------------------------------------- | -------- | ------------------------------------ | --------- |
+| Employee DB reads per request path (`EmployeeGuard` + `MeController`) | 2        | 1                                    | **-50%**  |
+| `findUnique` calls inside `me.controller.ts`                          | 1        | 0                                    | **-100%** |
+| Parallel cold-start duplicate work in `EmployeeGuard`                 | possible | deduped via shared in-flight Promise | reduced   |
 
 **Temporary profiling (if added later):** mark any `console.time` / custom spans with `// PERF-AUDIT-TEMP` for easy removal.
 
@@ -195,7 +210,7 @@
 2. RSC payload for route segments.
 3. Client hydrates → **`SessionProvider`** fetches **`GET /api/auth/session`**.
 4. **`SessionGate`**: blocks with spinner until `status !== 'loading'`.
-5. **`PermissionProvider`**: **`GET /api/me`** (Nest: JWT + EmployeeGuard + `findById`).
+5. **`PermissionProvider`**: **`GET /api/me`** (Nest: JWT + EmployeeGuard-enriched profile payload; no second controller `findUnique`).
 6. Page components (e.g. dashboard) fire **additional** parallel `api.get` calls → each authenticated request runs **AuthGuard + EmployeeGuard** again.
 
 ### Login
@@ -211,4 +226,4 @@
 ### In-app navigation (e.g. `/dashboard` → `/tasks`)
 
 - **`(app)/layout`** stays mounted: **no remount** of `PermissionProvider` from layout alone.
-- Session **may** still refetch on **tab focus** (default), and **`/api/me`** may refetch if `session` identity updates — primary **risk** for “navigation feels slow” is **RSC + data fetching for the new page** + **session refetch side effects**, not layout remount.
+- Session tab-focus refetch is now disabled in `SessionProvider`; primary remaining risk for “navigation feels slow” is **RSC + page data fetching**, not layout remount.

@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
       afterFiles: [
         {
           source: '/favicon.ico',
-          destination: '/favicon.svg',
+          destination: '/logo/icon.png',
         },
         {
           // Exclude Auth.js routes from backend proxying.
