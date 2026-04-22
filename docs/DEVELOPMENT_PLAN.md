@@ -133,7 +133,7 @@ Current status:
 - Stage gate validation tests pass for cumulative and type-specific requirements.
 - Cross-module `Deal -> Order -> Invoice` regression checks are now covered and green.
 
-### M2 - Projects Hub domain consistency
+### M2 - Projects Hub domain consistency (done)
 
 Scope:
 
@@ -145,6 +145,14 @@ Exit criteria:
 
 - Product-centric workflow has no ambiguous ownership or status contradictions.
 - Project overview metrics are derivable from real source entities only.
+
+Current status:
+
+- `ProjectsService.findById` returns product-centric project snapshot with `products` and `extensions`.
+- Product stage gates now enforce required linked entities for `NEW -> CREATING`.
+- Extension stage gates now enforce required linked entities for `NEW -> DEVELOPMENT`.
+- Task linkage by `PRODUCT` and `EXTENSION` is regression-covered in API tests.
+- Project detail UI consumes the unified project snapshot for products/extensions instead of split sources.
 
 ### M3 - Finance core correctness
 
@@ -216,7 +224,7 @@ Exit criteria:
 
 ## 6) Priority backlog (next 2-4 weeks)
 
-1. Execute M2 and M3 in sequence (Projects Hub consistency, Finance correctness).
+1. Execute M3 (Finance correctness).
 2. Continue focused regression tests for cross-module trigger chains:
    - Deal -> Order/Project/Product
    - Invoice/Payment -> Order and downstream effects
@@ -243,6 +251,11 @@ Exit criteria:
   - added regression tests for `Deal -> Order -> Invoice` chain visibility in CRM reads
   - verified invoice-driven deal promotion only happens when all linked invoices are paid and covered
   - verified incomplete invoice chains do not falsely promote deals
+- Closed M2 Projects Hub domain consistency:
+  - unified project detail snapshot around `products` and `extensions`
+  - validated required linked-entity stage gates for product/extension transitions
+  - verified task linkage behavior for product/extension entity views
+  - aligned project detail UI to derive product/extension metrics from project source data
 - Strengthened finance transition coverage:
   - added tests for partial/full payment synchronization outcomes
 
@@ -265,4 +278,4 @@ For each module cycle:
 
 ## 9) Current next action
 
-**Start M2:** validate Projects Hub domain consistency against current CRM outputs.
+**Start M3:** verify Finance core correctness for `Order -> Invoice -> Payment -> status sync`.
