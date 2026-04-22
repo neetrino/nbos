@@ -1,6 +1,12 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaClient, type Prisma, type InvoiceStatusEnum } from '@nbos/database';
+import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  getLatestPaymentDate,
+  resolveInvoiceStatus,
+  resolveOrderStatus,
+  sumAmounts,
+} from '../finance-status.utils';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -137,7 +143,7 @@ export class PaymentsService {
       throw new BadRequestException('Payment amount must be greater than zero');
     }
 
-    const currentPaid = invoice.payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+    const currentPaid = sumAmounts(invoice.payments);
     const nextPaid = currentPaid + data.amount;
     const invoiceAmount = Number(invoice.amount);
 
@@ -190,6 +196,7 @@ export class PaymentsService {
     monthStart.setHours(0, 0, 0, 0);
 
     const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
+    const monthScopedPaymentDate = this.buildMonthScopedDateRange(paymentDate, monthStart);
 
     const [totalPayments, totalCollected, thisMonthCollected] = await Promise.all([
       this.prisma.payment.count({
@@ -201,9 +208,7 @@ export class PaymentsService {
       }),
       this.prisma.payment.aggregate({
         where: {
-          paymentDate: {
-            gte: monthStart,
-          },
+          paymentDate: monthScopedPaymentDate,
         },
         _sum: { amount: true },
       }),
@@ -227,6 +232,20 @@ export class PaymentsService {
     };
   }
 
+  private buildMonthScopedDateRange(
+    paymentDate: Prisma.DateTimeFilter | undefined,
+    monthStart: Date,
+  ): Prisma.DateTimeFilter {
+    const dateFrom = paymentDate?.gte instanceof Date ? paymentDate.gte : undefined;
+    const dateTo = paymentDate?.lte instanceof Date ? paymentDate.lte : undefined;
+    const effectiveStart = dateFrom && dateFrom > monthStart ? dateFrom : monthStart;
+
+    return {
+      gte: effectiveStart,
+      ...(dateTo ? { lte: dateTo } : {}),
+    };
+  }
+
   private async syncInvoiceStatus(invoiceId: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
@@ -234,13 +253,13 @@ export class PaymentsService {
         amount: true,
         dueDate: true,
         status: true,
-        payments: { select: { amount: true } },
+        payments: { select: { amount: true, paymentDate: true } },
       },
     });
     if (!invoice) return;
 
-    const paid = invoice.payments.reduce((sum, p) => sum + Number(p.amount), 0);
-    const status = this.resolveInvoiceStatus({
+    const paid = sumAmounts(invoice.payments);
+    const status = resolveInvoiceStatus({
       amount: Number(invoice.amount),
       paid,
       dueDate: invoice.dueDate,
@@ -251,7 +270,7 @@ export class PaymentsService {
       where: { id: invoiceId },
       data: {
         status,
-        paidDate: status === 'PAID' ? new Date() : null,
+        paidDate: status === 'PAID' ? getLatestPaymentDate(invoice.payments) : null,
       },
     });
   }
@@ -267,41 +286,11 @@ export class PaymentsService {
     });
     if (invoices.length === 0) return;
 
-    const allPaid = invoices.every((inv) => inv.status === 'PAID');
-    const somePaid = invoices.some((inv) =>
-      inv.payments.some((payment) => Number(payment.amount) > 0),
-    );
-
-    let status: 'FULLY_PAID' | 'PARTIALLY_PAID' | 'ACTIVE' = 'ACTIVE';
-    if (allPaid) status = 'FULLY_PAID';
-    else if (somePaid) status = 'PARTIALLY_PAID';
+    const status = resolveOrderStatus(invoices);
 
     await this.prisma.order.update({
       where: { id: orderId },
       data: { status },
     });
-  }
-
-  private resolveInvoiceStatus(args: {
-    amount: number;
-    paid: number;
-    dueDate: Date | null;
-    currentStatus: InvoiceStatusEnum;
-  }): InvoiceStatusEnum {
-    const { amount, paid, dueDate, currentStatus } = args;
-
-    if (paid >= amount) {
-      return 'PAID';
-    }
-
-    if (currentStatus === 'ON_HOLD' || currentStatus === 'FAIL') {
-      return currentStatus;
-    }
-
-    if (!dueDate) {
-      return paid > 0 ? 'WAITING' : 'THIS_MONTH';
-    }
-
-    return dueDate.getTime() < Date.now() ? 'DELAYED' : 'WAITING';
   }
 }

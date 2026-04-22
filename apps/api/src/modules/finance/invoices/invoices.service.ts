@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -6,6 +6,12 @@ import {
   type InvoiceStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  getLatestPaymentDate,
+  resolveBaseInvoiceStatus,
+  resolveOrderStatus,
+  sumAmounts,
+} from '../finance-status.utils';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -21,6 +27,7 @@ interface InvoiceQueryParams {
   page?: number;
   pageSize?: number;
   status?: string;
+  type?: string;
   projectId?: string;
   search?: string;
   dateFrom?: string;
@@ -37,10 +44,11 @@ export class InvoicesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: InvoiceQueryParams) {
-    const { page = 1, pageSize = 20, status, projectId, search, dateFrom, dateTo } = params;
+    const { page = 1, pageSize = 20, status, type, projectId, search, dateFrom, dateTo } = params;
     const where: Prisma.InvoiceWhereInput = {};
 
     if (status) where.status = status as InvoiceStatusEnum;
+    if (type) where.type = type as InvoiceTypeEnum;
     if (projectId) where.projectId = projectId;
     if (search) {
       where.code = { contains: search, mode: 'insensitive' };
@@ -111,17 +119,50 @@ export class InvoicesService {
   }
 
   async updateStatus(id: string, status: string) {
-    const invoice = await this.findById(id);
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        orderId: true,
+        amount: true,
+        dueDate: true,
+        status: true,
+        payments: {
+          select: {
+            amount: true,
+            paymentDate: true,
+          },
+        },
+      },
+    });
+    if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
+
+    const amount = Number(invoice.amount);
+    const paid = sumAmounts(invoice.payments);
+    const derivedStatus = resolveBaseInvoiceStatus({
+      amount,
+      paid,
+      dueDate: invoice.dueDate,
+    });
+
+    this.assertManualStatusTransitionAllowed(status as InvoiceStatusEnum, derivedStatus);
+
     const updateData: Prisma.InvoiceUpdateInput = {
       status: status as InvoiceStatusEnum,
     };
     if (status === 'PAID') {
-      updateData.paidDate = new Date();
+      updateData.paidDate = getLatestPaymentDate(invoice.payments);
+    } else {
+      updateData.paidDate = null;
     }
     const updated = await this.prisma.invoice.update({
       where: { id },
       data: updateData,
     });
+
+    if (invoice.orderId) {
+      await this.syncOrderStatus(invoice.orderId);
+    }
 
     if (status === 'PAID' && invoice.orderId) {
       await this.checkAndPromoteDeal(invoice.orderId);
@@ -158,6 +199,19 @@ export class InvoicesService {
   async delete(id: string) {
     await this.findById(id);
     return this.prisma.invoice.delete({ where: { id } });
+  }
+
+  private assertManualStatusTransitionAllowed(
+    requestedStatus: InvoiceStatusEnum,
+    derivedStatus: InvoiceStatusEnum,
+  ) {
+    if (requestedStatus === 'PAID' && derivedStatus !== 'PAID') {
+      throw new BadRequestException('Cannot mark invoice as paid before payments fully cover it');
+    }
+
+    if (derivedStatus === 'PAID' && requestedStatus !== 'PAID') {
+      throw new BadRequestException('Fully paid invoices must stay in PAID status');
+    }
   }
 
   async getStats(params: InvoiceStatsParams = {}) {
@@ -233,6 +287,24 @@ export class InvoicesService {
     });
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `INV-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private async syncOrderStatus(orderId: string) {
+    const invoices = await this.prisma.invoice.findMany({
+      where: { orderId },
+      select: {
+        status: true,
+        payments: { select: { amount: true } },
+      },
+    });
+    if (invoices.length === 0) {
+      return;
+    }
+
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: resolveOrderStatus(invoices) },
+    });
   }
 
   private async resolveTaxStatus(

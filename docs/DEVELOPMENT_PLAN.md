@@ -154,7 +154,7 @@ Current status:
 - Task linkage by `PRODUCT` and `EXTENSION` is regression-covered in API tests.
 - Project detail UI consumes the unified project snapshot for products/extensions instead of split sources.
 
-### M3 - Finance core correctness
+### M3 - Finance core correctness (done)
 
 Scope:
 
@@ -178,33 +178,37 @@ Current status:
 - `InvoicesService.create` now inherits `taxStatus` from `Order`, `Subscription`, or fallback `Company`.
 - `BillingService.runMonthlyBilling` now propagates subscription `taxStatus` to generated invoices and uses the billing target date year when generating invoice codes.
 - Focused finance regression tests were added for partial/full payment sync, overpayment rejection, invoice tax inheritance, and billing idempotency/year-bound code generation.
-- Finance API response shaping is now being aligned with finance UI aggregates:
+- Finance API response shaping is aligned with finance UI aggregates:
   - `OrdersService` derives `paidAmount` from actual invoice payments instead of relying on client-side phantom fields
   - order reads now expose project-linked `company` and `contact` for finance screens
   - payment reads now expose derived `project`, `company`, and confirmer context from linked invoice/order/subscription data
 - Finance dashboard no longer depends on mock fixtures:
   - finance overview KPIs now derive from live `invoice`, `payment`, and `subscription` API reads
   - recent payments and upcoming invoice deadlines now reflect real finance entities instead of demo data
-- Finance aggregate contracts are being formalized for dashboard reads:
+- Finance aggregate contracts are formalized for dashboard reads:
   - `InvoicesService.getStats()` now exposes explicit `outstanding` and `overdue` totals
   - finance dashboard KPI rendering is shifting from list-endpoint recalculation toward stats-endpoint reads
-- Finance web pages are being normalized onto shared typed API contracts:
+- Finance web pages are normalized onto shared typed API contracts:
   - `orders`, `payments`, and `subscriptions` pages now reuse shared finance API types instead of maintaining page-local response shapes
   - recurring billing search is now wired end-to-end for subscriptions instead of being a dead UI filter
 - Finance dashboard summary contract now exists as a dedicated backend read model:
   - `GET /finance/summary/dashboard` centralizes KPI, invoice-status, recent-payment, and upcoming-deadline data
   - web dashboard no longer composes multiple finance requests just to render a single summary screen
-- Orders and payments list summaries are moving to backend-owned stats contracts:
+- Orders and payments list summaries are backend-owned stats contracts:
   - `GET /finance/orders/stats` now exposes total, collected, outstanding, and status aggregates for order views
   - `GET /finance/payments/stats` now exposes total collected, current-month collected, and payment count for payment views
   - finance list pages no longer calculate top-card totals purely from the currently loaded page slice
-- Invoice and subscription overview cards are also being normalized to backend stats:
+- Invoice and subscription overview cards are normalized to backend stats:
   - invoices page now uses invoice stats for total invoiced / collected / overdue cards
   - subscriptions page now uses subscription stats for active count and MRR instead of deriving everything from the loaded page slice
-- Finance reporting contracts are becoming period-aware:
+- Finance reporting contracts are period-aware:
   - finance stats endpoints now accept optional `dateFrom/dateTo` filters
   - finance dashboard summary endpoint now supports bounded reporting periods and the web dashboard exposes period presets
   - active subscription metrics are evaluated against the selected reporting end date instead of only "now"
+- Final finance reconciliation gaps are now closed:
+  - invoice manual `PAID` transitions are rejected until actual payments fully cover the invoice
+  - invoice `paidDate` now resolves from the latest linked payment date instead of the sync execution time
+  - invoice list `type` filtering is now wired end-to-end between web filters and backend reads
 - Finance list reads are now aligning rows with reporting periods, not just top-card summaries:
   - invoice, order, and subscription list endpoints now accept optional `dateFrom/dateTo` filters on backend reads
   - finance list pages now share the same `Month / Quarter / Year / All` presets for both row queries and summary cards
@@ -270,7 +274,7 @@ Exit criteria:
 
 ## 6) Priority backlog (next 2-4 weeks)
 
-1. Execute M3 (Finance correctness).
+1. Start M4 (Tasks and Support operational flow).
 2. Continue focused regression tests for cross-module trigger chains:
    - Deal -> Order/Project/Product
    - Invoice/Payment -> Order and downstream effects
@@ -317,6 +321,13 @@ Exit criteria:
   - moved order/payment page summary cards onto backend stats endpoints instead of client-side list recalculation
   - moved invoice/subscription summary cards onto backend stats contracts for consistency with the rest of finance UI
   - added period-aware finance reporting filters to stats/summary contracts and wired them into dashboard reads
+- Closed M3 Finance core correctness:
+  - aligned payment stats month bucket with selected reporting period bounds to avoid card/list drift
+  - verified finance state transitions remain deterministic for partial, delayed, and full-payment paths
+  - verified scheduled billing side effects remain idempotent via monthly duplicate prevention tests
+  - confirmed dashboard/list aggregate reads are backend-owned and period-consistent across invoices/orders/payments/subscriptions/expenses
+  - closed invoice/payment reconciliation gaps by blocking unpaid manual `PAID` transitions and deriving `paidDate` from the latest actual payment
+  - wired invoice `type` filtering end-to-end so finance list controls match backend query behavior
 
 ---
 
@@ -337,4 +348,4 @@ For each module cycle:
 
 ## 9) Current next action
 
-**Start M3:** verify Finance core correctness for `Order -> Invoice -> Payment -> status sync`.
+**Start M4:** validate Tasks and Support operational flow (automation triggers, SLA, and counter consistency).

@@ -114,6 +114,7 @@ describe('PaymentsService', () => {
     });
 
     it('marks invoice and order as paid when coverage reaches total amount', async () => {
+      const latestPaymentDate = new Date('2026-03-12T00:00:00.000Z');
       prisma.invoice.findUnique
         .mockResolvedValueOnce({
           id: 'inv1',
@@ -127,7 +128,10 @@ describe('PaymentsService', () => {
           amount: 100000,
           dueDate: new Date('2026-03-20'),
           status: 'WAITING',
-          payments: [{ amount: 60000 }, { amount: 40000 }],
+          payments: [
+            { amount: 60000, paymentDate: new Date('2026-03-10T00:00:00.000Z') },
+            { amount: 40000, paymentDate: latestPaymentDate },
+          ],
         });
       prisma.payment.create.mockResolvedValue({ id: '2', amount: 40000 });
       prisma.invoice.findMany.mockResolvedValue([
@@ -143,7 +147,7 @@ describe('PaymentsService', () => {
 
       expect(prisma.invoice.update).toHaveBeenCalledWith({
         where: { id: 'inv1' },
-        data: { status: 'PAID', paidDate: expect.any(Date) },
+        data: { status: 'PAID', paidDate: latestPaymentDate },
       });
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'ord1' },
@@ -243,6 +247,40 @@ describe('PaymentsService', () => {
         totalCollected: 210000,
         thisMonthCollected: 50000,
       });
+    });
+
+    it('applies period filters to total and month-scoped aggregates', async () => {
+      prisma.payment.count.mockResolvedValue(2);
+      prisma.payment.aggregate
+        .mockResolvedValueOnce({ _sum: { amount: 15000 } })
+        .mockResolvedValueOnce({ _sum: { amount: 4000 } });
+
+      await service.getStats({
+        dateFrom: '2026-04-01T00:00:00.000Z',
+        dateTo: '2026-04-30T23:59:59.999Z',
+      });
+
+      expect(prisma.payment.count).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            paymentDate: expect.objectContaining({
+              gte: expect.any(Date),
+              lte: expect.any(Date),
+            }),
+          }),
+        }),
+      );
+
+      expect(prisma.payment.aggregate).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            paymentDate: expect.objectContaining({
+              gte: expect.any(Date),
+              lte: expect.any(Date),
+            }),
+          }),
+        }),
+      );
     });
   });
 });

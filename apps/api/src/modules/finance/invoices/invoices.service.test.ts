@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { InvoicesService } from './invoices.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('InvoicesService', () => {
   let service: InvoicesService;
@@ -31,6 +31,18 @@ describe('InvoicesService', () => {
               gte: expect.any(Date),
               lte: expect.any(Date),
             }),
+          }),
+        }),
+      );
+    });
+
+    it('applies type filter', async () => {
+      await service.findAll({ type: 'SUBSCRIPTION' });
+
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            type: 'SUBSCRIPTION',
           }),
         }),
       );
@@ -82,26 +94,77 @@ describe('InvoicesService', () => {
 
   describe('updateStatus', () => {
     it('sets paidDate when marking as PAID', async () => {
-      prisma.invoice.findUnique.mockResolvedValue({ id: '1' });
+      const paidDate = new Date('2026-04-12T00:00:00.000Z');
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: '1',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          status: 'WAITING',
+          payments: [
+            { amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+            { amount: 40000, paymentDate: paidDate },
+          ],
+        })
+        .mockResolvedValueOnce({
+          id: '1',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          status: 'WAITING',
+          payments: [
+            { amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+            { amount: 40000, paymentDate: paidDate },
+          ],
+        });
       prisma.invoice.update.mockResolvedValue({ id: '1', status: 'PAID', paidDate: new Date() });
       await service.updateStatus('1', 'PAID');
       expect(prisma.invoice.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             status: 'PAID',
-            paidDate: expect.any(Date),
+            paidDate,
           }),
         }),
       );
     });
 
+    it('rejects manual PAID status before invoice is fully covered by payments', async () => {
+      prisma.invoice.findUnique.mockResolvedValue({
+        id: 'manual-inv',
+        orderId: null,
+        amount: 100000,
+        dueDate: new Date('2026-04-20'),
+        status: 'WAITING',
+        payments: [{ amount: 40000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
+      });
+
+      await expect(service.updateStatus('manual-inv', 'PAID')).rejects.toThrow(BadRequestException);
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+    });
+
     it('promotes the linked deal when all order invoices are paid and amount is covered', async () => {
-      prisma.invoice.findUnique.mockResolvedValueOnce({ id: 'inv-1', orderId: 'ord-1' });
+      prisma.invoice.findUnique.mockResolvedValueOnce({
+        id: 'inv-1',
+        orderId: 'ord-1',
+        amount: 100000,
+        dueDate: new Date('2026-04-20'),
+        status: 'WAITING',
+        payments: [
+          { amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+          { amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
+        ],
+      });
       prisma.invoice.update.mockResolvedValue({
         id: 'inv-1',
         status: 'PAID',
         paidDate: new Date(),
       });
+      prisma.invoice.findMany.mockResolvedValueOnce([
+        { status: 'PAID', payments: [{ amount: 100000 }] },
+        { status: 'PAID', payments: [{ amount: 50000 }] },
+      ]);
       prisma.order.findUnique.mockResolvedValue({
         id: 'ord-1',
         deal: { id: 'deal-1', status: 'IN_PROGRESS', amount: 100000 },
@@ -120,12 +183,23 @@ describe('InvoicesService', () => {
     });
 
     it('does not promote the linked deal when at least one order invoice is unpaid', async () => {
-      prisma.invoice.findUnique.mockResolvedValueOnce({ id: 'inv-2', orderId: 'ord-2' });
+      prisma.invoice.findUnique.mockResolvedValueOnce({
+        id: 'inv-2',
+        orderId: 'ord-2',
+        amount: 50000,
+        dueDate: new Date('2026-04-20'),
+        status: 'WAITING',
+        payments: [{ amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') }],
+      });
       prisma.invoice.update.mockResolvedValue({
         id: 'inv-2',
         status: 'PAID',
         paidDate: new Date(),
       });
+      prisma.invoice.findMany.mockResolvedValueOnce([
+        { status: 'PAID', payments: [{ amount: 50000 }] },
+        { status: 'THIS_MONTH', payments: [] },
+      ]);
       prisma.order.findUnique.mockResolvedValue({
         id: 'ord-2',
         deal: { id: 'deal-2', status: 'IN_PROGRESS', amount: 100000 },
@@ -141,12 +215,26 @@ describe('InvoicesService', () => {
     });
 
     it('does not promote the linked deal when paid invoices do not cover deal amount', async () => {
-      prisma.invoice.findUnique.mockResolvedValueOnce({ id: 'inv-3', orderId: 'ord-3' });
+      prisma.invoice.findUnique.mockResolvedValueOnce({
+        id: 'inv-3',
+        orderId: 'ord-3',
+        amount: 100000,
+        dueDate: new Date('2026-04-20'),
+        status: 'WAITING',
+        payments: [
+          { amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+          { amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
+        ],
+      });
       prisma.invoice.update.mockResolvedValue({
         id: 'inv-3',
         status: 'PAID',
         paidDate: new Date(),
       });
+      prisma.invoice.findMany.mockResolvedValueOnce([
+        { status: 'PAID', payments: [{ amount: 100000 }] },
+        { status: 'PAID', payments: [{ amount: 100000 }] },
+      ]);
       prisma.order.findUnique.mockResolvedValue({
         id: 'ord-3',
         deal: { id: 'deal-3', status: 'IN_PROGRESS', amount: 120000 },
