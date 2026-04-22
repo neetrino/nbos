@@ -112,7 +112,7 @@ Rules:
 - Each module closes with explicit exit criteria and docs update in this file.
 - Sequence respects business criticality and dependency chain.
 
-### M1 - CRM -> Product/Order transition integrity (done)
+### ✅ M1 - CRM -> Product/Order transition integrity (done)
 
 Scope:
 
@@ -133,7 +133,7 @@ Current status:
 - Stage gate validation tests pass for cumulative and type-specific requirements.
 - Cross-module `Deal -> Order -> Invoice` regression checks are now covered and green.
 
-### M2 - Projects Hub domain consistency (done)
+### ✅ M2 - Projects Hub domain consistency (done)
 
 Scope:
 
@@ -154,7 +154,7 @@ Current status:
 - Task linkage by `PRODUCT` and `EXTENSION` is regression-covered in API tests.
 - Project detail UI consumes the unified project snapshot for products/extensions instead of split sources.
 
-### M3 - Finance core correctness (done)
+### ✅ M3 - Finance core correctness (done)
 
 Scope:
 
