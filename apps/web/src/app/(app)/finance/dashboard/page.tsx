@@ -12,15 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAmount } from '@/features/finance/constants/finance';
-import {
-  type Invoice,
-  invoicesApi,
-  paymentsApi,
-  subscriptionsApi,
-  type InvoiceStats,
-  type Payment,
-  type SubscriptionStats,
-} from '@/lib/api/finance';
+import { financeSummaryApi, type FinanceDashboardSummary } from '@/lib/api/finance';
 
 interface FinanceDashboardData {
   totalRevenue: number;
@@ -104,39 +96,29 @@ function getDaysLeft(dueDate: string): number {
   return Math.ceil((targetDay.getTime() - today.getTime()) / 86_400_000);
 }
 
-function getInvoiceClientName(invoice: Invoice): string {
-  return invoice.company?.name ?? invoice.project?.name ?? 'Unknown client';
-}
-
-function buildFinanceDashboardData(
-  invoiceStats: InvoiceStats,
-  payments: Payment[],
-  subscriptionStats: SubscriptionStats,
-  invoices: Invoice[],
-): FinanceDashboardData {
-  const totalRevenue = toAmount(invoiceStats.totalRevenue);
-  const outstandingAmount = toAmount(invoiceStats.outstanding.amount);
-  const overdueAmount = toAmount(invoiceStats.overdue.amount);
-  const monthlyRecurringRevenue = toAmount(subscriptionStats.monthlyRevenue);
-  const totalInvoices = invoiceStats.total || 1;
+function buildFinanceDashboardData(summary: FinanceDashboardSummary): FinanceDashboardData {
+  const totalRevenue = toAmount(summary.kpis.totalRevenue);
+  const outstandingAmount = toAmount(summary.kpis.outstandingAmount);
+  const overdueAmount = toAmount(summary.kpis.overdueAmount);
+  const monthlyRecurringRevenue = toAmount(summary.kpis.monthlyRecurringRevenue);
+  const totalInvoices = summary.invoiceStatusItems.reduce((sum, item) => sum + item.count, 0) || 1;
 
   const invoiceStatusItems = Object.entries(INVOICE_STATUS_META)
     .map(([status, meta]) => {
-      const statusGroup = invoiceStats.byStatus.find((item) => item.status === status);
+      const statusGroup = summary.invoiceStatusItems.find((item) => item.status === status);
 
       return {
         label: meta.label,
-        count: statusGroup?._count ?? 0,
-        amount: toAmount(statusGroup?._sum.amount),
+        count: statusGroup?.count ?? 0,
+        amount: toAmount(statusGroup?.amount),
         color: meta.color,
-        pct: Math.round(((statusGroup?._count ?? 0) / totalInvoices) * 100),
+        pct: Math.round(((statusGroup?.count ?? 0) / totalInvoices) * 100),
       };
     })
     .filter((item) => item.count > 0);
 
-  const recentPayments = [...payments]
+  const recentPayments = [...summary.recentPayments]
     .sort((left, right) => right.paymentDate.localeCompare(left.paymentDate))
-    .slice(0, 5)
     .map((payment) => ({
       id: payment.id,
       client: payment.company?.name ?? payment.project?.name ?? 'Unknown client',
@@ -145,14 +127,14 @@ function buildFinanceDashboardData(
       dateLabel: formatRelativeDate(payment.paymentDate),
     }));
 
-  const upcomingInvoices = invoices
-    .filter((invoice) => invoice.status !== 'PAID' && invoice.dueDate)
+  const upcomingInvoices = summary.upcomingInvoices
+    .filter((invoice) => invoice.dueDate)
     .map((invoice) => {
       const dueDate = invoice.dueDate as string;
       return {
         id: invoice.id,
         invoice: invoice.code,
-        client: getInvoiceClientName(invoice),
+        client: invoice.company?.name ?? 'Unknown client',
         amount: toAmount(invoice.amount),
         dueDateLabel: new Date(dueDate).toLocaleDateString('en-US', {
           month: 'short',
@@ -161,8 +143,7 @@ function buildFinanceDashboardData(
         daysLeft: getDaysLeft(dueDate),
       };
     })
-    .sort((left, right) => left.daysLeft - right.daysLeft)
-    .slice(0, 5);
+    .sort((left, right) => left.daysLeft - right.daysLeft);
 
   return {
     totalRevenue,
@@ -330,22 +311,8 @@ export default function FinanceDashboardPage() {
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
     try {
-      const [invoiceStats, paymentsResponse, subscriptionStats, invoicesResponse] =
-        await Promise.all([
-          invoicesApi.getStats(),
-          paymentsApi.getAll({ pageSize: 20 }),
-          subscriptionsApi.getStats(),
-          invoicesApi.getAll({ pageSize: 200 }),
-        ]);
-
-      setData(
-        buildFinanceDashboardData(
-          invoiceStats,
-          paymentsResponse.items,
-          subscriptionStats,
-          invoicesResponse.items,
-        ),
-      );
+      const summary = await financeSummaryApi.getDashboard();
+      setData(buildFinanceDashboardData(summary));
     } catch {
       setData(null);
     } finally {

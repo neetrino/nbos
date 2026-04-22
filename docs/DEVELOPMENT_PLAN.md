@@ -191,6 +191,9 @@ Current status:
 - Finance web pages are being normalized onto shared typed API contracts:
   - `orders`, `payments`, and `subscriptions` pages now reuse shared finance API types instead of maintaining page-local response shapes
   - recurring billing search is now wired end-to-end for subscriptions instead of being a dead UI filter
+- Finance dashboard summary contract now exists as a dedicated backend read model:
+  - `GET /finance/summary/dashboard` centralizes KPI, invoice-status, recent-payment, and upcoming-deadline data
+  - web dashboard no longer composes multiple finance requests just to render a single summary screen
 
 ### M4 - Tasks and Support operational flow
 
@@ -291,6 +294,7 @@ Exit criteria:
   - replaced finance dashboard mock data with live finance aggregates on the web app
   - expanded invoice stats contracts for cleaner dashboard aggregate reads
   - normalized finance web pages onto shared typed contracts and removed dead subscription search behavior
+  - introduced a dedicated finance dashboard summary endpoint to reduce client-side aggregation drift
 
 ---
 

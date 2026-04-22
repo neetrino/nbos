@@ -126,6 +126,39 @@ export interface SubscriptionStats {
   monthlyRevenue: number | null;
 }
 
+export interface FinanceDashboardSummary {
+  kpis: {
+    totalRevenue: number | null;
+    outstandingAmount: number | null;
+    outstandingCount: number;
+    overdueAmount: number | null;
+    overdueCount: number;
+    monthlyRecurringRevenue: number | null;
+    activeSubscriptions: number;
+  };
+  invoiceStatusItems: Array<{
+    status: string;
+    count: number;
+    amount: number | null;
+  }>;
+  recentPayments: Array<{
+    id: string;
+    amount: number | null;
+    paymentDate: string;
+    invoice: { id: string; code: string };
+    company: { id: string; name: string } | null;
+    project: { id: string; name: string } | null;
+  }>;
+  upcomingInvoices: Array<{
+    id: string;
+    code: string;
+    amount: number | null;
+    dueDate: string | null;
+    company: { id: string; name: string } | null;
+    projectId: string;
+  }>;
+}
+
 export const invoicesApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Invoice>> {
     const resp = await api.get<ListData<Invoice>>('/api/finance/invoices', { params });
@@ -246,6 +279,13 @@ export const expensesApi = {
   },
   async getStats() {
     const resp = await api.get('/api/expenses/stats');
+    return resp.data;
+  },
+};
+
+export const financeSummaryApi = {
+  async getDashboard(): Promise<FinanceDashboardSummary> {
+    const resp = await api.get<FinanceDashboardSummary>('/api/finance/summary/dashboard');
     return resp.data;
   },
 };
