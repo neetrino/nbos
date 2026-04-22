@@ -51,6 +51,72 @@ describe('InvoicesService', () => {
         }),
       );
     });
+
+    it('promotes the linked deal when all order invoices are paid and amount is covered', async () => {
+      prisma.invoice.findUnique.mockResolvedValueOnce({ id: 'inv-1', orderId: 'ord-1' });
+      prisma.invoice.update.mockResolvedValue({
+        id: 'inv-1',
+        status: 'PAID',
+        paidDate: new Date(),
+      });
+      prisma.order.findUnique.mockResolvedValue({
+        id: 'ord-1',
+        deal: { id: 'deal-1', status: 'IN_PROGRESS', amount: 100000 },
+        invoices: [
+          { status: 'PAID', amount: 50000 },
+          { status: 'PAID', amount: 50000 },
+        ],
+      });
+
+      await service.updateStatus('inv-1', 'PAID');
+
+      expect(prisma.deal.update).toHaveBeenCalledWith({
+        where: { id: 'deal-1' },
+        data: { status: 'WON' },
+      });
+    });
+
+    it('does not promote the linked deal when at least one order invoice is unpaid', async () => {
+      prisma.invoice.findUnique.mockResolvedValueOnce({ id: 'inv-2', orderId: 'ord-2' });
+      prisma.invoice.update.mockResolvedValue({
+        id: 'inv-2',
+        status: 'PAID',
+        paidDate: new Date(),
+      });
+      prisma.order.findUnique.mockResolvedValue({
+        id: 'ord-2',
+        deal: { id: 'deal-2', status: 'IN_PROGRESS', amount: 100000 },
+        invoices: [
+          { status: 'PAID', amount: 50000 },
+          { status: 'THIS_MONTH', amount: 50000 },
+        ],
+      });
+
+      await service.updateStatus('inv-2', 'PAID');
+
+      expect(prisma.deal.update).not.toHaveBeenCalled();
+    });
+
+    it('does not promote the linked deal when paid invoices do not cover deal amount', async () => {
+      prisma.invoice.findUnique.mockResolvedValueOnce({ id: 'inv-3', orderId: 'ord-3' });
+      prisma.invoice.update.mockResolvedValue({
+        id: 'inv-3',
+        status: 'PAID',
+        paidDate: new Date(),
+      });
+      prisma.order.findUnique.mockResolvedValue({
+        id: 'ord-3',
+        deal: { id: 'deal-3', status: 'IN_PROGRESS', amount: 120000 },
+        invoices: [
+          { status: 'PAID', amount: 50000 },
+          { status: 'PAID', amount: 50000 },
+        ],
+      });
+
+      await service.updateStatus('inv-3', 'PAID');
+
+      expect(prisma.deal.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('getStats', () => {

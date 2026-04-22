@@ -112,7 +112,7 @@ Rules:
 - Each module closes with explicit exit criteria and docs update in this file.
 - Sequence respects business criticality and dependency chain.
 
-### M1 - CRM -> Product/Order transition integrity (current)
+### M1 - CRM -> Product/Order transition integrity (done)
 
 Scope:
 
@@ -131,7 +131,7 @@ Current status:
 - `updateStatus` idempotency added for repeated status updates.
 - `DealWonHandler` paths are covered by focused tests (PRODUCT and EXTENSION).
 - Stage gate validation tests pass for cumulative and type-specific requirements.
-- Remaining for full close: extend cross-module chain checks for order/invoice side effects.
+- Cross-module `Deal -> Order -> Invoice` regression checks are now covered and green.
 
 ### M2 - Projects Hub domain consistency
 
@@ -216,13 +216,12 @@ Exit criteria:
 
 ## 6) Priority backlog (next 2-4 weeks)
 
-1. Close remaining M1 chain checks for `Deal -> Order -> Invoice`.
-2. Execute M2 and M3 in sequence (Projects Hub consistency, Finance correctness).
-3. Continue focused regression tests for cross-module trigger chains:
+1. Execute M2 and M3 in sequence (Projects Hub consistency, Finance correctness).
+2. Continue focused regression tests for cross-module trigger chains:
    - Deal -> Order/Project/Product
    - Invoice/Payment -> Order and downstream effects
    - Product -> task automation
-4. Normalize docs where they still reflect old phase assumptions.
+3. Normalize docs where they still reflect old phase assumptions.
 
 ---
 
@@ -240,6 +239,10 @@ Exit criteria:
 - Stabilized CRM transition behavior:
   - prevented duplicate side effects on repeated `WON` status updates
   - added `DealWonHandler` unit tests for PRODUCT and EXTENSION flows
+- Closed M1 CRM -> Product/Order integrity:
+  - added regression tests for `Deal -> Order -> Invoice` chain visibility in CRM reads
+  - verified invoice-driven deal promotion only happens when all linked invoices are paid and covered
+  - verified incomplete invoice chains do not falsely promote deals
 - Strengthened finance transition coverage:
   - added tests for partial/full payment synchronization outcomes
 
@@ -262,4 +265,4 @@ For each module cycle:
 
 ## 9) Current next action
 
-**Continue M1 closeout:** complete `Deal -> Order -> Invoice` chain regression checks, then start M2.
+**Start M2:** validate Projects Hub domain consistency against current CRM outputs.

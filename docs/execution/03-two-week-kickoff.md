@@ -18,19 +18,22 @@ acceptance criteria, and visible progress.
 - [x] Prevent duplicate side effects on repeated `WON` status update.
 - [x] Add unit tests for `DealWonHandler` on PRODUCT and EXTENSION paths.
 - [x] Keep stage gate tests green for cumulative and type-specific requirements.
-- [ ] Add cross-module invariant test for `WON -> order/invoice` chain (next step).
+- [x] Add cross-module invariant tests for `Deal -> Order -> Invoice` chain.
 
 ## Evidence
 
 - `apps/api/src/modules/crm/deals/deals.service.ts` updated with idempotent status check.
 - `apps/api/src/modules/crm/deals/deals.service.test.ts` updated with unchanged-status test.
 - `apps/api/src/modules/crm/deals/deal-won.handler.test.ts` added.
+- `apps/api/src/modules/crm/deals/deals.service.test.ts` covers CRM read visibility for linked orders/invoices.
+- `apps/api/src/modules/finance/invoices/invoices.service.test.ts` covers positive and negative invoice-driven promotion paths.
 
 ## Acceptance criteria
 
 - Repeated `WON` update does not run side effects twice.
 - PRODUCT won path creates project/product when needed.
 - EXTENSION won path links extension to existing product and project.
+- `Deal -> Order -> Invoice` regression checks are green and deterministic.
 
 ## Week 2 - Projects and Finance consistency
 

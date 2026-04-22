@@ -42,6 +42,57 @@ describe('DealsService', () => {
       expect(result.code).toBe('D-2026-0001');
     });
 
+    it('returns linked orders and invoices for CRM chain inspection', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0001',
+        status: 'NEGOTIATION',
+        orders: [
+          {
+            id: 'ord-1',
+            code: 'ORD-2026-0001',
+            status: 'ACTIVE',
+            invoices: [
+              {
+                id: 'inv-1',
+                code: 'INV-2026-0001',
+                status: 'THIS_MONTH',
+                amount: 5000,
+                paidDate: null,
+                payments: [{ id: 'pay-1', amount: 2000, paymentDate: new Date('2026-04-20') }],
+              },
+            ],
+          },
+        ],
+      });
+
+      const result = await service.findById('1');
+
+      expect(result.orders).toHaveLength(1);
+      expect(result.orders[0]).toMatchObject({
+        id: 'ord-1',
+        code: 'ORD-2026-0001',
+        invoices: [
+          {
+            id: 'inv-1',
+            code: 'INV-2026-0001',
+            status: 'THIS_MONTH',
+          },
+        ],
+      });
+      expect(prisma.deal.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            orders: expect.objectContaining({
+              include: expect.objectContaining({
+                invoices: expect.any(Object),
+              }),
+            }),
+          }),
+        }),
+      );
+    });
+
     it('throws NotFoundException when not found', async () => {
       await expect(service.findById('missing')).rejects.toThrow(NotFoundException);
     });
