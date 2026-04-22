@@ -14,8 +14,30 @@ describe('PaymentsService', () => {
 
   describe('findAll', () => {
     it('returns paginated result', async () => {
+      prisma.payment.findMany.mockResolvedValue([
+        {
+          id: 'pay-1',
+          amount: 50000,
+          invoice: {
+            id: 'inv-1',
+            code: 'INV-1',
+            type: 'DEVELOPMENT',
+            projectId: 'proj-1',
+            company: { id: 'comp-1', name: 'ACME' },
+            order: { project: { id: 'proj-1', name: 'Main Project' } },
+            subscription: null,
+          },
+          confirmer: { id: 'emp-1', firstName: 'John', lastName: 'Smith' },
+        },
+      ]);
+
       const result = await service.findAll({});
       expect(result.meta.page).toBe(1);
+      expect(result.items[0]).toMatchObject({
+        company: { id: 'comp-1', name: 'ACME' },
+        project: { id: 'proj-1', name: 'Main Project' },
+        confirmer: { id: 'emp-1', firstName: 'John', lastName: 'Smith' },
+      });
     });
 
     it('applies invoiceId filter', async () => {
@@ -27,6 +49,29 @@ describe('PaymentsService', () => {
   describe('findById', () => {
     it('throws NotFoundException', async () => {
       await expect(service.findById('x')).rejects.toThrow(NotFoundException);
+    });
+
+    it('returns derived project and company from invoice relations', async () => {
+      prisma.payment.findUnique.mockResolvedValue({
+        id: 'pay-1',
+        invoiceId: 'inv-1',
+        invoice: {
+          id: 'inv-1',
+          code: 'INV-1',
+          projectId: 'proj-1',
+          company: { id: 'comp-1', name: 'ACME' },
+          order: { id: 'ord-1', code: 'ORD-1', project: { id: 'proj-1', name: 'Main Project' } },
+          subscription: null,
+        },
+        confirmer: { id: 'emp-1', firstName: 'John', lastName: 'Smith' },
+      });
+
+      const result = await service.findById('pay-1');
+
+      expect(result).toMatchObject({
+        company: { id: 'comp-1', name: 'ACME' },
+        project: { id: 'proj-1', name: 'Main Project' },
+      });
     });
   });
 

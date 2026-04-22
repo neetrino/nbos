@@ -46,7 +46,28 @@ export class PaymentsService {
       this.prisma.payment.findMany({
         where,
         include: {
-          invoice: { select: { id: true, code: true, amount: true, status: true } },
+          invoice: {
+            select: {
+              id: true,
+              code: true,
+              amount: true,
+              status: true,
+              type: true,
+              projectId: true,
+              company: { select: { id: true, name: true } },
+              order: {
+                select: {
+                  project: { select: { id: true, name: true } },
+                },
+              },
+              subscription: {
+                select: {
+                  project: { select: { id: true, name: true } },
+                },
+              },
+            },
+          },
+          confirmer: { select: { id: true, firstName: true, lastName: true } },
         },
         orderBy: { paymentDate: 'desc' },
         skip: (page - 1) * pageSize,
@@ -56,7 +77,14 @@ export class PaymentsService {
     ]);
 
     return {
-      items,
+      items: items.map((payment) => ({
+        ...payment,
+        project:
+          payment.invoice?.order?.project ??
+          payment.invoice?.subscription?.project ??
+          (payment.invoice ? { id: payment.invoice.projectId, name: 'Unknown project' } : null),
+        company: payment.invoice?.company ?? null,
+      })),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -67,14 +95,28 @@ export class PaymentsService {
       include: {
         invoice: {
           include: {
-            order: { select: { id: true, code: true } },
+            company: { select: { id: true, name: true } },
+            order: {
+              select: { id: true, code: true, project: { select: { id: true, name: true } } },
+            },
+            subscription: {
+              select: { id: true, code: true, project: { select: { id: true, name: true } } },
+            },
           },
         },
         confirmer: { select: { id: true, firstName: true, lastName: true } },
       },
     });
     if (!payment) throw new NotFoundException(`Payment ${id} not found`);
-    return payment;
+    return {
+      ...payment,
+      project: payment.invoice.order?.project ??
+        payment.invoice.subscription?.project ?? {
+          id: payment.invoice.projectId,
+          name: 'Unknown project',
+        },
+      company: payment.invoice.company ?? null,
+    };
   }
 
   async create(data: CreatePaymentDto) {

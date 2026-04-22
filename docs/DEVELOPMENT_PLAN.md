@@ -178,6 +178,10 @@ Current status:
 - `InvoicesService.create` now inherits `taxStatus` from `Order`, `Subscription`, or fallback `Company`.
 - `BillingService.runMonthlyBilling` now propagates subscription `taxStatus` to generated invoices and uses the billing target date year when generating invoice codes.
 - Focused finance regression tests were added for partial/full payment sync, overpayment rejection, invoice tax inheritance, and billing idempotency/year-bound code generation.
+- Finance API response shaping is now being aligned with finance UI aggregates:
+  - `OrdersService` derives `paidAmount` from actual invoice payments instead of relying on client-side phantom fields
+  - order reads now expose project-linked `company` and `contact` for finance screens
+  - payment reads now expose derived `project`, `company`, and confirmer context from linked invoice/order/subscription data
 
 ### M4 - Tasks and Support operational flow
 
@@ -274,6 +278,7 @@ Exit criteria:
   - blocked overpayment and repeated full-payment writes in `PaymentsService`
   - enforced invoice `taxStatus` inheritance from finance source entities
   - aligned monthly billing invoice generation with subscription tax status and target billing year
+  - aligned finance API order/payment payloads with UI aggregate needs to reduce dashboard/list drift
 
 ---
 

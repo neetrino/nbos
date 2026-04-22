@@ -34,7 +34,9 @@ export interface Payment {
   confirmedBy: string | null;
   notes: string | null;
   createdAt: string;
-  invoice?: { id: string; code: string; projectId: string };
+  invoice?: { id: string; code: string; projectId: string; type?: string };
+  project?: { id: string; name: string } | null;
+  company?: { id: string; name: string } | null;
   confirmer?: { id: string; firstName: string; lastName: string } | null;
 }
 
@@ -45,10 +47,14 @@ export interface Order {
   type: string;
   paymentType: string;
   totalAmount: string;
+  amount?: string;
+  paidAmount?: number;
   currency: string;
   status: string;
   createdAt: string;
   project: { id: string; code: string; name: string };
+  company?: { id: string; name: string } | null;
+  contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; status: string; amount: string }>;
 }
 

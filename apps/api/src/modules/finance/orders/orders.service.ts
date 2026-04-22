@@ -44,15 +44,31 @@ export class OrdersService {
       where.code = { contains: search, mode: 'insensitive' };
     }
 
-    const [items, total] = await Promise.all([
+    const [orders, total] = await Promise.all([
       this.prisma.order.findMany({
         where,
         include: {
-          project: { select: { id: true, code: true, name: true } },
+          project: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              company: { select: { id: true, name: true } },
+              contact: { select: { id: true, firstName: true, lastName: true } },
+            },
+          },
           deal: { select: { id: true, code: true } },
           product: { select: { id: true, name: true, productType: true } },
           extension: { select: { id: true, name: true } },
-          invoices: { select: { id: true, code: true, status: true, amount: true } },
+          invoices: {
+            select: {
+              id: true,
+              code: true,
+              status: true,
+              amount: true,
+              payments: { select: { amount: true } },
+            },
+          },
           _count: { select: { invoices: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -61,6 +77,26 @@ export class OrdersService {
       }),
       this.prisma.order.count({ where }),
     ]);
+
+    const items = orders.map((order) => {
+      const paidAmount = (order.invoices ?? []).reduce(
+        (sum, invoice) =>
+          sum +
+          (invoice.payments ?? []).reduce(
+            (invoiceSum, payment) => invoiceSum + Number(payment.amount),
+            0,
+          ),
+        0,
+      );
+
+      return {
+        ...order,
+        amount: order.totalAmount,
+        paidAmount,
+        company: order.project.company,
+        contact: order.project.contact,
+      };
+    });
 
     return {
       items,
@@ -72,7 +108,12 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: {
-        project: true,
+        project: {
+          include: {
+            company: { select: { id: true, name: true } },
+            contact: { select: { id: true, firstName: true, lastName: true } },
+          },
+        },
         deal: true,
         product: true,
         extension: true,
@@ -81,7 +122,24 @@ export class OrdersService {
       },
     });
     if (!order) throw new NotFoundException(`Order ${id} not found`);
-    return order;
+
+    const paidAmount = (order.invoices ?? []).reduce(
+      (sum, invoice) =>
+        sum +
+        (invoice.payments ?? []).reduce(
+          (invoiceSum, payment) => invoiceSum + Number(payment.amount),
+          0,
+        ),
+      0,
+    );
+
+    return {
+      ...order,
+      amount: order.totalAmount,
+      paidAmount,
+      company: order.project.company,
+      contact: order.project.contact,
+    };
   }
 
   async create(data: CreateOrderDto) {
