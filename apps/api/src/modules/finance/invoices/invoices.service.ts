@@ -149,7 +149,7 @@ export class InvoicesService {
   }
 
   async getStats() {
-    const [total, byStatus, totalRevenue] = await Promise.all([
+    const [total, byStatus, totalRevenue, outstanding, overdue] = await Promise.all([
       this.prisma.invoice.count(),
       this.prisma.invoice.groupBy({
         by: ['status'],
@@ -160,8 +160,31 @@ export class InvoicesService {
         where: { status: 'PAID' },
         _sum: { amount: true },
       }),
+      this.prisma.invoice.aggregate({
+        where: { status: { not: 'PAID' } },
+        _count: true,
+        _sum: { amount: true },
+      }),
+      this.prisma.invoice.aggregate({
+        where: { status: 'DELAYED' },
+        _count: true,
+        _sum: { amount: true },
+      }),
     ]);
-    return { total, byStatus, totalRevenue: totalRevenue._sum.amount };
+
+    return {
+      total,
+      byStatus,
+      totalRevenue: totalRevenue._sum.amount,
+      outstanding: {
+        count: outstanding._count,
+        amount: outstanding._sum.amount,
+      },
+      overdue: {
+        count: overdue._count,
+        amount: overdue._sum.amount,
+      },
+    };
   }
 
   private async generateCode(): Promise<string> {

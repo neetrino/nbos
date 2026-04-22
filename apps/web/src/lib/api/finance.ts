@@ -96,6 +96,33 @@ interface ListData<T> {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+export interface InvoiceStats {
+  total: number;
+  byStatus: Array<{
+    status: string;
+    _count: number;
+    _sum: { amount: number | null };
+  }>;
+  totalRevenue: number | null;
+  outstanding: { count: number; amount: number | null };
+  overdue: { count: number; amount: number | null };
+}
+
+export interface SubscriptionStats {
+  total: number;
+  byStatus: Array<{
+    status: string;
+    _count: number;
+    _sum: { amount: number | null };
+  }>;
+  byType: Array<{
+    type: string;
+    _count: number;
+    _sum: { amount: number | null };
+  }>;
+  monthlyRevenue: number | null;
+}
+
 export const invoicesApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Invoice>> {
     const resp = await api.get<ListData<Invoice>>('/api/finance/invoices', { params });
@@ -116,8 +143,8 @@ export const invoicesApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/invoices/${id}`);
   },
-  async getStats() {
-    const resp = await api.get('/api/finance/invoices/stats');
+  async getStats(): Promise<InvoiceStats> {
+    const resp = await api.get<InvoiceStats>('/api/finance/invoices/stats');
     return resp.data;
   },
 };
@@ -188,8 +215,8 @@ export const subscriptionsApi = {
     });
     return resp.data;
   },
-  async getStats() {
-    const resp = await api.get('/api/finance/subscriptions/stats');
+  async getStats(): Promise<SubscriptionStats> {
+    const resp = await api.get<SubscriptionStats>('/api/finance/subscriptions/stats');
     return resp.data;
   },
 };

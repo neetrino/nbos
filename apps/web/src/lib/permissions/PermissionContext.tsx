@@ -66,7 +66,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [userId, status]);
+  }, [me, userId, status]);
 
   const permissions = me?.permissions ?? {};
 

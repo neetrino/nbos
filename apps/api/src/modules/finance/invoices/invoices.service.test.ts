@@ -147,9 +147,15 @@ describe('InvoicesService', () => {
   describe('getStats', () => {
     it('returns stats structure', async () => {
       prisma.invoice.count.mockResolvedValue(5);
+      prisma.invoice.aggregate
+        .mockResolvedValueOnce({ _sum: { amount: 100000 } })
+        .mockResolvedValueOnce({ _count: 3, _sum: { amount: 40000 } })
+        .mockResolvedValueOnce({ _count: 1, _sum: { amount: 10000 } });
       const stats = await service.getStats();
       expect(stats.total).toBe(5);
       expect(stats).toHaveProperty('totalRevenue');
+      expect(stats.outstanding).toEqual({ count: 3, amount: 40000 });
+      expect(stats.overdue).toEqual({ count: 1, amount: 10000 });
     });
   });
 });

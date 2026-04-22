@@ -182,6 +182,12 @@ Current status:
   - `OrdersService` derives `paidAmount` from actual invoice payments instead of relying on client-side phantom fields
   - order reads now expose project-linked `company` and `contact` for finance screens
   - payment reads now expose derived `project`, `company`, and confirmer context from linked invoice/order/subscription data
+- Finance dashboard no longer depends on mock fixtures:
+  - finance overview KPIs now derive from live `invoice`, `payment`, and `subscription` API reads
+  - recent payments and upcoming invoice deadlines now reflect real finance entities instead of demo data
+- Finance aggregate contracts are being formalized for dashboard reads:
+  - `InvoicesService.getStats()` now exposes explicit `outstanding` and `overdue` totals
+  - finance dashboard KPI rendering is shifting from list-endpoint recalculation toward stats-endpoint reads
 
 ### M4 - Tasks and Support operational flow
 
@@ -279,6 +285,8 @@ Exit criteria:
   - enforced invoice `taxStatus` inheritance from finance source entities
   - aligned monthly billing invoice generation with subscription tax status and target billing year
   - aligned finance API order/payment payloads with UI aggregate needs to reduce dashboard/list drift
+  - replaced finance dashboard mock data with live finance aggregates on the web app
+  - expanded invoice stats contracts for cleaner dashboard aggregate reads
 
 ---
 

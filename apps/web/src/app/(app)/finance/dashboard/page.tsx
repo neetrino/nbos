@@ -1,17 +1,36 @@
 'use client';
 
+import { useCallback, useEffect, useState } from 'react';
 import {
-  DollarSign,
-  TrendingUp,
   AlertTriangle,
-  RefreshCw,
   ArrowUpRight,
-  Clock,
   CheckCircle2,
-  XCircle,
+  Clock,
+  DollarSign,
+  RefreshCw,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  type Invoice,
+  invoicesApi,
+  paymentsApi,
+  subscriptionsApi,
+  type InvoiceStats,
+  type Payment,
+  type SubscriptionStats,
+} from '@/lib/api/finance';
 
-/* ───────── Types ───────── */
+interface FinanceDashboardData {
+  totalRevenue: number;
+  outstandingAmount: number;
+  overdueAmount: number;
+  monthlyRecurringRevenue: number;
+  invoiceStatusItems: InvoiceStatusItem[];
+  recentPayments: RecentPaymentItem[];
+  upcomingInvoices: UpcomingInvoiceItem[];
+}
 
 interface FinanceKpi {
   label: string;
@@ -22,159 +41,161 @@ interface FinanceKpi {
   iconText: string;
 }
 
-interface MonthRevenue {
-  month: string;
-  value: number;
-}
-
-interface InvoiceStatus {
+interface InvoiceStatusItem {
   label: string;
   count: number;
-  amount: string;
+  amount: number;
   color: string;
   pct: number;
 }
 
-interface PaymentItem {
+interface RecentPaymentItem {
+  id: string;
   client: string;
   invoice: string;
-  amount: string;
-  date: string;
-  status: 'completed' | 'refunded';
+  amount: number;
+  dateLabel: string;
 }
 
-interface InvoiceDeadline {
+interface UpcomingInvoiceItem {
+  id: string;
   invoice: string;
   client: string;
-  amount: string;
-  dueDate: string;
+  amount: number;
+  dueDateLabel: string;
   daysLeft: number;
 }
 
-/* ───────── Mock data ───────── */
+const INVOICE_STATUS_META: Record<string, { label: string; color: string }> = {
+  PAID: { label: 'Paid', color: 'bg-emerald-500' },
+  WAITING: { label: 'Waiting', color: 'bg-violet-500' },
+  CREATE_INVOICE: { label: 'Create Invoice', color: 'bg-indigo-500' },
+  THIS_MONTH: { label: 'This Month', color: 'bg-blue-500' },
+  DELAYED: { label: 'Delayed', color: 'bg-orange-500' },
+  ON_HOLD: { label: 'On Hold', color: 'bg-gray-400' },
+  FAIL: { label: 'Fail', color: 'bg-red-500' },
+};
 
-const FINANCE_KPIS: FinanceKpi[] = [
-  {
-    label: 'Total Revenue',
-    value: '֏18,640,000',
-    change: '+22% vs last quarter',
-    icon: DollarSign,
-    iconBg: 'bg-emerald-100',
-    iconText: 'text-emerald-600',
-  },
-  {
-    label: 'Outstanding',
-    value: '֏3,240,000',
-    change: '12 pending invoices',
-    icon: Clock,
-    iconBg: 'bg-amber-100',
-    iconText: 'text-amber-600',
-  },
-  {
-    label: 'Overdue',
-    value: '֏860,000',
-    change: '3 invoices past due',
-    icon: AlertTriangle,
-    iconBg: 'bg-red-100',
-    iconText: 'text-red-600',
-  },
-  {
-    label: 'MRR',
-    value: '֏2,180,000',
-    change: '+8.5% growth',
-    icon: RefreshCw,
-    iconBg: 'bg-violet-100',
-    iconText: 'text-violet-600',
-  },
-];
+function startOfToday(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
 
-const MONTHLY_REVENUE: MonthRevenue[] = [
-  { month: 'Oct', value: 2800000 },
-  { month: 'Nov', value: 3200000 },
-  { month: 'Dec', value: 3600000 },
-  { month: 'Jan', value: 2900000 },
-  { month: 'Feb', value: 3800000 },
-  { month: 'Mar', value: 4200000 },
-];
+function toAmount(value: string | number | null | undefined): number {
+  return Number(value ?? 0);
+}
 
-const INVOICE_STATUSES: InvoiceStatus[] = [
-  { label: 'Paid', count: 48, amount: '֏14,200,000', color: 'bg-emerald-500', pct: 68 },
-  { label: 'Pending', count: 12, amount: '֏3,240,000', color: 'bg-amber-500', pct: 20 },
-  { label: 'Overdue', count: 3, amount: '֏860,000', color: 'bg-red-500', pct: 8 },
-  { label: 'Draft', count: 5, amount: '֏340,000', color: 'bg-gray-400', pct: 4 },
-];
+function formatRelativeDate(dateValue: string): string {
+  const target = new Date(dateValue);
+  const today = startOfToday();
+  const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  const diffMs = today.getTime() - targetDay.getTime();
+  const diffDays = Math.round(diffMs / 86_400_000);
 
-const RECENT_PAYMENTS: PaymentItem[] = [
-  {
-    client: 'ArmenTech LLC',
-    invoice: 'INV-0234',
-    amount: '֏1,200,000',
-    date: '2h ago',
-    status: 'completed',
-  },
-  {
-    client: 'SkyNet Solutions',
-    invoice: 'INV-0231',
-    amount: '֏480,000',
-    date: '5h ago',
-    status: 'completed',
-  },
-  {
-    client: 'GreenLine Co.',
-    invoice: 'INV-0228',
-    amount: '֏320,000',
-    date: '1d ago',
-    status: 'completed',
-  },
-  {
-    client: 'DigiPay Inc.',
-    invoice: 'INV-0225',
-    amount: '֏85,000',
-    date: '2d ago',
-    status: 'refunded',
-  },
-  {
-    client: 'CloudHost AM',
-    invoice: 'INV-0222',
-    amount: '֏640,000',
-    date: '3d ago',
-    status: 'completed',
-  },
-];
+  if (diffDays <= 0) return 'Today';
+  if (diffDays === 1) return '1d ago';
+  return `${diffDays}d ago`;
+}
 
-const UPCOMING_INVOICES: InvoiceDeadline[] = [
-  { invoice: 'INV-0240', client: 'TechCorp', amount: '֏950,000', dueDate: 'Mar 14', daysLeft: 3 },
-  {
-    invoice: 'INV-0241',
-    client: 'ArmenTech LLC',
-    amount: '֏1,800,000',
-    dueDate: 'Mar 16',
-    daysLeft: 5,
-  },
-  {
-    invoice: 'INV-0242',
-    client: 'Nova Design',
-    amount: '֏420,000',
-    dueDate: 'Mar 18',
-    daysLeft: 7,
-  },
-  {
-    invoice: 'INV-0243',
-    client: 'FastTrack AM',
-    amount: '֏280,000',
-    dueDate: 'Mar 20',
-    daysLeft: 9,
-  },
-  {
-    invoice: 'INV-0244',
-    client: 'SkyNet Solutions',
-    amount: '֏760,000',
-    dueDate: 'Mar 25',
-    daysLeft: 14,
-  },
-];
+function getDaysLeft(dueDate: string): number {
+  const target = new Date(dueDate);
+  const today = startOfToday();
+  const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  return Math.ceil((targetDay.getTime() - today.getTime()) / 86_400_000);
+}
 
-/* ───────── Components ───────── */
+function getInvoiceClientName(invoice: Invoice): string {
+  return invoice.company?.name ?? invoice.project?.name ?? 'Unknown client';
+}
+
+function buildFinanceDashboardData(
+  invoiceStats: InvoiceStats,
+  payments: Payment[],
+  subscriptionStats: SubscriptionStats,
+  invoices: Invoice[],
+): FinanceDashboardData {
+  const totalRevenue = toAmount(invoiceStats.totalRevenue);
+  const outstandingAmount = toAmount(invoiceStats.outstanding.amount);
+  const overdueAmount = toAmount(invoiceStats.overdue.amount);
+  const monthlyRecurringRevenue = toAmount(subscriptionStats.monthlyRevenue);
+  const totalInvoices = invoiceStats.total || 1;
+
+  const invoiceStatusItems = Object.entries(INVOICE_STATUS_META)
+    .map(([status, meta]) => {
+      const statusGroup = invoiceStats.byStatus.find((item) => item.status === status);
+
+      return {
+        label: meta.label,
+        count: statusGroup?._count ?? 0,
+        amount: toAmount(statusGroup?._sum.amount),
+        color: meta.color,
+        pct: Math.round(((statusGroup?._count ?? 0) / totalInvoices) * 100),
+      };
+    })
+    .filter((item) => item.count > 0);
+
+  const recentPayments = [...payments]
+    .sort((left, right) => right.paymentDate.localeCompare(left.paymentDate))
+    .slice(0, 5)
+    .map((payment) => ({
+      id: payment.id,
+      client: payment.company?.name ?? payment.project?.name ?? 'Unknown client',
+      invoice: payment.invoice?.code ?? 'Unknown invoice',
+      amount: toAmount(payment.amount),
+      dateLabel: formatRelativeDate(payment.paymentDate),
+    }));
+
+  const upcomingInvoices = invoices
+    .filter((invoice) => invoice.status !== 'PAID' && invoice.dueDate)
+    .map((invoice) => {
+      const dueDate = invoice.dueDate as string;
+      return {
+        id: invoice.id,
+        invoice: invoice.code,
+        client: getInvoiceClientName(invoice),
+        amount: toAmount(invoice.amount),
+        dueDateLabel: new Date(dueDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+        daysLeft: getDaysLeft(dueDate),
+      };
+    })
+    .sort((left, right) => left.daysLeft - right.daysLeft)
+    .slice(0, 5);
+
+  return {
+    totalRevenue,
+    outstandingAmount,
+    overdueAmount,
+    monthlyRecurringRevenue,
+    invoiceStatusItems,
+    recentPayments,
+    upcomingInvoices,
+  };
+}
+
+function DashboardLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <Skeleton className="h-8 w-56 rounded-lg" />
+        <Skeleton className="mt-2 h-4 w-72 rounded-lg" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className="h-36 rounded-2xl" />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Skeleton className="h-80 rounded-2xl" />
+        <Skeleton className="h-80 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
 
 function KpiCard({ kpi }: { kpi: FinanceKpi }) {
   return (
@@ -194,67 +215,35 @@ function KpiCard({ kpi }: { kpi: FinanceKpi }) {
   );
 }
 
-function RevenueByMonth() {
-  const maxVal = Math.max(...MONTHLY_REVENUE.map((m) => m.value));
+function InvoiceDistribution({ items }: { items: InvoiceStatusItem[] }) {
+  const totalCount = items.reduce((sum, item) => sum + item.count, 0);
 
-  return (
-    <div className="border-border bg-card rounded-2xl border p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-foreground text-lg font-semibold">Revenue by Month</h2>
-        <span className="flex items-center gap-1 text-xs text-emerald-600">
-          <TrendingUp size={14} />
-          +22% QoQ
-        </span>
-      </div>
-      <div className="mt-6 flex items-end gap-3" style={{ height: 180 }}>
-        {MONTHLY_REVENUE.map((m) => {
-          const pct = (m.value / maxVal) * 100;
-          return (
-            <div key={m.month} className="flex flex-1 flex-col items-center gap-2">
-              <span className="text-muted-foreground text-xs font-medium">
-                {(m.value / 1_000_000).toFixed(1)}M
-              </span>
-              <div
-                className="w-full rounded-t-lg bg-emerald-500/80 transition-all"
-                style={{ height: `${pct}%` }}
-              />
-              <span className="text-muted-foreground text-xs">{m.month}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function InvoiceDistribution() {
   return (
     <div className="border-border bg-card rounded-2xl border p-6">
       <h2 className="text-foreground text-lg font-semibold">Invoice Status</h2>
-      <p className="text-muted-foreground mt-1 text-sm">68 total invoices</p>
+      <p className="text-muted-foreground mt-1 text-sm">{totalCount} total invoices</p>
 
-      {/* Stacked bar */}
       <div className="mt-6 flex h-4 overflow-hidden rounded-full">
-        {INVOICE_STATUSES.map((s) => (
+        {items.map((item) => (
           <div
-            key={s.label}
-            className={`${s.color} transition-all`}
-            style={{ width: `${s.pct}%` }}
+            key={item.label}
+            className={`${item.color} transition-all`}
+            style={{ width: `${item.pct}%` }}
           />
         ))}
       </div>
 
       <div className="mt-4 space-y-3">
-        {INVOICE_STATUSES.map((s) => (
-          <div key={s.label} className="flex items-center justify-between">
+        {items.map((item) => (
+          <div key={item.label} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className={`h-3 w-3 rounded-full ${s.color}`} />
-              <span className="text-foreground text-sm">{s.label}</span>
+              <div className={`h-3 w-3 rounded-full ${item.color}`} />
+              <span className="text-foreground text-sm">{item.label}</span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-muted-foreground text-sm">{s.count}</span>
+              <span className="text-muted-foreground text-sm">{item.count}</span>
               <span className="text-foreground w-28 text-right text-sm font-medium">
-                {s.amount}
+                {formatAmount(item.amount)}
               </span>
             </div>
           </div>
@@ -264,97 +253,204 @@ function InvoiceDistribution() {
   );
 }
 
-function RecentPayments() {
+function RecentPayments({ items }: { items: RecentPaymentItem[] }) {
   return (
     <div className="border-border bg-card rounded-2xl border p-6">
       <h2 className="text-foreground text-lg font-semibold">Recent Payments</h2>
       <div className="mt-4 space-y-3">
-        {RECENT_PAYMENTS.map((p) => (
-          <div key={p.invoice} className="flex items-center justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                {p.status === 'completed' ? (
+        {items.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No payments yet.</p>
+        ) : (
+          items.map((item) => (
+            <div key={item.id} className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
                   <CheckCircle2 size={14} className="shrink-0 text-emerald-500" />
-                ) : (
-                  <XCircle size={14} className="shrink-0 text-red-400" />
-                )}
-                <p className="text-foreground truncate text-sm">{p.client}</p>
+                  <p className="text-foreground truncate text-sm">{item.client}</p>
+                </div>
+                <p className="text-muted-foreground ml-5 text-xs">
+                  {item.invoice} · {item.dateLabel}
+                </p>
               </div>
-              <p className="text-muted-foreground ml-5 text-xs">
-                {p.invoice} · {p.date}
-              </p>
+              <span className="text-foreground shrink-0 text-sm font-medium">
+                {formatAmount(item.amount)}
+              </span>
             </div>
-            <span className="text-foreground shrink-0 text-sm font-medium">{p.amount}</span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
 }
 
-function UpcomingInvoices() {
+function UpcomingInvoices({ items }: { items: UpcomingInvoiceItem[] }) {
   return (
     <div className="border-border bg-card rounded-2xl border p-6">
       <h2 className="text-foreground text-lg font-semibold">Upcoming Deadlines</h2>
       <div className="mt-4 space-y-3">
-        {UPCOMING_INVOICES.map((inv) => (
-          <div key={inv.invoice} className="flex items-center justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <p className="text-foreground truncate text-sm">{inv.client}</p>
-              <p className="text-muted-foreground text-xs">
-                {inv.invoice} · {inv.dueDate}
-              </p>
+        {items.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No unpaid invoices with due dates.</p>
+        ) : (
+          items.map((item) => (
+            <div key={item.id} className="flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-foreground truncate text-sm">{item.client}</p>
+                <p className="text-muted-foreground text-xs">
+                  {item.invoice} · {item.dueDateLabel}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-3">
+                <span className="text-foreground text-sm font-medium">
+                  {formatAmount(item.amount)}
+                </span>
+                <span
+                  className={`rounded-lg px-2 py-0.5 text-xs font-medium ${
+                    item.daysLeft <= 3
+                      ? 'bg-red-100 text-red-700'
+                      : item.daysLeft <= 7
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                  }`}
+                >
+                  {item.daysLeft}d
+                </span>
+              </div>
             </div>
-            <div className="flex shrink-0 items-center gap-3">
-              <span className="text-foreground text-sm font-medium">{inv.amount}</span>
-              <span
-                className={`rounded-lg px-2 py-0.5 text-xs font-medium ${
-                  inv.daysLeft <= 3
-                    ? 'bg-red-100 text-red-700'
-                    : inv.daysLeft <= 7
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-emerald-100 text-emerald-700'
-                }`}
-              >
-                {inv.daysLeft}d
-              </span>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
 }
 
-/* ───────── Page ───────── */
-
 export default function FinanceDashboardPage() {
+  const [data, setData] = useState<FinanceDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboard = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [invoiceStats, paymentsResponse, subscriptionStats, invoicesResponse] =
+        await Promise.all([
+          invoicesApi.getStats(),
+          paymentsApi.getAll({ pageSize: 20 }),
+          subscriptionsApi.getStats(),
+          invoicesApi.getAll({ pageSize: 200 }),
+        ]);
+
+      setData(
+        buildFinanceDashboardData(
+          invoiceStats,
+          paymentsResponse.items,
+          subscriptionStats,
+          invoicesResponse.items,
+        ),
+      );
+    } catch {
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
+
+  if (loading) {
+    return <DashboardLoadingSkeleton />;
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-muted-foreground mb-4">Could not load finance dashboard data</p>
+        <Button onClick={fetchDashboard}>
+          <RefreshCw size={16} className="mr-2" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const kpis: FinanceKpi[] = [
+    {
+      label: 'Total Revenue',
+      value: formatAmount(data.totalRevenue),
+      change: 'From paid invoices',
+      icon: DollarSign,
+      iconBg: 'bg-emerald-100',
+      iconText: 'text-emerald-600',
+    },
+    {
+      label: 'Outstanding',
+      value: formatAmount(data.outstandingAmount),
+      change: 'All unpaid invoices',
+      icon: Clock,
+      iconBg: 'bg-amber-100',
+      iconText: 'text-amber-600',
+    },
+    {
+      label: 'Overdue',
+      value: formatAmount(data.overdueAmount),
+      change: 'Invoices in delayed state',
+      icon: AlertTriangle,
+      iconBg: 'bg-red-100',
+      iconText: 'text-red-600',
+    },
+    {
+      label: 'MRR',
+      value: formatAmount(data.monthlyRecurringRevenue),
+      change: 'Active subscriptions only',
+      icon: RefreshCw,
+      iconBg: 'bg-violet-100',
+      iconText: 'text-violet-600',
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-foreground text-2xl font-semibold">Finance Overview</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Revenue, invoices, and payment analytics.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-foreground text-2xl font-semibold">Finance Overview</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Revenue, invoices, and payment analytics from live finance data.
+          </p>
+        </div>
+        <Button variant="outline" size="icon" onClick={fetchDashboard}>
+          <RefreshCw size={16} />
+        </Button>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {FINANCE_KPIS.map((kpi) => (
+        {kpis.map((kpi) => (
           <KpiCard key={kpi.label} kpi={kpi} />
         ))}
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RevenueByMonth />
-        <InvoiceDistribution />
+        <InvoiceDistribution items={data.invoiceStatusItems} />
+        <RecentPayments items={data.recentPayments} />
       </div>
 
-      {/* Bottom Lists */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RecentPayments />
-        <UpcomingInvoices />
+        <UpcomingInvoices items={data.upcomingInvoices} />
+        <div className="border-border bg-card rounded-2xl border p-6">
+          <h2 className="text-foreground text-lg font-semibold">Finance Notes</h2>
+          <div className="mt-4 space-y-3 text-sm">
+            <p className="text-muted-foreground">
+              Dashboard values are now derived from live `invoice`, `payment`, and `subscription`
+              data instead of mock fixtures.
+            </p>
+            <p className="text-muted-foreground">
+              `Outstanding` includes every invoice that is not `PAID`, while `Overdue` is limited to
+              invoices in `DELAYED`.
+            </p>
+            <p className="text-muted-foreground">
+              `MRR` is calculated from active subscriptions only, matching the subscriptions page.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
