@@ -20,6 +20,33 @@ interface CachedEmployee {
   roleLevel: number;
   departmentIds: string[];
   permissions: Record<string, string>;
+  meProfile: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    telegram: string | null;
+    avatar: string | null;
+    position: string | null;
+    role: {
+      id: string;
+      name: string;
+      slug: string;
+      level: number;
+    };
+    departments: Array<{
+      id: string;
+      departmentId: string;
+      deptRole: string;
+      isPrimary: boolean;
+      department: {
+        id: string;
+        name: string;
+        slug: string;
+      };
+    }>;
+  };
   cachedAt: number;
 }
 
@@ -97,7 +124,9 @@ export class EmployeeGuard implements CanActivate {
             },
           },
         },
-        departments: true,
+        departments: {
+          include: { department: { select: { id: true, name: true, slug: true } } },
+        },
       },
     });
 
@@ -120,6 +149,33 @@ export class EmployeeGuard implements CanActivate {
       roleLevel: employee.role.level,
       departmentIds: employee.departments.map((d) => d.departmentId),
       permissions,
+      meProfile: {
+        id: employee.id,
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        email: employee.email,
+        phone: employee.phone,
+        telegram: employee.telegram,
+        avatar: employee.avatar,
+        position: employee.position,
+        role: {
+          id: employee.role.id,
+          name: employee.role.name,
+          slug: employee.role.slug,
+          level: employee.role.level,
+        },
+        departments: employee.departments.map((departmentLink) => ({
+          id: departmentLink.id,
+          departmentId: departmentLink.departmentId,
+          deptRole: departmentLink.deptRole,
+          isPrimary: departmentLink.isPrimary,
+          department: {
+            id: departmentLink.department.id,
+            name: departmentLink.department.name,
+            slug: departmentLink.department.slug,
+          },
+        })),
+      },
       cachedAt: Date.now(),
     };
 

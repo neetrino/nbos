@@ -11,21 +11,6 @@ interface UpdateProfileBody {
   birthday?: string | null;
 }
 
-const ME_SELECT = {
-  id: true,
-  firstName: true,
-  lastName: true,
-  email: true,
-  phone: true,
-  telegram: true,
-  avatar: true,
-  position: true,
-  role: { select: { id: true, name: true, slug: true, level: true } },
-  departments: {
-    include: { department: { select: { id: true, name: true, slug: true } } },
-  },
-} as const;
-
 @ApiTags('Me')
 @ApiBearerAuth()
 @Controller('me')
@@ -35,21 +20,12 @@ export class MeController {
   @Get()
   @ApiOperation({ summary: 'Get current employee profile with role, permissions, and departments' })
   async getMe(@CurrentUser() user: CurrentUserPayload) {
-    if (!user?.id) {
-      throw new NotFoundException('Employee record not found for this user');
-    }
-
-    const employee = await this.prisma.employee.findUnique({
-      where: { id: user.id },
-      select: ME_SELECT,
-    });
-
-    if (!employee) {
+    if (!user?.id || !user.meProfile) {
       throw new NotFoundException('Employee record not found for this user');
     }
 
     return {
-      ...employee,
+      ...user.meProfile,
       permissions: user.permissions ?? {},
     };
   }
