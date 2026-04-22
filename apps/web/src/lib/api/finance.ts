@@ -94,6 +94,22 @@ export interface Expense {
   project?: { id: string; code: string; name: string } | null;
 }
 
+export interface ExpenseStats {
+  byCategory: Array<{
+    category: string;
+    _count: number;
+    _sum: { amount: number | null };
+  }>;
+  byStatus: Array<{
+    status: string;
+    _count: number;
+    _sum: { amount: number | null };
+  }>;
+  totalAmount: number | null;
+  paidAmount: number | null;
+  unpaidAmount: number | null;
+}
+
 interface ListData<T> {
   items: T[];
   meta: { total: number; page: number; pageSize: number; totalPages: number };
@@ -260,6 +276,32 @@ export const ordersApi = {
   },
 };
 
+export const expensesApi = {
+  async getAll(params?: Record<string, unknown>): Promise<ListData<Expense>> {
+    const resp = await api.get<ListData<Expense>>('/api/expenses', { params });
+    return resp.data;
+  },
+  async getById(id: string): Promise<Expense> {
+    const resp = await api.get<Expense>(`/api/expenses/${id}`);
+    return resp.data;
+  },
+  async create(data: Record<string, unknown>): Promise<Expense> {
+    const resp = await api.post<Expense>('/api/expenses', data);
+    return resp.data;
+  },
+  async update(id: string, data: Record<string, unknown>): Promise<Expense> {
+    const resp = await api.put<Expense>(`/api/expenses/${id}`, data);
+    return resp.data;
+  },
+  async delete(id: string): Promise<void> {
+    await api.delete(`/api/expenses/${id}`);
+  },
+  async getStats(params?: FinanceDateRangeParams): Promise<ExpenseStats> {
+    const resp = await api.get<ExpenseStats>('/api/expenses/stats', { params });
+    return resp.data;
+  },
+};
+
 export const subscriptionsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Subscription>> {
     const resp = await api.get<ListData<Subscription>>('/api/finance/subscriptions', { params });
@@ -285,32 +327,6 @@ export const subscriptionsApi = {
   },
   async getStats(params?: FinanceDateRangeParams): Promise<SubscriptionStats> {
     const resp = await api.get<SubscriptionStats>('/api/finance/subscriptions/stats', { params });
-    return resp.data;
-  },
-};
-
-export const expensesApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Expense>> {
-    const resp = await api.get<ListData<Expense>>('/api/expenses', { params });
-    return resp.data;
-  },
-  async getById(id: string): Promise<Expense> {
-    const resp = await api.get<Expense>(`/api/expenses/${id}`);
-    return resp.data;
-  },
-  async create(data: Record<string, unknown>): Promise<Expense> {
-    const resp = await api.post<Expense>('/api/expenses', data);
-    return resp.data;
-  },
-  async update(id: string, data: Record<string, unknown>): Promise<Expense> {
-    const resp = await api.put<Expense>(`/api/expenses/${id}`, data);
-    return resp.data;
-  },
-  async delete(id: string): Promise<void> {
-    await api.delete(`/api/expenses/${id}`);
-  },
-  async getStats() {
-    const resp = await api.get('/api/expenses/stats');
     return resp.data;
   },
 };

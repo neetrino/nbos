@@ -46,8 +46,15 @@ interface ExpenseQueryParams {
   projectId?: string;
   frequency?: string;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+}
+
+interface ExpenseStatsParams {
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 @Injectable()
@@ -64,11 +71,22 @@ export class ExpensesService {
       projectId,
       frequency,
       search,
+      dateFrom,
+      dateTo,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = params;
 
-    const where = this.buildWhere({ type, category, status, projectId, frequency, search });
+    const where = this.buildWhere({
+      type,
+      category,
+      status,
+      projectId,
+      frequency,
+      search,
+      dateFrom,
+      dateTo,
+    });
 
     const [items, total] = await Promise.all([
       this.prisma.expense.findMany({
@@ -153,16 +171,50 @@ export class ExpensesService {
     return this.prisma.expense.delete({ where: { id } });
   }
 
-  async getStats() {
-    const [byCategory, totalAmount] = await Promise.all([
+  async getStats(params: ExpenseStatsParams = {}) {
+    const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
+    const paidDate = this.buildDateRange(params.dateFrom, params.dateTo);
+
+    const [byCategory, byStatus, totalAmount, paidAmount, unpaidAmount] = await Promise.all([
       this.prisma.expense.groupBy({
         by: ['category'],
+        ...(createdAt ? { where: { createdAt } } : {}),
         _count: true,
         _sum: { amount: true },
       }),
-      this.prisma.expense.aggregate({ _sum: { amount: true } }),
+      this.prisma.expense.groupBy({
+        by: ['status'],
+        ...(createdAt ? { where: { createdAt } } : {}),
+        _count: true,
+        _sum: { amount: true },
+      }),
+      this.prisma.expense.aggregate({
+        ...(createdAt ? { where: { createdAt } } : {}),
+        _sum: { amount: true },
+      }),
+      this.prisma.expense.aggregate({
+        where: {
+          status: 'PAID',
+          ...(paidDate ? { paidDate } : {}),
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.expense.aggregate({
+        where: {
+          status: { not: 'PAID' },
+          ...(createdAt ? { createdAt } : {}),
+        },
+        _sum: { amount: true },
+      }),
     ]);
-    return { byCategory, totalAmount: totalAmount._sum.amount };
+
+    return {
+      byCategory,
+      byStatus,
+      totalAmount: totalAmount._sum.amount,
+      paidAmount: paidAmount._sum.amount,
+      unpaidAmount: unpaidAmount._sum.amount,
+    };
   }
 
   private buildWhere(
@@ -177,6 +229,21 @@ export class ExpensesService {
     if (filters.search) {
       where.name = { contains: filters.search, mode: 'insensitive' };
     }
+    const createdAt = this.buildDateRange(filters.dateFrom, filters.dateTo);
+    if (createdAt) {
+      where.createdAt = createdAt;
+    }
     return where;
+  }
+
+  private buildDateRange(dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined {
+    if (!dateFrom && !dateTo) {
+      return undefined;
+    }
+
+    return {
+      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo) } : {}),
+    };
   }
 }

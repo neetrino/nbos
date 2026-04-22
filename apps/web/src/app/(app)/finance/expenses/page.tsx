@@ -24,61 +24,54 @@ import { PageHeader, FilterBar, EmptyState, StatusBadge, KanbanBoard } from '@/c
 import {
   EXPENSE_CATEGORIES,
   EXPENSE_STAGES,
+  FINANCE_PERIOD_OPTIONS,
+  getFinancePeriodParams,
+  type FinancePeriod,
   getExpenseStage,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { api } from '@/lib/api';
-
-interface Expense {
-  id: string;
-  name: string;
-  type: string;
-  category: string;
-  amount: string;
-  currency: string;
-  status: string;
-  dueDate: string | null;
-  paidDate: string | null;
-  createdAt: string;
-  description: string | null;
-  project: { id: string; name: string } | null;
-}
+import { expensesApi, type Expense, type ExpenseStats } from '@/lib/api/finance';
 
 type ViewMode = 'kanban' | 'list';
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('list');
+  const [period, setPeriod] = useState<FinancePeriod>('month');
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/expenses', {
-        params: {
+      const periodParams = getFinancePeriodParams(period);
+      const [data, expenseStats] = await Promise.all([
+        expensesApi.getAll({
           pageSize: 100,
           search: search || undefined,
           category: filters.category && filters.category !== 'all' ? filters.category : undefined,
-        },
-      });
-      setExpenses(resp.data.items ?? resp.data ?? []);
+          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+          ...periodParams,
+        }),
+        expensesApi.getStats(periodParams),
+      ]);
+      setExpenses(data.items);
+      setStats(expenseStats);
     } catch {
       /* handled */
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, period]);
 
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-  const paidExpenses = expenses
-    .filter((e) => e.status === 'PAID')
-    .reduce((sum, e) => sum + parseFloat(e.amount), 0);
+  const totalExpenses = Number(stats?.totalAmount ?? 0);
+  const paidExpenses = Number(stats?.paidAmount ?? 0);
 
   const filterConfigs = [
     {
@@ -113,6 +106,18 @@ export default function ExpensesPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Expenses" description={`${expenses.length} total`}>
+        <div className="border-border flex rounded-lg border p-1">
+          {FINANCE_PERIOD_OPTIONS.map((option) => (
+            <Button
+              key={option.value}
+              variant={period === option.value ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setPeriod(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
         <Button variant="outline" size="icon" onClick={fetchExpenses}>
           <RefreshCcw size={16} />
         </Button>
@@ -224,9 +229,9 @@ export default function ExpensesPage() {
                   <TableRow key={expense.id}>
                     <TableCell>
                       <p className="font-medium">{expense.name}</p>
-                      {expense.description && (
+                      {expense.notes && (
                         <p className="text-muted-foreground max-w-[200px] truncate text-xs">
-                          {expense.description}
+                          {expense.notes}
                         </p>
                       )}
                     </TableCell>

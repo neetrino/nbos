@@ -29,6 +29,8 @@ export class ExpensesController {
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'frequency', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'dateFrom', required: false })
+  @ApiQuery({ name: 'dateTo', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -38,6 +40,8 @@ export class ExpensesController {
     @Query('projectId') projectId?: string,
     @Query('frequency') frequency?: string,
     @Query('search') search?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
@@ -50,6 +54,8 @@ export class ExpensesController {
       projectId,
       frequency,
       search,
+      dateFrom,
+      dateTo,
       sortBy,
       sortOrder,
     });
@@ -57,8 +63,8 @@ export class ExpensesController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get expense statistics' })
-  async getStats() {
-    return this.expensesService.getStats();
+  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.expensesService.getStats({ dateFrom, dateTo });
   }
 
   @Get(':id')

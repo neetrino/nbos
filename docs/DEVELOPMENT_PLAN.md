@@ -209,6 +209,10 @@ Current status:
   - invoice, order, and subscription list endpoints now accept optional `dateFrom/dateTo` filters on backend reads
   - finance list pages now share the same `Month / Quarter / Year / All` presets for both row queries and summary cards
   - dashboard and list-period logic now reuse a single typed finance period helper instead of duplicating date-range mapping in each screen
+- Expenses reporting is now aligned with the rest of finance:
+  - expenses list and stats endpoints now support optional `dateFrom/dateTo` filters
+  - expenses page now uses shared typed API contracts and backend-owned total/paid aggregates instead of local list recalculation
+  - expenses screen now exposes the same reporting-period presets as dashboard, invoices, orders, payments, and subscriptions
 
 ### M4 - Tasks and Support operational flow
 
