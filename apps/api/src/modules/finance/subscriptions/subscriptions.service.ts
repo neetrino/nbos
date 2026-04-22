@@ -37,6 +37,11 @@ interface SubscriptionQueryParams {
   search?: string;
 }
 
+interface SubscriptionStatsParams {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 @Injectable()
 export class SubscriptionsService {
   constructor(
@@ -163,25 +168,40 @@ export class SubscriptionsService {
     });
   }
 
-  async getStats() {
+  async getStats(params: SubscriptionStatsParams = {}) {
+    const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
+    const snapshotDate = params.dateTo ? new Date(params.dateTo) : new Date();
+
     const [total, byStatus, byType, totalRevenue, activeSubscriptions] = await Promise.all([
-      this.prisma.subscription.count(),
+      this.prisma.subscription.count({
+        ...(createdAt ? { where: { createdAt } } : {}),
+      }),
       this.prisma.subscription.groupBy({
         by: ['status'],
+        ...(createdAt ? { where: { createdAt } } : {}),
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.subscription.groupBy({
         by: ['type'],
+        ...(createdAt ? { where: { createdAt } } : {}),
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.subscription.aggregate({
-        where: { status: 'ACTIVE' },
+        where: {
+          status: 'ACTIVE',
+          startDate: { lte: snapshotDate },
+          OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+        },
         _sum: { amount: true },
       }),
       this.prisma.subscription.count({
-        where: { status: 'ACTIVE' },
+        where: {
+          status: 'ACTIVE',
+          startDate: { lte: snapshotDate },
+          OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+        },
       }),
     ]);
 
@@ -191,6 +211,17 @@ export class SubscriptionsService {
       byType,
       activeSubscriptions,
       monthlyRevenue: totalRevenue._sum.amount,
+    };
+  }
+
+  private buildDateRange(dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined {
+    if (!dateFrom && !dateTo) {
+      return undefined;
+    }
+
+    return {
+      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
   }
 

@@ -78,4 +78,43 @@ describe('FinanceSummaryService', () => {
       company: { id: 'comp-2', name: 'Globex' },
     });
   });
+
+  it('applies date filters to period-aware dashboard reads', async () => {
+    prisma.invoice.count.mockResolvedValue(0);
+    prisma.invoice.groupBy.mockResolvedValue([]);
+    prisma.invoice.aggregate
+      .mockResolvedValueOnce({ _sum: { amount: 0 } })
+      .mockResolvedValueOnce({ _count: 0, _sum: { amount: 0 } })
+      .mockResolvedValueOnce({ _count: 0, _sum: { amount: 0 } });
+    prisma.subscription.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
+    prisma.subscription.count.mockResolvedValue(0);
+    prisma.payment.findMany.mockResolvedValue([]);
+    prisma.invoice.findMany.mockResolvedValue([]);
+
+    await service.getDashboardSummary({
+      dateFrom: '2026-04-01T00:00:00.000Z',
+      dateTo: '2026-04-30T23:59:59.999Z',
+    });
+
+    expect(prisma.invoice.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          createdAt: expect.objectContaining({
+            gte: expect.any(Date),
+            lte: expect.any(Date),
+          }),
+        }),
+      }),
+    );
+    expect(prisma.payment.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          paymentDate: expect.objectContaining({
+            gte: expect.any(Date),
+            lte: expect.any(Date),
+          }),
+        }),
+      }),
+    );
+  });
 });

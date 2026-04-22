@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FinanceSummaryService } from './summary.service';
 
@@ -10,7 +10,10 @@ export class FinanceSummaryController {
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get finance dashboard summary' })
-  async getDashboardSummary() {
-    return this.financeSummaryService.getDashboardSummary();
+  async getDashboardSummary(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    return this.financeSummaryService.getDashboardSummary({ dateFrom, dateTo });
   }
 }

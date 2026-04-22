@@ -75,5 +75,34 @@ describe('SubscriptionsService', () => {
       expect(stats).toHaveProperty('byStatus');
       expect(stats.activeSubscriptions).toBe(5);
     });
+
+    it('applies date filters to grouped stats queries', async () => {
+      await service.getStats({
+        dateFrom: '2026-01-01T00:00:00.000Z',
+        dateTo: '2026-03-31T23:59:59.999Z',
+      });
+
+      expect(prisma.subscription.count).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: expect.objectContaining({
+              gte: expect.any(Date),
+              lte: expect.any(Date),
+            }),
+          }),
+        }),
+      );
+      expect(prisma.subscription.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: expect.objectContaining({
+              gte: expect.any(Date),
+              lte: expect.any(Date),
+            }),
+          }),
+        }),
+      );
+    });
   });
 });

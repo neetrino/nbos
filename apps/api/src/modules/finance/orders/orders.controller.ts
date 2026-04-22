@@ -39,8 +39,8 @@ export class OrdersController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get order statistics' })
-  async getStats() {
-    return this.ordersService.getStats();
+  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.ordersService.getStats({ dateFrom, dateTo });
   }
 
   @Get(':id')

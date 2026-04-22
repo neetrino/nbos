@@ -40,8 +40,8 @@ export class PaymentsController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get payment statistics' })
-  async getStats() {
-    return this.paymentsService.getStats();
+  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.paymentsService.getStats({ dateFrom, dateTo });
   }
 
   @Get(':id')

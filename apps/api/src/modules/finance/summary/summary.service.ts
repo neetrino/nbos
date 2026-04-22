@@ -2,16 +2,21 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 
+interface FinanceSummaryParams {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 @Injectable()
 export class FinanceSummaryService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async getDashboardSummary() {
+  async getDashboardSummary(params: FinanceSummaryParams = {}) {
     const [invoiceStats, subscriptionStats, recentPayments, upcomingInvoices] = await Promise.all([
-      this.getInvoiceStats(),
-      this.getSubscriptionStats(),
-      this.getRecentPayments(),
-      this.getUpcomingInvoices(),
+      this.getInvoiceStats(params),
+      this.getSubscriptionStats(params),
+      this.getRecentPayments(params),
+      this.getUpcomingInvoices(params),
     ]);
 
     return {
@@ -30,25 +35,40 @@ export class FinanceSummaryService {
     };
   }
 
-  private async getInvoiceStats() {
+  private async getInvoiceStats(params: FinanceSummaryParams) {
+    const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
+    const paidDate = this.buildDateRange(params.dateFrom, params.dateTo);
+
     const [total, byStatus, totalRevenue, outstanding, overdue] = await Promise.all([
-      this.prisma.invoice.count(),
+      this.prisma.invoice.count({
+        ...(createdAt ? { where: { createdAt } } : {}),
+      }),
       this.prisma.invoice.groupBy({
         by: ['status'],
+        ...(createdAt ? { where: { createdAt } } : {}),
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.invoice.aggregate({
-        where: { status: 'PAID' },
+        where: {
+          status: 'PAID',
+          ...(paidDate ? { paidDate } : {}),
+        },
         _sum: { amount: true },
       }),
       this.prisma.invoice.aggregate({
-        where: { status: { not: 'PAID' } },
+        where: {
+          status: { not: 'PAID' },
+          ...(createdAt ? { createdAt } : {}),
+        },
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.invoice.aggregate({
-        where: { status: 'DELAYED' },
+        where: {
+          status: 'DELAYED',
+          ...(createdAt ? { createdAt } : {}),
+        },
         _count: true,
         _sum: { amount: true },
       }),
@@ -73,14 +93,24 @@ export class FinanceSummaryService {
     };
   }
 
-  private async getSubscriptionStats() {
+  private async getSubscriptionStats(params: FinanceSummaryParams) {
+    const snapshotDate = params.dateTo ? new Date(params.dateTo) : new Date();
+
     const [monthlyRevenue, activeSubscriptions] = await Promise.all([
       this.prisma.subscription.aggregate({
-        where: { status: 'ACTIVE' },
+        where: {
+          status: 'ACTIVE',
+          startDate: { lte: snapshotDate },
+          OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+        },
         _sum: { amount: true },
       }),
       this.prisma.subscription.count({
-        where: { status: 'ACTIVE' },
+        where: {
+          status: 'ACTIVE',
+          startDate: { lte: snapshotDate },
+          OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+        },
       }),
     ]);
 
@@ -90,8 +120,11 @@ export class FinanceSummaryService {
     };
   }
 
-  private async getRecentPayments() {
+  private async getRecentPayments(params: FinanceSummaryParams) {
+    const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
+
     const payments = await this.prisma.payment.findMany({
+      ...(paymentDate ? { where: { paymentDate } } : {}),
       orderBy: { paymentDate: 'desc' },
       take: 5,
       include: {
@@ -126,11 +159,19 @@ export class FinanceSummaryService {
     }));
   }
 
-  private async getUpcomingInvoices() {
+  private async getUpcomingInvoices(params: FinanceSummaryParams) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dueDate: { gte: Date; lte?: Date } = { gte: today };
+    if (params.dateTo) {
+      dueDate.lte = new Date(params.dateTo);
+    }
+
     const invoices = await this.prisma.invoice.findMany({
       where: {
         status: { not: 'PAID' },
-        dueDate: { not: null },
+        dueDate,
       },
       orderBy: { dueDate: 'asc' },
       take: 5,
@@ -152,5 +193,16 @@ export class FinanceSummaryService {
       company: invoice.company,
       projectId: invoice.projectId,
     }));
+  }
+
+  private buildDateRange(dateFrom?: string, dateTo?: string) {
+    if (!dateFrom && !dateTo) {
+      return undefined;
+    }
+
+    return {
+      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo) } : {}),
+    };
   }
 }

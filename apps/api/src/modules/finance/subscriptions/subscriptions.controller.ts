@@ -30,8 +30,8 @@ export class SubscriptionsController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get subscription statistics' })
-  async getStats() {
-    return this.subscriptionsService.getStats();
+  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.subscriptionsService.getStats({ dateFrom, dateTo });
   }
 
   @Get(':id')

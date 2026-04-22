@@ -30,6 +30,11 @@ interface OrderQueryParams {
   search?: string;
 }
 
+interface OrderStatsParams {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 @Injectable()
 export class OrdersService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
@@ -178,19 +183,27 @@ export class OrdersService {
     return this.prisma.order.delete({ where: { id } });
   }
 
-  async getStats() {
+  async getStats(params: OrderStatsParams = {}) {
+    const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
+    const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
+
     const [totalOrders, totalAmount, byStatus, collected] = await Promise.all([
-      this.prisma.order.count(),
+      this.prisma.order.count({
+        ...(createdAt ? { where: { createdAt } } : {}),
+      }),
       this.prisma.order.aggregate({
+        ...(createdAt ? { where: { createdAt } } : {}),
         _sum: { totalAmount: true },
       }),
       this.prisma.order.groupBy({
         by: ['status'],
+        ...(createdAt ? { where: { createdAt } } : {}),
         _count: true,
         _sum: { totalAmount: true },
       }),
       this.prisma.payment.aggregate({
         where: {
+          ...(paymentDate ? { paymentDate } : {}),
           invoice: {
             orderId: { not: null },
           },
@@ -208,6 +221,17 @@ export class OrdersService {
       collectedAmount: collected._sum.amount,
       outstandingAmount: totalAmountValue - collectedAmount,
       byStatus,
+    };
+  }
+
+  private buildDateRange(dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined {
+    if (!dateFrom && !dateTo) {
+      return undefined;
+    }
+
+    return {
+      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
   }
 

@@ -201,6 +201,10 @@ Current status:
 - Invoice and subscription overview cards are also being normalized to backend stats:
   - invoices page now uses invoice stats for total invoiced / collected / overdue cards
   - subscriptions page now uses subscription stats for active count and MRR instead of deriving everything from the loaded page slice
+- Finance reporting contracts are becoming period-aware:
+  - finance stats endpoints now accept optional `dateFrom/dateTo` filters
+  - finance dashboard summary endpoint now supports bounded reporting periods and the web dashboard exposes period presets
+  - active subscription metrics are evaluated against the selected reporting end date instead of only "now"
 
 ### M4 - Tasks and Support operational flow
 
@@ -304,6 +308,7 @@ Exit criteria:
   - introduced a dedicated finance dashboard summary endpoint to reduce client-side aggregation drift
   - moved order/payment page summary cards onto backend stats endpoints instead of client-side list recalculation
   - moved invoice/subscription summary cards onto backend stats contracts for consistency with the rest of finance UI
+  - added period-aware finance reporting filters to stats/summary contracts and wired them into dashboard reads
 
 ---
 

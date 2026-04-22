@@ -25,6 +25,11 @@ interface InvoiceQueryParams {
   search?: string;
 }
 
+interface InvoiceStatsParams {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 @Injectable()
 export class InvoicesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
@@ -148,25 +153,40 @@ export class InvoicesService {
     return this.prisma.invoice.delete({ where: { id } });
   }
 
-  async getStats() {
+  async getStats(params: InvoiceStatsParams = {}) {
+    const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
+    const paidDate = this.buildDateRange(params.dateFrom, params.dateTo);
+
     const [total, byStatus, totalRevenue, outstanding, overdue] = await Promise.all([
-      this.prisma.invoice.count(),
+      this.prisma.invoice.count({
+        ...(createdAt ? { where: { createdAt } } : {}),
+      }),
       this.prisma.invoice.groupBy({
         by: ['status'],
+        ...(createdAt ? { where: { createdAt } } : {}),
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.invoice.aggregate({
-        where: { status: 'PAID' },
+        where: {
+          status: 'PAID',
+          ...(paidDate ? { paidDate } : {}),
+        },
         _sum: { amount: true },
       }),
       this.prisma.invoice.aggregate({
-        where: { status: { not: 'PAID' } },
+        where: {
+          status: { not: 'PAID' },
+          ...(createdAt ? { createdAt } : {}),
+        },
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.invoice.aggregate({
-        where: { status: 'DELAYED' },
+        where: {
+          status: 'DELAYED',
+          ...(createdAt ? { createdAt } : {}),
+        },
         _count: true,
         _sum: { amount: true },
       }),
@@ -184,6 +204,17 @@ export class InvoicesService {
         count: overdue._count,
         amount: overdue._sum.amount,
       },
+    };
+  }
+
+  private buildDateRange(dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined {
+    if (!dateFrom && !dateTo) {
+      return undefined;
+    }
+
+    return {
+      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
   }
 

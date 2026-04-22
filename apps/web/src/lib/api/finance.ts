@@ -99,6 +99,11 @@ interface ListData<T> {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+export interface FinanceDateRangeParams {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 export interface InvoiceStats {
   total: number;
   byStatus: Array<{
@@ -198,8 +203,8 @@ export const invoicesApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/invoices/${id}`);
   },
-  async getStats(): Promise<InvoiceStats> {
-    const resp = await api.get<InvoiceStats>('/api/finance/invoices/stats');
+  async getStats(params?: FinanceDateRangeParams): Promise<InvoiceStats> {
+    const resp = await api.get<InvoiceStats>('/api/finance/invoices/stats', { params });
     return resp.data;
   },
 };
@@ -223,8 +228,8 @@ export const paymentsApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/payments/${id}`);
   },
-  async getStats(): Promise<PaymentStats> {
-    const resp = await api.get<PaymentStats>('/api/finance/payments/stats');
+  async getStats(params?: FinanceDateRangeParams): Promise<PaymentStats> {
+    const resp = await api.get<PaymentStats>('/api/finance/payments/stats', { params });
     return resp.data;
   },
 };
@@ -249,8 +254,8 @@ export const ordersApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/orders/${id}`);
   },
-  async getStats(): Promise<OrderStats> {
-    const resp = await api.get<OrderStats>('/api/finance/orders/stats');
+  async getStats(params?: FinanceDateRangeParams): Promise<OrderStats> {
+    const resp = await api.get<OrderStats>('/api/finance/orders/stats', { params });
     return resp.data;
   },
 };
@@ -278,8 +283,8 @@ export const subscriptionsApi = {
     });
     return resp.data;
   },
-  async getStats(): Promise<SubscriptionStats> {
-    const resp = await api.get<SubscriptionStats>('/api/finance/subscriptions/stats');
+  async getStats(params?: FinanceDateRangeParams): Promise<SubscriptionStats> {
+    const resp = await api.get<SubscriptionStats>('/api/finance/subscriptions/stats', { params });
     return resp.data;
   },
 };
@@ -311,8 +316,10 @@ export const expensesApi = {
 };
 
 export const financeSummaryApi = {
-  async getDashboard(): Promise<FinanceDashboardSummary> {
-    const resp = await api.get<FinanceDashboardSummary>('/api/finance/summary/dashboard');
+  async getDashboard(params?: FinanceDateRangeParams): Promise<FinanceDashboardSummary> {
+    const resp = await api.get<FinanceDashboardSummary>('/api/finance/summary/dashboard', {
+      params,
+    });
     return resp.data;
   },
 };

@@ -184,14 +184,19 @@ export class PaymentsService {
     }
   }
 
-  async getStats() {
+  async getStats(params: Pick<PaymentQueryParams, 'dateFrom' | 'dateTo'> = {}) {
     const monthStart = new Date();
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
+    const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
+
     const [totalPayments, totalCollected, thisMonthCollected] = await Promise.all([
-      this.prisma.payment.count(),
+      this.prisma.payment.count({
+        ...(paymentDate ? { where: { paymentDate } } : {}),
+      }),
       this.prisma.payment.aggregate({
+        ...(paymentDate ? { where: { paymentDate } } : {}),
         _sum: { amount: true },
       }),
       this.prisma.payment.aggregate({
@@ -208,6 +213,17 @@ export class PaymentsService {
       totalPayments,
       totalCollected: totalCollected._sum.amount,
       thisMonthCollected: thisMonthCollected._sum.amount,
+    };
+  }
+
+  private buildDateRange(dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined {
+    if (!dateFrom && !dateTo) {
+      return undefined;
+    }
+
+    return {
+      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+      ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
   }
 

@@ -157,5 +157,35 @@ describe('InvoicesService', () => {
       expect(stats.outstanding).toEqual({ count: 3, amount: 40000 });
       expect(stats.overdue).toEqual({ count: 1, amount: 10000 });
     });
+
+    it('applies date filters to stats queries', async () => {
+      await service.getStats({
+        dateFrom: '2026-04-01T00:00:00.000Z',
+        dateTo: '2026-04-30T23:59:59.999Z',
+      });
+
+      expect(prisma.invoice.count).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: expect.objectContaining({
+              gte: expect.any(Date),
+              lte: expect.any(Date),
+            }),
+          }),
+        }),
+      );
+      expect(prisma.invoice.aggregate).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: 'PAID',
+            paidDate: expect.objectContaining({
+              gte: expect.any(Date),
+              lte: expect.any(Date),
+            }),
+          }),
+        }),
+      );
+    });
   });
 });
