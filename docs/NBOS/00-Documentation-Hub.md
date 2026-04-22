@@ -51,7 +51,7 @@
 | Решения заказчика (Product, Extension, MAINTENANCE) | `03-Business-Logic/08-Stakeholder-Decisions-Product-Extension-Maintenance.md`       |
 | Воронка Deal                                        | `02-Modules/01-CRM/03-Deal-Pipeline.md`                                             |
 | Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                       |
-| План синхронизации                                  | [PLAN_NEW_DESCRIPTION_SYNC.md](../PLAN_NEW_DESCRIPTION_SYNC.md)                     |
+| Единый план и прогресс                              | [DEVELOPMENT_PLAN.md](../DEVELOPMENT_PLAN.md)                                       |
 | Git / Product                                       | `PRODUCT-ENTITY-GIT-ANALYSIS.md`                                                    |
 
 ---
