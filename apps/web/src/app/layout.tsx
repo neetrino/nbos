@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: 'NBOS — Business Operation System',
   description: 'Internal Business Operation System by Neetrino',
   icons: {
-    icon: [{ url: '/logo/logo.svg', type: 'image/svg+xml' }],
+    icon: [{ url: '/logo/icon.png', type: 'image/png' }],
   },
 };
 

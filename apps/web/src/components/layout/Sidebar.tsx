@@ -198,7 +198,7 @@ export function Sidebar() {
         )}
         {collapsed && (
           <div className="mx-auto flex h-8 w-8 items-center justify-center">
-            <Image src="/logo/logo.png" alt="NBOS" width={32} height={32} className="h-8 w-8" />
+            <Image src="/logo/icon.png" alt="NBOS" width={32} height={32} className="h-8 w-8" />
           </div>
         )}
       </div>
