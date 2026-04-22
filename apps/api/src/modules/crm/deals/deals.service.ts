@@ -276,6 +276,10 @@ export class DealsService {
 
   async updateStatus(id: string, status: string) {
     const current = await this.findById(id);
+    if (current.status === status) {
+      return current;
+    }
+
     validateDealStageGate(current, status);
 
     const deal = await this.update(id, { status });

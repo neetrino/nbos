@@ -18,6 +18,9 @@ Linked context:
 - Product and module canon: `docs/NBOS/00-Documentation-Hub.md`
 - Architecture baseline: `docs/01-ARCHITECTURE.md`
 - Stack and operational constraints: `docs/TECH_CARD.md`
+- Delivery matrix: `docs/execution/01-module-delivery-matrix.md`
+- Performance governance: `docs/execution/02-performance-governance.md`
+- Two-week kickoff tracker: `docs/execution/03-two-week-kickoff.md`
 
 ---
 
@@ -123,6 +126,13 @@ Exit criteria:
 - Auto-created or linked entities are deterministic and auditable.
 - Negative-path tests for stage gate failures are present.
 
+Current status:
+
+- `updateStatus` idempotency added for repeated status updates.
+- `DealWonHandler` paths are covered by focused tests (PRODUCT and EXTENSION).
+- Stage gate validation tests pass for cumulative and type-specific requirements.
+- Remaining for full close: extend cross-module chain checks for order/invoice side effects.
+
 ### M2 - Projects Hub domain consistency
 
 Scope:
@@ -206,9 +216,9 @@ Exit criteria:
 
 ## 6) Priority backlog (next 2-4 weeks)
 
-1. Close M1 entirely (CRM transition integrity and stage gates).
+1. Close remaining M1 chain checks for `Deal -> Order -> Invoice`.
 2. Execute M2 and M3 in sequence (Projects Hub consistency, Finance correctness).
-3. Add focused regression tests for cross-module trigger chains:
+3. Continue focused regression tests for cross-module trigger chains:
    - Deal -> Order/Project/Product
    - Invoice/Payment -> Order and downstream effects
    - Product -> task automation
@@ -223,6 +233,15 @@ Exit criteria:
 - Re-baselined roadmap from "init/MVP pending" to actual "broad modules implemented".
 - Consolidated plan/progress into one canonical file.
 - Set module-by-module execution order with clear exit criteria.
+- Added delivery execution artifacts under `docs/execution/`:
+  - module delivery matrix
+  - performance-first governance policy
+  - two-week kickoff tracker
+- Stabilized CRM transition behavior:
+  - prevented duplicate side effects on repeated `WON` status updates
+  - added `DealWonHandler` unit tests for PRODUCT and EXTENSION flows
+- Strengthened finance transition coverage:
+  - added tests for partial/full payment synchronization outcomes
 
 ---
 
@@ -243,4 +262,4 @@ For each module cycle:
 
 ## 9) Current next action
 
-**Start M1:** CRM -> Product/Order transition integrity (list-driven behavior completion).
+**Continue M1 closeout:** complete `Deal -> Order -> Invoice` chain regression checks, then start M2.

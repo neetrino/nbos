@@ -8,6 +8,7 @@
 | [TECH_CARD.md](./TECH_CARD.md)               | Технологическая карта, стек                  |
 | [01-ARCHITECTURE.md](./01-ARCHITECTURE.md)   | Архитектура монорепо                         |
 | [DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md) | Единый план выполнения и прогресс по модулям |
+| [execution/](./execution/)                   | Исполнение: матрица модулей, perf, kickoff   |
 | [NBOS/](./NBOS/)                             | Бизнес- и UI-спецификация платформы          |
 | [archive/](./archive/)                       | Устаревшие или исходные черновики (не канон) |
 

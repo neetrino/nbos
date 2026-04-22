@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DealsService } from './deals.service';
 import { DealWonHandler } from './deal-won.handler';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
@@ -7,11 +7,12 @@ import { NotFoundException } from '@nestjs/common';
 describe('DealsService', () => {
   let service: DealsService;
   let prisma: MockPrisma;
+  let wonHandler: { handle: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    const wonHandler = new DealWonHandler(prisma as never);
-    service = new DealsService(prisma as never, wonHandler);
+    wonHandler = { handle: vi.fn().mockResolvedValue(undefined) };
+    service = new DealsService(prisma as never, wonHandler as unknown as DealWonHandler);
   });
 
   describe('findAll', () => {
@@ -63,6 +64,29 @@ describe('DealsService', () => {
   });
 
   describe('updateStatus', () => {
+    it('returns current deal when status is unchanged', async () => {
+      const currentDeal = {
+        id: '1',
+        status: 'WON',
+        type: 'PRODUCT',
+        amount: 5000,
+        paymentType: 'CLASSIC',
+        productCategory: 'CODE',
+        productType: 'COMPANY_WEBSITE',
+        pmId: 'pm-1',
+        deadline: new Date(),
+        existingProductId: null,
+      };
+
+      prisma.deal.findUnique.mockResolvedValue(currentDeal);
+
+      const result = await service.updateStatus('1', 'WON');
+
+      expect(result).toEqual(currentDeal);
+      expect(prisma.deal.update).not.toHaveBeenCalled();
+      expect(wonHandler.handle).not.toHaveBeenCalled();
+    });
+
     it('updates deal status for early stage (no gate)', async () => {
       prisma.deal.findUnique.mockResolvedValue({
         id: '1',
@@ -114,6 +138,7 @@ describe('DealsService', () => {
       });
       const result = await service.updateStatus('1', 'WON');
       expect(result.status).toBe('WON');
+      expect(wonHandler.handle).toHaveBeenCalledTimes(1);
     });
   });
 
