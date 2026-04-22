@@ -70,8 +70,10 @@ describe('SubscriptionsService', () => {
 
   describe('getStats', () => {
     it('returns stats', async () => {
+      prisma.subscription.count.mockResolvedValueOnce(8).mockResolvedValueOnce(5);
       const stats = await service.getStats();
       expect(stats).toHaveProperty('byStatus');
+      expect(stats.activeSubscriptions).toBe(5);
     });
   });
 });

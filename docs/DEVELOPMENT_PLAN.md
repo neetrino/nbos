@@ -198,6 +198,9 @@ Current status:
   - `GET /finance/orders/stats` now exposes total, collected, outstanding, and status aggregates for order views
   - `GET /finance/payments/stats` now exposes total collected, current-month collected, and payment count for payment views
   - finance list pages no longer calculate top-card totals purely from the currently loaded page slice
+- Invoice and subscription overview cards are also being normalized to backend stats:
+  - invoices page now uses invoice stats for total invoiced / collected / overdue cards
+  - subscriptions page now uses subscription stats for active count and MRR instead of deriving everything from the loaded page slice
 
 ### M4 - Tasks and Support operational flow
 
@@ -300,6 +303,7 @@ Exit criteria:
   - normalized finance web pages onto shared typed contracts and removed dead subscription search behavior
   - introduced a dedicated finance dashboard summary endpoint to reduce client-side aggregation drift
   - moved order/payment page summary cards onto backend stats endpoints instead of client-side list recalculation
+  - moved invoice/subscription summary cards onto backend stats contracts for consistency with the rest of finance UI
 
 ---
 

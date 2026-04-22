@@ -36,12 +36,13 @@ import {
   getInvoiceStage,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { invoicesApi, type Invoice } from '@/lib/api/finance';
+import { invoicesApi, type Invoice, type InvoiceStats } from '@/lib/api/finance';
 
 type ViewMode = 'kanban' | 'list';
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -52,13 +53,17 @@ export default function InvoicesPage() {
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await invoicesApi.getAll({
-        pageSize: 200,
-        search: search || undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-        type: filters.type && filters.type !== 'all' ? filters.type : undefined,
-      });
+      const [data, invoiceStats] = await Promise.all([
+        invoicesApi.getAll({
+          pageSize: 200,
+          search: search || undefined,
+          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+          type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+        }),
+        invoicesApi.getStats(),
+      ]);
       setInvoices(data.items);
+      setStats(invoiceStats);
     } catch {
       /* handled */
     } finally {
@@ -91,13 +96,10 @@ export default function InvoicesPage() {
     handleStatusChange(itemId, toColumn);
   };
 
-  const totalAmount = invoices.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
-  const paidAmount = invoices
-    .filter((inv) => inv.status === 'PAID')
-    .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
-  const overdueAmount = invoices
-    .filter((inv) => inv.status === 'DELAYED')
-    .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+  const totalAmount =
+    stats?.byStatus.reduce((sum, item) => sum + Number(item._sum.amount ?? 0), 0) ?? 0;
+  const paidAmount = Number(stats?.totalRevenue ?? 0);
+  const overdueAmount = Number(stats?.overdue.amount ?? 0);
 
   const filterConfigs = [
     {

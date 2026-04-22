@@ -164,7 +164,7 @@ export class SubscriptionsService {
   }
 
   async getStats() {
-    const [total, byStatus, byType, totalRevenue] = await Promise.all([
+    const [total, byStatus, byType, totalRevenue, activeSubscriptions] = await Promise.all([
       this.prisma.subscription.count(),
       this.prisma.subscription.groupBy({
         by: ['status'],
@@ -180,12 +180,16 @@ export class SubscriptionsService {
         where: { status: 'ACTIVE' },
         _sum: { amount: true },
       }),
+      this.prisma.subscription.count({
+        where: { status: 'ACTIVE' },
+      }),
     ]);
 
     return {
       total,
       byStatus,
       byType,
+      activeSubscriptions,
       monthlyRevenue: totalRevenue._sum.amount,
     };
   }

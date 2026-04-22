@@ -20,10 +20,11 @@ import {
   getSubscriptionStatus,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
+import { subscriptionsApi, type Subscription, type SubscriptionStats } from '@/lib/api/finance';
 
 export default function SubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [stats, setStats] = useState<SubscriptionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -31,13 +32,17 @@ export default function SubscriptionsPage() {
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await subscriptionsApi.getAll({
-        pageSize: 100,
-        search: search || undefined,
-        type: filters.type && filters.type !== 'all' ? filters.type : undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-      });
+      const [data, subscriptionStats] = await Promise.all([
+        subscriptionsApi.getAll({
+          pageSize: 100,
+          search: search || undefined,
+          type: filters.type && filters.type !== 'all' ? filters.type : undefined,
+          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        }),
+        subscriptionsApi.getStats(),
+      ]);
       setSubscriptions(data.items);
+      setStats(subscriptionStats);
     } catch {
       /* handled */
     } finally {
@@ -50,7 +55,9 @@ export default function SubscriptionsPage() {
   }, [fetchSubscriptions]);
 
   const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE');
-  const totalMRR = activeSubs.reduce((sum, s) => sum + parseFloat(s.amount), 0);
+  const totalMRR = Number(stats?.monthlyRevenue ?? 0);
+  const activeSubscriptions = stats?.activeSubscriptions ?? activeSubs.length;
+  const totalSubscriptions = stats?.total ?? subscriptions.length;
 
   const filterConfigs = [
     {
@@ -77,7 +84,7 @@ export default function SubscriptionsPage() {
     <div className="flex h-full flex-col gap-5">
       <PageHeader
         title="Subscriptions"
-        description={`${activeSubs.length} active, MRR ${formatAmount(totalMRR)}`}
+        description={`${activeSubscriptions} active, MRR ${formatAmount(totalMRR)}`}
       >
         <Button variant="outline" size="icon" onClick={fetchSubscriptions}>
           <RefreshCcw size={16} />
@@ -95,11 +102,11 @@ export default function SubscriptionsPage() {
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Active Subscriptions</p>
-          <p className="mt-1 text-xl font-bold">{activeSubs.length}</p>
+          <p className="mt-1 text-xl font-bold">{activeSubscriptions}</p>
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Total Subscriptions</p>
-          <p className="mt-1 text-xl font-bold">{subscriptions.length}</p>
+          <p className="mt-1 text-xl font-bold">{totalSubscriptions}</p>
         </div>
       </div>
 

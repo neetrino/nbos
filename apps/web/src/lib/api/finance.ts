@@ -123,6 +123,7 @@ export interface SubscriptionStats {
     _count: number;
     _sum: { amount: number | null };
   }>;
+  activeSubscriptions: number;
   monthlyRevenue: number | null;
 }
 
