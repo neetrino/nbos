@@ -30,6 +30,29 @@ const ALLOWED_TRANSITIONS: Record<ProductStatusEnum, ProductStatusEnum[]> = {
   LOST: [],
 };
 
+function validateProductStageGate(
+  product: {
+    status?: string | null;
+    description?: string | null;
+    deadline?: Date | string | null;
+    order?: { id: string } | null;
+  },
+  target: ProductStatusEnum,
+) {
+  if (product.status === 'NEW' && target === 'CREATING') {
+    const missing: string[] = [];
+    if (!product.description?.trim()) missing.push('description');
+    if (!product.deadline) missing.push('deadline');
+    if (!product.order?.id) missing.push('order');
+
+    if (missing.length > 0) {
+      throw new BadRequestException(
+        `Cannot transition to CREATING: missing required fields ${missing.join(', ')}`,
+      );
+    }
+  }
+}
+
 interface CreateProductDto {
   projectId: string;
   name: string;
@@ -210,6 +233,8 @@ export class ProductsService {
         `Cannot transition from ${current} to ${target}. Allowed: ${allowed?.join(', ') || 'none'}`,
       );
     }
+
+    validateProductStageGate(product, target);
 
     return this.prisma.product.update({
       where: { id },

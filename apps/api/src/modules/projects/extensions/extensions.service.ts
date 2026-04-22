@@ -16,6 +16,29 @@ const ALLOWED_TRANSITIONS: Record<ExtensionStatusEnum, ExtensionStatusEnum[]> = 
   LOST: [],
 };
 
+function validateExtensionStageGate(
+  extension: {
+    status?: string | null;
+    description?: string | null;
+    assignedTo?: string | null;
+    order?: { id: string } | null;
+  },
+  target: ExtensionStatusEnum,
+) {
+  if (extension.status === 'NEW' && target === 'DEVELOPMENT') {
+    const missing: string[] = [];
+    if (!extension.description?.trim()) missing.push('description');
+    if (!extension.assignedTo) missing.push('assignedTo');
+    if (!extension.order?.id) missing.push('order');
+
+    if (missing.length > 0) {
+      throw new BadRequestException(
+        `Cannot transition to DEVELOPMENT: missing required fields ${missing.join(', ')}`,
+      );
+    }
+  }
+}
+
 interface CreateExtensionDto {
   projectId: string;
   productId?: string;
@@ -169,6 +192,8 @@ export class ExtensionsService {
         `Cannot transition from ${current} to ${target}. Allowed: ${allowed?.join(', ') || 'none'}`,
       );
     }
+
+    validateExtensionStageGate(extension, target);
 
     return this.prisma.extension.update({
       where: { id },

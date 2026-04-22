@@ -104,8 +104,27 @@ describe('ExtensionsService', () => {
   });
 
   describe('updateStatus — stage gate', () => {
+    it('requires description, assignee, and order for NEW → DEVELOPMENT', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'NEW',
+        description: null,
+        assignedTo: null,
+        order: null,
+      });
+
+      await expect(service.updateStatus('e1', 'DEVELOPMENT')).rejects.toThrow(BadRequestException);
+      expect(prisma.extension.update).not.toHaveBeenCalled();
+    });
+
     it('allows NEW → DEVELOPMENT', async () => {
-      prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'NEW' });
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'NEW',
+        description: 'Add loyalty widget',
+        assignedTo: 'dev-1',
+        order: { id: 'ord-1' },
+      });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DEVELOPMENT' });
       const result = await service.updateStatus('e1', 'DEVELOPMENT');
       expect(result.status).toBe('DEVELOPMENT');

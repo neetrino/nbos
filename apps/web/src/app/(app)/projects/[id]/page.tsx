@@ -8,6 +8,7 @@ import {
   FolderKanban,
   Plus,
   Package,
+  Puzzle,
   ArrowRight,
   Building2,
   UserCircle,
@@ -18,10 +19,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/shared';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
-import { productsApi, type Product } from '@/lib/api/products';
 import {
   getProductStatus,
   getProductType,
+  getExtensionStatus,
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
@@ -30,9 +31,7 @@ export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [project, setProject] = useState<FullProject | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [productsLoading, setProductsLoading] = useState(true);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
@@ -49,30 +48,9 @@ export default function ProjectDetailPage() {
     }
   }, [params.id, router]);
 
-  const fetchProducts = useCallback(async () => {
-    if (!params.id) return;
-    setProductsLoading(true);
-    try {
-      const data = await productsApi.getAll({
-        projectId: params.id,
-        pageSize: 50,
-        ...(statusFilter ? { status: statusFilter } : {}),
-      });
-      setProducts(data.items);
-    } catch {
-      setProducts([]);
-    } finally {
-      setProductsLoading(false);
-    }
-  }, [params.id, statusFilter]);
-
   useEffect(() => {
     fetchProject();
   }, [fetchProject]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
 
   if (loading) {
     return (
@@ -90,7 +68,10 @@ export default function ProjectDetailPage() {
 
   if (!project) return null;
 
-  const byStatus = (status: string) => products.filter((p) => p.status === status).length;
+  const products = statusFilter
+    ? project.products.filter((product) => product.status === statusFilter)
+    : project.products;
+  const byStatus = (status: string) => project.products.filter((p) => p.status === status).length;
 
   return (
     <div className="flex h-full flex-col gap-6">
@@ -118,7 +99,6 @@ export default function ProjectDetailPage() {
           size="icon"
           onClick={() => {
             fetchProject();
-            fetchProducts();
           }}
         >
           <RefreshCcw size={16} />
@@ -140,6 +120,11 @@ export default function ProjectDetailPage() {
             {project.company && (
               <InfoRow icon={Building2} label="Company" value={project.company.name} />
             )}
+            <InfoRow
+              icon={Package}
+              label="Products / Extensions"
+              value={`${project._count.products} / ${project._count.extensions}`}
+            />
           </div>
         </div>
         {project.description && (
@@ -149,6 +134,47 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {project.extensions.length > 0 && (
+        <div className="bg-card border-border rounded-xl border p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Puzzle size={16} className="text-muted-foreground" />
+              <h3 className="text-sm font-semibold">Extensions Snapshot</h3>
+            </div>
+            <span className="text-muted-foreground text-xs">{project.extensions.length} total</span>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {project.extensions.slice(0, 4).map((extension) => {
+              const status = getExtensionStatus(extension.status);
+              return (
+                <div key={extension.id} className="bg-secondary/40 rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{extension.name}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {extension.product?.name ?? 'Unlinked extension'}
+                      </p>
+                    </div>
+                    {status && <StatusBadge label={status.label} variant={status.variant} />}
+                  </div>
+
+                  <div className="text-muted-foreground mt-3 flex items-center gap-3 text-xs">
+                    <span>{extension._count.tasks} tasks</span>
+                    <span>{extension.size.toLowerCase()}</span>
+                    {extension.assignee && (
+                      <span>
+                        {extension.assignee.firstName} {extension.assignee.lastName}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Products Section */}
       <div className="flex-1 space-y-4">
@@ -188,25 +214,27 @@ export default function ProjectDetailPage() {
           </Button>
         </div>
 
-        {productsLoading ? (
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-36 rounded-xl" />
-            ))}
-          </div>
-        ) : products.length === 0 ? (
+        {products.length === 0 ? (
           <div className="text-muted-foreground py-16 text-center">
             <Package size={48} className="mx-auto mb-4 opacity-20" />
-            <p className="mb-1 text-sm font-medium">No products in this project yet</p>
-            <p className="mb-4 text-xs">Create a product to start tracking work</p>
+            <p className="mb-1 text-sm font-medium">
+              {statusFilter
+                ? 'No products match this status filter'
+                : 'No products in this project yet'}
+            </p>
+            <p className="mb-4 text-xs">
+              {statusFilter
+                ? 'Try another status or clear the filter.'
+                : 'Create a product to start tracking work.'}
+            </p>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowCreateProduct(true)}
+              onClick={() => (statusFilter ? setStatusFilter(null) : setShowCreateProduct(true))}
               className="gap-1.5"
             >
               <Plus size={14} />
-              Create First Product
+              {statusFilter ? 'Show All Products' : 'Create First Product'}
             </Button>
           </div>
         ) : (
@@ -270,7 +298,7 @@ export default function ProjectDetailPage() {
       <CreateProductDialog
         open={showCreateProduct}
         onOpenChange={setShowCreateProduct}
-        onCreated={fetchProducts}
+        onCreated={fetchProject}
         projectId={project.id}
       />
     </div>

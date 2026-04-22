@@ -110,8 +110,27 @@ describe('ProductsService', () => {
   });
 
   describe('updateStatus — stage gate', () => {
+    it('requires description, deadline, and order for NEW → CREATING', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'NEW',
+        description: null,
+        deadline: null,
+        order: null,
+      });
+
+      await expect(service.updateStatus('p1', 'CREATING')).rejects.toThrow(BadRequestException);
+      expect(prisma.product.update).not.toHaveBeenCalled();
+    });
+
     it('allows NEW → CREATING', async () => {
-      prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'NEW' });
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'NEW',
+        description: 'Website scope',
+        deadline: new Date('2026-06-01'),
+        order: { id: 'ord-1' },
+      });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'CREATING' });
       const result = await service.updateStatus('p1', 'CREATING');
       expect(result.status).toBe('CREATING');

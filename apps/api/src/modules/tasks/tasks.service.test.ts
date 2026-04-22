@@ -35,6 +35,34 @@ describe('TasksService', () => {
     });
   });
 
+  describe('findByEntity', () => {
+    it('returns tasks linked to a product entity', async () => {
+      prisma.task.findMany.mockResolvedValue([{ id: 't1', title: 'Build landing page' }]);
+
+      const result = await service.findByEntity('PRODUCT', 'prod-1');
+
+      expect(result).toHaveLength(1);
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { links: { some: { entityType: 'PRODUCT', entityId: 'prod-1' } } },
+        }),
+      );
+    });
+
+    it('returns tasks linked to an extension entity', async () => {
+      prisma.task.findMany.mockResolvedValue([{ id: 't2', title: 'Fix extension QA issue' }]);
+
+      const result = await service.findByEntity('EXTENSION', 'ext-1');
+
+      expect(result).toHaveLength(1);
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { links: { some: { entityType: 'EXTENSION', entityId: 'ext-1' } } },
+        }),
+      );
+    });
+  });
+
   describe('create', () => {
     it('generates code T-YYYY-NNNN', async () => {
       prisma.task.findFirst.mockResolvedValue(null);

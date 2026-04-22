@@ -76,6 +76,21 @@ export class ProjectsService {
       include: {
         company: true,
         contact: true,
+        products: {
+          include: {
+            pm: { select: { id: true, firstName: true, lastName: true } },
+            _count: { select: { extensions: true, tasks: true, tickets: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        extensions: {
+          include: {
+            product: { select: { id: true, name: true, productType: true, status: true } },
+            assignee: { select: { id: true, firstName: true, lastName: true } },
+            _count: { select: { tasks: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
         orders: {
           include: {
             invoices: {
@@ -129,6 +144,8 @@ export class ProjectsService {
         },
         _count: {
           select: {
+            products: true,
+            extensions: true,
             orders: true,
             tickets: true,
             credentials: true,

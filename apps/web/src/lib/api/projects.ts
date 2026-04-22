@@ -18,7 +18,33 @@ export interface Project {
   updatedAt: string;
   company: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string };
-  _count: { orders: number };
+  _count: { orders: number; products?: number; extensions?: number };
+}
+
+export interface ProjectProductSummary {
+  id: string;
+  name: string;
+  status: string;
+  productCategory: string;
+  productType: string;
+  deadline: string | null;
+  pm: EmployeeRef | null;
+  _count: {
+    extensions: number;
+    tasks: number;
+    tickets: number;
+  };
+}
+
+export interface ProjectExtensionSummary {
+  id: string;
+  name: string;
+  status: string;
+  size: string;
+  productId: string | null;
+  assignee: EmployeeRef | null;
+  product: { id: string; name: string; productType: string; status: string } | null;
+  _count: { tasks: number };
 }
 
 export interface ProjectOrder {
@@ -115,6 +141,8 @@ export interface ProjectAuditLog {
 }
 
 export interface FullProject extends Project {
+  products: ProjectProductSummary[];
+  extensions: ProjectExtensionSummary[];
   orders: ProjectOrder[];
   tickets: ProjectTicket[];
   credentials: ProjectCredential[];
@@ -123,6 +151,8 @@ export interface FullProject extends Project {
   expenses: ProjectExpense[];
   auditLogs: ProjectAuditLog[];
   _count: {
+    products: number;
+    extensions: number;
     orders: number;
     tickets: number;
     credentials: number;

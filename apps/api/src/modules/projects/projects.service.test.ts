@@ -24,6 +24,52 @@ describe('ProjectsService', () => {
     it('throws NotFoundException', async () => {
       await expect(service.findById('missing')).rejects.toThrow(NotFoundException);
     });
+
+    it('returns project with product-centric relations for overview consistency', async () => {
+      prisma.project.findUnique.mockResolvedValue({
+        id: 'proj-1',
+        code: 'P-2026-0001',
+        products: [
+          {
+            id: 'prod-1',
+            name: 'Website',
+            status: 'DEVELOPMENT',
+            _count: { extensions: 1, tasks: 3, tickets: 2 },
+          },
+        ],
+        extensions: [
+          {
+            id: 'ext-1',
+            name: 'Checkout improvements',
+            status: 'QA',
+            product: { id: 'prod-1', name: 'Website', productType: 'COMPANY_WEBSITE' },
+            _count: { tasks: 2 },
+          },
+        ],
+        _count: {
+          products: 1,
+          extensions: 1,
+          orders: 0,
+          tickets: 0,
+          credentials: 0,
+          expenses: 0,
+        },
+      });
+
+      const result = await service.findById('proj-1');
+
+      expect(result.products).toHaveLength(1);
+      expect(result.extensions).toHaveLength(1);
+      expect(result._count).toMatchObject({ products: 1, extensions: 1 });
+      expect(prisma.project.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            products: expect.any(Object),
+            extensions: expect.any(Object),
+          }),
+        }),
+      );
+    });
   });
 
   describe('create', () => {
