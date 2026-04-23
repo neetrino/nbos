@@ -92,7 +92,7 @@
 
 Где осталось:
 
-- [docs/NBOS/00-Technical-Architecture-Brief.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/00-Technical-Architecture-Brief.md:58)
+- [docs/NBOS/archive/00-Technical-Architecture-Brief.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/archive/00-Technical-Architecture-Brief.md:58)
 - [docs/NBOS/03-Business-Logic/02-Order-to-Delivery-Process.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/03-Business-Logic/02-Order-to-Delivery-Process.md:68)
 - [docs/NBOS/03-Business-Logic/06-Entity-Relationships.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/03-Business-Logic/06-Entity-Relationships.md:250)
 - [docs/NBOS/05-UI-Specifications/03-Project-Hub-Pages.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/05-UI-Specifications/03-Project-Hub-Pages.md:187)

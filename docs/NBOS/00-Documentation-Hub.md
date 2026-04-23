@@ -15,9 +15,8 @@
 | 3         | `02-Modules/*`                                            | Модули по областям (CRM, Projects Hub, Finance, …)                                  |
 | 4         | `05-UI-Specifications/*`                                  | Экраны и навигация                                                                  |
 | 5         | `00-Delta-New-Description.md`                             | Матрица пробелов и бэклог относительно старых обсуждений                            |
-| 6         | `PRODUCT-ENTITY-GIT-ANALYSIS.md`                          | История удаления Product в git и стратегия восстановления                           |
 
-**Правило:** при конфликте формулировок между черновиком и § 1.1 Core Entities — **побеждает Core Entities**, затем актуальные решения из `08-Stakeholder-Decisions-*` и `05-Product-Centric-Navigation.md`.
+**Правило:** при конфликте формулировок между черновиком и § 1.1 Core Entities — **побеждает Core Entities**, затем актуальные решения из `08-Stakeholder-Decisions-*` и `05-Product-Centric-Navigation.md`. Архивные документы ниже не являются источниками правды.
 
 ---
 
@@ -56,7 +55,6 @@
 | Projects Hub cleanup register                       | `02-Modules/02-Projects-Hub/06-Projects-Hub-Cleanup-Register.md`                    |
 | Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                       |
 | Единый план и прогресс                              | [DEVELOPMENT_PLAN.md](../DEVELOPMENT_PLAN.md)                                       |
-| Git / Product                                       | `PRODUCT-ENTITY-GIT-ANALYSIS.md`                                                    |
 
 ---
 
@@ -64,13 +62,16 @@
 
 - **`docs/archive/New-Description/`** — полный набор исходных `.md` из корня репозитория (перенос 2026-03-31). Не удалять: нужен для аудита формулировок.
 - **`docs/archive/*`** (старые `ЧАСТЬ 1`, `Architecture` и т.д.) — исторические, не использовать как канон без сверки с NBOS.
+- **`docs/NBOS/archive/00-Technical-Architecture-Brief.md`** — исторический сводный brief; не использовать как активный канон.
+- **`docs/NBOS/archive/00-NEXT-STEPS-ROADMAP.md`** — исторический roadmap на момент раннего этапа восстановления Product/Projects Hub.
+- **`docs/NBOS/archive/PRODUCT-ENTITY-GIT-ANALYSIS.md`** — исторический git-анализ удаления и возврата Product; использовать только как справку по прошлым решениям.
 
 ---
 
 ## 5. Связь с кодом
 
 - Монорепо: `apps/web`, `apps/api`, `packages/database`.
-- Целевая модель данных: Core Entities; текущая схема Prisma может отставать (см. `PRODUCT-ENTITY-GIT-ANALYSIS.md`).
+- Целевая модель данных: Core Entities. Исторический анализ восстановления Product при необходимости смотреть в `archive/PRODUCT-ENTITY-GIT-ANALYSIS.md`.
 
 ---
 

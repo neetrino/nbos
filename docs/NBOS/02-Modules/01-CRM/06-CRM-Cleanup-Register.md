@@ -91,7 +91,7 @@
 
 Где осталось:
 
-- [docs/NBOS/00-Technical-Architecture-Brief.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/00-Technical-Architecture-Brief.md:76)
+- [docs/NBOS/archive/00-Technical-Architecture-Brief.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/archive/00-Technical-Architecture-Brief.md:76)
 - [docs/NBOS/02-Modules/13-Notifications/01-Notifications-System.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/13-Notifications/01-Notifications-System.md:134)
 
 Проблема:
@@ -108,7 +108,7 @@
 
 Где осталось:
 
-- [docs/NBOS/00-Technical-Architecture-Brief.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/00-Technical-Architecture-Brief.md:68)
+- [docs/NBOS/archive/00-Technical-Architecture-Brief.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/archive/00-Technical-Architecture-Brief.md:68)
 - [docs/NBOS/02-Modules/02-Projects-Hub/02-Project-Card.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/02-Projects-Hub/02-Project-Card.md:178)
 - [docs/NBOS/02-Modules/02-Projects-Hub/02-Project-Card.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/02-Projects-Hub/02-Project-Card.md:206)
 - [docs/NBOS/05-UI-Specifications/04-Finance-Pages.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/05-UI-Specifications/04-Finance-Pages.md:322)
