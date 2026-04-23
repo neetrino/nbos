@@ -43,7 +43,7 @@
 
 ## 4. Зачем отдельный Product
 
-Каждый Product — **отдельный элемент** с собственным Order, Creating, задачами и т.д. Это согласовано с моделью данных и сценариями Deal / Extension / Maintenance.
+Каждый Product — **отдельный элемент** с собственным Order, starting/delivery lifecycle, задачами и т.д. Это согласовано с моделью данных и сценариями Deal / Extension / Maintenance.
 
 ---
 

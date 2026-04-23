@@ -48,9 +48,9 @@ Contact (человек)
 | **Product Type** (при необходимости переименования в UI — **Service Type**) | Отдельный справочник **System Lists → Product Type** (те же настройки). Список **услуг/направлений** (Website, Mobile App, CRM, Logo, SMM и т.д.), ведётся в админке, меняется редко | Отвечает на вопрос: _если Deal Type = продуктовая разработка (`PRODUCT`), **какая именно услуга** заказана_. Для других Deal Type поле может быть неактуально или заполняться иначе (по правилам сценария).                                    |
 | **Сущность Product** (раздел 2.4)                                           | Модель данных проекта                                                                                                                                                                | Результат работ внутри **Project** (сайт, приложение, …). Это **не** то же самое, что значение справочника «PRODUCT» в Deal Type: совпадение имён — только на уровне слов; в коде и документах различать **Deal Type** и **сущность Product**. |
 
-**Правило второго уровня:** поле **Product Type** (из справочника услуг) логически требуется, когда в сделке выбран **Deal Type = PRODUCT** — чтобы определить вид работ и подтянуть правила Creating (обязательные поля, чеклисты).
+**Правило второго уровня:** поле **Product Type** (из справочника услуг) логически требуется, когда в сделке выбран **Deal Type = PRODUCT** — чтобы определить вид работ и подтянуть правила стартовой delivery-стадии и последующих stage gates.
 
-**Creating и обязательные поля:** на доске Creating у проекта/продукта набор обязательных полей и чеклистов **зависит от выбранного Product Type** (например, для Mobile App — аккаунты App Store и Google Play; для Website — хостинг, админка, домен и т.д.). Эти зависимости задаются конфигурацией по типу услуги, а не произвольно на карточке.
+**Starting и обязательные поля:** на стартовой стадии delivery у проекта/продукта набор обязательных полей и чеклистов **зависит от выбранного Product Type** (например, для Mobile App — аккаунты App Store и Google Play; для Website — хостинг, админка, домен и т.д.). Эти зависимости задаются конфигурацией по типу услуги, а не произвольно на карточке.
 
 **Админка:** оба справочника (**Deal Type** и **Product Type**) сейчас настраиваются через **Settings → Lists**. Набор Deal Type **ограничен четырьмя** кодами выше; расширять список Deal Type для новых «видов работ» не планируется — для детализации используется **Product Type** и сценарии по Deal Type.
 
@@ -150,32 +150,33 @@ Contact (человек)
 
 Конкретный результат работы внутри проекта: website, mobile app, logo, CRM system.
 
+`Product` — центральная delivery-сущность внутри `Project`. Именно вокруг него строятся delivery board, задачи, QA, transfer, credentials и support context.
+
 | Поле               | Тип                               | Описание                                                                               |
 | ------------------ | --------------------------------- | -------------------------------------------------------------------------------------- |
 | id                 | UUID                              | Уникальный идентификатор                                                               |
 | project_id         | FK → Project                      | Проект                                                                                 |
 | name               | String                            | Название продукта ("Website", "Mobile App")                                            |
 | product_type       | FK → System List **Product Type** | Вид услуги (Website, Mobile App, CRM, …); значения из справочника в админке, см. § 1.1 |
-| status             | Enum                              | New, Development, QA, Transfer, On Hold, Done, Lost                                    |
+| stage              | Enum                              | `STARTING`, `DEVELOPMENT`, `QA`, `TRANSFER`                                            |
+| work_status        | Enum                              | `ACTIVE`, `ON_HOLD`                                                                    |
+| resolution         | Enum / Null                       | `DONE`, `CANCELLED`, `null`                                                            |
 | order_id           | FK → Order                        | Связанный заказ                                                                        |
 | pm_id              | FK → Employee                     | PM продукта                                                                            |
 | deadline           | Date                              | Дедлайн продукта                                                                       |
 | description        | Text                              | Описание, техзадание                                                                   |
 | checklist_template | FK → Template                     | Шаблон чеклиста по типу продукта                                                       |
+| on_hold_reason     | String / Null                     | Причина паузы                                                                          |
+| on_hold_until      | Date / Null                       | До какой даты длится hold                                                              |
 | created_at         | DateTime                          | Дата создания                                                                          |
 
-**Стадии Product (Stage Gates):**
+**Канонический lifecycle Product:**
 
-1. **New** — проект получен, заполняется начальная информация
-2. **Creating** — подготовка: аккаунты, домены, окружение, доступы
-3. **Development** — разработка (scrum/kanban внутри)
-4. **QA / Checking** — проверка качества, чеклисты
-5. **Transfer** — передача клиенту, acceptance
-6. **On Hold** — приостановлен
-7. **Done** — завершён успешно
-8. **Lost** — отменён
+- Active stages: `Starting -> Development -> QA -> Transfer`
+- Pause state: `On Hold` как отдельный `work_status`, а не stage
+- Terminal outcomes: `Done` и `Cancelled`
 
-Переход между стадиями контролируется Stage Gates (обязательные поля, задачи, чеклисты).
+Переход между стадиями контролируется stage gates. Если карточку переводят сразу в позднюю стадию или сразу в `Done`, система должна выполнять cumulative validation по пропущенным шагам.
 
 **Связи:**
 
@@ -191,18 +192,24 @@ Contact (человек)
 
 Дополнительная работа к существующему продукту: новая функция, улучшение, доп. модуль.
 
-| Поле        | Тип           | Описание                                                                  |
-| ----------- | ------------- | ------------------------------------------------------------------------- |
-| id          | UUID          | Уникальный идентификатор                                                  |
-| project_id  | FK → Project  | Проект                                                                    |
-| product_id  | FK → Product  | К какому продукту доработка (опционально)                                 |
-| name        | String        | Название доработки                                                        |
-| size        | Enum          | Micro (< 1 день), Small (1–3 дня), Medium (1–2 недели), Large (2+ недели) |
-| status      | Enum          | New, Development, QA, Transfer, Done, Lost                                |
-| order_id    | FK → Order    | Связанный заказ                                                           |
-| assigned_to | FK → Employee | Исполнитель                                                               |
-| description | Text          | Описание                                                                  |
-| created_at  | DateTime      | Дата создания                                                             |
+`Extension` — отдельная delivery-сущность, но всегда в контексте существующего `Project` и одного основного `Product`.
+
+| Поле           | Тип           | Описание                                                                  |
+| -------------- | ------------- | ------------------------------------------------------------------------- |
+| id             | UUID          | Уникальный идентификатор                                                  |
+| project_id     | FK → Project  | Проект                                                                    |
+| product_id     | FK → Product  | К какому продукту относится доработка                                     |
+| name           | String        | Название доработки                                                        |
+| size           | Enum          | Micro (< 1 день), Small (1–3 дня), Medium (1–2 недели), Large (2+ недели) |
+| stage          | Enum          | `STARTING`, `DEVELOPMENT`, `QA`, `TRANSFER`                               |
+| work_status    | Enum          | `ACTIVE`, `ON_HOLD`                                                       |
+| resolution     | Enum / Null   | `DONE`, `CANCELLED`, `null`                                               |
+| order_id       | FK → Order    | Связанный заказ                                                           |
+| assigned_to    | FK → Employee | Исполнитель                                                               |
+| description    | Text          | Описание                                                                  |
+| on_hold_reason | String / Null | Причина паузы                                                             |
+| on_hold_until  | Date / Null   | До какой даты длится hold                                                 |
+| created_at     | DateTime      | Дата создания                                                             |
 
 **Важно:** Extension — это тоже Order с коммерческой стороны. Разница с Product:
 
@@ -210,12 +217,18 @@ Contact (человек)
 - Extension = доработка (от 1 часа до 1 месяца)
 - Оба генерируют бонусы через связанный Order
 
+**Источник данных Extension:**
+
+- часть данных приходит из `Deal`;
+- часть из `Project`;
+- часть из связанного `Product`.
+
 **Связи:**
 
 - Extension → one Order
 - Extension → many Tasks
 - Extension → one Project
-- Extension → one Product (опционально)
+- Extension → one Product
 
 ---
 
@@ -698,7 +711,7 @@ Lead ──1:1──► Deal ──1:1──► Order
 | **Deal Card (Kanban)** | Цвет и оформление карточки зависят от типа                                       |
 | **Deal → поля**        | `PRODUCT` → показывает Product Type; `EXTENSION` → показывает связку с продуктом |
 | **Deal → Order**       | Тип заказа наследует тип сделки                                                  |
-| **Creating (Product)** | Набор обязательных полей и стадий зависит от типа                                |
+| **Starting (Product)** | Набор обязательных полей и стадий зависит от типа                                |
 | **Stage Gates**        | _(будущее)_ Разные обязательные поля при переходе стадий для разных типов        |
 
 #### Product Type (WEBSITE, MOBILE_APP, CRM, LOGO, SMM, SEO, OTHER)
@@ -706,7 +719,7 @@ Lead ──1:1──► Deal ──1:1──► Order
 | Где влияет                       | Как                                                                                             |
 | -------------------------------- | ----------------------------------------------------------------------------------------------- |
 | **Auto-Tasks**                   | Шаблон задач при создании продукта зависит от типа (8 задач для WEB_APP vs 5 для DESIGN)        |
-| **Creating → обязательные поля** | _(будущее)_ WEBSITE → нужен домен, хостинг; MOBILE_APP → нужны App Store/Play Store credentials |
+| **Starting → обязательные поля** | _(будущее)_ WEBSITE → нужен домен, хостинг; MOBILE_APP → нужны App Store/Play Store credentials |
 | **Project Hub**                  | _(будущее)_ Иконка/визуал продукта зависит от типа                                              |
 
 #### Lead Source / Marketing (MARKETING, SALES, PARTNER, CLIENT)

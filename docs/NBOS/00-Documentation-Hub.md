@@ -53,6 +53,7 @@
 | Воронка Deal                                        | `02-Modules/01-CRM/03-Deal-Pipeline.md`                                             |
 | Stage Gates Deal + override logic                   | `02-Modules/01-CRM/05-Deal-Stage-Gates-and-Won-Override.md`                         |
 | CRM cleanup register                                | `02-Modules/01-CRM/06-CRM-Cleanup-Register.md`                                      |
+| Projects Hub cleanup register                       | `02-Modules/02-Projects-Hub/06-Projects-Hub-Cleanup-Register.md`                    |
 | Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                       |
 | Единый план и прогресс                              | [DEVELOPMENT_PLAN.md](../DEVELOPMENT_PLAN.md)                                       |
 | Git / Product                                       | `PRODUCT-ENTITY-GIT-ANALYSIS.md`                                                    |
