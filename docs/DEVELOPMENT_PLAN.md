@@ -285,6 +285,19 @@ Exit criteria:
 
 ## 7) Progress log (new format)
 
+### 2026-04-23
+
+- Continued canonical documentation normalization before next implementation cycle.
+- Expanded CRM documentation with stricter stage-gate business rules:
+  - marketing attribution block is now treated as mandatory for Lead/Deal progression
+  - offer proof is documented as `file / link / messenger screenshot` rather than link-only
+  - `MAINTENANCE` deal behavior is clarified as a linked commercial flow around an existing product
+  - `deadline` semantics are clarified per deal type, including planned maintenance start for maintenance deals
+- Clarified CRM -> Finance subscription boundary:
+  - `PRODUCT + Subscription` now documents first paid invoice as first paid subscription month
+  - `MAINTENANCE` now documents `Pending` subscription creation without confirmed start date
+  - subscription lifecycle statuses now include `Pending`, `On Hold`, and `Completed`
+
 ### 2026-04-22
 
 - Re-baselined roadmap from "init/MVP pending" to actual "broad modules implemented".

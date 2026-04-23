@@ -51,6 +51,20 @@ The system must validate fields based on:
 - stage-specific requirements;
 - business blockers that are not plain fields.
 
+### 3a. Marketing attribution is mandatory
+
+Both `Lead` and `Deal` must carry marketing attribution.
+
+For Deal, the canonical fields are:
+
+- `source`
+- `sourceDetail`
+- `sourcePartnerId` when source = partner
+- `sourceContactId` when source = client/referral context
+
+If Deal is created from Lead, this block is inherited automatically.
+If Deal is created manually, Sales must fill it before moving beyond the first meaningful stage.
+
 ### 4. `Deal Won` remains a manual business action
 
 For now, `Deal Won` is triggered manually by Sales after confirming readiness.
@@ -79,7 +93,7 @@ Examples:
 
 - amount
 - payment type
-- offer file or offer link
+- offer material
 - project type
 - deadline
 - linked project / linked product
@@ -138,6 +152,8 @@ Only fields that are missing or invalid.
 Examples:
 
 - Offer file
+- Marketing source
+- Marketing channel
 - Amount
 - Payment type
 - Project type
@@ -276,7 +292,8 @@ This is the canonical business matrix for current implementation planning.
 At least one must exist:
 
 - attached offer file; or
-- offer link
+- offer link; or
+- messenger screenshot / proof
 
 ### Type-specific
 
@@ -297,6 +314,8 @@ At least one must exist:
 - maintenance scope
 - billing model
 - planned start date or service start logic
+- linked project
+- linked product
 
 ## Stage 6 - Get Answer
 
@@ -319,7 +338,7 @@ At least one must exist:
 - company or payer entity
 - tax status
 - signed contract flag or attached contract
-- invoice created
+- invoice created for deposit-based deals
 
 ### Type-specific
 
@@ -338,7 +357,7 @@ At least one must exist:
 
 - maintenance package or agreed service scope
 - recurring amount
-- billing start date
+- planned maintenance start date
 
 ### Blockers
 
@@ -363,8 +382,10 @@ For all non-maintenance deals:
 
 For `MAINTENANCE`:
 
-- `WON` does not require the same deposit rule by default;
-- exact finance rule depends on maintenance billing model.
+- `WON` does not require the same deposit-paid rule by default;
+- after `WON`, a subscription record is created in `Pending`;
+- pending subscription has no confirmed `start_date` yet;
+- Finance later sets the actual start date from the Subscription Board.
 
 ### System effect after successful `WON`
 
@@ -373,6 +394,13 @@ For `MAINTENANCE`:
 - create `Product` or `Extension` as appropriate
 - start handoff flow
 - expose the work to delivery/creating boards
+
+For `PRODUCT + payment_type = Subscription`:
+
+- first paid invoice counts as first paid subscription month;
+- subscription is created immediately in `Active`;
+- month of first invoice is shown as paid in Subscription Board;
+- next monthly cycle is anchored to the payment day of that first paid invoice.
 
 ---
 
@@ -385,6 +413,7 @@ Typical required data set:
 - product category
 - product type
 - project type
+- marketing attribution
 - amount
 - payment type
 - offer
@@ -400,6 +429,7 @@ Typical required data set:
 
 - linked project
 - linked product where applicable
+- marketing attribution
 - extension scope
 - amount
 - payment type
@@ -419,12 +449,27 @@ Typical required data set:
 - maintenance scope
 - billing model
 - recurring amount
-- start date
+- linked project
+- linked product
+- marketing attribution
+- planned maintenance start date
 - linked project/product or clearly identified maintenance-only project path
 
 Important rule:
 
 - maintenance is not forced into the same deposit-paid rule as product and extension deals.
+- maintenance deal is usually a child commercial flow around an existing product.
+- after main product `WON`, system may auto-create a prepared maintenance deal card linked to that product.
+- in maintenance deals, the UI field `deadline` is interpreted as `planned maintenance start date`, not delivery deadline.
+
+## Automatic maintenance deal creation
+
+After a main `PRODUCT` deal reaches `WON`, NBOS should auto-create a linked `MAINTENANCE` deal card:
+
+- linked to the same project and product;
+- prefilled from the source product and source deal where fields are stable;
+- leaving commercial variables such as maintenance amount and final offer empty;
+- ready for Seller to continue commercial discussion later.
 
 ## OUTSOURCE and other future types
 
