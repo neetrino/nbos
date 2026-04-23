@@ -50,6 +50,7 @@
 | Продукто-центричный Hub                             | `02-Modules/02-Projects-Hub/05-Product-Centric-Navigation.md`                       |
 | Решения заказчика (Product, Extension, MAINTENANCE) | `03-Business-Logic/08-Stakeholder-Decisions-Product-Extension-Maintenance.md`       |
 | Воронка Deal                                        | `02-Modules/01-CRM/03-Deal-Pipeline.md`                                             |
+| Stage Gates Deal + override logic                   | `02-Modules/01-CRM/05-Deal-Stage-Gates-and-Won-Override.md`                         |
 | Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                       |
 | Единый план и прогресс                              | [DEVELOPMENT_PLAN.md](../DEVELOPMENT_PLAN.md)                                       |
 | Git / Product                                       | `PRODUCT-ENTITY-GIT-ANALYSIS.md`                                                    |
