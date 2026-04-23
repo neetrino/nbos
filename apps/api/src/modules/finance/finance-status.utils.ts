@@ -1,7 +1,7 @@
 import type { InvoiceStatusEnum } from '@nbos/database';
 
 interface AmountCarrier {
-  amount: number | string | null | undefined;
+  amount: number | string | DecimalValue | null | undefined;
 }
 
 interface PaymentCarrier extends AmountCarrier {
@@ -23,8 +23,18 @@ interface InvoiceStatusArgs extends BaseInvoiceStatusArgs {
   currentStatus: InvoiceStatusEnum;
 }
 
+interface DecimalValue {
+  toNumber: () => number;
+}
+
 export function sumAmounts(items: AmountCarrier[]): number {
-  return items.reduce((sum, item) => sum + Number(item.amount ?? 0), 0);
+  return items.reduce((sum, item) => {
+    const amount = item.amount;
+    const numericAmount =
+      amount && typeof amount === 'object' ? amount.toNumber() : Number(amount ?? 0);
+
+    return sum + numericAmount;
+  }, 0);
 }
 
 export function getLatestPaymentDate(payments: PaymentCarrier[]): Date | null {
