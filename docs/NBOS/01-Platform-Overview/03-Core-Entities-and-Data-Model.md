@@ -271,35 +271,35 @@ Contact (человек)
 
 ### 2.7. Invoice (Счёт)
 
-Конкретный счёт на оплату. Один Order может иметь несколько Invoices (при оплате частями).
+Карточка денег, которые клиент должен нам заплатить. В интерфейсе пока может называться `Invoice`, но по бизнес-смыслу это control card ожидаемой оплаты. Один Order может иметь несколько Invoice Card.
 
-| Поле            | Тип               | Описание                                                                   |
-| --------------- | ----------------- | -------------------------------------------------------------------------- |
-| id              | UUID              | Уникальный идентификатор                                                   |
-| order_id        | FK → Order        | Заказ                                                                      |
-| subscription_id | FK → Subscription | Подписка (если subscription invoice)                                       |
-| project_id      | FK → Project      | Проект                                                                     |
-| company_id      | FK → Company      | Кому выставлен (юрлицо)                                                    |
-| amount          | Decimal           | Сумма счёта                                                                |
-| currency        | Enum              | AMD, USD, EUR                                                              |
-| tax_status      | Enum              | Tax, Tax-Free (наследуется от Order/Subscription)                          |
-| type            | Enum              | Development, Extension, Subscription, Domain, Service, Other               |
-| status          | Enum              | New, Created in Gov System, Sent to Client, Overdue, On Hold, Paid, Unpaid |
-| due_date        | Date              | Дата, до которой нужно оплатить                                            |
-| paid_date       | Date              | Фактическая дата оплаты                                                    |
-| gov_invoice_id  | String            | ID в государственной системе                                               |
-| notes           | Text              | Заметки                                                                    |
-| created_at      | DateTime          | Дата создания                                                              |
+| Поле                          | Тип               | Описание                                                       |
+| ----------------------------- | ----------------- | -------------------------------------------------------------- |
+| id                            | UUID              | Уникальный идентификатор                                       |
+| order_id                      | FK → Order        | Заказ                                                          |
+| subscription_id               | FK → Subscription | Подписка (если subscription invoice)                           |
+| project_id                    | FK → Project      | Проект                                                         |
+| company_id                    | FK → Company      | Кому выставлен (юрлицо)                                        |
+| amount                        | Decimal           | Сумма счёта                                                    |
+| currency                      | Enum              | AMD, USD, EUR                                                  |
+| tax_status                    | Enum              | Tax, Free (наследуется от Order/Subscription/Domain/Service)   |
+| type                          | Enum              | Development, Extension, Subscription, Domain, Service, Other   |
+| money_status                  | Enum              | New, Awaiting Payment, Overdue, On Hold, Paid, Cancelled       |
+| notifications_enabled         | Boolean           | Разрешены ли клиентские напоминания                            |
+| due_date                      | Date              | Дата, до которой нужно оплатить                                |
+| paid_date                     | Date              | Фактическая дата оплаты                                        |
+| official_request_sent         | Boolean           | Отправлен ли запрос на официальный счёт в бухгалтерскую группу |
+| official_request_sent_at      | DateTime?         | Когда отправили запрос                                         |
+| official_request_cancelled_at | DateTime?         | Когда отменили предыдущий запрос                               |
+| notes                         | Text              | Заметки                                                        |
+| created_at                    | DateTime          | Дата создания                                                  |
 
-**Стадии Invoice (автоматизированные):**
+**Принципы Invoice Card:**
 
-1. **New** — создан в системе
-2. **Create in Gov System** — (через ~1 час) отправка уведомления бухгалтеру
-3. **Sent to Client** — сообщение клиенту в WhatsApp с напоминанием
-4. **Overdue** — (через N дней) просрочка, повторные напоминания
-5. **On Hold** — приостановлен вручную
-6. **Paid** — оплачен (финдиректор подтверждает)
-7. **Unpaid** — не оплачен (закрыт как неуспешный)
+1. `Tax = Free` — официальный счёт не нужен.
+2. `Tax = Tax` — может потребоваться запрос в бухгалтерскую WhatsApp-группу.
+3. Пока `official_request_sent = false`, клиентские напоминания не должны отправляться для `Tax`.
+4. Статус карточки отражает именно состояние денег, а не состояние уведомлений.
 
 **Связи:**
 

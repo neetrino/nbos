@@ -71,7 +71,7 @@
 Подпункты:
 | Элемент | Путь | Описание |
 |---------|------|----------|
-| Invoices | `/finance/invoices` | Счета (Kanban по стадиям) |
+| Invoices | `/finance/invoices` | Доска контроля ожидаемых оплат |
 | Payments | `/finance/payments` | Реестр платежей |
 | Subscriptions (Grid) | `/finance/subscriptions` | Подписки — матричный вид (проекты × месяцы) |
 | Expenses (Planned) | `/finance/expenses/planned` | Плановые расходы — сетка по месяцам |
