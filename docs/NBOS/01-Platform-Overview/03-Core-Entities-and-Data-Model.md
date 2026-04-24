@@ -335,25 +335,27 @@ Contact (человек)
 
 Повторяющееся коммерческое соглашение: клиент платит фиксированную сумму регулярно.
 
-| Поле            | Тип          | Описание                                                                       |
-| --------------- | ------------ | ------------------------------------------------------------------------------ |
-| id              | UUID         | Уникальный идентификатор                                                       |
-| project_id      | FK → Project | Проект                                                                         |
-| type            | Enum         | Maintenance Only, Development + Maintenance, Development Only, Partner Service |
-| amount          | Decimal      | Сумма подписки в месяц                                                         |
-| currency        | Enum         | AMD                                                                            |
-| tax_status      | Enum         | Tax, Tax-Free                                                                  |
-| billing_day     | Integer      | День месяца для биллинга (1–28)                                                |
-| start_date      | Date         | Дата начала                                                                    |
-| end_date        | Date         | Дата окончания (null = бессрочно)                                              |
-| status          | Enum         | Pending, Active, On Hold, Cancelled, Completed                                 |
-| partner_id      | FK → Partner | Партнёр (если partner service)                                                 |
-| partner_percent | Decimal      | % партнёра                                                                     |
-| notes           | Text         | Заметки                                                                        |
+| Поле                  | Тип          | Описание                                                                       |
+| --------------------- | ------------ | ------------------------------------------------------------------------------ |
+| id                    | UUID         | Уникальный идентификатор                                                       |
+| project_id            | FK → Project | Проект                                                                         |
+| type                  | Enum         | Maintenance Only, Development + Maintenance, Development Only, Partner Service |
+| base_monthly_amount   | Decimal      | Базовая стоимость одного месяца                                                |
+| currency              | Enum         | AMD                                                                            |
+| tax_status            | Enum         | Tax, Free                                                                      |
+| notifications_enabled | Boolean      | Разрешены ли автоматические уведомления по карточкам оплат                     |
+| billing_frequency     | Enum         | Monthly, Yearly, Custom                                                        |
+| billing_day           | Integer      | День месяца для биллинга (1–28), если применяется месячная логика              |
+| billing_start_date    | Date         | Дата старта биллинга                                                           |
+| end_date              | Date         | Дата окончания (null = бессрочно)                                              |
+| status                | Enum         | Pending, Active, On Hold, Cancelled, Completed                                 |
+| partner_id            | FK → Partner | Партнёр (если partner service)                                                 |
+| partner_percent       | Decimal      | % партнёра                                                                     |
+| notes                 | Text         | Заметки                                                                        |
 
 **Связи:**
 
-- Subscription → many Invoices (ежемесячные)
+- Subscription → many Invoice Cards (каждая может покрывать один или несколько месяцев)
 - Subscription → one Project
 - Subscription → one Partner (опционально)
 
