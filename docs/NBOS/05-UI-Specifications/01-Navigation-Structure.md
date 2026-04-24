@@ -89,7 +89,7 @@
 Подпункты:
 | Элемент | Путь | Описание |
 |---------|------|----------|
-| Tickets | `/support/tickets` | Тикеты — Kanban-доска |
+| Tickets | `/support/tickets` | Тикеты — основная support board и list view |
 | Dashboard | `/support/dashboard` | Обзорная панель поддержки |
 
 ### 2.7. Clients (раскрываемый)

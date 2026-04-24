@@ -55,6 +55,8 @@
 | Projects Hub cleanup register                       | `02-Modules/02-Projects-Hub/06-Projects-Hub-Cleanup-Register.md`                                    |
 | Task system / Work Space canon                      | `02-Modules/05-Tasks/01-Task-System-Overview.md`, `02-Modules/05-Tasks/02-Work-Spaces-and-Views.md` |
 | Tasks cleanup register                              | `02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md`                                                  |
+| Support canon                                       | `02-Modules/06-Support/01-Support-Overview.md`, `02-Modules/06-Support/02-Ticket-Lifecycle.md`      |
+| Support cleanup register                            | `02-Modules/06-Support/04-Support-Cleanup-Register.md`                                              |
 | Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                                       |
 | Единый план и прогресс                              | [DEVELOPMENT_PLAN.md](../DEVELOPMENT_PLAN.md)                                                       |
 

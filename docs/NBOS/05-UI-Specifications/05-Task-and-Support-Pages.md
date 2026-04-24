@@ -265,18 +265,26 @@ Scrum-вид должен содержать:
 
 **Путь:** `/support/tickets`
 
-### 6.2. Kanban-доска
+### 6.2. Основной board view
 
-Колонки = стадии тикета:
+Основные колонки тикета:
 
-| Колонка     | Описание                                          |
-| ----------- | ------------------------------------------------- |
-| New         | Новый тикет, ещё не обработан                     |
-| Triaged     | Классифицирован (категория + приоритет назначены) |
-| Assigned    | Назначен исполнителю                              |
-| In Progress | В работе                                          |
-| Resolved    | Решён (ожидает подтверждения)                     |
-| Closed      | Закрыт                                            |
+| Колонка     | Описание                                |
+| ----------- | --------------------------------------- |
+| New         | Новый ticket, ещё без triage            |
+| Triaged     | Классифицирован и готов к маршрутизации |
+| Assigned    | Есть владелец / исполнитель             |
+| In Progress | В работе                                |
+| Resolved    | Решение применено, ждём подтверждение   |
+| Closed      | Завершённый кейс                        |
+
+`Reopen` не является отдельной постоянной колонкой. Это действие, которое возвращает ticket обратно в `In Progress`.
+
+Поверх колонок карточка может иметь overlay badges:
+
+- `Waiting for Client`
+- `Waiting for Third Party`
+- `Escalated`
 
 ### 6.3. Карточка тикета на доске
 
@@ -284,11 +292,12 @@ Scrum-вид должен содержать:
 | --------------- | ---------------------------------------------------------------------------------- |
 | Заголовок       | Название тикета                                                                    |
 | Проект          | Связанный проект (ссылка)                                                          |
-| Категория бейдж | Bug / Feature Request / Question / Incident / Change Request                       |
+| Категория бейдж | Incident / Service Request / Change Request / Problem                              |
 | Приоритет бейдж | Low / Medium / High / Critical                                                     |
 | SLA индикатор   | Цветной кружок: зелёный (в пределах SLA), жёлтый (приближается), красный (нарушен) |
 | Исполнитель     | Аватар назначенного сотрудника                                                     |
 | Время создания  | Сколько времени назад создан                                                       |
+| Waiting badge   | Если ticket находится в ожидании клиента / third party / escalation                |
 
 ### 6.4. SLA-таймер
 
@@ -308,16 +317,19 @@ Scrum-вид должен содержать:
 ### 6.6. Фильтры
 
 - **По проекту:** выбор проекта
-- **По категории:** Bug / Feature Request / Question / Incident / Change Request
+- **По категории:** Incident / Service Request / Change Request / Problem
 - **По приоритету:** Low / Medium / High / Critical
 - **По статусу:** мультивыбор стадий
 - **По исполнителю:** выбор сотрудника
 - **По SLA:** In SLA / SLA Warning / SLA Breached
+- **По waiting-state:** Waiting for Client / Waiting for Third Party / Escalated
+- **По view:** Main Support / Change Control / Closed
 
 ### 6.7. Быстрые действия
 
-- `+ New Ticket` — создание тикета: заголовок, описание, проект, категория, приоритет
+- `+ New Ticket` — создание тикета: заголовок, описание, проект, продукт, категория, приоритет
 - **Classify Ticket** — быстрая классификация: установка категории + приоритета одним действием (из контекстного меню карточки)
+- **Send to Change Control** — если ticket классифицирован как `Change Request`
 
 ---
 
@@ -374,6 +386,7 @@ Scrum-вид должен содержать:
 | --------------------- | ------------------------------------------------------------------------------ |
 | Assign                | Назначить исполнителя                                                          |
 | Change Status         | Переход на следующую стадию                                                    |
+| Set Waiting State     | Поставить `Waiting for Client / Third Party / Escalated`                       |
 | Mark as Billable      | Отметить как оплачиваемый (если работа требует дополнительного финансирования) |
 | Create Extension Deal | Создать сделку-продление в CRM (если тикет = Change Request)                   |
 | Create Task           | Создать задачу на основе тикета (привязка к продукту)                          |
@@ -416,9 +429,9 @@ Support Ticket (Change Request)
   ↓ Create Extension Deal
 CRM → Extension Deal
   ↓ Won
-Project → Extension
-  ↓ Tasks
-Work Space
+Projects Hub → Extension
+  ↓ Work Space execution
+Ticket auto-close after delivery
 ```
 
 ```
@@ -431,6 +444,7 @@ Ticket → Resolved → Closed
 
 - Когда задача, созданная из тикета, завершается — тикет автоматически предлагается перевести в «Resolved»
 - Когда тикет типа Change Request создаёт Extension Deal — тикет помечается как «Billable» и привязывается к сделке
+- Change Request tickets должны быть видны в отдельном `Change Control` представлении, а не смешиваться с обычной support-очередью
 - Все связи двунаправленные и видны в обеих сущностях
 
 ---

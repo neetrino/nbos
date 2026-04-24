@@ -494,33 +494,36 @@ Contact (человек)
 
 ### 2.14. Support Ticket (Тикет)
 
-Обращение клиента по существующему проекту/продукту.
+Клиентский кейс по существующему проекту/продукту. Ticket не равен задаче: он хранит обращение, SLA и клиентскую историю, а исполнение идёт через linked tasks / work spaces.
 
-| Поле                  | Тип           | Описание                                                        |
-| --------------------- | ------------- | --------------------------------------------------------------- |
-| id                    | UUID          | Уникальный идентификатор                                        |
-| project_id            | FK → Project  | Проект                                                          |
-| product_id            | FK → Product  | Продукт (опционально)                                           |
-| contact_id            | FK → Contact  | Кто обратился                                                   |
-| category              | Enum          | Incident, Service Request, Change Request, Problem              |
-| priority              | Enum          | P1 Critical, P2 High, P3 Normal                                 |
-| status                | Enum          | New, Triaged, Assigned, In Progress, Resolved, Closed, Reopened |
-| billable              | Boolean       | Платная работа?                                                 |
-| source                | Enum          | Subscription (warranty), Paid Extension                         |
-| assigned_to           | FK → Employee | Исполнитель                                                     |
-| sla_response_deadline | DateTime      | Дедлайн первой реакции                                          |
-| sla_resolve_deadline  | DateTime      | Дедлайн решения                                                 |
-| description           | Text          | Описание проблемы                                               |
-| resolution            | Text          | Описание решения                                                |
-| created_at            | DateTime      | Дата создания                                                   |
-| resolved_at           | DateTime      | Дата решения                                                    |
+| Поле                     | Тип           | Описание                                                                       |
+| ------------------------ | ------------- | ------------------------------------------------------------------------------ |
+| id                       | UUID          | Уникальный идентификатор                                                       |
+| project_id               | FK → Project  | Проект                                                                         |
+| product_id               | FK → Product  | Продукт (опционально, но канонически желателен если кейс относится к продукту) |
+| contact_id               | FK → Contact  | Кто обратился                                                                  |
+| category                 | Enum          | Incident, Service Request, Change Request, Problem                             |
+| priority                 | Enum          | P1 Critical, P2 High, P3 Normal                                                |
+| status                   | Enum          | New, Triaged, Assigned, In Progress, Resolved, Closed                          |
+| waiting_state            | Enum?         | Waiting for Client, Waiting for Third Party, Escalated                         |
+| billable                 | Boolean       | Платная работа?                                                                |
+| assigned_to              | FK → Employee | Текущий владелец / исполнитель кейса                                           |
+| linked_extension_deal_id | FK → Deal     | Если ticket ушёл в change control                                              |
+| sla_response_deadline    | DateTime      | Дедлайн первой реакции                                                         |
+| sla_resolve_deadline     | DateTime      | Дедлайн решения                                                                |
+| description              | Text          | Описание проблемы / запроса                                                    |
+| resolution               | Text          | Описание решения                                                               |
+| created_at               | DateTime      | Дата создания                                                                  |
+| resolved_at              | DateTime      | Дата решения                                                                   |
+| closed_at                | DateTime      | Дата закрытия                                                                  |
 
 **Связи:**
 
 - Ticket → one Project
 - Ticket → one Product (опционально)
 - Ticket → one Contact
-- Ticket → may create Extension Deal (если Change Request = платная работа)
+- Ticket → may create / link Extension Deal (если Change Request = платная работа)
+- Ticket → may have many linked Tasks
 
 ---
 
