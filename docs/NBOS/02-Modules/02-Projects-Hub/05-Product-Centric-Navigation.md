@@ -22,7 +22,8 @@
 На странице **Product** размещаются вкладки, привязанные к **этому** продукту, например:
 
 - Overview
-- Tasks & Support
+- Work Space
+- Support
 - Credentials
 - Finance
 - (остальные по модулю — по тем же правилам привязки к Product)

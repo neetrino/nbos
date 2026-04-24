@@ -41,20 +41,22 @@
 
 ## 3. Ключевые «якорные» документы (часто нужны)
 
-| Тема                                                | Файл                                                                                |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Как прорабатывать каждый модуль                     | `00-Module-Documentation-Working-Method.md`                                         |
-| Финансовое ядро (журнал vB, accrual/cash, периоды)  | `02-Modules/04-Finance/09-Finance-Core-Architecture.md`                             |
-| Кошелёк сотрудника (Wallet, read-only)              | `02-Modules/04-Finance/08-Employee-Wallet.md`                                       |
-| Видение, слои                                       | `01-Platform-Overview/01-Vision-and-Goals.md`, `02-Platform-Architecture-Layers.md` |
-| Продукто-центричный Hub                             | `02-Modules/02-Projects-Hub/05-Product-Centric-Navigation.md`                       |
-| Решения заказчика (Product, Extension, MAINTENANCE) | `03-Business-Logic/08-Stakeholder-Decisions-Product-Extension-Maintenance.md`       |
-| Воронка Deal                                        | `02-Modules/01-CRM/03-Deal-Pipeline.md`                                             |
-| Stage Gates Deal + override logic                   | `02-Modules/01-CRM/05-Deal-Stage-Gates-and-Won-Override.md`                         |
-| CRM cleanup register                                | `02-Modules/01-CRM/06-CRM-Cleanup-Register.md`                                      |
-| Projects Hub cleanup register                       | `02-Modules/02-Projects-Hub/06-Projects-Hub-Cleanup-Register.md`                    |
-| Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                       |
-| Единый план и прогресс                              | [DEVELOPMENT_PLAN.md](../DEVELOPMENT_PLAN.md)                                       |
+| Тема                                                | Файл                                                                                                |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Как прорабатывать каждый модуль                     | `00-Module-Documentation-Working-Method.md`                                                         |
+| Финансовое ядро (журнал vB, accrual/cash, периоды)  | `02-Modules/04-Finance/09-Finance-Core-Architecture.md`                                             |
+| Кошелёк сотрудника (Wallet, read-only)              | `02-Modules/04-Finance/08-Employee-Wallet.md`                                                       |
+| Видение, слои                                       | `01-Platform-Overview/01-Vision-and-Goals.md`, `02-Platform-Architecture-Layers.md`                 |
+| Продукто-центричный Hub                             | `02-Modules/02-Projects-Hub/05-Product-Centric-Navigation.md`                                       |
+| Решения заказчика (Product, Extension, MAINTENANCE) | `03-Business-Logic/08-Stakeholder-Decisions-Product-Extension-Maintenance.md`                       |
+| Воронка Deal                                        | `02-Modules/01-CRM/03-Deal-Pipeline.md`                                                             |
+| Stage Gates Deal + override logic                   | `02-Modules/01-CRM/05-Deal-Stage-Gates-and-Won-Override.md`                                         |
+| CRM cleanup register                                | `02-Modules/01-CRM/06-CRM-Cleanup-Register.md`                                                      |
+| Projects Hub cleanup register                       | `02-Modules/02-Projects-Hub/06-Projects-Hub-Cleanup-Register.md`                                    |
+| Task system / Work Space canon                      | `02-Modules/05-Tasks/01-Task-System-Overview.md`, `02-Modules/05-Tasks/02-Work-Spaces-and-Views.md` |
+| Tasks cleanup register                              | `02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md`                                                  |
+| Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                                       |
+| Единый план и прогресс                              | [DEVELOPMENT_PLAN.md](../DEVELOPMENT_PLAN.md)                                                       |
 
 ---
 

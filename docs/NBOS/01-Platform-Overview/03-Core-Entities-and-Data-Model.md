@@ -632,25 +632,59 @@ Contact (человек)
 
 Подробное описание в отдельном документе (05-Tasks). Здесь — ключевые поля.
 
-| Поле         | Тип             | Описание                                             |
-| ------------ | --------------- | ---------------------------------------------------- |
-| id           | UUID            | Уникальный идентификатор                             |
-| title        | String          | Название задачи                                      |
-| project_id   | FK → Project    | Проект                                               |
-| product_id   | FK → Product    | Продукт (опционально)                                |
-| extension_id | FK → Extension  | Доработка (опционально)                              |
-| creator_id   | FK → Employee   | Кто поставил                                         |
-| assignee_id  | FK → Employee   | Исполнитель                                          |
-| co_assignees | FK[] → Employee | Соисполнители                                        |
-| observers    | FK[] → Employee | Наблюдатели                                          |
-| status       | Enum            | Backlog, To Do, In Progress, Review, Done, Cancelled |
-| priority     | Enum            | Critical, High, Normal, Low                          |
-| sprint_id    | FK → Sprint     | Спринт (опционально)                                 |
-| due_date     | Date            | Дедлайн                                              |
-| description  | Text            | Описание                                             |
-| has_chat     | Boolean         | Есть ли чат в задаче                                 |
-| created_at   | DateTime        | Дата создания                                        |
-| completed_at | DateTime        | Дата завершения                                      |
+| Поле                  | Тип             | Описание                                                  |
+| --------------------- | --------------- | --------------------------------------------------------- |
+| id                    | UUID            | Уникальный идентификатор                                  |
+| title                 | String          | Название задачи                                           |
+| primary_context_type  | Enum            | Основной контекст: Standalone / Product / Invoice и т.д.  |
+| project_id            | FK → Project    | Проект (опционально)                                      |
+| product_id            | FK → Product    | Продукт (опционально)                                     |
+| extension_id          | FK → Extension  | Доработка (опционально)                                   |
+| workspace_id          | FK → WorkSpace  | Work Space, в котором задача обычно живёт                 |
+| creator_id            | FK → Employee   | Кто поставил                                              |
+| assignee_id           | FK → Employee   | Исполнитель                                               |
+| co_assignees          | FK[] → Employee | Соисполнители                                             |
+| observers             | FK[] → Employee | Наблюдатели                                               |
+| reviewer_id           | FK → Employee   | Кто принимает review/completion, если применимо           |
+| workflow_status       | Enum            | Open, In Progress, Review, Completed, Deferred, Cancelled |
+| priority              | Enum            | Critical, High, Normal, Low                               |
+| sprint_id             | FK → Sprint     | Спринт (опционально, если workspace scrum-enabled)        |
+| due_date              | Date            | Дедлайн                                                   |
+| description           | Text            | Описание                                                  |
+| completion_rules_json | JSON            | Условия, без которых задачу нельзя завершить              |
+| has_chat              | Boolean         | Есть ли discussion thread                                 |
+| created_at            | DateTime        | Дата создания                                             |
+| completed_at          | DateTime        | Дата завершения                                           |
+
+### 2.20. Work Space
+
+`Work Space` — planning-сущность модуля `Tasks`. Она не заменяет задачу, а организует задачи в backlog, sprint, kanban и другие рабочие виды.
+
+| Поле                | Тип      | Описание                                                          |
+| ------------------- | -------- | ----------------------------------------------------------------- |
+| id                  | UUID     | Уникальный идентификатор                                          |
+| title               | String   | Название рабочего пространства                                    |
+| type                | Enum     | PRODUCT_DELIVERY, EXTENSION_DELIVERY, STANDALONE_OPERATIONAL, ... |
+| mode                | Enum     | KANBAN_ONLY, SCRUM_ENABLED                                        |
+| context_entity_type | Enum     | С какой сущностью связан workspace                                |
+| context_entity_id   | UUID     | Идентификатор связанной сущности                                  |
+| settings_json       | JSON     | Настройки интерфейса, views, правил и ограничений                 |
+| created_at          | DateTime | Дата создания                                                     |
+
+### 2.21. Sprint
+
+`Sprint` принадлежит `Work Space` и используется только в scrum-enabled пространствах.
+
+| Поле         | Тип            | Описание                                  |
+| ------------ | -------------- | ----------------------------------------- |
+| id           | UUID           | Уникальный идентификатор                  |
+| workspace_id | FK → WorkSpace | Пространство, которому принадлежит спринт |
+| title        | String         | Название спринта                          |
+| goal         | Text           | Цель спринта                              |
+| status       | Enum           | Planning, Active, Closed                  |
+| start_date   | Date           | Дата начала                               |
+| end_date     | Date           | Дата окончания                            |
+| created_at   | DateTime       | Дата создания                             |
 
 ---
 

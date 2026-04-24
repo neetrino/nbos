@@ -213,7 +213,7 @@
 **Примеры:**
 
 ```
-Home > Projects > Project "Brand X" > Product "Website" > Tasks
+Home > Projects > Project "Brand X" > Product "Website" > Work Space
 Home > CRM > Deals > Deal "Brand X — Website Development"
 Home > Finance > Invoices > Invoice #INV-2025-0042
 Home > Support > Tickets > Ticket #TKT-1205
