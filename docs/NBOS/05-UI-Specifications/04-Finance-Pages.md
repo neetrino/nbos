@@ -381,7 +381,7 @@ Default view:
 ### 7.1. Вкладки отчётов
 
 ```
-Company P&L | Project P&L | MRR Report
+Company P&L | Project P&L | Product P&L | Order P&L | Cash Flow | MRR | Journal
 ```
 
 ### 7.2. Company P&L (P&L компании)
@@ -389,10 +389,11 @@ Company P&L | Project P&L | MRR Report
 **Верхний блок — ключевые метрики:**
 | Метрика | Описание |
 |---------|----------|
-| Total Revenue | Общая выручка за период |
-| Total Expenses | Общие расходы за период |
-| Net Profit | Чистая прибыль |
-| Margin % | Процент маржинальности |
+| Total Revenue | Доходы из Payment / journal entries |
+| Direct Costs | Прямые расходы из Expense Cards / Expense Payments |
+| Gross Margin | Валовая маржа |
+| Operating Costs | Операционные расходы |
+| Net Margin | Чистая маржа |
 
 **Графики:**
 
@@ -423,7 +424,41 @@ Company P&L | Project P&L | MRR Report
 - Детализация по продуктам и расширениям
 - Сравнение Plan vs Actual (если бюджет задан)
 
-### 7.4. MRR Report (отчёт по рекуррентной выручке)
+### 7.4. Product P&L (P&L продукта)
+
+Показывает доходы и расходы конкретного продукта.
+
+Источники:
+
+- product orders;
+- product subscription payments;
+- extension revenue;
+- product-related client services;
+- product-linked expense cards.
+
+### 7.5. Order P&L (P&L заказа)
+
+Показывает маржу конкретного заказа:
+
+- payments по invoice cards заказа;
+- sales / delivery bonuses;
+- partner payouts;
+- прямые expense cards, если они относятся к order.
+
+### 7.6. Cash Flow (Денежный поток)
+
+Показывает:
+
+- текущий баланс;
+- ожидаемые поступления из open invoice cards;
+- будущие subscription invoice cards;
+- upcoming expense cards;
+- payroll runs;
+- expense backlog отдельным блоком.
+
+`Expense Backlog` не должен смешиваться с текущим платёжным циклом.
+
+### 7.7. MRR Report (отчёт по рекуррентной выручке)
 
 **Тренд MRR:**
 
@@ -432,7 +467,7 @@ Company P&L | Project P&L | MRR Report
 
 **Разбивка по подпискам:**
 
-- Таблица: проект, сумма подписки, дата начала, статус (Active / Churned / Paused)
+- Таблица: проект, сумма подписки, дата начала, статус (Pending / Active / On Hold / Cancelled / Completed)
 - Сортировка по сумме (убывание)
 
 **Анализ оттока (Churn Analysis):**
@@ -440,6 +475,34 @@ Company P&L | Project P&L | MRR Report
 - Churn Rate за период (% потерянного MRR)
 - Список отменённых/приостановленных подписок
 - Причины оттока (если указаны)
+
+### 7.8. Journal View (Журнал операций)
+
+Доступен только CEO / Finance.
+
+Показывает:
+
+- дату;
+- source type;
+- source id;
+- amount;
+- currency;
+- cash/accrual basis;
+- project;
+- product;
+- order;
+- employee;
+- period.
+
+### 7.9. Drill-down
+
+Любая сумма в отчётах должна открываться до источника:
+
+- revenue -> payments;
+- receivables -> invoice cards;
+- salaries -> payroll run / salary lines;
+- expenses -> expense cards / expense payments;
+- pass-through margin -> invoice card + expense card pair.
 
 ---
 

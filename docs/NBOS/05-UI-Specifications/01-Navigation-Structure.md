@@ -80,7 +80,7 @@
 | Domains | `/finance/domains` | Домены — управление и оплата |
 | Bonus Board | `/finance/bonuses` | Доска бонусов и история по сотрудникам |
 | Salary Board | `/finance/salary` | Матрица зарплат employees x months |
-| P&L Reports | `/finance/pnl` | Отчёты о прибылях и убытках |
+| P&L Reports | `/finance/pnl` | P&L, Cash Flow, MRR и Journal View |
 
 ### 2.6. Support
 

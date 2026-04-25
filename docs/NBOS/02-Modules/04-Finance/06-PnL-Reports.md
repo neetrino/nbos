@@ -1,331 +1,397 @@
-# Отчёты P&L (Profit & Loss)
+# P&L, Cash Flow и финансовые отчёты
 
 ## Общая концепция
 
-P&L (Profit & Loss) — отчёт о прибылях и убытках. В NBOS реализовано три уровня P&L, что позволяет анализировать финансовую эффективность на любом уровне детализации: от компании в целом до отдельного заказа.
+`P&L / Profit & Loss / Отчёт о прибыли и убытках` показывает:
 
+- сколько компания заработала;
+- сколько потратила;
+- какая маржа получилась.
+
+Отчёты не должны быть отдельной доской, где вручную живут суммы. Они должны быть read-only витриной над финансовыми фактами.
+
+Источник правды:
+
+```text
+Invoice Card
+Payment
+Subscription
+Expense Card
+Expense Payment
+Payroll Run
+Salary Line
+Client Service Record
+Operational Journal
 ```
-Company P&L  →  Агрегированная картина бизнеса
-Project P&L  →  Рентабельность конкретного проекта/бренда
-Order P&L    →  Маржинальность каждой сделки
-```
+
+Доски (`Invoice Board`, `Expense Board`, `Bonus Board`, `Salary Board`) являются рабочими интерфейсами. Они не должны быть источником истины для отчётов.
 
 ---
 
-## 1. Company P&L (P&L компании)
+## P&L vs Cash Flow
 
-### Периодичность
+Нужно разделять два вида финансовой картины.
 
-Формируется **ежемесячно**. Доступен в реальном времени (данные обновляются по мере поступления платежей и совершения расходов).
+| Вид         | Русское название | Главный вопрос                                      |
+| ----------- | ---------------- | --------------------------------------------------- |
+| `P&L`       | Прибыль и убытки | Сколько заработали и сколько потратили за период    |
+| `Cash Flow` | Денежный поток   | Сколько денег реально пришло, ушло и будет доступно |
 
-### Структура отчёта
+### Cash view / Денежный вид
 
-```
-╔══════════════════════════════════════════════════════════════╗
-║              COMPANY P&L — Март 2026                        ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  REVENUE (Доход)                                             ║
-║  ├─ Development Revenue           1,200,000                  ║
-║  ├─ Extension Revenue               350,000                  ║
-║  ├─ Subscription/Maintenance Rev    800,000                  ║
-║  ├─ Partner Service Revenue         150,000                  ║
-║  ├─ Pass-through Revenue             50,000  (наценка)       ║
-║  └─ TOTAL REVENUE                 2,550,000                  ║
-║                                                              ║
-║  DIRECT COSTS (Прямые расходы)                               ║
-║  ├─ Sales Bonuses                   180,000                  ║
-║  ├─ Delivery Bonuses                120,000                  ║
-║  ├─ Partner Payouts                 250,000                  ║
-║  └─ TOTAL DIRECT COSTS              550,000                  ║
-║                                                              ║
-║  GROSS MARGIN                     2,000,000  (78.4%)         ║
-║                                                              ║
-║  OPERATING COSTS (Операционные расходы)                      ║
-║  ├─ Salaries                      1,200,000                  ║
-║  ├─ Tools & Licenses                 80,000                  ║
-║  ├─ Hosting & Infrastructure         60,000                  ║
-║  ├─ Marketing                       100,000                  ║
-║  ├─ Office                          150,000                  ║
-║  ├─ Other                            30,000                  ║
-║  └─ TOTAL OPERATING COSTS         1,620,000                  ║
-║                                                              ║
-║  NET MARGIN                         380,000  (14.9%)         ║
-║                                                              ║
-╠══════════════════════════════════════════════════════════════╣
-║  CASH POSITION                                               ║
-║  ├─ Bank Balance                  1,500,000                  ║
-║  ├─ Outstanding Receivables         450,000                  ║
-║  ├─ Upcoming Expenses (30 days)     800,000                  ║
-║  └─ Projected Cash (30 days)      1,150,000                  ║
-╚══════════════════════════════════════════════════════════════╝
-```
+Показывает реальные движения денег:
 
-### Источники данных
+- клиент оплатил;
+- компания оплатила расход;
+- зарплата выплачена;
+- поставщик получил оплату.
 
-| Строка P&L               | Источник в NBOS                                           |
-| ------------------------ | --------------------------------------------------------- |
-| Development Revenue      | Payments по Invoice типа Development                      |
-| Extension Revenue        | Payments по Invoice типа Extension                        |
-| Subscription Revenue     | Payments по Invoice типа Subscription                     |
-| Partner Service Revenue  | Payments по Invoice типа Subscription (Partner Service)   |
-| Pass-through Revenue     | Наценка на pass-through (Invoice amount − Expense amount) |
-| Sales Bonuses            | Bonus Board (Active/Paid, тип Sales)                      |
-| Delivery Bonuses         | Bonus Board (Active/Paid, тип Delivery)                   |
-| Partner Payouts          | Expenses категории Partner Payout                         |
-| Salaries                 | Salary Board (base salaries)                              |
-| Tools & Licenses         | Expenses категории Tools                                  |
-| Hosting & Infrastructure | Expenses категорий Hosting, Service                       |
-| Marketing                | Expenses категории Marketing                              |
-| Office                   | Expenses категории Office                                 |
-| Bank Balance             | Внешний ввод / интеграция с банком                        |
-| Outstanding Receivables  | Сумма неоплаченных Invoice (Overdue + Pending)            |
-| Upcoming Expenses        | Expense Cards / Expense Plans на следующие 30 дней        |
+Источники:
 
-### Формулы
+- `Payment`;
+- `Expense Payment`;
+- банковский баланс, пока вручную или через интеграцию позже.
 
-| Показатель         | Формула                                                    |
-| ------------------ | ---------------------------------------------------------- |
-| **Gross Margin**   | Total Revenue − Direct Costs                               |
-| **Gross Margin %** | Gross Margin / Total Revenue × 100%                        |
-| **Net Margin**     | Gross Margin − Operating Costs                             |
-| **Net Margin %**   | Net Margin / Total Revenue × 100%                          |
-| **Projected Cash** | Bank Balance + Outstanding Receivables − Upcoming Expenses |
+### Accrual view / Начисленный вид
+
+Показывает экономическую принадлежность дохода или расхода к периоду.
+
+Примеры:
+
+- подписка оплачена за 12 месяцев, но revenue может распределяться по месяцам;
+- payroll относится к месяцу работы, даже если часть выплаты ушла позже;
+- expense может относиться к проекту или периоду, даже если оплачен частями.
+
+NBOS v1 может начинать с cash-driven отчётов, но канон должен сохранять место для accrual.
 
 ---
 
-## 2. Project P&L (P&L проекта)
+## Основные уровни P&L
 
-### Назначение
+NBOS должен поддерживать четыре уровня:
 
-Показывает финансовую эффективность конкретного проекта (бренда/бизнеса клиента). Помогает понять, какие проекты приносят прибыль, а какие работают в минус.
+| Уровень       | Русское название | Что показывает                        |
+| ------------- | ---------------- | ------------------------------------- |
+| `Company P&L` | P&L компании     | Общая прибыльность компании           |
+| `Project P&L` | P&L проекта      | Прибыльность бизнеса / бренда клиента |
+| `Product P&L` | P&L продукта     | Прибыльность конкретного продукта     |
+| `Order P&L`   | P&L заказа       | Маржа конкретной продажи              |
 
-### Структура
-
-```
-╔══════════════════════════════════════════════════════════════╗
-║              PROJECT P&L — Project Alpha                     ║
-║              Период: Январь 2025 — Март 2026                ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  REVENUE                                                     ║
-║  ├─ Development Orders              500,000                  ║
-║  ├─ Extensions                      120,000                  ║
-║  ├─ Subscriptions (Maintenance)     640,000  (8 мес × 80k)   ║
-║  └─ TOTAL REVENUE                 1,260,000                  ║
-║                                                              ║
-║  DIRECT COSTS                                                ║
-║  ├─ Sales Bonuses                    75,000                  ║
-║  ├─ Delivery Bonuses                 50,000                  ║
-║  ├─ Partner Payouts                 150,000                  ║
-║  ├─ Domains                          15,000                  ║
-║  ├─ Hosting                          48,000  (8 мес × 6k)    ║
-║  ├─ Services (Neon, Upstash, etc.)   24,000                  ║
-║  └─ TOTAL COSTS                     362,000                  ║
-║                                                              ║
-║  PROJECT MARGIN                     898,000  (71.3%)         ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-### Что входит в Project Revenue
-
-- Все Payments по всем Orders этого проекта (Development, Extension)
-- Все Payments по Subscriptions этого проекта
-- Наценка на pass-through (если есть)
-
-### Что входит в Project Costs
-
-- Бонусы продажников по заказам этого проекта
-- Бонусы доставки по заказам этого проекта
-- Партнёрские выплаты по этому проекту
-- Расходы на домены, привязанные к проекту
-- Расходы на хостинг, привязанный к проекту
-- Расходы на сервисы, привязанные к проекту
-- Любые другие Expenses с привязкой к этому проекту
-
-### Применение
-
-- **Выявление убыточных проектов**: если Project Margin отрицательная — проект требует внимания
-- **Оценка клиентов**: совокупная ценность клиента (у одного клиента может быть несколько проектов)
-- **Ценообразование**: понимание, достаточна ли подписка для покрытия расходов
-- **Переговоры**: данные для обоснования повышения цены
+`Product P&L` нужен потому, что `Product` является центральной delivery-сущностью NBOS.
 
 ---
 
-## 3. Order P&L (P&L заказа)
+## Company P&L / P&L компании
 
-### Назначение
+Company P&L агрегирует все доходы и расходы компании за период.
 
-Детальная финансовая картина одного конкретного заказа (сделки). Показывает маржинальность каждой продажи.
+### Revenue / Доходы
 
-### Структура
+Источники:
 
-```
-╔══════════════════════════════════════════════════════════════╗
-║              ORDER P&L — Order #127                          ║
-║              Project Alpha — Web Development                 ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  REVENUE                                                     ║
-║  ├─ Invoice #301 (предоплата 50%)   250,000                  ║
-║  ├─ Invoice #345 (остаток 50%)      250,000                  ║
-║  └─ TOTAL REVENUE                   500,000                  ║
-║                                                              ║
-║  COSTS                                                       ║
-║  ├─ Sales Bonus (Seller A, 5%)       25,000                  ║
-║  ├─ Delivery Bonus (PM B, 5%)        25,000                  ║
-║  ├─ Partner Payout (Partner X, 30%) 150,000                  ║
-║  └─ TOTAL COSTS                     200,000                  ║
-║                                                              ║
-║  ORDER MARGIN                       300,000  (60.0%)         ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-```
+| Строка                  | Источник                                                |
+| ----------------------- | ------------------------------------------------------- |
+| Development Revenue     | Payments по Invoice Cards, связанным с product/orders   |
+| Extension Revenue       | Payments по Invoice Cards, связанным с extension/orders |
+| Subscription Revenue    | Payments по Invoice Cards, созданным subscriptions      |
+| Maintenance Revenue     | Payments по maintenance subscriptions                   |
+| Client Services Revenue | Payments по client-paid services                        |
+| Pass-through Margin     | Payment от клиента минус связанный Expense Payment      |
 
-### Что входит в Order Revenue
+### Costs / Расходы
 
-- Все Payments по Invoices этого заказа
+Источники:
 
-### Что входит в Order Costs
+| Строка                   | Источник                                                         |
+| ------------------------ | ---------------------------------------------------------------- |
+| Salaries                 | Payroll Run -> Salary Lines -> Expense Cards -> Expense Payments |
+| Bonuses                  | Bonus Entries included in Payroll Run and related Expense Cards  |
+| Partner Payouts          | Expense Cards category Partner Payout                            |
+| Client Services Costs    | Expense Payments from Client Service Records                     |
+| Tools & Licenses         | Expense Cards category Tools / Service                           |
+| Hosting & Infrastructure | Expense Cards category Hosting / Service                         |
+| Marketing                | Expense Cards category Marketing                                 |
+| Office                   | Expense Cards category Office                                    |
+| Other                    | Expense Cards category Other                                     |
 
-- Бонус продажника (Sales bonus) по этому заказу
-- Бонус доставки (Delivery bonus) по этому заказу
-- Партнёрская выплата по этому заказу (если партнёрский)
+### Основные формулы
 
-### Применение
-
-- **Оценка эффективности продаж**: какие заказы приносят больше маржи
-- **Влияние партнёрских выплат**: насколько партнёрская модель снижает маржу
-- **Бонусная политика**: контроль, что бонусы не «съедают» прибыль
-
----
-
-## Отчёты и дашборды
-
-### Основные отчёты
-
-| Отчёт                            | Описание                                | Периодичность |
-| -------------------------------- | --------------------------------------- | ------------- |
-| **Monthly P&L Statement**        | Company P&L за месяц                    | Ежемесячно    |
-| **Quarterly P&L**                | Company P&L за квартал (агрегация)      | Ежеквартально |
-| **Annual P&L**                   | Company P&L за год                      | Ежегодно      |
-| **Project Profitability Report** | Ранжирование проектов по маржинальности | По запросу    |
-| **Order Profitability Report**   | Ранжирование заказов по маржинальности  | По запросу    |
-
-### MRR Report (Monthly Recurring Revenue)
-
-| Метрика             | Описание                                    |
-| ------------------- | ------------------------------------------- |
-| **Total MRR**       | Сумма всех активных подписок                |
-| **New MRR**         | MRR от новых подписок за месяц              |
-| **Expansion MRR**   | Увеличение суммы существующих подписок      |
-| **Contraction MRR** | Уменьшение суммы существующих подписок      |
-| **Churned MRR**     | Потерянный MRR от отменённых подписок       |
-| **Net New MRR**     | New + Expansion − Contraction − Churned     |
-| **MRR Growth Rate** | Net New MRR / MRR предыдущего месяца × 100% |
-
-### Churn Report
-
-| Метрика                       | Описание                               |
-| ----------------------------- | -------------------------------------- |
-| **Customer Churn Rate**       | % клиентов, отменивших подписку        |
-| **Revenue Churn Rate**        | % потерянного MRR                      |
-| **Churned Customers List**    | Список отменённых подписок с причинами |
-| **Average Customer Lifetime** | Средний срок жизни подписки            |
-| **LTV (Lifetime Value)**      | Средний доход с подписки за весь срок  |
-
-### DSO Report (Days Sales Outstanding)
-
-| Метрика           | Описание                                                 |
+| Показатель        | Формула                                                  |
 | ----------------- | -------------------------------------------------------- |
-| **Average DSO**   | Среднее количество дней от выставления до оплаты         |
-| **DSO by Client** | DSO в разрезе клиентов (кто платит быстро, кто медленно) |
-| **DSO Trend**     | Динамика DSO по месяцам                                  |
-| **Aging Report**  | Распределение дебиторки по срокам давности               |
-
-### Cash Flow Forecast (Прогноз денежного потока)
-
-```
-╔══════════════════════════════════════════════════════════════╗
-║              CASH FLOW FORECAST — Next 3 months              ║
-╠═══════════════╦═══════════╦═══════════╦═══════════╦═════════╣
-║               ║  Апрель   ║    Май    ║   Июнь    ║  Итого  ║
-╠═══════════════╬═══════════╬═══════════╬═══════════╬═════════╣
-║ Начальный     ║ 1,500,000 ║ 1,750,000║ 1,900,000 ║         ║
-║ баланс        ║           ║          ║           ║         ║
-╠═══════════════╬═══════════╬═══════════╬═══════════╬═════════╣
-║ Ожидаемые     ║           ║          ║           ║         ║
-║ поступления:  ║           ║          ║           ║         ║
-║  Subscriptions║   800,000 ║  800,000 ║   850,000 ║2,450,000║
-║  Orders       ║   500,000 ║  300,000 ║   400,000 ║1,200,000║
-║  Other        ║    50,000 ║   50,000 ║    50,000 ║  150,000║
-╠═══════════════╬═══════════╬═══════════╬═══════════╬═════════╣
-║ Ожидаемые     ║           ║          ║           ║         ║
-║ расходы:      ║           ║          ║           ║         ║
-║  Payroll      ║  -800,000 ║ -800,000 ║  -800,000 ║-2,400,00║
-║  Planned Exp  ║  -200,000 ║ -150,000 ║  -200,000 ║ -550,000║
-║  Partner Pay  ║  -100,000 ║ -100,000 ║  -100,000 ║ -300,000║
-╠═══════════════╬═══════════╬═══════════╬═══════════╬═════════╣
-║ Конечный      ║ 1,750,000 ║ 1,900,000║ 2,100,000 ║         ║
-║ баланс        ║           ║          ║           ║         ║
-╚═══════════════╩═══════════╩═══════════╩═══════════╩═════════╝
-```
-
-Источники данных для прогноза:
-
-- **Подписки**: Active subscriptions × amount (предсказуемый доход)
-- **Заказы**: Неоплаченные Invoice с ожидаемыми датами
-- **Payroll**: Salary Board (стабильная сумма)
-- **Expense Plans / Expense Cards**: из сетки планов расходов и созданных карточек расходов
-- **Partner Payouts**: из активных партнёрских соглашений
-
-### Expense Report (Плановые vs Фактические)
-
-| Категория | План    | Факт    | Отклонение   |
-| --------- | ------- | ------- | ------------ |
-| Hosting   | 60,000  | 58,000  | -2,000 (✅)  |
-| Tools     | 80,000  | 95,000  | +15,000 (⚠️) |
-| Marketing | 100,000 | 130,000 | +30,000 (🔴) |
-| Office    | 150,000 | 150,000 | 0            |
-
-### Bonus & Payroll Report
-
-| Показатель              | Значение  |
-| ----------------------- | --------- |
-| Total Payroll           | 1,280,000 |
-| Base Salaries           | 1,150,000 |
-| Total Bonuses           | 130,000   |
-| Sales Bonuses           | 60,000    |
-| Delivery Bonuses        | 45,000    |
-| Marketing Bonuses       | 25,000    |
-| Payroll as % of Revenue | 50.2%     |
+| `Total Revenue`   | Sum revenue lines                                        |
+| `Direct Costs`    | Costs directly tied to orders, products, client services |
+| `Gross Margin`    | Total Revenue - Direct Costs                             |
+| `Operating Costs` | Salaries, tools, office, overhead                        |
+| `Net Margin`      | Gross Margin - Operating Costs                           |
+| `Net Margin %`    | Net Margin / Total Revenue                               |
 
 ---
 
-## Доступы к отчётам
+## Project P&L / P&L проекта
 
-| Отчёт        | CEO | Финдиректор | Продажник                    | PM          |
-| ------------ | --- | ----------- | ---------------------------- | ----------- |
-| Company P&L  | ✅  | ✅          | ❌                           | ❌          |
-| Project P&L  | ✅  | ✅          | ❌ (свои проекты — частично) | ❌          |
-| Order P&L    | ✅  | ✅          | ❌                           | ❌          |
-| MRR Report   | ✅  | ✅          | ❌                           | ❌          |
-| Churn Report | ✅  | ✅          | ❌                           | ❌          |
-| DSO Report   | ✅  | ✅          | ❌                           | ❌          |
-| Cash Flow    | ✅  | ✅          | ❌                           | ❌          |
-| Bonus Report | ✅  | ✅          | Свои бонусы                  | Свои бонусы |
+Project P&L показывает прибыльность проекта как бизнеса / бренда клиента.
+
+Доходы:
+
+- payments по orders проекта;
+- payments по extensions проекта;
+- payments по subscriptions проекта;
+- payments по client services проекта;
+- pass-through margin, если есть.
+
+Расходы:
+
+- delivery bonuses по orders проекта;
+- sales bonuses по orders проекта;
+- partner payouts проекта;
+- domains / hosting / services проекта;
+- другие expense cards с project_id.
+
+Project P&L агрегирует:
+
+```text
+Project
+    ->
+Products
+    ->
+Extensions
+    ->
+Subscriptions
+    ->
+Client Services
+    ->
+Orders / Invoice Cards / Payments / Expenses
+```
 
 ---
 
-## Периодичность и автоматизация
+## Product P&L / P&L продукта
 
-| Действие               | Периодичность          | Авто/Ручное   |
-| ---------------------- | ---------------------- | ------------- |
-| Company P&L генерация  | Ежемесячно (1-е число) | Автоматически |
-| Project P&L обновление | Реальное время         | Автоматически |
-| Order P&L обновление   | Реальное время         | Автоматически |
-| MRR расчёт             | Ежедневно              | Автоматически |
-| Cash Flow прогноз      | Еженедельно            | Автоматически |
-| DSO расчёт             | Ежемесячно             | Автоматически |
-| Отправка P&L CEO       | Ежемесячно (5-е число) | Уведомление   |
+Product P&L показывает, сколько принёс и сколько стоил конкретный продукт.
+
+Доходы:
+
+- initial product order;
+- product subscription payments;
+- product-related client services;
+- extension revenue, если extension привязан к продукту.
+
+Расходы:
+
+- delivery bonuses;
+- product-related services;
+- hosting;
+- infrastructure;
+- support / maintenance costs, если они распределяются на product.
+
+Product P&L особенно важен для:
+
+- понимания прибыльности конкретного продукта;
+- сравнения продуктов внутри одного проекта;
+- решения, нужно ли повышать подписку или service fee.
+
+---
+
+## Order P&L / P&L заказа
+
+Order P&L показывает маржу конкретной продажи.
+
+Доходы:
+
+- payments по invoice cards заказа.
+
+Расходы:
+
+- sales bonus;
+- delivery bonus;
+- partner payout;
+- прямые costs, если они относятся именно к order.
+
+Order P&L нужен для:
+
+- контроля маржи сделки;
+- проверки бонусной политики;
+- анализа партнёрских продаж.
+
+---
+
+## Cash Flow / Денежный поток
+
+`Cash Flow / Денежный поток` отвечает на вопрос:
+
+сколько денег реально есть и сколько будет доступно через 30 / 60 / 90 дней.
+
+### Источники
+
+| Блок              | Источник                                              |
+| ----------------- | ----------------------------------------------------- |
+| Current balance   | Ручной ввод или банковская интеграция позже           |
+| Expected incoming | Open Invoice Cards, future subscription invoice cards |
+| Expected outgoing | Expense Cards, Expense Plans, Payroll Runs            |
+| Real incoming     | Payments                                              |
+| Real outgoing     | Expense Payments                                      |
+| Backlog debt      | Expense Backlog, отдельно от текущего прогноза        |
+
+### Важное правило
+
+`Expense Backlog / Долги и отложенные расходы` должен показываться отдельным блоком.
+
+Он не должен смешиваться с текущим cash forecast, иначе команда потеряет понимание, сколько денег нужно именно на ближайший платёжный цикл.
+
+---
+
+## Operational Journal / Операционный журнал
+
+`Operational Journal / Операционный журнал` - внутренний слой финансовых фактов.
+
+Он нужен, чтобы:
+
+- строить отчёты из одного места;
+- иметь audit;
+- поддерживать cash/accrual;
+- позже перейти к double-entry без потери истории.
+
+Обычные сотрудники не работают с журналом. CEO и Finance могут иметь `Journal View / Журнал операций`.
+
+Поля журнала:
+
+- дата;
+- сумма;
+- валюта;
+- cash/accrual basis;
+- source type;
+- source id;
+- project;
+- product;
+- order;
+- employee;
+- period;
+- description.
+
+---
+
+## Period Close / Закрытие периода
+
+Месяц нельзя закрывать, пока:
+
+- payroll run не закрыт или не перенесён осознанно;
+- важные payments и expense payments сверены;
+- открытые invoice cards и expense cards проверены;
+- manual adjustments, если есть, внесены;
+- Finance / CEO подтвердил закрытие.
+
+После закрытия периода:
+
+- нельзя тихо менять суммы в прошлом месяце;
+- исправления делаются корректирующими записями в открытом периоде;
+- отчёты прошлого периода остаются воспроизводимыми.
+
+---
+
+## Operational reports / Операционные отчёты
+
+### MRR Report / Отчёт подписочной выручки
+
+Показывает:
+
+- active MRR;
+- yearly/custom coverage;
+- new MRR;
+- expansion / contraction;
+- churned MRR;
+- paid coverage by month.
+
+Источники:
+
+- `Subscription`;
+- `Invoice Card coverage_start_month / coverage_month_count`;
+- `Payment`.
+
+### DSO Report / Скорость оплаты клиентами
+
+Показывает, как быстро клиенты платят.
+
+Источники:
+
+- `Invoice Card issue/due date`;
+- `Payment paid_at`;
+- overdue status.
+
+### Expense Plan vs Actual / План-факт расходов
+
+Показывает:
+
+- сколько планировали;
+- сколько создали карточек;
+- сколько реально оплатили;
+- отклонение по категориям.
+
+Источники:
+
+- `Expense Plan`;
+- `Expense Card`;
+- `Expense Payment`.
+
+### Payroll Report / Отчёт зарплат и бонусов
+
+Показывает:
+
+- total base salary;
+- total bonuses;
+- total payable;
+- paid;
+- remaining;
+- payroll as % of revenue.
+
+Источники:
+
+- `Payroll Run`;
+- `Salary Line`;
+- `Bonus Entry`;
+- `Expense Card`;
+- `Expense Payment`.
+
+---
+
+## Drill-down / Расшифровка сумм
+
+Любая сумма в отчёте должна открываться до источника.
+
+Примеры:
+
+- Revenue -> список payments;
+- Outstanding receivables -> список invoice cards;
+- Salaries -> payroll run / salary lines;
+- Expenses -> expense cards / expense payments;
+- Client services margin -> invoice card + expense card pair.
+
+Это обязательное правило для доверия к финансовым отчётам.
+
+---
+
+## Доступы
+
+| Отчёт          | CEO | Finance Director | Seller  | PM      | Employee        |
+| -------------- | --- | ---------------- | ------- | ------- | --------------- |
+| Company P&L    | Yes | Yes              | No      | No      | No              |
+| Project P&L    | Yes | Yes              | Limited | Limited | No              |
+| Product P&L    | Yes | Yes              | Limited | Limited | No              |
+| Order P&L      | Yes | Yes              | Limited | No      | No              |
+| Cash Flow      | Yes | Yes              | No      | No      | No              |
+| MRR Report     | Yes | Yes              | No      | No      | No              |
+| Payroll Report | Yes | Yes              | No      | No      | Own wallet only |
+| Journal View   | Yes | Yes              | No      | No      | No              |
+
+---
+
+## Автоматизация
+
+| Событие                             | Действие                                         |
+| ----------------------------------- | ------------------------------------------------ |
+| Payment created                     | Update cash view and revenue reports             |
+| Expense Payment created             | Update cash view and cost reports                |
+| Payroll Run approved                | Create expense cards and update payroll forecast |
+| Subscription invoice card generated | Update expected incoming                         |
+| Expense Plan creates card           | Update expected outgoing                         |
+| Period close requested              | Run close checklist                              |
+| Closed period correction needed     | Create adjustment entry in open period           |
