@@ -16,6 +16,7 @@
 - `Bonus Policy` и `KPI Policy` универсальны для всех отделов, ролей, уровней и сотрудников;
 - `Policy Templates` живут в коде, а UI настраивает безопасные параметры;
 - employee overrides требуют reason, effective date и audit;
+- SOP разделяет `SOP Document`, `Process Template`, `Process Run`, `Task Blueprint`, `Automation Rule`;
 - `Department -> Seat -> Seat Assignment -> Employee` является основной моделью оргструктуры;
 - Org Structure UI должен быть canvas с карточками отделов, zoom/search/collapse и drawer деталей;
 - Finance использует policies из My Company, но не придумывает роли и мотивацию сам.
@@ -200,6 +201,25 @@ New canon requires:
 - policy audit view;
 - validation warnings.
 
+### C7. SOP runtime model is missing
+
+Статус: `MISSING CODE`
+
+New canon requires:
+
+- `SOP Document`;
+- `Process Template`;
+- `Process Run`;
+- process steps;
+- linked tasks / checklists / approvals;
+- owner seat;
+- department binding;
+- review date;
+- version history;
+- change requests.
+
+Current docs/processes may still treat SOP as static markdown or mix it with task templates. Runtime must separate SOP Library from Task Blueprints and Automation Rules.
+
 ---
 
 ## D. Recommended implementation order
@@ -212,5 +232,7 @@ New canon requires:
 6. Add versioned `Compensation Profile`.
 7. Add `Bonus Policy` and `KPI Policy` templates and active policies.
 8. Add Compensation dashboard and policy management views.
-9. Connect policies to Finance payroll and bonus release.
-10. Add KPI dashboards and employee wallet projections.
+9. Add SOP Library, Process Templates and Process Runs.
+10. Connect onboarding/offboarding/monthly close to Tasks via process runs.
+11. Connect policies to Finance payroll and bonus release.
+12. Add KPI dashboards and employee wallet projections.

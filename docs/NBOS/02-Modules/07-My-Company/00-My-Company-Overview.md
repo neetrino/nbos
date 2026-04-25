@@ -22,15 +22,15 @@
 
 ## Основные разделы
 
-| Раздел            | Назначение                                                        |
-| ----------------- | ----------------------------------------------------------------- |
-| `Org Structure`   | Визуальная структура отделов и seats                              |
-| `Team`            | Список сотрудников и карточки сотрудников                         |
-| `Departments`     | Отделы, владельцы, подотделы, KPI                                 |
-| `Roles & Seats`   | Бизнес-функции и accountability                                   |
-| `Compensation`    | Compensation profiles, bonus policies, KPI policies, overrides    |
-| `KPI / Scorecard` | Company / department / employee KPI                               |
-| `SOP & Templates` | Процедуры, onboarding, offboarding, recurring operating processes |
+| Раздел            | Назначение                                                     |
+| ----------------- | -------------------------------------------------------------- |
+| `Org Structure`   | Визуальная структура отделов и seats                           |
+| `Team`            | Список сотрудников и карточки сотрудников                      |
+| `Departments`     | Отделы, владельцы, подотделы, KPI                              |
+| `Roles & Seats`   | Бизнес-функции и accountability                                |
+| `Compensation`    | Compensation profiles, bonus policies, KPI policies, overrides |
+| `KPI / Scorecard` | Company / department / employee KPI                            |
+| `SOP & Templates` | SOP library, process templates, onboarding/offboarding runs    |
 
 ---
 
@@ -88,6 +88,16 @@ CEO:
 ### Employee Override / Индивидуальное исключение
 
 Персональное правило сотрудника, которое имеет приоритет над department/seat/level policy и обязательно хранит reason, effective date и audit.
+
+### SOP Document / Process Template / Process Run
+
+SOP не должен быть просто текстом и не должен смешиваться с task templates.
+
+```text
+SOP Document -> Process Template -> Process Run -> Tasks / Checklists / Approvals
+```
+
+`SOP Document` объясняет процесс человеку. `Process Template` описывает исполняемые шаги. `Process Run` - конкретный запуск: onboarding сотрудника, monthly close, incident response.
 
 ---
 
@@ -156,16 +166,18 @@ CEO:
 
 `My Company` должен поддерживать несколько видов:
 
-| View               | Назначение                          |
-| ------------------ | ----------------------------------- |
-| `Org Chart`        | Визуальная карта компании           |
-| `Departments List` | Таблица отделов                     |
-| `Seats List`       | Все seats с фильтрами по статусу    |
-| `Assignments`      | Кто какие seats занимает            |
-| `Employees`        | Список сотрудников                  |
-| `Vacancies`        | Vacant seats и открытые функции     |
-| `Compensation`     | Профили оплаты и policies           |
-| `KPI`              | KPI company / department / employee |
+| View               | Назначение                                         |
+| ------------------ | -------------------------------------------------- |
+| `Org Chart`        | Визуальная карта компании                          |
+| `Departments List` | Таблица отделов                                    |
+| `Seats List`       | Все seats с фильтрами по статусу                   |
+| `Assignments`      | Кто какие seats занимает                           |
+| `Employees`        | Список сотрудников                                 |
+| `Vacancies`        | Vacant seats и открытые функции                    |
+| `Compensation`     | Профили оплаты и policies                          |
+| `KPI`              | KPI company / department / employee                |
+| `SOP Library`      | SOP documents и process templates                  |
+| `Process Runs`     | Активные onboarding/offboarding/monthly close runs |
 
 ---
 
@@ -195,7 +207,7 @@ My Company -> Projects Hub
   Employees, seats, availability -> resource planning
 
 My Company -> Tasks
-  Employee assignments, onboarding/offboarding tasks
+  Employee assignments, process runs, onboarding/offboarding tasks
 
 My Company -> Credentials
   Seat / permission mapping, offboarding access revoke

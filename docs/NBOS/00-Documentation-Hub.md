@@ -48,6 +48,7 @@
 | Кошелёк сотрудника (Wallet, read-only)              | `02-Modules/04-Finance/08-Employee-Wallet.md`                                                       |
 | My Company overview                                 | `02-Modules/07-My-Company/00-My-Company-Overview.md`                                                |
 | My Company compensation / policies                  | `02-Modules/07-My-Company/07-Compensation-and-Policies.md`                                          |
+| My Company SOP / process templates                  | `02-Modules/07-My-Company/05-SOP-Templates.md`                                                      |
 | Видение, слои                                       | `01-Platform-Overview/01-Vision-and-Goals.md`, `02-Platform-Architecture-Layers.md`                 |
 | Продукто-центричный Hub                             | `02-Modules/02-Projects-Hub/05-Product-Centric-Navigation.md`                                       |
 | Решения заказчика (Product, Extension, MAINTENANCE) | `03-Business-Logic/08-Stakeholder-Decisions-Product-Extension-Maintenance.md`                       |

@@ -902,6 +902,57 @@ Contact (человек)
 
 ---
 
+### 2.17.4. SOP Document (Стандартная операционная процедура)
+
+Человеческое описание повторяемого процесса.
+
+| Поле           | Тип             | Описание                                      |
+| -------------- | --------------- | --------------------------------------------- |
+| id             | UUID            | Уникальный идентификатор                      |
+| title          | String          | Название SOP                                  |
+| department_id  | FK → Department | Отдел                                         |
+| owner_seat_id  | FK → Seat       | Seat, отвечающий за актуальность SOP          |
+| purpose        | Text            | Цель                                          |
+| input          | Text            | Что запускает процесс                         |
+| output         | Text            | Что является результатом                      |
+| body           | Text            | Шаги и описание                               |
+| checklist_json | JSON            | Чеклист                                       |
+| version        | String          | Версия                                        |
+| review_date    | Date            | Когда пересмотреть                            |
+| status         | Enum            | Draft, Review, Active, Needs Update, Archived |
+
+### 2.17.5. Process Template (Шаблон процесса)
+
+Исполняемая версия SOP.
+
+| Поле               | Тип                   | Описание                               |
+| ------------------ | --------------------- | -------------------------------------- |
+| id                 | UUID                  | Уникальный идентификатор               |
+| sop_document_id    | FK → SOP Document     | На какой SOP ссылается                 |
+| trigger_type       | Enum                  | Manual, Event, Schedule                |
+| trigger_config     | JSON                  | Настройки запуска                      |
+| steps_json         | JSON                  | Шаги, владельцы, сроки, approvals      |
+| task_blueprint_ids | FK[] → Task Blueprint | Какие задачи создаются, если применимо |
+| status             | Enum                  | Draft, Active, Archived                |
+
+### 2.17.6. Process Run (Запуск процесса)
+
+Конкретный запуск процесса: onboarding, offboarding, monthly close, incident response.
+
+| Поле                | Тип                   | Описание                                           |
+| ------------------- | --------------------- | -------------------------------------------------- |
+| id                  | UUID                  | Уникальный идентификатор                           |
+| process_template_id | FK → Process Template | Шаблон процесса                                    |
+| context_type        | Enum                  | Employee, Project, Product, Finance Period, Ticket |
+| context_id          | UUID                  | ID связанной сущности                              |
+| owner_employee_id   | FK → Employee         | Кто отвечает за конкретный запуск                  |
+| status              | Enum                  | Open, In Progress, Waiting, Completed, Cancelled   |
+| started_at          | DateTime              | Когда запущен                                      |
+| due_at              | DateTime              | Дедлайн процесса                                   |
+| completed_at        | DateTime              | Когда завершён                                     |
+
+---
+
 ### 2.18. Partner (Партнёр)
 
 | Поле            | Тип     | Описание                                                                |
