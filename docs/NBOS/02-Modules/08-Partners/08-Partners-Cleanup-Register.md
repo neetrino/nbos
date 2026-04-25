@@ -119,7 +119,7 @@ Outbound — это доход Neetrino от партнёра.
 - `07-Partner-Analytics-and-Agreements.md`;
 - `08-Partners-Cleanup-Register.md`.
 
-Нужно обновить ссылки из соседних документов, которые всё ещё ссылаются на старый `01-Partners-Overview.md`.
+Активные соседние документы должны ссылаться на новую структуру Partners. Старое имя `01-Partners-Overview.md` остаётся только как историческая заметка в cleanup/archive-контексте.
 
 ---
 

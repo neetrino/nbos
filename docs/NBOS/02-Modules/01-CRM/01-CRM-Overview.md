@@ -192,9 +192,11 @@ Lead (SQL) → Deal → [Pipeline стадии] → Deal Won + 1st Payment → O
 
 ### CRM → Partners
 
-- Если лид пришёл от партнёра — привязка к партнёрской записи
-- При закрытии сделки автоматически рассчитывается партнёрское вознаграждение (стандарт: 30%)
-- Создаётся запись в Expenses для выплаты партнёру
+- Если Lead / Deal пришёл от партнёра — обязательна привязка к Partner.
+- CRM фиксирует `Partner Referral Terms`: партнёр, Deal Type, Payment Type, зафиксированный процент.
+- Deal Type определяет процент партнёра по Partner Commission Policy.
+- Payment Type определяет ритм выплаты: Classic после сдачи и полной оплаты, Subscription после реально полученных subscription-платежей.
+- CRM не создаёт Expense напрямую. После реальной оплаты Finance / Partners создают цепочку `Partner Accrual -> Partner Balance -> Payout Batch -> Expense Card`.
 
 ### CRM → Calendar
 

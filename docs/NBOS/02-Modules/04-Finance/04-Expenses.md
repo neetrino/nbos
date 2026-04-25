@@ -97,7 +97,7 @@
 - автоматически из `Expense Plan`;
 - автоматически из `Client Service Record` после оплаты клиента;
 - автоматически из `Payroll Run`;
-- автоматически из `Bonus / Partner Payout`;
+- автоматически из `Bonus / Payout Batch`;
 - вручную как `Unplanned Expense / Внеплановый расход`.
 
 ### Поля карточки расхода
@@ -426,7 +426,7 @@ Expense Card -> Expense Payment
 Client Service Record -> Invoice Card -> Payment -> Expense Card -> Task -> Paid
 Payroll Run -> Expense Card -> Expense Payment
 Bonus Ledger -> Payroll Run -> Expense Card
-Partner Payout -> Expense Card
+Partner Accrual -> Partner Balance -> Payout Batch -> Expense Card
 Expense Cards -> P&L
 ```
 
@@ -436,5 +436,6 @@ Expense Cards -> P&L
 - `Finance / Client Services` - домены, hosting, accounts, services;
 - `Tasks / Work Space` - задачи на покупку / продление / оплату;
 - `My Company / Payroll` - зарплаты и бонусы;
+- `Partners` - Payout Batch создаёт Expense Card для фактической выплаты партнёру;
 - `Projects Hub` - привязка к проектам и продуктам;
 - `P&L Reports` - отчётность по затратам.

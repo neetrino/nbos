@@ -273,7 +273,8 @@ Payment confirmed
    - order / deal logic;
    - subscription logic;
    - domain / service purchase tasks;
-   - bonus / partner logic, если применимо.
+   - bonus logic, если применимо;
+   - partner logic, если применимо: `Payment -> Partner Accrual -> Partner Balance`, но не Expense напрямую.
 
 ---
 
