@@ -33,6 +33,9 @@
 - реализовать computed endpoint / view для Client Portfolio;
 - открыть Portfolio из Contact Card и Company Card;
 - добавить finance, projects, subscriptions, support, order history, communication summary.
+- добавить tabs: Overview / Projects / Finance / Subscriptions / Support / Communication / Files;
+- реализовать context modes: Contact Portfolio и Company Portfolio;
+- реализовать access mask для финансовых данных.
 
 ### C4. Company имеет один primary contact
 
@@ -97,3 +100,4 @@ Client Portfolio — вычисляемый клиентский обзор, к�
 | Сложные роли не обязательны в v1                                   | Accepted |
 | Manual override типа контакта разрешён в Contact Card              | Accepted |
 | Billing / project / deal контекст определяется конкретными связями | Accepted |
+| Client Portfolio имеет отдельный screen spec и tabs                | Accepted |
