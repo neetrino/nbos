@@ -63,33 +63,33 @@ Order P&L    →  Маржинальность каждой сделки
 
 ### Источники данных
 
-| Строка P&L | Источник в NBOS |
-|------------|----------------|
-| Development Revenue | Payments по Invoice типа Development |
-| Extension Revenue | Payments по Invoice типа Extension |
-| Subscription Revenue | Payments по Invoice типа Subscription |
-| Partner Service Revenue | Payments по Invoice типа Subscription (Partner Service) |
-| Pass-through Revenue | Наценка на pass-through (Invoice amount − Expense amount) |
-| Sales Bonuses | Bonus Board (Active/Paid, тип Sales) |
-| Delivery Bonuses | Bonus Board (Active/Paid, тип Delivery) |
-| Partner Payouts | Expenses категории Partner Payout |
-| Salaries | Salary Board (base salaries) |
-| Tools & Licenses | Expenses категории Tools |
-| Hosting & Infrastructure | Expenses категорий Hosting, Service |
-| Marketing | Expenses категории Marketing |
-| Office | Expenses категории Office |
-| Bank Balance | Внешний ввод / интеграция с банком |
-| Outstanding Receivables | Сумма неоплаченных Invoice (Overdue + Pending) |
-| Upcoming Expenses | Planned Expenses на следующие 30 дней |
+| Строка P&L               | Источник в NBOS                                           |
+| ------------------------ | --------------------------------------------------------- |
+| Development Revenue      | Payments по Invoice типа Development                      |
+| Extension Revenue        | Payments по Invoice типа Extension                        |
+| Subscription Revenue     | Payments по Invoice типа Subscription                     |
+| Partner Service Revenue  | Payments по Invoice типа Subscription (Partner Service)   |
+| Pass-through Revenue     | Наценка на pass-through (Invoice amount − Expense amount) |
+| Sales Bonuses            | Bonus Board (Active/Paid, тип Sales)                      |
+| Delivery Bonuses         | Bonus Board (Active/Paid, тип Delivery)                   |
+| Partner Payouts          | Expenses категории Partner Payout                         |
+| Salaries                 | Salary Board (base salaries)                              |
+| Tools & Licenses         | Expenses категории Tools                                  |
+| Hosting & Infrastructure | Expenses категорий Hosting, Service                       |
+| Marketing                | Expenses категории Marketing                              |
+| Office                   | Expenses категории Office                                 |
+| Bank Balance             | Внешний ввод / интеграция с банком                        |
+| Outstanding Receivables  | Сумма неоплаченных Invoice (Overdue + Pending)            |
+| Upcoming Expenses        | Expense Cards / Expense Plans на следующие 30 дней        |
 
 ### Формулы
 
-| Показатель | Формула |
-|------------|---------|
-| **Gross Margin** | Total Revenue − Direct Costs |
-| **Gross Margin %** | Gross Margin / Total Revenue × 100% |
-| **Net Margin** | Gross Margin − Operating Costs |
-| **Net Margin %** | Net Margin / Total Revenue × 100% |
+| Показатель         | Формула                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| **Gross Margin**   | Total Revenue − Direct Costs                               |
+| **Gross Margin %** | Gross Margin / Total Revenue × 100%                        |
+| **Net Margin**     | Gross Margin − Operating Costs                             |
+| **Net Margin %**   | Net Margin / Total Revenue × 100%                          |
 | **Projected Cash** | Bank Balance + Outstanding Receivables − Upcoming Expenses |
 
 ---
@@ -205,44 +205,44 @@ Order P&L    →  Маржинальность каждой сделки
 
 ### Основные отчёты
 
-| Отчёт | Описание | Периодичность |
-|-------|----------|---------------|
-| **Monthly P&L Statement** | Company P&L за месяц | Ежемесячно |
-| **Quarterly P&L** | Company P&L за квартал (агрегация) | Ежеквартально |
-| **Annual P&L** | Company P&L за год | Ежегодно |
-| **Project Profitability Report** | Ранжирование проектов по маржинальности | По запросу |
-| **Order Profitability Report** | Ранжирование заказов по маржинальности | По запросу |
+| Отчёт                            | Описание                                | Периодичность |
+| -------------------------------- | --------------------------------------- | ------------- |
+| **Monthly P&L Statement**        | Company P&L за месяц                    | Ежемесячно    |
+| **Quarterly P&L**                | Company P&L за квартал (агрегация)      | Ежеквартально |
+| **Annual P&L**                   | Company P&L за год                      | Ежегодно      |
+| **Project Profitability Report** | Ранжирование проектов по маржинальности | По запросу    |
+| **Order Profitability Report**   | Ранжирование заказов по маржинальности  | По запросу    |
 
 ### MRR Report (Monthly Recurring Revenue)
 
-| Метрика | Описание |
-|---------|----------|
-| **Total MRR** | Сумма всех активных подписок |
-| **New MRR** | MRR от новых подписок за месяц |
-| **Expansion MRR** | Увеличение суммы существующих подписок |
-| **Contraction MRR** | Уменьшение суммы существующих подписок |
-| **Churned MRR** | Потерянный MRR от отменённых подписок |
-| **Net New MRR** | New + Expansion − Contraction − Churned |
+| Метрика             | Описание                                    |
+| ------------------- | ------------------------------------------- |
+| **Total MRR**       | Сумма всех активных подписок                |
+| **New MRR**         | MRR от новых подписок за месяц              |
+| **Expansion MRR**   | Увеличение суммы существующих подписок      |
+| **Contraction MRR** | Уменьшение суммы существующих подписок      |
+| **Churned MRR**     | Потерянный MRR от отменённых подписок       |
+| **Net New MRR**     | New + Expansion − Contraction − Churned     |
 | **MRR Growth Rate** | Net New MRR / MRR предыдущего месяца × 100% |
 
 ### Churn Report
 
-| Метрика | Описание |
-|---------|----------|
-| **Customer Churn Rate** | % клиентов, отменивших подписку |
-| **Revenue Churn Rate** | % потерянного MRR |
-| **Churned Customers List** | Список отменённых подписок с причинами |
-| **Average Customer Lifetime** | Средний срок жизни подписки |
-| **LTV (Lifetime Value)** | Средний доход с подписки за весь срок |
+| Метрика                       | Описание                               |
+| ----------------------------- | -------------------------------------- |
+| **Customer Churn Rate**       | % клиентов, отменивших подписку        |
+| **Revenue Churn Rate**        | % потерянного MRR                      |
+| **Churned Customers List**    | Список отменённых подписок с причинами |
+| **Average Customer Lifetime** | Средний срок жизни подписки            |
+| **LTV (Lifetime Value)**      | Средний доход с подписки за весь срок  |
 
 ### DSO Report (Days Sales Outstanding)
 
-| Метрика | Описание |
-|---------|----------|
-| **Average DSO** | Среднее количество дней от выставления до оплаты |
+| Метрика           | Описание                                                 |
+| ----------------- | -------------------------------------------------------- |
+| **Average DSO**   | Среднее количество дней от выставления до оплаты         |
 | **DSO by Client** | DSO в разрезе клиентов (кто платит быстро, кто медленно) |
-| **DSO Trend** | Динамика DSO по месяцам |
-| **Aging Report** | Распределение дебиторки по срокам давности |
+| **DSO Trend**     | Динамика DSO по месяцам                                  |
+| **Aging Report**  | Распределение дебиторки по срокам давности               |
 
 ### Cash Flow Forecast (Прогноз денежного потока)
 
@@ -273,58 +273,59 @@ Order P&L    →  Маржинальность каждой сделки
 ```
 
 Источники данных для прогноза:
+
 - **Подписки**: Active subscriptions × amount (предсказуемый доход)
 - **Заказы**: Неоплаченные Invoice с ожидаемыми датами
 - **Payroll**: Salary Board (стабильная сумма)
-- **Planned Expenses**: из сетки плановых расходов
+- **Expense Plans / Expense Cards**: из сетки планов расходов и созданных карточек расходов
 - **Partner Payouts**: из активных партнёрских соглашений
 
 ### Expense Report (Плановые vs Фактические)
 
-| Категория | План | Факт | Отклонение |
-|-----------|------|------|-----------|
-| Hosting | 60,000 | 58,000 | -2,000 (✅) |
-| Tools | 80,000 | 95,000 | +15,000 (⚠️) |
+| Категория | План    | Факт    | Отклонение   |
+| --------- | ------- | ------- | ------------ |
+| Hosting   | 60,000  | 58,000  | -2,000 (✅)  |
+| Tools     | 80,000  | 95,000  | +15,000 (⚠️) |
 | Marketing | 100,000 | 130,000 | +30,000 (🔴) |
-| Office | 150,000 | 150,000 | 0 |
+| Office    | 150,000 | 150,000 | 0            |
 
 ### Bonus & Payroll Report
 
-| Показатель | Значение |
-|------------|---------|
-| Total Payroll | 1,280,000 |
-| Base Salaries | 1,150,000 |
-| Total Bonuses | 130,000 |
-| Sales Bonuses | 60,000 |
-| Delivery Bonuses | 45,000 |
-| Marketing Bonuses | 25,000 |
-| Payroll as % of Revenue | 50.2% |
+| Показатель              | Значение  |
+| ----------------------- | --------- |
+| Total Payroll           | 1,280,000 |
+| Base Salaries           | 1,150,000 |
+| Total Bonuses           | 130,000   |
+| Sales Bonuses           | 60,000    |
+| Delivery Bonuses        | 45,000    |
+| Marketing Bonuses       | 25,000    |
+| Payroll as % of Revenue | 50.2%     |
 
 ---
 
 ## Доступы к отчётам
 
-| Отчёт | CEO | Финдиректор | Продажник | PM |
-|-------|-----|-------------|-----------|-----|
-| Company P&L | ✅ | ✅ | ❌ | ❌ |
-| Project P&L | ✅ | ✅ | ❌ (свои проекты — частично) | ❌ |
-| Order P&L | ✅ | ✅ | ❌ | ❌ |
-| MRR Report | ✅ | ✅ | ❌ | ❌ |
-| Churn Report | ✅ | ✅ | ❌ | ❌ |
-| DSO Report | ✅ | ✅ | ❌ | ❌ |
-| Cash Flow | ✅ | ✅ | ❌ | ❌ |
-| Bonus Report | ✅ | ✅ | Свои бонусы | Свои бонусы |
+| Отчёт        | CEO | Финдиректор | Продажник                    | PM          |
+| ------------ | --- | ----------- | ---------------------------- | ----------- |
+| Company P&L  | ✅  | ✅          | ❌                           | ❌          |
+| Project P&L  | ✅  | ✅          | ❌ (свои проекты — частично) | ❌          |
+| Order P&L    | ✅  | ✅          | ❌                           | ❌          |
+| MRR Report   | ✅  | ✅          | ❌                           | ❌          |
+| Churn Report | ✅  | ✅          | ❌                           | ❌          |
+| DSO Report   | ✅  | ✅          | ❌                           | ❌          |
+| Cash Flow    | ✅  | ✅          | ❌                           | ❌          |
+| Bonus Report | ✅  | ✅          | Свои бонусы                  | Свои бонусы |
 
 ---
 
 ## Периодичность и автоматизация
 
-| Действие | Периодичность | Авто/Ручное |
-|----------|--------------|-------------|
-| Company P&L генерация | Ежемесячно (1-е число) | Автоматически |
-| Project P&L обновление | Реальное время | Автоматически |
-| Order P&L обновление | Реальное время | Автоматически |
-| MRR расчёт | Ежедневно | Автоматически |
-| Cash Flow прогноз | Еженедельно | Автоматически |
-| DSO расчёт | Ежемесячно | Автоматически |
-| Отправка P&L CEO | Ежемесячно (5-е число) | Уведомление |
+| Действие               | Периодичность          | Авто/Ручное   |
+| ---------------------- | ---------------------- | ------------- |
+| Company P&L генерация  | Ежемесячно (1-е число) | Автоматически |
+| Project P&L обновление | Реальное время         | Автоматически |
+| Order P&L обновление   | Реальное время         | Автоматически |
+| MRR расчёт             | Ежедневно              | Автоматически |
+| Cash Flow прогноз      | Еженедельно            | Автоматически |
+| DSO расчёт             | Ежемесячно             | Автоматически |
+| Отправка P&L CEO       | Ежемесячно (5-е число) | Уведомление   |

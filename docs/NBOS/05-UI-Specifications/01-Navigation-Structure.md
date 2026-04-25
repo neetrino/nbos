@@ -74,8 +74,9 @@
 | Invoices | `/finance/invoices` | Доска контроля ожидаемых оплат |
 | Payments | `/finance/payments` | Реестр платежей |
 | Subscriptions (Grid) | `/finance/subscriptions` | Подписки — матричный вид (проекты × месяцы) |
-| Expenses (Planned) | `/finance/expenses/planned` | Плановые расходы — сетка по месяцам |
-| Expenses (Current Month) | `/finance/expenses/current` | Расходы текущего месяца — Kanban |
+| Expense Plans | `/finance/expenses/plans` | Планы расходов — сетка по месяцам |
+| Expense Board | `/finance/expenses/board` | Текущие карточки расходов |
+| Expense Backlog | `/finance/expenses/backlog` | Долги и отложенные расходы вне текущего цикла |
 | Domains | `/finance/domains` | Домены — управление и оплата |
 | Bonus Board | `/finance/bonuses` | Бонусная доска сотрудников |
 | Salary Board | `/finance/salary` | Зарплатная ведомость |

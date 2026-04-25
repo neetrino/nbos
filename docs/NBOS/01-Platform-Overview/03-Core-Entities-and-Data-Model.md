@@ -361,36 +361,79 @@ Contact (человек)
 
 ---
 
-### 2.10. Expense (Затрата)
+### 2.10. Expense Plan / Expense Card / Expense Payment (Расходы)
 
-Расход денег — запланированный или незапланированный.
+Расходы разделяются на три сущности:
 
-| Поле                      | Тип           | Описание                                                                         |
-| ------------------------- | ------------- | -------------------------------------------------------------------------------- |
-| id                        | UUID          | Уникальный идентификатор                                                         |
-| type                      | Enum          | Planned, Unplanned                                                               |
-| category                  | Enum          | Domain, Hosting, Service, Marketing, Salary, Bonus, Partner Payout, Tools, Other |
-| name                      | String        | Название затраты                                                                 |
-| amount                    | Decimal       | Сумма                                                                            |
-| currency                  | Enum          | AMD, USD, EUR                                                                    |
-| frequency                 | Enum          | One-time, Monthly, Quarterly, Yearly, Multi-year                                 |
-| due_date                  | Date          | Дата, до которой нужно оплатить                                                  |
-| status                    | Enum          | This Month, Pay Now, Delayed, On Hold, Old, Paid, Unpaid                         |
-| project_id                | FK → Project  | Привязка к проекту (опционально)                                                 |
-| order_id                  | FK → Order    | Привязка к заказу (опционально)                                                  |
-| partner_id                | FK → Partner  | Партнёр (для partner payouts)                                                    |
-| owner_id                  | FK → Employee | Ответственный за оплату                                                          |
-| is_pass_through           | Boolean       | Затрата "вместо клиента" (домен, сервис)                                         |
-| tax_status                | Enum          | Tax, Tax-Free                                                                    |
-| source_planned_expense_id | FK → Expense  | Ссылка на planned expense (для автосозданных)                                    |
-| paid_date                 | Date          | Фактическая дата оплаты                                                          |
-| notes                     | Text          | Заметки                                                                          |
+- `Expense Plan / План расхода` — правило или ожидание будущего расхода.
+- `Expense Card / Карточка расхода` — конкретная сумма, которую нужно оплатить.
+- `Expense Payment / Оплата расхода` — факт частичной или полной оплаты.
+
+#### Expense Plan
+
+| Поле                     | Тип                        | Описание                                                                                 |
+| ------------------------ | -------------------------- | ---------------------------------------------------------------------------------------- |
+| id                       | UUID                       | Уникальный идентификатор                                                                 |
+| name                     | String                     | Название плана                                                                           |
+| category                 | Enum                       | Domain, Hosting, Service, Marketing, Salary, Bonus, Partner Payout, Tools, Office, Other |
+| amount                   | Decimal                    | Ожидаемая сумма                                                                          |
+| currency                 | Enum                       | AMD, USD, EUR                                                                            |
+| frequency                | Enum                       | One-time, Monthly, Quarterly, Yearly, Custom                                             |
+| next_due_date            | Date                       | Следующая дата оплаты                                                                    |
+| provider                 | String                     | Поставщик                                                                                |
+| project_id               | FK → Project               | Проект, если расход проектный                                                            |
+| product_id               | FK → Product               | Продукт, если применимо                                                                  |
+| client_service_record_id | FK → Client Service Record | Сервис клиента, если план идёт от него                                                   |
+| auto_generate            | Boolean                    | Создавать ли карточки автоматически                                                      |
+| notes                    | Text                       | Заметки                                                                                  |
+
+#### Expense Card
+
+| Поле                     | Тип                        | Описание                                                                                 |
+| ------------------------ | -------------------------- | ---------------------------------------------------------------------------------------- |
+| id                       | UUID                       | Уникальный идентификатор                                                                 |
+| source_type              | Enum                       | Manual, Expense Plan, Client Service, Payroll, Bonus, Partner Payout                     |
+| category                 | Enum                       | Domain, Hosting, Service, Marketing, Salary, Bonus, Partner Payout, Tools, Office, Other |
+| name                     | String                     | Название карточки                                                                        |
+| original_amount          | Decimal                    | Исходная сумма                                                                           |
+| paid_amount              | Decimal                    | Уже оплачено                                                                             |
+| remaining_amount         | Decimal                    | Осталось оплатить                                                                        |
+| currency                 | Enum                       | AMD, USD, EUR                                                                            |
+| due_date                 | Date                       | Дата оплаты                                                                              |
+| workflow_status          | Enum                       | Planned, Due Soon, Due Now, Overdue, On Hold, Backlog, Paid, Cancelled                   |
+| payment_status           | Enum                       | Unpaid, Partially Paid, Paid                                                             |
+| backlog_reason           | Enum                       | Debt to Pay Later, Waiting for Decision, Waiting for Client, Waiting for Provider, Other |
+| project_id               | FK → Project               | Привязка к проекту                                                                       |
+| product_id               | FK → Product               | Привязка к продукту                                                                      |
+| order_id                 | FK → Order                 | Привязка к заказу                                                                        |
+| partner_id               | FK → Partner               | Партнёр, если partner payout                                                             |
+| client_service_record_id | FK → Client Service Record | Сервис клиента                                                                           |
+| invoice_card_id          | FK → Invoice Card          | Карточка оплаты клиента, если pass-through                                               |
+| owner_id                 | FK → Employee              | Ответственный                                                                            |
+| notes                    | Text                       | Заметки                                                                                  |
+
+#### Expense Payment
+
+| Поле            | Тип               | Описание                        |
+| --------------- | ----------------- | ------------------------------- |
+| id              | UUID              | Уникальный идентификатор        |
+| expense_card_id | FK → Expense Card | Связанная карточка расхода      |
+| amount          | Decimal           | Сумма оплаты                    |
+| currency        | Enum              | AMD, USD, EUR                   |
+| paid_at         | DateTime          | Дата оплаты                     |
+| paid_by_id      | FK → Employee     | Кто отметил оплату              |
+| payment_method  | String            | Метод оплаты, если используется |
+| attachment_id   | FK → File         | Подтверждение оплаты, если есть |
+| comment         | Text              | Комментарий                     |
 
 **Связи:**
 
-- Expense → one Project (опционально)
-- Expense → one Order (опционально)
-- Expense → one Partner (для partner payouts)
+- Expense Plan → many Expense Cards
+- Expense Card → many Expense Payments
+- Client Service Record → Invoice Card → Payment → Expense Card → Task
+- Payroll Run → Expense Card
+- Expense Card → one Project / Product / Order (опционально)
+- Expense Card → one Partner (для partner payouts)
 
 ---
 
