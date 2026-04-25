@@ -28,7 +28,7 @@
 | `Team`            | Список сотрудников и карточки сотрудников                         |
 | `Departments`     | Отделы, владельцы, подотделы, KPI                                 |
 | `Roles & Seats`   | Бизнес-функции и accountability                                   |
-| `Compensation`    | Compensation profiles, bonus policies, KPI policies               |
+| `Compensation`    | Compensation profiles, bonus policies, KPI policies, overrides    |
 | `KPI / Scorecard` | Company / department / employee KPI                               |
 | `SOP & Templates` | Процедуры, onboarding, offboarding, recurring operating processes |
 
@@ -80,6 +80,14 @@ CEO:
 ### KPI Policy / Bonus Policy
 
 Правила мотивации и оценки эффективности. Они могут применяться на уровне department, seat, level или employee.
+
+### Policy Template / Шаблон правила
+
+Безопасный тип правила, реализованный в коде. В интерфейсе CEO/HR/Finance меняют параметры, но не строят произвольную бизнес-логику с нуля.
+
+### Employee Override / Индивидуальное исключение
+
+Персональное правило сотрудника, которое имеет приоритет над department/seat/level policy и обязательно хранит reason, effective date и audit.
 
 ---
 
@@ -181,7 +189,7 @@ CEO:
 
 ```text
 My Company -> Finance
-  Compensation Profile, Bonus Policy, KPI Policy -> Payroll
+  Compensation Profile, Bonus Policy, KPI Policy -> Payroll / Bonus Release
 
 My Company -> Projects Hub
   Employees, seats, availability -> resource planning
@@ -206,3 +214,4 @@ My Company -> Dashboards
 - [04-KPI-Scorecard.md](./04-KPI-Scorecard.md) - KPI policies и scorecard.
 - [05-SOP-Templates.md](./05-SOP-Templates.md) - SOP и процедуры.
 - [06-My-Company-Cleanup-Register.md](./06-My-Company-Cleanup-Register.md) - cleanup register.
+- [07-Compensation-and-Policies.md](./07-Compensation-and-Policies.md) - compensation profiles, bonus policies, KPI policies.

@@ -147,7 +147,7 @@
 |---------|------|----------|
 | Org Structure | `/company/org` | Визуальная org chart: departments, seats, assignments |
 | Team | `/company/team` | Список сотрудников с профилями |
-| Compensation | `/company/compensation` | Профили оплаты, bonus policies, KPI policies |
+| Compensation | `/company/compensation` | Профили оплаты, bonus/KPI policies, templates, overrides |
 | KPI / Scorecard | `/company/kpi` | Ключевые показатели эффективности |
 | Roles & Seats | `/company/roles` | Бизнес-роли, seats, levels и accountability |
 | Departments | `/company/departments` | Отделы компании и их владельцы |

@@ -528,25 +528,91 @@ Contact (человек)
 
 Постоянные правила оплаты сотрудника. Живёт в контуре `My Company / Team`, а Finance использует его при payroll.
 
-| Поле            | Тип           | Описание                             |
-| --------------- | ------------- | ------------------------------------ |
-| id              | UUID          | Уникальный идентификатор             |
-| employee_id     | FK → Employee | Сотрудник                            |
-| base_salary     | Decimal       | Минимальная / фиксированная зарплата |
-| currency        | Enum          | AMD, USD, EUR                        |
-| role            | Enum          | Роль сотрудника                      |
-| level           | Enum          | Уровень сотрудника                   |
-| bonus_policy    | JSON          | Правила бонусов                      |
-| kpi_policy      | JSON          | Правила KPI                          |
-| payout_schedule | JSON          | График выплат                        |
-| effective_from  | Date          | Дата начала действия                 |
-| effective_to    | Date          | Дата окончания, если профиль заменён |
-| status          | Enum          | Active, Archived                     |
+| Поле            | Тип               | Описание                             |
+| --------------- | ----------------- | ------------------------------------ |
+| id              | UUID              | Уникальный идентификатор             |
+| employee_id     | FK → Employee     | Сотрудник                            |
+| base_salary     | Decimal           | Минимальная / фиксированная зарплата |
+| currency        | Enum              | AMD, USD, EUR                        |
+| primary_seat_id | FK → Seat         | Основной seat на момент профиля      |
+| level           | Enum              | Уровень сотрудника                   |
+| bonus_policy_id | FK → Bonus Policy | Активное правило бонусов             |
+| kpi_policy_id   | FK → KPI Policy   | Активное правило KPI                 |
+| payout_schedule | JSON              | График выплат                        |
+| effective_from  | Date              | Дата начала действия                 |
+| effective_to    | Date              | Дата окончания, если профиль заменён |
+| status          | Enum              | Draft, Review, Active, Archived      |
 
 **Связи:**
 
 - Employee → many Compensation Profiles
 - Active Compensation Profile → Payroll Run input
+
+---
+
+### 2.11.1.1. Policy Template (Шаблон правила)
+
+Безопасный тип правила, реализованный в коде. UI меняет параметры, но не создаёт произвольную бизнес-логику.
+
+| Поле           | Тип    | Описание                              |
+| -------------- | ------ | ------------------------------------- |
+| id             | UUID   | Уникальный идентификатор              |
+| code           | String | Код шаблона                           |
+| type           | Enum   | Bonus, KPI, Release, Holdback, Manual |
+| name           | String | Название                              |
+| allowed_params | JSON   | Какие параметры можно менять в UI     |
+| status         | Enum   | Active, Deprecated                    |
+
+### 2.11.1.2. Bonus Policy (Правило бонусов)
+
+Активное правило расчёта бонусов.
+
+| Поле           | Тип                  | Описание                                   |
+| -------------- | -------------------- | ------------------------------------------ |
+| id             | UUID                 | Уникальный идентификатор                   |
+| template_id    | FK → Policy Template | Шаблон правила                             |
+| scope          | Enum                 | Company, Department, Seat, Level, Employee |
+| scope_id       | UUID                 | ID объекта scope                           |
+| params         | JSON                 | Проценты, фильтры, caps, holdback, release |
+| effective_from | Date                 | С какой даты действует                     |
+| effective_to   | Date                 | Когда перестало действовать                |
+| status         | Enum                 | Draft, Active, Archived                    |
+| approved_by_id | FK → Employee        | Кто утвердил                               |
+
+### 2.11.1.3. KPI Policy (Правило KPI)
+
+Активное правило KPI и KPI gate.
+
+| Поле           | Тип                  | Описание                                   |
+| -------------- | -------------------- | ------------------------------------------ |
+| id             | UUID                 | Уникальный идентификатор                   |
+| template_id    | FK → Policy Template | Шаблон KPI                                 |
+| scope          | Enum                 | Company, Department, Seat, Level, Employee |
+| scope_id       | UUID                 | ID объекта scope                           |
+| metrics        | JSON                 | KPI metrics                                |
+| weights        | JSON                 | Веса метрик                                |
+| gate_rules     | JSON                 | Пороги выплаты                             |
+| period         | Enum                 | Week, Month, Quarter, Sprint               |
+| effective_from | Date                 | С какой даты действует                     |
+| effective_to   | Date                 | Когда перестало действовать                |
+| status         | Enum                 | Draft, Active, Archived                    |
+
+### 2.11.1.4. Employee Policy Override (Индивидуальное исключение)
+
+Персональное правило сотрудника, которое перекрывает department/seat/level policy.
+
+| Поле            | Тип           | Описание                       |
+| --------------- | ------------- | ------------------------------ |
+| id              | UUID          | Уникальный идентификатор       |
+| employee_id     | FK → Employee | Сотрудник                      |
+| policy_type     | Enum          | Bonus, KPI, Compensation       |
+| base_policy_id  | UUID          | Какое правило переопределяется |
+| override_params | JSON          | Что меняется                   |
+| reason          | Text          | Причина, обязательна           |
+| effective_from  | Date          | С какой даты действует         |
+| effective_to    | Date          | Когда перестало действовать    |
+| approved_by_id  | FK → Employee | Кто утвердил                   |
+| status          | Enum          | Draft, Active, Archived        |
 
 ---
 

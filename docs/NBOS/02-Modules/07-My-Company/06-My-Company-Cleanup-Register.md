@@ -14,6 +14,8 @@
 - `Settings` содержит системную админку, а не бизнес-структуру компании;
 - `Compensation Profile` хранит условия оплаты сотрудника с историей версий;
 - `Bonus Policy` и `KPI Policy` универсальны для всех отделов, ролей, уровней и сотрудников;
+- `Policy Templates` живут в коде, а UI настраивает безопасные параметры;
+- employee overrides требуют reason, effective date и audit;
 - `Department -> Seat -> Seat Assignment -> Employee` является основной моделью оргструктуры;
 - Org Structure UI должен быть canvas с карточками отделов, zoom/search/collapse и drawer деталей;
 - Finance использует policies из My Company, но не придумывает роли и мотивацию сам.
@@ -33,6 +35,7 @@
 - [03-RBAC-Permissions.md](./03-RBAC-Permissions.md)
 - [04-KPI-Scorecard.md](./04-KPI-Scorecard.md)
 - [05-SOP-Templates.md](./05-SOP-Templates.md)
+- [07-Compensation-and-Policies.md](./07-Compensation-and-Policies.md)
 
 ### A2. Navigation canon already includes My Company
 
@@ -114,6 +117,7 @@ Employee currently may still contain simple salary fields. New canon requires:
 - active KPI policy;
 - effective dates;
 - archive old versions instead of overwriting.
+- validation before payroll run.
 
 ### C2. Bonus Policy is not implemented as universal policy layer
 
@@ -130,6 +134,9 @@ Policy must support:
 - product category / product type for delivery roles;
 - lead source / deal type / payment type for sales;
 - effective dates and audit.
+- policy templates;
+- employee overrides with reason;
+- preview affected employees before policy changes.
 
 ### C3. KPI Policy is not implemented as universal policy layer
 
@@ -143,6 +150,9 @@ New canon requires:
 - KPI results;
 - KPI gate results for payroll;
 - optional manual adjustments with reason.
+- KPI policy templates;
+- KPI gate preview;
+- validation that metric weights sum to 100%.
 
 ### C4. Business roles and system permissions need separation
 
@@ -176,6 +186,20 @@ New canon requires:
 
 Current runtime/UI may still treat `role` and `department` as simple employee fields. This must be refactored so employee profile derives primary role/department from seat assignments.
 
+### C6. Compensation UI is missing
+
+Статус: `MISSING UI`
+
+New canon requires:
+
+- Compensation dashboard;
+- Compensation Profiles view;
+- Bonus Policies view;
+- KPI Policies view;
+- Employee policy drawer;
+- policy audit view;
+- validation warnings.
+
 ---
 
 ## D. Recommended implementation order
@@ -187,5 +211,6 @@ Current runtime/UI may still treat `role` and `department` as simple employee fi
 5. Split business roles/seats from technical permission roles.
 6. Add versioned `Compensation Profile`.
 7. Add `Bonus Policy` and `KPI Policy` templates and active policies.
-8. Connect policies to Finance payroll and bonus release.
-9. Add KPI dashboards and employee wallet projections.
+8. Add Compensation dashboard and policy management views.
+9. Connect policies to Finance payroll and bonus release.
+10. Add KPI dashboards and employee wallet projections.
