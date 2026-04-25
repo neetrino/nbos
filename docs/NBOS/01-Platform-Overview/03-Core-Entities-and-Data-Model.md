@@ -475,6 +475,89 @@ Contact (человек)
 - Bonus Entry → one Employee
 - Bonus Entry → one Order
 - Bonus Entry → one Project
+- Bonus Entry → one Payroll Run / Salary Line when included in payout
+
+---
+
+### 2.11.1. Compensation Profile (Профиль оплаты сотрудника)
+
+Постоянные правила оплаты сотрудника. Живёт в контуре `My Company / Team`, а Finance использует его при payroll.
+
+| Поле            | Тип           | Описание                             |
+| --------------- | ------------- | ------------------------------------ |
+| id              | UUID          | Уникальный идентификатор             |
+| employee_id     | FK → Employee | Сотрудник                            |
+| base_salary     | Decimal       | Минимальная / фиксированная зарплата |
+| currency        | Enum          | AMD, USD, EUR                        |
+| role            | Enum          | Роль сотрудника                      |
+| level           | Enum          | Уровень сотрудника                   |
+| bonus_policy    | JSON          | Правила бонусов                      |
+| kpi_policy      | JSON          | Правила KPI                          |
+| payout_schedule | JSON          | График выплат                        |
+| effective_from  | Date          | Дата начала действия                 |
+| effective_to    | Date          | Дата окончания, если профиль заменён |
+| status          | Enum          | Active, Archived                     |
+
+**Связи:**
+
+- Employee → many Compensation Profiles
+- Active Compensation Profile → Payroll Run input
+
+---
+
+### 2.11.2. Payroll Run (Зарплатный расчёт)
+
+Месячный контейнер расчёта зарплат и бонусов.
+
+| Поле              | Тип           | Описание                                |
+| ----------------- | ------------- | --------------------------------------- |
+| id                | UUID          | Уникальный идентификатор                |
+| payroll_month     | String        | Месяц расчёта, YYYY-MM                  |
+| status            | Enum          | Draft, Review, Approved, Paying, Closed |
+| total_base_salary | Decimal       | Сумма фиксированных зарплат             |
+| total_bonuses     | Decimal       | Сумма бонусов                           |
+| total_adjustments | Decimal       | Корректировки                           |
+| total_deductions  | Decimal       | Удержания                               |
+| total_payable     | Decimal       | Итого к выплате                         |
+| total_paid        | Decimal       | Уже выплачено                           |
+| created_by_id     | FK → Employee | Кто создал / запустил расчёт            |
+| approved_by_id    | FK → Employee | Кто утвердил                            |
+| approved_at       | DateTime      | Когда утверждён                         |
+| closed_at         | DateTime      | Когда закрыт                            |
+
+**Связи:**
+
+- Payroll Run → many Salary Lines
+- Payroll Run → many Expense Cards
+- Payroll Run → many Bonus Entries through Salary Lines
+
+---
+
+### 2.11.3. Salary Line (Строка зарплаты сотрудника)
+
+Запись `employee + month` внутри payroll run.
+
+| Поле                    | Тип                       | Описание                                      |
+| ----------------------- | ------------------------- | --------------------------------------------- |
+| id                      | UUID                      | Уникальный идентификатор                      |
+| payroll_run_id          | FK → Payroll Run          | Зарплатный расчёт                             |
+| employee_id             | FK → Employee             | Сотрудник                                     |
+| compensation_profile_id | FK → Compensation Profile | Профиль оплаты на момент расчёта              |
+| base_salary             | Decimal                   | Фикс за месяц                                 |
+| bonuses_total           | Decimal                   | Бонусы за месяц                               |
+| adjustments_total       | Decimal                   | Корректировки                                 |
+| deductions_total        | Decimal                   | Удержания                                     |
+| total_payable           | Decimal                   | Итого к выплате                               |
+| paid_amount             | Decimal                   | Уже выплачено                                 |
+| remaining_amount        | Decimal                   | Осталось выплатить                            |
+| status                  | Enum                      | Pending, Approved, Partially Paid, Paid, Held |
+| expense_card_id         | FK → Expense Card         | Связанная карточка расхода                    |
+
+**Связи:**
+
+- Salary Line → many Bonus Entries
+- Salary Line → one Expense Card
+- Expense Card → many Expense Payments
 
 ---
 
@@ -631,27 +714,28 @@ Contact (человек)
 
 ### 2.17. Employee (Сотрудник)
 
-| Поле          | Тип     | Описание                                                                                   |
-| ------------- | ------- | ------------------------------------------------------------------------------------------ |
-| id            | UUID    | Уникальный идентификатор                                                                   |
-| first_name    | String  | Имя                                                                                        |
-| last_name     | String  | Фамилия                                                                                    |
-| role          | Enum    | CEO, Seller, PM, Developer, Designer, QA, Tech Specialist, Finance, Marketing, Junior, Ops |
-| department    | Enum    | Executive, Sales, Marketing, Delivery, Support, Finance, HR, Ops                           |
-| level         | Enum    | Junior, Middle, Senior, Lead, Head                                                         |
-| base_salary   | Decimal | Фиксированная зарплата                                                                     |
-| email         | String  | Email                                                                                      |
-| phone         | String  | Телефон                                                                                    |
-| telegram_id   | String  | Telegram ID                                                                                |
-| work_schedule | JSON    | Рабочий график                                                                             |
-| status        | Enum    | Active, Probation, On Leave, Fired                                                         |
-| hire_date     | Date    | Дата найма                                                                                 |
+| Поле          | Тип    | Описание                                                                                   |
+| ------------- | ------ | ------------------------------------------------------------------------------------------ |
+| id            | UUID   | Уникальный идентификатор                                                                   |
+| first_name    | String | Имя                                                                                        |
+| last_name     | String | Фамилия                                                                                    |
+| role          | Enum   | CEO, Seller, PM, Developer, Designer, QA, Tech Specialist, Finance, Marketing, Junior, Ops |
+| department    | Enum   | Executive, Sales, Marketing, Delivery, Support, Finance, HR, Ops                           |
+| level         | Enum   | Junior, Middle, Senior, Lead, Head                                                         |
+| email         | String | Email                                                                                      |
+| phone         | String | Телефон                                                                                    |
+| telegram_id   | String | Telegram ID                                                                                |
+| work_schedule | JSON   | Рабочий график                                                                             |
+| status        | Enum   | Active, Probation, On Leave, Fired                                                         |
+| hire_date     | Date   | Дата найма                                                                                 |
 
 **Связи:**
 
 - Employee → many Projects (как seller, PM, dev)
 - Employee → many Tasks
 - Employee → many Bonus Entries
+- Employee → many Compensation Profiles
+- Employee → many Payroll Runs / Salary Lines
 - Employee → many Credentials (доступ)
 
 ---

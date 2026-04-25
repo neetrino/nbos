@@ -78,8 +78,8 @@
 | Expense Board | `/finance/expenses/board` | Текущие карточки расходов |
 | Expense Backlog | `/finance/expenses/backlog` | Долги и отложенные расходы вне текущего цикла |
 | Domains | `/finance/domains` | Домены — управление и оплата |
-| Bonus Board | `/finance/bonuses` | Бонусная доска сотрудников |
-| Salary Board | `/finance/salary` | Зарплатная ведомость |
+| Bonus Board | `/finance/bonuses` | Доска бонусов и история по сотрудникам |
+| Salary Board | `/finance/salary` | Матрица зарплат employees x months |
 | P&L Reports | `/finance/pnl` | Отчёты о прибылях и убытках |
 
 ### 2.6. Support
