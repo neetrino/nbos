@@ -14,6 +14,8 @@
 - `Settings` содержит системную админку, а не бизнес-структуру компании;
 - `Compensation Profile` хранит условия оплаты сотрудника с историей версий;
 - `Bonus Policy` и `KPI Policy` универсальны для всех отделов, ролей, уровней и сотрудников;
+- `Department -> Seat -> Seat Assignment -> Employee` является основной моделью оргструктуры;
+- Org Structure UI должен быть canvas с карточками отделов, zoom/search/collapse и drawer деталей;
 - Finance использует policies из My Company, но не придумывает роли и мотивацию сам.
 
 ---
@@ -57,6 +59,8 @@ Future implementation:
 - add `My Company` top-level sidebar item;
 - move `Team` under `My Company`;
 - add `Org Structure`, `Compensation`, `KPI / Scorecard`, `Roles & Seats`, `Departments`, `SOP`;
+- make `Org Structure` the default My Company page;
+- implement org chart canvas with department cards, lines, zoom, search, collapse/expand and detail drawer;
 - hide items by RBAC.
 
 ### B2. My Account currently appears inside Settings
@@ -154,14 +158,34 @@ Future implementation must separate:
 - `Seat / Position` in My Company;
 - `Permission Role` in Settings / RBAC.
 
+### C5. Department / Seat / Assignment runtime model is missing
+
+Статус: `MISSING CODE`
+
+New canon requires:
+
+- `Department`;
+- `Seat`;
+- `Seat Assignment`;
+- support for multiple active assignments per employee;
+- primary assignment;
+- allocation percent;
+- vacant seats;
+- temporary assignments;
+- assignment history.
+
+Current runtime/UI may still treat `role` and `department` as simple employee fields. This must be refactored so employee profile derives primary role/department from seat assignments.
+
 ---
 
 ## D. Recommended implementation order
 
 1. Add `My Company` sidebar and move `Team` under it.
 2. Remove `My Account` from Settings and open it from header user menu.
-3. Split business roles/seats from technical permission roles.
-4. Add versioned `Compensation Profile`.
-5. Add `Bonus Policy` and `KPI Policy` templates and active policies.
-6. Connect policies to Finance payroll and bonus release.
-7. Add KPI dashboards and employee wallet projections.
+3. Add org chart canvas as default My Company screen.
+4. Add `Department`, `Seat`, `Seat Assignment`.
+5. Split business roles/seats from technical permission roles.
+6. Add versioned `Compensation Profile`.
+7. Add `Bonus Policy` and `KPI Policy` templates and active policies.
+8. Connect policies to Finance payroll and bonus release.
+9. Add KPI dashboards and employee wallet projections.

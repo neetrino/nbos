@@ -46,6 +46,7 @@
 | Как прорабатывать каждый модуль                     | `00-Module-Documentation-Working-Method.md`                                                         |
 | Финансовое ядро (журнал vB, accrual/cash, периоды)  | `02-Modules/04-Finance/09-Finance-Core-Architecture.md`                                             |
 | Кошелёк сотрудника (Wallet, read-only)              | `02-Modules/04-Finance/08-Employee-Wallet.md`                                                       |
+| My Company overview                                 | `02-Modules/07-My-Company/00-My-Company-Overview.md`                                                |
 | Видение, слои                                       | `01-Platform-Overview/01-Vision-and-Goals.md`, `02-Platform-Architecture-Layers.md`                 |
 | Продукто-центричный Hub                             | `02-Modules/02-Projects-Hub/05-Product-Centric-Navigation.md`                                       |
 | Решения заказчика (Product, Extension, MAINTENANCE) | `03-Business-Logic/08-Stakeholder-Decisions-Product-Extension-Maintenance.md`                       |

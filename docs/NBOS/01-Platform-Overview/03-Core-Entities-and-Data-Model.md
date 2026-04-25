@@ -759,29 +759,80 @@ Contact (человек)
 
 ### 2.17. Employee (Сотрудник)
 
-| Поле          | Тип    | Описание                                                                                   |
-| ------------- | ------ | ------------------------------------------------------------------------------------------ |
-| id            | UUID   | Уникальный идентификатор                                                                   |
-| first_name    | String | Имя                                                                                        |
-| last_name     | String | Фамилия                                                                                    |
-| role          | Enum   | CEO, Seller, PM, Developer, Designer, QA, Tech Specialist, Finance, Marketing, Junior, Ops |
-| department    | Enum   | Executive, Sales, Marketing, Delivery, Support, Finance, HR, Ops                           |
-| level         | Enum   | Junior, Middle, Senior, Lead, Head                                                         |
-| email         | String | Email                                                                                      |
-| phone         | String | Телефон                                                                                    |
-| telegram_id   | String | Telegram ID                                                                                |
-| work_schedule | JSON   | Рабочий график                                                                             |
-| status        | Enum   | Active, Probation, On Leave, Fired                                                         |
-| hire_date     | Date   | Дата найма                                                                                 |
+| Поле                  | Тип             | Описание                                                   |
+| --------------------- | --------------- | ---------------------------------------------------------- |
+| id                    | UUID            | Уникальный идентификатор                                   |
+| first_name            | String          | Имя                                                        |
+| last_name             | String          | Фамилия                                                    |
+| primary_seat_id       | FK → Seat       | Основная функция, вычисляется из active primary assignment |
+| primary_department_id | FK → Department | Основной отдел, вычисляется из primary seat                |
+| level                 | Enum            | Junior, Middle, Senior, Lead, Head                         |
+| email                 | String          | Email                                                      |
+| phone                 | String          | Телефон                                                    |
+| telegram_id           | String          | Telegram ID                                                |
+| work_schedule         | JSON            | Рабочий график                                             |
+| status                | Enum            | Active, Probation, On Leave, Fired                         |
+| hire_date             | Date            | Дата найма                                                 |
+
+`role` и `department` не должны быть простыми scalar fields источника истины. Бизнес-функции сотрудника задаются через `Seat Assignment`.
 
 **Связи:**
 
+- Employee → many Seat Assignments
 - Employee → many Projects (как seller, PM, dev)
 - Employee → many Tasks
 - Employee → many Bonus Entries
 - Employee → many Compensation Profiles
 - Employee → many Payroll Runs / Salary Lines
 - Employee → many Credentials (доступ)
+
+---
+
+### 2.17.1. Department (Отдел)
+
+Бизнес-направление компании.
+
+| Поле              | Тип             | Описание                        |
+| ----------------- | --------------- | ------------------------------- |
+| id                | UUID            | Уникальный идентификатор        |
+| name              | String          | Название отдела                 |
+| parent_id         | FK → Department | Родительский отдел, если есть   |
+| head_seat_id      | FK → Seat       | Seat руководителя отдела        |
+| owner_employee_id | FK → Employee   | Текущий владелец / руководитель |
+| status            | Enum            | Active, Archived                |
+| kpi_policy_id     | FK → KPI Policy | KPI policy отдела, если есть    |
+
+### 2.17.2. Seat (Место / функция)
+
+Функция в компании, а не человек.
+
+| Поле                       | Тип                  | Описание                      |
+| -------------------------- | -------------------- | ----------------------------- |
+| id                         | UUID                 | Уникальный идентификатор      |
+| department_id              | FK → Department      | Отдел                         |
+| title                      | String               | Название функции              |
+| accountability             | Text                 | За что seat отвечает          |
+| required_skills            | JSON                 | Требования / навыки           |
+| level_range                | JSON                 | Допустимые уровни             |
+| default_kpi_policy_id      | FK → KPI Policy      | KPI policy по умолчанию       |
+| default_bonus_policy_id    | FK → Bonus Policy    | Bonus policy по умолчанию     |
+| default_permission_role_id | FK → Permission Role | Техническая роль по умолчанию |
+| status                     | Enum                 | Active, Vacant, Archived      |
+
+### 2.17.3. Seat Assignment (Назначение на место)
+
+Связь сотрудника с функцией.
+
+| Поле           | Тип           | Описание                            |
+| -------------- | ------------- | ----------------------------------- |
+| id             | UUID          | Уникальный идентификатор            |
+| seat_id        | FK → Seat     | Какая функция                       |
+| employee_id    | FK → Employee | Кто занимает                        |
+| allocation_pct | Decimal       | Процент занятости / ответственности |
+| is_primary     | Boolean       | Основная функция сотрудника         |
+| start_date     | Date          | Дата начала                         |
+| end_date       | Date          | Дата окончания, если есть           |
+| status         | Enum          | Active, Temporary, Ended            |
 
 ---
 

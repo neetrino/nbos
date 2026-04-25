@@ -145,7 +145,7 @@
 Подпункты:
 | Элемент | Путь | Описание |
 |---------|------|----------|
-| Org Structure | `/company/org` | Организационная структура (иерархия отделов) |
+| Org Structure | `/company/org` | Визуальная org chart: departments, seats, assignments |
 | Team | `/company/team` | Список сотрудников с профилями |
 | Compensation | `/company/compensation` | Профили оплаты, bonus policies, KPI policies |
 | KPI / Scorecard | `/company/kpi` | Ключевые показатели эффективности |
@@ -154,6 +154,8 @@
 | SOP & Templates | `/company/sop` | Стандартные процедуры и шаблоны |
 
 `Team` не должен быть отдельным top-level пунктом sidebar. Это часть `My Company`, потому что сотрудники, роли, KPI, компенсация и оргструктура являются одним бизнес-контуром.
+
+Default page для `My Company` - `Org Structure` с визуальной картой компании. По UX она должна быть похожа на org chart canvas: карточки отделов, линии подчинения, zoom, search, collapse/expand и drawer деталей.
 
 ### 2.13. Credentials (Password Vault)
 
