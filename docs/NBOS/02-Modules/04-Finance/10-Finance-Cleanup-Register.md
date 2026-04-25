@@ -266,7 +266,14 @@ Runtime currently has `Domain`, but not a general `Client Service Record`.
 - migrate / wrap domain logic into the general service model;
 - support billing model: `Client-paid / Company-paid`;
 - support pricing model: `Fixed / Usage-based`;
-- connect to `Invoice Card`, `Expense Card`, `Task`, `Credential`.
+- connect to `Invoice Card`, `Expense Card`, `Task`, `Credential`, and Drive File Assets for receipts/proofs/provider documents.
+
+Finance runtime also needs Drive alignment:
+
+- invoice/payment/expense attachments should become Drive File Assets;
+- proofs should use finance-restricted visibility;
+- provider receipts for Client Service Records should link to Drive;
+- payroll and partner payout exports should be generated as Drive files with audit.
 
 ### C6. Operational Journal and period close are not implemented
 

@@ -12,7 +12,7 @@
 - finance;
 - support;
 - credentials;
-- files.
+- files / Drive libraries.
 
 Главный принцип:
 
@@ -45,6 +45,7 @@
 | Extensions              | Последние/активные доработки                                                 |
 | Delivery Snapshot       | Сколько карточек сейчас в `Starting / Development / QA / Transfer / On Hold` |
 | Finance Snapshot        | Заказы, оплаты, подписки                                                     |
+| Files Snapshot          | Важные Drive files: approved offers, handoff, delivery, finance docs         |
 | Nearest Deadlines       | Ближайшие даты по delivery-сущностям                                         |
 | Audit / Recent Activity | Последние ключевые события                                                   |
 
@@ -134,6 +135,27 @@ Project Card может показывать финансовый агрегат
 - subscription summary;
 - last payment / next billing visibility.
 
+Финансовые документы физически хранятся в Drive как File Assets, но видимость на Project Card зависит от Finance permissions. PM может видеть наличие документа без доступа к sensitive amount/proof, если политика доступа это требует.
+
+---
+
+## 5.1. Files / Drive section
+
+Project Card показывает `Project Library` как агрегированный Drive view.
+
+Внутри видны секции:
+
+- Commercial / approved offers;
+- Handoff;
+- Product files;
+- Extension files;
+- Delivery;
+- Support evidence;
+- Client documents;
+- Finance documents, если у пользователя есть доступ.
+
+Project Card не должен физически копировать файлы между папками. Он показывает Drive File Assets, связанные с Project, Product, Extension, Deal, Client и Finance.
+
 ---
 
 ## 6. Subscription / Maintenance section
@@ -170,3 +192,4 @@ Project Card может показывать финансовый агрегат
 - `Product workspace`
 - `Extension card`
 - `Delivery Board`
+- `Product / Extension Library` в Drive

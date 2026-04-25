@@ -39,7 +39,7 @@ Partner analytics должна иметь несколько видов:
 
 ## 3. Agreements
 
-Agreement хранит документы и условия партнёрства.
+Agreement хранит условия партнёрства и links на документы в Drive.
 
 Поля:
 
@@ -48,9 +48,11 @@ Agreement хранит документы и условия партнёрств
 | agreement_status     | No Agreement / Draft / Active / Expired |
 | agreement_start_date | Начало действия                         |
 | agreement_end_date   | Окончание                               |
-| document_file        | Договор / PDF / scan                    |
+| document_file        | Drive File Asset: договор / PDF / scan  |
 | special_terms        | Особые условия                          |
 | owner                | Кто отвечает за партнёра                |
+
+Partner Agreement documents не должны храниться как локальные attachments Partners module. Они являются Drive File Assets с purpose `PARTNER_AGREEMENT`. Для future Partner Account видимость задаётся через Drive `Partner Visible`, но внешний доступ не включается автоматически.
 
 ---
 

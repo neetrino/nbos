@@ -25,10 +25,13 @@
 - Work Space
 - Support
 - Credentials
+- Files / Drive Library
 - Finance
 - (остальные по модулю — по тем же правилам привязки к Product)
 
-**Правило:** задачи, тикеты, финансы по продукту, пароли, относящиеся к этой линии — в контексте **Product**, если иное явно не задано (например, общие пароли компании — по правилам Vault).
+**Правило:** задачи, тикеты, файлы, финансы по продукту, пароли, относящиеся к этой линии — в контексте **Product**, если иное явно не задано (например, общие пароли компании — по правилам Vault).
+
+Вкладка `Files / Drive Library` показывает Product Library: approved offer, handoff docs, design, development docs, QA evidence, delivery files, support files and selected finance documents according to Drive permissions.
 
 ---
 

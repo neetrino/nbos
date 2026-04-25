@@ -117,17 +117,17 @@ Outbound-партнёрство — это доход Neetrino, а не payout.
 
 ## 6. Связи с другими модулями
 
-| Модуль                | Связь                                                              |
-| --------------------- | ------------------------------------------------------------------ |
-| CRM                   | Lead / Deal source Partner, фиксация партнёрских условий           |
-| Clients               | Contact с типом Partner, клиентская история по переданным клиентам |
-| Projects Hub          | Project / Product показывают partner referral context              |
-| Finance Invoices      | Доход от клиента или партнёра                                      |
-| Finance Subscriptions | Subscription-платежи клиента или outbound partner service          |
-| Finance Expenses      | Expense Card создаётся для фактической выплаты партнёру            |
-| P&L Reports           | Partner payouts как расходы, partner service revenue как доход     |
-| Drive                 | Хранение соглашений, договоров и документов партнёра               |
-| Notifications         | Напоминания о payout, истечении договора, новых referral leads     |
+| Модуль                | Связь                                                               |
+| --------------------- | ------------------------------------------------------------------- |
+| CRM                   | Lead / Deal source Partner, фиксация партнёрских условий            |
+| Clients               | Contact с типом Partner, клиентская история по переданным клиентам  |
+| Projects Hub          | Project / Product показывают partner referral context               |
+| Finance Invoices      | Доход от клиента или партнёра                                       |
+| Finance Subscriptions | Subscription-платежи клиента или outbound partner service           |
+| Finance Expenses      | Expense Card создаётся для фактической выплаты партнёру             |
+| P&L Reports           | Partner payouts как расходы, partner service revenue как доход      |
+| Drive                 | Partner Library, agreements, payout documents, portal-visible files |
+| Notifications         | Напоминания о payout, истечении договора, новых referral leads      |
 
 ---
 

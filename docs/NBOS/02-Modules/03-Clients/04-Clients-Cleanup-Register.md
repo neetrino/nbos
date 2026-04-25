@@ -36,6 +36,7 @@
 - добавить tabs: Overview / Projects / Finance / Subscriptions / Support / Communication / Files;
 - реализовать context modes: Contact Portfolio и Company Portfolio;
 - реализовать access mask для финансовых данных.
+- реализовать Files tab как Drive Client Library, а не отдельное хранилище файлов внутри Clients.
 
 ### C4. Company имеет один primary contact
 

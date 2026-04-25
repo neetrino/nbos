@@ -71,7 +71,7 @@ Premium не означает автоматически больший проц
 | Inbound Referrals | Lead / Deal / Order / Subscription, которые пришли от партнёра |
 | Payouts & Balance | Accruals, balance, payout batches, paid history                |
 | Outbound Services | Клиенты, переданные партнёру, и доход Neetrino                 |
-| Agreements        | Договоры, файлы, даты действия                                 |
+| Agreements        | Drive Partner Library: договоры, файлы, даты действия          |
 | Analytics         | Revenue, payouts, conversion, unpaid balance                   |
 
 ---

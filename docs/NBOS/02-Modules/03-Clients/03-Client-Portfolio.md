@@ -69,17 +69,19 @@ Client Portfolio открывается как полноценная стран
 
 ### 2.1.1. Tabs
 
-| Tab           | Назначение                                                          |
-| ------------- | ------------------------------------------------------------------- |
-| Overview      | Краткая сводка: финансы, активные проекты, риски, последние события |
-| Projects      | Все Projects / Products / Extensions в выбранном контексте          |
-| Finance       | Invoices, payments, orders, outstanding balance, LTV                |
-| Subscriptions | Активные, pending, on hold, cancelled, completed subscriptions      |
-| Support       | Open tickets, recent tickets, SLA risks                             |
-| Communication | История сообщений, звонков, заметок, reminders                      |
-| Files         | Client Library / документы клиента, если Drive доступен             |
+| Tab           | Назначение                                                           |
+| ------------- | -------------------------------------------------------------------- |
+| Overview      | Краткая сводка: финансы, активные проекты, риски, последние события  |
+| Projects      | Все Projects / Products / Extensions в выбранном контексте           |
+| Finance       | Invoices, payments, orders, outstanding balance, LTV                 |
+| Subscriptions | Активные, pending, on hold, cancelled, completed subscriptions       |
+| Support       | Open tickets, recent tickets, SLA risks                              |
+| Communication | История сообщений, звонков, заметок, reminders                       |
+| Files         | Drive Client Library: документы Contact / Company / проектов клиента |
 
 Default tab = Overview. Система запоминает последний открытый tab пользователя.
+
+`Files` tab не хранит файлы внутри Client Portfolio. Это Drive view, который агрегирует File Assets, связанные с Contact, Company, Deals, Projects, Products, Invoices, Support Tickets и Partner context, если применимо. Finance-sensitive файлы показываются только пользователям с правами Finance.
 
 ---
 

@@ -137,6 +137,19 @@ Support Ticket Closed
 
 Ticket не должен быть местом, где команда пытается заменить нормальный task engine.
 
+### 4.1. Files / Evidence
+
+Файлы тикета хранятся через Drive:
+
+- screenshots;
+- logs;
+- screen recordings;
+- customer proof;
+- incident reports;
+- resolution documents.
+
+Support Ticket хранит links на Drive File Assets. Если ticket связан с Product, важные evidence files должны быть видны в Product Library в секции `Support History`. Temporary screenshots могут позже попасть в cleanup по правилам Drive, но incident/post-mortem материалы должны храниться дольше.
+
 ---
 
 ## 5. Communication

@@ -139,9 +139,12 @@ Partners ──→ Partner Accruals, Partner Balance, Payout Batches, Partner Se
 My Company ──→ Salary Board, Employee Bonuses
 Tasks ──→ Auto-tasks (купить домен, оплатить сервис)
 Credentials ──→ Аккаунты провайдеров (домены, хостинг)
+Drive ──→ Invoice/payment/expense proofs, payroll exports, partner payout docs
 Notifications ──→ Напоминания об оплатах, просрочках
 Dashboards ──→ MRR, Churn, Cash Flow, P&L виджеты
 ```
+
+Finance не хранит файлы в собственном локальном attachment layer. Все proofs, scans, exports и supporting documents являются Drive File Assets с finance permissions. Finance остаётся source of truth для сумм и статусов, Drive - source of truth для файлов и версий.
 
 ---
 

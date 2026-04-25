@@ -238,13 +238,15 @@ Deal Pipeline — воронка для работы с квалифициров
 | Оценка сроков        | Число (дни/месяцы)                                   | Да           | Стадия 4                    |
 | Сумма сделки         | Число                                                | Да           | Стадия 5                    |
 | Тип оплаты           | Classic 50/50 / 30/30/40 / Subscription              | Да           | Стадия 5                    |
-| Offer Materials      | Файл / ссылка / screenshot                           | Да           | Стадия 5                    |
+| Offer Materials      | Drive File Asset: файл / ссылка / screenshot         | Да           | Стадия 5                    |
 | Налогооблагаемость   | Tax / Free                                           | Да           | До стадии 7                 |
 | Deadline             | Дата                                                 | Да\*\*       | Стадия 7                    |
 | Причина проигрыша    | Текст + выбор                                        | Условно      | Если Failed                 |
 
 > \*Обязательно до перехода дальше первой meaningful stage
 > \*\*Для `PRODUCT / EXTENSION / OUTSOURCE` это delivery deadline; для `MAINTENANCE` это planned maintenance start date
+
+`Offer Materials` не должны храниться как локальное поле Deal. Deal хранит links на Drive File Assets с purpose `OFFER_DRAFT / OFFER_SENT / OFFER_APPROVED / MESSENGER_PROOF`. При `Deal Won` approved offer автоматически становится видимым в Product Library, Project Library и Client Library по правилам Drive.
 
 ### Автосоздание Maintenance Deal
 

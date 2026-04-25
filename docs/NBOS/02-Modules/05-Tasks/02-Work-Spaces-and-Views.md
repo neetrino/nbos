@@ -11,6 +11,7 @@
 - kanban board
 - list view
 - timeline
+- files / artifacts
 - rules
 - analytics
 - type-specific settings
@@ -75,6 +76,7 @@
 
 - страница продукта открывает connected workspace этого продукта
 - именно там живут scrum/kanban/list/timeline представления
+- именно там видны Work Space files and artifacts через Drive
 - задачи продукта собираются и выполняются через это пространство
 
 Путь логически должен быть:
@@ -216,6 +218,22 @@ PM-oriented вид по срокам, зависимостям и critical path.
 2. В product workspace scrum и kanban могут сосуществовать как два режима одного пространства.
 3. Разные workspace types могут иметь разный UI и набор доступных блоков.
 4. Source of truth остаются `Task + Work Space + Sprint`, а не отдельные несвязанные доски.
+5. Work Space files являются Drive File Assets. Backlog/task attachments не должны попадать в Product Library как финальные документы, пока их не отметили как final artifact / delivery file.
+
+## 10.1. Work Space Library
+
+Каждый Work Space имеет Drive-based library.
+
+Секции:
+
+- Backlog attachments;
+- Sprint artifacts;
+- Task outputs;
+- QA evidence;
+- Final delivery candidates;
+- Archive.
+
+Scrum planning files, meeting notes, screenshots and task results должны храниться в Drive и связываться с Work Space, Sprint, Task и Product/Extension по необходимости.
 
 ## 11. Что может развиваться дальше
 
