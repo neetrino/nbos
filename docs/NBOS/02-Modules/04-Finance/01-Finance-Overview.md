@@ -10,16 +10,16 @@
 
 ## Структура модуля
 
-| Раздел                               | Описание                                                                                                    | Основные сущности                                                              |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Finance Core (архитектура учёта)** | Операционный журнал vB, accrual/cash, периоды, мультивалюта; целевая модель без full double-entry на старте | См. [09-Finance-Core-Architecture.md](./09-Finance-Core-Architecture.md)       |
-| **Invoices & Payments**              | Выставление счетов, контроль оплат                                                                          | Invoice, Payment                                                               |
-| **Subscriptions**                    | Ежемесячные подписки клиентов                                                                               | Subscription, Subscription Grid                                                |
-| **Expenses**                         | Планы расходов, текущие карточки расходов, частичные оплаты, backlog долгов и pass-through расходы          | Expense Plan, Expense Card, Expense Payment                                    |
-| **Bonus & Payroll**                  | Профили оплаты, бонусные события, payroll run, salary board и выплаты через expense cards                   | Compensation Profile, Bonus Entry, Payroll Run, Salary Line                    |
-| **Employee Wallet**                  | Личный read-only экран сотрудника: зарплата, бонусы по проектам, прогноз, история                           | Проекция Bonus + Payroll; см. [08-Employee-Wallet.md](./08-Employee-Wallet.md) |
-| **Domains & Client Services**        | Домены, хостинг, аккаунты и внешние сервисы клиента; связь с invoice cards, expenses, tasks и credentials   | Client Service Record, Domain, Hosting, Service, Account, License              |
-| **P&L Reports**                      | Отчётность и аналитика                                                                                      | Company P&L, Project P&L, Order P&L                                            |
+| Раздел                               | Описание                                                                                                    | Основные сущности                                                                              |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Finance Core (архитектура учёта)** | Операционный журнал vB, accrual/cash, периоды, мультивалюта; целевая модель без full double-entry на старте | См. [09-Finance-Core-Architecture.md](./09-Finance-Core-Architecture.md)                       |
+| **Invoices & Payments**              | Выставление счетов, контроль оплат                                                                          | Invoice, Payment                                                                               |
+| **Subscriptions**                    | Ежемесячные подписки клиентов                                                                               | Subscription, Subscription Grid                                                                |
+| **Expenses**                         | Планы расходов, текущие карточки расходов, частичные оплаты, backlog долгов и pass-through расходы          | Expense Plan, Expense Card, Expense Payment                                                    |
+| **Bonus & Payroll**                  | Профили оплаты, bonus policies, project bonus pool, payroll run, salary board и выплаты через expense cards | Compensation Profile, Bonus Entry, Project Bonus Pool, Bonus Release, Payroll Run, Salary Line |
+| **Employee Wallet**                  | Личный read-only экран сотрудника: зарплата, бонусы по проектам, прогноз, история                           | Проекция Bonus + Payroll; см. [08-Employee-Wallet.md](./08-Employee-Wallet.md)                 |
+| **Domains & Client Services**        | Домены, хостинг, аккаунты и внешние сервисы клиента; связь с invoice cards, expenses, tasks и credentials   | Client Service Record, Domain, Hosting, Service, Account, License                              |
+| **P&L Reports**                      | Отчётность и аналитика                                                                                      | Company P&L, Project P&L, Order P&L                                                            |
 
 ---
 

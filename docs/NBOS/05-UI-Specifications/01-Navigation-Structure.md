@@ -140,15 +140,20 @@
 ### 2.12. My Company (раскрываемый)
 
 - **Иконка:** здание
-- **Доступ:** CEO — полный доступ; Head of Delivery, Head of Sales — просмотр структуры и KPI; все сотрудники — просмотр оргструктуры и SOP
+- **Доступ:** CEO — полный доступ; HR/Finance/Heads — по своим зонам; все сотрудники — базовый просмотр оргструктуры, команды и SOP
 
 Подпункты:
 | Элемент | Путь | Описание |
 |---------|------|----------|
 | Org Structure | `/company/org` | Организационная структура (иерархия отделов) |
 | Team | `/company/team` | Список сотрудников с профилями |
+| Compensation | `/company/compensation` | Профили оплаты, bonus policies, KPI policies |
 | KPI / Scorecard | `/company/kpi` | Ключевые показатели эффективности |
+| Roles & Seats | `/company/roles` | Бизнес-роли, seats, levels и accountability |
+| Departments | `/company/departments` | Отделы компании и их владельцы |
 | SOP & Templates | `/company/sop` | Стандартные процедуры и шаблоны |
+
+`Team` не должен быть отдельным top-level пунктом sidebar. Это часть `My Company`, потому что сотрудники, роли, KPI, компенсация и оргструктура являются одним бизнес-контуром.
 
 ### 2.13. Credentials (Password Vault)
 
@@ -163,6 +168,20 @@
 - **Путь:** `/settings`
 - **Описание:** Системные настройки платформы
 - **Доступ:** только CEO и назначенные администраторы
+
+Settings не должен быть местом для личного профиля пользователя или бизнес-структуры компании.
+
+Подпункты Settings:
+
+| Элемент            | Путь                     | Описание                                                   |
+| ------------------ | ------------------------ | ---------------------------------------------------------- |
+| General            | `/settings/general`      | Общие системные настройки платформы                        |
+| System Lists       | `/settings/lists`        | Справочники: deal type, product type, statuses, categories |
+| Permissions / RBAC | `/settings/permissions`  | Технические права доступа и permission matrix              |
+| Integrations       | `/settings/integrations` | Внешние сервисы и API                                      |
+| Audit Log          | `/settings/audit`        | Системный audit                                            |
+
+Business roles, departments, seats, employees, KPI и compensation живут в `My Company`, а не в Settings. В Settings может остаться только технический RBAC и системные справочники.
 
 ---
 
@@ -190,9 +209,12 @@
 
 - **Расположение:** правый край верхней панели
 - **Содержимое выпадающего меню:**
-  - My Profile — профиль пользователя
-  - My Settings — персональные настройки (уведомления, язык, тема)
+  - My Account — личный профиль пользователя
+  - Notifications — персональные настройки уведомлений
+  - Security — пароль, сессии, 2FA
   - Logout — выход из системы
+
+`My Account` открывается из header user menu и не должен быть подпунктом Settings. Settings — это админка платформы, My Account — личный профиль текущего пользователя.
 
 ### 3.4. Быстрые действия (Quick Actions)
 

@@ -451,7 +451,13 @@ Contact (человек)
 | amount                | Decimal       | Сумма бонуса                                                                    |
 | percent               | Decimal       | % от суммы заказа                                                               |
 | status                | Enum          | Incoming, Earned, Pending Eligibility, Vested, Holdback, Active, Paid, Clawback |
-| kpi_gate_passed       | Boolean       | Прошёл ли KPI-гейт (для Sales)                                                  |
+| kpi_gate_result       | JSON          | Результат KPI gate, если применяется                                            |
+| planned_amount        | Decimal       | Плановый бонус по project/order pool                                            |
+| released_amount       | Decimal       | Сколько уже выпущено к выплате                                                  |
+| paid_amount           | Decimal       | Сколько реально выплачено                                                       |
+| remaining_amount      | Decimal       | Остаток по плановому бонусу                                                     |
+| extra_bonus_amount    | Decimal       | Сумма сверх планового бонуса                                                    |
+| over_funding_amount   | Decimal       | Сумма сверх доступного проектного фонда                                         |
 | holdback_percent      | Decimal       | % удержания (20% по умолчанию)                                                  |
 | holdback_release_date | Date          | Дата освобождения holdback                                                      |
 | earn_event            | String        | Событие начисления ("Invoice Paid", "Work Done + Paid")                         |
@@ -476,6 +482,45 @@ Contact (человек)
 - Bonus Entry → one Order
 - Bonus Entry → one Project
 - Bonus Entry → one Payroll Run / Salary Line when included in payout
+- Bonus Entry → many Bonus Releases
+
+---
+
+### 2.11.0.1. Project Bonus Pool (Бонусный фонд проекта)
+
+Плановый бонусный фонд проекта или order. Нужен, чтобы разделить "сколько положено" и "сколько уже можно выплатить".
+
+| Поле                   | Тип          | Описание                                   |
+| ---------------------- | ------------ | ------------------------------------------ |
+| id                     | UUID         | Уникальный идентификатор                   |
+| project_id             | FK → Project | Проект                                     |
+| order_id               | FK → Order   | Заказ, если применимо                      |
+| total_planned_amount   | Decimal      | Общая плановая сумма бонусов               |
+| total_released_amount  | Decimal      | Уже выпущено к выплате                     |
+| total_paid_amount      | Decimal      | Уже выплачено                              |
+| total_remaining_amount | Decimal      | Остаток планового бонуса                   |
+| available_funding      | Decimal      | Доступный фонд из полученных оплат клиента |
+| over_funding_amount    | Decimal      | Выпущено сверх полученных денег            |
+| status                 | Enum         | Draft, Active, Partially Released, Closed  |
+
+### 2.11.0.2. Bonus Release (Выпуск бонуса)
+
+Решение включить часть бонуса в конкретный payroll.
+
+| Поле           | Тип              | Описание                                              |
+| -------------- | ---------------- | ----------------------------------------------------- |
+| id             | UUID             | Уникальный идентификатор                              |
+| bonus_entry_id | FK → Bonus Entry | Бонусная запись                                       |
+| payroll_run_id | FK → Payroll Run | Зарплатный расчёт                                     |
+| employee_id    | FK → Employee    | Сотрудник                                             |
+| project_id     | FK → Project     | Проект                                                |
+| amount         | Decimal          | Сумма выпуска                                         |
+| release_type   | Enum             | Auto, Manual, Early, Extra, Over Funding, Correction  |
+| reason         | Text             | Причина, обязательна для Early/Extra/Over Funding     |
+| approved_by_id | FK → Employee    | Кто утвердил exception                                |
+| status         | Enum             | Draft, Approved, Included In Payroll, Paid, Cancelled |
+
+`Bonus Release` создаётся автоматически после сдачи проекта, если есть доступный проектный фонд, или вручную до сдачи / при исключениях.
 
 ---
 

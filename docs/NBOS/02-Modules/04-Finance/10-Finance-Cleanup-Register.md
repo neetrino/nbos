@@ -19,6 +19,8 @@
 - `Compensation Profile / Профиль оплаты сотрудника`;
 - `Payroll Run / Зарплатный расчёт`;
 - `Salary Line / Строка сотрудника в payroll`;
+- `Project Bonus Pool / Бонусный фонд проекта`;
+- `Bonus Release / Выпуск бонуса к выплате`;
 - `Employee Wallet / read-only кошелёк сотрудника`;
 - `Operational Journal / Операционный журнал`;
 - `Company / Project / Product / Order P&L`.
@@ -54,6 +56,8 @@
 - `Compensation Profile`;
 - `Payroll Run`;
 - `Salary Line`.
+- `Project Bonus Pool`;
+- `Bonus Release`.
 
 ### A3. Bonus lifecycle already has a rich status model
 
@@ -70,7 +74,7 @@ Runtime уже содержит расширенный `BonusStatusEnum`:
 - `PAID`;
 - `CLAWBACK`.
 
-Это близко к новому канону. Основной будущий refactor здесь не в статусах, а в связке с `Payroll Run`, `Salary Line`, `Expense Card` и `Employee Wallet`.
+Это близко к новому канону. Основной будущий refactor здесь не в статусах, а в связке с `Project Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`, `Expense Card` и `Employee Wallet`.
 
 ---
 
@@ -222,19 +226,25 @@ Runtime сейчас использует старые statuses:
 - `Compensation Profile`;
 - `Payroll Run`;
 - `Salary Line`;
+- `Project Bonus Pool`;
+- `Bonus Release`;
 - `Expense Card` creation from approved payroll;
 - partial salary payments via `Expense Payment`;
 - `Employee Wallet` as read-only projection.
 
-Runtime currently still has only basic employee salary fields and bonus entries. It does not have the full payroll entity flow.
+Runtime currently still has only basic employee salary fields and bonus entries. It does not have the full payroll entity flow, project bonus pool, automatic release after project done, or manual release overrides.
 
 Будущий refactor:
 
 - move compensation settings out of simple employee scalar fields into compensation profile history;
 - add payroll run model;
 - add salary line model;
+- add project bonus pool and bonus release models;
+- add automatic release after project done based on available project funding;
+- add manual override flow for early release, extra bonus and over funding;
 - connect payroll to expense cards and expense payments;
-- update salary UI from monthly table to `employees x months` matrix.
+- update salary UI from monthly table to `employees x months` matrix;
+- add payroll bonus release workspace.
 
 ### C5. Client Service Record is not a runtime entity yet
 
@@ -327,12 +337,13 @@ They currently calculate status and summary around old invoice and expense stage
 4. Add `Expense Plan`, `Expense Card`, `Expense Payment`, `Expense Backlog`.
 5. Add partial outgoing payments for expenses and salary.
 6. Add `Client Service Record` and connect it to invoice/expense/task/credential.
-7. Add `Compensation Profile`, `Payroll Run`, `Salary Line`.
-8. Add `Employee Wallet` read model.
-9. Add `Operational Journal`, period close and adjustment flow.
-10. Rebuild Finance UI routes and views around the new canon.
-11. Update finance dashboard/summary/scheduler logic.
-12. Add tests for all transition and generation rules.
+7. Add `Compensation Profile`, `Project Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`.
+8. Add automatic subscription delivery bonus release after project done, with manual override.
+9. Add `Employee Wallet` read model.
+10. Add `Operational Journal`, period close and adjustment flow.
+11. Rebuild Finance UI routes and views around the new canon.
+12. Update finance dashboard/summary/scheduler logic.
+13. Add tests for all transition and generation rules.
 
 ---
 
@@ -342,8 +353,10 @@ They currently calculate status and summary around old invoice and expense stage
 2. `Subscriptions` status + coverage because recurring revenue depends on invoice cards.
 3. `Client Service Record` because it feeds both invoice and expense.
 4. `Expense Plan / Card / Payment / Backlog`.
-5. `Payroll Run / Salary Line / Employee Wallet`.
-6. `Operational Journal / P&L / Cash Flow`.
-7. Finance dashboard and reporting refinements.
+5. `Compensation Profile / Bonus Policy / KPI Policy`.
+6. `Project Bonus Pool / Bonus Release`.
+7. `Payroll Run / Salary Line / Employee Wallet`.
+8. `Operational Journal / P&L / Cash Flow`.
+9. Finance dashboard and reporting refinements.
 
 This order keeps income, recurring billing and client-service flow stable before rebuilding expenses and payroll on top of them.

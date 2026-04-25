@@ -58,6 +58,7 @@
 | Support canon                                       | `02-Modules/06-Support/01-Support-Overview.md`, `02-Modules/06-Support/02-Ticket-Lifecycle.md`      |
 | Support cleanup register                            | `02-Modules/06-Support/04-Support-Cleanup-Register.md`                                              |
 | Finance cleanup register                            | `02-Modules/04-Finance/10-Finance-Cleanup-Register.md`                                              |
+| My Company cleanup register                         | `02-Modules/07-My-Company/06-My-Company-Cleanup-Register.md`                                        |
 | Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                                       |
 | Единый план и прогресс                              | [DEVELOPMENT_PLAN.md](../DEVELOPMENT_PLAN.md)                                                       |
 
