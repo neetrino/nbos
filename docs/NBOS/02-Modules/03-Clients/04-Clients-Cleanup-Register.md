@@ -57,6 +57,18 @@
 - предусмотреть дополнительные контакты проекта;
 - invoice/payment reminders должны брать billing contact из Company / invoice settings, а не общий `contact_type`.
 
+### C6. Нет process-flow реализации
+
+Канон процесса описан в `05-Clients-Process-Flow.md`, но runtime пока не гарантирует весь путь Lead → Contact → Company → Deal → Project → Client Portfolio.
+
+Нужно:
+
+- добавить dedupe-check при создании Contact из Lead / Deal;
+- сделать Company обязательной перед Invoice / Order / Subscription;
+- поддержать Company типа `Individual` для физлиц;
+- добавить billing contact / invoice contact;
+- реализовать Client Portfolio endpoint / view.
+
 ## 2. Documentation cleanup
 
 ### D1. Убрать смысл “role управляет процессом”
