@@ -1,0 +1,76 @@
+# Partner Analytics and Agreements
+
+## Назначение
+
+Этот документ описывает аналитику партнёров и работу с договорами / соглашениями.
+
+---
+
+## 1. Partner Analytics
+
+Analytics должна показывать:
+
+| Метрика                      | Смысл                                               |
+| ---------------------------- | --------------------------------------------------- |
+| Referred Leads               | Сколько лидов пришло от партнёра                    |
+| Won Deals                    | Сколько сделок выиграно                             |
+| Conversion Rate              | Won / referred                                      |
+| Referred Revenue             | Сколько денег Neetrino получил от клиентов партнёра |
+| Accrued Partner Payouts      | Сколько начислено партнёру                          |
+| Paid Partner Payouts         | Сколько выплачено                                   |
+| Unpaid Balance               | Сколько осталось выплатить                          |
+| Active Subscription Accruals | Активные регулярные начисления                      |
+| Outbound Revenue             | Сколько партнёр платит Neetrino                     |
+
+---
+
+## 2. Views
+
+Partner analytics должна иметь несколько видов:
+
+- by partner;
+- by period;
+- by deal type;
+- by payment type;
+- by project / product;
+- by inbound vs outbound.
+
+---
+
+## 3. Agreements
+
+Agreement хранит документы и условия партнёрства.
+
+Поля:
+
+| Поле                 | Назначение                              |
+| -------------------- | --------------------------------------- |
+| agreement_status     | No Agreement / Draft / Active / Expired |
+| agreement_start_date | Начало действия                         |
+| agreement_end_date   | Окончание                               |
+| document_file        | Договор / PDF / scan                    |
+| special_terms        | Особые условия                          |
+| owner                | Кто отвечает за партнёра                |
+
+---
+
+## 4. Notifications
+
+| Событие                      | Кому                         | Что происходит                      |
+| ---------------------------- | ---------------------------- | ----------------------------------- |
+| New referral lead            | CEO / Head of Sales / Seller | Новый лид от партнёра               |
+| Partner accrual created      | Finance                      | Появилось начисление партнёру       |
+| Payout batch ready           | Finance                      | Пора сформировать / оплатить batch  |
+| Agreement expires in 30 days | CEO / Head of Sales          | Нужно продлить договор              |
+| Partner paused / terminated  | Sales                        | Нельзя использовать в новых сделках |
+
+---
+
+## 5. Accepted decisions
+
+| Решение                                                | Статус   |
+| ------------------------------------------------------ | -------- |
+| Analytics разделяет inbound payouts и outbound revenue | Accepted |
+| Agreement не определяет процент автоматически          | Accepted |
+| Истечение договора должно создавать notification       | Accepted |
+| Partner analytics должна показывать unpaid balance     | Accepted |
