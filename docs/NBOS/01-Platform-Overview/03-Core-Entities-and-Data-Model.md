@@ -561,6 +561,8 @@ Contact (человек)
 
 ### 2.16. Domain (Домен)
 
+Частный случай `Client Service Record`: домен проекта клиента с датой продления, себестоимостью и возможной ценой для клиента.
+
 | Поле          | Тип             | Описание                                                 |
 | ------------- | --------------- | -------------------------------------------------------- |
 | id            | UUID            | Уникальный идентификатор                                 |
@@ -580,7 +582,7 @@ Contact (человек)
 
 - Domain → one Project
 - Domain → one Credential (аккаунт провайдера)
-- Domain generates: annual Expense + Invoice for client
+- Domain may generate: Invoice Card for client + Expense + renewal task
 
 ---
 

@@ -18,7 +18,7 @@
 | **Expenses**                         | Расходы (плановые, внеплановые, pass-through)                                                               | Planned Expense, Unplanned Expense                                             |
 | **Bonus & Payroll**                  | Бонусы сотрудников, зарплатная ведомость                                                                    | Bonus, Salary Board                                                            |
 | **Employee Wallet**                  | Личный read-only экран сотрудника: зарплата, бонусы по проектам, прогноз, история                           | Проекция Bonus + Payroll; см. [08-Employee-Wallet.md](./08-Employee-Wallet.md) |
-| **Domains, Hosting, Licenses**       | Инфраструктурные расходы                                                                                    | Domain, Hosting, License/Service                                               |
+| **Domains & Client Services**        | Домены, хостинг, аккаунты и внешние сервисы клиента; связь с invoice cards, expenses, tasks и credentials   | Client Service Record, Domain, Hosting, Service, Account, License              |
 | **P&L Reports**                      | Отчётность и аналитика                                                                                      | Company P&L, Project P&L, Order P&L                                            |
 
 ---
