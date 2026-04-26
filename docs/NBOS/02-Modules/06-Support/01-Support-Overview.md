@@ -27,6 +27,8 @@
 - `CRM` — платные change requests через `Extension Deal`
 - `Projects Hub` — delivery результата, если change request превратился в extension
 - `Messenger` — канал входящего обращения и клиентской коммуникации
+- `Technical / Infrastructure` — технический контекст инцидента: environment, asset, deploy, monitoring
+- `Finance / Subscriptions` — проверка, покрыт ли кейс активной maintenance-подпиской
 
 ---
 
@@ -205,7 +207,22 @@ SLA управляет:
 - customer case management;
 - SLA control;
 - bridge в `Tasks`, `CRM` и `Projects Hub`;
+- bridge в `Technical / Infrastructure`, если кейс связан с production, deployment, DNS, SSL, hosting, database или monitoring;
 - история клиентских проблем и решений;
 - аналитика качества продукта и обслуживания.
 
 Это делает модуль операционно сильнее, чем просто доска с тикетами.
+
+---
+
+## Support Coverage Decision
+
+На triage нужно определить не только категорию и priority, но и coverage:
+
+- `Covered by Maintenance` - входит в активную support/maintenance subscription;
+- `Free Goodwill` - компания делает бесплатно как исключение или заботу о клиенте;
+- `Billable Small Work` - оплачиваемая небольшая работа без полноценного Extension flow;
+- `Extension Required` - нужна новая Extension Deal в CRM;
+- `Not Covered / Rejected` - не входит в обслуживание и не берётся в работу.
+
+Это решение важно, чтобы Support не превращался в бесплатную разработку и чтобы Finance/CRM вовремя подключались к платным кейсам.

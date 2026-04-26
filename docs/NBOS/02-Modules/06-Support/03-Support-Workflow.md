@@ -69,11 +69,14 @@ Ticket может появиться:
 2. Какой приоритет у кейса?
 3. Это support-covered кейс или платная работа?
 4. Кто должен дальше владеть исполнением?
+5. Нужен ли link на Technical Asset / Environment / Deployment?
 
 Результат triage:
 
 - заполнены category и priority;
 - ticket связан с `Project` и, если применимо, с `Product`;
+- заполнено coverage decision: maintenance / free / billable / extension required / rejected;
+- если это technical incident, ticket связан с Technical / Infrastructure context;
 - определён дальнейший маршрут.
 
 ---
@@ -162,6 +165,16 @@ Support Ticket хранит links на Drive File Assets. Если ticket свя
 - `Internal notes` — обсуждение команды;
 - `System activity` — смена статусов, SLA warnings, auto-close, reassignment.
 
+External Messenger / WhatsApp Group не заменяет ticket.
+
+Правильная модель:
+
+1. клиент пишет в project WhatsApp group или другой external channel;
+2. PM / Support создаёт ticket или связывает сообщение с существующим ticket;
+3. важная клиентская коммуникация отражается в ticket timeline;
+4. команда может обсуждать детали во внутренних notes/tasks;
+5. итоговое решение возвращается клиенту через external channel.
+
 В будущем это естественно вырастает в:
 
 - `Discussion`
@@ -189,9 +202,10 @@ Support Ticket хранит links на Drive File Assets. Если ticket свя
 Когда linked work выполнена:
 
 1. ticket получает `resolution summary`;
-2. клиент уведомляется;
-3. ticket переходит в `Resolved`;
-4. после подтверждения или автозакрытия уходит в `Closed`.
+2. linked tasks / technical action имеют понятный результат;
+3. клиент уведомляется;
+4. ticket переходит в `Resolved`;
+5. после подтверждения или автозакрытия уходит в `Closed`.
 
 Если клиент пишет, что проблема осталась:
 

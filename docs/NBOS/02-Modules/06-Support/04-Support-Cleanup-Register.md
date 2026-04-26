@@ -46,6 +46,10 @@
 | Change control bridge                              | `STALE CODE` | Нет runtime-механизма `Ticket -> Extension Deal -> auto-close after Extension Done`             |
 | SLA pause / breach / escalation logic              | `STALE CODE` | Есть только дедлайны, но нет зрелого pause/escalation orchestration                             |
 | Support UI                                         | `STALE CODE` | Сейчас это базовая list/kanban page без product-context, change-control view и waiting overlays |
+| Support -> Technical Infrastructure link           | `MISSING`    | Нет связи ticket с Technical Asset / Environment / Deployment Record                            |
+| Coverage decision                                  | `MISSING`    | Нет поля/процесса maintenance-covered / free / billable / extension required                    |
+| External Messenger message link                    | `MISSING`    | Нет связи ticket с external WhatsApp/CRM conversation/message                                   |
+| Resolution close requirements                      | `PARTIAL`    | Нет обязательных resolution summary, client confirmation / auto-close reason                    |
 
 ---
 
@@ -70,5 +74,7 @@
 2. полноценно использовать `productId` и project/product context;
 3. добавить linked task / work space bridge;
 4. вынести `Change Request` в отдельный change-control flow;
-5. добавить SLA pause / escalation / auto-close orchestration;
-6. только потом усложнять messenger-automation и AI triage.
+5. добавить Support -> Technical Infrastructure links для incidents;
+6. добавить coverage decision и bridge к Maintenance / Finance / CRM;
+7. добавить SLA pause / escalation / auto-close orchestration;
+8. только потом усложнять messenger-automation и AI triage.

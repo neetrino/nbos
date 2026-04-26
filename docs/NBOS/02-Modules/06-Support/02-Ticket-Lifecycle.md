@@ -90,6 +90,8 @@ New -> Triaged -> Assigned -> In Progress -> Resolved -> Closed
 - какая категория у тикета;
 - какой приоритет;
 - бесплатный ли это кейс;
+- покрыт ли кейс активной maintenance subscription;
+- нужен ли technical context: environment, asset, deployment, monitoring;
 - какой маршрут дальше: support flow, change control или problem flow.
 
 ### Результат triage по категориям
@@ -227,10 +229,25 @@ Closed
 
 ## Минимальные stage requirements
 
-| Стадия        | Что обязательно                          |
-| ------------- | ---------------------------------------- |
-| `Triaged`     | category, priority                       |
-| `Assigned`    | assignee / owner                         |
-| `In Progress` | исполнитель или linked execution context |
-| `Resolved`    | resolution summary                       |
-| `Closed`      | confirmation or auto-close reason        |
+| Стадия        | Что обязательно                                            |
+| ------------- | ---------------------------------------------------------- |
+| `Triaged`     | category, priority                                         |
+| `Assigned`    | assignee / owner                                           |
+| `In Progress` | исполнитель или linked execution context                   |
+| `Resolved`    | resolution summary, linked work result, client update      |
+| `Closed`      | confirmation or auto-close reason, final category/coverage |
+
+---
+
+## Technical Incident Link
+
+Если ticket связан с технической проблемой продукта, он должен иметь ссылку на technical context:
+
+- affected Product;
+- affected Environment;
+- affected Technical Asset;
+- related Deployment Record, если проблема после deploy;
+- monitoring check, если ticket создан из monitoring;
+- backup/restore context, если проблема связана с данными.
+
+Support остаётся владельцем клиентского кейса и SLA, а Technical / Infrastructure хранит эксплуатационный контекст.
