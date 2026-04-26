@@ -44,6 +44,8 @@ CRM Inbox используется для:
 - сохранить файл/скриншот как Drive File Asset;
 - отметить сообщение как offer proof.
 
+Для WhatsApp 1:1 в NBOS используется тот же `WhatsAppWebAdapter`, что и для групп. 1:1 chats являются вторичным сценарием: в основном Seller может отвечать клиенту напрямую из CRM Inbox.
+
 ## Project WhatsApp Groups
 
 После Deal Won может существовать клиентская WhatsApp group.
@@ -87,20 +89,41 @@ Finance conversation - внешнее общение по оплатам.
 
 Finance status меняется в Finance module, не вручную из чата. Сообщение может только инициировать действие или оставить audit trail.
 
-## WhatsApp / QR adapters
+## WhatsApp adapter canon
 
-NBOS не должен зависеть от одного WhatsApp-провайдера. Нужен слой `External Channel Adapter`.
+Для WhatsApp в NBOS канонический путь на ближайшие годы:
 
-Возможные варианты:
+```text
+NBOS Messenger / CRM
+  -> WhatsAppWebAdapter
+    -> WAHA
+      -> QR-connected WhatsApp account
+        -> WhatsApp Groups / 1:1 chats
+```
 
-| Adapter type             | Для чего                                                            |
-| ------------------------ | ------------------------------------------------------------------- |
-| `Provider API`           | Wappi, ChatApp или похожий сервис                                   |
-| `WhatsApp Web QR Bridge` | Подключение через QR, если нужен доступ к group chats               |
-| `Own QR Bridge`          | Будущий собственный мост, если будет выгодно контролировать процесс |
-| `Official API`           | Если функционал официального API подходит для нужного сценария      |
+`WhatsAppWebAdapter` - тип адаптера внутри NBOS.
+`WAHA` - первый технический инструмент для реализации этого адаптера.
+`QR-connected WhatsApp account` - способ подключения нашего WhatsApp-аккаунта, как обычный WhatsApp Web.
 
-Провайдер может меняться, но бизнес-логика NBOS не должна переписываться.
+Этот путь покрывает:
+
+- Project WhatsApp Groups;
+- invoice reminders в группы;
+- maintenance/support уведомления в группы;
+- бухгалтерскую WhatsApp-группу;
+- редкие WhatsApp 1:1 chats;
+- чтение и отправку сообщений из NBOS Messenger/CRM.
+
+`WhatsAppOfficialAdapter / Meta Cloud API` не является MVP и не является планом на ближайшие годы. Его можно оставить только как distant future option, если бизнес-модель радикально изменится.
+
+Fallback варианты, если WAHA окажется нестабильным:
+
+| Вариант                      | Роль                                                           |
+| ---------------------------- | -------------------------------------------------------------- |
+| `Whapi` / `Wazzup` / `Wappi` | Managed provider fallback для WhatsApp Web / group-capable API |
+| `Evolution API`              | Second self-hosted candidate, если WAHA не подойдёт            |
+
+В любом случае бизнес-логика NBOS должна зависеть только от `External Channel Adapter`, а не от конкретного сервиса.
 
 ## External safety
 

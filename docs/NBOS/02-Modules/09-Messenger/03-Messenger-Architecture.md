@@ -69,6 +69,43 @@ Queue обязательна для внешних каналов.
 - может прислать delivery status позже;
 - может требовать retry.
 
+## External Channel Adapter
+
+Все внешние каналы подключаются через `External Channel Adapter`.
+
+NBOS core не должен знать, какой конкретный сервис отправляет сообщение. Для Messenger и Notifications важен единый контракт:
+
+| Method               | Назначение                                                                |
+| -------------------- | ------------------------------------------------------------------------- |
+| `sendMessage`        | Отправить сообщение во внешний канал                                      |
+| `receiveWebhook`     | Принять входящее событие от провайдера                                    |
+| `syncConversation`   | Синхронизировать чат/группу/participants/history, если канал поддерживает |
+| `getDeliveryStatus`  | Получить или обработать статус доставки                                   |
+| `downloadAttachment` | Скачать вложение и передать его в Drive                                   |
+| `reconnectChannel`   | Переподключить канал или обновить QR session                              |
+| `healthCheck`        | Проверить состояние канала                                                |
+
+### WhatsApp adapter decision
+
+Для WhatsApp primary adapter:
+
+```text
+WhatsAppWebAdapter
+  -> WAHA
+    -> QR-connected WhatsApp account
+```
+
+Этот adapter покрывает и `WhatsApp Groups`, и редкие `WhatsApp 1:1 chats`.
+
+`WhatsAppOfficialAdapter / Meta Cloud API` не входит в MVP и не планируется на ближайшие годы. Его нельзя закладывать как обязательную зависимость для Messenger или Notifications.
+
+Если WAHA не подойдёт по стабильности, fallback:
+
+- managed provider: `Whapi`, `Wazzup`, `Wappi`;
+- second self-hosted candidate: `Evolution API`.
+
+Контракт адаптера должен позволить заменить WAHA без переписывания Messenger/Notifications.
+
 ## Message statuses
 
 ### Internal
