@@ -134,23 +134,23 @@
 - выровнять статусы под `Open / In Progress / Review / Completed / Deferred / Cancelled`;
 - вставить `Work Space` между delivery-сущностью и sprint planning.
 
-### B2. Messenger docs ещё описывают старый Task Chat lifecycle
+### B2. Messenger docs выровнены под новый Task Chat lifecycle
 
 Где осталось:
 
-- [docs/NBOS/02-Modules/09-Messenger/01-Messenger-Overview.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/09-Messenger/01-Messenger-Overview.md:123)
-- [docs/NBOS/02-Modules/09-Messenger/01-Messenger-Overview.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/09-Messenger/01-Messenger-Overview.md:143)
+- [docs/NBOS/02-Modules/09-Messenger/01-Internal-Messenger.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/09-Messenger/01-Internal-Messenger.md)
+- [docs/NBOS/02-Modules/09-Messenger/06-Messenger-Cleanup-Register.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/09-Messenger/06-Messenger-Cleanup-Register.md)
 
-Проблема:
+Решение:
 
-- там речь идёт только о `Task Chat`, а новый канон уже различает:
-  - `Discussion`
-  - `Activity Feed`
-- плюс используется старое закрытие через `Done`.
+- Task Chat теперь описан как discussion stream внутри Task card;
+- Messenger вкладка `Task Chats` используется в основном для ответа на unread task messages;
+- закрытие задачи не удаляет chat history;
+- task attachments идут через Drive File Assets.
 
-Что надо сделать:
+Что осталось сделать:
 
-- позже выровнять messenger docs под новую модель task discussion stream.
+- при реализации связать Task card, Messenger unread и Drive attachments единой моделью.
 
 ### B3. В части role/docs всё ещё говорится только “Scrum/Kanban board”, но не `Work Space`
 

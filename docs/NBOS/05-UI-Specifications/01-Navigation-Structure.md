@@ -111,17 +111,19 @@
 - **Описание:** Партнёры (субподрядчики, внешние исполнители)
 - **Доступ:** CEO, Head of Delivery, PM, Finance Director
 
-### 2.9. Messenger (раскрываемый)
+### 2.9. Messenger
 
 - **Иконка:** чат-пузырь
 - **Доступ:** все авторизованные пользователи
 
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| Project Chats | `/messenger/projects` | Чаты по проектам (автоматически создаются) |
-| Client Communication | `/messenger/clients` | Коммуникация с клиентами |
-| Direct Messages | `/messenger/direct` | Личные сообщения между сотрудниками |
+Канонически Messenger разделяется на две зоны:
+
+| Элемент       | Путь                  | Описание                                                                                   |
+| ------------- | --------------------- | ------------------------------------------------------------------------------------------ |
+| Internal Chat | `/messenger/internal` | Внутренние чаты команды: Project General, Deal Chats, Product Chats, Task Chats, Favorites |
+| External Chat | `/messenger/external` | Клиентские и внешние чаты: CRM Inbox, WhatsApp Groups, Support/Finance Conversations       |
+
+Примечание: визуально эти зоны могут быть отдельными кнопками или одним Messenger с жёстким zone switch. Internal/External нельзя смешивать в одном рабочем списке.
 
 ### 2.10. Calendar
 
