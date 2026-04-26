@@ -45,6 +45,27 @@ Add action
 
 Список фильтруется по правам пользователя.
 
+## Personal Links as Pinned Actions
+
+`Personal Links` - это пользовательские внутренние или внешние ссылки, которые могут отображаться в Dashboard как pinned actions.
+
+Это не отдельный dashboard-only механизм. Источник общий с personal navigation sidebar:
+
+```text
+PersonalLink -> Sidebar My Links
+PersonalLink -> Dashboard Pinned Actions
+```
+
+Personal link может вести на:
+
+- внутреннюю страницу NBOS;
+- внешний URL;
+- документ;
+- external service;
+- часто используемый канал или рабочую страницу.
+
+Для external links Dashboard должен показывать external badge и по умолчанию открывать ссылку в новой вкладке.
+
 ## Default by role
 
 Система может дать стартовый layout:
