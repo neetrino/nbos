@@ -91,15 +91,18 @@ Runtime уже содержит расширенный `BonusStatusEnum`:
 - не считать эти файлы активным Finance-каноном;
 - использовать их только как backlog / historical delta.
 
-### B2. Notifications doc still contains old deal taxonomy
+### B2. Notifications doc old deal taxonomy resolved
 
-Статус: `STALE DOC`
+Статус: `RESOLVED IN NOTIFICATIONS PASS`
 
-[01-Notifications-System.md](../13-Notifications/01-Notifications-System.md) всё ещё содержит старое wording:
+[01-Notifications-System.md](../13-Notifications/01-Notifications-System.md) теперь использует canonical Deal Types:
 
-- `New / Extension / Upsell`.
+- `PRODUCT`;
+- `EXTENSION`;
+- `MAINTENANCE`;
+- `OUTSOURCE`.
 
-Это не Finance runtime bug, но при проходе Notifications модуль нужно обновить под CRM/Finance канон.
+`Upsell` больше не описывается как runtime Deal Type.
 
 ---
 

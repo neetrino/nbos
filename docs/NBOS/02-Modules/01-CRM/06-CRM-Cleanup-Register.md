@@ -92,17 +92,20 @@
 Где осталось:
 
 - [docs/NBOS/archive/00-Technical-Architecture-Brief.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/archive/00-Technical-Architecture-Brief.md:76)
-- [docs/NBOS/02-Modules/13-Notifications/01-Notifications-System.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/13-Notifications/01-Notifications-System.md:134)
 
 Проблема:
 
-- документы всё ещё описывают старую модель;
+- архивные документы всё ещё описывают старую модель;
 - это конфликтует с текущим каноном `PRODUCT / EXTENSION / MAINTENANCE / OUTSOURCE`.
 
 Что надо сделать:
 
-- заменить старую таксономию на канонические `Deal Type`;
+- не использовать архив как активный канон;
 - если нужен смысл "new client" или "upsell", описывать это как sales scenario, а не как enum.
+
+Статус:
+
+- active Notifications canon уже выровнен под текущие `Deal Type`.
 
 ### B2. В части документов ещё живут старые статусы подписок
 
