@@ -63,6 +63,7 @@
 | Drive canon                                         | `02-Modules/11-Drive/00-Drive-Overview.md`, `02-Modules/11-Drive/07-Drive-Cleanup-Register.md`                               |
 | Messenger canon                                     | `02-Modules/09-Messenger/00-Messenger-Overview.md`, `02-Modules/09-Messenger/06-Messenger-Cleanup-Register.md`               |
 | Notifications canon                                 | `02-Modules/13-Notifications/01-Notifications-System.md`, `02-Modules/13-Notifications/05-Notifications-Cleanup-Register.md` |
+| Calendar canon                                      | `02-Modules/10-Calendar/01-Calendar-Overview.md`, `02-Modules/10-Calendar/06-Calendar-Cleanup-Register.md`                   |
 | Finance cleanup register                            | `02-Modules/04-Finance/10-Finance-Cleanup-Register.md`                                                                       |
 | My Company cleanup register                         | `02-Modules/07-My-Company/06-My-Company-Cleanup-Register.md`                                                                 |
 | Дельта и бэклог                                     | `00-Delta-New-Description.md`                                                                                                |

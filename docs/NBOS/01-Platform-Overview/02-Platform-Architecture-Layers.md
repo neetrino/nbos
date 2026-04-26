@@ -74,20 +74,20 @@ CEO + Heads of Departments (Sales, Delivery, Support, Finance).
 
 ### Модули этого слоя:
 
-| Модуль           | Назначение                                                |
-| ---------------- | --------------------------------------------------------- |
-| **CRM**          | Lead/Deal pipeline, Extension Deals, Offers               |
-| **Projects Hub** | Центральная сущность: проекты, продукты, заказы           |
-| **Tasks**        | Задачи: kanban/scrum, множественные виды, роли            |
-| **Finance**      | Invoices, Payments, Expenses, Subscriptions, Bonus Ledger |
-| **Support**      | Тикеты (Incident/Request/Change/Problem), SLA             |
-| **Clients**      | Companies, Contacts, Client Portfolio                     |
-| **Partners**     | Partner Directory, Referral Deals, Payouts                |
-| **Credentials**  | Password Vault, Access Control, Backup                    |
-| **Messenger**    | Project Chats, Task Chats, Client Omnichannel             |
-| **Calendar**     | Meetings, Deadlines, Team Schedules                       |
-| **Drive**        | Project Files, Company Library, Quick Attach              |
-| **My Company**   | Org Structure, Team, Permissions, KPI, SOP                |
+| Модуль           | Назначение                                                             |
+| ---------------- | ---------------------------------------------------------------------- |
+| **CRM**          | Lead/Deal pipeline, Extension Deals, Offers                            |
+| **Projects Hub** | Центральная сущность: проекты, продукты, заказы                        |
+| **Tasks**        | Задачи: kanban/scrum, множественные виды, роли                         |
+| **Finance**      | Invoices, Payments, Expenses, Subscriptions, Bonus Ledger              |
+| **Support**      | Тикеты (Incident/Request/Change/Problem), SLA                          |
+| **Clients**      | Companies, Contacts, Client Portfolio                                  |
+| **Partners**     | Partner Directory, Referral Deals, Payouts                             |
+| **Credentials**  | Password Vault, Access Control, Backup                                 |
+| **Messenger**    | Project Chats, Task Chats, Client Omnichannel                          |
+| **Calendar**     | Client Meetings, Product/Extension Delivery Deadlines, Personal Events |
+| **Drive**        | Project Files, Company Library, Quick Attach                           |
+| **My Company**   | Org Structure, Team, Permissions, KPI, SOP                             |
 
 ### Кто работает:
 
