@@ -143,6 +143,22 @@ Marketing
 
 CRM использует marketing attribution fields, но Marketing operations не должны быть спрятаны внутри CRM.
 
+### B8. Reports / Analytics top-level module is missing
+
+Статус: `MISSING UI`
+
+По новому канону Reports / Analytics должен быть отдельным read-only слоем:
+
+```text
+Reports / Analytics
+  Report Catalog
+  Scheduled Reports
+  Export History
+  Saved Views
+```
+
+Dashboard не должен тянуть тяжёлую аналитику; он должен вести в Reports.
+
 ---
 
 ## C. Runtime missing / Needs implementation
@@ -237,11 +253,12 @@ Deep work -> full page.
 6. Align Settings children with Settings/Admin canon.
 7. Align Finance/CRM sidebar children with module canons.
 8. Add Marketing top-level module.
-9. Add Personal Navigation data model.
-10. Add reorder/hide sidebar preferences.
-11. Add My Links.
-12. Share My Links with Dashboard pinned actions.
-13. Standardize Module Shell.
+9. Add Reports / Analytics top-level module.
+10. Add Personal Navigation data model.
+11. Add reorder/hide sidebar preferences.
+12. Add My Links.
+13. Share My Links with Dashboard pinned actions.
+14. Standardize Module Shell.
 
 ## E. Non-goals for MVP
 

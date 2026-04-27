@@ -62,6 +62,7 @@ Sidebar содержит top-level модули, а не все возможны
 
 ```text
 Dashboard
+Reports / Analytics
 CRM
 Marketing
 Project Hub
@@ -85,6 +86,34 @@ Settings / Admin
 - Доступ: все авторизованные пользователи.
 
 Dashboard не является analytics-only страницей. Быстрые действия, pinned actions и важные карточки живут здесь.
+
+### Reports / Analytics
+
+Подпункты:
+
+```text
+Reports / Analytics
+  Report Catalog
+  Scheduled Reports
+  Export History
+  Saved Views
+```
+
+Reports / Analytics - read-only слой глубокого анализа:
+
+- отчёты за период;
+- сравнения;
+- drill-down;
+- exports;
+- scheduled reports;
+- data quality warnings.
+
+Правило:
+
+```text
+Dashboard = что требует внимания сейчас.
+Reports = что произошло и что это значит.
+```
 
 ### CRM
 
