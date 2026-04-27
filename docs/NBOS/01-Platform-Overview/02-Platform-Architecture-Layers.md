@@ -25,6 +25,32 @@
 
 ---
 
+## Cross-layer engineering rule: module independence
+
+Каждый модуль NBOS должен продолжать работать, даже если связанный модуль ещё не реализован, временно недоступен или выключен feature flag.
+
+Это называется `Module Independence / Graceful Degradation`.
+
+Правило:
+
+```text
+Hard business dependency -> block only the specific unsafe transition.
+Soft dependency missing -> show warning / empty state / link later.
+Unavailable module -> do not crash the current module.
+```
+
+Примеры:
+
+- Marketing Activity работает без Finance Expense link, но CPL/ROI показывают `No spend data`.
+- Product page работает без Drive/Credentials/Messenger, но показывает empty/coming-later tabs.
+- Dashboard открывается даже если один widget упал.
+- Reports показывает data-quality warning, если source data неполные.
+- CRM не падает из-за отсутствия Reports, но stage gates блокируют небезопасный переход.
+
+Подробнее: [00-Implementation-Roadmap.md](../00-Implementation-Roadmap.md).
+
+---
+
 ## Layer 1: Core Layer (Стратегия и правила)
 
 **Назначение:** фундаментальные правила бизнеса, которые редко меняются.

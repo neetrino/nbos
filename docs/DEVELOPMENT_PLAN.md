@@ -16,6 +16,7 @@ From now on, planning, progress, and execution sequence live here only.
 Linked context:
 
 - Product and module canon: `docs/NBOS/00-Documentation-Hub.md`
+- Canon implementation roadmap: `docs/NBOS/00-Implementation-Roadmap.md`
 - Architecture baseline: `docs/01-ARCHITECTURE.md`
 - Stack and operational constraints: `docs/TECH_CARD.md`
 - Delivery matrix: `docs/execution/01-module-delivery-matrix.md`
