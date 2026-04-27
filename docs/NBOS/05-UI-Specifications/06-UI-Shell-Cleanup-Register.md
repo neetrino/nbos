@@ -26,11 +26,12 @@
 
 ### A1. Sidebar exists
 
-Статус: `PARTIAL UI`
+Статус: `PARTIAL UI / RBAC VISIBILITY HARDENED`
 
 Runtime уже имеет sidebar, collapse mode, active states и RBAC visibility.
 
-Остаток: привести структуру пунктов к новому канону.
+Реализовано: parent/child sidebar entries фильтруются по module-level permissions; Settings/Admin не отображается без доступных admin children.
+Остаток: персональные navigation preferences и полноценные module shells.
 
 ### A2. Header user menu opens My Account
 
@@ -111,7 +112,7 @@ Runtime имеет search entry в sidebar. Canon допускает global sear
 
 ### B6. Finance/CRM sidebar children are incomplete
 
-Статус: `STALE UI`
+Статус: `PARTIAL UI / RBAC VISIBILITY HARDENED`
 
 Runtime finance children не соответствуют новому Finance canon:
 
@@ -127,6 +128,8 @@ CRM children тоже должны быть приведены к CRM canon:
 - Deals;
 - CRM Client Chats;
 - Sales Reports / Analytics as CRM-owned module view and Reports Catalog item.
+
+Runtime now applies child-level permission visibility for CRM and Finance links, so users do not see unavailable sub-sections. Deeper Finance/CRM naming and workflow completeness remains module implementation work.
 
 ### B7. Marketing top-level module is missing
 

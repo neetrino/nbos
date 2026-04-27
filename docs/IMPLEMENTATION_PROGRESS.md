@@ -22,19 +22,19 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                         |
-| -------------------- | --------------------------------------------- |
-| Current phase        | Phase 1 - Platform shell and foundations      |
-| Current module/block | UI Shell / Navigation / My Company / Settings |
-| Current task         | Quality gate lint cleanup completed           |
-| Status               | Waiting approval for next slice               |
-| Last updated         | 2026-04-27                                    |
+| Field                | Value                                          |
+| -------------------- | ---------------------------------------------- |
+| Current phase        | Phase 1 - Platform shell and foundations       |
+| Current module/block | UI Shell / Navigation / RBAC visibility        |
+| Current task         | RBAC navigation visibility hardening completed |
+| Status               | Waiting approval for next slice                |
+| Last updated         | 2026-04-27                                     |
 
 ## Phase Progress
 
 | Phase                                            | Status      | Progress | Current blocker                | Notes                                        |
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------- |
-| Phase 1 - Platform shell and foundations         | In progress |      30% | None                           | Root lint/typecheck/build/test completed     |
+| Phase 1 - Platform shell and foundations         | In progress |      32% | None                           | Root lint/typecheck/build/test completed     |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Not started |       0% | Waits Phase 1 foundation       | Requires source attribution and stage gates  |
 | Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
@@ -44,12 +44,13 @@ Rules:
 
 ## Active Work Log
 
-| Date       | Done                                    | Scope                                                                                               | Verification                                                                                                        | Next                                            |
-| ---------- | --------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| 2026-04-27 | Documentation launch setup completed    | `AI-START-HERE`, docs root cleanup, payment references moved                                        | `git diff --check`; committed as `c50edab`                                                                          | Start Phase 1 implementation                    |
-| 2026-04-27 | UI shell navigation cleanup completed   | Sidebar/topbar canon, `My Company`, `Marketing`, `Reports / Analytics`, Settings/Admin placeholders | Focused web ESLint; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/web build`; `pnpm test`; `pnpm build` | Wait for approval; next Phase 1 slice           |
-| 2026-04-27 | Database typecheck foundation completed | `@nbos/database` tsconfig and Prisma seed script typing                                             | `pnpm --filter @nbos/database typecheck`; `pnpm typecheck`; `pnpm build`; `pnpm test`                               | Existing web lint cleanup or next Phase 1 slice |
-| 2026-04-27 | Quality gate lint cleanup completed     | Web React Compiler lint errors, unused imports/vars, API credentials controller warnings            | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                            | RBAC navigation visibility or shared states     |
+| Date       | Done                                    | Scope                                                                                               | Verification                                                                                                                  | Next                                            |
+| ---------- | --------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| 2026-04-27 | Documentation launch setup completed    | `AI-START-HERE`, docs root cleanup, payment references moved                                        | `git diff --check`; committed as `c50edab`                                                                                    | Start Phase 1 implementation                    |
+| 2026-04-27 | UI shell navigation cleanup completed   | Sidebar/topbar canon, `My Company`, `Marketing`, `Reports / Analytics`, Settings/Admin placeholders | Focused web ESLint; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/web build`; `pnpm test`; `pnpm build`           | Wait for approval; next Phase 1 slice           |
+| 2026-04-27 | Database typecheck foundation completed | `@nbos/database` tsconfig and Prisma seed script typing                                             | `pnpm --filter @nbos/database typecheck`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                         | Existing web lint cleanup or next Phase 1 slice |
+| 2026-04-27 | Quality gate lint cleanup completed     | Web React Compiler lint errors, unused imports/vars, API credentials controller warnings            | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                      | RBAC navigation visibility or shared states     |
+| 2026-04-27 | RBAC navigation visibility completed    | Sidebar parent/child permission filtering for module-level navigation                               | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test` | Shared states or next approved Phase 1 slice    |
 
 ## Phase 1 Checklist
 
@@ -59,19 +60,19 @@ Make NBOS navigable, permission-aware and safe to extend.
 
 ### Scope
 
-| Item                                      | Status      | Notes                                                                     |
-| ----------------------------------------- | ----------- | ------------------------------------------------------------------------- |
-| UI Shell canon reviewed                   | Done        | Navigation, cleanup, My Company and Settings/Admin docs reviewed          |
-| UI visual quality pass                    | Partial     | New placeholder screens use existing Tailwind + shared components         |
-| Sidebar navigation aligned with canon     | Partial     | Top-level shell aligned; deeper Finance/CRM children remain future slices |
-| Global header `Create` removed            | Done        | Creation stays contextual by module                                       |
-| `Team` moved under My Company             | Done        | Sidebar now links to `My Company -> Team`                                 |
-| `Departments` moved under My Company      | Done        | Sidebar now links to `My Company -> Departments`                          |
-| `My Account` moved outside Settings       | Done        | Header user menu remains the entry point                                  |
-| My Company skeleton implemented           | Done        | Org Structure page plus safe child routes/placeholders                    |
-| Settings/Admin skeleton implemented       | Done        | System admin sections and safe placeholders added                         |
-| RBAC visibility checked                   | Not started | Hide unavailable modules safely                                           |
-| Shared empty/loading/error states checked | Not started | Graceful degradation rule                                                 |
+| Item                                      | Status      | Notes                                                                             |
+| ----------------------------------------- | ----------- | --------------------------------------------------------------------------------- |
+| UI Shell canon reviewed                   | Done        | Navigation, cleanup, My Company and Settings/Admin docs reviewed                  |
+| UI visual quality pass                    | Partial     | New placeholder screens use existing Tailwind + shared components                 |
+| Sidebar navigation aligned with canon     | Partial     | Top-level shell aligned; deeper Finance/CRM business screens remain future slices |
+| Global header `Create` removed            | Done        | Creation stays contextual by module                                               |
+| `Team` moved under My Company             | Done        | Sidebar now links to `My Company -> Team`                                         |
+| `Departments` moved under My Company      | Done        | Sidebar now links to `My Company -> Departments`                                  |
+| `My Account` moved outside Settings       | Done        | Header user menu remains the entry point                                          |
+| My Company skeleton implemented           | Done        | Org Structure page plus safe child routes/placeholders                            |
+| Settings/Admin skeleton implemented       | Done        | System admin sections and safe placeholders added                                 |
+| RBAC visibility checked                   | Done        | Parent and child sidebar items hide when module-level access is unavailable       |
+| Shared empty/loading/error states checked | Not started | Graceful degradation rule                                                         |
 
 ### Key Docs
 
@@ -82,26 +83,26 @@ Make NBOS navigable, permission-aware and safe to extend.
 
 ## Module Progress Matrix
 
-| Module / Area               | Docs ready | Code checked | Implemented | Tested | Status / Notes                     |
-| --------------------------- | ---------- | ------------ | ----------- | ------ | ---------------------------------- |
-| Platform Shell / Navigation | Yes        | Yes          | Partial     | Yes    | Navigation cleanup slice completed |
-| My Company                  | Yes        | Yes          | Partial     | Yes    | Shell/skeleton routes completed    |
-| Settings / Admin            | Yes        | Yes          | Partial     | Yes    | Shell/skeleton routes completed    |
-| CRM                         | Yes        | No           | No          | No     | Phase 2                            |
-| Marketing                   | Yes        | No           | No          | No     | Phase 2                            |
-| Finance                     | Yes        | No           | No          | No     | Phase 3                            |
-| Partners                    | Yes        | No           | No          | No     | Phase 3/Finance dependency         |
-| Projects Hub                | Yes        | No           | No          | No     | Phase 4                            |
-| Tasks / Work Spaces         | Yes        | No           | No          | No     | Phase 4                            |
-| Support                     | Yes        | No           | No          | No     | Phase 4                            |
-| Drive                       | Yes        | No           | No          | No     | Phase 5                            |
-| Credentials                 | Yes        | No           | No          | No     | Phase 5                            |
-| Messenger                   | Yes        | No           | No          | No     | Phase 5                            |
-| Notifications               | Yes        | No           | No          | No     | Phase 5                            |
-| Calendar                    | Yes        | No           | No          | No     | Phase 6                            |
-| Dashboard Control Center    | Yes        | No           | No          | No     | Phase 6                            |
-| Reports / Analytics         | Yes        | No           | No          | No     | Phase 6                            |
-| Integrations / Migration    | Partial    | No           | No          | No     | Phase 7                            |
+| Module / Area               | Docs ready | Code checked | Implemented | Tested | Status / Notes                                          |
+| --------------------------- | ---------- | ------------ | ----------- | ------ | ------------------------------------------------------- |
+| Platform Shell / Navigation | Yes        | Yes          | Partial     | Yes    | Navigation cleanup and RBAC visibility slices completed |
+| My Company                  | Yes        | Yes          | Partial     | Yes    | Shell/skeleton routes completed                         |
+| Settings / Admin            | Yes        | Yes          | Partial     | Yes    | Shell/skeleton routes completed                         |
+| CRM                         | Yes        | No           | No          | No     | Phase 2                                                 |
+| Marketing                   | Yes        | No           | No          | No     | Phase 2                                                 |
+| Finance                     | Yes        | No           | No          | No     | Phase 3                                                 |
+| Partners                    | Yes        | No           | No          | No     | Phase 3/Finance dependency                              |
+| Projects Hub                | Yes        | No           | No          | No     | Phase 4                                                 |
+| Tasks / Work Spaces         | Yes        | No           | No          | No     | Phase 4                                                 |
+| Support                     | Yes        | No           | No          | No     | Phase 4                                                 |
+| Drive                       | Yes        | No           | No          | No     | Phase 5                                                 |
+| Credentials                 | Yes        | No           | No          | No     | Phase 5                                                 |
+| Messenger                   | Yes        | No           | No          | No     | Phase 5                                                 |
+| Notifications               | Yes        | No           | No          | No     | Phase 5                                                 |
+| Calendar                    | Yes        | No           | No          | No     | Phase 6                                                 |
+| Dashboard Control Center    | Yes        | No           | No          | No     | Phase 6                                                 |
+| Reports / Analytics         | Yes        | No           | No          | No     | Phase 6                                                 |
+| Integrations / Migration    | Partial    | No           | No          | No     | Phase 7                                                 |
 
 ## Definition Of Done For Each Slice
 
@@ -120,7 +121,6 @@ Continue Phase 1 after approval:
 
 ```text
 Pick the next smallest safe Phase 1 slice:
-- RBAC navigation visibility hardening;
 - shared empty/loading/error states;
 - My Company org structure data model;
 - Settings/Admin audit foundation.
