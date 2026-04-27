@@ -11,7 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Public } from '../../common/decorators';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import {
   SystemListsService,
   CreateSystemListOptionDto,
@@ -25,14 +25,12 @@ export class SystemListsController {
   constructor(private readonly systemListsService: SystemListsService) {}
 
   @Get('keys')
-  @Public()
   @ApiOperation({ summary: 'Get all list keys (for admin UI)' })
   async getListKeys() {
     return this.systemListsService.getListKeys();
   }
 
   @Get('options/:listKey')
-  @Public()
   @ApiOperation({ summary: 'Get options for one list (for dropdowns)' })
   @ApiQuery({ name: 'includeInactive', required: false, type: Boolean })
   async getOptionsByKey(
@@ -45,7 +43,6 @@ export class SystemListsController {
   }
 
   @Get()
-  @Public()
   @ApiOperation({ summary: 'Get all options, optionally filtered by listKey' })
   @ApiQuery({ name: 'listKey', required: false, type: String })
   @ApiQuery({ name: 'includeInactive', required: false, type: Boolean })
@@ -60,31 +57,34 @@ export class SystemListsController {
   }
 
   @Get(':id')
-  @Public()
   @ApiOperation({ summary: 'Get one option by id' })
   async getById(@Param('id') id: string) {
     return this.systemListsService.getById(id);
   }
 
   @Post()
-  @Public()
+  @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Create a new list option' })
-  async create(@Body() body: CreateSystemListOptionDto) {
-    return this.systemListsService.create(body);
+  async create(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateSystemListOptionDto) {
+    return this.systemListsService.create(body, user.id);
   }
 
   @Patch(':id')
-  @Public()
+  @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Update a list option' })
-  async update(@Param('id') id: string, @Body() body: UpdateSystemListOptionDto) {
-    return this.systemListsService.update(id, body);
+  async update(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: UpdateSystemListOptionDto,
+  ) {
+    return this.systemListsService.update(id, body, user.id);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Public()
-  @ApiOperation({ summary: 'Delete a list option' })
-  async delete(@Param('id') id: string) {
-    return this.systemListsService.delete(id);
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'Deactivate a list option' })
+  async delete(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.systemListsService.delete(id, user.id);
   }
 }

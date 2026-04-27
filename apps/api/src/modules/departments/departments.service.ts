@@ -1,10 +1,14 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class DepartmentsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll() {
     return this.prisma.department.findMany({
@@ -38,16 +42,23 @@ export class DepartmentsService {
     return department;
   }
 
-  async create(data: {
-    name: string;
-    slug: string;
-    description?: string;
-    parentId?: string;
-    sortOrder?: number;
-  }) {
-    return this.prisma.department.create({
+  async create(
+    data: {
+      name: string;
+      slug: string;
+      description?: string;
+      parentId?: string;
+      sortOrder?: number;
+    },
+    actorId: string,
+  ) {
+    const department = await this.prisma.department.create({
       data,
     });
+    await this.logDepartmentChange('DEPARTMENT_CREATED', department.id, actorId, {
+      after: this.toDepartmentAuditSnapshot(department),
+    });
+    return department;
   }
 
   async update(
@@ -59,6 +70,7 @@ export class DepartmentsService {
       parentId?: string;
       sortOrder?: number;
     },
+    actorId: string,
   ) {
     const department = await this.prisma.department.findUnique({
       where: { id },
@@ -66,13 +78,18 @@ export class DepartmentsService {
     if (!department) {
       throw new NotFoundException(`Department ${id} not found`);
     }
-    return this.prisma.department.update({
+    const updated = await this.prisma.department.update({
       where: { id },
       data,
     });
+    await this.logDepartmentChange('DEPARTMENT_UPDATED', id, actorId, {
+      before: this.toDepartmentAuditSnapshot(department),
+      after: this.toDepartmentAuditSnapshot(updated),
+    });
+    return updated;
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId: string) {
     const department = await this.prisma.department.findUnique({
       where: { id },
       include: { _count: { select: { members: true } } },
@@ -83,6 +100,43 @@ export class DepartmentsService {
     if (department._count.members > 0) {
       throw new BadRequestException('Cannot delete department with members');
     }
-    return this.prisma.department.delete({ where: { id } });
+    const deleted = await this.prisma.department.delete({ where: { id } });
+    await this.logDepartmentChange('DEPARTMENT_DELETED', id, actorId, {
+      before: this.toDepartmentAuditSnapshot(department),
+    });
+    return deleted;
+  }
+
+  private async logDepartmentChange(
+    action: string,
+    entityId: string,
+    userId: string,
+    changes: InputJsonValue,
+  ): Promise<void> {
+    await this.auditService.log({
+      entityType: 'Department',
+      entityId,
+      action,
+      userId,
+      changes,
+    });
+  }
+
+  private toDepartmentAuditSnapshot(department: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    parentId: string | null;
+    sortOrder: number;
+  }): InputJsonValue {
+    return {
+      id: department.id,
+      name: department.name,
+      slug: department.slug,
+      description: department.description,
+      parentId: department.parentId,
+      sortOrder: department.sortOrder,
+    };
   }
 }

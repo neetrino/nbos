@@ -5,8 +5,11 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { PrismaClient, type Prisma } from '@nbos/database';
+import { PrismaClient, type Prisma, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
+
+const PROTECTED_LIST_KEYS = new Set(['PRODUCT_TYPE']);
 
 export interface SystemListOptionDto {
   id: string;
@@ -39,6 +42,7 @@ export class SystemListsService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
   ) {}
 
   /** Get all distinct list keys (for admin UI) */
@@ -93,7 +97,7 @@ export class SystemListsService {
   }
 
   /** Create a new option */
-  async create(data: CreateSystemListOptionDto): Promise<SystemListOptionDto> {
+  async create(data: CreateSystemListOptionDto, actorId: string): Promise<SystemListOptionDto> {
     if (!data.listKey?.trim()) {
       throw new BadRequestException('listKey is required');
     }
@@ -105,6 +109,7 @@ export class SystemListsService {
     }
     const code = data.code.trim().toUpperCase().replace(/\s+/g, '_');
     const listKey = data.listKey.trim();
+    this.assertCanCreateOption(listKey);
 
     const existing = await this.prisma.systemListOption.findUnique({
       where: { listKey_code: { listKey, code } },
@@ -131,12 +136,20 @@ export class SystemListsService {
         isActive: data.isActive ?? true,
       },
     });
+    await this.logChange('SYSTEM_LIST_OPTION_CREATED', item.id, actorId, {
+      after: this.toAuditSnapshot(this.toDto(item)),
+    });
     return this.toDto(item);
   }
 
   /** Update an option */
-  async update(id: string, data: UpdateSystemListOptionDto): Promise<SystemListOptionDto> {
-    await this.getById(id);
+  async update(
+    id: string,
+    data: UpdateSystemListOptionDto,
+    actorId: string,
+  ): Promise<SystemListOptionDto> {
+    const before = await this.getById(id);
+    this.assertCanUpdateOption(before, data);
 
     const updateData: Prisma.SystemListOptionUpdateInput = {};
     if (data.code !== undefined) {
@@ -150,13 +163,24 @@ export class SystemListsService {
       where: { id },
       data: updateData,
     });
+    await this.logChange('SYSTEM_LIST_OPTION_UPDATED', id, actorId, {
+      before: this.toAuditSnapshot(before),
+      after: this.toAuditSnapshot(this.toDto(item)),
+    });
     return this.toDto(item);
   }
 
   /** Delete an option */
-  async delete(id: string): Promise<void> {
-    await this.getById(id);
-    await this.prisma.systemListOption.delete({ where: { id } });
+  async delete(id: string, actorId: string): Promise<void> {
+    const before = await this.getById(id);
+    await this.prisma.systemListOption.update({
+      where: { id },
+      data: { isActive: false },
+    });
+    await this.logChange('SYSTEM_LIST_OPTION_DEACTIVATED', id, actorId, {
+      before: this.toAuditSnapshot(before),
+      after: this.toAuditSnapshot({ ...before, isActive: false }),
+    });
   }
 
   private toDto(row: Prisma.SystemListOptionGetPayload<object>): SystemListOptionDto {
@@ -169,6 +193,47 @@ export class SystemListsService {
       isActive: row.isActive,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+    };
+  }
+
+  private assertCanCreateOption(listKey: string): void {
+    if (PROTECTED_LIST_KEYS.has(listKey)) {
+      throw new BadRequestException(`List "${listKey}" is protected; create options via code seed`);
+    }
+  }
+
+  private assertCanUpdateOption(
+    option: SystemListOptionDto,
+    data: UpdateSystemListOptionDto,
+  ): void {
+    if (data.code !== undefined && PROTECTED_LIST_KEYS.has(option.listKey)) {
+      throw new BadRequestException('Cannot change code for protected system list options');
+    }
+  }
+
+  private async logChange(
+    action: string,
+    entityId: string,
+    userId: string,
+    changes: InputJsonValue,
+  ): Promise<void> {
+    await this.auditService.log({
+      entityType: 'SystemListOption',
+      entityId,
+      action,
+      userId,
+      changes,
+    });
+  }
+
+  private toAuditSnapshot(option: SystemListOptionDto): InputJsonValue {
+    return {
+      id: option.id,
+      listKey: option.listKey,
+      code: option.code,
+      label: option.label,
+      sortOrder: option.sortOrder,
+      isActive: option.isActive,
     };
   }
 }

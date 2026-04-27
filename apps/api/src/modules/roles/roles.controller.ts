@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
-import { RequirePermission } from '../../common/decorators';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
@@ -25,6 +25,7 @@ export class RolesController {
   @RequirePermission('COMPANY', 'ADD')
   @ApiOperation({ summary: 'Create role' })
   create(
+    @CurrentUser() user: CurrentUserPayload,
     @Body()
     body: {
       name: string;
@@ -33,12 +34,14 @@ export class RolesController {
       level: number;
     },
   ) {
-    return this.rolesService.create(body);
+    return this.rolesService.create(body, user.id);
   }
 
   @Put(':id')
+  @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Update role' })
   update(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
     @Body()
     body: {
@@ -48,22 +51,25 @@ export class RolesController {
       level?: number;
     },
   ) {
-    return this.rolesService.update(id, body);
+    return this.rolesService.update(id, body, user.id);
   }
 
   @Put(':id/permissions')
+  @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Update role permissions' })
   updatePermissions(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
     @Body()
     body: { permissions: Array<{ permissionId: string; scope: string }> },
   ) {
-    return this.rolesService.updatePermissions(id, body.permissions);
+    return this.rolesService.updatePermissions(id, body.permissions, user.id);
   }
 
   @Delete(':id')
+  @RequirePermission('COMPANY', 'DELETE')
   @ApiOperation({ summary: 'Delete role' })
-  remove(@Param('id') id: string) {
-    return this.rolesService.remove(id);
+  remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.rolesService.remove(id, user.id);
   }
 }
