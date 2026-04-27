@@ -127,6 +127,22 @@ CRM children тоже должны быть приведены к CRM canon:
 - CRM Client Chats;
 - Sales Analytics / Reports.
 
+### B7. Marketing top-level module is missing
+
+Статус: `MISSING UI`
+
+По новому канону Marketing должен быть отдельным top-level module:
+
+```text
+Marketing
+  Marketing Board
+  Attribution Review
+  Marketing Dashboard
+  Marketing Settings
+```
+
+CRM использует marketing attribution fields, но Marketing operations не должны быть спрятаны внутри CRM.
+
 ---
 
 ## C. Runtime missing / Needs implementation
@@ -220,11 +236,12 @@ Deep work -> full page.
 5. Move `Team` under `My Company`.
 6. Align Settings children with Settings/Admin canon.
 7. Align Finance/CRM sidebar children with module canons.
-8. Add Personal Navigation data model.
-9. Add reorder/hide sidebar preferences.
-10. Add My Links.
-11. Share My Links with Dashboard pinned actions.
-12. Standardize Module Shell.
+8. Add Marketing top-level module.
+9. Add Personal Navigation data model.
+10. Add reorder/hide sidebar preferences.
+11. Add My Links.
+12. Share My Links with Dashboard pinned actions.
+13. Standardize Module Shell.
 
 ## E. Non-goals for MVP
 

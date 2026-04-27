@@ -63,6 +63,7 @@ Sidebar содержит top-level модули, а не все возможны
 ```text
 Dashboard
 CRM
+Marketing
 Project Hub
 Tasks
 Finance
@@ -98,6 +99,33 @@ CRM
 ```
 
 CRM отвечает за Lead/Deal pipeline, offers, stage gates и клиентские pre-sale коммуникации.
+
+### Marketing
+
+Подпункты:
+
+```text
+Marketing
+  Marketing Board
+  Attribution Review
+  Marketing Dashboard
+  Marketing Settings
+```
+
+Marketing является рабочим модулем маркетингового отдела:
+
+- планирование и запуск активностей;
+- каналы и аккаунты;
+- связь с Finance expenses;
+- attribution для CRM Lead/Deal;
+- анализ лидов, MQL/SQL/Won и revenue by source.
+
+Marketing и CRM связаны, но не являются одним модулем:
+
+```text
+Marketing creates/tracks demand.
+CRM processes leads/deals.
+```
 
 ### Project Hub
 
