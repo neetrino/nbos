@@ -116,7 +116,7 @@ Deal Pipeline                              Projects Hub
      │       │                                   │
      │       └── HANDOFF STARTS ──────────────► Project создан/обновлён
      │                                           │
-     ├── Стадия 8: Creating ◄────────────────── PM принял проект
+     ├── Delivery Board: Starting ◄──────────── PM принял проект
      │                                           │
 ```
 
@@ -211,9 +211,9 @@ PM проходит по каждому пункту чек-листа в сис
 
 После перевода в Development:
 
-- Проект появляется в списке «Development» в Projects Hub
+- Product / Extension переходит с `Starting` на `Development` на Delivery Board
 - PM может создавать спринты и задачи
-- Seller видит сделку на стадии «Creating»
+- Seller видит, что сделка закрыта как `Deal Won`, а дальнейшая работа идёт в Projects Hub
 
 ---
 
@@ -270,14 +270,14 @@ PM проходит по каждому пункту чек-листа в сис
 
 ## Автоматизация процесса
 
-| Триггер                           | Автоматическое действие                                             |
-| --------------------------------- | ------------------------------------------------------------------- |
-| Первый Invoice оплачен            | Создание Order, Project, Product                                    |
-| Project создан                    | Назначение PM, генерация Kickoff Checklist, уведомление PM          |
-| Kickoff Checklist не заполнен 48ч | Напоминание PM + уведомление Head of Delivery                       |
-| Все пункты Checklist заполнены    | Разблокировка перехода в Development                                |
-| Extension Deal Won                | Создание Work Package в существующем Project, сокращённый Checklist |
-| PM перевёл в Development          | Обновление стадии Deal → «Creating»                                 |
+| Триггер                           | Автоматическое действие                                                   |
+| --------------------------------- | ------------------------------------------------------------------------- |
+| Первый Invoice оплачен            | Создание Order, Project, Product                                          |
+| Project создан                    | Назначение PM, генерация Kickoff Checklist, уведомление PM                |
+| Kickoff Checklist не заполнен 48ч | Напоминание PM + уведомление Head of Delivery                             |
+| Все пункты Checklist заполнены    | Разблокировка перехода в Development                                      |
+| Extension Deal Won                | Создание Work Package в существующем Project, сокращённый Checklist       |
+| PM перевёл в Development          | Обновление delivery-stage у Product / Extension; Deal остаётся `Deal Won` |
 
 ---
 

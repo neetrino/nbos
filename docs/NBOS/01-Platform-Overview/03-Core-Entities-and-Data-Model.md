@@ -700,27 +700,27 @@ Contact (человек)
 
 Активная продажа. Создаётся из Lead (SQL), вручную в CRM или из контекста проекта. Вид сделки задаётся справочником **Deal Type** (четыре значения), детализация услуги — справочником **Product Type** при необходимости (см. § 1.1).
 
-| Поле              | Тип                           | Описание                                                                                                                                                           |
-| ----------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| id                | UUID                          | Уникальный идентификатор                                                                                                                                           |
-| lead_id           | FK → Lead                     | Источник (для новых клиентов)                                                                                                                                      |
-| project_id        | FK → Project                  | Проект (для extension deals)                                                                                                                                       |
-| contact_id        | FK → Contact                  | Контакт                                                                                                                                                            |
-| deal_type         | FK → System List Deal Type    | `PRODUCT`, `EXTENSION`, `MAINTENANCE`, `OUTSOURCE`                                                                                                                 |
-| product_type      | FK → System List Product Type | Вид услуги (Website, Mobile App, …); в первую очередь при `deal_type = PRODUCT`                                                                                    |
-| status            | Enum                          | Start a Conversation … Deposit & Contract (последняя рабочая), затем **Failed** или **Deal Won** — без стадий Creating / Get Final Pay / Maintenance billing в CRM |
-| amount            | Decimal                       | Ожидаемая сумма                                                                                                                                                    |
-| payment_type      | Enum                          | Classic 50/50, Classic 30/30/40, Subscription                                                                                                                      |
-| seller_id         | FK → Employee                 | Ответственный продажник                                                                                                                                            |
-| deadline          | Date                          | Для `PRODUCT/EXTENSION/OUTSOURCE` — delivery deadline; для `MAINTENANCE` — planned maintenance start date                                                          |
-| source            | Enum                          | Верхний источник: Marketing, Sales, Partner, Client                                                                                                                |
-| source_detail     | Enum / String                 | Канал внутри источника                                                                                                                                             |
-| source_partner_id | FK → Partner                  | Партнёр-источник, если применимо                                                                                                                                   |
-| source_contact_id | FK → Contact                  | Клиент/реферал-источник, если применимо                                                                                                                            |
-| offer_url         | String                        | Legacy single-link field; canonical business model uses offer materials (file / link / messenger proof)                                                            |
-| notes             | Text                          | Заметки                                                                                                                                                            |
-| created_at        | DateTime                      | Дата создания                                                                                                                                                      |
-| closed_at         | DateTime                      | Дата закрытия                                                                                                                                                      |
+| Поле              | Тип                           | Описание                                                                                                                                                          |
+| ----------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id                | UUID                          | Уникальный идентификатор                                                                                                                                          |
+| lead_id           | FK → Lead                     | Источник (для новых клиентов)                                                                                                                                     |
+| project_id        | FK → Project                  | Проект (для extension deals)                                                                                                                                      |
+| contact_id        | FK → Contact                  | Контакт                                                                                                                                                           |
+| deal_type         | FK → System List Deal Type    | `PRODUCT`, `EXTENSION`, `MAINTENANCE`, `OUTSOURCE`                                                                                                                |
+| product_type      | FK → System List Product Type | Вид услуги (Website, Mobile App, …); в первую очередь при `deal_type = PRODUCT`                                                                                   |
+| status            | Enum                          | Start a Conversation … Deposit & Contract (последняя рабочая), затем **Failed** или **Deal Won** — без Delivery Board / Get Final Pay / Maintenance billing в CRM |
+| amount            | Decimal                       | Ожидаемая сумма                                                                                                                                                   |
+| payment_type      | Enum                          | Classic 50/50, Classic 30/30/40, Subscription                                                                                                                     |
+| seller_id         | FK → Employee                 | Ответственный продажник                                                                                                                                           |
+| deadline          | Date                          | Для `PRODUCT/EXTENSION/OUTSOURCE` — delivery deadline; для `MAINTENANCE` — planned maintenance start date                                                         |
+| source            | Enum                          | Верхний источник: Marketing, Sales, Partner, Client                                                                                                               |
+| source_detail     | Enum / String                 | Канал внутри источника                                                                                                                                            |
+| source_partner_id | FK → Partner                  | Партнёр-источник, если применимо                                                                                                                                  |
+| source_contact_id | FK → Contact                  | Клиент/реферал-источник, если применимо                                                                                                                           |
+| offer_url         | String                        | Legacy single-link field; canonical business model uses offer materials (file / link / messenger proof)                                                           |
+| notes             | Text                          | Заметки                                                                                                                                                           |
+| created_at        | DateTime                      | Дата создания                                                                                                                                                     |
+| closed_at         | DateTime                      | Дата закрытия                                                                                                                                                     |
 
 **Связи:**
 

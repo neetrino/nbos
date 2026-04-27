@@ -8,7 +8,7 @@ Deal Pipeline — воронка для работы с квалифициров
 
 **Ответственный:** Seller (основная работа), Head of Sales (контроль и эскалация)
 
-**Граница CRM (новая модель):** последняя **рабочая** стадия воронки — **Deposit & Contract**. После успешного Stage Gate (первый счёт оплачен, договор подписан) сделка переходит в **Deal Won** и **выходит из CRM-воронки**: дальнейшие этапы разработки, остатки оплаты и предложение Maintenance ведутся в **Projects** (доска Creating, продукт), **Finance** (счета, платежи) и связанных модулях — **не** как стадии карточки Deal.
+**Граница CRM (новая модель):** последняя **рабочая** стадия воронки — **Deposit & Contract**. После успешного Stage Gate (первый счёт оплачен, договор подписан) сделка переходит в **Deal Won** и **выходит из CRM-воронки**: дальнейшие этапы разработки, остатки оплаты и предложение Maintenance ведутся в **Projects Hub / Delivery Board** (Product / Extension lifecycle), **Finance** (счета, платежи) и связанных модулях — **не** как стадии карточки Deal.
 
 Для канонических правил переходов, обязательных полей по типам сделок, поведения popup при пропуске стадий и управляемого bypass для `Deal Won` см. `05-Deal-Stage-Gates-and-Won-Override.md`.
 
@@ -132,7 +132,7 @@ Deal Pipeline — воронка для работы с квалифициров
 - Создаётся **Order** (финансовая сущность)
 - Создаётся или обновляется **Project** в Projects Hub
 - Запускается **Handoff** процесс (Seller → PM)
-- Создаётся карточка работы на **доске Creating** и движение **Product** по стадиям — **вне** воронки Deal
+- Создаётся карточка работы на **Delivery Board** и движение **Product / Extension** по стадиям — **вне** воронки Deal
 
 **Для `PRODUCT / EXTENSION / OUTSOURCE`:**
 
@@ -153,11 +153,11 @@ Deal Pipeline — воронка для работы с квалифициров
 
 Следующие процессы **не** являются колонками Deal Pipeline:
 
-| Процесс                      | Где ведётся                                    | Содержание                                                |
-| ---------------------------- | ---------------------------------------------- | --------------------------------------------------------- |
-| **Creating**                 | Projects: доска Creating, Product, Project Hub | Подготовка, разработка, stage gates по типу услуги        |
-| **Get Final Pay**            | Finance: Invoices / Orders                     | Остатки по Classic, контроль оплат                        |
-| **Maintenance Subscription** | Finance: Subscription Board                    | Pending/Active lifecycle, billing start, monthly invoices |
+| Процесс                      | Где ведётся                                       | Содержание                                                |
+| ---------------------------- | ------------------------------------------------- | --------------------------------------------------------- |
+| **Delivery lifecycle**       | Projects Hub: Delivery Board, Product / Extension | Starting, Development, QA, Transfer, Done / Closed        |
+| **Get Final Pay**            | Finance: Invoices / Orders                        | Остатки по Classic, контроль оплат                        |
+| **Maintenance Subscription** | Finance: Subscription Board                       | Pending/Active lifecycle, billing start, monthly invoices |
 
 Исходная сделка в CRM остаётся в статусе **Deal Won**; дальнейшая история — по Order, Product и подпискам.
 
@@ -262,19 +262,19 @@ Deal Pipeline — воронка для работы с квалифициров
 
 ## Автоматизация воронки сделок
 
-| Триггер                                           | Действие                                                               |
-| ------------------------------------------------- | ---------------------------------------------------------------------- |
-| Сделка создана из Lead (SQL)                      | Уведомление Seller, перенос данных контакта                            |
-| Встреча назначена (стадия 3)                      | Событие в Calendar                                                     |
-| КП отправлено (стадия 5 → 6)                      | Напоминание о follow-up через 3, 7, 14 дней                            |
-| Invoice создан (стадия 7)                         | Invoice → доска счетов Finance Director                                |
-| Первый Invoice оплачен (стадия 7, `Subscription`) | **Deal Won** + Order + Project + Active Subscription + вход в Creating |
-| Первый Invoice оплачен (стадия 7, `Classic`)      | **Deal Won** + Order + Project + Handoff + вход в Creating             |
-| Deal Won                                          | Расчёт бонуса Seller (по правилам оплаты), обновление аналитики        |
-| Все оплаты по заказу (Finance)                    | Доп. бонусы / delivery по правилам модуля Finance                      |
-| Extension Deal Won                                | Добавление Work Package к существующему Project                        |
-| Product Deal Won                                  | Автосоздание связанной `MAINTENANCE` deal card                         |
-| Сделка в одной стадии > 14 дней                   | Уведомление Seller + Head of Sales                                     |
+| Триггер                                           | Действие                                                                          |
+| ------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Сделка создана из Lead (SQL)                      | Уведомление Seller, перенос данных контакта                                       |
+| Встреча назначена (стадия 3)                      | Событие в Calendar                                                                |
+| КП отправлено (стадия 5 → 6)                      | Напоминание о follow-up через 3, 7, 14 дней                                       |
+| Invoice создан (стадия 7)                         | Invoice → доска счетов Finance Director                                           |
+| Первый Invoice оплачен (стадия 7, `Subscription`) | **Deal Won** + Order + Project + Active Subscription + карточка на Delivery Board |
+| Первый Invoice оплачен (стадия 7, `Classic`)      | **Deal Won** + Order + Project + Handoff + карточка на Delivery Board             |
+| Deal Won                                          | Расчёт бонуса Seller (по правилам оплаты), обновление аналитики                   |
+| Все оплаты по заказу (Finance)                    | Доп. бонусы / delivery по правилам модуля Finance                                 |
+| Extension Deal Won                                | Добавление Work Package к существующему Project                                   |
+| Product Deal Won                                  | Автосоздание связанной `MAINTENANCE` deal card                                    |
+| Сделка в одной стадии > 14 дней                   | Уведомление Seller + Head of Sales                                                |
 
 ---
 

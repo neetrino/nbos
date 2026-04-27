@@ -1,6 +1,6 @@
-# Dashboard Control Center and Analytics
+# Dashboard Control Center
 
-> NBOS Platform - персональный пульт управления, priority feed, role widgets и отдельный слой аналитики.
+> NBOS Platform - персональный пульт управления, priority feed, role widgets и быстрые рабочие показатели без подмены Reports / Analytics.
 
 ## Назначение
 

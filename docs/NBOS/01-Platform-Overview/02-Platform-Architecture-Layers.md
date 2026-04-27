@@ -176,18 +176,25 @@ CEO / Ops / Finance Director настраивают правила. Автома
 
 **Назначение:** видимость и контроль всего, что происходит в компании.
 
-### Dashboards:
+### Control surfaces:
 
-| Dashboard                  | Для кого             | Метрики                                                              |
-| -------------------------- | -------------------- | -------------------------------------------------------------------- |
-| **CEO Dashboard**          | CEO                  | P&L, Cash, MRR, Overdue, Team Load, Rocks Status                     |
-| **Sales Dashboard**        | Head of Sales        | Pipeline value, Conversion, Revenue/week, Avg deal size, Sales cycle |
-| **Delivery Dashboard**     | Head of Delivery     | On-time %, Active projects, Capacity, Work packages status           |
-| **Finance Dashboard**      | Finance Director     | Invoices, Payments, Expenses, Bonus Payroll, DSO, Gross Margin       |
-| **Support Dashboard**      | Head of Support / PM | SLA %, First response, Tickets closed/week, Reopen rate              |
-| **Marketing Dashboard**    | Marketing Team       | Leads by source, CPL, MQL→SQL conversion, ROI by channel             |
-| **Subscription Dashboard** | Finance / CEO        | MRR, Churn rate, Renewal forecast, Grid view (projects × months)     |
-| **Personal Dashboard**     | Each employee        | My tasks, My bonuses, My schedule, My KPI                            |
+| Surface                      | Для кого               | Назначение                                                            |
+| ---------------------------- | ---------------------- | --------------------------------------------------------------------- |
+| **Dashboard Control Center** | Каждый сотрудник       | Персональный пульт: pinned actions, priority feed, role widgets       |
+| **Role / module dashboards** | Heads / teams          | Быстрые рабочие показатели внутри модуля без глубокого report-builder |
+| **Reports / Analytics**      | CEO / Heads / Finance  | Кросс-модульные отчёты, saved views, exports, scheduled reports       |
+| **Scorecard**                | CEO + Heads            | Еженедельные 5–15 метрик компании и отделов                           |
+| **Audit**                    | CEO / Admin / Security | Контроль чувствительных изменений, доступов и финансовых действий     |
+
+Examples of module dashboards:
+
+- Sales pipeline dashboard;
+- Delivery status dashboard;
+- Finance working dashboard;
+- Support SLA dashboard;
+- Marketing dashboard;
+- Subscription dashboard;
+- Personal dashboard.
 
 ### Scorecard (Weekly):
 
@@ -208,7 +215,7 @@ CEO / Ops / Finance Director настраивают правила. Автома
 - Изменения доступов и ролей
 - AI-операции (что запрошено, что создано)
 
-### P&L Reports:
+### Reports / Analytics:
 
 - Company P&L (ежемесячно)
 - Project P&L (по каждому проекту)

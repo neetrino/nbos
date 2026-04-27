@@ -141,7 +141,7 @@ Lead (SQL) → Deal → [Pipeline стадии] → Deal Won + 1st Payment → O
 
 ### 2. Deal Pipeline Board (Доска сделок)
 
-- Kanban-доска с **7 рабочими стадиями** + 2 терминальных статуса (**Failed**, **Deal Won**). Последняя рабочая стадия — **Deposit & Contract**; Creating / остаток оплат / Maintenance billing — вне воронки (Projects, Finance)
+- Kanban-доска с **7 рабочими стадиями** + 2 терминальных статуса (**Failed**, **Deal Won**). Последняя рабочая стадия — **Deposit & Contract**; Delivery Board / остаток оплат / Maintenance billing — вне воронки (Projects, Finance)
 - Визуальное отличие deal types по цвету карточек:
   - `PRODUCT` — белый
   - `EXTENSION` — оранжевый
