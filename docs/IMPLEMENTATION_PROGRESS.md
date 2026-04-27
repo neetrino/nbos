@@ -18,6 +18,7 @@ Rules:
 - This file records actual progress.
 - Module docs define business behavior.
 - Cleanup registers are checklists for what must be fixed in code.
+- All UI work must use the existing Tailwind + shadcn/ui stack and be implemented with polished NBOS visual quality: clean spacing, clear hierarchy, responsive layout, consistent cards/forms/tables, and subtle interaction states.
 
 ## Current Focus
 
@@ -55,18 +56,19 @@ Make NBOS navigable, permission-aware and safe to extend.
 
 ### Scope
 
-| Item                                      | Status      | Notes                                                    |
-| ----------------------------------------- | ----------- | -------------------------------------------------------- |
-| UI Shell canon reviewed                   | Not started | Read navigation docs before code changes                 |
-| Sidebar navigation aligned with canon     | Not started | Move/remove old items                                    |
-| Global header `Create` removed            | Not started | Creation should be contextual or dashboard pinned action |
-| `Team` moved under My Company             | Not started | Team should not be a main sidebar module                 |
-| `Departments` moved under My Company      | Not started | Remove from Settings if present                          |
-| `My Account` moved outside Settings       | Not started | User profile lives in account menu/header context        |
-| My Company skeleton implemented           | Not started | Org, team, roles/KPI/SOP placeholders                    |
-| Settings/Admin skeleton implemented       | Not started | System admin only                                        |
-| RBAC visibility checked                   | Not started | Hide unavailable modules safely                          |
-| Shared empty/loading/error states checked | Not started | Graceful degradation rule                                |
+| Item                                      | Status      | Notes                                                              |
+| ----------------------------------------- | ----------- | ------------------------------------------------------------------ |
+| UI Shell canon reviewed                   | Not started | Read navigation docs before code changes                           |
+| UI visual quality pass                    | Not started | Use existing Tailwind + shadcn/ui stack; no duplicate UI libraries |
+| Sidebar navigation aligned with canon     | Not started | Move/remove old items                                              |
+| Global header `Create` removed            | Not started | Creation should be contextual or dashboard pinned action           |
+| `Team` moved under My Company             | Not started | Team should not be a main sidebar module                           |
+| `Departments` moved under My Company      | Not started | Remove from Settings if present                                    |
+| `My Account` moved outside Settings       | Not started | User profile lives in account menu/header context                  |
+| My Company skeleton implemented           | Not started | Org, team, roles/KPI/SOP placeholders                              |
+| Settings/Admin skeleton implemented       | Not started | System admin only                                                  |
+| RBAC visibility checked                   | Not started | Hide unavailable modules safely                                    |
+| Shared empty/loading/error states checked | Not started | Graceful degradation rule                                          |
 
 ### Key Docs
 

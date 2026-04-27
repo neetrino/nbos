@@ -42,6 +42,7 @@ Before coding:
 4. Implement the smallest safe slice.
 5. Keep modules independent: missing linked modules must not crash the current module.
 6. Never fake financial, payment, payroll, credential, audit or report data.
+7. All UI work must use the existing Tailwind + shadcn/ui stack and be implemented with polished NBOS visual quality: clean spacing, clear hierarchy, responsive layout, consistent cards/forms/tables, and subtle interaction states.
 
 ## Current Development Entry Point
 

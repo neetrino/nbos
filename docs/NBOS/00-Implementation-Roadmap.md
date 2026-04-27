@@ -34,6 +34,8 @@ Close behavior before adding depth.
 Prefer safe incomplete workflows over broken cross-module dependencies.
 ```
 
+UI rule: all UI work must use the existing Tailwind + shadcn/ui stack and be implemented with polished NBOS visual quality: clean spacing, clear hierarchy, responsive layout, consistent cards/forms/tables, and subtle interaction states.
+
 ## Module independence / graceful degradation
 
 Every module must continue working even when another related module is missing, disabled, incomplete, or temporarily unavailable.
