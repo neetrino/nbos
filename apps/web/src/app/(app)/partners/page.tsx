@@ -1,19 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  RefreshCcw,
-  Handshake,
-  User,
-  Mail,
-  Phone,
-  ArrowDownLeft,
-  ArrowUpRight,
-  FileText,
-  TrendingUp,
-  DollarSign,
-} from 'lucide-react';
+import { Plus, RefreshCcw, Handshake, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -28,7 +16,6 @@ import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/sha
 import {
   PARTNER_TYPES,
   PARTNER_LEVELS,
-  AGREEMENT_STATUSES,
   PARTNER_STATUSES,
   getPartnerType,
   getPartnerLevel,

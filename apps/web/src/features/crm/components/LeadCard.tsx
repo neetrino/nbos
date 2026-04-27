@@ -1,5 +1,6 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
 import { Phone, Mail, User, Calendar, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,8 +11,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/shared';
-import { getLeadSource, getLeadStage } from '../constants/leadPipeline';
+import { getLeadSource } from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
+
+const DAY_MS = 1000 * 60 * 60 * 24;
+const CLOCK_REFRESH_MS = 60 * 1000;
+
+function subscribeToClock(onStoreChange: () => void): () => void {
+  const timerId = window.setInterval(onStoreChange, CLOCK_REFRESH_MS);
+  return () => window.clearInterval(timerId);
+}
+
+function getCurrentTimeSnapshot(): number {
+  return Date.now();
+}
 
 interface LeadCardProps {
   lead: Lead;
@@ -22,11 +35,13 @@ interface LeadCardProps {
 
 export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: LeadCardProps) {
   const source = getLeadSource(lead.source);
-  const stage = getLeadStage(lead.status);
-
-  const daysSinceCreation = Math.floor(
-    (Date.now() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24),
+  const currentTime = useSyncExternalStore(
+    subscribeToClock,
+    getCurrentTimeSnapshot,
+    getCurrentTimeSnapshot,
   );
+
+  const daysSinceCreation = Math.floor((currentTime - new Date(lead.createdAt).getTime()) / DAY_MS);
   const isOverdue = lead.status === 'NEW' && daysSinceCreation >= 1;
 
   return (

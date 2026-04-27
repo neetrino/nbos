@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/shared';
-import { getDealStage, formatAmount } from '../constants/dealPipeline';
+import { formatAmount } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
 
 interface DealCardProps {

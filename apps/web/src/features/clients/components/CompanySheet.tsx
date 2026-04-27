@@ -1,15 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Building2,
-  User,
-  Calendar,
-  FileText,
-  FolderKanban,
-  Trash2,
-  MessageCircle,
-} from 'lucide-react';
+import { User, Calendar, FileText, FolderKanban, Trash2, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { EntitySheet, StatusBadge } from '@/components/shared';
-import { COMPANY_TYPES, TAX_STATUSES, getCompanyType, getTaxStatus } from '../constants/clients';
+import { COMPANY_TYPES, getCompanyType, getTaxStatus } from '../constants/clients';
 import type { Company } from '@/lib/api/clients';
 
 interface CompanySheetProps {

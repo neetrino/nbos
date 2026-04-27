@@ -10,7 +10,6 @@ import {
   MessageSquare,
   ArrowRight,
   Trash2,
-  Globe,
   Link2,
   LayoutGrid,
   History,

@@ -1,17 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  RefreshCcw,
-  Headphones,
-  LayoutGrid,
-  List,
-  FolderKanban,
-  User,
-  Clock,
-  AlertTriangle,
-} from 'lucide-react';
+import { Plus, RefreshCcw, Headphones, LayoutGrid, List, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {

@@ -17,7 +17,7 @@ import { PageHeader } from '@/components/shared';
 import { leadsApi, type LeadStats } from '@/lib/api/leads';
 import { dealsApi } from '@/lib/api/deals';
 import { LEAD_SOURCES, getLeadStage } from '@/features/crm/constants/leadPipeline';
-import { getDealStage, formatAmount, DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
+import { formatAmount, DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
 
 interface KpiData {
   label: string;

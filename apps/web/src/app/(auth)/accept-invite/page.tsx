@@ -37,12 +37,10 @@ function AcceptInviteContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const tokenError = token ? null : 'No invitation token provided';
 
   useEffect(() => {
-    if (!token) {
-      setInviteError('No invitation token provided');
-      return;
-    }
+    if (!token) return;
 
     fetch(`/api/v1/auth/invite-info?token=${encodeURIComponent(token)}`)
       .then(async (res) => {
@@ -83,13 +81,13 @@ function AcceptInviteContent() {
     setTimeout(() => router.push('/sign-in'), 2500);
   }
 
-  if (inviteError) {
+  if (tokenError || inviteError) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">
           <div className="bg-destructive/10 text-destructive rounded-xl p-6">
             <p className="font-medium">Invitation Error</p>
-            <p className="mt-1 text-sm">{inviteError}</p>
+            <p className="mt-1 text-sm">{tokenError ?? inviteError}</p>
           </div>
         </div>
       </div>

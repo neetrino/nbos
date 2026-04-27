@@ -585,7 +585,7 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
               placeholder="Search contacts..."
               icon={<User size={12} />}
               onSearch={searchContacts}
-              onSave={(v, _label) => saveField('contactId', v)}
+              onSave={(v) => saveField('contactId', v)}
             />
 
             <InlineField

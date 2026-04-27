@@ -15,13 +15,11 @@ import {
   RotateCcw,
   Pause,
   Plus,
-  Trash2,
   Link as LinkIcon,
   Calendar,
   User,
   Users,
   Eye,
-  Flag,
   MessageSquare,
 } from 'lucide-react';
 import { tasksApi, type Task } from '@/lib/api/tasks';
@@ -42,12 +40,26 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
 
   useEffect(() => {
     if (!taskId || !open) return;
-    setLoading(true);
-    tasksApi
-      .getById(taskId)
-      .then(setTask)
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    let cancelled = false;
+
+    async function loadTask() {
+      await Promise.resolve();
+      if (cancelled) return;
+      setLoading(true);
+      try {
+        const nextTask = await tasksApi.getById(taskId!);
+        if (!cancelled) setTask(nextTask);
+      } catch {
+        /* handled */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadTask();
+    return () => {
+      cancelled = true;
+    };
   }, [taskId, open]);
 
   const handleAction = async (action: 'start' | 'complete' | 'reopen' | 'defer') => {

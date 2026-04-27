@@ -388,7 +388,7 @@ export default function TasksPage() {
   };
 
   /* ─── My Plan stage management ─── */
-  const handleAddMyPlanStage = async (title: string, color: string, _afterKey?: string) => {
+  const handleAddMyPlanStage = async (title: string, color: string) => {
     try {
       const stage = await tasksApi.createStage({
         boardType: 'MY_PLAN',

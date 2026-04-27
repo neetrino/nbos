@@ -18,7 +18,6 @@ import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
 import {
   DEAL_STAGES,
   DEAL_TYPES,
-  PAYMENT_TYPES,
   getDealStage,
   formatAmount,
 } from '@/features/crm/constants/dealPipeline';

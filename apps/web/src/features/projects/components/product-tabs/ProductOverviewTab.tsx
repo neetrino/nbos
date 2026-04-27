@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ListChecks, Puzzle, Ticket, Calendar, User, DollarSign } from 'lucide-react';
+import { ListChecks, Puzzle, Ticket, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';

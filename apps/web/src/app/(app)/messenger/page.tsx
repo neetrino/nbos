@@ -8,8 +8,6 @@ import {
   GENERAL_MESSAGES,
   formatTime,
   getDateLabel,
-  type Channel,
-  type DmUser,
   type Message,
 } from './_data';
 
