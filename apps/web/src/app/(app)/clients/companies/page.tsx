@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, Building2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -12,7 +11,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import { CompanySheet } from '@/features/clients/components/CompanySheet';
 import { CreateCompanyDialog } from '@/features/clients/components/CreateCompanyDialog';
 import {
@@ -26,6 +32,7 @@ import { companiesApi, type Company } from '@/lib/api/clients';
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showCreate, setShowCreate] = useState(false);
@@ -42,8 +49,9 @@ export default function CompaniesPage() {
         taxStatus: filters.taxStatus && filters.taxStatus !== 'all' ? filters.taxStatus : undefined,
       });
       setCompanies(data.items);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Companies could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -106,11 +114,9 @@ export default function CompaniesPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchCompanies} />
       ) : companies.length === 0 ? (
         <EmptyState
           icon={Building2}

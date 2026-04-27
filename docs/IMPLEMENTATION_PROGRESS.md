@@ -22,19 +22,19 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                          |
-| -------------------- | ---------------------------------------------- |
-| Current phase        | Phase 1 - Platform shell and foundations       |
-| Current module/block | UI Shell / Navigation / RBAC visibility        |
-| Current task         | RBAC navigation visibility hardening completed |
-| Status               | Waiting approval for next slice                |
-| Last updated         | 2026-04-27                                     |
+| Field                | Value                                       |
+| -------------------- | ------------------------------------------- |
+| Current phase        | Phase 1 - Platform shell and foundations    |
+| Current module/block | UI Shell / Shared UI states                 |
+| Current task         | Shared empty/loading/error states completed |
+| Status               | Waiting approval for next slice             |
+| Last updated         | 2026-04-27                                  |
 
 ## Phase Progress
 
 | Phase                                            | Status      | Progress | Current blocker                | Notes                                        |
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------- |
-| Phase 1 - Platform shell and foundations         | In progress |      32% | None                           | Root lint/typecheck/build/test completed     |
+| Phase 1 - Platform shell and foundations         | In progress |      34% | None                           | Root lint/typecheck/build/test completed     |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Not started |       0% | Waits Phase 1 foundation       | Requires source attribution and stage gates  |
 | Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
@@ -51,6 +51,7 @@ Rules:
 | 2026-04-27 | Database typecheck foundation completed | `@nbos/database` tsconfig and Prisma seed script typing                                             | `pnpm --filter @nbos/database typecheck`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                         | Existing web lint cleanup or next Phase 1 slice |
 | 2026-04-27 | Quality gate lint cleanup completed     | Web React Compiler lint errors, unused imports/vars, API credentials controller warnings            | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                      | RBAC navigation visibility or shared states     |
 | 2026-04-27 | RBAC navigation visibility completed    | Sidebar parent/child permission filtering for module-level navigation                               | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test` | Shared states or next approved Phase 1 slice    |
+| 2026-04-27 | Shared UI states completed              | Reusable loading/error states and retry UX for key list screens                                     | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test` | My Company org model or Settings/Admin audit    |
 
 ## Phase 1 Checklist
 
@@ -60,19 +61,19 @@ Make NBOS navigable, permission-aware and safe to extend.
 
 ### Scope
 
-| Item                                      | Status      | Notes                                                                             |
-| ----------------------------------------- | ----------- | --------------------------------------------------------------------------------- |
-| UI Shell canon reviewed                   | Done        | Navigation, cleanup, My Company and Settings/Admin docs reviewed                  |
-| UI visual quality pass                    | Partial     | New placeholder screens use existing Tailwind + shared components                 |
-| Sidebar navigation aligned with canon     | Partial     | Top-level shell aligned; deeper Finance/CRM business screens remain future slices |
-| Global header `Create` removed            | Done        | Creation stays contextual by module                                               |
-| `Team` moved under My Company             | Done        | Sidebar now links to `My Company -> Team`                                         |
-| `Departments` moved under My Company      | Done        | Sidebar now links to `My Company -> Departments`                                  |
-| `My Account` moved outside Settings       | Done        | Header user menu remains the entry point                                          |
-| My Company skeleton implemented           | Done        | Org Structure page plus safe child routes/placeholders                            |
-| Settings/Admin skeleton implemented       | Done        | System admin sections and safe placeholders added                                 |
-| RBAC visibility checked                   | Done        | Parent and child sidebar items hide when module-level access is unavailable       |
-| Shared empty/loading/error states checked | Not started | Graceful degradation rule                                                         |
+| Item                                      | Status  | Notes                                                                             |
+| ----------------------------------------- | ------- | --------------------------------------------------------------------------------- |
+| UI Shell canon reviewed                   | Done    | Navigation, cleanup, My Company and Settings/Admin docs reviewed                  |
+| UI visual quality pass                    | Partial | New placeholder screens use existing Tailwind + shared components                 |
+| Sidebar navigation aligned with canon     | Partial | Top-level shell aligned; deeper Finance/CRM business screens remain future slices |
+| Global header `Create` removed            | Done    | Creation stays contextual by module                                               |
+| `Team` moved under My Company             | Done    | Sidebar now links to `My Company -> Team`                                         |
+| `Departments` moved under My Company      | Done    | Sidebar now links to `My Company -> Departments`                                  |
+| `My Account` moved outside Settings       | Done    | Header user menu remains the entry point                                          |
+| My Company skeleton implemented           | Done    | Org Structure page plus safe child routes/placeholders                            |
+| Settings/Admin skeleton implemented       | Done    | System admin sections and safe placeholders added                                 |
+| RBAC visibility checked                   | Done    | Parent and child sidebar items hide when module-level access is unavailable       |
+| Shared empty/loading/error states checked | Done    | Shared LoadingState/ErrorState added and adopted by key list screens              |
 
 ### Key Docs
 
@@ -86,6 +87,7 @@ Make NBOS navigable, permission-aware and safe to extend.
 | Module / Area               | Docs ready | Code checked | Implemented | Tested | Status / Notes                                          |
 | --------------------------- | ---------- | ------------ | ----------- | ------ | ------------------------------------------------------- |
 | Platform Shell / Navigation | Yes        | Yes          | Partial     | Yes    | Navigation cleanup and RBAC visibility slices completed |
+| Shared UI States            | Yes        | Yes          | Partial     | Yes    | Loading/error/empty state baseline completed            |
 | My Company                  | Yes        | Yes          | Partial     | Yes    | Shell/skeleton routes completed                         |
 | Settings / Admin            | Yes        | Yes          | Partial     | Yes    | Shell/skeleton routes completed                         |
 | CRM                         | Yes        | No           | No          | No     | Phase 2                                                 |
@@ -121,7 +123,6 @@ Continue Phase 1 after approval:
 
 ```text
 Pick the next smallest safe Phase 1 slice:
-- shared empty/loading/error states;
 - My Company org structure data model;
 - Settings/Admin audit foundation.
 ```

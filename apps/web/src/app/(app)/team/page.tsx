@@ -13,7 +13,6 @@ import {
   Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -22,7 +21,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   EMPLOYEE_LEVELS,
   EMPLOYEE_STATUSES,
@@ -41,6 +47,7 @@ export default function TeamPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('grid');
@@ -62,8 +69,9 @@ export default function TeamPage() {
         },
       });
       setEmployees(resp.data.items ?? resp.data ?? []);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Employees could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -172,11 +180,9 @@ export default function TeamPage() {
       />
 
       {loading ? (
-        <div className="grid grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full rounded-xl" />
-          ))}
-        </div>
+        <LoadingState variant="cards" count={6} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchEmployees} />
       ) : employees.length === 0 ? (
         <EmptyState
           icon={Users2}

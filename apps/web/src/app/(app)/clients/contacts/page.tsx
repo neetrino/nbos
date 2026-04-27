@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, Users, Phone, Mail, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -12,7 +11,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
 import {
@@ -25,6 +31,7 @@ import { contactsApi, type Contact } from '@/lib/api/clients';
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showCreate, setShowCreate] = useState(false);
@@ -40,8 +47,9 @@ export default function ContactsPage() {
         role: filters.role && filters.role !== 'all' ? filters.role : undefined,
       });
       setContacts(data.items);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Contacts could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -104,11 +112,9 @@ export default function ContactsPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchContacts} />
       ) : contacts.length === 0 ? (
         <EmptyState
           icon={Users}

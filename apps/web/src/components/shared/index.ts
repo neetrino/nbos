@@ -1,6 +1,8 @@
 export { PageHeader } from './PageHeader';
 export { StatusBadge, type StatusVariant } from './StatusBadge';
 export { EmptyState } from './EmptyState';
+export { ErrorState } from './ErrorState';
+export { LoadingState } from './LoadingState';
 export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar } from './FilterBar';
 export { EntitySheet } from './EntitySheet';
