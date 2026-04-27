@@ -8,8 +8,9 @@ Read in this order:
 
 1. `docs/NBOS/00-Documentation-Hub.md`
 2. `docs/NBOS/00-Implementation-Roadmap.md`
-3. `docs/NBOS/00-Documentation-Consistency-Audit.md`
-4. The specific module docs for the task you are implementing.
+3. `docs/IMPLEMENTATION_PROGRESS.md`
+4. `docs/NBOS/00-Documentation-Consistency-Audit.md`
+5. The specific module docs for the task you are implementing.
 
 ## Source Of Truth
 
@@ -48,6 +49,12 @@ Start implementation from:
 
 ```text
 docs/NBOS/00-Implementation-Roadmap.md
+```
+
+Then check the current progress state:
+
+```text
+docs/IMPLEMENTATION_PROGRESS.md
 ```
 
 Current first phase:

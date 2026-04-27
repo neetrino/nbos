@@ -20,6 +20,12 @@ docs/NBOS/02-Modules/*
 docs/NBOS/05-UI-Specifications/*
 ```
 
+Actual implementation status is tracked in:
+
+```text
+docs/IMPLEMENTATION_PROGRESS.md
+```
+
 ## Primary implementation rule
 
 ```text
