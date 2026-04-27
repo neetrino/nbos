@@ -50,7 +50,7 @@
 
 ### B1. Sidebar currently shows Team as top-level item
 
-Статус: `STALE UI`
+Статус: `DONE IN UI SHELL SLICE`
 
 Current UI shows `Team` directly in the sidebar. It should move under:
 
@@ -67,9 +67,11 @@ Future implementation:
 - implement org chart canvas with department cards, lines, zoom, search, collapse/expand and detail drawer;
 - hide items by RBAC.
 
+Runtime now has `My Company` top-level sidebar navigation and `Team` lives under it. Org chart, seats, compensation, KPI and SOP remain dedicated follow-up slices.
+
 ### B2. My Account currently appears inside Settings
 
-Статус: `STALE UI`
+Статус: `DONE IN UI SHELL SLICE`
 
 `My Account` is a personal profile screen and should open from the header user menu.
 
@@ -81,7 +83,7 @@ Future implementation:
 
 ### B3. Settings mixes system configuration with business structure
 
-Статус: `STALE UI / STALE INFORMATION ARCHITECTURE`
+Статус: `SHELL CLEANUP DONE / BUSINESS MODEL PENDING`
 
 Settings should contain system administration only:
 
@@ -100,6 +102,8 @@ Business objects should move to `My Company`:
 - compensation profiles;
 - KPI policies;
 - bonus policies.
+
+Runtime Settings landing now focuses on system admin, and My Company owns the business structure entry points.
 
 ---
 

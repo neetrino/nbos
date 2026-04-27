@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Bell, ChevronDown, LogOut, Plus, UserCircle2 } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, UserCircle2 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { usePermission } from '@/lib/permissions';
 import {
@@ -30,12 +30,6 @@ export function Topbar() {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        {/* Quick Add */}
-        <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors">
-          <Plus size={16} />
-          <span className="hidden sm:inline">Create</span>
-        </button>
-
         {/* Notifications */}
         <button className="text-muted-foreground hover:bg-secondary hover:text-foreground relative rounded-lg p-2 transition-colors">
           <Bell size={20} />

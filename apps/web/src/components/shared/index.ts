@@ -1,6 +1,7 @@
 export { PageHeader } from './PageHeader';
 export { StatusBadge, type StatusVariant } from './StatusBadge';
 export { EmptyState } from './EmptyState';
+export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar } from './FilterBar';
 export { EntitySheet } from './EntitySheet';
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';

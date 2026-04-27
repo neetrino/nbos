@@ -26,27 +26,28 @@ Rules:
 | -------------------- | --------------------------------------------- |
 | Current phase        | Phase 1 - Platform shell and foundations      |
 | Current module/block | UI Shell / Navigation / My Company / Settings |
-| Current task         | Not started yet                               |
-| Status               | Ready to start                                |
+| Current task         | Navigation cleanup slice completed            |
+| Status               | Waiting approval for next slice               |
 | Last updated         | 2026-04-27                                    |
 
 ## Phase Progress
 
-| Phase                                            | Status         | Progress | Current blocker                | Notes                                        |
-| ------------------------------------------------ | -------------- | -------: | ------------------------------ | -------------------------------------------- |
-| Phase 1 - Platform shell and foundations         | Ready to start |       0% | None                           | First implementation phase                   |
-| Phase 2 - CRM, Marketing and Lead-to-Cash intake | Not started    |       0% | Waits Phase 1 foundation       | Requires source attribution and stage gates  |
-| Phase 3 - Finance core                           | Not started    |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
-| Phase 4 - Delivery operations                    | Not started    |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
-| Phase 5 - Collaboration and knowledge            | Not started    |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications |
-| Phase 6 - Control layer                          | Not started    |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views           |
-| Phase 7 - Integrations and migration             | Not started    |       0% | Waits stable workflows         | WhatsApp, bank/gov, Bitrix migration         |
+| Phase                                            | Status      | Progress | Current blocker                | Notes                                        |
+| ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------- |
+| Phase 1 - Platform shell and foundations         | In progress |      20% | Root database typecheck config | Navigation shell cleanup completed           |
+| Phase 2 - CRM, Marketing and Lead-to-Cash intake | Not started |       0% | Waits Phase 1 foundation       | Requires source attribution and stage gates  |
+| Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
+| Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
+| Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications |
+| Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views           |
+| Phase 7 - Integrations and migration             | Not started |       0% | Waits stable workflows         | WhatsApp, bank/gov, Bitrix migration         |
 
 ## Active Work Log
 
-| Date       | Done                                 | Scope                                                        | Verification                               | Next                         |
-| ---------- | ------------------------------------ | ------------------------------------------------------------ | ------------------------------------------ | ---------------------------- |
-| 2026-04-27 | Documentation launch setup completed | `AI-START-HERE`, docs root cleanup, payment references moved | `git diff --check`; committed as `c50edab` | Start Phase 1 implementation |
+| Date       | Done                                  | Scope                                                                                               | Verification                                                                                                        | Next                                  |
+| ---------- | ------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| 2026-04-27 | Documentation launch setup completed  | `AI-START-HERE`, docs root cleanup, payment references moved                                        | `git diff --check`; committed as `c50edab`                                                                          | Start Phase 1 implementation          |
+| 2026-04-27 | UI shell navigation cleanup completed | Sidebar/topbar canon, `My Company`, `Marketing`, `Reports / Analytics`, Settings/Admin placeholders | Focused web ESLint; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/web build`; `pnpm test`; `pnpm build` | Wait for approval; next Phase 1 slice |
 
 ## Phase 1 Checklist
 
@@ -56,19 +57,19 @@ Make NBOS navigable, permission-aware and safe to extend.
 
 ### Scope
 
-| Item                                      | Status      | Notes                                                              |
-| ----------------------------------------- | ----------- | ------------------------------------------------------------------ |
-| UI Shell canon reviewed                   | Not started | Read navigation docs before code changes                           |
-| UI visual quality pass                    | Not started | Use existing Tailwind + shadcn/ui stack; no duplicate UI libraries |
-| Sidebar navigation aligned with canon     | Not started | Move/remove old items                                              |
-| Global header `Create` removed            | Not started | Creation should be contextual or dashboard pinned action           |
-| `Team` moved under My Company             | Not started | Team should not be a main sidebar module                           |
-| `Departments` moved under My Company      | Not started | Remove from Settings if present                                    |
-| `My Account` moved outside Settings       | Not started | User profile lives in account menu/header context                  |
-| My Company skeleton implemented           | Not started | Org, team, roles/KPI/SOP placeholders                              |
-| Settings/Admin skeleton implemented       | Not started | System admin only                                                  |
-| RBAC visibility checked                   | Not started | Hide unavailable modules safely                                    |
-| Shared empty/loading/error states checked | Not started | Graceful degradation rule                                          |
+| Item                                      | Status      | Notes                                                                     |
+| ----------------------------------------- | ----------- | ------------------------------------------------------------------------- |
+| UI Shell canon reviewed                   | Done        | Navigation, cleanup, My Company and Settings/Admin docs reviewed          |
+| UI visual quality pass                    | Partial     | New placeholder screens use existing Tailwind + shared components         |
+| Sidebar navigation aligned with canon     | Partial     | Top-level shell aligned; deeper Finance/CRM children remain future slices |
+| Global header `Create` removed            | Done        | Creation stays contextual by module                                       |
+| `Team` moved under My Company             | Done        | Sidebar now links to `My Company -> Team`                                 |
+| `Departments` moved under My Company      | Done        | Sidebar now links to `My Company -> Departments`                          |
+| `My Account` moved outside Settings       | Done        | Header user menu remains the entry point                                  |
+| My Company skeleton implemented           | Done        | Org Structure page plus safe child routes/placeholders                    |
+| Settings/Admin skeleton implemented       | Done        | System admin sections and safe placeholders added                         |
+| RBAC visibility checked                   | Not started | Hide unavailable modules safely                                           |
+| Shared empty/loading/error states checked | Not started | Graceful degradation rule                                                 |
 
 ### Key Docs
 
@@ -79,26 +80,26 @@ Make NBOS navigable, permission-aware and safe to extend.
 
 ## Module Progress Matrix
 
-| Module / Area               | Docs ready | Code checked | Implemented | Tested | Status / Notes             |
-| --------------------------- | ---------- | ------------ | ----------- | ------ | -------------------------- |
-| Platform Shell / Navigation | Yes        | No           | No          | No     | Start here                 |
-| My Company                  | Yes        | No           | No          | No     | Phase 1                    |
-| Settings / Admin            | Yes        | No           | No          | No     | Phase 1                    |
-| CRM                         | Yes        | No           | No          | No     | Phase 2                    |
-| Marketing                   | Yes        | No           | No          | No     | Phase 2                    |
-| Finance                     | Yes        | No           | No          | No     | Phase 3                    |
-| Partners                    | Yes        | No           | No          | No     | Phase 3/Finance dependency |
-| Projects Hub                | Yes        | No           | No          | No     | Phase 4                    |
-| Tasks / Work Spaces         | Yes        | No           | No          | No     | Phase 4                    |
-| Support                     | Yes        | No           | No          | No     | Phase 4                    |
-| Drive                       | Yes        | No           | No          | No     | Phase 5                    |
-| Credentials                 | Yes        | No           | No          | No     | Phase 5                    |
-| Messenger                   | Yes        | No           | No          | No     | Phase 5                    |
-| Notifications               | Yes        | No           | No          | No     | Phase 5                    |
-| Calendar                    | Yes        | No           | No          | No     | Phase 6                    |
-| Dashboard Control Center    | Yes        | No           | No          | No     | Phase 6                    |
-| Reports / Analytics         | Yes        | No           | No          | No     | Phase 6                    |
-| Integrations / Migration    | Partial    | No           | No          | No     | Phase 7                    |
+| Module / Area               | Docs ready | Code checked | Implemented | Tested | Status / Notes                     |
+| --------------------------- | ---------- | ------------ | ----------- | ------ | ---------------------------------- |
+| Platform Shell / Navigation | Yes        | Yes          | Partial     | Yes    | Navigation cleanup slice completed |
+| My Company                  | Yes        | Yes          | Partial     | Yes    | Shell/skeleton routes completed    |
+| Settings / Admin            | Yes        | Yes          | Partial     | Yes    | Shell/skeleton routes completed    |
+| CRM                         | Yes        | No           | No          | No     | Phase 2                            |
+| Marketing                   | Yes        | No           | No          | No     | Phase 2                            |
+| Finance                     | Yes        | No           | No          | No     | Phase 3                            |
+| Partners                    | Yes        | No           | No          | No     | Phase 3/Finance dependency         |
+| Projects Hub                | Yes        | No           | No          | No     | Phase 4                            |
+| Tasks / Work Spaces         | Yes        | No           | No          | No     | Phase 4                            |
+| Support                     | Yes        | No           | No          | No     | Phase 4                            |
+| Drive                       | Yes        | No           | No          | No     | Phase 5                            |
+| Credentials                 | Yes        | No           | No          | No     | Phase 5                            |
+| Messenger                   | Yes        | No           | No          | No     | Phase 5                            |
+| Notifications               | Yes        | No           | No          | No     | Phase 5                            |
+| Calendar                    | Yes        | No           | No          | No     | Phase 6                            |
+| Dashboard Control Center    | Yes        | No           | No          | No     | Phase 6                            |
+| Reports / Analytics         | Yes        | No           | No          | No     | Phase 6                            |
+| Integrations / Migration    | Partial    | No           | No          | No     | Phase 7                            |
 
 ## Definition Of Done For Each Slice
 
@@ -113,10 +114,12 @@ A slice is done only when:
 
 ## Next Action
 
-Start Phase 1:
+Continue Phase 1 after approval:
 
 ```text
-Inspect current UI shell/navigation implementation and compare with:
-docs/NBOS/05-UI-Specifications/01-Navigation-Structure.md
-docs/NBOS/05-UI-Specifications/06-UI-Shell-Cleanup-Register.md
+Pick the next smallest safe Phase 1 slice:
+- RBAC navigation visibility hardening;
+- shared empty/loading/error states;
+- My Company org structure data model;
+- Settings/Admin audit foundation.
 ```

@@ -54,7 +54,7 @@ Runtime уже имеет `/dashboard`.
 
 ### B1. Team is still top-level sidebar item
 
-Статус: `STALE UI`
+Статус: `DONE IN UI SHELL SLICE`
 
 `Team` должен быть внутри:
 
@@ -62,11 +62,12 @@ Runtime уже имеет `/dashboard`.
 My Company -> Team
 ```
 
-Нужно добавить top-level `My Company` и перенести туда Team, Departments, Roles & Seats, Compensation, KPI, SOP.
+Реализовано: top-level `My Company` добавлен, `Team` перенесён внутрь него.
+Остаток: полноценные data model / org chart / seats будут отдельными My Company slices.
 
 ### B2. Settings contains My Account
 
-Статус: `STALE UI`
+Статус: `DONE IN UI SHELL SLICE`
 
 `My Account` не должен быть подпунктом Settings.
 
@@ -78,7 +79,7 @@ Header User Menu -> My Account
 
 ### B3. Settings contains Departments
 
-Статус: `STALE UI`
+Статус: `DONE IN UI SHELL SLICE`
 
 `Departments` должны жить в:
 
@@ -88,7 +89,7 @@ My Company -> Departments
 
 ### B4. Topbar contains global Create button
 
-Статус: `STALE UI`
+Статус: `DONE IN UI SHELL SLICE`
 
 Глобальная кнопка `Create` должна быть удалена из header.
 
@@ -129,7 +130,7 @@ CRM children тоже должны быть приведены к CRM canon:
 
 ### B7. Marketing top-level module is missing
 
-Статус: `MISSING UI`
+Статус: `SHELL DONE / MODULE WORKFLOW PENDING`
 
 По новому канону Marketing должен быть отдельным top-level module:
 
@@ -142,10 +143,11 @@ Marketing
 ```
 
 CRM использует marketing attribution fields, но Marketing operations не должны быть спрятаны внутри CRM.
+Runtime now exposes Marketing as a top-level module with safe placeholder routes. Business workflows remain Phase 2 work.
 
 ### B8. Reports / Analytics top-level module is missing
 
-Статус: `MISSING UI`
+Статус: `SHELL DONE / MODULE WORKFLOW PENDING`
 
 По новому канону Reports / Analytics должен быть отдельным read-only слоем:
 
@@ -158,6 +160,7 @@ Reports / Analytics
 ```
 
 Dashboard не должен тянуть тяжёлую аналитику; он должен вести в Reports.
+Runtime now exposes Reports / Analytics as a top-level read-only module placeholder. Report catalog implementation remains Phase 6 work.
 
 ---
 
@@ -165,7 +168,7 @@ Dashboard не должен тянуть тяжёлую аналитику; он
 
 ### C1. My Company top-level module is missing
 
-Статус: `MISSING UI`
+Статус: `SHELL DONE / MODULE WORKFLOW PENDING`
 
 Нужно добавить:
 
@@ -179,6 +182,8 @@ My Company
   KPI / Scorecard
   SOP & Templates
 ```
+
+Runtime now includes this sidebar structure and safe routes/placeholders. Full My Company runtime behavior remains separate implementation work.
 
 ### C2. Personal Navigation preferences are missing
 

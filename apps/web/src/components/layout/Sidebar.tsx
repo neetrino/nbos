@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
+  BarChart3,
   LayoutDashboard,
   Users,
   Users2,
@@ -21,6 +22,7 @@ import {
   Settings,
   ChevronLeft,
   Search,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
@@ -36,6 +38,11 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
   {
+    label: 'Reports / Analytics',
+    href: '/reports',
+    icon: <BarChart3 size={20} />,
+  },
+  {
     label: 'CRM',
     href: '/crm',
     icon: <Users size={20} />,
@@ -44,6 +51,20 @@ const NAV_ITEMS: NavItem[] = [
       { label: 'Dashboard', href: '/crm/dashboard' },
       { label: 'Leads', href: '/crm/leads' },
       { label: 'Deals', href: '/crm/deals' },
+      { label: 'CRM Client Chats', href: '/messenger?scope=crm' },
+      { label: 'Sales Reports / Analytics', href: '/reports?module=crm' },
+    ],
+  },
+  {
+    label: 'Marketing',
+    href: '/marketing',
+    icon: <Megaphone size={20} />,
+    permission: { module: 'CRM_LEADS', action: 'VIEW' },
+    children: [
+      { label: 'Marketing Board', href: '/marketing' },
+      { label: 'Attribution Review', href: '/marketing/attribution' },
+      { label: 'Marketing Dashboard', href: '/marketing/dashboard' },
+      { label: 'Marketing Settings', href: '/marketing/settings' },
     ],
   },
   {
@@ -94,10 +115,19 @@ const NAV_ITEMS: NavItem[] = [
     permission: { module: 'PARTNERS', action: 'VIEW' },
   },
   {
-    label: 'Team',
-    href: '/team',
+    label: 'My Company',
+    href: '/my-company',
     icon: <Users2 size={20} />,
     permission: { module: 'COMPANY', action: 'VIEW' },
+    children: [
+      { label: 'Org Structure', href: '/my-company' },
+      { label: 'Team', href: '/my-company/team' },
+      { label: 'Departments', href: '/my-company/departments' },
+      { label: 'Roles & Seats', href: '/my-company/roles-seats' },
+      { label: 'Compensation', href: '/my-company/compensation' },
+      { label: 'KPI / Scorecard', href: '/my-company/kpi' },
+      { label: 'SOP & Templates', href: '/my-company/sop' },
+    ],
   },
   {
     label: 'Messenger',
@@ -124,15 +154,18 @@ const NAV_ITEMS: NavItem[] = [
     permission: { module: 'CREDENTIALS', action: 'VIEW' },
   },
   {
-    label: 'Settings',
+    label: 'Settings / Admin',
     href: '/settings',
     icon: <Settings size={20} />,
     children: [
-      { label: 'My Account', href: '/my-account' },
       { label: 'General', href: '/settings' },
-      { label: 'Lists', href: '/settings/lists' },
-      { label: 'Roles', href: '/settings/roles' },
-      { label: 'Departments', href: '/settings/departments' },
+      { label: 'System Lists', href: '/settings/lists' },
+      { label: 'Permissions / RBAC', href: '/settings/roles' },
+      { label: 'Module Settings', href: '/settings/module-settings' },
+      { label: 'Integrations', href: '/settings/integrations' },
+      { label: 'Security', href: '/settings/security' },
+      { label: 'Feature Flags', href: '/settings/feature-flags' },
+      { label: 'Audit Log', href: '/settings/audit-log' },
     ],
   },
 ];
@@ -155,7 +188,7 @@ export function Sidebar() {
   const { can, isLoading: permsLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
   /** At most one section with children is expanded (accordion). */
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [manualExpandedSection, setManualExpandedSection] = useState<string | null>(null);
 
   const visibleItems = permsLoading
     ? NAV_ITEMS
@@ -164,20 +197,20 @@ export function Sidebar() {
         return can(item.permission.action, item.permission.module);
       });
 
-  useEffect(() => {
-    const match = NAV_ITEMS.find(
+  const activeSection =
+    NAV_ITEMS.find(
       (item) =>
         item.children && item.children.some((child) => isChildRouteActive(pathname, child.href)),
-    );
-    setExpandedSection(match?.label ?? null);
-  }, [pathname]);
+    )?.label ?? null;
+
+  const expandedSection = manualExpandedSection ?? activeSection;
 
   const toggleExpanded = (label: string) => {
-    setExpandedSection((current) => (current === label ? null : label));
+    setManualExpandedSection((current) => (current === label ? null : label));
   };
 
   const expandOnly = (label: string) => {
-    setExpandedSection(label);
+    setManualExpandedSection(label);
   };
 
   const isActive = (href: string) => pathname.startsWith(href);

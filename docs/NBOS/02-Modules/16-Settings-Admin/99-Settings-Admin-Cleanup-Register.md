@@ -68,7 +68,7 @@
 
 ### B1. Settings page contains company/business settings
 
-Статус: `STALE UI`
+Статус: `DONE IN UI SHELL SLICE`
 
 Текущий Settings page содержит company form / company settings. По новому канону это нужно разделить:
 
@@ -76,9 +76,11 @@
 - business company structure, departments, employees, compensation и policies должны жить в `My Company`;
 - юридические/организационные данные компании не должны смешиваться с системной админкой.
 
+Runtime Settings landing no longer shows hardcoded company/legal fields and now presents system admin sections.
+
 ### B2. My Account appears inside Settings
 
-Статус: `STALE UI`
+Статус: `DONE IN UI SHELL SLICE`
 
 `My Account` должен открываться из header user menu.
 
@@ -90,7 +92,7 @@ Future implementation:
 
 ### B3. Departments currently live under Settings
 
-Статус: `STALE UI / STALE ROUTING`
+Статус: `DONE IN SIDEBAR / STALE ROUTE KEPT FOR COMPATIBILITY`
 
 `Departments` должны переехать в:
 
@@ -99,10 +101,11 @@ My Company -> Departments
 ```
 
 Settings не должен быть местом для оргструктуры.
+Sidebar now routes Departments through `My Company -> Departments`. The old `/settings/departments` route still exists as a compatibility route until a dedicated My Company implementation can own the page component directly.
 
 ### B4. Settings navigation lacks complete admin structure
 
-Статус: `MISSING UI`
+Статус: `SHELL DONE / WORKFLOWS PENDING`
 
 Нужно привести навигацию к канону:
 
@@ -117,6 +120,8 @@ Settings / Admin
   Feature Flags
   Audit Log
 ```
+
+Runtime navigation and placeholder routes now expose this structure. Data models, API enforcement and audit remain later Settings/Admin slices.
 
 ---
 
