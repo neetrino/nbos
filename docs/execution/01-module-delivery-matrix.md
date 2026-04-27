@@ -2,8 +2,15 @@
 
 ## Purpose
 
-Execution order and Definition of Done for each implementation block.
-This document is operational and complements `docs/DEVELOPMENT_PLAN.md`.
+Execution order and Definition of Done for implementation blocks.
+
+Canonical roadmap:
+
+```text
+docs/NBOS/00-Implementation-Roadmap.md
+```
+
+This document is an operational supplement. If it conflicts with the NBOS roadmap, the roadmap wins.
 
 ## Delivery order
 

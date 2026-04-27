@@ -3,7 +3,7 @@
 > Այս փաստաթուղթը նախատեսված է **Idram**-ի միացման համար։ Բոլոր նյուանսները (form, RESULT_URL երկու POST, checksum կարգ, precheck «OK») ներառված են, որպեսզի նոր նախագծում ինտեգրացիան աշխատի առաջին փորձից։
 >
 > **Պաշտոնական API նկարագրություն:**  
-> `payment integration/| Official doc for the API integrationm/IDram/Idram Merchant API New.md`
+> `../official-docs/IDram/Idram Merchant API New.md`
 
 ---
 
@@ -15,8 +15,8 @@
 
 ### 1.1 Form action (մեկ URL test և production)
 
-| Նշանակում | URL |
-|-----------|-----|
+| Նշանակում      | URL                                           |
+| -------------- | --------------------------------------------- |
 | **GetPayment** | `https://banking.idram.am/Payment/GetPayment` |
 
 Test/live տարբերակ չկա — միևնույն URL-ն է. Test/live ռեժիմը որոշվում է Idram-ում գրանցված REC_ACCOUNT / SECRET_KEY-ով:
@@ -49,11 +49,11 @@ APP_URL=https://yoursite.com
 
 Idram merchant panel-ում գրանցել.
 
-| Պարամետր | URL |
-|----------|-----|
-| **RESULT_URL** | `https://yoursite.com/api/v1/payments/idram/callback` |
-| **SUCCESS_URL** | `https://yoursite.com/api/v1/payments/idram/success` |
-| **FAIL_URL** | `https://yoursite.com/api/v1/payments/idram/fail` |
+| Պարամետր        | URL                                                   |
+| --------------- | ----------------------------------------------------- |
+| **RESULT_URL**  | `https://yoursite.com/api/v1/payments/idram/callback` |
+| **SUCCESS_URL** | `https://yoursite.com/api/v1/payments/idram/success`  |
+| **FAIL_URL**    | `https://yoursite.com/api/v1/payments/idram/fail`     |
 
 Callback path-երը (`/api/v1/payments/idram/...`) — ըստ նախագծի; Idram merchant panel-ում գրանցեք `APP_URL` + path համակցությունը։
 
@@ -78,30 +78,31 @@ Callback path-երը (`/api/v1/payments/idram/...`) — ըստ նախագծի; I
 
 ### 5.1 Form fields (hidden)
 
-| Field | Տիպ | Պարտադիր | Նկարագրություն |
-|-------|-----|----------|-----------------|
-| EDP_LANGUAGE | string | Yes | **EN**, **AM** (հայերեն), **RU** |
-| EDP_REC_ACCOUNT | string | Yes | Merchant IdramID (EDP_REC_ACCOUNT) |
-| EDP_DESCRIPTION | string | Yes | Ապրանք/Պատվերի նկարագրություն (UTF-8) |
-| EDP_AMOUNT | string | Yes | Գումար, **տասնորդական — dot (.)** (օր. 1900 կամ 19.50) |
-| EDP_BILL_NO | string | Yes | Հաշվի/պատվերի ID (order.number — ձեր accounting system-ից) |
-| EDP_EMAIL | string | No | Էլ. փոստ; եթե set — overload-ում է Idram-ի EMAIL այդ գործարքի համար |
-| (custom, առանց EDP_) | string | No | Idram-ը «after payment completion» վերադարձնում է merchant-ին (օր. order_number success redirect-ում) |
+| Field                 | Տիպ    | Պարտադիր | Նկարագրություն                                                                                        |
+| --------------------- | ------ | -------- | ----------------------------------------------------------------------------------------------------- |
+| EDP_LANGUAGE          | string | Yes      | **EN**, **AM** (հայերեն), **RU**                                                                      |
+| EDP_REC_ACCOUNT       | string | Yes      | Merchant IdramID (EDP_REC_ACCOUNT)                                                                    |
+| EDP_DESCRIPTION       | string | Yes      | Ապրանք/Պատվերի նկարագրություն (UTF-8)                                                                 |
+| EDP_AMOUNT            | string | Yes      | Գումար, **տասնորդական — dot (.)** (օր. 1900 կամ 19.50)                                                |
+| EDP_BILL_NO           | string | Yes      | Հաշվի/պատվերի ID (order.number — ձեր accounting system-ից)                                            |
+| EDP_EMAIL             | string | No       | Էլ. փոստ; եթե set — overload-ում է Idram-ի EMAIL այդ գործարքի համար                                   |
+| (custom, առանց EDP\_) | string | No       | Idram-ը «after payment completion» վերադարձնում է merchant-ին (օր. order_number success redirect-ում) |
 
-**Կարևոր.**  
-- EDP_BILL_NO — ձեր համակարգում պատվերի/հաշվի unique ID; callback-ում **order-ը գտնելու** համար օգտագործել այդ արժեքը (find by order.number).  
+**Կարևոր.**
+
+- EDP_BILL_NO — ձեր համակարգում պատվերի/հաշվի unique ID; callback-ում **order-ը գտնելու** համար օգտագործել այդ արժեքը (find by order.number).
 - Գումարը միշտ **ստուգել ԲԴ-ից** (order.total), ոչ request-ից։
 
 ### 5.2 Օրինակ (doc)
 
 ```html
 <form action="https://banking.idram.am/Payment/GetPayment" method="POST">
-  <input type="hidden" name="EDP_LANGUAGE" value="EN">
-  <input type="hidden" name="EDP_REC_ACCOUNT" value="100000114">
-  <input type="hidden" name="EDP_DESCRIPTION" value="Order description">
-  <input type="hidden" name="EDP_AMOUNT" value="1900">
-  <input type="hidden" name="EDP_BILL_NO" value="1806">
-  <input type="submit" value="submit">
+  <input type="hidden" name="EDP_LANGUAGE" value="EN" />
+  <input type="hidden" name="EDP_REC_ACCOUNT" value="100000114" />
+  <input type="hidden" name="EDP_DESCRIPTION" value="Order description" />
+  <input type="hidden" name="EDP_AMOUNT" value="1900" />
+  <input type="hidden" name="EDP_BILL_NO" value="1806" />
+  <input type="submit" value="submit" />
 </form>
 ```
 
@@ -120,7 +121,7 @@ Idram-ը ուղարկում է **երկու** POST (Content-Type: `application/x
 - Ստուգել `EDP_REC_ACCOUNT` = ձեր config REC_ACCOUNT.
 - **EDP_BILL_NO**-ով DB-ից գտնել order; ստուգել, որ order գոյություն ունի և paymentStatus = pending.
 - **Գումարը** ստուգել **միայն ԲԴ-ից** (order.total), request-ի EDP_AMOUNT-ը համեմատել order.total-ի հետ (լվացում 0.01 tolerance float-ի համար).
-- Եթե ամեն ինչ ճիշտ է → պատասխան **ճիշտ «OK»** (without any html formatting).  
+- Եթե ամեն ինչ ճիշտ է → պատասխան **ճիշտ «OK»** (without any html formatting).
 - Հակառակ դեպքում → ցանկացած այլ տեքստ (օր. "EDP_BILL_NO not found", "EDP_AMOUNT mismatch") → Idram-ը գումարը չի փոխանցի և օգտատիրոջ կուղարկի **FAIL_URL**:
 
 ### 6.2 (b) Payment confirmation
@@ -158,7 +159,7 @@ GET redirect — օգտատերը Idram-ից վերադառնում է այդ UR
 
 ## 9. Init API (ձեր նախագիծ)
 
-Օրինակ flow: checkout-ում Idram ընտրելիս → order creation → **POST /api/v1/payments/idram/init** body `{ orderNumber, lang? }` → response `{ formAction, formData }` → frontend-ը build form և submit → Idram GetPayment:  
+Օրինակ flow: checkout-ում Idram ընտրելիս → order creation → **POST /api/v1/payments/idram/init** body `{ orderNumber, lang? }` → response `{ formAction, formData }` → frontend-ը build form և submit → Idram GetPayment:
 
 - Init-ում ստուգել order, currency === AMD, paymentStatus pending, idram payment pending; build form (EDP_BILL_NO = order.number, EDP_AMOUNT = order.total, EDP_DESCRIPTION, EDP_REC_ACCOUNT from config, EDP_LANGUAGE from lang map EN/AM/RU).
 

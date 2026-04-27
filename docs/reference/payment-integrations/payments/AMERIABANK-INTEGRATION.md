@@ -3,7 +3,7 @@
 > Այս փաստաթուղթը նախատեսված է **Ameriabank**-ի միացման համար։ Բոլոր նյուանսները (API տիպեր, օրենագրի սխալներ, success-ի ճանաչում) ներառված են, որպեսզի նոր նախագծում ինտեգրացիան աշխատի առաջին փորձից։
 >
 > **Պաշտոնական API նկարագրություն:**  
-> `payment integration/| Official doc for the API integrationm/AmeriaBank/vPOS - Ameriabank.md`
+> `../official-docs/AmeriaBank/vPOS - Ameriabank.md`
 
 ---
 
@@ -15,10 +15,10 @@
 
 ### 1.1 Հիմնական URL-ներ (առանց trailing slash)
 
-| Միջավայր | Base URL |
-|----------|----------|
+| Միջավայր | Base URL                                  |
+| -------- | ----------------------------------------- |
 | **Test** | `https://servicestest.ameriabank.am/VPOS` |
-| **Live** | `https://services.ameriabank.am/VPOS` |
+| **Live** | `https://services.ameriabank.am/VPOS`     |
 
 Ընտրությունը՝ env-ով (տես բաժին 2).
 
@@ -53,11 +53,11 @@ APP_URL=https://yoursite.com
 vPOS-ը աշխատում է **ISO 4217 numeric** արժեքներով.
 
 | Կոդ | Արժեք | Առք/Վաճառք |
-|-----|--------|------------|
-| AMD | `051` | default |
-| EUR | `978` | |
-| USD | `840` | |
-| RUB | `643` | |
+| --- | ----- | ---------- |
+| AMD | `051` | default    |
+| EUR | `978` |            |
+| USD | `840` |            |
+| RUB | `643` |            |
 
 Պարտադիր չէ Currency ուղարկել; default = AMD (051).
 
@@ -83,31 +83,32 @@ vPOS-ը աշխատում է **ISO 4217 numeric** արժեքներով.
 
 ### 5.1 Request body (JSON)
 
-| Параметр | Տիպ | Պարտադիր | Նկարագրություն |
-|---------|-----|----------|-----------------|
-| ClientID | string | Yes | Merchant ID |
-| Username | string | Yes | Merchant user |
-| Password | string | Yes | Merchant password |
-| OrderID | **integer** | Yes | **Միայն ամբողջ թիվ.** Ներքին order id-ից hash/number փոխարկել (օր. 1–999999999) |
-| Amount | number | Yes | Գումար |
-| Currency | string | No | 051 / 978 / 840 / 643 |
-| Description | string | Yes | Օր. "Order #12345" |
-| BackURL | string | No, բայց **խորհուրդ** | URL վերադարձի հետ (success/fail — միևնույն URL-ը, արդյունքը GetPaymentDetails-ով) |
-| Opaque | string | No | **Խորհուրդ:** Order ID (UUID/crypto id) — callback-ում order-ը գտնելու համար |
-| lang | string | No | en / am / ru (Pay page) |
-| Timeout | integer | No | Session վայրկյան (max 1200, default 1200) |
+| Параметр    | Տիպ         | Պարտադիր              | Նկարագրություն                                                                    |
+| ----------- | ----------- | --------------------- | --------------------------------------------------------------------------------- |
+| ClientID    | string      | Yes                   | Merchant ID                                                                       |
+| Username    | string      | Yes                   | Merchant user                                                                     |
+| Password    | string      | Yes                   | Merchant password                                                                 |
+| OrderID     | **integer** | Yes                   | **Միայն ամբողջ թիվ.** Ներքին order id-ից hash/number փոխարկել (օր. 1–999999999)   |
+| Amount      | number      | Yes                   | Գումար                                                                            |
+| Currency    | string      | No                    | 051 / 978 / 840 / 643                                                             |
+| Description | string      | Yes                   | Օր. "Order #12345"                                                                |
+| BackURL     | string      | No, բայց **խորհուրդ** | URL վերադարձի հետ (success/fail — միևնույն URL-ը, արդյունքը GetPaymentDetails-ով) |
+| Opaque      | string      | No                    | **Խորհուրդ:** Order ID (UUID/crypto id) — callback-ում order-ը գտնելու համար      |
+| lang        | string      | No                    | en / am / ru (Pay page)                                                           |
+| Timeout     | integer     | No                    | Session վայրկյան (max 1200, default 1200)                                         |
 
-**Կարևոր.**  
-- `OrderID` — API-ն սպասում է **integer**. Եթե ձեր order id-ը string/UUID է, փոխարկեք ամբողջ թվի (օր. stable hash `% 1000000000`), որպեսզի նույն order-ը միշտ նույն OrderID ունենա.  
+**Կարևոր.**
+
+- `OrderID` — API-ն սպասում է **integer**. Եթե ձեր order id-ը string/UUID է, փոխարկեք ամբողջ թվի (օր. stable hash `% 1000000000`), որպեսզի նույն order-ը միշտ նույն OrderID ունենա.
 - `Opaque` — չխառնել OrderID-ի հետ. Opaque = ձեր ներքին order id (string), callback-ում `opaque` param-ով կգա և կօգտագործեք DB-ում order գտնելու համար.
 
 ### 5.2 Response (JSON)
 
-| Параметр | Տիպ | Նկարագրություն |
-|---------|-----|-----------------|
-| PaymentID | string | Օգտագործել Pay page redirect-ում և GetPaymentDetails-ում |
-| ResponseCode | **integer** | **Success = 1** (ոչ "1", այլ number 1) |
-| ResponseMessage | string | Սխալի դեպքում նկարագրություն |
+| Параметр        | Տիպ         | Նկարագրություն                                           |
+| --------------- | ----------- | -------------------------------------------------------- |
+| PaymentID       | string      | Օգտագործել Pay page redirect-ում և GetPaymentDetails-ում |
+| ResponseCode    | **integer** | **Success = 1** (ոչ "1", այլ number 1)                   |
+| ResponseMessage | string      | Սխալի դեպքում նկարագրություն                             |
 
 Success: `ResponseCode === 1` և `PaymentID` present.
 
@@ -127,12 +128,12 @@ GET {baseUrl}/Payments/Pay?id={PaymentID}&lang={lang}
 
 Վճարումից հետո բանկը redirect է անում **BackURL**-ով (GET). Query parameters (պաշտոնական doc):
 
-| Parameter | Նկարագրություն |
-|-----------|-----------------|
-| orderID | Transaction ID (string) |
+| Parameter        | Նկարագրություն                                                                |
+| ---------------- | ----------------------------------------------------------------------------- |
+| orderID          | Transaction ID (string)                                                       |
 | **resposneCode** | **Օրենագրի սխալ.** Գրված է **resposneCode** (ոչ responseCode). Success = `00` |
-| paymentID | Unique payment ID |
-| opaque | Նույնը, ինչ InitPayment-ում ուղարկել եք (order id) |
+| paymentID        | Unique payment ID                                                             |
+| opaque           | Նույնը, ինչ InitPayment-ում ուղարկել եք (order id)                            |
 
 ### 6.1 ⚠️ Ոչ միայն URL-ին չհավ trust
 
@@ -166,8 +167,8 @@ GET {baseUrl}/Payments/Pay?id={PaymentID}&lang={lang}
   - `"00"`
   - `"00 : Payment Successfully Completed"` (լրիվ տեքստ)
   - կամ number `0` / string `"0"`  
-→ Success համարել, եթե `ResponseCode`-ը **"00"** է **կամ** **սկսվում է "00"**-ով (օր. `responseCode.startsWith("00")`).  
-Եթե արժեքը `0` կամ `"0"` է, նախ նորմալացնել `"00"`.
+    → Success համարել, եթե `ResponseCode`-ը **"00"** է **կամ** **սկսվում է "00"**-ով (օր. `responseCode.startsWith("00")`).  
+    Եթե արժեքը `0` կամ `"0"` է, նախ նորմալացնել `"00"`.
 
 ### 7.2 PaymentState / OrderStatus
 
@@ -176,15 +177,15 @@ GET {baseUrl}/Payments/Pay?id={PaymentID}&lang={lang}
 
 **Table 2. Payment State Values (Order Status Code):**
 
-| Payment State       | Order Status Code | Description                    |
-|---------------------|-------------------|--------------------------------|
-| payment_started     | 0                 | Registered, not paid           |
-| payment_approved    | 1                 | Preauthorized                  |
-| **payment_deposited** | **2**           | **Amount successfully authorized** |
-| payment_void        | 3                 | Authorization cancelled        |
-| payment_refunded    | 4                 | Refunded                       |
-| payment_autoauthorized | 5              | Via ACS                        |
-| payment_declined     | 6                 | Declined                       |
+| Payment State          | Order Status Code | Description                        |
+| ---------------------- | ----------------- | ---------------------------------- |
+| payment_started        | 0                 | Registered, not paid               |
+| payment_approved       | 1                 | Preauthorized                      |
+| **payment_deposited**  | **2**             | **Amount successfully authorized** |
+| payment_void           | 3                 | Authorization cancelled            |
+| payment_refunded       | 4                 | Refunded                           |
+| payment_autoauthorized | 5                 | Via ACS                            |
+| payment_declined       | 6                 | Declined                           |
 
 Success համարել, եթե **ResponseCode**-ը OK է (վերև) **և** որևէ մեկը.
 
@@ -220,8 +221,9 @@ API-ն կարող է վերադարձնել `responseCode` / `PaymentState` / `O
 **Endpoint:** `POST {baseUrl}/api/VPOS/RefundPayment`
 
 **Request:**  
-`{ "PaymentID": "...", "Username": "...", "Password": "...", "Amount": <number> }`  
-- **Amount** — վերադարձվող գումար; **չի կարող գերազանցել** transaction amount.  
+`{ "PaymentID": "...", "Username": "...", "Password": "...", "Amount": <number> }`
+
+- **Amount** — վերադարձվող գումար; **չի կարող գերազանցել** transaction amount.
 - Ամբողջ գումարի refund = transaction Amount.
 
 **Response:**  
@@ -232,18 +234,18 @@ API-ն կարող է վերադարձնել `responseCode` / `PaymentState` / `O
 
 ## 10. Table 1 — հիմնական Response codes (համառոտ)
 
-| Code | Նկարագրություն |
-|------|-----------------|
+| Code   | Նկարագրություն                           |
+| ------ | ---------------------------------------- |
 | **00** | Approved. Payment successfully completed |
-| 01 | Order already exists |
-| 05 | Incorrect Parameters |
-| 06 | Unregistered OrderId |
-| 20 | Incorrect Username and Password |
-| 30 | Incorrect Value of Opaque field |
-| 500 | Unknown error |
-| 510 | Incorrect parameters |
-| 513 | Do not have Refund operation permission |
-| 514 | Do not have Reverse operation permission |
+| 01     | Order already exists                     |
+| 05     | Incorrect Parameters                     |
+| 06     | Unregistered OrderId                     |
+| 20     | Incorrect Username and Password          |
+| 30     | Incorrect Value of Opaque field          |
+| 500    | Unknown error                            |
+| 510    | Incorrect parameters                     |
+| 513    | Do not have Refund operation permission  |
+| 514    | Do not have Reverse operation permission |
 
 Մնացած decline/error codes — doc Table 1.
 

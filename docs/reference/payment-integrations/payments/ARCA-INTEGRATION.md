@@ -4,7 +4,7 @@
 >
 > **Ameriabank** использует собственный API (vPOS) и **не относится** к этому документу — см. `AMERIABANK-INTEGRATION.md`.
 >
-> **Официальная документация:** `payment integration/| Official doc for the API integrationm/Arca/Merchant Manual_1.55.1.0.md`
+> **Официальная документация:** `../official-docs/Arca/Merchant Manual_1.55.1.0.md`
 
 ---
 
@@ -18,11 +18,11 @@
 
 ### Банки на Arca
 
-| Банк | Base URL (test) | Base URL (live) |
-|------|----------------|-----------------|
-| **IDBank** | `https://ipaytest.arca.am:8445/payment/rest` | `https://ipay.arca.am/payment/rest` |
-| **Inecobank** | `https://pg.inecoecom.am/payment/rest` (test credentials) | `https://pg.inecoecom.am/payment/rest` |
-| **ACBA, Converse, Evoca, AMIO…** | Уточнить у банка | Уточнить у банка |
+| Банк                             | Base URL (test)                                           | Base URL (live)                        |
+| -------------------------------- | --------------------------------------------------------- | -------------------------------------- |
+| **IDBank**                       | `https://ipaytest.arca.am:8445/payment/rest`              | `https://ipay.arca.am/payment/rest`    |
+| **Inecobank**                    | `https://pg.inecoecom.am/payment/rest` (test credentials) | `https://pg.inecoecom.am/payment/rest` |
+| **ACBA, Converse, Evoca, AMIO…** | Уточнить у банка                                          | Уточнить у банка                       |
 
 Inecobank использует свой gateway (`pg.inecoecom.am`), но API идентичный Arca — те же endpoint-ы, параметры и статусы.
 
@@ -52,8 +52,8 @@ APP_URL=https://yoursite.com
 
 ## 3. Callback URL
 
-| Параметр | URL |
-|----------|-----|
+| Параметр      | URL                                                                  |
+| ------------- | -------------------------------------------------------------------- |
 | **returnUrl** | `https://yoursite.com/api/v1/payments/arca/callback?order={orderId}` |
 
 returnUrl передаётся в запросе `register.do`. Arca redirect пользователя на этот URL после оплаты. В query добавляем свой order ID для идентификации.
@@ -81,30 +81,31 @@ returnUrl передаётся в запросе `register.do`. Arca redirect п
 
 **Параметры (POST, form-data):**
 
-| Параметр | Тип | Обязательный | Описание |
-|----------|-----|-------------|----------|
-| userName | string | Да | Логин от банка |
-| password | string | Да | Пароль от банка |
-| orderNumber | string | Да | Номер заказа в вашей системе (уникальный) |
-| amount | integer | Да | Сумма в **минимальных единицах** (1000 AMD = 100000) |
-| currency | string | Нет | ISO 4217 numeric: `051` (AMD), `840` (USD), `978` (EUR), `643` (RUB) |
-| returnUrl | string | Да | URL возврата пользователя |
-| description | string | Нет | Описание заказа |
-| language | string | Нет | `hy` / `ru` / `en` |
-| pageView | string | Нет | `MOBILE` / `DESKTOP` |
-| jsonParams | string | Нет | `{"FORCE_3DS2":"true"}` для принудительного 3DS2 |
-| clientId | string | Нет | ID клиента (для привязки карт) |
+| Параметр    | Тип     | Обязательный | Описание                                                             |
+| ----------- | ------- | ------------ | -------------------------------------------------------------------- |
+| userName    | string  | Да           | Логин от банка                                                       |
+| password    | string  | Да           | Пароль от банка                                                      |
+| orderNumber | string  | Да           | Номер заказа в вашей системе (уникальный)                            |
+| amount      | integer | Да           | Сумма в **минимальных единицах** (1000 AMD = 100000)                 |
+| currency    | string  | Нет          | ISO 4217 numeric: `051` (AMD), `840` (USD), `978` (EUR), `643` (RUB) |
+| returnUrl   | string  | Да           | URL возврата пользователя                                            |
+| description | string  | Нет          | Описание заказа                                                      |
+| language    | string  | Нет          | `hy` / `ru` / `en`                                                   |
+| pageView    | string  | Нет          | `MOBILE` / `DESKTOP`                                                 |
+| jsonParams  | string  | Нет          | `{"FORCE_3DS2":"true"}` для принудительного 3DS2                     |
+| clientId    | string  | Нет          | ID клиента (для привязки карт)                                       |
 
 **Ответ:**
 
-| Поле | Описание |
-|------|----------|
-| orderId | ID заказа в Arca (UUID) |
-| formUrl | URL платёжной формы — redirect пользователя сюда |
-| errorCode | `0` = успех |
-| errorMessage | Описание ошибки (если есть) |
+| Поле         | Описание                                         |
+| ------------ | ------------------------------------------------ |
+| orderId      | ID заказа в Arca (UUID)                          |
+| formUrl      | URL платёжной формы — redirect пользователя сюда |
+| errorCode    | `0` = успех                                      |
+| errorMessage | Описание ошибки (если есть)                      |
 
 **Коды ошибок register.do:**
+
 - `0` — успех
 - `1` — заказ с таким номером уже зарегистрирован
 - `3` — неизвестная валюта
@@ -120,34 +121,34 @@ returnUrl передаётся в запросе `register.do`. Arca redirect п
 
 **Параметры (POST, form-data):**
 
-| Параметр | Тип | Описание |
-|----------|-----|----------|
-| userName | string | Логин от банка |
-| password | string | Пароль от банка |
-| orderId | string | ID заказа от Arca (из register.do) |
+| Параметр | Тип    | Описание                           |
+| -------- | ------ | ---------------------------------- |
+| userName | string | Логин от банка                     |
+| password | string | Пароль от банка                    |
+| orderId  | string | ID заказа от Arca (из register.do) |
 
 **Ответ (ключевые поля):**
 
-| Поле | Описание |
-|------|----------|
-| errorCode | `0` = успех |
-| orderNumber | Номер заказа в вашей системе |
-| orderStatus | Код статуса (integer) |
-| actionCode | `0` = платёж прошёл |
-| paymentAmountInfo.paymentState | Строковый статус |
-| paymentAmountInfo.approvedAmount | Подтверждённая сумма |
-| paymentAmountInfo.depositedAmount | Списанная сумма |
+| Поле                              | Описание                     |
+| --------------------------------- | ---------------------------- |
+| errorCode                         | `0` = успех                  |
+| orderNumber                       | Номер заказа в вашей системе |
+| orderStatus                       | Код статуса (integer)        |
+| actionCode                        | `0` = платёж прошёл          |
+| paymentAmountInfo.paymentState    | Строковый статус             |
+| paymentAmountInfo.approvedAmount  | Подтверждённая сумма         |
+| paymentAmountInfo.depositedAmount | Списанная сумма              |
 
 **Статусы:**
 
-| paymentState | orderStatus | Описание |
-|-------------|-------------|----------|
-| CREATED | 0 | Заказ создан, не оплачен |
-| APPROVED | 1 | Пред-авторизация (двухстадийный) |
-| **DEPOSITED** | **2** | **Средства списаны — успех** |
-| DECLINED | 3 | Отклонён |
-| REVERSED | 4 | Отменён |
-| REFUNDED | 5 | Возврат |
+| paymentState  | orderStatus | Описание                         |
+| ------------- | ----------- | -------------------------------- |
+| CREATED       | 0           | Заказ создан, не оплачен         |
+| APPROVED      | 1           | Пред-авторизация (двухстадийный) |
+| **DEPOSITED** | **2**       | **Средства списаны — успех**     |
+| DECLINED      | 3           | Отклонён                         |
+| REVERSED      | 4           | Отменён                          |
+| REFUNDED      | 5           | Возврат                          |
 
 **Success:** `paymentState === "DEPOSITED"` (или `orderStatus === 2`).
 
@@ -187,6 +188,7 @@ returnUrl передаётся в запросе `register.do`. Arca redirect п
 ### Сумма в минимальных единицах
 
 В отличие от Ameriabank (передаёт сумму как есть), Arca требует сумму в **минимальных единицах валюты**:
+
 - AMD: 1000 AMD → `100000` (x100, хотя у AMD нет «копеек»)
 - USD: 10.50 USD → `1050`
 - EUR: 25.00 EUR → `2500`
@@ -194,6 +196,7 @@ returnUrl передаётся в запросе `register.do`. Arca redirect п
 ### returnUrl = browser redirect
 
 Arca не отправляет server-to-server callback. Пользователь redirect через браузер на returnUrl. Это значит:
+
 - `localhost` работает для тестов (Cloudflare Tunnel не нужен)
 - Но если пользователь закроет браузер до redirect — callback не придёт
 - Поэтому рекомендуется также проверять статус по расписанию (cron) для pending заказов
@@ -201,6 +204,7 @@ Arca не отправляет server-to-server callback. Пользовател
 ### Идентификация заказа в callback
 
 Arca добавляет `orderId` (Arca UUID) в returnUrl params. Для идентификации своего заказа:
+
 - Вариант 1: добавить свой order ID в returnUrl query (`?order={ourOrderId}`)
 - Вариант 2: найти по Payment.providerTransactionId = arcaOrderId
 

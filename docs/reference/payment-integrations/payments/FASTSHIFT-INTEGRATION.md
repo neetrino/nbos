@@ -2,25 +2,25 @@
 
 > Այս փաստաթուղթը նախատեսված է **FastShift** (e-wallet / vPOS) միացման համար։ Register order → redirect_url → callback/webhook։
 >
-> **Պաշտոնական API.** `payment integration/| Official doc for the API integrationm/FastShift/PayByFastShift (vers25.02.25).md` — Pay by FastShift v1.0. Իրականացումը համապատասխանում է այդ փաստաթղթին (Register order API, callback params `status` + `order_number`, response `data.redirect_url`, `data.order`).
+> **Պաշտոնական API.** `../official-docs/FastShift/PayByFastShift (vers25.02.25).md` — Pay by FastShift v1.0. Իրականացումը համապատասխանում է այդ փաստաթղթին (Register order API, callback params `status` + `order_number`, response `data.redirect_url`, `data.order`).
 
 ---
 
 ## 0. Համապատասխանություն պաշտոնական PayByFastShift (vers25.02.25).md
 
-| Փաստաթղթի պահանջ | Մեր իրականացում |
-|--------------------|------------------|
-| URL `https://merchants.fastshift.am/api/en/vpos/order/register` | ✓ `FASTSHIFT_REGISTER_URL` |
-| Method POST, Header `Authorization: Bearer {Token}`, `Content-Type: application/json` | ✓ `client.ts` registerOrder |
-| `order_number` — **guid**, required | ✓ UUID v4 `generateFastshiftOrderGuid()` |
-| `amount` — unsigned int, required | ✓ `Math.round(total)` |
-| `description` — string, required | ✓ `Order ${order.number}` |
+| Փաստաթղթի պահանջ                                                                        | Մեր իրականացում                                                                                           |
+| --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| URL `https://merchants.fastshift.am/api/en/vpos/order/register`                         | ✓ `FASTSHIFT_REGISTER_URL`                                                                                |
+| Method POST, Header `Authorization: Bearer {Token}`, `Content-Type: application/json`   | ✓ `client.ts` registerOrder                                                                               |
+| `order_number` — **guid**, required                                                     | ✓ UUID v4 `generateFastshiftOrderGuid()`                                                                  |
+| `amount` — unsigned int, required                                                       | ✓ `Math.round(total)`                                                                                     |
+| `description` — string, required                                                        | ✓ `Order ${order.number}`                                                                                 |
 | `callback_url` — string, required; callback-ում փոխանցվում են `status` և `order_number` | ✓ URL + query `?order=...`; handler ընդունում է `status`, `order_number` (և `order` մեր նույնացման համար) |
-| `webhook_url` — optional; params `status`, `order_number` | ✓ նույն URL, POST handler |
-| `external_order_id` — optional, merchant order id | ✓ `order.id` |
-| Success response `data.redirect_url`, `data.order.order_number` | ✓ redirectUrl; providerTransactionId |
-| Callback params: `status`, `order_number` (guid) | ✓ handleFastshiftResponse; order by `order` (URL) or by Payment.providerTransactionId = order_number |
-| Order status `completed` = success; `rejected`, `expired` = fail | ✓ FASTSHIFT_STATUS_SUCCESS includes `completed` |
+| `webhook_url` — optional; params `status`, `order_number`                               | ✓ նույն URL, POST handler                                                                                 |
+| `external_order_id` — optional, merchant order id                                       | ✓ `order.id`                                                                                              |
+| Success response `data.redirect_url`, `data.order.order_number`                         | ✓ redirectUrl; providerTransactionId                                                                      |
+| Callback params: `status`, `order_number` (guid)                                        | ✓ handleFastshiftResponse; order by `order` (URL) or by Payment.providerTransactionId = order_number      |
+| Order status `completed` = success; `rejected`, `expired` = fail                        | ✓ FASTSHIFT_STATUS_SUCCESS includes `completed`                                                           |
 
 **Անվտանգություն.** Callback-ում status-ը **ստուգվում է FastShift API-ով** (GET `/vpos/order/status/{order_number}`). Եթե API-ն պատասխանում է — օգտագործվում է API-ի status-ը (source of truth); հակառակ դեպքում fallback callback params-ի վրա։ Idempotency: եթե order արդեն paid — կրկնակի callback-ը չի փոխում state։ order_number (GUID) վալիդացվում է UUID ֆորմատով։ Webhook/GET սխալի դեպքում պատասխանում ենք 400/redirect առանց ներքին սխալի տեքստի արտահոսքի։
 
@@ -34,8 +34,8 @@
 
 ### 1.1 API
 
-| Էնդպոյնտ | URL |
-|----------|-----|
+| Էնդպոյնտ           | URL                                                         |
+| ------------------ | ----------------------------------------------------------- |
 | **Register order** | `https://merchants.fastshift.am/api/en/vpos/order/register` |
 
 Test/live — նույն host; տարբերությունը **token**-ի արժեքն է (FASTSHIFT_TOKEN / FASTSHIFT_LIVE_TOKEN).
@@ -61,9 +61,9 @@ APP_URL=https://yoursite.com
 
 FastShift-ում (register request-ում) փոխանցվում են.
 
-| Պարամետր | URL |
-|----------|-----|
-| **callback_url** | `https://yoursite.com/api/v1/payments/fastshift/callback` |
+| Պարամետր                   | URL                                                       |
+| -------------------------- | --------------------------------------------------------- |
+| **callback_url**           | `https://yoursite.com/api/v1/payments/fastshift/callback` |
 | **webhook_url** (optional) | `https://yoursite.com/api/v1/payments/fastshift/callback` |
 
 Իրականացումում երկուսն էլ ուղարկվում են նույն URL-ին (GET — user redirect, POST — webhook).
@@ -86,14 +86,14 @@ FastShift-ում (register request-ում) փոխանցվում են.
 
 **Body (JSON).**
 
-| Դաշտ | Նկարագրություն |
-|------|------------------|
-| order_number | **GUID/UUID** (օր. `a1b2c3d4-e5f6-7890-abcd-ef1234567890`) — FastShift-ը սպասում է unique identifier, ոչ թե մեր պատվերի համարը. տես `generateFastshiftOrderGuid()` |
-| amount | Գումար (ամբողջ թիվ, Math.round(total)) |
-| description | Օր. "Order 260218-12345" |
-| callback_url | Full URL — user redirect after payment; URL-ում պետք է ունենալ մեր order, օր. `...?order=260218-12345` |
-| webhook_url | Full URL — server-to-server (optional) |
-| external_order_id | Order id (optional) |
+| Դաշտ              | Նկարագրություն                                                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| order_number      | **GUID/UUID** (օր. `a1b2c3d4-e5f6-7890-abcd-ef1234567890`) — FastShift-ը սպասում է unique identifier, ոչ թե մեր պատվերի համարը. տես `generateFastshiftOrderGuid()` |
+| amount            | Գումար (ամբողջ թիվ, Math.round(total))                                                                                                                             |
+| description       | Օր. "Order 260218-12345"                                                                                                                                           |
+| callback_url      | Full URL — user redirect after payment; URL-ում պետք է ունենալ մեր order, օր. `...?order=260218-12345`                                                             |
+| webhook_url       | Full URL — server-to-server (optional)                                                                                                                             |
+| external_order_id | Order id (optional)                                                                                                                                                |
 
 **Response.** `{ data: { redirect_url: "https://..." } }` կամ `{ redirect_url: "https://..." }`.
 

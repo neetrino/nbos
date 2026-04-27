@@ -21,13 +21,13 @@
 
 ### Кому нужен туннель
 
-| Провайдер | Нужен туннель для теста | Причина |
-|-----------|------------------------|---------|
-| Ameriabank | Нет | BackURL = redirect через браузер |
-| Arca | Нет | returnUrl = redirect через браузер |
-| Idram | **Да** | RESULT_URL = server-to-server POST |
-| Telcell | **Да** | RESULT_URL = server-to-server callback |
-| FastShift | Частично | callback_url = redirect (работает без туннеля); webhook_url = server POST (нужен туннель) |
+| Провайдер  | Нужен туннель для теста | Причина                                                                                   |
+| ---------- | ----------------------- | ----------------------------------------------------------------------------------------- |
+| Ameriabank | Нет                     | BackURL = redirect через браузер                                                          |
+| Arca       | Нет                     | returnUrl = redirect через браузер                                                        |
+| Idram      | **Да**                  | RESULT_URL = server-to-server POST                                                        |
+| Telcell    | **Да**                  | RESULT_URL = server-to-server callback                                                    |
+| FastShift  | Частично                | callback_url = redirect (работает без туннеля); webhook_url = server POST (нужен туннель) |
 
 ### Преимущества перед ngrok
 
@@ -58,11 +58,13 @@ cloudflared tunnel route dns dev-neetrino dev.neetrino.com
 ### Запуск
 
 Терминал 1 — приложение:
+
 ```bash
 npm run dev
 ```
 
 Терминал 2 — туннель:
+
 ```bash
 cloudflared tunnel run --url http://localhost:3000 dev-neetrino
 ```
@@ -93,6 +95,7 @@ URL **постоянный** — менять `.env` при перезапуск
 **Получить:** test ClientID, Username, Password — от Ameriabank.
 
 **ENV:**
+
 ```
 AMERIA_TEST_MODE=true
 AMERIA_CLIENT_ID=...
@@ -103,6 +106,7 @@ AMERIA_PASSWORD=...
 **Test base URL:** `https://servicestest.ameriabank.am/VPOS`
 
 **Test flow:**
+
 1. Checkout → выбрать Ameriabank → init
 2. InitPayment → получить PaymentID → redirect на Pay page
 3. Ввести тестовые карточные данные на странице банка
@@ -121,6 +125,7 @@ AMERIA_PASSWORD=...
 **Получить:** test userName, password — от банка (IDBank, Inecobank и т.д.).
 
 **ENV:**
+
 ```
 ARCA_TEST_MODE=true
 ARCA_USERNAME=...
@@ -128,10 +133,12 @@ ARCA_PASSWORD=...
 ```
 
 **Test base URL:**
+
 - IDBank: `https://ipaytest.arca.am:8445/payment/rest`
 - Inecobank: `https://pg.inecoecom.am/payment/rest` (test credentials)
 
 **Test flow:**
+
 1. Checkout → выбрать Arca → init
 2. register.do → получить formUrl → redirect
 3. Ввести тестовые карточные данные
@@ -148,6 +155,7 @@ ARCA_PASSWORD=...
 **Получить:** test EDP_REC_ACCOUNT, SECRET_KEY — запросить у технического персонала Idram.
 
 **ENV:**
+
 ```
 IDRAM_TEST_MODE=true
 IDRAM_REC_ACCOUNT=...
@@ -157,6 +165,7 @@ IDRAM_SECRET_KEY=...
 **Form URL (test и live одинаковый):** `https://banking.idram.am/Payment/GetPayment`
 
 **Test flow:**
+
 1. Checkout → выбрать Idram → init → получить formAction + formData
 2. Frontend submit form POST → banking.idram.am
 3. Idram отправляет 2 POST на RESULT_URL:
@@ -169,11 +178,11 @@ IDRAM_SECRET_KEY=...
 
 **Регистрация URL у Idram:**
 
-| Параметр | URL |
-|----------|-----|
-| RESULT_URL | `https://dev.neetrino.com/api/v1/payments/idram/callback` |
-| SUCCESS_URL | `https://dev.neetrino.com/api/v1/payments/idram/success` |
-| FAIL_URL | `https://dev.neetrino.com/api/v1/payments/idram/fail` |
+| Параметр    | URL                                                       |
+| ----------- | --------------------------------------------------------- |
+| RESULT_URL  | `https://dev.neetrino.com/api/v1/payments/idram/callback` |
+| SUCCESS_URL | `https://dev.neetrino.com/api/v1/payments/idram/success`  |
+| FAIL_URL    | `https://dev.neetrino.com/api/v1/payments/idram/fail`     |
 
 ---
 
@@ -182,6 +191,7 @@ IDRAM_SECRET_KEY=...
 **Получить:** test shop_id, shop_key — от Telcell.
 
 **ENV:**
+
 ```
 TELCELL_TEST_MODE=true
 TELCELL_SHOP_ID=...
@@ -191,6 +201,7 @@ TELCELL_SHOP_KEY=...
 **API URL (test и live одинаковый):** `https://telcellmoney.am/invoices`
 
 **Test flow:**
+
 1. Checkout → выбрать Telcell → init → получить redirectUrl
 2. Redirect → telcellmoney.am → оплата
 3. Telcell отправляет callback на RESULT_URL (GET/POST): issuer_id, status, checksum
@@ -202,9 +213,9 @@ TELCELL_SHOP_KEY=...
 
 **Регистрация URL у Telcell:**
 
-| Параметр | URL |
-|----------|-----|
-| RESULT_URL | `https://dev.neetrino.com/api/v1/payments/telcell/callback` |
+| Параметр     | URL                                                         |
+| ------------ | ----------------------------------------------------------- |
+| RESULT_URL   | `https://dev.neetrino.com/api/v1/payments/telcell/callback` |
 | REDIRECT_URL | `https://dev.neetrino.com/api/v1/payments/telcell/redirect` |
 
 ---
@@ -214,6 +225,7 @@ TELCELL_SHOP_KEY=...
 **Получить:** test Bearer Token — от FastShift.
 
 **ENV:**
+
 ```
 FASTSHIFT_TEST_MODE=true
 FASTSHIFT_TOKEN=...
@@ -222,6 +234,7 @@ FASTSHIFT_TOKEN=...
 **Register URL (test и live одинаковый):** `https://merchants.fastshift.am/api/en/vpos/order/register`
 
 **Test flow:**
+
 1. Checkout → выбрать FastShift → init
 2. Register order → получить redirect_url → redirect
 3. Пользователь оплачивает
@@ -250,18 +263,18 @@ FASTSHIFT_TOKEN=...
 
 ## 5. Troubleshooting
 
-| Проблема | Причина | Решение |
-|----------|---------|---------|
-| RESULT_URL не доходит | Cloudflare Tunnel не запущен или DNS не настроен | Проверить `cloudflared tunnel list`, убедиться что `dev.neetrino.com` резолвится |
-| Checksum mismatch (Idram) | Неверный порядок полей в MD5 | Порядок: `EDP_REC_ACCOUNT:EDP_AMOUNT:SECRET_KEY:EDP_BILL_NO:EDP_PAYER_ACCOUNT:EDP_TRANS_ID:EDP_TRANS_DATE` |
-| Checksum mismatch (Telcell) | Неверный порядок полей | Порядок: `shop_key+invoice+issuer_id+payment_id+currency+sum+time+status` |
-| Order not found (Telcell) | issuer_id приходит в base64 или plain | Пробовать: raw → decoded → number(decoded) → number(raw) |
-| GetPaymentDetails ResponseCode != "00" (Ameriabank) | ResponseCode может быть "00 : Payment..." | Использовать `startsWith("00")` |
-| PaymentState приходит числом (Ameriabank) | API возвращает 2 / 4 вместо строки | Нормализовать: `2` = DEPOSITED = success |
-| Arca сумма неверная | Не умножена на 100 | Сумма в минимальных единицах: 1000 AMD = 100000 |
-| FastShift order_number не найден | GUID формат не совпадает | Валидировать UUID формат |
-| Туннель не стартует | Туннель не создан или не авторизован | `cloudflared tunnel list` → `cloudflared login` → `cloudflared tunnel create dev-neetrino` |
-| SSL ошибка при callback | Cloudflare сертификат не выпущен | Подождать 1–2 мин после первого запуска; проверить DNS в Cloudflare dashboard |
+| Проблема                                            | Причина                                          | Решение                                                                                                    |
+| --------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| RESULT_URL не доходит                               | Cloudflare Tunnel не запущен или DNS не настроен | Проверить `cloudflared tunnel list`, убедиться что `dev.neetrino.com` резолвится                           |
+| Checksum mismatch (Idram)                           | Неверный порядок полей в MD5                     | Порядок: `EDP_REC_ACCOUNT:EDP_AMOUNT:SECRET_KEY:EDP_BILL_NO:EDP_PAYER_ACCOUNT:EDP_TRANS_ID:EDP_TRANS_DATE` |
+| Checksum mismatch (Telcell)                         | Неверный порядок полей                           | Порядок: `shop_key+invoice+issuer_id+payment_id+currency+sum+time+status`                                  |
+| Order not found (Telcell)                           | issuer_id приходит в base64 или plain            | Пробовать: raw → decoded → number(decoded) → number(raw)                                                   |
+| GetPaymentDetails ResponseCode != "00" (Ameriabank) | ResponseCode может быть "00 : Payment..."        | Использовать `startsWith("00")`                                                                            |
+| PaymentState приходит числом (Ameriabank)           | API возвращает 2 / 4 вместо строки               | Нормализовать: `2` = DEPOSITED = success                                                                   |
+| Arca сумма неверная                                 | Не умножена на 100                               | Сумма в минимальных единицах: 1000 AMD = 100000                                                            |
+| FastShift order_number не найден                    | GUID формат не совпадает                         | Валидировать UUID формат                                                                                   |
+| Туннель не стартует                                 | Туннель не создан или не авторизован             | `cloudflared tunnel list` → `cloudflared login` → `cloudflared tunnel create dev-neetrino`                 |
+| SSL ошибка при callback                             | Cloudflare сертификат не выпущен                 | Подождать 1–2 мин после первого запуска; проверить DNS в Cloudflare dashboard                              |
 
 ---
 

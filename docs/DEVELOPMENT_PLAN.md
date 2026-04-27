@@ -2,16 +2,19 @@
 
 **Project:** NBOS Platform  
 **Project size:** C (monorepo: `apps/*`, `packages/*`)  
-**Document role:** single source of truth for roadmap + progress + next actions  
-**Updated:** 2026-04-22  
+**Document role:** implementation progress tracker and factual codebase state
+**Updated:** 2026-04-27
 **Status:** active
+
+> Canonical implementation sequence now lives in `docs/NBOS/00-Implementation-Roadmap.md`.
+> This file tracks factual progress and execution notes. If this file conflicts with the NBOS roadmap or module canon, the NBOS canon wins.
 
 ---
 
 ## 1) Why this document exists
 
-This file replaces fragmented planning status across multiple files.  
-From now on, planning, progress, and execution sequence live here only.
+This file replaces fragmented progress status across multiple files.
+It should be used as a progress tracker, not as the business/process canon.
 
 Linked context:
 
@@ -66,9 +69,10 @@ The real state is **post-MVP with broad module coverage**, and work should move 
 
 ## 3) Documentation consolidation decision
 
-### 3.1 Canonical planning policy
+### 3.1 Planning policy
 
-- This file is the only active planning/progress file.
+- `docs/NBOS/00-Implementation-Roadmap.md` is the source of truth for implementation sequence.
+- This file is the active progress tracker.
 - Older planning/progress artifacts are archived.
 - If a phase is completed, update this file immediately.
 

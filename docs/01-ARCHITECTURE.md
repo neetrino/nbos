@@ -3,7 +3,7 @@
 > Внутренняя Business Operation System: CRM, проекты, финансы, задачи, поддержка, пароли, коммуникации, аналитика. Замена Bitrix24.
 
 **Размер проекта.** C (большой)  
-**Последнее обновление.** 2026-03-11
+**Последнее обновление.** 2026-04-27
 
 ---
 
@@ -15,9 +15,9 @@ NBOS объединяет все операционные процессы IT-к
 
 ### Основные особенности
 
-- 14 модулей (CRM, Projects Hub, Finance, Tasks, Support, Credentials, Messenger и др.)
-- 19 сущностей, строгая иерархия (Contact → Company → Project → Product/Order/Subscription и т.д.)
-- 32+ сценариев автоматизации (биллинг, уведомления, бонусы, SLA)
+- Модульная платформа NBOS: CRM, Projects Hub, Finance, Tasks, Support, Clients, Partners, Drive, Credentials, Messenger, Notifications, Calendar, Dashboard, Reports и др.
+- Product-centric модель: Project содержит Product / Extension и связывает продажи, финансы, delivery, поддержку и файлы.
+- Автоматизации: billing, notifications, bonus/payroll, SLA, scheduler, task automation.
 - RBAC: 12 ролей, 3 уровня доступа (модуль / проект / запись)
 - Real-time: чаты, уведомления, обновления дашбордов
 - Шифрование полей Credentials (AES-256-GCM)
@@ -97,13 +97,13 @@ NBOS объединяет все операционные процессы IT-к
 - **Технологии:** NestJS 11, Prisma 7, Socket.io (Gateway), BullMQ, class-validator, Zod
 - **Назначение:** Бизнес-логика, валидация, RBAC, события, фоновые задачи, WebSocket
 - **Расположение:** `apps/api/`
-- **API:** REST, OpenAPI (Swagger) auto-generated. JWT от Clerk верифицируется в Guard.
+- **API:** REST, OpenAPI (Swagger) auto-generated. Backend JWT верифицируется в Guard.
 
 ### База данных
 
 - **СУБД:** PostgreSQL 17 (Neon)
 - **ORM:** Prisma 7
-- **Схема:** 19 основных сущностей (Contact, Company, Project, Product, Order, Invoice, Payment, Subscription, Expense, Bonus, Lead, Deal, Task, Support Ticket, Credential, Domain, Employee, Partner и др.). Детально — `docs/Docs/01-Platform-Overview/03-Core-Entities-and-Data-Model.md`
+- **Схема:** основные сущности и связи описаны в `docs/NBOS/01-Platform-Overview/03-Core-Entities-and-Data-Model.md`.
 - **Миграции:** Prisma Migrate, SQL-миграции в репозитории
 
 ### Кеш и очереди
@@ -184,10 +184,10 @@ nbos/
 
 ### Аутентификация
 
-1. Вход через Clerk (Email / Google) на frontend.
-2. Clerk выдаёт JWT; frontend сохраняет (cookie/session) и передаёт в заголовке при запросах к API.
-3. NestJS Guard проверяет JWT (Clerk JWKS или секрет), извлекает `userId` (Clerk) → по нему загружается Employee и роли.
-4. RBAC: второй Guard или декоратор проверяет доступ к модулю/проекту/записи по матрице ролей (см. `docs/Docs/04-Roles-and-Access/02-Access-Matrix.md`).
+1. Вход через NextAuth.js v5 на frontend.
+2. Frontend session использует NextAuth JWT; API-запросы получают backend JWT по принятому auth flow.
+3. NestJS Guard проверяет backend JWT (`JWT_SECRET`), извлекает employee/user context → по нему загружается Employee и роли.
+4. RBAC: второй Guard или декоратор проверяет доступ к модулю/проекту/записи по матрице ролей (см. `docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md` и My Company / Settings canon).
 
 ### События и автоматизации
 
@@ -208,47 +208,47 @@ nbos/
 
 ### Основные сущности
 
-| Сущность | Описание |
-|---------|----------|
-| Contact | Физлицо (клиент, партнёр) |
-| Company | Юрлицо для биллинга |
-| Project | Центральная сущность (бизнес/бренд клиента) |
-| Product | Продукт внутри проекта (сайт, приложение, CRM) |
-| Extension | Доработка к продукту |
-| Order | Заказ (сумма, тип оплаты, партнёр) |
-| Invoice | Счёт (привязка к Order или Subscription) |
-| Payment | Факт оплаты (триггеры: бонусы, статусы, партнёрские выплаты) |
-| Subscription | Подписка (ежемесячный биллинг) |
-| Expense | Расход (плановый/внеплановый, партнёрская выплата) |
-| Bonus Entry | Запись бонуса сотруднику |
-| Lead / Deal | Воронки CRM |
-| Task | Задача (проект, продукт, спринт, исполнители) |
-| Support Ticket | Тикет поддержки (SLA, категории) |
-| Credential | Пароль/доступ (поля шифруются AES-256) |
-| Domain | Домен (срок, продление) |
-| Employee / Partner | Сотрудники и партнёры |
+| Сущность           | Описание                                                     |
+| ------------------ | ------------------------------------------------------------ |
+| Contact            | Физлицо (клиент, партнёр)                                    |
+| Company            | Юрлицо для биллинга                                          |
+| Project            | Центральная сущность (бизнес/бренд клиента)                  |
+| Product            | Продукт внутри проекта (сайт, приложение, CRM)               |
+| Extension          | Доработка к продукту                                         |
+| Order              | Заказ (сумма, тип оплаты, партнёр)                           |
+| Invoice            | Счёт (привязка к Order или Subscription)                     |
+| Payment            | Факт оплаты (триггеры: бонусы, статусы, партнёрские выплаты) |
+| Subscription       | Подписка (ежемесячный биллинг)                               |
+| Expense            | Расход (плановый/внеплановый, партнёрская выплата)           |
+| Bonus Entry        | Запись бонуса сотруднику                                     |
+| Lead / Deal        | Воронки CRM                                                  |
+| Task               | Задача (проект, продукт, спринт, исполнители)                |
+| Support Ticket     | Тикет поддержки (SLA, категории)                             |
+| Credential         | Пароль/доступ (поля шифруются AES-256)                       |
+| Domain             | Домен (срок, продление)                                      |
+| Employee / Partner | Сотрудники и партнёры                                        |
 
 ### ER (связи)
 
-Детальная модель и связи — в `docs/Docs/01-Platform-Overview/03-Core-Entities-and-Data-Model.md` и `docs/Docs/03-Business-Logic/06-Entity-Relationships.md`.  
+Детальная модель и связи — в `docs/NBOS/01-Platform-Overview/03-Core-Entities-and-Data-Model.md` и `docs/NBOS/03-Business-Logic/06-Entity-Relationships.md`.
 Реализация схемы — в `prisma/schema.prisma` (или `packages/database`).
 
 ---
 
 ## Интеграции
 
-| Сервис | Назначение | Фаза |
-|--------|------------|------|
-| Clerk | Аутентификация, 2FA, mobile SDK | 1 |
-| IDBank (ARCA) + Idram | Онлайн-оплата по ссылке (payment link) | 1 |
-| Resend | Email (инвойсы, уведомления) | 1–3 |
-| Cloudflare R2 | Файлы (Drive, вложения) | 2 |
-| Upstash Redis | Кеш, очереди, pub/sub | 1 |
-| WhatsApp (агрегатор) | Уведомления клиентам | 3 |
-| Telegram Bot API | Уведомления команде | 3 |
-| Госсистема инвойсов | Создание/синхронизация счетов | 3 |
-| Meta (Instagram/Facebook) | Лиды, сообщения | 4 |
-| Google Drive / GitHub | По мере необходимости | 4–5 |
+| Сервис                    | Назначение                                 | Фаза |
+| ------------------------- | ------------------------------------------ | ---- |
+| NextAuth.js + own JWT     | Аутентификация, session, backend API token | 1    |
+| IDBank (ARCA) + Idram     | Онлайн-оплата по ссылке (payment link)     | 1    |
+| Resend                    | Email (инвойсы, уведомления)               | 1–3  |
+| Cloudflare R2             | Файлы (Drive, вложения)                    | 2    |
+| Upstash Redis             | Кеш, очереди, pub/sub                      | 1    |
+| WhatsApp (агрегатор)      | Уведомления клиентам                       | 3    |
+| Telegram Bot API          | Уведомления команде                        | 3    |
+| Госсистема инвойсов       | Создание/синхронизация счетов              | 3    |
+| Meta (Instagram/Facebook) | Лиды, сообщения                            | 4    |
+| Google Drive / GitHub     | По мере необходимости                      | 4–5  |
 
 ---
 
@@ -256,14 +256,14 @@ nbos/
 
 ### Аутентификация
 
-- **Метод:** JWT (Clerk), проверка на каждом запросе к API.
+- **Метод:** NextAuth session на web + backend JWT для API, проверка на каждом запросе к API.
 - **Хранение:** httpOnly cookie или заголовок Authorization (по решению frontend).
-- **2FA:** обязательно для CEO, Finance Director, Tech Ops (средства Clerk).
+- **2FA:** обязательно для CEO, Finance Director, Tech Ops; конкретная реализация фиксируется отдельно при hardening auth.
 
 ### Авторизация (RBAC)
 
 - **Модель:** RBAC по ролям (12 ролей) и контексту (модуль, проект, запись).
-- **Реализация:** NestJS Guards + декораторы; матрица доступов — см. `docs/Docs/04-Roles-and-Access/02-Access-Matrix.md`.
+- **Реализация:** NestJS Guards + декораторы; матрица доступов — см. `docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md`, `docs/NBOS/02-Modules/07-My-Company/03-RBAC-Permissions.md` и `docs/NBOS/02-Modules/16-Settings-Admin/02-Permissions-RBAC.md`.
 - **Credentials:** отдельные уровни (Secret, Project Team, Department, All) и явный список сотрудников для Secret.
 
 ### Защита
@@ -290,11 +290,11 @@ nbos/
 
 ### Окружения
 
-| Окружение | URL | Назначение |
-|-----------|-----|------------|
-| Development | localhost:3000 (web), localhost:4000 (api) | Локальная разработка |
-| Staging | staging-*.vercel.app, api на Render (staging) | Приёмка, тесты |
-| Production | кастомный домен (nbos.*) | Боевой режим |
+| Окружение   | URL                                            | Назначение           |
+| ----------- | ---------------------------------------------- | -------------------- |
+| Development | localhost:3000 (web), localhost:4000 (api)     | Локальная разработка |
+| Staging     | staging-\*.vercel.app, api на Render (staging) | Приёмка, тесты       |
+| Production  | кастомный домен (nbos.\*)                      | Боевой режим         |
 
 ### Инфраструктура
 
@@ -327,18 +327,18 @@ nbos/
 
 ## Ключевые решения
 
-| Решение | Выбор | Причина |
-|---------|--------|---------|
-| Backend | NestJS | Модули, очереди, WebSocket, RBAC, Swagger |
-| API | REST + OpenAPI | Удобно для mobile и внешних интеграций |
-| Auth | Clerk | 2FA, быстрый старт, JWT для API, React Native SDK |
-| RBAC | Свой в NestJS | 12 ролей, 3 уровня, матрица из документации |
-| Платежи | IDBank (ARCA) + Idram | Payment links, webhook для подтверждения |
-| Очереди | BullMQ + Redis | Надёжные фоновые задачи и отложенные задания |
-| Real-time | Socket.io в NestJS | Чаты и уведомления без внешнего сервиса |
-| Шифрование | AES-256-GCM | Поля Credential, мастер-ключ в env |
-| Frontend хостинг | Vercel | Оптимально для Next.js |
-| Backend хостинг | Render | Docker, WebSocket, workers |
+| Решение          | Выбор                 | Причина                                            |
+| ---------------- | --------------------- | -------------------------------------------------- |
+| Backend          | NestJS                | Модули, очереди, WebSocket, RBAC, Swagger          |
+| API              | REST + OpenAPI        | Удобно для mobile и внешних интеграций             |
+| Auth             | NextAuth.js + own JWT | Internal auth, invite-only access, backend API JWT |
+| RBAC             | Свой в NestJS         | 12 ролей, 3 уровня, матрица из документации        |
+| Платежи          | IDBank (ARCA) + Idram | Payment links, webhook для подтверждения           |
+| Очереди          | BullMQ + Redis        | Надёжные фоновые задачи и отложенные задания       |
+| Real-time        | Socket.io в NestJS    | Чаты и уведомления без внешнего сервиса            |
+| Шифрование       | AES-256-GCM           | Поля Credential, мастер-ключ в env                 |
+| Frontend хостинг | Vercel                | Оптимально для Next.js                             |
+| Backend хостинг  | Render                | Docker, WebSocket, workers                         |
 
 ---
 
@@ -350,9 +350,11 @@ nbos/
 - [04-API.md](./04-API.md) — описание API (при наличии)
 - [05-DATABASE.md](./05-DATABASE.md) — схема БД (при наличии)
 - [DECISIONS.md](./DECISIONS.md) — журнал решений
-- [docs/Docs/00-Technical-Architecture-Brief.md](./Docs/00-Technical-Architecture-Brief.md) — сводный бизнес-контекст
+- [NBOS/00-Documentation-Hub.md](./NBOS/00-Documentation-Hub.md) — центральный указатель канона
+- [NBOS/00-Implementation-Roadmap.md](./NBOS/00-Implementation-Roadmap.md) — порядок реализации
+- [NBOS/00-Documentation-Consistency-Audit.md](./NBOS/00-Documentation-Consistency-Audit.md) — финальный аудит перед разработкой
 
 ---
 
 **Версия документа.** 1.0  
-**Дата.** 2026-03-11
+**Дата.** 2026-04-27

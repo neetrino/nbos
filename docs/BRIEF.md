@@ -1,108 +1,115 @@
-# NBOS Platform — Техническое задание
+# NBOS Platform - Current Brief
 
-> Заполняется перед началом разработки. Детальная бизнес-документация — в папке `docs/Docs/`.
+> Short current brief. Detailed business and UI canon lives in `docs/NBOS`.
 
----
+## Product
 
-## Описание
+NBOS Platform is the internal Business Operation System for Neetrino. It replaces scattered Bitrix24 workflows with one integrated platform for CRM, Projects Hub, Finance, Tasks, Support, Clients, Partners, Drive, Credentials, Messenger, Notifications, Calendar, Dashboard and Reports.
 
-**NBOS Platform** — собственная Business Operation System компании Neetrino (IT-компания, Армения), заменяющая Bitrix24. Внутренний продукт (не SaaS), объединяющий CRM, управление проектами, финансы, задачи, поддержку, пароли, коммуникации и аналитику в одну систему.
+NBOS is an internal company platform, not a public SaaS product.
 
-**Ключевой принцип:** Project — центральная сущность. Всё (заказы, задачи, инвойсы, пароли, файлы, чаты) привязано к проекту. Каждый специалист заходит в проект и видит то, что нужно именно ему.
+## Canon
 
-## Целевая аудитория
+The active source of truth is:
 
-| Роль | Кол-во | Основные сценарии |
-|------|--------|-------------------|
-| CEO / Founder | 1–2 | Полный доступ: дашборды, финансы, аудит, настройки |
-| Seller | 2–3 | CRM (лиды, сделки), свои проекты, бонусы |
-| PM | 3–5 | Проекты, задачи, поддержка, мессенджер, календарь |
-| Developer | 5–8 | Задачи, credentials, чаты по проектам |
-| Junior Developer | 2–4 | Только свои назначенные задачи |
-| Designer | 1–2 | Задачи, Drive |
-| QA | 1–2 | Задачи, поддержка |
-| Finance Director | 1 | Финансы полностью: инвойсы, платежи, подписки, расходы, бонусы |
-| Tech Specialist / Ops | 1–2 | Credentials, домены, Drive |
-| Marketing | 1–2 | CRM (лиды), дашборды |
+```text
+docs/NBOS/00-Documentation-Hub.md
+docs/NBOS/00-Implementation-Roadmap.md
+docs/NBOS/00-Documentation-Consistency-Audit.md
+```
 
-**Масштаб:** 20 → 50+ сотрудников, 20 → 50+ проектов, ~100 → 300+ подписок.
+Archived documents are historical context only.
 
-## Основные функции (по фазам)
+## Core Business Principle
 
-### Фаза 1: MVP (2–3 мес)
-1. **CRM** (лиды + сделки) — воронки, стадии, Stage Gates
-2. **Projects Hub** (базовый) — карточка проекта, продукты, расширения
-3. **Clients** (компании + контакты)
-4. **Finance** (инвойсы, подписки, платежи)
-5. **Auth + RBAC** (12 ролей, 3 уровня доступа)
+Project and Product are central operational entities.
 
-### Фаза 2: Core (2–3 мес)
-6. **Tasks** (Kanban/Scrum, шаблоны, чеклисты)
-7. **Support** (тикеты ITIL-lite, SLA)
-8. **Credentials Vault** (AES-256, аудит)
-9. **Drive** (файлы по проектам)
-10. **Expenses + Bonus Board**
+Most business work connects to one or more of:
 
-### Фаза 3: Автоматизация (1–2 мес)
-11. **Движок уведомлений** (In-App, Telegram, WhatsApp, Email)
-12. **Авто-биллинг** (подписки, инвойсы по расписанию)
-13. **Авто-задачи** (из шаблонов, по событиям)
+- Lead / Deal;
+- Order / Invoice / Payment;
+- Project;
+- Product / Extension;
+- Subscription / Maintenance;
+- Task / Work Space;
+- Client / Company / Contact;
+- Partner;
+- Drive File Asset;
+- Credential;
+- Messenger thread;
+- Calendar projection;
+- Notification.
 
-### Фаза 4: Расширенное (2–3 мес)
-14. **Messenger** (проектные чаты с топиками + omnichannel)
-15. **Calendar** (встречи, дедлайны, биллинг-календарь)
-16. **Dashboards/Analytics** (8 дашбордов)
+## Current Development Direction
 
-### Фаза 5: Миграция (1–2 мес)
-17. **Импорт данных из Bitrix**
-18. **Параллельная работа + переключение**
+Implementation should follow:
 
-## Стек (принято)
+```text
+docs/NBOS/00-Implementation-Roadmap.md
+```
 
-- **Вариант B** — Next.js (frontend) + NestJS (backend), хостинг backend: Render
-- Детали — в `docs/TECH_CARD.md`
+Current first implementation block:
 
-## Дизайн
+```text
+Phase 1 - Platform shell and foundations
+```
 
-- Figma: [ссылка при наличии]
-- UI Kit: shadcn/ui (рекомендовано)
+Main Phase 1 goals:
 
-## Интеграции
+- align UI shell and navigation with canon;
+- move Team / Departments under My Company;
+- keep My Account outside Settings;
+- remove global header Create;
+- create My Company and Settings/Admin skeletons;
+- establish RBAC visibility and graceful module degradation.
 
-- [x] Email (Resend)
-- [x] Аутентификация (Clerk)
-- [x] Файловое хранилище (Cloudflare R2)
-- [x] База данных (PostgreSQL / Neon)
-- [x] Кеш и очереди (Upstash Redis + BullMQ)
-- [x] Real-time (Socket.io)
-- [x] Платежи (IDBank/ARCA + Idram — оплата по ссылке)
-- [ ] WhatsApp Business API (фаза 3)
-- [ ] Telegram Bot API (фаза 3)
-- [ ] Instagram / Facebook Meta API (фаза 4)
-- [ ] Госсистема инвойсов (фаза 3)
-- [ ] Google Drive (фаза 4)
-- [ ] GitHub API (фаза 4)
+## Technology Baseline
 
-## Язык интерфейса
+See `docs/TECH_CARD.md` and `docs/01-ARCHITECTURE.md`.
 
-- Основной язык интерфейса: **English**
-- i18n: не требуется на старте (при необходимости — позже)
+Short version:
 
-## Ограничения
+- frontend: Next.js / React / Tailwind;
+- backend: NestJS modular monolith;
+- database: PostgreSQL / Prisma;
+- queues: Redis / BullMQ;
+- files: Cloudflare R2;
+- real-time: Socket.io;
+- package manager: pnpm;
+- monorepo: apps + packages.
 
-- Сроки: 10–14 месяцев (5 фаз)
-- Бюджет: управляемые SaaS-сервисы (Clerk, Neon, Upstash, Render, Vercel)
-- Технические: backend на Render (Docker, WebSocket, фоновые задачи)
+## Integration Direction
 
-## Связанные документы
+Integration decisions must follow module canon, especially:
 
-- Полная бизнес-документация — 59 файлов в `docs/Docs/`
-- Сводный документ — `docs/Docs/00-Technical-Architecture-Brief.md`
-- Модель данных — `docs/Docs/01-Platform-Overview/03-Core-Entities-and-Data-Model.md`
-- Автоматизации — `docs/Docs/06-Integrations/05-Automation-Scenarios.md`
-- RBAC и матрица доступов — `docs/Docs/04-Roles-and-Access/02-Access-Matrix.md`
+- Messenger: `docs/NBOS/02-Modules/09-Messenger/*`
+- Notifications: `docs/NBOS/02-Modules/13-Notifications/*`
+- Finance: `docs/NBOS/02-Modules/04-Finance/*`
+- Drive: `docs/NBOS/02-Modules/11-Drive/*`
 
----
+Important current decision:
 
-**Статус:** утверждён  
-**Дата:** 2026-03-05
+- WhatsApp should be implemented first through QR-connected WhatsApp Web / WAHA-style adapter for project groups and rare 1:1 chats.
+- WhatsApp Official API is not a near-term requirement unless business process changes.
+
+## Quality Rule
+
+Do not fake business-critical data.
+
+If data is missing, show missing data. Never invent:
+
+- payment status;
+- invoice paid status;
+- payroll totals;
+- bonus release;
+- partner payouts;
+- credential access;
+- audit logs;
+- report formulas;
+- marketing CPL/ROI without spend.
+
+## Status
+
+Documentation canon is ready for development.
+
+See `docs/NBOS/00-Documentation-Consistency-Audit.md`.

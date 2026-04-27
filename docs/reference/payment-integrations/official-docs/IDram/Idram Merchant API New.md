@@ -1,54 +1,56 @@
 Idram Payment System merchant interface description
 Idram Payment System merchant interface description .................................................................... 1
+
 1. Requirements ............................................................................................................................. 1
 2. Payment via Idram Wallet (Web) ......................................................................................... 1
 3. Payment via Idram Wallet (Mobile app) .............................................................................. 3
 4. Order Confirmation .................................................................................................................. 4
-1. Requirements
-This document describes the interaction scheme between a merchant and Idram Merchant Interface. There
-are 3 URLs, 1 secret key and 1 email address for each merchant working with the Idram system.
-SUCCESS_URL
-FAIL_URL
-RESULT_URL
-SECRET_KEY
-EMAIL
-At the moment these 5 parameters are set by Idram payment system technical personnel after signing an
-agreement with merchant company.
-SUCCESS_URL (^) A script or html page URL, to which user has to be redirected when transaction has been
-complete successfully
-FAIL_URL A script or html page URL, to which user has to be redirected when transaction has been
-failed
-RESULT_URL The URL of script which processes Idram system requests
-SECRET_KEY A secret key, known only to merchant and Idram system
-EMAIL (^) Email address, to which payment confirmation will be sent if “OK” reply was not received
-from merchant during payment confirmation process
+5. Requirements
+   This document describes the interaction scheme between a merchant and Idram Merchant Interface. There
+   are 3 URLs, 1 secret key and 1 email address for each merchant working with the Idram system.
+   SUCCESS_URL
+   FAIL_URL
+   RESULT_URL
+   SECRET_KEY
+   EMAIL
+   At the moment these 5 parameters are set by Idram payment system technical personnel after signing an
+   agreement with merchant company.
+   SUCCESS_URL (^) A script or html page URL, to which user has to be redirected when transaction has been
+   complete successfully
+   FAIL_URL A script or html page URL, to which user has to be redirected when transaction has been
+   failed
+   RESULT_URL The URL of script which processes Idram system requests
+   SECRET_KEY A secret key, known only to merchant and Idram system
+   EMAIL (^) Email address, to which payment confirmation will be sent if “OK” reply was not received
+   from merchant during payment confirmation process
 
-2. Payment via Idram Wallet (Web)
-The merchant must generate html form, containing the following hidden fields:
-Field Description
-EDP_LANGUAGE
-(RU,EN,AM)
-In this field merchant sets Idram interface language
-EDP_REC_ACCOUNT IdramID of the merchant, which receives customer’s payment
-EDP_DESCRIPTION Product^ or^ service^ description.^
-If set, it is assigned to the payment description in Idram transaction
-EDP_AMOUNT
-Payment amount, which merchant requests from the customer. The amount must be
-greater than zero. Fraction must be separated by period (dot)
-EDP_BILL_NO (^) In this field merchant sets bill ID according to his accounting system
-EDP_EMAIL
-Email address, to which payment confirmation will be sent if “OK” reply was not
-received from merchant during payment confirmation process. If set, it overloads EMAIL
-field value for the current operation
-Additional merchant
-fields
-All fields not having "EDP_" prefix, are automatically processed by Idram service and
-posted to the merchant’s web-site after payment completion
+6. Payment via Idram Wallet (Web)
+   The merchant must generate html form, containing the following hidden fields:
+   Field Description
+   EDP*LANGUAGE
+   (RU,EN,AM)
+   In this field merchant sets Idram interface language
+   EDP_REC_ACCOUNT IdramID of the merchant, which receives customer’s payment
+   EDP_DESCRIPTION Product^ or^ service^ description.^
+   If set, it is assigned to the payment description in Idram transaction
+   EDP_AMOUNT
+   Payment amount, which merchant requests from the customer. The amount must be
+   greater than zero. Fraction must be separated by period (dot)
+   EDP_BILL_NO (^) In this field merchant sets bill ID according to his accounting system
+   EDP_EMAIL
+   Email address, to which payment confirmation will be sent if “OK” reply was not
+   received from merchant during payment confirmation process. If set, it overloads EMAIL
+   field value for the current operation
+   Additional merchant
+   fields
+   All fields not having "EDP*" prefix, are automatically processed by Idram service and
+   posted to the merchant’s web-site after payment completion
 
 The form must send a request to https://banking.idram.am/Payment/GetPayment (by action parameter) using
 POST method. Idram interface uses utf-8 encoding. It means that EDP_DESCRIPTION field must contain
 text encoded with utf-8.
 Below is an example of the payment request html form.
+
 <form action="https://banking.idram.am/Payment/GetPayment" method="POST">
 <input type="hidden" name="EDP_LANGUAGE" value="EN">
 <input type="hidden" name="EDP_REC_ACCOUNT" value="100000114">
