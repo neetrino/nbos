@@ -125,7 +125,7 @@ CRM children тоже должны быть приведены к CRM canon:
 - Leads;
 - Deals;
 - CRM Client Chats;
-- Sales Analytics / Reports.
+- Sales Reports / Analytics as CRM-owned module view and Reports Catalog item.
 
 ### B7. Marketing top-level module is missing
 
@@ -137,7 +137,7 @@ CRM children тоже должны быть приведены к CRM canon:
 Marketing
   Marketing Board
   Attribution Review
-  Marketing Dashboard
+  Marketing Dashboard / module analytics
   Marketing Settings
 ```
 

@@ -124,10 +124,11 @@ CRM
   Leads
   Deals
   CRM Client Chats
-  Sales Analytics / Reports
+  Sales Reports / Analytics
 ```
 
 CRM отвечает за Lead/Deal pipeline, offers, stage gates и клиентские pre-sale коммуникации.
+`Sales Reports / Analytics` является CRM-owned view и также отображается в `Reports / Analytics` catalog.
 
 ### Marketing
 
@@ -137,7 +138,7 @@ CRM отвечает за Lead/Deal pipeline, offers, stage gates и клиен�
 Marketing
   Marketing Board
   Attribution Review
-  Marketing Dashboard
+  Marketing Dashboard / module analytics
   Marketing Settings
 ```
 
@@ -200,10 +201,10 @@ Finance
   Bonus Board
   Salary Board
   Partner Payouts
-  P&L / Reports
+  Finance Reports / P&L
 ```
 
-Finance может иметь свои module dashboards, но глобальная `/dashboard` остаётся персональным Control Center.
+Finance-owned reports хранят финансовые определения и формулы. Глобальный `Reports / Analytics` показывает эти отчёты в catalog, exports и scheduled reports, но не дублирует finance logic.
 
 ### Support
 
@@ -212,7 +213,7 @@ Finance может иметь свои module dashboards, но глобальн�
 ```text
 Support
   Tickets
-  Support Dashboard
+  Support Reports / Dashboard
   Knowledge / FAQ later
 ```
 

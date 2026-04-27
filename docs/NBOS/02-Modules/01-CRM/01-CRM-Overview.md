@@ -159,7 +159,7 @@ Lead (SQL) → Deal → [Pipeline стадии] → Deal Won + 1st Payment → O
 
 На создании карточки допускается временная неполнота, но перейти дальше первой meaningful stage без этого блока нельзя.
 
-### 3. Sales Analytics (Аналитика продаж)
+### 3. Sales Reports / module-owned analytics
 
 - Конверсия по стадиям (Lead → SQL → Deal → Won)
 - Средний цикл сделки
@@ -167,6 +167,15 @@ Lead (SQL) → Deal → [Pipeline стадии] → Deal Won + 1st Payment → O
 - Разбивка по источникам лидов
 - Performance продавцов
 - Прогноз выручки по текущему pipeline
+
+Граница с `Reports / Analytics`:
+
+```text
+CRM owns sales facts and CRM-specific report definitions.
+Reports / Analytics exposes these reports in the global catalog, scheduled reports and exports.
+```
+
+CRM не должен становиться отдельным глобальным BI-модулем. CRM показывает sales analytics там, где это помогает Sales работать с pipeline; глубокие сравнения периодов, exports и scheduled reports живут в `Reports / Analytics`.
 
 ---
 

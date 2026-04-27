@@ -61,6 +61,26 @@ My Company owns KPI/people structure.
 Reports owns calculated views and report snapshots.
 ```
 
+## Module-owned analytics rule
+
+Модульные analytics/report pages не нужно удалять.
+
+Правильная граница:
+
+```text
+Module owns facts, formulas and context-specific views.
+Reports / Analytics owns catalog, cross-module access, scheduled reports, exports and snapshots.
+```
+
+Примеры:
+
+- Finance owns P&L formulas, Reports shows Finance P&L in catalog.
+- Marketing owns attribution logic, Reports shows Marketing performance reports.
+- CRM owns sales pipeline facts, Reports shows sales reports over periods.
+- Support owns ticket/SLA facts, Reports shows support reports and scheduled SLA summaries.
+
+Reports не должен копировать бизнес-логику из модулей. Он должен ссылаться на module-owned definitions and projections.
+
 ## Основные разделы
 
 ```text

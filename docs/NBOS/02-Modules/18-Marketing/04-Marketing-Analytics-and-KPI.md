@@ -13,6 +13,15 @@ Count what is reliable now.
 Calculate cost only where spend data exists.
 ```
 
+Граница с `Reports / Analytics`:
+
+```text
+Marketing owns attribution logic, channel/account/activity meaning and marketing KPI facts.
+Reports / Analytics exposes marketing reports in the global catalog, scheduled reports and exports.
+```
+
+Marketing Dashboard остаётся рабочим module-owned view для маркетолога. Cross-period reports, exports, saved report views и scheduled reports должны идти через `Reports / Analytics`.
+
 ## Dashboard blocks
 
 Marketing Dashboard показывает:

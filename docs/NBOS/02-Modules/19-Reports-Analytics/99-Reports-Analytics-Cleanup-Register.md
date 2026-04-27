@@ -13,6 +13,7 @@
 - exports and scheduled reports are first-class;
 - sensitive exports require audit;
 - Finance P&L remains Finance-owned but visible through Reports catalog;
+- module analytics stays module-owned and is exposed through Reports catalog;
 - report definitions must be explicit.
 
 ---
@@ -36,6 +37,17 @@ Finance уже описывает P&L, MRR, Payroll reports. Reports долже�
 Статус: `OK DOCS / NEEDS CATALOG LINK`
 
 Marketing analytics остаётся source-specific. Reports может агрегировать и сравнивать marketing metrics across periods.
+
+### A4. Module-owned analytics boundary is accepted
+
+Статус: `OK DOCS`
+
+Модульные analytics pages не удаляются. Они очищаются формулировочно:
+
+```text
+Module = facts, formulas, context view.
+Reports = catalog, exports, scheduled reports, snapshots.
+```
 
 ---
 

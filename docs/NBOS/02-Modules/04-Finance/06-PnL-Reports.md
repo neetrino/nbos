@@ -10,6 +10,15 @@
 
 Отчёты не должны быть отдельной доской, где вручную живут суммы. Они должны быть read-only витриной над финансовыми фактами.
 
+Граница с `Reports / Analytics`:
+
+```text
+Finance owns financial report logic and source facts.
+Reports / Analytics exposes finance reports in the global report catalog, scheduled reports and exports.
+```
+
+`P&L`, `Cash Flow`, `MRR`, `Payroll Report` и finance definitions остаются в Finance, потому что Finance является source of truth для денег. Глобальный Reports layer не должен заново придумывать финансовые формулы.
+
 Источник правды:
 
 ```text

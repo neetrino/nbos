@@ -4,6 +4,15 @@
 
 Этот документ описывает аналитику партнёров и работу с договорами / соглашениями.
 
+Граница с `Reports / Analytics`:
+
+```text
+Partners owns partner-specific analytics and agreement facts.
+Reports / Analytics exposes partner reports in the global report catalog, scheduled reports and exports.
+```
+
+Partner analytics остаётся внутри Partners, потому что только Partners знает смысл inbound referral, outbound partner service, payout balance и agreement status. Глобальный Reports layer не должен дублировать partner business rules.
+
 ---
 
 ## 1. Partner Analytics

@@ -395,9 +395,11 @@ Scrum-вид должен содержать:
 
 ---
 
-## 8. Support Dashboard
+## 8. Support Reports / module dashboard
 
 **Путь:** `/support/dashboard`
+
+Это module-owned support view: он помогает Support/PM видеть SLA и тикеты в контексте работы. Глобальные period reports, exports, scheduled reports и cross-module comparisons должны отображаться через `Reports / Analytics`.
 
 ### 8.1. Сводные метрики
 
