@@ -340,6 +340,9 @@ nbos/
 | Frontend хостинг | Vercel                | Оптимально для Next.js                             |
 | Backend хостинг  | Render                | Docker, WebSocket, workers                         |
 
+Module-level technical decisions are maintained in `docs/NBOS/00-Technical-Decisions-By-Module.md`.
+Read that document before implementing or changing a module.
+
 ---
 
 ## Связанные документы
@@ -352,6 +355,7 @@ nbos/
 - [DECISIONS.md](./DECISIONS.md) — журнал решений
 - [NBOS/00-Documentation-Hub.md](./NBOS/00-Documentation-Hub.md) — центральный указатель канона
 - [NBOS/00-Implementation-Roadmap.md](./NBOS/00-Implementation-Roadmap.md) — порядок реализации
+- [NBOS/00-Technical-Decisions-By-Module.md](./NBOS/00-Technical-Decisions-By-Module.md) — обязательные технические решения по модулям
 - [NBOS/00-Documentation-Consistency-Audit.md](./NBOS/00-Documentation-Consistency-Audit.md) — финальный аудит перед разработкой
 
 ---
