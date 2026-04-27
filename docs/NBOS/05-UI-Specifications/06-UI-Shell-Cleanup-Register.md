@@ -226,7 +226,7 @@ PersonalLink -> Dashboard Pinned Actions
 
 ### C5. Module shell is not standardized
 
-Статус: `PARTIAL UI / SHARED STATES BASELINE DONE`
+Статус: `PHASE 1 BASELINE DONE / FULL MODULE SHELL PENDING`
 
 Нужно унифицировать:
 
@@ -237,7 +237,7 @@ PersonalLink -> Dashboard Pinned Actions
 - tabs;
 - empty/loading/error states.
 
-Реализовано: добавлены reusable `LoadingState` и `ErrorState`, ключевые list screens используют единый loading/error/retry pattern. Остаётся полноценная стандартизация Module Shell и внедрение shared states во все module screens.
+Реализовано: добавлены reusable `LoadingState` и `ErrorState`, ключевые list screens используют единый loading/error/retry pattern. Phase 1 baseline завершён; полноценная стандартизация Module Shell, entity opening rules и персональные navigation preferences остаются отдельными UX/platform slices.
 
 ### C6. Entity opening rules are not standardized
 

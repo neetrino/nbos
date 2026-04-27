@@ -129,7 +129,7 @@ Runtime navigation and placeholder routes now expose this structure. Data models
 
 ### C1. System Lists protection model is missing
 
-Статус: `MISSING CODE`
+Статус: `PHASE 1 FOUNDATION DONE / FULL MODEL PENDING`
 
 Нужно добавить:
 
@@ -142,9 +142,11 @@ Runtime navigation and placeholder routes now expose this structure. Data models
 - deactivate вместо delete;
 - audit изменений.
 
+Phase 1 runtime now protects current managed lists at the API/UI level: protected option codes cannot be changed, delete deactivates options, admin mutations require permissions, and changes are written to audit logs. A dedicated `SystemList` metadata table with owner module/protection level remains a later deep Settings/Admin slice.
+
 ### C2. System Lists API allows risky operations
 
-Статус: `NEEDS HARDENING`
+Статус: `PHASE 1 HARDENED`
 
 Если API позволяет свободно create/delete/update options, это риск.
 
@@ -156,9 +158,11 @@ Runtime navigation and placeholder routes now expose this structure. Data models
 - запретить изменение code для business-bound values;
 - показывать warning в UI.
 
+Runtime now removes public write access, uses `COMPANY.EDIT` for mutations, blocks protected code edits, deactivates instead of deleting, and shows protected-list warnings in UI.
+
 ### C3. RBAC scope enforcement is incomplete
 
-Статус: `NEEDS HARDENING`
+Статус: `FOUNDATION HARDENED / ENTITY SCOPE PENDING`
 
 Если guard только определяет `permissionScope`, но не проверяет конкретную запись, это недостаточно.
 
@@ -174,9 +178,11 @@ Permission exists -> Scope resolved -> Entity access checked
 - Head of Sales видит deals отдела;
 - Owner видит все deals.
 
+Phase 1 adds stronger admin mutation permissions and audit logging for roles. Entity-level enforcement for business records remains module-specific work in later phases.
+
 ### C4. Business role and permission role may be mixed
 
-Статус: `NEEDS REFACTOR`
+Статус: `BOUNDARY VISIBLE / DATA MODEL PENDING`
 
 Нужно разделить:
 
@@ -184,6 +190,8 @@ Permission exists -> Scope resolved -> Entity access checked
 - `Permission Role` в Settings.
 
 Employee может иметь несколько seats и несколько permission roles. Итоговый доступ должен быть виден как effective access.
+
+Phase 1 keeps technical permission roles in Settings/RBAC and exposes business-seat gaps in My Company. Multiple seats / effective access visualization remain later My Company + Settings slices.
 
 ### C5. Feature Flags are missing
 
