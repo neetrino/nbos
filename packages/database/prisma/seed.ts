@@ -1,12 +1,11 @@
 import { createPrismaClient } from '../src/client';
-import type { PrismaClient as PrismaClientType } from '../src/generated/prisma/client';
 import dotenv from 'dotenv';
 import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
 async function main() {
-  const prisma = createPrismaClient() as InstanceType<PrismaClientType>;
+  const prisma = createPrismaClient();
 
   console.log('Cleaning existing data...');
   await prisma.auditLog.deleteMany();
@@ -387,7 +386,7 @@ async function main() {
       deadline: new Date('2026-12-01'),
     },
   });
-  const prod7 = await prisma.product.create({
+  await prisma.product.create({
     data: {
       id: '00000000-0000-0000-0000-000000000030',
       projectId: project3.id,
@@ -423,7 +422,7 @@ async function main() {
       pmId: pm.id,
     },
   });
-  const prod10 = await prisma.product.create({
+  await prisma.product.create({
     data: {
       id: '00000000-0000-0000-0000-000000000031',
       projectId: project4.id,
@@ -448,7 +447,7 @@ async function main() {
       deadline: new Date('2026-07-15'),
     },
   });
-  const prod12 = await prisma.product.create({
+  await prisma.product.create({
     data: {
       id: '00000000-0000-0000-0000-000000000027',
       projectId: project5.id,
@@ -820,7 +819,7 @@ async function main() {
       productId: prod4.id,
     },
   });
-  const order4 = await prisma.order.create({
+  await prisma.order.create({
     data: {
       code: 'ORD-2026-0004',
       projectId: project3.id,

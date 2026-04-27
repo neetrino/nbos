@@ -8,7 +8,6 @@
  */
 import argon2 from 'argon2';
 import { createPrismaClient } from '../src/client';
-import type { PrismaClient as PrismaClientType } from '../src/generated/prisma/client';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -25,7 +24,7 @@ async function main() {
     process.exit(1);
   }
 
-  const prisma = createPrismaClient() as InstanceType<PrismaClientType>;
+  const prisma = createPrismaClient();
 
   const passwordHash = await argon2.hash(ADMIN_PASSWORD, { type: argon2.argon2id });
 

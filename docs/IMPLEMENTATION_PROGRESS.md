@@ -26,28 +26,29 @@ Rules:
 | -------------------- | --------------------------------------------- |
 | Current phase        | Phase 1 - Platform shell and foundations      |
 | Current module/block | UI Shell / Navigation / My Company / Settings |
-| Current task         | Navigation cleanup slice completed            |
+| Current task         | Database typecheck foundation completed       |
 | Status               | Waiting approval for next slice               |
 | Last updated         | 2026-04-27                                    |
 
 ## Phase Progress
 
-| Phase                                            | Status      | Progress | Current blocker                | Notes                                        |
-| ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------- |
-| Phase 1 - Platform shell and foundations         | In progress |      20% | Root database typecheck config | Navigation shell cleanup completed           |
-| Phase 2 - CRM, Marketing and Lead-to-Cash intake | Not started |       0% | Waits Phase 1 foundation       | Requires source attribution and stage gates  |
-| Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
-| Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
-| Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications |
-| Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views           |
-| Phase 7 - Integrations and migration             | Not started |       0% | Waits stable workflows         | WhatsApp, bank/gov, Bitrix migration         |
+| Phase                                            | Status      | Progress | Current blocker                | Notes                                         |
+| ------------------------------------------------ | ----------- | -------: | ------------------------------ | --------------------------------------------- |
+| Phase 1 - Platform shell and foundations         | In progress |      25% | Existing web lint errors       | Navigation shell and root typecheck completed |
+| Phase 2 - CRM, Marketing and Lead-to-Cash intake | Not started |       0% | Waits Phase 1 foundation       | Requires source attribution and stage gates   |
+| Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                 |
+| Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                   |
+| Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications  |
+| Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views            |
+| Phase 7 - Integrations and migration             | Not started |       0% | Waits stable workflows         | WhatsApp, bank/gov, Bitrix migration          |
 
 ## Active Work Log
 
-| Date       | Done                                  | Scope                                                                                               | Verification                                                                                                        | Next                                  |
-| ---------- | ------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| 2026-04-27 | Documentation launch setup completed  | `AI-START-HERE`, docs root cleanup, payment references moved                                        | `git diff --check`; committed as `c50edab`                                                                          | Start Phase 1 implementation          |
-| 2026-04-27 | UI shell navigation cleanup completed | Sidebar/topbar canon, `My Company`, `Marketing`, `Reports / Analytics`, Settings/Admin placeholders | Focused web ESLint; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/web build`; `pnpm test`; `pnpm build` | Wait for approval; next Phase 1 slice |
+| Date       | Done                                    | Scope                                                                                               | Verification                                                                                                        | Next                                            |
+| ---------- | --------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| 2026-04-27 | Documentation launch setup completed    | `AI-START-HERE`, docs root cleanup, payment references moved                                        | `git diff --check`; committed as `c50edab`                                                                          | Start Phase 1 implementation                    |
+| 2026-04-27 | UI shell navigation cleanup completed   | Sidebar/topbar canon, `My Company`, `Marketing`, `Reports / Analytics`, Settings/Admin placeholders | Focused web ESLint; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/web build`; `pnpm test`; `pnpm build` | Wait for approval; next Phase 1 slice           |
+| 2026-04-27 | Database typecheck foundation completed | `@nbos/database` tsconfig and Prisma seed script typing                                             | `pnpm --filter @nbos/database typecheck`; `pnpm typecheck`; `pnpm build`; `pnpm test`                               | Existing web lint cleanup or next Phase 1 slice |
 
 ## Phase 1 Checklist
 
@@ -118,6 +119,7 @@ Continue Phase 1 after approval:
 
 ```text
 Pick the next smallest safe Phase 1 slice:
+- existing web lint cleanup;
 - RBAC navigation visibility hardening;
 - shared empty/loading/error states;
 - My Company org structure data model;

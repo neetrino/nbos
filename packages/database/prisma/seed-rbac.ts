@@ -1,5 +1,4 @@
 import { createPrismaClient } from '../src/client';
-import type { PrismaClient as PrismaClientType } from '../src/generated/prisma/client';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -339,7 +338,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
 };
 
 async function main() {
-  const prisma = createPrismaClient() as InstanceType<PrismaClientType>;
+  const prisma = createPrismaClient();
 
   console.log('Seeding RBAC permissions...');
 
@@ -366,7 +365,7 @@ async function main() {
   for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
     for (const [module, scopes] of Object.entries(moduleMap)) {
       ACTIONS.forEach((action, idx) => {
-        const scope = scopes[idx];
+        const scope = scopes[idx] ?? 'NONE';
         if (scope === 'NONE') return;
         const permId = `perm-${module.toLowerCase().replace(/_/g, '-')}-${action.toLowerCase()}`;
         rolePermissionData.push({ roleId, permissionId: permId, scope });

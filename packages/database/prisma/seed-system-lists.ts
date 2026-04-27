@@ -3,7 +3,6 @@
  * Usage: cd packages/database && pnpm exec tsx prisma/seed-system-lists.ts
  */
 import { createPrismaClient } from '../src/client';
-import type { PrismaClient as PrismaClientType } from '../src/generated/prisma/client';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -40,7 +39,7 @@ const systemListOptions = [
 ];
 
 async function main() {
-  const prisma = createPrismaClient() as InstanceType<typeof PrismaClientType>;
+  const prisma = createPrismaClient();
   const count = await prisma.systemListOption.count();
   if (count > 0) {
     console.log(`System list options already exist (${count} rows). Skipping.`);
