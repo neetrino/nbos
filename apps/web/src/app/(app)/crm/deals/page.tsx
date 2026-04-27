@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   PageHeader,
   FilterBar,
   KanbanBoard,
   EmptyState,
+  ErrorState,
+  LoadingState,
   StatusBadge,
   type KanbanColumn,
 } from '@/components/shared';
@@ -36,6 +37,7 @@ type ViewMode = 'kanban' | 'list';
 export default function DealsPipelinePage() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('kanban');
@@ -53,8 +55,9 @@ export default function DealsPipelinePage() {
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
       });
       setDeals(data.items);
+      setError(null);
     } catch {
-      /* handled by API layer */
+      setError('Deals could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -194,11 +197,9 @@ export default function DealsPipelinePage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 w-full rounded-xl" />
-          ))}
-        </div>
+        <LoadingState variant="cards" count={3} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchDeals} />
       ) : deals.length === 0 ? (
         <EmptyState
           icon={Handshake}

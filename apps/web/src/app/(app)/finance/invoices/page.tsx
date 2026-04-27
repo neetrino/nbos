@@ -12,7 +12,6 @@ import {
   List,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -25,6 +24,8 @@ import {
   PageHeader,
   FilterBar,
   EmptyState,
+  ErrorState,
+  LoadingState,
   StatusBadge,
   KanbanBoard,
   type KanbanColumn,
@@ -47,6 +48,7 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('kanban');
@@ -70,8 +72,9 @@ export default function InvoicesPage() {
       ]);
       setInvoices(data.items);
       setStats(invoiceStats);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Invoices could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -209,11 +212,9 @@ export default function InvoicesPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchInvoices} />
       ) : invoices.length === 0 ? (
         <EmptyState
           icon={FileText}

@@ -11,7 +11,6 @@ import {
   List,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -20,7 +19,15 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge, KanbanBoard } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+  KanbanBoard,
+} from '@/components/shared';
 import {
   EXPENSE_CATEGORIES,
   EXPENSE_STAGES,
@@ -38,6 +45,7 @@ export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('list');
@@ -59,8 +67,9 @@ export default function ExpensesPage() {
       ]);
       setExpenses(data.items);
       setStats(expenseStats);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Expenses could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -167,11 +176,9 @@ export default function ExpensesPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchExpenses} />
       ) : expenses.length === 0 ? (
         <EmptyState
           icon={Receipt}

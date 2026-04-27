@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { RefreshCcw, CreditCard, DollarSign, FileText, FolderKanban, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -12,7 +11,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   FINANCE_PERIOD_OPTIONS,
   getFinancePeriodParams,
@@ -25,6 +31,7 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [stats, setStats] = useState<PaymentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [period, setPeriod] = useState<FinancePeriod>('month');
 
@@ -42,8 +49,9 @@ export default function PaymentsPage() {
       ]);
       setPayments(data.items);
       setStats(paymentStats);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Payments could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -103,11 +111,9 @@ export default function PaymentsPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchPayments} />
       ) : payments.length === 0 ? (
         <EmptyState
           icon={CreditCard}

@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, RefreshCw, DollarSign, FolderKanban, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -12,7 +11,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   FINANCE_PERIOD_OPTIONS,
   SUBSCRIPTION_TYPES,
@@ -29,6 +35,7 @@ export default function SubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [stats, setStats] = useState<SubscriptionStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
@@ -49,8 +56,9 @@ export default function SubscriptionsPage() {
       ]);
       setSubscriptions(data.items);
       setStats(subscriptionStats);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Subscriptions could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -139,11 +147,9 @@ export default function SubscriptionsPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState count={4} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchSubscriptions} />
       ) : subscriptions.length === 0 ? (
         <EmptyState
           icon={RefreshCw}

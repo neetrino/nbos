@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, Handshake, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -12,7 +11,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   PARTNER_TYPES,
   PARTNER_LEVELS,
@@ -46,6 +52,7 @@ interface Partner {
 export default function PartnersPage() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
 
@@ -60,8 +67,9 @@ export default function PartnersPage() {
         },
       });
       setPartners(resp.data.items ?? resp.data ?? []);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Partners could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -147,11 +155,9 @@ export default function PartnersPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState count={4} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchPartners} />
       ) : partners.length === 0 ? (
         <EmptyState
           icon={Handshake}

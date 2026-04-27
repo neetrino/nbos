@@ -16,12 +16,13 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   PageHeader,
   FilterBar,
   KanbanBoard,
   EmptyState,
+  ErrorState,
+  LoadingState,
   type KanbanColumn,
 } from '@/components/shared';
 import { TASK_STATUSES, TASK_PRIORITIES, getTaskPriority } from '@/features/tasks/constants/tasks';
@@ -218,6 +219,7 @@ function TaskMiniCard({
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [boardView, setBoardView] = useState<BoardView>('kanban');
@@ -242,8 +244,9 @@ export default function TasksPage() {
         hasParent: false,
       });
       setTasks(resp.items);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Tasks could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -628,11 +631,9 @@ export default function TasksPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchTasks} />
       ) : tasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}

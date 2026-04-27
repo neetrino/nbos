@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, ShoppingCart, DollarSign, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import {
   Table,
@@ -13,7 +12,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   FINANCE_PERIOD_OPTIONS,
   getFinancePeriodParams,
@@ -38,6 +44,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
@@ -57,8 +64,9 @@ export default function OrdersPage() {
       ]);
       setOrders(data.items);
       setStats(orderStats);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Orders could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -133,11 +141,9 @@ export default function OrdersPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchOrders} />
       ) : orders.length === 0 ? (
         <EmptyState
           icon={ShoppingCart}

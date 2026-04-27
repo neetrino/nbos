@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   PageHeader,
   FilterBar,
   KanbanBoard,
   EmptyState,
+  ErrorState,
+  LoadingState,
   type KanbanColumn,
 } from '@/components/shared';
 import { LeadCard } from '@/features/crm/components/LeadCard';
@@ -33,6 +34,7 @@ type ViewMode = 'kanban' | 'list';
 export default function LeadsPipelinePage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('kanban');
@@ -50,8 +52,9 @@ export default function LeadsPipelinePage() {
         source: filters.source && filters.source !== 'all' ? filters.source : undefined,
       });
       setLeads(data.items);
+      setError(null);
     } catch {
-      /* handled by API layer */
+      setError('Leads could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -191,11 +194,9 @@ export default function LeadsPipelinePage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 w-full rounded-xl" />
-          ))}
-        </div>
+        <LoadingState variant="cards" count={3} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchLeads} />
       ) : leads.length === 0 ? (
         <EmptyState
           icon={Users}

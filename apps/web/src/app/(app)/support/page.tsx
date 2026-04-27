@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, Headphones, LayoutGrid, List, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -12,7 +11,15 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge, KanbanBoard } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+  KanbanBoard,
+} from '@/components/shared';
 import {
   TICKET_CATEGORIES,
   TICKET_PRIORITIES,
@@ -43,6 +50,7 @@ type ViewMode = 'kanban' | 'list';
 export default function SupportPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('list');
@@ -59,8 +67,9 @@ export default function SupportPage() {
         },
       });
       setTickets(resp.data.items ?? resp.data ?? []);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Support tickets could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -159,11 +168,9 @@ export default function SupportPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchTickets} />
       ) : tickets.length === 0 ? (
         <EmptyState
           icon={Headphones}
