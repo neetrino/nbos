@@ -370,6 +370,52 @@ describe('ExpensesService', () => {
       );
       expect(prisma.expense.update).not.toHaveBeenCalled();
     });
+
+    it('rejects amount below sum of recorded payments', async () => {
+      const paymentRow = {
+        id: 'pay1',
+        amount: new Decimal(80),
+        paymentDate: new Date('2026-04-01'),
+        notes: null,
+        createdAt: new Date('2026-04-01'),
+      };
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        amount: new Decimal(100),
+        expensePayments: [paymentRow],
+        project: null,
+      });
+
+      await expect(service.update('e1', { amount: 50 })).rejects.toThrow(BadRequestException);
+      expect(prisma.expense.update).not.toHaveBeenCalled();
+    });
+
+    it('allows amount equal to sum of payments', async () => {
+      const paymentRow = {
+        id: 'pay1',
+        amount: new Decimal(80),
+        paymentDate: new Date('2026-04-01'),
+        notes: null,
+        createdAt: new Date('2026-04-01'),
+      };
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        amount: new Decimal(100),
+        expensePayments: [paymentRow],
+        project: null,
+      });
+
+      await service.update('e1', { amount: 80 });
+
+      expect(prisma.expense.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'e1' },
+          data: expect.objectContaining({ amount: 80 }),
+        }),
+      );
+    });
   });
 
   describe('getStats', () => {

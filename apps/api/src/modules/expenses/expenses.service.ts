@@ -1,5 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
+  Decimal,
   PrismaClient,
   type Prisma,
   type ExpenseBacklogReasonEnum,
@@ -37,6 +38,7 @@ import {
   attachLedgerFieldsToExpenseListItems,
   fetchExpensePaidTotalsByExpenseIds,
 } from './expense-list-ledger';
+import { assertExpenseAmountCoversRecordedPayments } from './expense-amount-update-guard';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
 import type {
   CreateExpenseDto,
@@ -185,6 +187,10 @@ export class ExpensesService {
       data.backlogReason !== undefined
         ? parseExpenseBacklogReasonField(data.backlogReason)
         : undefined;
+
+    if (data.amount !== undefined) {
+      await assertExpenseAmountCoversRecordedPayments(this.prisma, id, new Decimal(data.amount));
+    }
 
     await this.prisma.expense.update({
       where: { id },
