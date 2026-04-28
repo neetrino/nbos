@@ -137,6 +137,12 @@ export interface Expense {
   backlogReason: string | null;
   notes: string | null;
   createdAt: string;
+  /** Set when this expense is linked to a payroll salary line (materialization). */
+  linkedPayrollRun?: {
+    payrollRunId: string;
+    payrollMonth: string;
+    salaryLineId: string;
+  } | null;
   project?: { id: string; code: string; name: string } | null;
   paidAmount?: string;
   remainingAmount?: string;

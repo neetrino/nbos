@@ -106,7 +106,11 @@ export class ExpensesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get expense by ID' })
+  @ApiOperation({
+    summary: 'Get expense by ID',
+    description:
+      'Expense ledger JSON may include linkedPayrollRun when the row is tied to a salary line (payroll materialization).',
+  })
   async findOne(@Param('id') id: string) {
     return this.expensesService.findById(id);
   }

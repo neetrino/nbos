@@ -160,6 +160,70 @@ describe('ExpensesService', () => {
     it('throws NotFoundException', async () => {
       await expect(service.findById('x')).rejects.toThrow(NotFoundException);
     });
+
+    it('returns linkedPayrollRun when a salary line links the expense to a payroll run', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Net payroll',
+        type: 'PLANNED',
+        category: 'OTHER',
+        frequency: 'ONE_TIME',
+        dueDate: null,
+        status: 'THIS_MONTH',
+        projectId: null,
+        expensePlanId: null,
+        isPassThrough: false,
+        taxStatus: 'TAX',
+        backlogReason: null,
+        notes: null,
+        createdAt: new Date('2026-04-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-04-01T00:00:00.000Z'),
+        amount: new Decimal(1000),
+        project: null,
+        expensePayments: [],
+        salaryLine: {
+          id: 'sl1',
+          payrollRunId: 'run1',
+          payrollRun: { payrollMonth: '2026-04' },
+        },
+      });
+
+      const result = await service.findById('e1');
+
+      expect(result.linkedPayrollRun).toEqual({
+        payrollRunId: 'run1',
+        payrollMonth: '2026-04',
+        salaryLineId: 'sl1',
+      });
+    });
+
+    it('returns linkedPayrollRun null when there is no salary line', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Hosting',
+        type: 'PLANNED',
+        category: 'HOSTING',
+        frequency: 'ONE_TIME',
+        dueDate: null,
+        status: 'THIS_MONTH',
+        projectId: null,
+        expensePlanId: null,
+        isPassThrough: false,
+        taxStatus: 'TAX',
+        backlogReason: null,
+        notes: null,
+        createdAt: new Date('2026-04-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-04-01T00:00:00.000Z'),
+        amount: new Decimal(100),
+        project: null,
+        expensePayments: [],
+        salaryLine: null,
+      });
+
+      const result = await service.findById('e1');
+
+      expect(result.linkedPayrollRun).toBeNull();
+    });
   });
 
   describe('create', () => {

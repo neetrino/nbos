@@ -7,9 +7,14 @@ import { cn } from '@/lib/utils';
 
 export interface ExpensePayrollLinkBannerProps {
   payrollRunId: string;
+  /** Payroll run month label (YYYY-MM) when known from the API. */
+  payrollMonth?: string | null;
 }
 
-export function ExpensePayrollLinkBanner({ payrollRunId }: ExpensePayrollLinkBannerProps) {
+export function ExpensePayrollLinkBanner({
+  payrollRunId,
+  payrollMonth,
+}: ExpensePayrollLinkBannerProps) {
   return (
     <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
       <p className="text-foreground max-w-prose">
@@ -21,6 +26,12 @@ export function ExpensePayrollLinkBanner({ payrollRunId }: ExpensePayrollLinkBan
           {' '}
           — this expense was created from an approved payroll run (see run for salary lines and
           audit).
+          {payrollMonth ? (
+            <>
+              {' '}
+              <span className="text-foreground/80 font-mono text-xs">({payrollMonth})</span>
+            </>
+          ) : null}
         </span>
       </p>
       <Link

@@ -107,10 +107,19 @@ function ExpenseDetailPageInner() {
 
   useFinanceDocumentTitle(financeDocTitle);
 
-  const payrollLink = useMemo(
-    () => parsePayrollLinkFromExpenseNotes(expense?.notes ?? null),
-    [expense?.notes],
-  );
+  const payrollBanner = useMemo((): {
+    payrollRunId: string;
+    payrollMonth: string | null;
+  } | null => {
+    if (!expense) return null;
+    const api = expense.linkedPayrollRun;
+    if (api?.payrollRunId) {
+      return { payrollRunId: api.payrollRunId, payrollMonth: api.payrollMonth };
+    }
+    const fromNotes = parsePayrollLinkFromExpenseNotes(expense.notes);
+    if (!fromNotes) return null;
+    return { payrollRunId: fromNotes.payrollRunId, payrollMonth: null };
+  }, [expense]);
 
   if (loading) {
     return (
@@ -227,7 +236,12 @@ function ExpenseDetailPageInner() {
         onConfirm={handleDeleteExpense}
       />
 
-      {payrollLink ? <ExpensePayrollLinkBanner payrollRunId={payrollLink.payrollRunId} /> : null}
+      {payrollBanner ? (
+        <ExpensePayrollLinkBanner
+          payrollRunId={payrollBanner.payrollRunId}
+          payrollMonth={payrollBanner.payrollMonth}
+        />
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="border-border bg-card rounded-xl border p-4">

@@ -120,15 +120,27 @@ export class ExpensesService {
   }
 
   async findById(id: string) {
-    const expense = await this.prisma.expense.findUnique({
+    const row = await this.prisma.expense.findUnique({
       where: { id },
       include: {
         project: { select: { id: true, code: true, name: true } },
         expensePayments: { orderBy: { paymentDate: 'desc' } },
+        salaryLine: {
+          select: {
+            id: true,
+            payrollRunId: true,
+            payrollRun: { select: { payrollMonth: true } },
+          },
+        },
       },
     });
-    if (!expense) throw new NotFoundException(`Expense ${id} not found`);
-    return toExpenseLedgerJson(expense);
+    if (!row) throw new NotFoundException(`Expense ${id} not found`);
+    const { salaryLine, ...expense } = row;
+    const ledger = toExpenseLedgerJson(expense);
+    return {
+      ...ledger,
+      linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
+    };
   }
 
   async addPayment(id: string, input: AddExpensePaymentInput) {
@@ -314,4 +326,23 @@ export class ExpensesService {
       ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
   }
+}
+
+type SalaryLineForPayrollLink = {
+  id: string;
+  payrollRunId: string;
+  payrollRun: { payrollMonth: string } | null;
+} | null;
+
+function mapSalaryLineToLinkedPayrollRun(
+  salaryLine: SalaryLineForPayrollLink | undefined,
+): { payrollRunId: string; payrollMonth: string; salaryLineId: string } | null {
+  if (!salaryLine?.payrollRun) {
+    return null;
+  }
+  return {
+    payrollRunId: salaryLine.payrollRunId,
+    payrollMonth: salaryLine.payrollRun.payrollMonth,
+    salaryLineId: salaryLine.id,
+  };
 }
