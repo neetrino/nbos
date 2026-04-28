@@ -3,6 +3,23 @@ import { SubscriptionsService } from './subscriptions.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
+function mockSubscriptionForFindById(
+  overrides: Partial<{ status: string; startDate: Date; endDate: Date | null }> = {},
+) {
+  return {
+    id: '1',
+    code: 'SUB-2026-0001',
+    amount: 5000,
+    status: 'ACTIVE',
+    startDate: new Date('2026-01-01T00:00:00.000Z'),
+    endDate: null as Date | null,
+    invoices: [],
+    project: { id: 'p', code: 'P', name: 'Proj' },
+    partner: null,
+    ...overrides,
+  };
+}
+
 describe('SubscriptionsService', () => {
   let service: SubscriptionsService;
   let prisma: MockPrisma;
@@ -100,11 +117,11 @@ describe('SubscriptionsService', () => {
 
   describe('updateStatus', () => {
     it('updates status', async () => {
-      prisma.subscription.findUnique.mockResolvedValue({ id: '1', startDate: new Date() });
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({ status: 'ACTIVE' }),
+      );
       prisma.subscription.update.mockResolvedValue({
-        id: '1',
-        status: 'ON_HOLD',
-        startDate: new Date(),
+        ...mockSubscriptionForFindById({ status: 'ON_HOLD' }),
       });
       const result = await service.updateStatus('1', 'ON_HOLD');
       expect(result.status).toBe('ON_HOLD');
@@ -112,13 +129,11 @@ describe('SubscriptionsService', () => {
 
     it('activates pending subscription without replacing existing start date', async () => {
       const startDate = new Date('2026-01-15T00:00:00.000Z');
-      prisma.subscription.findUnique.mockResolvedValue({ id: '1', startDate, status: 'PENDING' });
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({ status: 'PENDING', startDate }),
+      );
       prisma.subscription.update.mockResolvedValue({
-        id: '1',
-        amount: 5000,
-        status: 'ACTIVE',
-        startDate,
-        endDate: null,
+        ...mockSubscriptionForFindById({ status: 'ACTIVE', startDate }),
       });
 
       const result = await service.updateStatus('1', 'ACTIVE');
@@ -133,6 +148,24 @@ describe('SubscriptionsService', () => {
 
     it('rejects invalid subscription status', async () => {
       await expect(service.updateStatus('1', 'PAUSED')).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects disallowed transition from CANCELLED', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({ status: 'CANCELLED', endDate: new Date() }),
+      );
+
+      await expect(service.updateStatus('1', 'ACTIVE')).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects no-op status update', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(
+        mockSubscriptionForFindById({ status: 'ACTIVE' }),
+      );
+
+      await expect(service.updateStatus('1', 'ACTIVE')).rejects.toThrow(BadRequestException);
       expect(prisma.subscription.update).not.toHaveBeenCalled();
     });
   });

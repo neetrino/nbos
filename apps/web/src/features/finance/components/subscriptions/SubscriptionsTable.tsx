@@ -1,4 +1,7 @@
-import { Calendar, DollarSign, FolderKanban, PlayCircle } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+import { Calendar, DollarSign, FolderKanban, PlayCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -15,61 +18,98 @@ import {
   getSubscriptionStatus,
   getSubscriptionType,
 } from '@/features/finance/constants/finance';
+import { SubscriptionCancelDialog } from './SubscriptionCancelDialog';
+
+const CANCELLABLE_STATUSES = new Set(['PENDING', 'ACTIVE', 'ON_HOLD']);
 
 interface SubscriptionsTableProps {
   subscriptions: Subscription[];
   activatingId: string | null;
+  cancellingId: string | null;
   onActivate: (subscription: Subscription) => void;
+  onCancel: (subscription: Subscription) => Promise<void>;
 }
 
 export function SubscriptionsTable({
   subscriptions,
   activatingId,
+  cancellingId,
   onActivate,
+  onCancel,
 }: SubscriptionsTableProps) {
+  const [cancelTarget, setCancelTarget] = useState<Subscription | null>(null);
+
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Project</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead className="text-right">Amount/mo</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Coverage</TableHead>
-            <TableHead>Billing Day</TableHead>
-            <TableHead>Start Date</TableHead>
-            <TableHead className="text-right">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {subscriptions.map((subscription) => (
-            <SubscriptionTableRow
-              key={subscription.id}
-              subscription={subscription}
-              activatingId={activatingId}
-              onActivate={onActivate}
-            />
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <>
+      <div className="border-border overflow-hidden rounded-xl border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Project</TableHead>
+              <TableHead>Company</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead className="text-right">Amount/mo</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Coverage</TableHead>
+              <TableHead>Billing Day</TableHead>
+              <TableHead>Start Date</TableHead>
+              <TableHead className="text-right">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {subscriptions.map((subscription) => (
+              <SubscriptionTableRow
+                key={subscription.id}
+                subscription={subscription}
+                activatingId={activatingId}
+                cancellingId={cancellingId}
+                onActivate={onActivate}
+                onOpenCancelDialog={() => setCancelTarget(subscription)}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <SubscriptionCancelDialog
+        subscription={cancelTarget}
+        open={cancelTarget !== null}
+        isSubmitting={Boolean(cancellingId && cancelTarget && cancellingId === cancelTarget.id)}
+        onOpenChange={(open) => {
+          if (!open) setCancelTarget(null);
+        }}
+        onConfirm={async () => {
+          if (!cancelTarget) return;
+          try {
+            await onCancel(cancelTarget);
+            setCancelTarget(null);
+          } catch {
+            /* Error surfaced via page ErrorState; keep dialog open for retry. */
+          }
+        }}
+      />
+    </>
   );
 }
 
 function SubscriptionTableRow({
   subscription,
   activatingId,
+  cancellingId,
   onActivate,
+  onOpenCancelDialog,
 }: {
   subscription: Subscription;
   activatingId: string | null;
+  cancellingId: string | null;
   onActivate: (subscription: Subscription) => void;
+  onOpenCancelDialog: () => void;
 }) {
   const subscriptionType = getSubscriptionType(subscription.type);
   const subscriptionStatus = getSubscriptionStatus(subscription.status);
+  const opLock = activatingId ?? cancellingId;
+  const isLockedOut = Boolean(opLock && opLock !== subscription.id);
   const isActivating = activatingId === subscription.id;
+  const isCancelling = cancellingId === subscription.id;
 
   return (
     <TableRow>
@@ -94,8 +134,11 @@ function SubscriptionTableRow({
       </TableCell>
       <SubscriptionActionCell
         subscription={subscription}
+        isLockedOut={isLockedOut}
         isActivating={isActivating}
+        isCancelling={isCancelling}
         onActivate={onActivate}
+        onOpenCancelDialog={onOpenCancelDialog}
       />
     </TableRow>
   );
@@ -153,26 +196,57 @@ function SubscriptionBillingCell({ billingDay }: { billingDay: number }) {
 
 function SubscriptionActionCell({
   subscription,
+  isLockedOut,
   isActivating,
+  isCancelling,
   onActivate,
+  onOpenCancelDialog,
 }: {
   subscription: Subscription;
+  isLockedOut: boolean;
   isActivating: boolean;
+  isCancelling: boolean;
   onActivate: (subscription: Subscription) => void;
+  onOpenCancelDialog: () => void;
 }) {
-  if (subscription.status !== 'PENDING') return <TableCell className="text-right" />;
+  const showActivate = subscription.status === 'PENDING';
+  const showCancel = CANCELLABLE_STATUSES.has(subscription.status);
+
+  if (!showActivate && !showCancel) {
+    return (
+      <TableCell className="text-muted-foreground text-right text-xs">
+        <span aria-hidden>—</span>
+      </TableCell>
+    );
+  }
 
   return (
     <TableCell className="text-right">
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={isActivating}
-        onClick={() => onActivate(subscription)}
-      >
-        <PlayCircle size={14} />
-        {isActivating ? 'Activating...' : 'Activate'}
-      </Button>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {showActivate ? (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isLockedOut || isActivating || isCancelling}
+            onClick={() => onActivate(subscription)}
+          >
+            <PlayCircle size={14} />
+            {isActivating ? 'Activating…' : 'Activate'}
+          </Button>
+        ) : null}
+        {showCancel ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-destructive hover:bg-destructive/10 border-destructive/40"
+            disabled={isLockedOut || isActivating || isCancelling}
+            onClick={onOpenCancelDialog}
+          >
+            <XCircle size={14} />
+            {isCancelling ? 'Cancelling…' : 'Cancel'}
+          </Button>
+        ) : null}
+      </div>
     </TableCell>
   );
 }

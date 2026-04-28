@@ -10,6 +10,7 @@ export function useSubscriptionsPageState() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useInitialSearch();
   const [activatingId, setActivatingId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
 
@@ -30,6 +31,13 @@ export function useSubscriptionsPageState() {
     setActivatingId,
   );
 
+  const handleCancel = useSubscriptionCancellation(
+    setSubscriptions,
+    setStats,
+    setError,
+    setCancellingId,
+  );
+
   useEffect(() => {
     fetchSubscriptions();
   }, [fetchSubscriptions]);
@@ -42,12 +50,14 @@ export function useSubscriptionsPageState() {
     search,
     setSearch,
     activatingId,
+    cancellingId,
     filters,
     setFilters,
     period,
     setPeriod,
     fetchSubscriptions,
     handleActivate,
+    handleCancel,
   };
 }
 
@@ -120,7 +130,9 @@ function useSubscriptionActivation(
       try {
         const updated = await subscriptionsApi.updateStatus(subscription.id, 'ACTIVE');
         setSubscriptions((current) => replaceSubscription(current, updated));
-        setStats((current) => incrementActiveStats(current, Number(updated.amount)));
+        setStats((current) =>
+          applyOptimisticSubscriptionStats(current, 'PENDING', 'ACTIVE', Number(updated.amount)),
+        );
         setError(null);
       } catch {
         setError('Subscription could not be activated. Check the subscription and try again.');
@@ -138,12 +150,60 @@ function replaceSubscription(subscriptions: Subscription[], updated: Subscriptio
   );
 }
 
-function incrementActiveStats(stats: SubscriptionStats | null, amount: number) {
+function applyOptimisticSubscriptionStats(
+  stats: SubscriptionStats | null,
+  from: string,
+  to: string,
+  amount: number,
+): SubscriptionStats | null {
   if (!stats) return stats;
 
-  return {
-    ...stats,
-    activeSubscriptions: stats.activeSubscriptions + 1,
-    monthlyRevenue: Number(stats.monthlyRevenue ?? 0) + amount,
-  };
+  const mrr = Number(stats.monthlyRevenue ?? 0);
+  if (from === 'PENDING' && to === 'ACTIVE') {
+    return {
+      ...stats,
+      activeSubscriptions: stats.activeSubscriptions + 1,
+      monthlyRevenue: mrr + amount,
+    };
+  }
+  if (from === 'ACTIVE' && to === 'CANCELLED') {
+    return {
+      ...stats,
+      activeSubscriptions: Math.max(0, stats.activeSubscriptions - 1),
+      monthlyRevenue: Math.max(0, mrr - amount),
+    };
+  }
+  return stats;
+}
+
+function useSubscriptionCancellation(
+  setSubscriptions: (updater: (current: Subscription[]) => Subscription[]) => void,
+  setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
+  setError: (error: string | null) => void,
+  setCancellingId: (id: string | null) => void,
+) {
+  return useCallback(
+    async (subscription: Subscription) => {
+      setCancellingId(subscription.id);
+      try {
+        const updated = await subscriptionsApi.updateStatus(subscription.id, 'CANCELLED');
+        setSubscriptions((current) => replaceSubscription(current, updated));
+        setStats((current) =>
+          applyOptimisticSubscriptionStats(
+            current,
+            subscription.status,
+            'CANCELLED',
+            Number(subscription.amount),
+          ),
+        );
+        setError(null);
+      } catch {
+        setError('Subscription could not be cancelled. Try again.');
+        throw new Error('subscription_cancel_failed');
+      } finally {
+        setCancellingId(null);
+      }
+    },
+    [setCancellingId, setError, setStats, setSubscriptions],
+  );
 }

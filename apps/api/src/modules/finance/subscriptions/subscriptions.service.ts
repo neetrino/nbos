@@ -7,6 +7,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { assertSubscriptionStatus, attachSubscriptionCoverage } from './subscription-coverage';
+import { assertSubscriptionStatusTransition } from './subscription-status-transitions';
 
 interface CreateSubscriptionDto {
   projectId: string;
@@ -165,6 +166,10 @@ export class SubscriptionsService {
   async updateStatus(id: string, status: string) {
     assertSubscriptionStatus(status);
     const current = await this.findById(id);
+    assertSubscriptionStatusTransition(
+      current.status as SubscriptionStatusEnum,
+      status as SubscriptionStatusEnum,
+    );
 
     const updateData: Prisma.SubscriptionUpdateInput = {
       status: status as SubscriptionStatusEnum,
