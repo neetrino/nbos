@@ -3,19 +3,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Download, Loader2, RefreshCcw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollRunDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
+import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
 import { PayrollRunSalaryLinesTable } from '@/features/finance/components/payroll/PayrollRunSalaryLinesTable';
+import { usePayrollRunJournalAuditCsvExport } from '@/features/finance/components/payroll/use-payroll-run-journal-audit-csv-export';
 import { usePayrollRunSalaryLinesCsvExport } from '@/features/finance/components/payroll/use-payroll-run-salary-lines-csv-export';
 import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import {
   PAYROLL_JOURNAL_KIND_LABEL,
   PAYROLL_RUN_STATUS_LABEL,
-  payrollRunActionOptions,
 } from '@/features/finance/constants/payroll-run-ui';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -52,6 +52,8 @@ export default function PayrollRunDetailPage() {
 
   const { exportCsvSubmitting, handleExportSalaryLinesCsv } =
     usePayrollRunSalaryLinesCsvExport(run);
+  const { journalSubmitting, auditSubmitting, handleExportJournalCsv, handleExportAuditCsv } =
+    usePayrollRunJournalAuditCsvExport(run);
 
   useFinanceDocumentTitle(payrollRunDetailPageTitle(run?.payrollMonth));
 
@@ -118,7 +120,6 @@ export default function PayrollRunDetailPage() {
     );
   }
 
-  const actions = payrollRunActionOptions(run.status);
   const listHrefForRunMonth = payrollRunsListHref(undefined, {
     payrollMonthFrom: run.payrollMonth,
     payrollMonthTo: run.payrollMonth,
@@ -144,37 +145,18 @@ export default function PayrollRunDetailPage() {
               : ' · no salary lines'}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => void load()} aria-label="Refresh">
-            <RefreshCcw size={16} />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={exportCsvSubmitting || run.salaryLines.length === 0}
-            onClick={() => handleExportSalaryLinesCsv()}
-            aria-label="Export salary lines as CSV"
-            title="Download all salary lines for this run (UTF-8 CSV)"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={16} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={16} aria-hidden />
-            )}
-          </Button>
-          {actions.map((a) => (
-            <Button
-              key={a.to}
-              type="button"
-              variant={a.to === 'DRAFT' ? 'outline' : 'default'}
-              disabled={statusBusy}
-              onClick={() => void applyStatus(a.to)}
-            >
-              {a.label}
-            </Button>
-          ))}
-        </div>
+        <PayrollRunDetailActions
+          run={run}
+          onRefresh={load}
+          salaryExportSubmitting={exportCsvSubmitting}
+          onExportSalaryLines={handleExportSalaryLinesCsv}
+          journalSubmitting={journalSubmitting}
+          onExportJournal={handleExportJournalCsv}
+          auditSubmitting={auditSubmitting}
+          onExportAudit={handleExportAuditCsv}
+          statusBusy={statusBusy}
+          onApplyStatus={applyStatus}
+        />
       </div>
 
       {actionError ? <p className="text-destructive text-sm">{actionError}</p> : null}
