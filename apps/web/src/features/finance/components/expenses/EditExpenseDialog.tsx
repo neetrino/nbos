@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EXPENSE_CATEGORIES, EXPENSE_STAGES } from '@/features/finance/constants/finance';
+import { ApiError } from '@/lib/api-errors';
 import { expensesApi, type Expense, type UpdateExpensePayload } from '@/lib/api/finance';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import {
@@ -143,8 +144,12 @@ export function EditExpenseDialog({
       const updated = await expensesApi.update(expense.id, payload);
       onSaved(updated);
       onOpenChange(false);
-    } catch {
-      setFormError('Expense could not be saved. Check your connection and try again.');
+    } catch (caught) {
+      setFormError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'Expense could not be saved. Check your connection and try again.',
+      );
     } finally {
       setLoading(false);
     }
