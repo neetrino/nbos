@@ -189,45 +189,78 @@ describe('ExpensesService', () => {
         amount: new Decimal(10),
       });
       prisma.expensePayment.delete.mockResolvedValue({ id: 'pay1' });
-      prisma.expense.findUnique.mockResolvedValue({
-        id: 'e1',
-        name: 'Rent',
-        amount: new Decimal(100),
-        expensePayments: [],
-        project: null,
-      });
+      prisma.expense.findUnique
+        .mockResolvedValueOnce({
+          id: 'e1',
+          amount: new Decimal(100),
+          status: 'PAID',
+          expensePayments: [],
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Rent',
+          amount: new Decimal(100),
+          status: 'UNPAID',
+          expensePayments: [],
+          project: null,
+        });
 
       const result = await service.deletePayment('e1', 'pay1');
 
       expect(prisma.expensePayment.delete).toHaveBeenCalledWith({ where: { id: 'pay1' } });
+      expect(prisma.expense.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'e1' },
+          data: { status: 'UNPAID' },
+        }),
+      );
       expect(result.paymentStatus).toBe('UNPAID');
       expect(result.paidAmount).toBe('0.00');
+      expect(result.status).toBe('UNPAID');
     });
   });
 
   describe('addPayment', () => {
     it('records payment and returns ledger shape', async () => {
-      prisma.expense.findUnique.mockResolvedValueOnce({
-        id: 'e1',
-        amount: new Decimal(100),
-        expensePayments: [],
-      });
+      prisma.expense.findUnique
+        .mockResolvedValueOnce({
+          id: 'e1',
+          amount: new Decimal(100),
+          status: 'THIS_MONTH',
+          expensePayments: [],
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          amount: new Decimal(100),
+          status: 'THIS_MONTH',
+          expensePayments: [
+            {
+              id: 'pay1',
+              amount: new Decimal(40),
+              paymentDate: new Date('2026-04-28'),
+              notes: null,
+              createdAt: new Date('2026-04-28'),
+            },
+          ],
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'X',
+          amount: new Decimal(100),
+          status: 'THIS_MONTH',
+          expensePayments: [
+            {
+              id: 'pay1',
+              amount: new Decimal(40),
+              paymentDate: new Date('2026-04-28'),
+              notes: null,
+              createdAt: new Date('2026-04-28'),
+            },
+          ],
+          project: null,
+        });
+
       prisma.expensePayment.create.mockResolvedValue({ id: 'pay1' });
-      prisma.expense.findUnique.mockResolvedValueOnce({
-        id: 'e1',
-        name: 'X',
-        amount: new Decimal(100),
-        expensePayments: [
-          {
-            id: 'pay1',
-            amount: new Decimal(40),
-            paymentDate: new Date('2026-04-28'),
-            notes: null,
-            createdAt: new Date('2026-04-28'),
-          },
-        ],
-        project: null,
-      });
 
       const result = await service.addPayment('e1', {
         amount: 40,
@@ -238,6 +271,61 @@ describe('ExpensesService', () => {
       expect(result.paymentStatus).toBe('PARTIAL');
       expect(result.paidAmount).toBe('40.00');
       expect(result.remainingAmount).toBe('60.00');
+    });
+
+    it('sets expense status PAID when payment completes the balance', async () => {
+      prisma.expense.findUnique
+        .mockResolvedValueOnce({
+          id: 'e1',
+          amount: new Decimal(100),
+          status: 'UNPAID',
+          expensePayments: [{ amount: new Decimal(60) }],
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          amount: new Decimal(100),
+          status: 'UNPAID',
+          expensePayments: [{ amount: new Decimal(60) }, { amount: new Decimal(40) }],
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Full',
+          amount: new Decimal(100),
+          status: 'PAID',
+          expensePayments: [
+            {
+              id: 'a',
+              amount: new Decimal(60),
+              paymentDate: new Date(),
+              notes: null,
+              createdAt: new Date(),
+            },
+            {
+              id: 'b',
+              amount: new Decimal(40),
+              paymentDate: new Date(),
+              notes: null,
+              createdAt: new Date(),
+            },
+          ],
+          project: null,
+        });
+
+      prisma.expensePayment.create.mockResolvedValue({ id: 'pay2' });
+
+      const result = await service.addPayment('e1', {
+        amount: 40,
+        paymentDate: '2026-04-28T00:00:00.000Z',
+      });
+
+      expect(prisma.expense.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'e1' },
+          data: { status: 'PAID' },
+        }),
+      );
+      expect(result.status).toBe('PAID');
+      expect(result.paymentStatus).toBe('PAID');
     });
 
     it('rejects overpayment', async () => {

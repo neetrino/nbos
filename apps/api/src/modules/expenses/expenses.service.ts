@@ -37,6 +37,7 @@ import {
   attachLedgerFieldsToExpenseListItems,
   fetchExpensePaidTotalsByExpenseIds,
 } from './expense-list-ledger';
+import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -138,6 +139,7 @@ export class ExpensesService {
       throw new NotFoundException(`Expense payment ${paymentId} not found`);
     }
     await this.prisma.expensePayment.delete({ where: { id: paymentId } });
+    await syncExpenseStatusWithPaymentLedger(this.prisma, expenseId);
     return this.findById(expenseId);
   }
 
