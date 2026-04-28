@@ -10,6 +10,7 @@ import {
   parseExpenseListSortOrderParam,
   setExpenseListSortParams,
 } from '@/features/finance/constants/expenses-list-query';
+import { expensesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PROJECT_EXPENSES_DRILLDOWN_QUERY } from '@/features/finance/constants/project-expenses-drilldown';
 import type { ExpenseListSortField } from '@/lib/api/finance';
 import { ExpensesPageContent } from '@/features/finance/components/expenses/ExpensesPageContent';
@@ -21,7 +22,7 @@ function ExpensesPageInner() {
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
 
-  useFinanceDocumentTitle(projectIdFromUrl?.trim() ? 'Expenses · project filter' : 'Expenses');
+  useFinanceDocumentTitle(expensesListPageTitle(Boolean(projectIdFromUrl?.trim())));
 
   const replaceExpensesUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {

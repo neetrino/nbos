@@ -10,6 +10,7 @@ import {
   parseExpenseListSortOrderParam,
   setExpenseListSortParams,
 } from '@/features/finance/constants/expenses-list-query';
+import { expenseBacklogPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
   EXPENSE_BACKLOG_LIST_PATH,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
@@ -24,9 +25,7 @@ function ExpensesBacklogPageInner() {
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
 
-  useFinanceDocumentTitle(
-    projectIdFromUrl?.trim() ? 'Expense backlog · project filter' : 'Expense backlog',
-  );
+  useFinanceDocumentTitle(expenseBacklogPageTitle(Boolean(projectIdFromUrl?.trim())));
 
   const replaceExpensesUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {

@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { FilterBar, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/constants/finance';
+import { subscriptionsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-partner-drilldown';
 import { usePartnerFilterOptions } from '@/features/finance/hooks/usePartnerFilterOptions';
 import { SubscriptionsPageContent } from '@/features/finance/components/subscriptions/SubscriptionsPageContent';
@@ -23,9 +24,7 @@ function SubscriptionsPageInner() {
   const { partnerFilterOptions, partnerOptionsLoadError, clearPartnerOptionsLoadError } =
     usePartnerFilterOptions();
 
-  useFinanceDocumentTitle(
-    partnerIdFromUrl?.trim() ? 'Subscriptions · partner filter' : 'Subscriptions',
-  );
+  useFinanceDocumentTitle(subscriptionsListPageTitle(Boolean(partnerIdFromUrl?.trim())));
 
   const totalMRR = Number(page.stats?.monthlyRevenue ?? 0);
   const activeCount = page.subscriptions.filter(

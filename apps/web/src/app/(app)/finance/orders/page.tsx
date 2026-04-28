@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, RefreshCcw, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import {
   ORDER_RECONCILIATION_GAP_QUERY,
   parseOrderReconciliationGap,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
+import { ordersListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PARTNER_ORDERS_DRILLDOWN_QUERY } from '@/features/finance/constants/partner-orders-drilldown';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { ORDER_STATUSES } from '@/features/finance/components/orders/order-statuses';
@@ -47,15 +48,7 @@ function OrdersPageContent() {
   const gap = parseOrderReconciliationGap(searchParams.get(ORDER_RECONCILIATION_GAP_QUERY));
   const partnerIdFromUrl = searchParams.get(PARTNER_ORDERS_DRILLDOWN_QUERY);
 
-  const ordersDocumentTitle = useMemo(() => {
-    const partner = partnerIdFromUrl?.trim();
-    if (partner && gap) return 'Orders · partner & gap filter';
-    if (partner) return 'Orders · partner filter';
-    if (gap) return 'Orders · reconciliation filter';
-    return 'Orders';
-  }, [gap, partnerIdFromUrl]);
-
-  useFinanceDocumentTitle(ordersDocumentTitle);
+  useFinanceDocumentTitle(ordersListPageTitle(Boolean(partnerIdFromUrl?.trim()), gap !== null));
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);

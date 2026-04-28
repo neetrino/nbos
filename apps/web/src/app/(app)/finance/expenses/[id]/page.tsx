@@ -27,6 +27,7 @@ import {
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   financeExpensesListHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
+import { expenseDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { formatExpenseBacklogReasonLabel } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/AddExpensePaymentDialog';
 import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
@@ -90,16 +91,17 @@ function ExpenseDetailPageInner() {
     fetchExpense();
   }, [fetchExpense]);
 
-  const financeDocTitle = useMemo(() => {
-    if (loading) return undefined;
-    if (error || !expense) return 'Expense';
-    const hasBacklog = fromBacklog;
-    const hasProject = Boolean(listProjectId?.trim());
-    if (!hasBacklog && !hasProject) return expense.name;
-    if (hasBacklog && hasProject) return `${expense.name} · backlog · project filter`;
-    if (hasBacklog) return `${expense.name} · backlog`;
-    return `${expense.name} · project filter`;
-  }, [loading, error, expense, fromBacklog, listProjectId]);
+  const financeDocTitle = useMemo(
+    () =>
+      expenseDetailPageTitle({
+        loading,
+        loadFailed: Boolean(error || !expense),
+        expenseName: expense?.name,
+        fromBacklog,
+        hasProjectDrilldown: Boolean(listProjectId?.trim()),
+      }),
+    [loading, error, expense, fromBacklog, listProjectId],
+  );
 
   useFinanceDocumentTitle(financeDocTitle);
 
