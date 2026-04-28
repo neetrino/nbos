@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Plus, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FilterBar, EmptyState, ErrorState, LoadingState, KanbanBoard } from '@/components/shared';
@@ -13,7 +13,10 @@ import {
   type ExpenseStats,
 } from '@/lib/api/finance';
 import { projectsApi } from '@/lib/api/projects';
-import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
+import {
+  PROJECT_EXPENSES_DRILLDOWN_QUERY,
+  expenseDetailHref,
+} from '@/features/finance/constants/project-expenses-drilldown';
 import { ExpenseSortControls } from './ExpenseSortControls';
 import { ExpensesPageHeader } from './ExpensesPageHeader';
 import { ExpenseSummaryCards } from './ExpenseSummaryCards';
@@ -31,14 +34,23 @@ type ViewMode = 'kanban' | 'list';
 interface ExpensesPageContentProps {
   projectIdFromUrl: string | null;
   onClearProjectFilter: () => void;
+  replaceExpensesUrl: (mutate: (params: URLSearchParams) => void) => void;
+  sortBy: ExpenseListSortField;
+  sortOrder: 'asc' | 'desc';
+  onSortByChange: (value: ExpenseListSortField) => void;
+  onSortOrderChange: (value: 'asc' | 'desc') => void;
 }
 
 export function ExpensesPageContent({
   projectIdFromUrl,
   onClearProjectFilter,
+  replaceExpensesUrl,
+  sortBy,
+  sortOrder,
+  onSortByChange,
+  onSortOrderChange,
 }: ExpensesPageContentProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,8 +64,6 @@ export function ExpensesPageContent({
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<ExpenseListSortField>('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const projectFilterOptions = useExpenseProjectFilterOptions();
 
   useEffect(() => {
@@ -99,11 +109,13 @@ export function ExpensesPageContent({
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
       if (projectIdFromUrl && key === 'project') {
-        router.replace(pathname ?? '/finance/expenses');
+        replaceExpensesUrl((params) => {
+          params.delete(PROJECT_EXPENSES_DRILLDOWN_QUERY);
+        });
       }
       setFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [pathname, projectIdFromUrl, router],
+    [projectIdFromUrl, replaceExpensesUrl],
   );
 
   const fetchExpenses = useCallback(async () => {
@@ -198,8 +210,8 @@ export function ExpensesPageContent({
           <ExpenseSortControls
             sortBy={sortBy}
             sortOrder={sortOrder}
-            onSortByChange={setSortBy}
-            onSortOrderChange={setSortOrder}
+            onSortByChange={onSortByChange}
+            onSortOrderChange={onSortOrderChange}
           />
         }
       />
