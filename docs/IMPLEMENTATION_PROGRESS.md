@@ -22,13 +22,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                       |
-| -------------------- | ------------------------------------------- |
-| Current phase        | Phase 3 - Finance core                      |
-| Current module/block | Finance subscriptions ↔ partner             |
-| Current task         | GET subscriptions `partnerId` filter + UI   |
-| Status               | Slice done; next invoice/subscription depth |
-| Last updated         | 2026-04-28                                  |
+| Field                | Value                                                  |
+| -------------------- | ------------------------------------------------------ |
+| Current phase        | Phase 3 - Finance core                                 |
+| Current module/block | Finance subscriptions ↔ partner                        |
+| Current task         | Invoices `subscriptionId` filter + sub → invoices link |
+| Status               | Slice done; next invoice/subscription depth            |
+| Last updated         | 2026-04-28                                             |
 
 ## Phase Progress
 
@@ -36,7 +36,7 @@ Rules:
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                          |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations |
-| Phase 3 - Finance core                           | In progress |      18% | None                           | Subscriptions hold/resume/cancel UX                                  |
+| Phase 3 - Finance core                           | In progress |      20% | None                           | Subscriptions hold/resume/cancel UX                                  |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                          |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                         |
 | Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                   |
@@ -87,6 +87,7 @@ Rules:
 | 2026-04-28 | Partner primary contact resolved done    | Prisma Partner.contact relation; FK migration; API includes contact; list + detail show name                                   | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`; deploy DB: `pnpm --filter @nbos/database exec prisma migrate deploy`                                                                                                                                                        | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscription partner link UX done        | Subscriptions table Partner column; SubscriptionPartnerDialog; PUT partnerId null clears; UpdateSubscriptionPayload typed      | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscriptions partner filter done        | `GET /finance/subscriptions?partnerId=` + `SUBSCRIPTION_PARTNER_FILTER_UNLINKED`; FilterBar Partner; `usePartnerFilterOptions` | `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/shared typecheck`; `pnpm exec vitest run apps/api/src/modules/finance/subscriptions/subscriptions.service.test.ts`                                                                                         | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Subscription → invoices drilldown done   | `GET /finance/invoices?subscriptionId=`; invoices page banner + clear; subscriptions table link; `InvoiceListParams`           | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm exec vitest run apps/api/src/modules/finance/invoices/invoices.service.test.ts`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                           | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 

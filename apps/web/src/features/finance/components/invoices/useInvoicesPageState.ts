@@ -12,7 +12,12 @@ interface RecordPaymentInput {
   notes?: string;
 }
 
-export function useInvoicesPageState() {
+interface UseInvoicesPageStateOptions {
+  subscriptionIdFromUrl?: string | null;
+}
+
+export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
+  const subscriptionIdFromUrl = options?.subscriptionIdFromUrl?.trim() || null;
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,6 +34,7 @@ export function useInvoicesPageState() {
     search,
     filters,
     period,
+    subscriptionIdFromUrl,
     setInvoices,
     setStats,
     setError,
@@ -74,6 +80,7 @@ function useFetchInvoices({
   search,
   filters,
   period,
+  subscriptionIdFromUrl,
   setInvoices,
   setStats,
   setError,
@@ -82,6 +89,7 @@ function useFetchInvoices({
   search: string;
   filters: Record<string, string>;
   period: FinancePeriod;
+  subscriptionIdFromUrl: string | null;
   setInvoices: (invoices: Invoice[]) => void;
   setStats: (stats: InvoiceStats) => void;
   setError: (error: string | null) => void;
@@ -92,7 +100,9 @@ function useFetchInvoices({
     try {
       const periodParams = getFinancePeriodParams(period);
       const [data, invoiceStats] = await Promise.all([
-        invoicesApi.getAll(buildInvoiceQuery({ filters, search }, periodParams)),
+        invoicesApi.getAll(
+          buildInvoiceQuery({ filters, search, subscriptionIdFromUrl }, periodParams),
+        ),
         invoicesApi.getStats(periodParams),
       ]);
       setInvoices(data.items);
@@ -103,11 +113,15 @@ function useFetchInvoices({
     } finally {
       setLoading(false);
     }
-  }, [filters, period, search, setError, setInvoices, setLoading, setStats]);
+  }, [filters, period, search, subscriptionIdFromUrl, setError, setInvoices, setLoading, setStats]);
 }
 
 function buildInvoiceQuery(
-  params: { search: string; filters: Record<string, string> },
+  params: {
+    search: string;
+    filters: Record<string, string>;
+    subscriptionIdFromUrl: string | null;
+  },
   periodParams?: FinanceDateRangeParams,
 ) {
   return {
@@ -116,6 +130,7 @@ function buildInvoiceQuery(
     status:
       params.filters.status && params.filters.status !== 'all' ? params.filters.status : undefined,
     type: params.filters.type && params.filters.type !== 'all' ? params.filters.type : undefined,
+    subscriptionId: params.subscriptionIdFromUrl || undefined,
     ...periodParams,
   };
 }

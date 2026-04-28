@@ -47,6 +47,18 @@ describe('InvoicesService', () => {
         }),
       );
     });
+
+    it('applies subscriptionId filter', async () => {
+      await service.findAll({ subscriptionId: 'sub-1' });
+
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            subscriptionId: 'sub-1',
+          }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

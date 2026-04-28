@@ -10,6 +10,16 @@ export type {
 } from './subscriptions';
 export { subscriptionsApi } from './subscriptions';
 
+export interface InvoiceListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  type?: string;
+  projectId?: string;
+  subscriptionId?: string;
+  search?: string;
+}
+
 export interface Invoice {
   id: string;
   code: string;
@@ -216,7 +226,7 @@ export interface FinanceDashboardSummary {
 }
 
 export const invoicesApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Invoice>> {
+  async getAll(params?: InvoiceListParams): Promise<ListData<Invoice>> {
     const resp = await api.get<ListData<Invoice>>('/api/finance/invoices', { params });
     return resp.data;
   },

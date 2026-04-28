@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import { Calendar, DollarSign, FolderKanban, Handshake } from 'lucide-react';
+import { Calendar, DollarSign, FileText, FolderKanban, Handshake } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -18,6 +19,7 @@ import {
   getSubscriptionStatus,
   getSubscriptionType,
 } from '@/features/finance/constants/finance';
+import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/subscription-invoice-drilldown';
 import { SubscriptionCancelDialog } from './SubscriptionCancelDialog';
 import { SubscriptionHoldDialog } from './SubscriptionHoldDialog';
 import { SubscriptionPartnerDialog } from './SubscriptionPartnerDialog';
@@ -63,6 +65,7 @@ export function SubscriptionsTable({
               <TableHead>Coverage</TableHead>
               <TableHead>Billing Day</TableHead>
               <TableHead>Start Date</TableHead>
+              <TableHead>Invoices</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -194,6 +197,16 @@ function SubscriptionTableRow({
       <SubscriptionBillingCell billingDay={subscription.billingDay} />
       <TableCell className="text-muted-foreground text-xs">
         {new Date(subscription.startDate).toLocaleDateString()}
+      </TableCell>
+      <TableCell>
+        <Link
+          href={subscriptionInvoicesDrilldownHref(subscription.id)}
+          className="text-primary inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
+          aria-label="View invoices for this subscription"
+        >
+          <FileText size={14} />
+          Invoices
+        </Link>
       </TableCell>
       <SubscriptionTableActionCell
         subscription={subscription}
