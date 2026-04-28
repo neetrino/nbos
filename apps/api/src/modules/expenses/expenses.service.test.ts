@@ -107,6 +107,32 @@ describe('ExpensesService', () => {
         }),
       );
     });
+
+    it('attaches payment ledger fields using grouped payment totals', async () => {
+      prisma.expense.findMany.mockResolvedValue([
+        {
+          id: 'e1',
+          amount: new Decimal(100),
+          project: null,
+        },
+      ]);
+      prisma.expensePayment.groupBy.mockResolvedValue([
+        { expenseId: 'e1', _sum: { amount: new Decimal(25) } },
+      ]);
+
+      const result = await service.findAll({});
+
+      expect(result.items[0]).toMatchObject({
+        paidAmount: '25.00',
+        remainingAmount: '75.00',
+        paymentStatus: 'PARTIAL',
+      });
+      expect(prisma.expensePayment.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { expenseId: { in: ['e1'] } },
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

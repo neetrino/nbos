@@ -18,6 +18,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
+import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { getExpenseStage, formatAmount } from '@/features/finance/constants/finance';
 import {
   type ExpenseListNavigationSort,
@@ -51,6 +52,7 @@ export function ExpensesTableSection({
             <TableHead>Category</TableHead>
             <TableHead>Type</TableHead>
             <TableHead className="text-right">Amount</TableHead>
+            <TableHead className="text-right">Paid / Remaining</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Project</TableHead>
             <TableHead>Due Date</TableHead>
@@ -62,6 +64,12 @@ export function ExpensesTableSection({
         <TableBody>
           {expenses.map((expense) => {
             const stage = getExpenseStage(expense.status);
+            const ledgerPresentation =
+              expense.paymentStatus !== undefined
+                ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
+                : null;
+            const hasLedger =
+              expense.paidAmount !== undefined && expense.remainingAmount !== undefined;
             return (
               <TableRow key={expense.id}>
                 <TableCell>
@@ -89,6 +97,22 @@ export function ExpensesTableSection({
                     <DollarSign size={12} className="text-accent" />
                     {formatAmount(parseFloat(expense.amount))}
                   </span>
+                </TableCell>
+                <TableCell className="text-right align-top">
+                  {ledgerPresentation && hasLedger ? (
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-xs font-medium tabular-nums">
+                        {formatAmount(parseFloat(expense.paidAmount!))} /{' '}
+                        {formatAmount(parseFloat(expense.remainingAmount!))}
+                      </span>
+                      <StatusBadge
+                        label={ledgerPresentation.label}
+                        variant={ledgerPresentation.variant}
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   {stage && <StatusBadge label={stage.label} variant={stage.variant} />}

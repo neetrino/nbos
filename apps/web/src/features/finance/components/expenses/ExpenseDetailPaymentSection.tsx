@@ -9,8 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { formatAmount } from '@/features/finance/constants/finance';
-import type { Expense, ExpenseLedgerPaymentStatus } from '@/lib/api/finance';
+import type { Expense } from '@/lib/api/finance';
 
 function formatPaymentDate(iso: string | null): string {
   if (!iso) return '—';
@@ -21,27 +22,15 @@ function formatPaymentDate(iso: string | null): string {
   }
 }
 
-function ledgerStatusPresentation(status: ExpenseLedgerPaymentStatus): {
-  label: string;
-  variant: 'emerald' | 'amber' | 'gray';
-} {
-  switch (status) {
-    case 'PAID':
-      return { label: 'Paid', variant: 'emerald' };
-    case 'PARTIAL':
-      return { label: 'Partially paid', variant: 'amber' };
-    default:
-      return { label: 'Unpaid', variant: 'gray' };
-  }
-}
-
 interface ExpenseDetailPaymentSectionProps {
   expense: Expense;
 }
 
 export function ExpenseDetailPaymentSection({ expense }: ExpenseDetailPaymentSectionProps) {
   const ledgerPresentation =
-    expense.paymentStatus !== undefined ? ledgerStatusPresentation(expense.paymentStatus) : null;
+    expense.paymentStatus !== undefined
+      ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
+      : null;
 
   return (
     <>

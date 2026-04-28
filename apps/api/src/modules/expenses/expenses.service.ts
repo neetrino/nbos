@@ -33,6 +33,10 @@ import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expens
 import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
 import { createExpensePaymentRecord, type AddExpensePaymentInput } from './expense-payment-create';
 import { toExpenseLedgerJson } from './expense-detail-mapper';
+import {
+  attachLedgerFieldsToExpenseListItems,
+  fetchExpensePaidTotalsByExpenseIds,
+} from './expense-list-ledger';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -99,8 +103,12 @@ export class ExpensesService {
       this.prisma.expense.count({ where }),
     ]);
 
+    const ids = items.map((row) => row.id);
+    const paidTotals = await fetchExpensePaidTotalsByExpenseIds(this.prisma, ids);
+    const enrichedItems = attachLedgerFieldsToExpenseListItems(items, paidTotals);
+
     return {
-      items,
+      items: enrichedItems,
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }

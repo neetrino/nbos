@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/shared';
+import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   type ExpenseListNavigationSort,
@@ -32,6 +33,12 @@ export function ExpenseKanbanCard({
   fromBacklog = false,
   onRequestDelete,
 }: ExpenseKanbanCardProps) {
+  const ledgerPresentation =
+    expense.paymentStatus !== undefined
+      ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
+      : null;
+  const hasLedger = expense.paidAmount !== undefined && expense.remainingAmount !== undefined;
+
   return (
     <div className="border-border bg-card relative rounded-xl border">
       <Link
@@ -47,6 +54,15 @@ export function ExpenseKanbanCard({
         </div>
         <p className="text-sm font-medium">{expense.name}</p>
         <p className="text-sm font-bold">{formatAmount(parseFloat(expense.amount))}</p>
+        {ledgerPresentation && hasLedger ? (
+          <div className="flex flex-col gap-1">
+            <p className="text-muted-foreground text-xs tabular-nums">
+              Paid {formatAmount(parseFloat(expense.paidAmount!))} · Left{' '}
+              {formatAmount(parseFloat(expense.remainingAmount!))}
+            </p>
+            <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
+          </div>
+        ) : null}
         {expense.project ? (
           <div className="text-muted-foreground flex items-center gap-1 text-xs">
             <FolderKanban size={10} />
