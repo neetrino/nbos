@@ -379,13 +379,18 @@ describe('ExpensesService', () => {
         notes: null,
         createdAt: new Date('2026-04-01'),
       };
-      prisma.expense.findUnique.mockResolvedValue({
-        id: 'e1',
-        name: 'Rent',
-        amount: new Decimal(100),
-        expensePayments: [paymentRow],
-        project: null,
-      });
+      prisma.expense.findUnique
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Rent',
+          amount: new Decimal(100),
+          status: 'UNPAID',
+          expensePayments: [paymentRow],
+          project: null,
+        })
+        .mockResolvedValueOnce({
+          expensePayments: [{ amount: new Decimal(80) }],
+        });
 
       await expect(service.update('e1', { amount: 50 })).rejects.toThrow(BadRequestException);
       expect(prisma.expense.update).not.toHaveBeenCalled();
@@ -399,13 +404,34 @@ describe('ExpensesService', () => {
         notes: null,
         createdAt: new Date('2026-04-01'),
       };
-      prisma.expense.findUnique.mockResolvedValue({
-        id: 'e1',
-        name: 'Rent',
-        amount: new Decimal(100),
-        expensePayments: [paymentRow],
-        project: null,
-      });
+      prisma.expense.findUnique
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Rent',
+          amount: new Decimal(100),
+          status: 'UNPAID',
+          expensePayments: [paymentRow],
+          project: null,
+        })
+        .mockResolvedValueOnce({
+          expensePayments: [{ amount: new Decimal(80) }],
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Rent',
+          amount: new Decimal(80),
+          status: 'UNPAID',
+          expensePayments: [paymentRow],
+          project: null,
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Rent',
+          amount: new Decimal(80),
+          status: 'PAID',
+          expensePayments: [paymentRow],
+          project: null,
+        });
 
       await service.update('e1', { amount: 80 });
 
@@ -413,6 +439,72 @@ describe('ExpensesService', () => {
         expect.objectContaining({
           where: { id: 'e1' },
           data: expect.objectContaining({ amount: 80 }),
+        }),
+      );
+      expect(prisma.expense.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'e1' },
+          data: { status: 'PAID' },
+        }),
+      );
+    });
+
+    it('demotes PAID status when amount increases above recorded payments', async () => {
+      const pay40 = {
+        id: 'pay-a',
+        amount: new Decimal(40),
+        paymentDate: new Date('2026-04-01'),
+        notes: null,
+        createdAt: new Date('2026-04-01'),
+      };
+      const pay60 = {
+        id: 'pay-b',
+        amount: new Decimal(60),
+        paymentDate: new Date('2026-04-02'),
+        notes: null,
+        createdAt: new Date('2026-04-02'),
+      };
+      prisma.expense.findUnique
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Rent',
+          amount: new Decimal(100),
+          status: 'PAID',
+          expensePayments: [pay40, pay60],
+          project: null,
+        })
+        .mockResolvedValueOnce({
+          expensePayments: [{ amount: new Decimal(40) }, { amount: new Decimal(60) }],
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Rent',
+          amount: new Decimal(150),
+          status: 'PAID',
+          expensePayments: [pay40, pay60],
+          project: null,
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          name: 'Rent',
+          amount: new Decimal(150),
+          status: 'UNPAID',
+          expensePayments: [pay40, pay60],
+          project: null,
+        });
+
+      await service.update('e1', { amount: 150 });
+
+      expect(prisma.expense.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'e1' },
+          data: expect.objectContaining({ amount: 150 }),
+        }),
+      );
+      expect(prisma.expense.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'e1' },
+          data: { status: 'UNPAID' },
         }),
       );
     });

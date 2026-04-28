@@ -215,6 +215,9 @@ export class ExpensesService {
         ...(data.notes !== undefined && { notes: data.notes }),
       },
     });
+    if (data.amount !== undefined) {
+      await syncExpenseStatusWithPaymentLedger(this.prisma, id);
+    }
     return this.findById(id);
   }
 
