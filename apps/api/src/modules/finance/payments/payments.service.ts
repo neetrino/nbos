@@ -157,7 +157,7 @@ export class PaymentsService {
       );
     }
 
-    const payment = await this.prisma.payment.create({
+    const created = await this.prisma.payment.create({
       data: {
         invoiceId: data.invoiceId,
         amount: data.amount,
@@ -165,9 +165,6 @@ export class PaymentsService {
         paymentMethod: data.paymentMethod,
         confirmedBy: data.confirmedBy,
         notes: data.notes,
-      },
-      include: {
-        invoice: { select: { id: true, code: true, amount: true, status: true } },
       },
     });
 
@@ -177,7 +174,7 @@ export class PaymentsService {
       await this.syncOrderStatus(invoice.orderId);
     }
 
-    return payment;
+    return this.findById(created.id);
   }
 
   async delete(id: string) {

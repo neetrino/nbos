@@ -3,6 +3,33 @@ import { OrdersService } from './orders.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
 
+/** Row returned by `findById` after `create` / `updateStatus`. */
+function mockOrderFindByIdRow(id: string, overrides: Record<string, unknown> = {}) {
+  return {
+    id,
+    code: 'ORD-2026-0001',
+    totalAmount: 100000,
+    currency: 'AMD',
+    status: 'ACTIVE',
+    type: 'PRODUCT',
+    paymentType: 'FULL',
+    projectId: 'p1',
+    project: {
+      id: 'p1',
+      code: 'P-1',
+      name: 'Project',
+      company: { id: 'c1', name: 'Company' },
+      contact: { id: 'ct1', firstName: 'Jane', lastName: 'Doe' },
+    },
+    deal: null,
+    product: null,
+    extension: null,
+    partner: null,
+    invoices: [],
+    ...overrides,
+  };
+}
+
 describe('OrdersService', () => {
   let service: OrdersService;
   let prisma: MockPrisma;
@@ -152,7 +179,9 @@ describe('OrdersService', () => {
 
   describe('create', () => {
     it('generates code ORD-YYYY-NNNN', async () => {
-      prisma.order.create.mockResolvedValue({ id: '1', code: 'ORD-2026-0001' });
+      prisma.order.findFirst.mockResolvedValue(null);
+      prisma.order.create.mockResolvedValue({ id: 'new-ord', code: 'ORD-2026-0001' });
+      prisma.order.findUnique.mockResolvedValue(mockOrderFindByIdRow('new-ord'));
       const result = await service.create({
         projectId: 'p1',
         type: 'PRODUCT',
@@ -165,12 +194,10 @@ describe('OrdersService', () => {
 
   describe('updateStatus', () => {
     it('updates status when found', async () => {
-      prisma.order.findUnique.mockResolvedValue({
-        id: '1',
-        project: { company: null, contact: null },
-        invoices: [],
-      });
-      prisma.order.update.mockResolvedValue({ id: '1', status: 'COMPLETED' });
+      prisma.order.findUnique
+        .mockResolvedValueOnce(mockOrderFindByIdRow('1'))
+        .mockResolvedValueOnce(mockOrderFindByIdRow('1', { status: 'COMPLETED' }));
+      prisma.order.update.mockResolvedValue({});
       const result = await service.updateStatus('1', 'COMPLETED');
       expect(result.status).toBe('COMPLETED');
     });

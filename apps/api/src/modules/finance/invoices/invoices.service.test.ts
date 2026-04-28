@@ -3,6 +3,44 @@ import { InvoicesService } from './invoices.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
+/** Full row shape for `findById` (returned after create/updateStatus). */
+function mockInvoiceFindByIdRow(
+  id: string,
+  overrides: Record<string, unknown> & {
+    amount?: number;
+    payments?: Array<{ id?: string; amount: number; paymentDate: Date }>;
+  } = {},
+) {
+  const {
+    amount = 100000,
+    payments = [
+      { id: 'p1', amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+      { id: 'p2', amount: 40000, paymentDate: new Date('2026-04-12T00:00:00.000Z') },
+    ],
+    ...rest
+  } = overrides;
+  return {
+    id,
+    code: `INV-2026-${id}`,
+    amount,
+    dueDate: new Date('2026-04-20'),
+    status: 'PAID',
+    type: 'SUBSCRIPTION',
+    taxStatus: 'TAX',
+    orderId: null,
+    subscriptionId: null,
+    projectId: 'proj-1',
+    companyId: null,
+    createdAt: new Date(),
+    order: null,
+    subscription: null,
+    company: null,
+    payments,
+    paidDate: new Date('2026-04-12T00:00:00.000Z'),
+    ...rest,
+  };
+}
+
 describe('InvoicesService', () => {
   let service: InvoicesService;
   let prisma: MockPrisma;
@@ -70,6 +108,14 @@ describe('InvoicesService', () => {
   describe('updateStatus', () => {
     it('sets paidDate when marking as PAID', async () => {
       const paidDate = new Date('2026-04-12T00:00:00.000Z');
+      const partialPayments = [
+        { amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+        { amount: 40000, paymentDate: paidDate },
+      ];
+      const fullPayments = [
+        { id: 'p1', amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+        { id: 'p2', amount: 40000, paymentDate: paidDate },
+      ];
       prisma.invoice.findUnique
         .mockResolvedValueOnce({
           id: '1',
@@ -77,32 +123,10 @@ describe('InvoicesService', () => {
           amount: 100000,
           dueDate: new Date('2026-04-20'),
           status: 'WAITING',
-          payments: [
-            { amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
-            { amount: 40000, paymentDate: paidDate },
-          ],
+          payments: partialPayments,
         })
-        .mockResolvedValueOnce({
-          id: '1',
-          orderId: null,
-          amount: 100000,
-          dueDate: new Date('2026-04-20'),
-          status: 'WAITING',
-          payments: [
-            { amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
-            { amount: 40000, paymentDate: paidDate },
-          ],
-        });
-      prisma.invoice.update.mockResolvedValue({
-        id: '1',
-        amount: 100000,
-        payments: [
-          { amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
-          { amount: 40000, paymentDate: paidDate },
-        ],
-        status: 'PAID',
-        paidDate: new Date(),
-      });
+        .mockResolvedValueOnce(mockInvoiceFindByIdRow('1', { paidDate, payments: fullPayments }));
+      prisma.invoice.update.mockResolvedValue({});
       await service.updateStatus('1', 'PAID');
       expect(prisma.invoice.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -129,24 +153,28 @@ describe('InvoicesService', () => {
     });
 
     it('promotes the linked deal when all order invoices are paid and amount is covered', async () => {
-      prisma.invoice.findUnique.mockResolvedValueOnce({
-        id: 'inv-1',
-        orderId: 'ord-1',
-        amount: 100000,
-        dueDate: new Date('2026-04-20'),
-        status: 'WAITING',
-        payments: [
-          { amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
-          { amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
-        ],
-      });
-      prisma.invoice.update.mockResolvedValue({
-        id: 'inv-1',
-        amount: 100000,
-        payments: [{ amount: 100000 }],
-        status: 'PAID',
-        paidDate: new Date(),
-      });
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'inv-1',
+          orderId: 'ord-1',
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          status: 'WAITING',
+          payments: [
+            { amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+            { amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
+          ],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('inv-1', {
+            orderId: 'ord-1',
+            payments: [
+              { id: 'p1', amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+              { id: 'p2', amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
+            ],
+          }),
+        );
+      prisma.invoice.update.mockResolvedValue({});
       prisma.invoice.findMany.mockResolvedValueOnce([
         { status: 'PAID', payments: [{ amount: 100000 }] },
         { status: 'PAID', payments: [{ amount: 50000 }] },
@@ -169,21 +197,25 @@ describe('InvoicesService', () => {
     });
 
     it('does not promote the linked deal when at least one order invoice is unpaid', async () => {
-      prisma.invoice.findUnique.mockResolvedValueOnce({
-        id: 'inv-2',
-        orderId: 'ord-2',
-        amount: 50000,
-        dueDate: new Date('2026-04-20'),
-        status: 'WAITING',
-        payments: [{ amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') }],
-      });
-      prisma.invoice.update.mockResolvedValue({
-        id: 'inv-2',
-        amount: 50000,
-        payments: [{ amount: 50000 }],
-        status: 'PAID',
-        paidDate: new Date(),
-      });
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'inv-2',
+          orderId: 'ord-2',
+          amount: 50000,
+          dueDate: new Date('2026-04-20'),
+          status: 'WAITING',
+          payments: [{ amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') }],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('inv-2', {
+            orderId: 'ord-2',
+            amount: 50000,
+            payments: [
+              { id: 'p1', amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
+            ],
+          }),
+        );
+      prisma.invoice.update.mockResolvedValue({});
       prisma.invoice.findMany.mockResolvedValueOnce([
         { status: 'PAID', payments: [{ amount: 50000 }] },
         { status: 'THIS_MONTH', payments: [] },
@@ -203,24 +235,28 @@ describe('InvoicesService', () => {
     });
 
     it('does not promote the linked deal when paid invoices do not cover deal amount', async () => {
-      prisma.invoice.findUnique.mockResolvedValueOnce({
-        id: 'inv-3',
-        orderId: 'ord-3',
-        amount: 100000,
-        dueDate: new Date('2026-04-20'),
-        status: 'WAITING',
-        payments: [
-          { amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
-          { amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
-        ],
-      });
-      prisma.invoice.update.mockResolvedValue({
-        id: 'inv-3',
-        amount: 100000,
-        payments: [{ amount: 100000 }],
-        status: 'PAID',
-        paidDate: new Date(),
-      });
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'inv-3',
+          orderId: 'ord-3',
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          status: 'WAITING',
+          payments: [
+            { amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+            { amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
+          ],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('inv-3', {
+            orderId: 'ord-3',
+            payments: [
+              { id: 'p1', amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+              { id: 'p2', amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
+            ],
+          }),
+        );
+      prisma.invoice.update.mockResolvedValue({});
       prisma.invoice.findMany.mockResolvedValueOnce([
         { status: 'PAID', payments: [{ amount: 100000 }] },
         { status: 'PAID', payments: [{ amount: 100000 }] },

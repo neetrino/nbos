@@ -3,6 +3,43 @@ import { PaymentsService } from './payments.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
+/** Row returned by `findById` after `create` completes sync helpers. */
+function mockPaymentFindByIdRow(
+  id: string,
+  overrides: Record<string, unknown> & {
+    amount?: number;
+    invoice?: Record<string, unknown>;
+  } = {},
+) {
+  const { amount = 50000, invoice: invoiceOverrides, ...rest } = overrides;
+  return {
+    id,
+    invoiceId: 'inv1',
+    amount,
+    paymentDate: new Date('2026-03-11'),
+    paymentMethod: null,
+    confirmedBy: null,
+    notes: null,
+    invoice: {
+      id: 'inv1',
+      code: 'INV-TEST',
+      projectId: 'proj-1',
+      amount: 100000,
+      status: 'WAITING',
+      company: { id: 'comp-1', name: 'ACME' },
+      order: {
+        id: 'ord1',
+        code: 'ORD-1',
+        project: { id: 'proj-1', name: 'Main Project' },
+      },
+      subscription: null,
+      ...(invoiceOverrides ?? {}),
+    },
+    confirmer: null,
+    ...rest,
+  };
+}
+
 describe('PaymentsService', () => {
   let service: PaymentsService;
   let prisma: MockPrisma;
@@ -96,6 +133,7 @@ describe('PaymentsService', () => {
       prisma.invoice.findMany.mockResolvedValue([
         { status: 'WAITING', amount: 100000, payments: [{ amount: 50000 }] },
       ]);
+      prisma.payment.findUnique.mockResolvedValue(mockPaymentFindByIdRow('1'));
 
       const result = await service.create({
         invoiceId: 'inv1',
@@ -138,6 +176,14 @@ describe('PaymentsService', () => {
         { status: 'PAID', amount: 100000, payments: [{ amount: 100000 }] },
         { status: 'PAID', amount: 50000, payments: [{ amount: 50000 }] },
       ]);
+      prisma.payment.findUnique.mockResolvedValue(
+        mockPaymentFindByIdRow('2', {
+          amount: 40000,
+          invoice: {
+            status: 'PAID',
+          },
+        }),
+      );
 
       await service.create({
         invoiceId: 'inv1',
@@ -175,6 +221,9 @@ describe('PaymentsService', () => {
       prisma.invoice.findMany.mockResolvedValue([
         { status: 'DELAYED', amount: 100000, payments: [{ amount: 30000 }] },
       ]);
+      prisma.payment.findUnique.mockResolvedValue(
+        mockPaymentFindByIdRow('3', { amount: 30000, invoice: { status: 'DELAYED' } }),
+      );
 
       await service.create({
         invoiceId: 'inv1',

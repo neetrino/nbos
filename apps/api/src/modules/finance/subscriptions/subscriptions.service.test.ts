@@ -123,6 +123,7 @@ describe('SubscriptionsService', () => {
     it('generates code SUB-YYYY-NNNN', async () => {
       prisma.subscription.findFirst.mockResolvedValue(null);
       prisma.subscription.create.mockResolvedValue({ id: '1', code: 'SUB-2026-0001' });
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
       const result = await service.create({
         projectId: 'p1',
         type: 'MAINTENANCE_ONLY',
@@ -136,24 +137,20 @@ describe('SubscriptionsService', () => {
 
   describe('updateStatus', () => {
     it('updates status', async () => {
-      prisma.subscription.findUnique.mockResolvedValue(
-        mockSubscriptionForFindById({ status: 'ACTIVE' }),
-      );
-      prisma.subscription.update.mockResolvedValue({
-        ...mockSubscriptionForFindById({ status: 'ON_HOLD' }),
-      });
+      prisma.subscription.findUnique
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'ACTIVE' }))
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'ON_HOLD' }));
+      prisma.subscription.update.mockResolvedValue({});
       const result = await service.updateStatus('1', 'ON_HOLD');
       expect(result.status).toBe('ON_HOLD');
     });
 
     it('activates pending subscription without replacing existing start date', async () => {
       const startDate = new Date('2026-01-15T00:00:00.000Z');
-      prisma.subscription.findUnique.mockResolvedValue(
-        mockSubscriptionForFindById({ status: 'PENDING', startDate }),
-      );
-      prisma.subscription.update.mockResolvedValue({
-        ...mockSubscriptionForFindById({ status: 'ACTIVE', startDate }),
-      });
+      prisma.subscription.findUnique
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'PENDING', startDate }))
+        .mockResolvedValueOnce(mockSubscriptionForFindById({ status: 'ACTIVE', startDate }));
+      prisma.subscription.update.mockResolvedValue({});
 
       const result = await service.updateStatus('1', 'ACTIVE');
 

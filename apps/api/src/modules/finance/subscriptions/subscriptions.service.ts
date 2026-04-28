@@ -127,7 +127,7 @@ export class SubscriptionsService {
 
   async create(data: CreateSubscriptionDto) {
     const code = await this.generateCode();
-    const subscription = await this.prisma.subscription.create({
+    const created = await this.prisma.subscription.create({
       data: {
         code,
         projectId: data.projectId,
@@ -140,12 +140,8 @@ export class SubscriptionsService {
         endDate: data.endDate ? new Date(data.endDate) : undefined,
         partnerId: data.partnerId,
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        partner: { select: { id: true, name: true } },
-      },
     });
-    return attachSubscriptionCoverage(subscription);
+    return this.findById(created.id);
   }
 
   async update(id: string, data: UpdateSubscriptionDto) {
@@ -166,15 +162,11 @@ export class SubscriptionsService {
         ? { connect: { id: data.partnerId } }
         : { disconnect: true };
 
-    const subscription = await this.prisma.subscription.update({
+    await this.prisma.subscription.update({
       where: { id },
       data: updateData,
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        partner: { select: { id: true, name: true } },
-      },
     });
-    return attachSubscriptionCoverage(subscription);
+    return this.findById(id);
   }
 
   async updateStatus(id: string, status: string) {
@@ -195,11 +187,11 @@ export class SubscriptionsService {
       updateData.endDate = new Date();
     }
 
-    const subscription = await this.prisma.subscription.update({
+    await this.prisma.subscription.update({
       where: { id },
       data: updateData,
     });
-    return attachSubscriptionCoverage(subscription);
+    return this.findById(id);
   }
 
   async getStats(params: SubscriptionStatsParams = {}) {

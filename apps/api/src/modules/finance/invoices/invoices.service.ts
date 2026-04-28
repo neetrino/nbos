@@ -131,14 +131,8 @@ export class InvoicesService {
         type: data.type as InvoiceTypeEnum,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
       },
-      include: {
-        order: { select: { id: true, code: true } },
-        company: { select: { id: true, name: true } },
-        payments: { select: { id: true, amount: true, paymentDate: true } },
-        _count: { select: { payments: true } },
-      },
     });
-    return attachInvoicePaymentCoverage(invoice);
+    return this.findById(invoice.id);
   }
 
   async updateStatus(id: string, status: string) {
@@ -178,15 +172,9 @@ export class InvoicesService {
     } else {
       updateData.paidDate = null;
     }
-    const updated = await this.prisma.invoice.update({
+    await this.prisma.invoice.update({
       where: { id },
       data: updateData,
-      include: {
-        order: { select: { id: true, code: true } },
-        company: { select: { id: true, name: true } },
-        payments: { select: { id: true, amount: true, paymentDate: true } },
-        _count: { select: { payments: true } },
-      },
     });
 
     if (invoice.orderId) {
@@ -197,7 +185,7 @@ export class InvoicesService {
       await this.checkAndPromoteDeal(invoice.orderId);
     }
 
-    return attachInvoicePaymentCoverage(updated);
+    return this.findById(id);
   }
 
   private async checkAndPromoteDeal(orderId: string) {

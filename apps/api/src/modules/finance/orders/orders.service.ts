@@ -185,7 +185,7 @@ export class OrdersService {
 
   async create(data: CreateOrderDto) {
     const code = await this.generateCode();
-    return this.prisma.order.create({
+    const created = await this.prisma.order.create({
       data: {
         code,
         projectId: data.projectId,
@@ -200,18 +200,17 @@ export class OrdersService {
         partnerId: data.partnerId,
         partnerPercent: data.partnerPercent,
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-      },
     });
+    return this.findById(created.id);
   }
 
   async updateStatus(id: string, status: string) {
     await this.findById(id);
-    return this.prisma.order.update({
+    await this.prisma.order.update({
       where: { id },
       data: { status: status as OrderStatusEnum },
     });
+    return this.findById(id);
   }
 
   async delete(id: string) {
