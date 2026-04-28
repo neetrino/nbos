@@ -27,6 +27,7 @@ import {
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   financeExpensesListHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
+import { FINANCE_DOCUMENT_TITLE_SUFFIX } from '@/features/finance/constants/finance-document-title';
 import { formatExpenseBacklogReasonLabel } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { cn } from '@/lib/utils';
 import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/AddExpensePaymentDialog';
@@ -34,9 +35,6 @@ import { DeleteExpenseDialog } from '@/features/finance/components/expenses/Dele
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
 import { expensesApi, type Expense } from '@/lib/api/finance';
-
-/** Browser tab label suffix (aligned with root metadata branding). */
-const FINANCE_EXPENSE_DETAIL_TITLE_SUFFIX = ' · Finance · NBOS';
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
@@ -95,13 +93,13 @@ function ExpenseDetailPageInner() {
     const previousTitle = document.title;
 
     if (error || !expense) {
-      document.title = `Expense${FINANCE_EXPENSE_DETAIL_TITLE_SUFFIX}`;
+      document.title = `Expense${FINANCE_DOCUMENT_TITLE_SUFFIX}`;
       return () => {
         document.title = previousTitle;
       };
     }
 
-    document.title = `${expense.name}${FINANCE_EXPENSE_DETAIL_TITLE_SUFFIX}`;
+    document.title = `${expense.name}${FINANCE_DOCUMENT_TITLE_SUFFIX}`;
     return () => {
       document.title = previousTitle;
     };

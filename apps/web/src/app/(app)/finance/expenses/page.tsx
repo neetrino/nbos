@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback } from 'react';
+import { Suspense, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { LoadingState } from '@/components/shared';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/features/finance/constants/expenses-list-query';
 import { PROJECT_EXPENSES_DRILLDOWN_QUERY } from '@/features/finance/constants/project-expenses-drilldown';
 import type { ExpenseListSortField } from '@/lib/api/finance';
+import { FINANCE_DOCUMENT_TITLE_SUFFIX } from '@/features/finance/constants/finance-document-title';
 import { ExpensesPageContent } from '@/features/finance/components/expenses/ExpensesPageContent';
 
 function ExpensesPageInner() {
@@ -19,6 +20,14 @@ function ExpensesPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
+
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = `Expenses${FINANCE_DOCUMENT_TITLE_SUFFIX}`;
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
 
   const replaceExpensesUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
