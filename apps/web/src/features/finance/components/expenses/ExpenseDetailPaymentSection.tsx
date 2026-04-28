@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { ApiError } from '@/lib/api-errors';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type Expense, type ExpensePaymentEntry } from '@/lib/api/finance';
 import { DeleteExpensePaymentDialog } from './DeleteExpensePaymentDialog';
 
@@ -59,9 +59,7 @@ export function ExpenseDetailPaymentSection({
       onExpenseUpdated(updated);
       setPaymentToRemove(null);
     } catch (caught) {
-      setDeleteError(
-        caught instanceof ApiError ? caught.message : 'Payment could not be removed. Try again.',
-      );
+      setDeleteError(getApiErrorMessage(caught, 'Payment could not be removed. Try again.'));
     } finally {
       setDeleteSubmitting(false);
     }

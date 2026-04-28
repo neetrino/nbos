@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EXPENSE_CATEGORIES, EXPENSE_STAGES } from '@/features/finance/constants/finance';
-import { ApiError } from '@/lib/api-errors';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type CreateExpensePayload, type Expense } from '@/lib/api/finance';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { PROJECTS_PAGE_SIZE, SCHEMA_EXPENSE_STATUSES } from './edit-expense-dialog-constants';
@@ -132,9 +132,10 @@ export function CreateExpenseDialog({
       onOpenChange(false);
     } catch (caught) {
       setFormError(
-        caught instanceof ApiError
-          ? caught.message
-          : 'Expense could not be created. Check your connection and try again.',
+        getApiErrorMessage(
+          caught,
+          'Expense could not be created. Check your connection and try again.',
+        ),
       );
     } finally {
       setLoading(false);

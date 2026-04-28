@@ -34,7 +34,7 @@ import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/
 import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
-import { ApiError } from '@/lib/api-errors';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
 function formatDate(iso: string | null): string {
@@ -79,9 +79,7 @@ function ExpenseDetailPageInner() {
     } catch (caught) {
       setExpense(null);
       setError(
-        caught instanceof ApiError
-          ? caught.message
-          : 'Expense could not be loaded. It may have been removed.',
+        getApiErrorMessage(caught, 'Expense could not be loaded. It may have been removed.'),
       );
     } finally {
       setLoading(false);
@@ -146,9 +144,10 @@ function ExpenseDetailPageInner() {
       router.replace(expensesListHref);
     } catch (caught) {
       setDeleteError(
-        caught instanceof ApiError
-          ? caught.message
-          : 'Expense could not be deleted. Check your connection and try again.',
+        getApiErrorMessage(
+          caught,
+          'Expense could not be deleted. Check your connection and try again.',
+        ),
       );
     } finally {
       setDeleteSubmitting(false);

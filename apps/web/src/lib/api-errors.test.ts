@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError, isStageGateApiError, toApiError } from './api-errors';
+import { ApiError, getApiErrorMessage, isStageGateApiError, toApiError } from './api-errors';
 
 describe('api error helpers', () => {
   it('preserves structured stage gate errors', () => {
@@ -27,5 +27,14 @@ describe('api error helpers', () => {
     expect(error.message).toBe('Unauthorized');
     expect(error.errors).toEqual([]);
     expect(isStageGateApiError(error)).toBe(false);
+  });
+
+  it('getApiErrorMessage returns ApiError message when present', () => {
+    const err = new ApiError('Server said no');
+    expect(getApiErrorMessage(err, 'fallback')).toBe('Server said no');
+  });
+
+  it('getApiErrorMessage returns fallback for non-ApiError', () => {
+    expect(getApiErrorMessage(new Error('x'), 'fallback')).toBe('fallback');
   });
 });
