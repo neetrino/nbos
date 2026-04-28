@@ -48,6 +48,14 @@ export class ExpensePlansController {
     });
   }
 
+  @Post(':id/cards')
+  @ApiOperation({
+    summary: 'Generate an expense (card) from a plan and advance plan next due when recurring',
+  })
+  async generateCard(@Param('id') id: string, @Body() body?: { dueDate?: string | null }) {
+    return this.expensePlansService.generateCard(id, body);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get expense plan by id' })
   async findOne(@Param('id') id: string) {

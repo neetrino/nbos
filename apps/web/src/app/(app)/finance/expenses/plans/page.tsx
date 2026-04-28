@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { CalendarDays, Plus, RefreshCcw, Trash2 } from 'lucide-react';
+import { CalendarDays, FileOutput, Plus, RefreshCcw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -11,15 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  PageHeader,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-} from '@/components/shared';
+import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { expensePlansListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { CreateExpensePlanDialog } from '@/features/finance/components/expenses/CreateExpensePlanDialog';
+import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components/expenses/GenerateExpenseCardFromPlanDialog';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -51,6 +47,8 @@ export default function ExpensePlansPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [generatePlan, setGeneratePlan] = useState<ExpensePlan | null>(null);
 
   const fetchPlans = useCallback(async () => {
     setLoading(true);
@@ -72,7 +70,11 @@ export default function ExpensePlansPage() {
   }, [fetchPlans]);
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Delete expense plan “${name}”? Linked cards keep running; plan link is cleared.`)) {
+    if (
+      !window.confirm(
+        `Delete expense plan “${name}”? Linked cards keep running; plan link is cleared.`,
+      )
+    ) {
       return;
     }
     try {
@@ -109,7 +111,7 @@ export default function ExpensePlansPage() {
         <EmptyState
           icon={CalendarDays}
           title="No expense plans yet"
-          description="Create a plan for rent, SaaS, or other recurring spend. Generated cards will link here in a later slice."
+          description="Create a plan for rent, SaaS, or other recurring spend; generate Board expenses from a plan when due."
         />
       ) : (
         <div className="border-border rounded-lg border">
@@ -123,7 +125,7 @@ export default function ExpensePlansPage() {
                 <TableHead>Next due</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead className="text-right">Linked cards</TableHead>
-                <TableHead className="w-[100px]" />
+                <TableHead className="w-[120px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -137,15 +139,29 @@ export default function ExpensePlansPage() {
                   <TableCell>{plan.project ? `${plan.project.code}` : '—'}</TableCell>
                   <TableCell className="text-right">{plan._count.expenses}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Delete ${plan.name}`}
-                      onClick={() => void handleDelete(plan.id, plan.name)}
-                    >
-                      <Trash2 size={16} />
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Generate expense from ${plan.name}`}
+                        onClick={() => {
+                          setGeneratePlan(plan);
+                          setGenerateOpen(true);
+                        }}
+                      >
+                        <FileOutput size={16} />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Delete ${plan.name}`}
+                        onClick={() => void handleDelete(plan.id, plan.name)}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -160,6 +176,16 @@ export default function ExpensePlansPage() {
         onCreated={() => {
           void fetchPlans();
         }}
+      />
+
+      <GenerateExpenseCardFromPlanDialog
+        plan={generatePlan}
+        open={generateOpen}
+        onOpenChange={(next) => {
+          setGenerateOpen(next);
+          if (!next) setGeneratePlan(null);
+        }}
+        onGenerated={() => void fetchPlans()}
       />
     </div>
   );

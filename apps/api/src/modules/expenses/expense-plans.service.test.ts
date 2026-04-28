@@ -7,10 +7,12 @@ import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma'
 describe('ExpensePlansService', () => {
   let service: ExpensePlansService;
   let prisma: MockPrisma;
+  let expensesService: { create: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ExpensePlansService(prisma as never);
+    expensesService = { create: vi.fn().mockResolvedValue({ id: 'exp-1' }) };
+    service = new ExpensePlansService(prisma as never, expensesService as never);
   });
 
   it('findAll returns paginated meta', async () => {
@@ -74,5 +76,29 @@ describe('ExpensePlansService', () => {
 
     expect(row.amount).toBe('99');
     expect(prisma.expensePlan.create).toHaveBeenCalled();
+  });
+
+  it('generateCard delegates to ExpensesService and updates plan next due', async () => {
+    prisma.expensePlan.findUnique = vi.fn().mockResolvedValue({
+      id: 'plan-1',
+      name: 'Rent',
+      category: 'HOSTING',
+      amount: new Decimal('100'),
+      frequency: 'MONTHLY',
+      nextDueDate: new Date('2026-03-01T00:00:00.000Z'),
+      provider: null,
+      projectId: null,
+      autoGenerate: false,
+      notes: null,
+    });
+    prisma.expensePlan.update = vi.fn().mockResolvedValue({});
+
+    const result = await service.generateCard('plan-1', {});
+
+    expect(expensesService.create).toHaveBeenCalledWith(
+      expect.objectContaining({ expensePlanId: 'plan-1', type: 'PLANNED' }),
+    );
+    expect(prisma.expensePlan.update).toHaveBeenCalled();
+    expect(result).toEqual({ id: 'exp-1' });
   });
 });

@@ -41,7 +41,7 @@ Before coding:
 2. Read `docs/NBOS/00-Technical-Decisions-By-Module.md`.
 3. Read the module canon and cleanup register.
 4. Check current code behavior.
-5. Implement the **next substantive cohesive unit** per roadmap—**large vertical slices are OK** when they match `docs/NBOS` (e.g. Plan·Card, ledger, payroll)—**avoid** polish-only micro-fragments and **avoid** unscoped refactors unrelated to the task. For **schema-wide or canon-sized** work: re-read the relevant NBOS module docs **twice** before changing code; ship in coherent steps/commits, not scattered edits.
+5. Implement the **next substantive cohesive unit** per roadmap—**large vertical slices are OK** when they match `docs/NBOS` (e.g. Plan·Card, ledger, payroll)—**avoid** polish-only micro-fragments and **avoid** unscoped refactors unrelated to the task. For **schema-wide or canon-sized** work: re-read the relevant NBOS module docs **twice** before changing code; ship in coherent increments, not scattered edits. **Git:** when the slice is done, prefer **one commit at the end** that includes **all** files touched for that slice (small or large), after the relevant checks—avoid mid-slice micro-commits unless unblocking CI or production for the same slice.
 6. Keep modules independent: missing linked modules must not crash the current module.
 7. Never fake financial, payment, payroll, credential, audit or report data.
 8. All UI work must use the existing Tailwind + shadcn/ui stack and be implemented with polished NBOS visual quality: clean spacing, clear hierarchy, responsive layout, consistent cards/forms/tables, and subtle interaction states.
@@ -76,4 +76,5 @@ Build module by module.
 Close behavior before adding depth.
 Prefer safe incomplete workflows over broken cross-module dependencies.
 When continuing per plan: ship doc-aligned cohesive units at full depth—NBOS is the contract.
+Prefer one end-of-slice commit bundling every related file (see step 5).
 ```

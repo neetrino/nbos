@@ -20,6 +20,7 @@ Rules:
 - This file records actual progress.
 - Module docs define business behavior.
 - Cleanup registers are checklists for what must be fixed in code.
+- **Git (slices):** prefer **one commit at the end** of each implementation slice with **all** related files together (same rule for small and large slices); see `docs/AI-START-HERE.md` step 5.
 - All UI work must use the existing Tailwind + shadcn/ui stack and be implemented with polished NBOS visual quality: clean spacing, clear hierarchy, responsive layout, consistent cards/forms/tables, and subtle interaction states.
 
 ## Current Focus
@@ -141,7 +142,7 @@ A slice is done only when:
 - UI does not crash when linked modules/data are missing;
 - no fake financial, credential, audit or report data is introduced;
 - this progress file is updated **for milestones** (Active Work Log policy);
-- commit is created with a clear message.
+- an **end-of-slice** commit with a clear message bundles **all** related changes (avoid splitting one slice across many commits unless fixing the same slice’s CI).
 
 ## Next Action
 

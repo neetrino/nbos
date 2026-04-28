@@ -1,14 +1,14 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import {
-  Decimal,
-  PrismaClient,
-  type Prisma,
-  type ExpenseCategoryEnum,
-} from '@nbos/database';
+import { Decimal, PrismaClient, type Prisma, type ExpenseCategoryEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { pickExpenseCategoryFilter } from './expense-query-enum-guards';
-import { requireExpenseCategory, resolveExpenseFrequency } from './expense-mutation-enum-validators';
+import { planNextDueAfterOccurrence } from './expense-plan-next-due';
+import {
+  requireExpenseCategory,
+  resolveExpenseFrequency,
+} from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
+import { ExpensesService } from './expenses.service';
 
 const EXPENSE_PLAN_SORT_FIELDS = new Set(['createdAt', 'nextDueDate', 'amount', 'name']);
 
@@ -52,7 +52,10 @@ function serializePlanRow<T extends { amount: Decimal | unknown }>(row: T) {
 
 @Injectable()
 export class ExpensePlansService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly expensesService: ExpensesService,
+  ) {}
 
   async findAll(params: ExpensePlanQueryParams) {
     const page = normalizeExpenseListPage(params.page);
@@ -143,13 +146,17 @@ export class ExpensePlansService {
       data.name = n;
     }
     if (body.category !== undefined) {
-      data.category = requireExpenseCategory(body.category) as Prisma.ExpensePlanUpdateInput['category'];
+      data.category = requireExpenseCategory(
+        body.category,
+      ) as Prisma.ExpensePlanUpdateInput['category'];
     }
     if (body.amount !== undefined) {
       data.amount = toAmountDecimal(body.amount);
     }
     if (body.frequency !== undefined) {
-      data.frequency = resolveExpenseFrequency(body.frequency) as Prisma.ExpensePlanUpdateInput['frequency'];
+      data.frequency = resolveExpenseFrequency(
+        body.frequency,
+      ) as Prisma.ExpensePlanUpdateInput['frequency'];
     }
     if (body.nextDueDate !== undefined) {
       data.nextDueDate = body.nextDueDate ? new Date(body.nextDueDate) : null;
@@ -184,6 +191,42 @@ export class ExpensePlansService {
     await this.prisma.expensePlan.delete({ where: { id } });
   }
 
+  /**
+   * Creates a plan-linked **Expense** (card) and advances `nextDueDate` when the plan is recurring.
+   */
+  async generateCard(planId: string, body?: { dueDate?: string | null }) {
+    const plan = await this.prisma.expensePlan.findUnique({ where: { id: planId } });
+    if (!plan) throw new NotFoundException('Expense plan not found');
+
+    const fromBody = body?.dueDate?.trim() ? new Date(body.dueDate) : null;
+    const occurrence = fromBody ?? plan.nextDueDate;
+    if (!occurrence) {
+      throw new BadRequestException('Set next due on the plan or pass dueDate to generate a card.');
+    }
+
+    const amount = new Decimal(plan.amount).toNumber();
+    const expense = await this.expensesService.create({
+      name: plan.name,
+      type: 'PLANNED',
+      category: plan.category,
+      amount,
+      frequency: 'ONE_TIME',
+      dueDate: occurrence.toISOString(),
+      status: 'THIS_MONTH',
+      projectId: plan.projectId ?? undefined,
+      notes: plan.provider ? `From plan. Provider: ${plan.provider}` : 'From expense plan',
+      expensePlanId: planId,
+    });
+
+    const nextDue = planNextDueAfterOccurrence(occurrence, plan.frequency);
+    await this.prisma.expensePlan.update({
+      where: { id: planId },
+      data: { nextDueDate: nextDue },
+    });
+
+    return expense;
+  }
+
   private buildOrderBy(
     sortBy?: string,
     sortOrder?: 'asc' | 'desc',
@@ -198,7 +241,9 @@ export class ExpensePlansService {
     if (!n) throw new NotFoundException('Expense plan not found');
   }
 
-  private async resolveProjectIdOrThrow(projectId: string | null | undefined): Promise<string | null> {
+  private async resolveProjectIdOrThrow(
+    projectId: string | null | undefined,
+  ): Promise<string | null> {
     if (projectId === undefined || projectId === null || projectId === '') return null;
     const id = projectId.trim();
     const p = await this.prisma.project.findUnique({ where: { id }, select: { id: true } });

@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { Expense } from './finance';
 import type { ListData } from './finance-common';
 
 export interface ExpensePlan {
@@ -53,5 +54,10 @@ export const expensePlansApi = {
 
   async delete(id: string): Promise<void> {
     await api.delete(`/api/expense-plans/${id}`);
+  },
+
+  async generateCard(planId: string, body?: { dueDate?: string | null }): Promise<Expense> {
+    const resp = await api.post<Expense>(`/api/expense-plans/${planId}/cards`, body ?? {});
+    return resp.data;
   },
 };
