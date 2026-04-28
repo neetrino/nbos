@@ -139,6 +139,11 @@ const NAV_ITEMS: NavItem[] = [
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {
+        label: 'Expense plans',
+        href: '/finance/expenses/plans',
+        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
+      },
+      {
         label: 'Bonus board',
         href: '/bonus',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
