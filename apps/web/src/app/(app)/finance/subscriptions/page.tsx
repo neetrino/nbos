@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { FilterBar, LoadingState } from '@/components/shared';
+import { FilterBar, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/constants/finance';
 import { PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-partner-drilldown';
@@ -107,22 +107,12 @@ function SubscriptionsPageInner() {
       />
 
       {partnerOptionsLoadError ? (
-        <div
-          className="border-destructive/40 bg-destructive/5 flex flex-wrap items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm"
-          role="alert"
-        >
-          <p className="text-destructive max-w-prose">{partnerOptionsLoadError}</p>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:text-destructive shrink-0"
-            onClick={clearPartnerOptionsLoadError}
-            aria-label="Dismiss partner load error"
-          >
-            Dismiss
-          </Button>
-        </div>
+        <ListMutationErrorBanner
+          message={partnerOptionsLoadError}
+          onDismiss={clearPartnerOptionsLoadError}
+          dismissAriaLabel="Dismiss partner load error"
+          dismissText="Dismiss"
+        />
       ) : null}
 
       <SubscriptionsPageContent
