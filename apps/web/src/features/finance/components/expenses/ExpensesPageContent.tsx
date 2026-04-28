@@ -28,6 +28,7 @@ import { buildExpenseKanbanColumns } from './expense-kanban-columns';
 import { buildExpenseFilterConfigs } from './expenses-filter-config';
 import { ExpensesTableSection } from './ExpensesTableSection';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
+import { downloadExpensesCsv } from '@/features/finance/utils/export-expenses-csv';
 
 type ViewMode = 'kanban' | 'list';
 
@@ -176,6 +177,10 @@ export function ExpensesPageContent({
 
   const kanbanColumns = buildExpenseKanbanColumns(expenses);
 
+  const handleExportCsv = useCallback(() => {
+    downloadExpensesCsv(expenses);
+  }, [expenses]);
+
   return (
     <div className="flex h-full flex-col gap-5">
       <ExpensesPageHeader
@@ -185,6 +190,8 @@ export function ExpensesPageContent({
         view={view}
         onViewChange={setView}
         onRefresh={fetchExpenses}
+        onExportCsv={handleExportCsv}
+        exportDisabled={loading || expenses.length === 0}
         onCreateClick={() => setCreateOpen(true)}
       />
 

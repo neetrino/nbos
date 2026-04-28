@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
+import { Download, Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
@@ -14,6 +14,9 @@ interface ExpensesPageHeaderProps {
   view: ViewMode;
   onViewChange: (value: ViewMode) => void;
   onRefresh: () => void;
+  /** Exports the currently loaded expense rows (same filters as on screen). */
+  onExportCsv: () => void;
+  exportDisabled: boolean;
   onCreateClick: () => void;
 }
 
@@ -24,6 +27,8 @@ export function ExpensesPageHeader({
   view,
   onViewChange,
   onRefresh,
+  onExportCsv,
+  exportDisabled,
   onCreateClick,
 }: ExpensesPageHeaderProps) {
   return (
@@ -40,8 +45,19 @@ export function ExpensesPageHeader({
           </Button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh}>
+      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh expenses">
         <RefreshCcw size={16} />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={exportDisabled}
+        onClick={onExportCsv}
+        aria-label="Export expenses as CSV"
+        title="Export current list as CSV"
+      >
+        <Download size={16} />
       </Button>
       <div className="border-border flex rounded-lg border">
         <Button

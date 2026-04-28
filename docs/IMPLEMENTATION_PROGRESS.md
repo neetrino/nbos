@@ -126,6 +126,7 @@ Roadmap Phase 3 spans invoices, payments, subscriptions, expenses, partners/payo
 | 2026-04-28 | Expense list sort UI + API order allowlist done | `ExpensesService.buildExpenseListOrderBy` whitelist; web `ExpenseSortControls` on FilterBar; `ExpensesPageHeader` extraction; literal `'asc' \| 'desc'` for Prisma order   | `pnpm vitest run apps/api/src/modules/expenses/expenses.service.test.ts`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`                                                                                                                                                             | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Expenses list sort synced with URL done         | `sortBy`/`sortOrder` query params + defaults; strip defaults from URL; project drill-down clear preserves sort; Vitest for parse/set helpers                               | `pnpm vitest run apps/web/src/features/finance/constants/expenses-list-query.test.ts`; `pnpm --filter @nbos/web lint`                                                                                                                                                                                     | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Expense detail preserves list sort in URL done  | `expenseDetailHref` / `financeExpensesListHref` carry sort context; detail back + delete redirect restore list query; table/kanban/create pass `ExpenseListNavigationSort` | `pnpm exec vitest run apps/web/src/features/finance/constants/project-expenses-drilldown.test.ts`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                    | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Expenses CSV export (current list) done         | Client `downloadExpensesCsv` from loaded rows; RFC4180-style quoting; UTF-8 BOM; header Export; Vitest for escaping/project columns                                        | `pnpm exec vitest run apps/web/src/features/finance/utils/export-expenses-csv.test.ts`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                               | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 
@@ -198,7 +199,7 @@ Continue Phase 3 with **right-sized slices**: each iteration should ship one **c
 
 ```text
 Phase 3 slice ideas (pick one cohesive unit per iteration):
-- Expenses: list/kanban sort + URL sync + API order allowlist shipped; next deepen toward canon (partial payments / backlog) without full schema rewrite in one step.
+- Expenses: list/kanban sort + URL sync + API order allowlist + client CSV of loaded rows shipped; next deepen toward canon (partial payments / backlog) without full schema rewrite in one step.
 - Subscription and invoice lifecycle depth when priorities require it (no fake money states).
-- Reporting or exports only when product priorities are confirmed.
+- Server-side reporting or bulk exports when product priorities are confirmed.
 ```
