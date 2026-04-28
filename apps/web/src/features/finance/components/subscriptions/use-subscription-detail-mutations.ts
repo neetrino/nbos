@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 
 export function useSubscriptionDetailMutations(
@@ -16,8 +17,10 @@ export function useSubscriptionDetailMutations(
     try {
       const updated = await subscriptionsApi.updateStatus(subscription.id, 'ACTIVE');
       onSubscriptionChange(updated);
-    } catch {
-      onError('Subscription could not be activated or resumed. Try again.');
+    } catch (caught) {
+      onError(
+        getApiErrorMessage(caught, 'Subscription could not be activated or resumed. Try again.'),
+      );
     } finally {
       setActivatingId(null);
     }
@@ -29,8 +32,8 @@ export function useSubscriptionDetailMutations(
     try {
       const updated = await subscriptionsApi.updateStatus(subscription.id, 'CANCELLED');
       onSubscriptionChange(updated);
-    } catch {
-      onError('Subscription could not be cancelled. Try again.');
+    } catch (caught) {
+      onError(getApiErrorMessage(caught, 'Subscription could not be cancelled. Try again.'));
       throw new Error('subscription_cancel_failed');
     } finally {
       setCancellingId(null);
@@ -43,8 +46,8 @@ export function useSubscriptionDetailMutations(
     try {
       const updated = await subscriptionsApi.updateStatus(subscription.id, 'ON_HOLD');
       onSubscriptionChange(updated);
-    } catch {
-      onError('Subscription could not be put on hold. Try again.');
+    } catch (caught) {
+      onError(getApiErrorMessage(caught, 'Subscription could not be put on hold. Try again.'));
       throw new Error('subscription_hold_failed');
     } finally {
       setHoldingId(null);
