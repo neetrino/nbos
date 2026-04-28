@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { FINANCE_DOCUMENT_TITLE_SUFFIX } from '@/features/finance/constants/finance-document-title';
+import { buildFinanceDocumentTitle } from '@/features/finance/constants/finance-document-title';
 
 /**
  * Sets `document.title` while `pageTitle` is a non-empty string; restores the previous title on cleanup
@@ -9,7 +9,7 @@ export function useFinanceDocumentTitle(pageTitle: string | null | undefined) {
   useEffect(() => {
     if (pageTitle == null || pageTitle === '') return;
     const previousTitle = document.title;
-    document.title = `${pageTitle}${FINANCE_DOCUMENT_TITLE_SUFFIX}`;
+    document.title = buildFinanceDocumentTitle(pageTitle);
     return () => {
       document.title = previousTitle;
     };
