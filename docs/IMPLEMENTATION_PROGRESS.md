@@ -25,8 +25,8 @@ Rules:
 | Field                | Value                                            |
 | -------------------- | ------------------------------------------------ |
 | Current phase        | Phase 2 - CRM, Marketing and Lead-to-Cash intake |
-| Current module/block | Product development gate foundation              |
-| Current task         | Kickoff checklist blocks Development transition  |
+| Current module/block | Subscription activation and coverage foundation  |
+| Current task         | Pending subscriptions activate with coverage UI  |
 | Status               | Slice completed; waiting approval for next step  |
 | Last updated         | 2026-04-28                                       |
 
@@ -35,7 +35,7 @@ Rules:
 | Phase                                            | Status      | Progress | Current blocker                | Notes                                        |
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                  |
-| Phase 2 - CRM, Marketing and Lead-to-Cash intake | In progress |      72% | None                           | Product Development gate foundation done     |
+| Phase 2 - CRM, Marketing and Lead-to-Cash intake | In progress |      75% | None                           | Subscription activation foundation done      |
 | Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications |
@@ -63,6 +63,7 @@ Rules:
 | 2026-04-28 | Project intake visibility completed      | Project detail exposes derived PM intake readiness from products, finance, subscriptions, credentials and tasks              | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
 | 2026-04-28 | PM kickoff checklist foundation done     | Project detail persists canonical PM kickoff checklist rows with required progress and notes                                 | `pnpm --filter @nbos/database generate`; `pnpm --filter @nbos/database typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check` | Wait for approval; next Phase 2 slice           |
 | 2026-04-28 | Product Development gate foundation done | Product status transition to Development blocks on missing required PM kickoff checklist items                               | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
+| 2026-04-28 | Subscription activation foundation done  | Finance subscriptions validate canonical statuses, activate Pending subscriptions, and show derived coverage months          | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
 
 ## Phase 1 Checklist
 
@@ -104,7 +105,7 @@ Make NBOS navigable, permission-aware and safe to extend.
 | Settings / Admin            | Yes        | Yes          | Partial     | Yes     | Admin/audit foundation completed; deep settings later                   |
 | CRM                         | Yes        | Yes          | Partial     | Partial | Offer/contract, Deal Won, maintenance entry and handoff visibility done |
 | Marketing                   | Yes        | Yes          | Partial     | Partial | Launch gates and Finance spend links foundation added                   |
-| Finance                     | Yes        | Yes          | Partial     | Partial | Subscriptions receive CRM entries; Finance depth later                  |
+| Finance                     | Yes        | Yes          | Partial     | Partial | Subscription activation and coverage visibility foundation added        |
 | Partners                    | Yes        | No           | No          | No      | Phase 3/Finance dependency                                              |
 | Projects Hub                | Yes        | Yes          | Partial     | Partial | PM intake, kickoff checklist and Development gate foundations added     |
 | Tasks / Work Spaces         | Yes        | No           | No          | No      | Phase 4                                                                 |
@@ -135,7 +136,7 @@ Continue Phase 2 after approval:
 
 ```text
 Next Phase 2 slice candidates:
-- Extension shortened checklist or Finance subscription activation depth;
+- Extension shortened checklist or remaining Finance payment/invoice depth;
 - Marketing dashboard spend/revenue analytics after Finance spend runtime deepens;
 - Remaining popup direct actions and transition shortcuts.
 ```

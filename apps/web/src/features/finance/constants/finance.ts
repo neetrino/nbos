@@ -1,5 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
-import type { FinanceDateRangeParams } from '@/lib/api/finance';
+import type { FinanceDateRangeParams } from '@/lib/api/finance-common';
 
 export const INVOICE_TYPES = [
   { value: 'DEVELOPMENT', label: 'Development' },

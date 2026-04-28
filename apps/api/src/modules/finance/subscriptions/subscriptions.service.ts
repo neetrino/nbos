@@ -6,6 +6,7 @@ import {
   type SubscriptionStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { assertSubscriptionStatus, attachSubscriptionCoverage } from './subscription-coverage';
 
 interface CreateSubscriptionDto {
   projectId: string;
@@ -86,7 +87,7 @@ export class SubscriptionsService {
     ]);
 
     return {
-      items,
+      items: items.map(attachSubscriptionCoverage),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -106,12 +107,12 @@ export class SubscriptionsService {
     if (!subscription) {
       throw new NotFoundException(`Subscription ${id} not found`);
     }
-    return subscription;
+    return attachSubscriptionCoverage(subscription);
   }
 
   async create(data: CreateSubscriptionDto) {
     const code = await this.generateCode();
-    return this.prisma.subscription.create({
+    const subscription = await this.prisma.subscription.create({
       data: {
         code,
         projectId: data.projectId,
@@ -129,6 +130,7 @@ export class SubscriptionsService {
         partner: { select: { id: true, name: true } },
       },
     });
+    return attachSubscriptionCoverage(subscription);
   }
 
   async update(id: string, data: UpdateSubscriptionDto) {
@@ -149,7 +151,7 @@ export class SubscriptionsService {
         ? { connect: { id: data.partnerId } }
         : { disconnect: true };
 
-    return this.prisma.subscription.update({
+    const subscription = await this.prisma.subscription.update({
       where: { id },
       data: updateData,
       include: {
@@ -157,22 +159,28 @@ export class SubscriptionsService {
         partner: { select: { id: true, name: true } },
       },
     });
+    return attachSubscriptionCoverage(subscription);
   }
 
   async updateStatus(id: string, status: string) {
-    await this.findById(id);
+    assertSubscriptionStatus(status);
+    const current = await this.findById(id);
 
     const updateData: Prisma.SubscriptionUpdateInput = {
       status: status as SubscriptionStatusEnum,
     };
+    if (status === 'ACTIVE' && !current.startDate) {
+      updateData.startDate = new Date();
+    }
     if (status === 'CANCELLED') {
       updateData.endDate = new Date();
     }
 
-    return this.prisma.subscription.update({
+    const subscription = await this.prisma.subscription.update({
       where: { id },
       data: updateData,
     });
+    return attachSubscriptionCoverage(subscription);
   }
 
   async getStats(params: SubscriptionStatsParams = {}) {

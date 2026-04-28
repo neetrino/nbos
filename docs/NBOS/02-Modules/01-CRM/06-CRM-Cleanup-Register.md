@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `PRODUCT DEVELOPMENT GATE FOUNDATION DONE / FINANCE DEPTH NEXT`
+Статус: `SUBSCRIPTION ACTIVATION FOUNDATION DONE / DELIVERY DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -207,14 +207,15 @@ Deal Won foundation уже блокирует non-maintenance Won без linked 
 и `DEPOSIT_AND_CONTRACT`. Maintenance entry foundation добавил canonical subscription statuses,
 Product subscription entry, auto-created linked `MAINTENANCE Deal`, `Pending` subscription
 creation for won Maintenance deals, Deal card handoff links/readiness visibility,
-Project detail read-only PM intake visibility, and persisted PM kickoff checklist rows.
-Product Development gate now blocks on missing required PM kickoff checklist acceptance.
+Project detail read-only PM intake visibility, persisted PM kickoff checklist rows,
+Product Development gate blockers, and Finance Pending subscription activation with
+derived coverage month visibility.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
 - углубить direct actions из popup там, где нужны create/open shortcuts;
-- углубить Finance subscription grid, coverage months and activation workflow;
+- углубить payment confirmation, invoice generation and finance reconciliation workflow;
 - добавить shortened Extension checklist and remaining delivery lifecycle depth.
 
 Опорные места в коде:

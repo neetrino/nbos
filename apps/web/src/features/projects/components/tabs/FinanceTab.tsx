@@ -177,6 +177,11 @@ export function FinanceTab({ orders, subscriptions, expenses, domains }: Finance
                     {sub.type.replace(/_/g, ' ')} &middot; Billing day: {sub.billingDay} &middot;
                     Since {new Date(sub.startDate).toLocaleDateString()}
                   </p>
+                  {sub.status === 'PENDING' && (
+                    <p className="mt-2 text-xs text-amber-600">
+                      Pending activation in Finance subscriptions.
+                    </p>
+                  )}
                 </div>
               );
             })}

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SubscriptionsService } from './subscriptions.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('SubscriptionsService', () => {
   let service: SubscriptionsService;
@@ -16,6 +16,27 @@ describe('SubscriptionsService', () => {
     it('returns paginated result', async () => {
       const result = await service.findAll({});
       expect(result.meta.page).toBe(1);
+    });
+
+    it('attaches coverage metadata', async () => {
+      prisma.subscription.findMany.mockResolvedValue([
+        {
+          id: '1',
+          amount: 1000,
+          status: 'ACTIVE',
+          startDate: new Date('2026-03-01T00:00:00.000Z'),
+          endDate: null,
+        },
+      ]);
+
+      const result = await service.findAll({});
+      expect(result.items[0]).toMatchObject({
+        coverage: {
+          firstCoveredMonth: 2,
+          activeMonthCount: 10,
+          annualizedAmount: 10000,
+        },
+      });
     });
 
     it('applies filters', async () => {
@@ -79,10 +100,40 @@ describe('SubscriptionsService', () => {
 
   describe('updateStatus', () => {
     it('updates status', async () => {
-      prisma.subscription.findUnique.mockResolvedValue({ id: '1' });
-      prisma.subscription.update.mockResolvedValue({ id: '1', status: 'ON_HOLD' });
+      prisma.subscription.findUnique.mockResolvedValue({ id: '1', startDate: new Date() });
+      prisma.subscription.update.mockResolvedValue({
+        id: '1',
+        status: 'ON_HOLD',
+        startDate: new Date(),
+      });
       const result = await service.updateStatus('1', 'ON_HOLD');
       expect(result.status).toBe('ON_HOLD');
+    });
+
+    it('activates pending subscription without replacing existing start date', async () => {
+      const startDate = new Date('2026-01-15T00:00:00.000Z');
+      prisma.subscription.findUnique.mockResolvedValue({ id: '1', startDate, status: 'PENDING' });
+      prisma.subscription.update.mockResolvedValue({
+        id: '1',
+        amount: 5000,
+        status: 'ACTIVE',
+        startDate,
+        endDate: null,
+      });
+
+      const result = await service.updateStatus('1', 'ACTIVE');
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { status: 'ACTIVE' },
+        }),
+      );
+      expect(result.coverage).toMatchObject({ firstCoveredMonth: 0, activeMonthCount: 12 });
+    });
+
+    it('rejects invalid subscription status', async () => {
+      await expect(service.updateStatus('1', 'PAUSED')).rejects.toThrow(BadRequestException);
+      expect(prisma.subscription.update).not.toHaveBeenCalled();
     });
   });
 
