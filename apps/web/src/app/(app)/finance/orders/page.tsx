@@ -46,17 +46,26 @@ function OrdersPageContent() {
     try {
       const periodParams = getFinancePeriodParams(period);
       const pageSize = gap ? ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE : 100;
+      const statusFilter = filters.status && filters.status !== 'all' ? filters.status : undefined;
       const listParams: Record<string, unknown> = {
         pageSize,
         search: search || undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        status: statusFilter,
         ...periodParams,
       };
       if (gap) {
         listParams.gap = gap;
       }
-
-      const statsParams = { ...periodParams, ...(gap ? { gap } : {}) };
+      const statsParams = {
+        ...periodParams,
+        ...(gap
+          ? {
+              gap,
+              status: statusFilter,
+              search: search || undefined,
+            }
+          : {}),
+      };
       const [data, orderStats] = await Promise.all([
         ordersApi.getAll(listParams),
         ordersApi.getStats(statsParams),
@@ -122,7 +131,9 @@ function OrdersPageContent() {
       <OrdersStatsCards
         stats={stats}
         statsScopeNote={
-          gap ? 'Totals match the reconciliation filter and selected period.' : undefined
+          gap
+            ? 'Totals match the reconciliation filter, selected period, and list filters.'
+            : undefined
         }
       />
 

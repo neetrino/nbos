@@ -10,6 +10,9 @@ interface GapStatsParams {
   gap: OrderReconciliationListGap;
   dateFrom?: string;
   dateTo?: string;
+  status?: string;
+  projectId?: string;
+  search?: string;
 }
 
 function toNumber(value: unknown): number {
@@ -40,6 +43,9 @@ export async function queryOrderStatsForReconciliationGap(
     gap: params.gap,
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
+    status: params.status,
+    projectId: params.projectId,
+    search: params.search,
   });
 
   const paidSql = orderPaidThroughInvoicesSql();

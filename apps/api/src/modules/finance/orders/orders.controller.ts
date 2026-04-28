@@ -56,6 +56,9 @@ export class OrdersController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('gap') gap?: string,
+    @Query('status') status?: string,
+    @Query('projectId') projectId?: string,
+    @Query('search') search?: string,
   ) {
     const reconciliationGap = parseOrderReconciliationListGap(gap);
     if (gap !== undefined && reconciliationGap === null) {
@@ -66,6 +69,9 @@ export class OrdersController {
       dateFrom,
       dateTo,
       reconciliationGap: reconciliationGap ?? undefined,
+      status,
+      projectId,
+      search,
     });
   }
 

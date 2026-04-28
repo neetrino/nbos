@@ -22,13 +22,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                               |
-| -------------------- | ----------------------------------- |
-| Current phase        | Phase 3 - Finance core              |
-| Current module/block | Orders reconciliation stats vs gap  |
-| Current task         | Orders stats endpoint scoped by gap |
-| Status               | Slice completed; waiting approval   |
-| Last updated         | 2026-04-28                          |
+| Field                | Value                                 |
+| -------------------- | ------------------------------------- |
+| Current phase        | Phase 3 - Finance core                |
+| Current module/block | Orders gap stats + list filter parity |
+| Current task         | Stats GET accepts status/search       |
+| Status               | Slice completed; waiting approval     |
+| Last updated         | 2026-04-28                            |
 
 ## Phase Progress
 
@@ -36,7 +36,7 @@ Rules:
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                          |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations |
-| Phase 3 - Finance core                           | In progress |      12% | None                           | Orders reconciliation gap list + stats aligned                       |
+| Phase 3 - Finance core                           | In progress |      13% | None                           | Gap stats honor status/search like orders list                       |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                          |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                         |
 | Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                   |
@@ -77,6 +77,7 @@ Rules:
 | 2026-04-28 | Orders reconciliation drilldown done     | Finance dashboard reconciliation warnings link to Orders with gap filters and in-memory reconciliation highlighting           | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm vitest run apps/web/src/features/finance/constants/order-reconciliation-drilldown.test.ts`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                       | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Orders reconciliation API filter done    | GET /finance/orders supports gap uninvoiced/outstanding with SQL filters aligned to reconciliation math                       | `pnpm --filter @nbos/database typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                          | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Orders stats aligned with gap done       | GET /finance/orders/stats accepts gap; SQL aggregates over same reconciliation WHERE as list; Orders page passes gap to stats | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Gap stats list-filter parity done        | Orders stats with gap accepts status/search/projectId; web passes filters with drill-down                                     | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 
@@ -151,5 +152,4 @@ Continue with Phase 3:
 Next Phase 3 slice candidates:
 - Subscription and invoice lifecycle depth with no fake money states.
 - Partner and payout dependencies once Finance source data is reliable.
-- Extend gap stats with status/search parity if filters should narrow totals further.
 ```

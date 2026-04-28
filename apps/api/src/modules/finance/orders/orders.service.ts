@@ -42,6 +42,10 @@ interface OrderStatsParams {
   dateFrom?: string;
   dateTo?: string;
   reconciliationGap?: OrderReconciliationListGap;
+  /** With reconciliation gap: same dimensions as list (`findAll`). */
+  status?: string;
+  projectId?: string;
+  search?: string;
 }
 
 @Injectable()
@@ -221,6 +225,9 @@ export class OrdersService {
         gap: params.reconciliationGap,
         dateFrom: params.dateFrom,
         dateTo: params.dateTo,
+        status: params.status,
+        projectId: params.projectId,
+        search: params.search,
       });
     }
 

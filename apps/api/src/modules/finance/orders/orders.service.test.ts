@@ -204,7 +204,11 @@ describe('OrdersService', () => {
         ])
         .mockResolvedValueOnce([{ status: 'ACTIVE', cnt: BigInt(2), amt: 300000 }]);
 
-      const stats = await service.getStats({ reconciliationGap: 'outstanding' });
+      const stats = await service.getStats({
+        reconciliationGap: 'outstanding',
+        status: 'ACTIVE',
+        search: 'ORD',
+      });
 
       expect(prisma.$queryRaw).toHaveBeenCalledTimes(2);
       expect(stats).toMatchObject({

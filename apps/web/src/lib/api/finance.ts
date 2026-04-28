@@ -150,6 +150,10 @@ export interface OrderStats {
 /** Query params for `ordersApi.getStats` (optional reconciliation drill-down). */
 export interface OrderStatsQueryParams extends FinanceDateRangeParams {
   gap?: 'uninvoiced' | 'outstanding';
+  /** With gap: align stats with the orders list. */
+  status?: string;
+  projectId?: string;
+  search?: string;
 }
 
 export interface PaymentStats {
