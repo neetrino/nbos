@@ -45,6 +45,7 @@ function ExpenseDetailPageInner() {
   };
   const fromBacklog = searchParams.get(EXPENSE_FROM_BACKLOG_QUERY) === EXPENSE_FROM_BACKLOG_VALUE;
   const expensesListHref = financeExpensesListHref(listProjectId, listSort, { fromBacklog });
+  const expenseBackNavAriaLabel = fromBacklog ? 'Back to deferred backlog' : 'Back to expenses';
 
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,7 +89,7 @@ function ExpenseDetailPageInner() {
           <Link
             href={expensesListHref}
             className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
-            aria-label="Back to expenses"
+            aria-label={expenseBackNavAriaLabel}
           >
             <ArrowLeft size={18} />
           </Link>
@@ -121,7 +122,7 @@ function ExpenseDetailPageInner() {
           <Link
             href={expensesListHref}
             className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'mt-0.5 shrink-0')}
-            aria-label="Back to expenses"
+            aria-label={expenseBackNavAriaLabel}
           >
             <ArrowLeft size={18} />
           </Link>

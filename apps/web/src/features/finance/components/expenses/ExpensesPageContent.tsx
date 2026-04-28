@@ -224,7 +224,11 @@ export function ExpensesPageContent({
         onCreateClick={() => setCreateOpen(true)}
       />
 
-      <ExpenseSummaryCards totalExpenses={totalExpenses} paidExpenses={paidExpenses} />
+      <ExpenseSummaryCards
+        totalExpenses={totalExpenses}
+        paidExpenses={paidExpenses}
+        variant={pageVariant === 'backlog' ? 'backlog' : 'default'}
+      />
 
       {projectIdFromUrl ? (
         <ExpenseProjectDrilldownBanner

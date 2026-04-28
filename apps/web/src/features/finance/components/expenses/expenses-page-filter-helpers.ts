@@ -1,4 +1,4 @@
-import { EXPENSE_BACKLOG_FIXED_STATUS } from '@/features/finance/constants/project-expenses-drilldown';
+import { EXPENSE_BACKLOG_FIXED_STATUS } from '../../constants/project-expenses-drilldown';
 
 export type ExpensesPageVariant = 'default' | 'backlog';
 
