@@ -200,7 +200,14 @@ export default function PartnersPage() {
                     onClick={() => router.push(`/partners/${partner.id}`)}
                   >
                     <TableCell>
-                      <p className="font-medium">{partner.name}</p>
+                      <div>
+                        <p className="font-medium">{partner.name}</p>
+                        {partner.contact ? (
+                          <p className="text-muted-foreground text-xs">
+                            {partner.contact.firstName} {partner.contact.lastName}
+                          </p>
+                        ) : null}
+                      </div>
                     </TableCell>
                     <TableCell>
                       {tier && <StatusBadge label={tier.label} variant={tier.variant} />}

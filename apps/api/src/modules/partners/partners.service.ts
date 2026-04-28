@@ -37,6 +37,7 @@ interface UpdatePartnerDto {
 
 const PARTNER_INCLUDE = {
   _count: { select: { subscriptions: true, orders: true } },
+  contact: { select: { id: true, firstName: true, lastName: true } },
 } satisfies Prisma.PartnerInclude;
 
 @Injectable()

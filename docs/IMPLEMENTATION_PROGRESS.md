@@ -22,13 +22,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                            |
-| -------------------- | ------------------------------------------------ |
-| Current phase        | Phase 3 - Finance core                           |
-| Current module/block | Partners detail + edit                           |
-| Current task         | `/partners/[id]` card layout + EditPartnerDialog |
-| Status               | Detail/edit slice done; next Finance UX          |
-| Last updated         | 2026-04-28                                       |
+| Field                | Value                                         |
+| -------------------- | --------------------------------------------- |
+| Current phase        | Phase 3 - Finance core                        |
+| Current module/block | Partners → Contact FK                         |
+| Current task         | Resolve primary contact name in API + UI      |
+| Status               | Slice done; next subscription–partner linkage |
+| Last updated         | 2026-04-28                                    |
 
 ## Phase Progress
 
@@ -84,6 +84,7 @@ Rules:
 | 2026-04-28 | Partners list aligned with API done      | GET /partners forwards status, type, direction; web uses partnersApi, real columns and stats (no fake revenue)                | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Partners create dialog done              | CreatePartnerDialog posts to API; optional contact from clients list; CreatePartnerPayload typed                              | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Partners detail + edit done              | `/partners/[id]` GET detail; EditPartnerDialog + UpdatePartnerPayload; row navigates; default-% utils + unit tests            | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Partner primary contact resolved done    | Prisma Partner.contact relation; FK migration; API includes contact; list + detail show name                                  | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`; deploy DB: `pnpm --filter @nbos/database exec prisma migrate deploy`                                                                                                                                                        | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 
@@ -126,7 +127,7 @@ Make NBOS navigable, permission-aware and safe to extend.
 | CRM                         | Yes        | Yes          | Partial     | Partial | Offer/contract, Deal Won, handoff visibility and popup shortcuts done                                              |
 | Marketing                   | Yes        | Yes          | Partial     | Partial | Launch gates, Finance spend links, performance and efficiency snapshots added                                      |
 | Finance                     | Yes        | Yes          | Partial     | Partial | Subscriptions activate/cancel with transition guards, invoice payment, reconciliation drill-down foundations added |
-| Partners                    | Yes        | Yes          | Partial     | Partial | List, detail `/partners/[id]`, create + edit; contact shown as id until API joins Contact                          |
+| Partners                    | Yes        | Yes          | Partial     | Partial | List/detail/create/edit; primary contact name via Partner→Contact include                                          |
 | Projects Hub                | Yes        | Yes          | Partial     | Partial | PM intake, Product/Extension readiness, Done gates and blocker shortcuts added                                     |
 | Tasks / Work Spaces         | Yes        | No           | No          | No      | Phase 4                                                                                                            |
 | Support                     | Yes        | No           | No          | No      | Phase 4                                                                                                            |
@@ -156,6 +157,6 @@ Continue with Phase 3:
 
 ```text
 Next Phase 3 slice candidates:
-- Subscription–partner linkage UX on Finance subscriptions or partner-resolved contact name on detail.
+- Subscription–partner linkage UX on Finance subscriptions.
 - Subscription and invoice lifecycle depth with no fake money states.
 ```

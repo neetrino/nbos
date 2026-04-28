@@ -35,6 +35,7 @@ model Contact {
   tickets       SupportTicket[]
   leadsAsSource Lead[]          @relation("LeadSourceContact")
   dealsAsSource Deal[]          @relation("DealSourceContact")
+  partners      Partner[]
 
   @@map("contacts")
 }
@@ -1127,6 +1128,7 @@ model Partner {
   createdAt      DateTime             @default(now()) @map("created_at")
   updatedAt      DateTime             @updatedAt @map("updated_at")
 
+  contact       Contact?       @relation(fields: [contactId], references: [id])
   orders        Order[]
   subscriptions Subscription[]
   leadsAsSource Lead[]         @relation("LeadSourcePartner")

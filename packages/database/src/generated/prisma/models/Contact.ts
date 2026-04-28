@@ -221,6 +221,7 @@ export type ContactWhereInput = {
   tickets?: Prisma.SupportTicketListRelationFilter;
   leadsAsSource?: Prisma.LeadListRelationFilter;
   dealsAsSource?: Prisma.DealListRelationFilter;
+  partners?: Prisma.PartnerListRelationFilter;
 };
 
 export type ContactOrderByWithRelationInput = {
@@ -241,6 +242,7 @@ export type ContactOrderByWithRelationInput = {
   tickets?: Prisma.SupportTicketOrderByRelationAggregateInput;
   leadsAsSource?: Prisma.LeadOrderByRelationAggregateInput;
   dealsAsSource?: Prisma.DealOrderByRelationAggregateInput;
+  partners?: Prisma.PartnerOrderByRelationAggregateInput;
 };
 
 export type ContactWhereUniqueInput = Prisma.AtLeast<
@@ -265,6 +267,7 @@ export type ContactWhereUniqueInput = Prisma.AtLeast<
     tickets?: Prisma.SupportTicketListRelationFilter;
     leadsAsSource?: Prisma.LeadListRelationFilter;
     dealsAsSource?: Prisma.DealListRelationFilter;
+    partners?: Prisma.PartnerListRelationFilter;
   },
   'id'
 >;
@@ -323,6 +326,7 @@ export type ContactCreateInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUncheckedCreateInput = {
@@ -343,6 +347,7 @@ export type ContactUncheckedCreateInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUpdateInput = {
@@ -363,6 +368,7 @@ export type ContactUpdateInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUncheckedUpdateInput = {
@@ -383,6 +389,7 @@ export type ContactUncheckedUpdateInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactCreateManyInput = {
@@ -677,6 +684,34 @@ export type ContactUpdateOneWithoutTicketsNestedInput = {
   >;
 };
 
+export type ContactCreateNestedOneWithoutPartnersInput = {
+  create?: Prisma.XOR<
+    Prisma.ContactCreateWithoutPartnersInput,
+    Prisma.ContactUncheckedCreateWithoutPartnersInput
+  >;
+  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutPartnersInput;
+  connect?: Prisma.ContactWhereUniqueInput;
+};
+
+export type ContactUpdateOneWithoutPartnersNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ContactCreateWithoutPartnersInput,
+    Prisma.ContactUncheckedCreateWithoutPartnersInput
+  >;
+  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutPartnersInput;
+  upsert?: Prisma.ContactUpsertWithoutPartnersInput;
+  disconnect?: Prisma.ContactWhereInput | boolean;
+  delete?: Prisma.ContactWhereInput | boolean;
+  connect?: Prisma.ContactWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ContactUpdateToOneWithWhereWithoutPartnersInput,
+      Prisma.ContactUpdateWithoutPartnersInput
+    >,
+    Prisma.ContactUncheckedUpdateWithoutPartnersInput
+  >;
+};
+
 export type ContactCreateWithoutCompaniesInput = {
   id?: string;
   firstName: string;
@@ -694,6 +729,7 @@ export type ContactCreateWithoutCompaniesInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUncheckedCreateWithoutCompaniesInput = {
@@ -713,6 +749,7 @@ export type ContactUncheckedCreateWithoutCompaniesInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
 };
 
 export type ContactCreateOrConnectWithoutCompaniesInput = {
@@ -760,6 +797,7 @@ export type ContactUpdateWithoutCompaniesInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutCompaniesInput = {
@@ -779,6 +817,7 @@ export type ContactUncheckedUpdateWithoutCompaniesInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactCreateWithoutProjectsInput = {
@@ -798,6 +837,7 @@ export type ContactCreateWithoutProjectsInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUncheckedCreateWithoutProjectsInput = {
@@ -817,6 +857,7 @@ export type ContactUncheckedCreateWithoutProjectsInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
 };
 
 export type ContactCreateOrConnectWithoutProjectsInput = {
@@ -864,6 +905,7 @@ export type ContactUpdateWithoutProjectsInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutProjectsInput = {
@@ -883,6 +925,7 @@ export type ContactUncheckedUpdateWithoutProjectsInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactCreateWithoutLeadsInput = {
@@ -902,6 +945,7 @@ export type ContactCreateWithoutLeadsInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUncheckedCreateWithoutLeadsInput = {
@@ -921,6 +965,7 @@ export type ContactUncheckedCreateWithoutLeadsInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
 };
 
 export type ContactCreateOrConnectWithoutLeadsInput = {
@@ -948,6 +993,7 @@ export type ContactCreateWithoutLeadsAsSourceInput = {
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUncheckedCreateWithoutLeadsAsSourceInput = {
@@ -967,6 +1013,7 @@ export type ContactUncheckedCreateWithoutLeadsAsSourceInput = {
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
   dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
 };
 
 export type ContactCreateOrConnectWithoutLeadsAsSourceInput = {
@@ -1014,6 +1061,7 @@ export type ContactUpdateWithoutLeadsInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutLeadsInput = {
@@ -1033,6 +1081,7 @@ export type ContactUncheckedUpdateWithoutLeadsInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUpsertWithoutLeadsAsSourceInput = {
@@ -1072,6 +1121,7 @@ export type ContactUpdateWithoutLeadsAsSourceInput = {
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutLeadsAsSourceInput = {
@@ -1091,6 +1141,7 @@ export type ContactUncheckedUpdateWithoutLeadsAsSourceInput = {
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactCreateWithoutDealsInput = {
@@ -1110,6 +1161,7 @@ export type ContactCreateWithoutDealsInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUncheckedCreateWithoutDealsInput = {
@@ -1129,6 +1181,7 @@ export type ContactUncheckedCreateWithoutDealsInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
 };
 
 export type ContactCreateOrConnectWithoutDealsInput = {
@@ -1156,6 +1209,7 @@ export type ContactCreateWithoutDealsAsSourceInput = {
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUncheckedCreateWithoutDealsAsSourceInput = {
@@ -1175,6 +1229,7 @@ export type ContactUncheckedCreateWithoutDealsAsSourceInput = {
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
 };
 
 export type ContactCreateOrConnectWithoutDealsAsSourceInput = {
@@ -1222,6 +1277,7 @@ export type ContactUpdateWithoutDealsInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutDealsInput = {
@@ -1241,6 +1297,7 @@ export type ContactUncheckedUpdateWithoutDealsInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUpsertWithoutDealsAsSourceInput = {
@@ -1280,6 +1337,7 @@ export type ContactUpdateWithoutDealsAsSourceInput = {
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutDealsAsSourceInput = {
@@ -1299,6 +1357,7 @@ export type ContactUncheckedUpdateWithoutDealsAsSourceInput = {
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactCreateWithoutTicketsInput = {
@@ -1318,6 +1377,7 @@ export type ContactCreateWithoutTicketsInput = {
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
 };
 
 export type ContactUncheckedCreateWithoutTicketsInput = {
@@ -1337,6 +1397,7 @@ export type ContactUncheckedCreateWithoutTicketsInput = {
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
   leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
   dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
 };
 
 export type ContactCreateOrConnectWithoutTicketsInput = {
@@ -1384,6 +1445,7 @@ export type ContactUpdateWithoutTicketsInput = {
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutTicketsInput = {
@@ -1403,6 +1465,115 @@ export type ContactUncheckedUpdateWithoutTicketsInput = {
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
+};
+
+export type ContactCreateWithoutPartnersInput = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  email?: string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: $Enums.ContactRole;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
+  leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
+  deals?: Prisma.DealCreateNestedManyWithoutContactInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
+  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
+  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+};
+
+export type ContactUncheckedCreateWithoutPartnersInput = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  email?: string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: $Enums.ContactRole;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
+  deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
+  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
+  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+};
+
+export type ContactCreateOrConnectWithoutPartnersInput = {
+  where: Prisma.ContactWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ContactCreateWithoutPartnersInput,
+    Prisma.ContactUncheckedCreateWithoutPartnersInput
+  >;
+};
+
+export type ContactUpsertWithoutPartnersInput = {
+  update: Prisma.XOR<
+    Prisma.ContactUpdateWithoutPartnersInput,
+    Prisma.ContactUncheckedUpdateWithoutPartnersInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ContactCreateWithoutPartnersInput,
+    Prisma.ContactUncheckedCreateWithoutPartnersInput
+  >;
+  where?: Prisma.ContactWhereInput;
+};
+
+export type ContactUpdateToOneWithWhereWithoutPartnersInput = {
+  where?: Prisma.ContactWhereInput;
+  data: Prisma.XOR<
+    Prisma.ContactUpdateWithoutPartnersInput,
+    Prisma.ContactUncheckedUpdateWithoutPartnersInput
+  >;
+};
+
+export type ContactUpdateWithoutPartnersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
+  leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
+  deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
+  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
+  dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+};
+
+export type ContactUncheckedUpdateWithoutPartnersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
+  deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
+  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
+  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
 };
 
 /**
@@ -1417,6 +1588,7 @@ export type ContactCountOutputType = {
   tickets: number;
   leadsAsSource: number;
   dealsAsSource: number;
+  partners: number;
 };
 
 export type ContactCountOutputTypeSelect<
@@ -1429,6 +1601,7 @@ export type ContactCountOutputTypeSelect<
   tickets?: boolean | ContactCountOutputTypeCountTicketsArgs;
   leadsAsSource?: boolean | ContactCountOutputTypeCountLeadsAsSourceArgs;
   dealsAsSource?: boolean | ContactCountOutputTypeCountDealsAsSourceArgs;
+  partners?: boolean | ContactCountOutputTypeCountPartnersArgs;
 };
 
 /**
@@ -1506,6 +1679,15 @@ export type ContactCountOutputTypeCountDealsAsSourceArgs<
   where?: Prisma.DealWhereInput;
 };
 
+/**
+ * ContactCountOutputType without action
+ */
+export type ContactCountOutputTypeCountPartnersArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PartnerWhereInput;
+};
+
 export type ContactSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -1527,6 +1709,7 @@ export type ContactSelect<
     tickets?: boolean | Prisma.Contact$ticketsArgs<ExtArgs>;
     leadsAsSource?: boolean | Prisma.Contact$leadsAsSourceArgs<ExtArgs>;
     dealsAsSource?: boolean | Prisma.Contact$dealsAsSourceArgs<ExtArgs>;
+    partners?: boolean | Prisma.Contact$partnersArgs<ExtArgs>;
     _count?: boolean | Prisma.ContactCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['contact']
@@ -1606,6 +1789,7 @@ export type ContactInclude<
   tickets?: boolean | Prisma.Contact$ticketsArgs<ExtArgs>;
   leadsAsSource?: boolean | Prisma.Contact$leadsAsSourceArgs<ExtArgs>;
   dealsAsSource?: boolean | Prisma.Contact$dealsAsSourceArgs<ExtArgs>;
+  partners?: boolean | Prisma.Contact$partnersArgs<ExtArgs>;
   _count?: boolean | Prisma.ContactCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type ContactIncludeCreateManyAndReturn<
@@ -1627,6 +1811,7 @@ export type $ContactPayload<
     tickets: Prisma.$SupportTicketPayload<ExtArgs>[];
     leadsAsSource: Prisma.$LeadPayload<ExtArgs>[];
     dealsAsSource: Prisma.$DealPayload<ExtArgs>[];
+    partners: Prisma.$PartnerPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -2210,6 +2395,17 @@ export interface Prisma__ContactClient<
     args?: Prisma.Subset<T, Prisma.Contact$dealsAsSourceArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<Prisma.$DealPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
+    | Null
+  >;
+  partners<T extends Prisma.Contact$partnersArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Contact$partnersArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PartnerPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
     | Null
   >;
   /**
@@ -2849,6 +3045,32 @@ export type Contact$dealsAsSourceArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.DealScalarFieldEnum | Prisma.DealScalarFieldEnum[];
+};
+
+/**
+ * Contact.partners
+ */
+export type Contact$partnersArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Partner
+   */
+  select?: Prisma.PartnerSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Partner
+   */
+  omit?: Prisma.PartnerOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerInclude<ExtArgs> | null;
+  where?: Prisma.PartnerWhereInput;
+  orderBy?: Prisma.PartnerOrderByWithRelationInput | Prisma.PartnerOrderByWithRelationInput[];
+  cursor?: Prisma.PartnerWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.PartnerScalarFieldEnum | Prisma.PartnerScalarFieldEnum[];
 };
 
 /**

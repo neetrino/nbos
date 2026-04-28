@@ -1,5 +1,12 @@
 import { api } from '../api';
 
+/** Resolved contact when `partner.contactId` points to a row in `contacts`. */
+export interface PartnerContactSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface Partner {
   id: string;
   name: string;
@@ -9,6 +16,7 @@ export interface Partner {
   status: string;
   contactId: string | null;
   createdAt: string;
+  contact?: PartnerContactSummary | null;
   _count?: { orders: number; subscriptions: number };
 }
 

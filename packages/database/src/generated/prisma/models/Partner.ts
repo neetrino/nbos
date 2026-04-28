@@ -249,6 +249,7 @@ export type PartnerWhereInput = {
   contactId?: Prisma.StringNullableFilter<'Partner'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
+  contact?: Prisma.XOR<Prisma.ContactNullableScalarRelationFilter, Prisma.ContactWhereInput> | null;
   orders?: Prisma.OrderListRelationFilter;
   subscriptions?: Prisma.SubscriptionListRelationFilter;
   leadsAsSource?: Prisma.LeadListRelationFilter;
@@ -265,6 +266,7 @@ export type PartnerOrderByWithRelationInput = {
   contactId?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  contact?: Prisma.ContactOrderByWithRelationInput;
   orders?: Prisma.OrderOrderByRelationAggregateInput;
   subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput;
   leadsAsSource?: Prisma.LeadOrderByRelationAggregateInput;
@@ -290,6 +292,10 @@ export type PartnerWhereUniqueInput = Prisma.AtLeast<
     contactId?: Prisma.StringNullableFilter<'Partner'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
+    contact?: Prisma.XOR<
+      Prisma.ContactNullableScalarRelationFilter,
+      Prisma.ContactWhereInput
+    > | null;
     orders?: Prisma.OrderListRelationFilter;
     subscriptions?: Prisma.SubscriptionListRelationFilter;
     leadsAsSource?: Prisma.LeadListRelationFilter;
@@ -348,9 +354,9 @@ export type PartnerCreateInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
-  contactId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -387,9 +393,9 @@ export type PartnerUpdateInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -445,7 +451,6 @@ export type PartnerUpdateManyMutationInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -467,6 +472,16 @@ export type PartnerUncheckedUpdateManyInput = {
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerListRelationFilter = {
+  every?: Prisma.PartnerWhereInput;
+  some?: Prisma.PartnerWhereInput;
+  none?: Prisma.PartnerWhereInput;
+};
+
+export type PartnerOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
 };
 
 export type PartnerNullableScalarRelationFilter = {
@@ -516,6 +531,92 @@ export type PartnerMinOrderByAggregateInput = {
 
 export type PartnerSumOrderByAggregateInput = {
   defaultPercent?: Prisma.SortOrder;
+};
+
+export type PartnerCreateNestedManyWithoutContactInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutContactInput,
+        Prisma.PartnerUncheckedCreateWithoutContactInput
+      >
+    | Prisma.PartnerCreateWithoutContactInput[]
+    | Prisma.PartnerUncheckedCreateWithoutContactInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutContactInput
+    | Prisma.PartnerCreateOrConnectWithoutContactInput[];
+  createMany?: Prisma.PartnerCreateManyContactInputEnvelope;
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+};
+
+export type PartnerUncheckedCreateNestedManyWithoutContactInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutContactInput,
+        Prisma.PartnerUncheckedCreateWithoutContactInput
+      >
+    | Prisma.PartnerCreateWithoutContactInput[]
+    | Prisma.PartnerUncheckedCreateWithoutContactInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutContactInput
+    | Prisma.PartnerCreateOrConnectWithoutContactInput[];
+  createMany?: Prisma.PartnerCreateManyContactInputEnvelope;
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+};
+
+export type PartnerUpdateManyWithoutContactNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutContactInput,
+        Prisma.PartnerUncheckedCreateWithoutContactInput
+      >
+    | Prisma.PartnerCreateWithoutContactInput[]
+    | Prisma.PartnerUncheckedCreateWithoutContactInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutContactInput
+    | Prisma.PartnerCreateOrConnectWithoutContactInput[];
+  upsert?:
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutContactInput
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutContactInput[];
+  createMany?: Prisma.PartnerCreateManyContactInputEnvelope;
+  set?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  disconnect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  delete?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutContactInput
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutContactInput[];
+  updateMany?:
+    | Prisma.PartnerUpdateManyWithWhereWithoutContactInput
+    | Prisma.PartnerUpdateManyWithWhereWithoutContactInput[];
+  deleteMany?: Prisma.PartnerScalarWhereInput | Prisma.PartnerScalarWhereInput[];
+};
+
+export type PartnerUncheckedUpdateManyWithoutContactNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutContactInput,
+        Prisma.PartnerUncheckedCreateWithoutContactInput
+      >
+    | Prisma.PartnerCreateWithoutContactInput[]
+    | Prisma.PartnerUncheckedCreateWithoutContactInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutContactInput
+    | Prisma.PartnerCreateOrConnectWithoutContactInput[];
+  upsert?:
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutContactInput
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutContactInput[];
+  createMany?: Prisma.PartnerCreateManyContactInputEnvelope;
+  set?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  disconnect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  delete?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutContactInput
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutContactInput[];
+  updateMany?:
+    | Prisma.PartnerUpdateManyWithWhereWithoutContactInput
+    | Prisma.PartnerUpdateManyWithWhereWithoutContactInput[];
+  deleteMany?: Prisma.PartnerScalarWhereInput | Prisma.PartnerScalarWhereInput[];
 };
 
 export type PartnerCreateNestedOneWithoutLeadsAsSourceInput = {
@@ -642,6 +743,97 @@ export type EnumPartnerStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.PartnerStatusEnum;
 };
 
+export type PartnerCreateWithoutContactInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
+  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
+  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
+};
+
+export type PartnerUncheckedCreateWithoutContactInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPartnerInput;
+  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourcePartnerInput;
+  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourcePartnerInput;
+};
+
+export type PartnerCreateOrConnectWithoutContactInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerCreateWithoutContactInput,
+    Prisma.PartnerUncheckedCreateWithoutContactInput
+  >;
+};
+
+export type PartnerCreateManyContactInputEnvelope = {
+  data: Prisma.PartnerCreateManyContactInput | Prisma.PartnerCreateManyContactInput[];
+  skipDuplicates?: boolean;
+};
+
+export type PartnerUpsertWithWhereUniqueWithoutContactInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PartnerUpdateWithoutContactInput,
+    Prisma.PartnerUncheckedUpdateWithoutContactInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerCreateWithoutContactInput,
+    Prisma.PartnerUncheckedCreateWithoutContactInput
+  >;
+};
+
+export type PartnerUpdateWithWhereUniqueWithoutContactInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PartnerUpdateWithoutContactInput,
+    Prisma.PartnerUncheckedUpdateWithoutContactInput
+  >;
+};
+
+export type PartnerUpdateManyWithWhereWithoutContactInput = {
+  where: Prisma.PartnerScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerUpdateManyMutationInput,
+    Prisma.PartnerUncheckedUpdateManyWithoutContactInput
+  >;
+};
+
+export type PartnerScalarWhereInput = {
+  AND?: Prisma.PartnerScalarWhereInput | Prisma.PartnerScalarWhereInput[];
+  OR?: Prisma.PartnerScalarWhereInput[];
+  NOT?: Prisma.PartnerScalarWhereInput | Prisma.PartnerScalarWhereInput[];
+  id?: Prisma.StringFilter<'Partner'> | string;
+  name?: Prisma.StringFilter<'Partner'> | string;
+  type?: Prisma.EnumPartnerTypeEnumFilter<'Partner'> | $Enums.PartnerTypeEnum;
+  direction?: Prisma.EnumPartnerDirectionEnumFilter<'Partner'> | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFilter<'Partner'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFilter<'Partner'> | $Enums.PartnerStatusEnum;
+  contactId?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  createdAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
+};
+
 export type PartnerCreateWithoutLeadsAsSourceInput = {
   id?: string;
   name: string;
@@ -649,9 +841,9 @@ export type PartnerCreateWithoutLeadsAsSourceInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
-  contactId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
@@ -714,9 +906,9 @@ export type PartnerUpdateWithoutLeadsAsSourceInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
@@ -751,9 +943,9 @@ export type PartnerCreateWithoutDealsAsSourceInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
-  contactId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -816,9 +1008,9 @@ export type PartnerUpdateWithoutDealsAsSourceInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -853,9 +1045,9 @@ export type PartnerCreateWithoutOrdersInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
-  contactId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
@@ -918,9 +1110,9 @@ export type PartnerUpdateWithoutOrdersInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
@@ -955,9 +1147,9 @@ export type PartnerCreateWithoutSubscriptionsInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
-  contactId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
@@ -1020,9 +1212,9 @@ export type PartnerUpdateWithoutSubscriptionsInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
@@ -1048,6 +1240,79 @@ export type PartnerUncheckedUpdateWithoutSubscriptionsInput = {
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourcePartnerNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+};
+
+export type PartnerCreateManyContactInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerUpdateWithoutContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
+  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
+  dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
+};
+
+export type PartnerUncheckedUpdateWithoutContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPartnerNestedInput;
+  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+};
+
+export type PartnerUncheckedUpdateManyWithoutContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 /**
@@ -1131,6 +1396,7 @@ export type PartnerSelect<
     contactId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
     orders?: boolean | Prisma.Partner$ordersArgs<ExtArgs>;
     subscriptions?: boolean | Prisma.Partner$subscriptionsArgs<ExtArgs>;
     leadsAsSource?: boolean | Prisma.Partner$leadsAsSourceArgs<ExtArgs>;
@@ -1153,6 +1419,7 @@ export type PartnerSelectCreateManyAndReturn<
     contactId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
   },
   ExtArgs['result']['partner']
 >;
@@ -1170,6 +1437,7 @@ export type PartnerSelectUpdateManyAndReturn<
     contactId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
   },
   ExtArgs['result']['partner']
 >;
@@ -1203,6 +1471,7 @@ export type PartnerOmit<
 export type PartnerInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
+  contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
   orders?: boolean | Prisma.Partner$ordersArgs<ExtArgs>;
   subscriptions?: boolean | Prisma.Partner$subscriptionsArgs<ExtArgs>;
   leadsAsSource?: boolean | Prisma.Partner$leadsAsSourceArgs<ExtArgs>;
@@ -1211,16 +1480,21 @@ export type PartnerInclude<
 };
 export type PartnerIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {};
+> = {
+  contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
+};
 export type PartnerIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {};
+> = {
+  contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
+};
 
 export type $PartnerPayload<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   name: 'Partner';
   objects: {
+    contact: Prisma.$ContactPayload<ExtArgs> | null;
     orders: Prisma.$OrderPayload<ExtArgs>[];
     subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[];
     leadsAsSource: Prisma.$LeadPayload<ExtArgs>[];
@@ -1752,6 +2026,19 @@ export interface Prisma__PartnerClient<
   GlobalOmitOptions = {},
 > extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: 'PrismaPromise';
+  contact<T extends Prisma.Partner$contactArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Partner$contactArgs<ExtArgs>>,
+  ): Prisma.Prisma__ContactClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$ContactPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   orders<T extends Prisma.Partner$ordersArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Partner$ordersArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -2090,6 +2377,10 @@ export type PartnerCreateManyAndReturnArgs<
    */
   data: Prisma.PartnerCreateManyInput | Prisma.PartnerCreateManyInput[];
   skipDuplicates?: boolean;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerIncludeCreateManyAndReturn<ExtArgs> | null;
 };
 
 /**
@@ -2166,6 +2457,10 @@ export type PartnerUpdateManyAndReturnArgs<
    * Limit how many Partners to update.
    */
   limit?: number;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerIncludeUpdateManyAndReturn<ExtArgs> | null;
 };
 
 /**
@@ -2238,6 +2533,27 @@ export type PartnerDeleteManyArgs<
    * Limit how many Partners to delete.
    */
   limit?: number;
+};
+
+/**
+ * Partner.contact
+ */
+export type Partner$contactArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Contact
+   */
+  select?: Prisma.ContactSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Contact
+   */
+  omit?: Prisma.ContactOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContactInclude<ExtArgs> | null;
+  where?: Prisma.ContactWhereInput;
 };
 
 /**

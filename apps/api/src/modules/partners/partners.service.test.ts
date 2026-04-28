@@ -65,6 +65,21 @@ describe('PartnersService', () => {
         }),
       );
     });
+
+    it('should include contact summary for list rows', async () => {
+      prisma.partner.findMany.mockResolvedValue([]);
+      prisma.partner.count.mockResolvedValue(0);
+
+      await service.findAll({});
+
+      expect(prisma.partner.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            contact: { select: { id: true, firstName: true, lastName: true } },
+          }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

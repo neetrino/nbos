@@ -182,13 +182,20 @@ export default function PartnerDetailPage() {
 
       <div className="border-border bg-card rounded-xl border p-4">
         <p className="text-muted-foreground text-xs">Primary contact</p>
-        <p className="mt-2 text-sm">
-          {partner.contactId ? (
+        <div className="mt-2 text-sm">
+          {partner.contact ? (
+            <div>
+              <p className="font-medium">
+                {partner.contact.firstName} {partner.contact.lastName}
+              </p>
+              <p className="text-muted-foreground font-mono text-xs">{partner.contact.id}</p>
+            </div>
+          ) : partner.contactId ? (
             <span className="font-mono text-xs">{partner.contactId}</span>
           ) : (
             <span className="text-muted-foreground">None linked</span>
           )}
-        </p>
+        </div>
       </div>
     </div>
   );
