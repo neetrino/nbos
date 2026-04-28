@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { expensesApi, type AddExpensePaymentPayload } from '@/lib/api/finance';
+import { expensesApi, type AddExpensePaymentPayload, type Expense } from '@/lib/api/finance';
 
 function todayDateInputValue(): string {
   return new Date().toISOString().slice(0, 10);
@@ -22,7 +22,8 @@ interface AddExpensePaymentDialogProps {
   expenseId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onRecorded: () => void;
+  /** Full expense from API (includes ledger fields and synced workflow status). */
+  onRecorded: (expense: Expense) => void;
 }
 
 export function AddExpensePaymentDialog({
@@ -60,8 +61,8 @@ export function AddExpensePaymentDialog({
         paymentDate: when.toISOString(),
         notes: notes.trim() ? notes.trim() : undefined,
       };
-      await expensesApi.addPayment(expenseId, payload);
-      onRecorded();
+      const updated = await expensesApi.addPayment(expenseId, payload);
+      onRecorded(updated);
       onOpenChange(false);
     } catch {
       setError('Payment could not be recorded. Check the amount and try again.');

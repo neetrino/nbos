@@ -181,7 +181,7 @@ function ExpenseDetailPageInner() {
         expenseId={expense.id}
         open={paymentOpen}
         onOpenChange={setPaymentOpen}
-        onRecorded={fetchExpense}
+        onRecorded={(updated) => setExpense(updated)}
       />
 
       <DeleteExpenseDialog
