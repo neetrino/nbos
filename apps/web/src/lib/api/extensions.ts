@@ -21,12 +21,24 @@ export interface Extension {
   project: { id: string; name: string; code: string };
   product: { id: string; name: string } | null;
   assignee: ExtensionEmployee | null;
+  order?: { id: string; code: string; status: string } | null;
+  readiness?: ExtensionReadinessSummary;
   _count: { tasks: number };
 }
 
 export interface FullExtension extends Extension {
   tasks: ExtensionTaskRef[];
   order: ExtensionOrderRef | null;
+}
+
+export interface ExtensionReadinessSummary {
+  isReadyForDevelopment: boolean;
+  missing: ExtensionReadinessIssue[];
+}
+
+export interface ExtensionReadinessIssue {
+  field: string;
+  message: string;
 }
 
 export interface ExtensionTaskRef {

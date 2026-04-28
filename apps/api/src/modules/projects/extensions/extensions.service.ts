@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -6,38 +6,11 @@ import {
   type ExtensionStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-
-const ALLOWED_TRANSITIONS: Record<ExtensionStatusEnum, ExtensionStatusEnum[]> = {
-  NEW: ['DEVELOPMENT', 'LOST'],
-  DEVELOPMENT: ['QA', 'LOST'],
-  QA: ['TRANSFER', 'DEVELOPMENT', 'LOST'],
-  TRANSFER: ['DONE', 'LOST'],
-  DONE: [],
-  LOST: [],
-};
-
-function validateExtensionStageGate(
-  extension: {
-    status?: string | null;
-    description?: string | null;
-    assignedTo?: string | null;
-    order?: { id: string } | null;
-  },
-  target: ExtensionStatusEnum,
-) {
-  if (extension.status === 'NEW' && target === 'DEVELOPMENT') {
-    const missing: string[] = [];
-    if (!extension.description?.trim()) missing.push('description');
-    if (!extension.assignedTo) missing.push('assignedTo');
-    if (!extension.order?.id) missing.push('order');
-
-    if (missing.length > 0) {
-      throw new BadRequestException(
-        `Cannot transition to DEVELOPMENT: missing required fields ${missing.join(', ')}`,
-      );
-    }
-  }
-}
+import {
+  attachExtensionReadiness,
+  validateExtensionStageGate,
+  validateExtensionTransition,
+} from './extension-stage-gates';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -114,7 +87,7 @@ export class ExtensionsService {
     ]);
 
     return {
-      items,
+      items: items.map(attachExtensionReadiness),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -141,11 +114,11 @@ export class ExtensionsService {
       },
     });
     if (!extension) throw new NotFoundException(`Extension ${id} not found`);
-    return extension;
+    return attachExtensionReadiness(extension);
   }
 
   async create(data: CreateExtensionDto) {
-    return this.prisma.extension.create({
+    const extension = await this.prisma.extension.create({
       data: {
         projectId: data.projectId,
         productId: data.productId,
@@ -160,11 +133,12 @@ export class ExtensionsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    return attachExtensionReadiness(extension);
   }
 
   async update(id: string, data: UpdateExtensionDto) {
     await this.findById(id);
-    return this.prisma.extension.update({
+    const extension = await this.prisma.extension.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
@@ -179,6 +153,7 @@ export class ExtensionsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    return attachExtensionReadiness(extension);
   }
 
   async updateStatus(id: string, newStatus: string) {
@@ -186,23 +161,19 @@ export class ExtensionsService {
     const current = extension.status as ExtensionStatusEnum;
     const target = newStatus as ExtensionStatusEnum;
 
-    const allowed = ALLOWED_TRANSITIONS[current];
-    if (!allowed?.includes(target)) {
-      throw new BadRequestException(
-        `Cannot transition from ${current} to ${target}. Allowed: ${allowed?.join(', ') || 'none'}`,
-      );
-    }
-
+    validateExtensionTransition(current, target);
     validateExtensionStageGate(extension, target);
 
-    return this.prisma.extension.update({
+    const updated = await this.prisma.extension.update({
       where: { id },
       data: { status: target },
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
       },
     });
+    return attachExtensionReadiness(updated);
   }
 
   async delete(id: string) {

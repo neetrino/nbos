@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `SUBSCRIPTION ACTIVATION FOUNDATION DONE / DELIVERY DEPTH NEXT`
+Статус: `EXTENSION READINESS FOUNDATION DONE / FINANCE DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -208,15 +208,15 @@ Deal Won foundation уже блокирует non-maintenance Won без linked 
 Product subscription entry, auto-created linked `MAINTENANCE Deal`, `Pending` subscription
 creation for won Maintenance deals, Deal card handoff links/readiness visibility,
 Project detail read-only PM intake visibility, persisted PM kickoff checklist rows,
-Product Development gate blockers, and Finance Pending subscription activation with
-derived coverage month visibility.
+Product Development gate blockers, Finance Pending subscription activation with
+derived coverage month visibility, and Extension Development readiness blockers.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
 - углубить direct actions из popup там, где нужны create/open shortcuts;
 - углубить payment confirmation, invoice generation and finance reconciliation workflow;
-- добавить shortened Extension checklist and remaining delivery lifecycle depth.
+- углубить remaining delivery lifecycle depth after readiness foundations.
 
 Опорные места в коде:
 
@@ -246,7 +246,7 @@ derived coverage month visibility.
 
 Что потом нужно сделать:
 
-- углубить Extension-specific checklist and later delivery board depth;
+- углубить Extension delivery board depth after readiness foundation;
 - later deepen activation rules in Finance instead of CRM.
 
 ---

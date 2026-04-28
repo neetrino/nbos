@@ -10,7 +10,11 @@ export interface ApiErrorPayload {
   errors?: ApiFieldError[];
 }
 
-const STAGE_GATE_ERROR_CODES = new Set(['ATTRIBUTION_GATE_VALIDATION', 'STAGE_GATE_VALIDATION']);
+const STAGE_GATE_ERROR_CODES = new Set([
+  'ATTRIBUTION_GATE_VALIDATION',
+  'STAGE_GATE_VALIDATION',
+  'EXTENSION_STAGE_GATE_VALIDATION',
+]);
 
 export class ApiError extends Error {
   readonly statusCode?: number;

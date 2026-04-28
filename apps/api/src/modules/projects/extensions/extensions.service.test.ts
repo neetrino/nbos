@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ExtensionsService } from './extensions.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { EXTENSION_STAGE_GATE_ERROR_CODE } from './extension-stage-gates';
 
 describe('ExtensionsService', () => {
   let service: ExtensionsService;
@@ -17,6 +18,31 @@ describe('ExtensionsService', () => {
       const result = await service.findAll({});
       expect(result.items).toEqual([]);
       expect(result.meta.totalPages).toBe(0);
+    });
+
+    it('attaches readiness metadata', async () => {
+      prisma.extension.findMany.mockResolvedValue([
+        {
+          id: 'e1',
+          status: 'NEW',
+          description: null,
+          assignedTo: null,
+          order: null,
+        },
+      ]);
+
+      const result = await service.findAll({});
+
+      expect(result.items[0]).toMatchObject({
+        readiness: {
+          isReadyForDevelopment: false,
+          missing: [
+            { field: 'description', message: expect.any(String) },
+            { field: 'assignedTo', message: expect.any(String) },
+            { field: 'order', message: expect.any(String) },
+          ],
+        },
+      });
     });
 
     it('applies projectId filter', async () => {
@@ -117,6 +143,31 @@ describe('ExtensionsService', () => {
       expect(prisma.extension.update).not.toHaveBeenCalled();
     });
 
+    it('returns structured readiness blockers for NEW → DEVELOPMENT', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'NEW',
+        description: '',
+        assignedTo: null,
+        order: null,
+      });
+
+      const error = await service
+        .updateStatus('e1', 'DEVELOPMENT')
+        .catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: EXTENSION_STAGE_GATE_ERROR_CODE,
+        errors: [
+          { field: 'description', message: expect.any(String) },
+          { field: 'assignedTo', message: expect.any(String) },
+          { field: 'order', message: expect.any(String) },
+        ],
+      });
+      expect(prisma.extension.update).not.toHaveBeenCalled();
+    });
+
     it('allows NEW → DEVELOPMENT', async () => {
       prisma.extension.findUnique.mockResolvedValue({
         id: 'e1',
@@ -178,3 +229,9 @@ describe('ExtensionsService', () => {
     });
   });
 });
+
+function readExceptionResponse(error: unknown) {
+  if (!(error instanceof BadRequestException)) return {};
+  const response = error.getResponse();
+  return typeof response === 'object' && response !== null ? response : {};
+}
