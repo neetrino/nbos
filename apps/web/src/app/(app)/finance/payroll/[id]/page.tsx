@@ -137,7 +137,7 @@ export default function PayrollRunDetailPage() {
           <p className="text-muted-foreground mt-1 text-sm">
             Status: {PAYROLL_RUN_STATUS_LABEL[run.status]}
             {run.salaryLines.length > 0
-              ? ` · ${run.salaryLines.length} salary line(s)`
+              ? ` · ${run.salaryLines.length} salary line(s) · ${run.materializedExpenseLineCount} expense card(s)`
               : ' · no salary lines'}
           </p>
         </div>

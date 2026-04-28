@@ -18,10 +18,32 @@ describe('PayrollRunsService', () => {
         { id: '1', payrollMonth: '2026-03', _count: { salaryLines: 0 } },
       ]);
       prisma.payrollRun.count.mockResolvedValue(1);
+      prisma.salaryLine.groupBy.mockResolvedValue([]);
       const result = await service.findAll({});
       expect(result.meta.page).toBe(1);
       expect(result.meta.total).toBe(1);
       expect(result.items).toHaveLength(1);
+      expect(result.items[0].materializedExpenseLineCount).toBe(0);
+      expect(prisma.salaryLine.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            payrollRunId: { in: ['1'] },
+            expenseId: { not: null },
+          }),
+        }),
+      );
+    });
+
+    it('adds materializedExpenseLineCount from salary lines with expense_id', async () => {
+      prisma.payrollRun.findMany.mockResolvedValue([
+        { id: 'r1', payrollMonth: '2026-03', _count: { salaryLines: 5 } },
+        { id: 'r2', payrollMonth: '2026-02', _count: { salaryLines: 2 } },
+      ]);
+      prisma.payrollRun.count.mockResolvedValue(2);
+      prisma.salaryLine.groupBy.mockResolvedValue([{ payrollRunId: 'r1', _count: { _all: 3 } }]);
+      const result = await service.findAll({});
+      expect(result.items[0].materializedExpenseLineCount).toBe(3);
+      expect(result.items[1].materializedExpenseLineCount).toBe(0);
     });
   });
 
@@ -33,6 +55,7 @@ describe('PayrollRunsService', () => {
     it('returns journal derived from durable timestamps', async () => {
       prisma.auditLog.findMany.mockResolvedValue([]);
       prisma.employee.findMany.mockResolvedValue([]);
+      prisma.salaryLine.groupBy.mockResolvedValue([{ payrollRunId: 'p1', _count: { _all: 2 } }]);
       prisma.payrollRun.findUnique.mockResolvedValue({
         id: 'p1',
         payrollMonth: '2026-04',
@@ -52,6 +75,7 @@ describe('PayrollRunsService', () => {
         approvedBy: { id: 'e2', firstName: 'C', lastName: 'D' },
       });
       const result = await service.findById('p1');
+      expect(result.materializedExpenseLineCount).toBe(2);
       expect(result.journal).toHaveLength(3);
       expect(result.journal.map((j: { kind: string }) => j.kind)).toEqual([
         'CREATED',

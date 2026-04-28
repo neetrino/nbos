@@ -134,6 +134,7 @@ export default function PayrollRunsPage() {
                 <TableHead>Month</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Lines</TableHead>
+                <TableHead className="text-right">Expense cards</TableHead>
                 <TableHead className="text-right">Total payable</TableHead>
                 <TableHead className="text-right">Paid</TableHead>
               </TableRow>
@@ -151,6 +152,9 @@ export default function PayrollRunsPage() {
                   </TableCell>
                   <TableCell>{PAYROLL_RUN_STATUS_LABEL[row.status]}</TableCell>
                   <TableCell className="text-right">{row._count.salaryLines}</TableCell>
+                  <TableCell className="text-muted-foreground text-right text-xs tabular-nums">
+                    {row.materializedExpenseLineCount} / {row._count.salaryLines}
+                  </TableCell>
                   <TableCell className="text-right">
                     {formatAmount(parseAmount(row.totalPayable))}
                   </TableCell>

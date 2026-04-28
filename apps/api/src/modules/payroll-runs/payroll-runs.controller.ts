@@ -10,7 +10,11 @@ export class PayrollRunsController {
   constructor(private readonly payrollRunsService: PayrollRunsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List payroll runs (paged)' })
+  @ApiOperation({
+    summary: 'List payroll runs (paged)',
+    description:
+      'Each item includes materializedExpenseLineCount: salary lines with expense_id set (materialized cards).',
+  })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'status', required: false })
@@ -36,7 +40,7 @@ export class PayrollRunsController {
   @ApiOperation({
     summary: 'Get payroll run with salary lines',
     description:
-      'Includes `journal` (milestone timestamps) and `auditTrail` (`audit_logs` for this run: create + status changes).',
+      'Includes materializedExpenseLineCount, `journal` (milestone timestamps), and `auditTrail` (`audit_logs` for this run: create + status changes).',
   })
   async findOne(@Param('id') id: string) {
     return this.payrollRunsService.findById(id);

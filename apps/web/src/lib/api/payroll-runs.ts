@@ -36,6 +36,8 @@ export interface PayrollRunListRow {
   createdAt: string;
   updatedAt: string;
   _count: { salaryLines: number };
+  /** Salary lines with `expense_id` set (materialized expense cards). */
+  materializedExpenseLineCount: number;
 }
 
 export interface PayrollRunEmployeeRef {

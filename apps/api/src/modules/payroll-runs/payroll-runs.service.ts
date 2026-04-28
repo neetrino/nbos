@@ -18,6 +18,7 @@ import {
   PAYROLL_RUN_AUDIT_ENTITY_TYPE,
 } from './payroll-run-audit.constants';
 import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
+import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
 const PAYROLL_RUN_STATUSES: PayrollRunStatusEnum[] = [
@@ -94,8 +95,16 @@ export class PayrollRunsService {
       this.prisma.payrollRun.count({ where }),
     ]);
 
+    const materializedByRun = await fetchMaterializedSalaryLineCountByPayrollRunId(
+      this.prisma,
+      items.map((row) => row.id),
+    );
+
     return {
-      items,
+      items: items.map((row) => ({
+        ...row,
+        materializedExpenseLineCount: materializedByRun.get(row.id) ?? 0,
+      })),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -116,13 +125,15 @@ export class PayrollRunsService {
       },
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
-    const auditTrail = await loadPayrollRunAuditTrail(
-      this.prisma,
-      PAYROLL_RUN_AUDIT_ENTITY_TYPE,
-      id,
-    );
+
+    const [materializedByRun, auditTrail] = await Promise.all([
+      fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
+      loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
+    ]);
+
     return {
       ...run,
+      materializedExpenseLineCount: materializedByRun.get(id) ?? 0,
       journal: buildPayrollRunJournal(run),
       auditTrail,
     };
