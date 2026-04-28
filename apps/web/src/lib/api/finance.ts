@@ -69,7 +69,25 @@ export interface Order {
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; status: string; amount: string }>;
+  reconciliation?: OrderReconciliation;
   _count?: { invoices: number };
+}
+
+export interface OrderReconciliation {
+  orderAmount: number;
+  invoicedAmount: number;
+  paidAmount: number;
+  uninvoicedAmount: number;
+  outstandingAmount: number;
+  invoiceCount: number;
+  isFullyInvoiced: boolean;
+  isFullyPaid: boolean;
+  warnings: OrderReconciliationWarning[];
+}
+
+export interface OrderReconciliationWarning {
+  code: 'NO_INVOICES' | 'UNINVOICED_AMOUNT' | 'OUTSTANDING_AMOUNT';
+  message: string;
 }
 
 export interface Expense {

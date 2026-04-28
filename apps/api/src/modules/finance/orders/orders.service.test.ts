@@ -26,7 +26,7 @@ describe('OrdersService', () => {
             company: { id: 'c1', name: 'Company' },
             contact: { id: 'ct1', firstName: 'Jane', lastName: 'Doe' },
           },
-          invoices: [{ payments: [{ amount: 25000 }, { amount: 15000 }] }],
+          invoices: [{ amount: 60000, payments: [{ amount: 25000 }, { amount: 15000 }] }],
           _count: { invoices: 1 },
         },
       ]);
@@ -36,6 +36,12 @@ describe('OrdersService', () => {
       expect(result.items[0]).toMatchObject({
         amount: 100000,
         paidAmount: 40000,
+        reconciliation: {
+          invoicedAmount: 60000,
+          paidAmount: 40000,
+          uninvoicedAmount: 40000,
+          outstandingAmount: 60000,
+        },
         company: { id: 'c1', name: 'Company' },
         contact: { id: 'ct1', firstName: 'Jane', lastName: 'Doe' },
       });
@@ -86,8 +92,8 @@ describe('OrdersService', () => {
           contact: { id: 'ct1', firstName: 'Jane', lastName: 'Doe' },
         },
         invoices: [
-          { payments: [{ amount: 20000 }, { amount: 10000 }] },
-          { payments: [{ amount: 15000 }] },
+          { amount: 60000, payments: [{ amount: 20000 }, { amount: 10000 }] },
+          { amount: 40000, payments: [{ amount: 15000 }] },
         ],
       });
 
@@ -96,6 +102,12 @@ describe('OrdersService', () => {
       expect(result).toMatchObject({
         amount: 120000,
         paidAmount: 45000,
+        reconciliation: {
+          invoicedAmount: 100000,
+          paidAmount: 45000,
+          uninvoicedAmount: 20000,
+          outstandingAmount: 75000,
+        },
         company: { id: 'c1', name: 'Company' },
         contact: { id: 'ct1', firstName: 'Jane', lastName: 'Doe' },
       });

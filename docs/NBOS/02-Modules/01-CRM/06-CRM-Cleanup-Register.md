@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `INVOICE GENERATION FOUNDATION DONE / FINANCE RECONCILIATION OR DELIVERY DEPTH NEXT`
+Статус: `ORDER RECONCILIATION SNAPSHOT DONE / DELIVERY DEPTH OR MARKETING ANALYTICS NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -213,13 +213,14 @@ derived coverage month visibility, Extension Development readiness blockers,
 Finance invoice paid/outstanding coverage with controlled Record Payment action,
 field-aware blocker popup direct actions for CRM, Product and Extension gates,
 read-only Marketing performance snapshot from real spend links and attributed paid revenue,
-and controlled manual invoice generation from Finance invoice/order screens.
+controlled manual invoice generation from Finance invoice/order screens,
+and read-only Order reconciliation coverage from linked invoices/payments.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, где нужны remaining create shortcuts beyond invoice generation;
 - углубить direct actions там, где понадобится actual create flow, not only open target;
-- углубить later finance reconciliation workflow after controlled invoice generation;
+- углубить later finance reconciliation workflow after read-only order coverage visibility;
 - later deepen Marketing ROI after Finance reconciliation becomes reliable;
 - углубить remaining delivery lifecycle depth after readiness foundations.
 

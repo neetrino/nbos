@@ -7,6 +7,7 @@ import {
   type OrderStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { attachOrderReconciliation } from './order-reconciliation';
 
 interface CreateOrderDto {
   projectId: string;
@@ -91,20 +92,12 @@ export class OrdersService {
     ]);
 
     const items = orders.map((order) => {
-      const paidAmount = (order.invoices ?? []).reduce(
-        (sum, invoice) =>
-          sum +
-          (invoice.payments ?? []).reduce(
-            (invoiceSum, payment) => invoiceSum + Number(payment.amount),
-            0,
-          ),
-        0,
-      );
+      const orderWithReconciliation = attachOrderReconciliation(order);
 
       return {
-        ...order,
+        ...orderWithReconciliation,
         amount: order.totalAmount,
-        paidAmount,
+        paidAmount: orderWithReconciliation.reconciliation.paidAmount,
         company: order.project.company,
         contact: order.project.contact,
       };
@@ -135,20 +128,12 @@ export class OrdersService {
     });
     if (!order) throw new NotFoundException(`Order ${id} not found`);
 
-    const paidAmount = (order.invoices ?? []).reduce(
-      (sum, invoice) =>
-        sum +
-        (invoice.payments ?? []).reduce(
-          (invoiceSum, payment) => invoiceSum + Number(payment.amount),
-          0,
-        ),
-      0,
-    );
+    const orderWithReconciliation = attachOrderReconciliation(order);
 
     return {
-      ...order,
+      ...orderWithReconciliation,
       amount: order.totalAmount,
-      paidAmount,
+      paidAmount: orderWithReconciliation.reconciliation.paidAmount,
       company: order.project.company,
       contact: order.project.contact,
     };
