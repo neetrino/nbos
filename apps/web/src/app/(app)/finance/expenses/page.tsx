@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Plus,
   RefreshCcw,
@@ -196,7 +197,10 @@ export default function ExpensesPage() {
           columns={kanbanColumns}
           getItemId={(e: Expense) => e.id}
           renderCard={(expense: Expense) => (
-            <div className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm">
+            <Link
+              href={`/finance/expenses/${expense.id}`}
+              className="border-border bg-card focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium">{expense.category}</span>
                 <StatusBadge
@@ -212,7 +216,7 @@ export default function ExpensesPage() {
                   {expense.project.name}
                 </div>
               )}
-            </div>
+            </Link>
           )}
         />
       ) : (
@@ -235,7 +239,12 @@ export default function ExpensesPage() {
                 return (
                   <TableRow key={expense.id}>
                     <TableCell>
-                      <p className="font-medium">{expense.name}</p>
+                      <Link
+                        href={`/finance/expenses/${expense.id}`}
+                        className="text-primary font-medium hover:underline"
+                      >
+                        {expense.name}
+                      </Link>
                       {expense.notes && (
                         <p className="text-muted-foreground max-w-[200px] truncate text-xs">
                           {expense.notes}
