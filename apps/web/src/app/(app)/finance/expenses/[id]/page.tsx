@@ -2,8 +2,8 @@
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
-import { ArrowLeft, ExternalLink, FolderKanban, Pencil, RefreshCcw } from 'lucide-react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, ExternalLink, FolderKanban, Pencil, RefreshCcw, Trash2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { formatAmount, getExpenseStage } from '@/features/finance/constants/finance';
@@ -12,6 +12,7 @@ import {
   financeExpensesListHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
 import { cn } from '@/lib/utils';
+import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
@@ -25,6 +26,7 @@ function formatDate(iso: string | null): string {
 }
 
 function ExpenseDetailPageInner() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const id = typeof params.id === 'string' ? params.id : '';
@@ -35,6 +37,9 @@ function ExpenseDetailPageInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchExpense = useCallback(async () => {
     if (!id) return;
@@ -83,6 +88,19 @@ function ExpenseDetailPageInner() {
 
   const stage = getExpenseStage(expense.status);
 
+  const handleDeleteExpense = async () => {
+    setDeleteError(null);
+    setDeleteSubmitting(true);
+    try {
+      await expensesApi.delete(expense.id);
+      router.replace(expensesListHref);
+    } catch {
+      setDeleteError('Expense could not be deleted. Check your connection and try again.');
+    } finally {
+      setDeleteSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex h-full flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -107,6 +125,18 @@ function ExpenseDetailPageInner() {
             <Pencil size={16} />
             Edit
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="text-destructive hover:bg-destructive/10 border-destructive/40"
+            onClick={() => {
+              setDeleteError(null);
+              setDeleteOpen(true);
+            }}
+          >
+            <Trash2 size={16} />
+            Delete
+          </Button>
         </div>
       </div>
 
@@ -115,6 +145,18 @@ function ExpenseDetailPageInner() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onSaved={(updated) => setExpense(updated)}
+      />
+
+      <DeleteExpenseDialog
+        expenseName={expense.name}
+        open={deleteOpen}
+        isSubmitting={deleteSubmitting}
+        errorMessage={deleteError}
+        onOpenChange={(next) => {
+          setDeleteOpen(next);
+          if (!next) setDeleteError(null);
+        }}
+        onConfirm={handleDeleteExpense}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

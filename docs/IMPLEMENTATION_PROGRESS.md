@@ -120,6 +120,7 @@ Roadmap Phase 3 spans invoices, payments, subscriptions, expenses, partners/payo
 | 2026-04-28 | Project → expenses drill-down done             | `GET /expenses/stats?projectId=` parity with list; `/finance/expenses?projectId=` banner; Product Finance tab link; typed API params     | `pnpm exec vitest run apps/api/src/modules/expenses/expenses.service.test.ts`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                   | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Finance expenses create dialog done            | `CreateExpenseDialog` + `CreateExpensePayload`; list/empty New Expense; prefill project from `?projectId=`; form submit labels           | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                                                                                                                       | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Expense project navigation parity done         | `expenseDetailHref` + list/kanban/detail back preserve `?projectId=`; create → detail with query; Suspense + `useSearchParams`; Vitest   | `pnpm exec vitest run apps/web/src/features/finance/constants/project-expenses-drilldown.test.ts`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                    | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Expense delete from detail done                | `DeleteExpenseDialog`; `DELETE /expenses/:id`; redirect to list preserving `?projectId=`; right-sized slice guidance in progress doc     | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                                                                                                                       | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 
@@ -188,11 +189,11 @@ A slice is done only when:
 
 ## Next Action
 
-Continue with Phase 3 at bounded scope (avoid tiny-only fixes and avoid multi-module breaking refactors in one PR):
+Continue Phase 3 with **right-sized slices**: each iteration should ship one **coherent, reviewable unit** — enough scope to be meaningful (feature-quality, tested where appropriate), without unrelated drive-by edits or multi-module megarefactors unless explicitly agreed. Avoid splitting work into unnecessarily tiny fragments; avoid scope creep.
 
 ```text
-Next Phase 3 slice candidates:
-- Expenses: deepen safe slices toward canon (partial payments / backlog) without full schema rewrite in one step.
+Phase 3 slice ideas (pick one cohesive unit per iteration):
+- Expenses: deepen toward canon (partial payments / backlog) without full schema rewrite in one step.
 - Subscription and invoice lifecycle depth when priorities require it (no fake money states).
 - Reporting or exports only when product priorities are confirmed.
 ```
