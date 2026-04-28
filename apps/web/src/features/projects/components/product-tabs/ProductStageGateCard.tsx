@@ -8,6 +8,7 @@ import type { FullProduct } from '@/lib/api/products';
 import { productsApi } from '@/lib/api/products';
 import { type ApiFieldError, isStageGateApiError } from '@/lib/api-errors';
 import { PRODUCT_STATUSES } from '@/features/projects/constants/projects';
+import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   NEW: ['CREATING', 'LOST'],
@@ -126,6 +127,11 @@ function StageGateBlockerPanel({
   blocker: StageGateBlocker;
   projectId: string;
 }) {
+  const directActions = resolveBlockerDirectActions({
+    context: 'product',
+    errors: blocker.errors,
+  });
+
   return (
     <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
       <div className="flex items-start gap-2">
@@ -139,14 +145,34 @@ function StageGateBlockerPanel({
               <li key={error.field}>- {error.message}</li>
             ))}
           </ul>
-          <Link
-            href={`/projects/${projectId}`}
-            className={buttonVariants({ variant: 'outline', size: 'sm', className: 'mt-3' })}
-          >
-            Open Project PM Intake
-          </Link>
+          <ProductBlockerActions actions={directActions} projectId={projectId} />
         </div>
       </div>
+    </div>
+  );
+}
+
+function ProductBlockerActions({
+  actions,
+  projectId,
+}: {
+  actions: Array<{ key: string; label: string }>;
+  projectId: string;
+}) {
+  const visibleActions =
+    actions.length > 0 ? actions : [{ key: 'pm-intake', label: 'Open PM intake' }];
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {visibleActions.map((action) => (
+        <Link
+          key={action.key}
+          href={`/projects/${projectId}`}
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        >
+          {action.label}
+        </Link>
+      ))}
     </div>
   );
 }

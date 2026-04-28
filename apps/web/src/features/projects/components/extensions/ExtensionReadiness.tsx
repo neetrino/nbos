@@ -1,4 +1,7 @@
+import Link from 'next/link';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
+import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 import type { Extension, ExtensionReadinessIssue } from '@/lib/api/extensions';
 import type { ExtensionBlocker } from './useExtensionsTabState';
 
@@ -34,6 +37,8 @@ export function ExtensionBlockerPanel({
   blocker: ExtensionBlocker;
   onDismiss: () => void;
 }) {
+  const actions = resolveBlockerDirectActions({ context: 'extension', errors: blocker.errors });
+
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
       <div className="flex items-start justify-between gap-4">
@@ -46,6 +51,20 @@ export function ExtensionBlockerPanel({
         </button>
       </div>
       {blocker.errors.length > 0 && <ExtensionReadinessIssues issues={blocker.errors} />}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {(actions.length > 0
+          ? actions
+          : [{ key: 'extension-context', label: 'Open extension context' }]
+        ).map((action) => (
+          <Link
+            key={action.key}
+            href={`/projects/${blocker.projectId}`}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            {action.label}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

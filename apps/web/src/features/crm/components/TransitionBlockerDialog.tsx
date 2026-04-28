@@ -22,6 +22,12 @@ export interface TransitionBlockerState<TItem> {
   message: string;
 }
 
+export interface TransitionBlockerAction {
+  key: string;
+  label: string;
+  onClick: () => void;
+}
+
 interface TransitionBlockerDialogProps<TItem> {
   open: boolean;
   blocker: TransitionBlockerState<TItem> | null;
@@ -30,6 +36,7 @@ interface TransitionBlockerDialogProps<TItem> {
   onOpenChange: (open: boolean) => void;
   onOpenDetails: () => void;
   onRetry: () => Promise<void>;
+  directActions?: TransitionBlockerAction[];
   businessActionLabel?: string;
   onBusinessAction?: () => void;
   onOverride?: (reason: string) => Promise<void>;
@@ -45,6 +52,7 @@ export function TransitionBlockerDialog<TItem>({
   onOpenChange,
   onOpenDetails,
   onRetry,
+  directActions = [],
   businessActionLabel,
   onBusinessAction,
   onOverride,
@@ -139,6 +147,11 @@ export function TransitionBlockerDialog<TItem>({
         )}
 
         <DialogFooter>
+          {directActions.map((action) => (
+            <Button key={action.key} type="button" variant="outline" onClick={action.onClick}>
+              {action.label}
+            </Button>
+          ))}
           {onBusinessAction && businessActionLabel && (
             <Button type="button" variant="outline" onClick={onBusinessAction}>
               {businessActionLabel}

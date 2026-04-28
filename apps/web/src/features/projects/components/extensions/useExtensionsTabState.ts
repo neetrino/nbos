@@ -4,6 +4,7 @@ import { extensionsApi, type Extension } from '@/lib/api/extensions';
 
 export interface ExtensionBlocker {
   extensionId: string;
+  projectId: string;
   extensionName: string;
   message: string;
   errors: ApiFieldError[];
@@ -84,6 +85,7 @@ function toExtensionBlocker(error: unknown, extension: Extension): ExtensionBloc
   if (isStageGateApiError(error)) {
     return {
       extensionId: extension.id,
+      projectId: extension.projectId,
       extensionName: extension.name,
       message: error.message,
       errors: error.errors,
@@ -92,6 +94,7 @@ function toExtensionBlocker(error: unknown, extension: Extension): ExtensionBloc
 
   return {
     extensionId: extension.id,
+    projectId: extension.projectId,
     extensionName: extension.name,
     message: 'Extension status could not be updated. Check readiness and try again.',
     errors: [],

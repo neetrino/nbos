@@ -22,6 +22,7 @@ import {
 import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
 import { leadsApi, type Lead } from '@/lib/api/leads';
 import { isStageGateApiError } from '@/lib/api-errors';
+import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 import {
   Table,
   TableHeader,
@@ -111,6 +112,16 @@ export default function LeadsPipelinePage() {
     setSelectedLead(currentLead ?? transitionBlocker.item);
     setSheetOpen(true);
   };
+
+  const blockerActions = transitionBlocker
+    ? resolveBlockerDirectActions({ context: 'crm', errors: transitionBlocker.errors }).map(
+        (action) => ({
+          key: action.key,
+          label: action.label,
+          onClick: handleOpenBlockedLead,
+        }),
+      )
+    : [];
 
   const handleRetryBlockedMove = async () => {
     const blocker = transitionBlocker;
@@ -335,6 +346,7 @@ export default function LeadsPipelinePage() {
         }}
         onOpenDetails={handleOpenBlockedLead}
         onRetry={handleRetryBlockedMove}
+        directActions={blockerActions}
       />
     </div>
   );

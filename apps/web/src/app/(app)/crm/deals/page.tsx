@@ -28,6 +28,7 @@ import {
 } from '@/features/crm/constants/dealPipeline';
 import { dealsApi, type Deal } from '@/lib/api/deals';
 import { isStageGateApiError } from '@/lib/api-errors';
+import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 import {
   Table,
   TableHeader,
@@ -116,6 +117,16 @@ export default function DealsPipelinePage() {
     setSelectedDeal(currentDeal ?? transitionBlocker.item);
     setSheetOpen(true);
   };
+
+  const blockerActions = transitionBlocker
+    ? resolveBlockerDirectActions({ context: 'crm', errors: transitionBlocker.errors }).map(
+        (action) => ({
+          key: action.key,
+          label: action.label,
+          onClick: handleOpenBlockedDeal,
+        }),
+      )
+    : [];
 
   const handleRetryBlockedMove = async () => {
     const blocker = transitionBlocker;
@@ -374,8 +385,7 @@ export default function DealsPipelinePage() {
         }}
         onOpenDetails={handleOpenBlockedDeal}
         onRetry={handleRetryBlockedMove}
-        businessActionLabel="Open deal finance"
-        onBusinessAction={handleOpenBlockedDeal}
+        directActions={blockerActions}
         onOverride={handleOverrideBlockedMove}
       />
     </div>

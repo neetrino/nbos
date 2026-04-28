@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `PAYMENT APPLICATION FOUNDATION DONE / POPUP SHORTCUTS OR FINANCE DEPTH NEXT`
+Статус: `POPUP DIRECT ACTIONS FOUNDATION DONE / FINANCE OR DELIVERY DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -210,12 +210,13 @@ creation for won Maintenance deals, Deal card handoff links/readiness visibility
 Project detail read-only PM intake visibility, persisted PM kickoff checklist rows,
 Product Development gate blockers, Finance Pending subscription activation with
 derived coverage month visibility, Extension Development readiness blockers,
-and Finance invoice paid/outstanding coverage with controlled Record Payment action.
+Finance invoice paid/outstanding coverage with controlled Record Payment action,
+and field-aware blocker popup direct actions for CRM, Product and Extension gates.
 
 Новые требования, которые надо будет реализовать:
 
-- проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
-- углубить direct actions из popup там, где нужны create/open shortcuts;
+- проверить, где нужны remaining create shortcuts beyond direct open actions;
+- углубить direct actions там, где понадобится actual create flow, not only open target;
 - углубить invoice generation and later finance reconciliation workflow;
 - углубить remaining delivery lifecycle depth after readiness foundations.
 
@@ -260,7 +261,7 @@ and Finance invoice paid/outstanding coverage with controlled Record Payment act
 2. привести subscription statuses к новому канону в shared/backend/frontend;
 3. расширить CRM stage gates и popup transitions;
 4. реализовать maintenance auto-created flow;
-5. углубить Extension checklist and remaining Finance payment/subscription depth;
+5. углубить Extension checklist, remaining Finance payment/subscription depth and create shortcuts;
 6. только после этого полировать вторичные UI детали и automation texts.
 
 ---
