@@ -46,6 +46,7 @@ interface SubscriptionQueryParams {
 interface SubscriptionStatsParams {
   dateFrom?: string;
   dateTo?: string;
+  partnerId?: string;
 }
 
 @Injectable()
@@ -70,11 +71,7 @@ export class SubscriptionsService {
     const where: Prisma.SubscriptionWhereInput = {};
 
     if (projectId) where.projectId = projectId;
-    if (partnerId === SUBSCRIPTION_PARTNER_FILTER_UNLINKED) {
-      where.partnerId = null;
-    } else if (partnerId) {
-      where.partnerId = partnerId;
-    }
+    Object.assign(where, this.subscriptionPartnerWhere(partnerId));
     if (status) where.status = status as SubscriptionStatusEnum;
     if (type) where.type = type as SubscriptionTypeEnum;
     if (search) {
@@ -208,20 +205,30 @@ export class SubscriptionsService {
   async getStats(params: SubscriptionStatsParams = {}) {
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const snapshotDate = params.dateTo ? new Date(params.dateTo) : new Date();
+    const partnerWhere = this.subscriptionPartnerWhere(params.partnerId);
 
     const [total, byStatus, byType, totalRevenue, activeSubscriptions] = await Promise.all([
       this.prisma.subscription.count({
-        ...(createdAt ? { where: { createdAt } } : {}),
+        where: {
+          ...(createdAt ? { createdAt } : {}),
+          ...partnerWhere,
+        },
       }),
       this.prisma.subscription.groupBy({
         by: ['status'],
-        ...(createdAt ? { where: { createdAt } } : {}),
+        where: {
+          ...(createdAt ? { createdAt } : {}),
+          ...partnerWhere,
+        },
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.subscription.groupBy({
         by: ['type'],
-        ...(createdAt ? { where: { createdAt } } : {}),
+        where: {
+          ...(createdAt ? { createdAt } : {}),
+          ...partnerWhere,
+        },
         _count: true,
         _sum: { amount: true },
       }),
@@ -230,6 +237,7 @@ export class SubscriptionsService {
           status: 'ACTIVE',
           startDate: { lte: snapshotDate },
           OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+          ...partnerWhere,
         },
         _sum: { amount: true },
       }),
@@ -238,6 +246,7 @@ export class SubscriptionsService {
           status: 'ACTIVE',
           startDate: { lte: snapshotDate },
           OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
+          ...partnerWhere,
         },
       }),
     ]);
@@ -249,6 +258,14 @@ export class SubscriptionsService {
       activeSubscriptions,
       monthlyRevenue: totalRevenue._sum.amount,
     };
+  }
+
+  private subscriptionPartnerWhere(partnerId?: string): Prisma.SubscriptionWhereInput {
+    if (!partnerId) return {};
+    if (partnerId === SUBSCRIPTION_PARTNER_FILTER_UNLINKED) {
+      return { partnerId: null };
+    }
+    return { partnerId };
   }
 
   private buildDateRange(dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined {

@@ -6,6 +6,7 @@ export type {
   Subscription,
   SubscriptionCoverageSummary,
   SubscriptionStats,
+  SubscriptionStatsQueryParams,
   UpdateSubscriptionPayload,
 } from './subscriptions';
 export { subscriptionsApi } from './subscriptions';

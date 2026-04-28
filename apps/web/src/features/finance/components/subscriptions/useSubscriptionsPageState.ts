@@ -120,11 +120,16 @@ function useSubscriptionFetch({
     setLoading(true);
     try {
       const periodParams = getFinancePeriodParams(period);
+      const listQuery = buildSubscriptionListQuery(
+        { filters, search, partnerIdFromUrl },
+        periodParams,
+      );
       const [data, subscriptionStats] = await Promise.all([
-        subscriptionsApi.getAll(
-          buildSubscriptionListQuery({ filters, search, partnerIdFromUrl }, periodParams),
-        ),
-        subscriptionsApi.getStats(periodParams),
+        subscriptionsApi.getAll(listQuery),
+        subscriptionsApi.getStats({
+          ...periodParams,
+          ...(listQuery.partnerId !== undefined ? { partnerId: listQuery.partnerId } : {}),
+        }),
       ]);
       setSubscriptions(data.items);
       setStats(subscriptionStats);

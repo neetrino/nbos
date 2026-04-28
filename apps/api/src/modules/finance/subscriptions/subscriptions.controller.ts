@@ -36,8 +36,12 @@ export class SubscriptionsController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get subscription statistics' })
-  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
-    return this.subscriptionsService.getStats({ dateFrom, dateTo });
+  async getStats(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('partnerId') partnerId?: string,
+  ) {
+    return this.subscriptionsService.getStats({ dateFrom, dateTo, partnerId });
   }
 
   @Get(':id')

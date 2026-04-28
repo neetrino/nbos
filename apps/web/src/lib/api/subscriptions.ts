@@ -47,6 +47,11 @@ export interface SubscriptionCoverageSummary {
   annualizedAmount: number;
 }
 
+/** Query params for `subscriptionsApi.getStats` (optional partner drill-down parity with list). */
+export interface SubscriptionStatsQueryParams extends FinanceDateRangeParams {
+  partnerId?: string;
+}
+
 export interface SubscriptionStats {
   total: number;
   byStatus: Array<{
@@ -86,7 +91,7 @@ export const subscriptionsApi = {
     });
     return resp.data;
   },
-  async getStats(params?: FinanceDateRangeParams): Promise<SubscriptionStats> {
+  async getStats(params?: SubscriptionStatsQueryParams): Promise<SubscriptionStats> {
     const resp = await api.get<SubscriptionStats>('/api/finance/subscriptions/stats', { params });
     return resp.data;
   },

@@ -225,5 +225,37 @@ describe('SubscriptionsService', () => {
         }),
       );
     });
+
+    it('applies partnerId to aggregate queries', async () => {
+      prisma.subscription.count.mockResolvedValueOnce(3).mockResolvedValueOnce(2);
+      await service.getStats({ partnerId: 'partner-uuid-1' });
+
+      expect(prisma.subscription.count).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          where: expect.objectContaining({ partnerId: 'partner-uuid-1' }),
+        }),
+      );
+      expect(prisma.subscription.aggregate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            partnerId: 'partner-uuid-1',
+            status: 'ACTIVE',
+          }),
+        }),
+      );
+    });
+
+    it('maps unlinked partner filter for stats', async () => {
+      prisma.subscription.count.mockResolvedValueOnce(1).mockResolvedValueOnce(0);
+      await service.getStats({ partnerId: SUBSCRIPTION_PARTNER_FILTER_UNLINKED });
+
+      expect(prisma.subscription.count).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          where: expect.objectContaining({ partnerId: null }),
+        }),
+      );
+    });
   });
 });
