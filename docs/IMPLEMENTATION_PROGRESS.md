@@ -22,25 +22,25 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                            |
-| -------------------- | ------------------------------------------------ |
-| Current phase        | Phase 2 - CRM, Marketing and Lead-to-Cash intake |
-| Current module/block | Finance reconciliation summary foundation        |
-| Current task         | Read-only Finance dashboard reconciliation view  |
-| Status               | Slice completed; waiting approval for next step  |
-| Last updated         | 2026-04-28                                       |
+| Field                | Value                                    |
+| -------------------- | ---------------------------------------- |
+| Current phase        | Phase 3 - Finance core                   |
+| Current module/block | Phase 3 kickoff                          |
+| Current task         | Start Finance-owned money workflow depth |
+| Status               | Phase 2 closed; ready to start Phase 3   |
+| Last updated         | 2026-04-28                               |
 
 ## Phase Progress
 
-| Phase                                            | Status      | Progress | Current blocker                | Notes                                          |
-| ------------------------------------------------ | ----------- | -------: | ------------------------------ | ---------------------------------------------- |
-| Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                    |
-| Phase 2 - CRM, Marketing and Lead-to-Cash intake | In progress |     100% | None                           | Finance reconciliation dashboard snapshot done |
-| Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                  |
-| Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                    |
-| Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications   |
-| Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views             |
-| Phase 7 - Integrations and migration             | Not started |       0% | Waits stable workflows         | WhatsApp, bank/gov, Bitrix migration           |
+| Phase                                            | Status      | Progress | Current blocker                | Notes                                                                |
+| ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------------------------------- |
+| Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                          |
+| Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations |
+| Phase 3 - Finance core                           | In progress |       0% | None                           | Next focus: Finance-owned money workflow depth                       |
+| Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                          |
+| Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                         |
+| Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                   |
+| Phase 7 - Integrations and migration             | Not started |       0% | Waits stable workflows         | WhatsApp, bank/gov, Bitrix migration                                 |
 
 ## Active Work Log
 
@@ -73,6 +73,7 @@ Rules:
 | 2026-04-28 | Delivery Done gates foundation done      | Product and Extension Done transitions block while delivery tasks, tickets or child extensions remain open                   | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
 | 2026-04-28 | Marketing efficiency snapshot done       | Marketing dashboard shows read-only ROAS, net return and cost-per-won-deal with partial-data warnings                        | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
 | 2026-04-28 | Finance reconciliation summary done      | Finance dashboard shows order amount, invoiced, paid, uninvoiced and outstanding coverage with warnings                      | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Phase 2 wrap-up review before Phase 3           |
+| 2026-04-28 | Phase 2 closed                           | CRM, Marketing, Projects intake and Finance reconciliation foundations accepted as Phase 2 baseline                          | `git diff --check`                                                                                                                                                                                                                                                                                        | Start Phase 3 Finance core                      |
 
 ## Phase 1 Checklist
 
@@ -141,10 +142,11 @@ A slice is done only when:
 
 ## Next Action
 
-Continue after approval:
+Continue with Phase 3:
 
 ```text
-Next slice candidate:
-- Phase 2 wrap-up review before Phase 3 Finance core.
-- Remaining delivery board depth can continue after wrap-up if Phase 3 is not started yet.
+Next Phase 3 slice candidates:
+- Finance-owned reconciliation workflow beyond read-only dashboard visibility.
+- Subscription and invoice lifecycle depth with no fake money states.
+- Partner and payout dependencies once Finance source data is reliable.
 ```

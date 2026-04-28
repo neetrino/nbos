@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `FINANCE RECONCILIATION SUMMARY DONE / PHASE 2 WRAP-UP NEXT`
+Статус: `PHASE 2 CLOSED / PHASE 3 FINANCE CORE NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -233,7 +233,7 @@ uninvoiced and outstanding coverage.
 - [apps/api/src/modules/crm/deals/deal-stage-gate.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/crm/deals/deal-stage-gate.ts:34)
 - [apps/api/src/modules/crm/deals/deal-won.handler.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/crm/deals/deal-won.handler.ts:1)
 
-Что потом нужно сделать:
+Что потом нужно сделать в Phase 3:
 
 - углубить remaining Finance-owned reconciliation/subscription semantics in Phase 3;
 - добавить later delivery board depth and operational task workflows.
