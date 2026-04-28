@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Calendar, DollarSign, FileText, FolderKanban, Handshake } from 'lucide-react';
 import {
@@ -151,6 +152,7 @@ function SubscriptionTableRow({
   onOpenHoldDialog: () => void;
   onOpenPartnerDialog: () => void;
 }) {
+  const router = useRouter();
   const subscriptionType = getSubscriptionType(subscription.type);
   const subscriptionStatus = getSubscriptionStatus(subscription.status);
   const opLock = activatingId ?? cancellingId ?? holdingId;
@@ -160,7 +162,10 @@ function SubscriptionTableRow({
   const isHolding = holdingId === subscription.id;
 
   return (
-    <TableRow>
+    <TableRow
+      className="hover:bg-muted/40 cursor-pointer"
+      onClick={() => router.push(`/finance/subscriptions/${subscription.id}`)}
+    >
       <TableCell>
         <div className="flex items-center gap-2">
           <FolderKanban size={14} className="text-muted-foreground" />
@@ -198,7 +203,7 @@ function SubscriptionTableRow({
       <TableCell className="text-muted-foreground text-xs">
         {new Date(subscription.startDate).toLocaleDateString()}
       </TableCell>
-      <TableCell>
+      <TableCell onClick={(event) => event.stopPropagation()}>
         <Link
           href={subscriptionInvoicesDrilldownHref(subscription.id)}
           className="text-primary inline-flex items-center gap-1.5 text-sm font-medium hover:underline"

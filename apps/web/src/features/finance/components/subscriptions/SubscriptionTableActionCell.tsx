@@ -38,7 +38,7 @@ export function SubscriptionTableActionCell({
   }
 
   return (
-    <TableCell className="text-right">
+    <TableCell className="text-right" onClick={(event) => event.stopPropagation()}>
       <div className="flex flex-wrap items-center justify-end gap-2">
         {showActivateOrResume ? (
           <Button
