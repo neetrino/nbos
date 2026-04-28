@@ -6,6 +6,7 @@ import {
   EXPENSE_BACKLOG_LIST_PATH,
   expenseDetailHref,
   financeExpensesListHref,
+  projectExpensesBacklogDrilldownHref,
   projectExpensesDrilldownHref,
 } from './project-expenses-drilldown';
 
@@ -13,6 +14,12 @@ describe('project-expenses-drilldown', () => {
   it('projectExpensesDrilldownHref sets query key', () => {
     expect(projectExpensesDrilldownHref('abc')).toBe(
       `/finance/expenses?${PROJECT_EXPENSES_DRILLDOWN_QUERY}=abc`,
+    );
+  });
+
+  it('projectExpensesBacklogDrilldownHref targets backlog path', () => {
+    expect(projectExpensesBacklogDrilldownHref('abc')).toBe(
+      `${EXPENSE_BACKLOG_LIST_PATH}?${PROJECT_EXPENSES_DRILLDOWN_QUERY}=abc`,
     );
   });
 

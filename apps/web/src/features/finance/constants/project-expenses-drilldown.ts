@@ -31,6 +31,14 @@ export function projectExpensesDrilldownHref(projectId: string): string {
   return `/finance/expenses?${q.toString()}`;
 }
 
+/** Project-scoped expense backlog list (`Delayed` scope until backlog schema exists). */
+export function projectExpensesBacklogDrilldownHref(projectId: string): string {
+  const q = new URLSearchParams({
+    [PROJECT_EXPENSES_DRILLDOWN_QUERY]: projectId,
+  });
+  return `${EXPENSE_BACKLOG_LIST_PATH}?${q.toString()}`;
+}
+
 /**
  * List URL with optional project drill-down and/or sort (same semantics as the expenses list page query).
  */

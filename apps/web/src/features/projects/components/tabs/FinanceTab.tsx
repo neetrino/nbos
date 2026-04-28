@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, ExternalLink } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
-import { projectExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
+import {
+  projectExpensesBacklogDrilldownHref,
+  projectExpensesDrilldownHref,
+} from '@/features/finance/constants/project-expenses-drilldown';
 import type {
   ProjectOrder,
   ProjectSubscription,
@@ -16,7 +19,7 @@ interface FinanceTabProps {
   subscriptions: ProjectSubscription[];
   expenses: ProjectExpense[];
   domains: ProjectDomain[];
-  /** When set, Finance expenses section links to filtered `/finance/expenses`. */
+  /** When set, Finance expenses section links to filtered expenses (main list + backlog). */
   projectId?: string;
 }
 
@@ -204,13 +207,22 @@ export function FinanceTab({
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold">Expenses ({expenses.length})</h3>
             {projectId ? (
-              <Link
-                href={projectExpensesDrilldownHref(projectId)}
-                className="text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline"
-              >
-                Open in Finance
-                <ExternalLink size={12} className="opacity-70" aria-hidden />
-              </Link>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <Link
+                  href={projectExpensesDrilldownHref(projectId)}
+                  className="text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                >
+                  Open in Finance
+                  <ExternalLink size={12} className="opacity-70" aria-hidden />
+                </Link>
+                <Link
+                  href={projectExpensesBacklogDrilldownHref(projectId)}
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                >
+                  Deferred backlog
+                  <ExternalLink size={12} className="opacity-70" aria-hidden />
+                </Link>
+              </div>
             ) : null}
           </div>
           <div className="border-border overflow-hidden rounded-xl border">
