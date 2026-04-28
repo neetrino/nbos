@@ -63,6 +63,7 @@ export const ModelName = {
   Payment: 'Payment',
   Subscription: 'Subscription',
   Expense: 'Expense',
+  ExpensePayment: 'ExpensePayment',
   BonusEntry: 'BonusEntry',
   Task: 'Task',
   TaskLink: 'TaskLink',
@@ -406,6 +407,19 @@ export const ExpenseScalarFieldEnum = {
 
 export type ExpenseScalarFieldEnum =
   (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum];
+
+export const ExpensePaymentScalarFieldEnum = {
+  id: 'id',
+  expenseId: 'expenseId',
+  amount: 'amount',
+  paymentDate: 'paymentDate',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ExpensePaymentScalarFieldEnum =
+  (typeof ExpensePaymentScalarFieldEnum)[keyof typeof ExpensePaymentScalarFieldEnum];
 
 export const BonusEntryScalarFieldEnum = {
   id: 'id',

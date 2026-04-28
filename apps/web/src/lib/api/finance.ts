@@ -111,6 +111,17 @@ export interface OrderReconciliationWarning {
   message: string;
 }
 
+/** Ledger roll-up from `GET /expenses/:id` (optional on list rows). */
+export type ExpenseLedgerPaymentStatus = 'UNPAID' | 'PARTIAL' | 'PAID';
+
+export interface ExpensePaymentEntry {
+  id: string;
+  amount: string;
+  paymentDate: string;
+  notes: string | null;
+  createdAt: string;
+}
+
 export interface Expense {
   id: string;
   type: string;
@@ -127,6 +138,10 @@ export interface Expense {
   notes: string | null;
   createdAt: string;
   project?: { id: string; code: string; name: string } | null;
+  paidAmount?: string;
+  remainingAmount?: string;
+  paymentStatus?: ExpenseLedgerPaymentStatus;
+  payments?: ExpensePaymentEntry[];
 }
 
 export interface ExpenseStats {
@@ -184,6 +199,13 @@ export interface CreateExpensePayload {
   taxStatus?: string;
   backlogReason?: string | null;
   notes?: string | null;
+}
+
+/** Body for `POST /expenses/:id/payments`. */
+export interface AddExpensePaymentPayload {
+  amount: number;
+  paymentDate: string;
+  notes?: string;
 }
 
 export interface UpdateExpensePayload {
@@ -386,6 +408,10 @@ export const expensesApi = {
   },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/expenses/${id}`);
+  },
+  async addPayment(id: string, data: AddExpensePaymentPayload): Promise<Expense> {
+    const resp = await api.post<Expense>(`/api/expenses/${id}/payments`, data);
+    return resp.data;
   },
   async getStats(params?: ExpenseStatsQueryParams): Promise<ExpenseStats> {
     const resp = await api.get<ExpenseStats>('/api/expenses/stats', { params });

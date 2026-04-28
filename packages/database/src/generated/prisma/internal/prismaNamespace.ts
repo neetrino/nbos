@@ -390,6 +390,7 @@ export const ModelName = {
   Payment: 'Payment',
   Subscription: 'Subscription',
   Expense: 'Expense',
+  ExpensePayment: 'ExpensePayment',
   BonusEntry: 'BonusEntry',
   Task: 'Task',
   TaskLink: 'TaskLink',
@@ -445,6 +446,7 @@ export type TypeMap<
       | 'payment'
       | 'subscription'
       | 'expense'
+      | 'expensePayment'
       | 'bonusEntry'
       | 'task'
       | 'taskLink'
@@ -1583,6 +1585,82 @@ export type TypeMap<
         count: {
           args: Prisma.ExpenseCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.ExpenseCountAggregateOutputType> | number;
+        };
+      };
+    };
+    ExpensePayment: {
+      payload: Prisma.$ExpensePaymentPayload<ExtArgs>;
+      fields: Prisma.ExpensePaymentFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ExpensePaymentFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ExpensePaymentFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>;
+        };
+        findFirst: {
+          args: Prisma.ExpensePaymentFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ExpensePaymentFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>;
+        };
+        findMany: {
+          args: Prisma.ExpensePaymentFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>[];
+        };
+        create: {
+          args: Prisma.ExpensePaymentCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>;
+        };
+        createMany: {
+          args: Prisma.ExpensePaymentCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ExpensePaymentCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>[];
+        };
+        delete: {
+          args: Prisma.ExpensePaymentDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>;
+        };
+        update: {
+          args: Prisma.ExpensePaymentUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ExpensePaymentDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ExpensePaymentUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ExpensePaymentUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>[];
+        };
+        upsert: {
+          args: Prisma.ExpensePaymentUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePaymentPayload>;
+        };
+        aggregate: {
+          args: Prisma.ExpensePaymentAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExpensePayment>;
+        };
+        groupBy: {
+          args: Prisma.ExpensePaymentGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ExpensePaymentGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ExpensePaymentCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ExpensePaymentCountAggregateOutputType>
+            | number;
         };
       };
     };
@@ -3427,6 +3505,19 @@ export const ExpenseScalarFieldEnum = {
 export type ExpenseScalarFieldEnum =
   (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum];
 
+export const ExpensePaymentScalarFieldEnum = {
+  id: 'id',
+  expenseId: 'expenseId',
+  amount: 'amount',
+  paymentDate: 'paymentDate',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ExpensePaymentScalarFieldEnum =
+  (typeof ExpensePaymentScalarFieldEnum)[keyof typeof ExpensePaymentScalarFieldEnum];
+
 export const BonusEntryScalarFieldEnum = {
   id: 'id',
   employeeId: 'employeeId',
@@ -4666,6 +4757,7 @@ export type GlobalOmitConfig = {
   payment?: Prisma.PaymentOmit;
   subscription?: Prisma.SubscriptionOmit;
   expense?: Prisma.ExpenseOmit;
+  expensePayment?: Prisma.ExpensePaymentOmit;
   bonusEntry?: Prisma.BonusEntryOmit;
   task?: Prisma.TaskOmit;
   taskLink?: Prisma.TaskLinkOmit;

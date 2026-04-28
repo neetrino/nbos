@@ -22,6 +22,7 @@ export type * from './models/Invoice';
 export type * from './models/Payment';
 export type * from './models/Subscription';
 export type * from './models/Expense';
+export type * from './models/ExpensePayment';
 export type * from './models/BonusEntry';
 export type * from './models/Task';
 export type * from './models/TaskLink';

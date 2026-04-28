@@ -31,61 +31,14 @@ import {
 } from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
-
-interface CreateExpenseDto {
-  name: string;
-  type: string;
-  category: string;
-  amount: number;
-  frequency?: string;
-  dueDate?: string;
-  status?: string;
-  projectId?: string;
-  isPassThrough?: boolean;
-  taxStatus?: string;
-  backlogReason?: string | null;
-  notes?: string;
-}
-
-interface UpdateExpenseDto {
-  name?: string;
-  type?: string;
-  category?: string;
-  amount?: number;
-  frequency?: string;
-  dueDate?: string;
-  status?: string;
-  projectId?: string;
-  isPassThrough?: boolean;
-  taxStatus?: string;
-  backlogReason?: string | null;
-  notes?: string;
-}
-
-interface ExpenseQueryParams {
-  page?: number;
-  pageSize?: number;
-  type?: string;
-  category?: string;
-  status?: string;
-  backlogReason?: string;
-  projectId?: string;
-  frequency?: string;
-  search?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-interface ExpenseStatsParams {
-  dateFrom?: string;
-  dateTo?: string;
-  /** When set, stats match `findAll` list filter for the same project. */
-  projectId?: string;
-  /** When set, aggregates are scoped to this status (list/stats parity). */
-  status?: string;
-}
+import { createExpensePaymentRecord, type AddExpensePaymentInput } from './expense-payment-create';
+import { toExpenseLedgerJson } from './expense-detail-mapper';
+import type {
+  CreateExpenseDto,
+  ExpenseQueryParams,
+  ExpenseStatsParams,
+  UpdateExpenseDto,
+} from './expense-service.types';
 
 const EXPENSE_LIST_SORT_FIELDS = new Set(['createdAt', 'dueDate', 'amount', 'name', 'status']);
 
@@ -157,10 +110,16 @@ export class ExpensesService {
       where: { id },
       include: {
         project: { select: { id: true, code: true, name: true } },
+        expensePayments: { orderBy: { paymentDate: 'desc' } },
       },
     });
     if (!expense) throw new NotFoundException(`Expense ${id} not found`);
-    return expense;
+    return toExpenseLedgerJson(expense);
+  }
+
+  async addPayment(id: string, input: AddExpensePaymentInput) {
+    await createExpensePaymentRecord(this.prisma, id, input);
+    return this.findById(id);
   }
 
   async create(data: CreateExpenseDto) {

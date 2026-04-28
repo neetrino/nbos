@@ -3,7 +3,15 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, ExternalLink, FolderKanban, Pencil, RefreshCcw, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Banknote,
+  ExternalLink,
+  FolderKanban,
+  Pencil,
+  RefreshCcw,
+  Trash2,
+} from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { formatAmount, getExpenseStage } from '@/features/finance/constants/finance';
@@ -21,8 +29,10 @@ import {
 } from '@/features/finance/constants/project-expenses-drilldown';
 import { formatExpenseBacklogReasonLabel } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { cn } from '@/lib/utils';
+import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/AddExpensePaymentDialog';
 import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
+import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
 function formatDate(iso: string | null): string {
@@ -55,6 +65,7 @@ function ExpenseDetailPageInner() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   const fetchExpense = useCallback(async () => {
     if (!id) return;
@@ -136,6 +147,10 @@ function ExpenseDetailPageInner() {
           <Button variant="outline" size="icon" type="button" onClick={fetchExpense}>
             <RefreshCcw size={16} />
           </Button>
+          <Button type="button" variant="outline" onClick={() => setPaymentOpen(true)}>
+            <Banknote size={16} />
+            Add payment
+          </Button>
           <Button type="button" onClick={() => setEditOpen(true)}>
             <Pencil size={16} />
             Edit
@@ -162,6 +177,13 @@ function ExpenseDetailPageInner() {
         onSaved={(updated) => setExpense(updated)}
       />
 
+      <AddExpensePaymentDialog
+        expenseId={expense.id}
+        open={paymentOpen}
+        onOpenChange={setPaymentOpen}
+        onRecorded={fetchExpense}
+      />
+
       <DeleteExpenseDialog
         expenseName={expense.name}
         open={deleteOpen}
@@ -176,7 +198,7 @@ function ExpenseDetailPageInner() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Amount</p>
+          <p className="text-muted-foreground text-xs">Original amount</p>
           <p className="mt-2 text-lg font-semibold tabular-nums">
             {formatAmount(parseFloat(expense.amount))}
           </p>
@@ -201,6 +223,8 @@ function ExpenseDetailPageInner() {
           <p className="mt-2 font-medium">{expense.category}</p>
         </div>
       </div>
+
+      <ExpenseDetailPaymentSection expense={expense} />
 
       {expense.status === 'DELAYED' || expense.backlogReason ? (
         <div className="border-border bg-card rounded-xl border p-4">

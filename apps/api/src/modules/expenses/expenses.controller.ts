@@ -91,6 +91,20 @@ export class ExpensesController {
     return this.expensesService.findById(id);
   }
 
+  @Post(':id/payments')
+  @ApiOperation({ summary: 'Record a partial or full payment against an expense' })
+  async addPayment(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      amount: number;
+      paymentDate: string;
+      notes?: string;
+    },
+  ) {
+    return this.expensesService.addPayment(id, body);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create expense' })
   async create(

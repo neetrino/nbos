@@ -92,6 +92,11 @@ export type Subscription = Prisma.SubscriptionModel;
  */
 export type Expense = Prisma.ExpenseModel;
 /**
+ * Model ExpensePayment
+ *
+ */
+export type ExpensePayment = Prisma.ExpensePaymentModel;
+/**
  * Model BonusEntry
  *
  */

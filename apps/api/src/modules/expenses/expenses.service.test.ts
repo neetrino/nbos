@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { Decimal } from '@nbos/database';
 import { ExpensesService } from './expenses.service';
 import { EXPENSE_LIST_MAX_PAGE_SIZE } from './expenses-list-pagination';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -120,7 +121,8 @@ describe('ExpensesService', () => {
       prisma.expense.findUnique.mockResolvedValue({
         id: '1',
         name: 'Hosting',
-        amount: 20000,
+        amount: new Decimal(20000),
+        expensePayments: [],
         project: null,
       });
       const result = await service.create({
@@ -146,12 +148,62 @@ describe('ExpensesService', () => {
     });
   });
 
+  describe('addPayment', () => {
+    it('records payment and returns ledger shape', async () => {
+      prisma.expense.findUnique.mockResolvedValueOnce({
+        id: 'e1',
+        amount: new Decimal(100),
+        expensePayments: [],
+      });
+      prisma.expensePayment.create.mockResolvedValue({ id: 'pay1' });
+      prisma.expense.findUnique.mockResolvedValueOnce({
+        id: 'e1',
+        name: 'X',
+        amount: new Decimal(100),
+        expensePayments: [
+          {
+            id: 'pay1',
+            amount: new Decimal(40),
+            paymentDate: new Date('2026-04-28'),
+            notes: null,
+            createdAt: new Date('2026-04-28'),
+          },
+        ],
+        project: null,
+      });
+
+      const result = await service.addPayment('e1', {
+        amount: 40,
+        paymentDate: '2026-04-28T00:00:00.000Z',
+      });
+
+      expect(prisma.expensePayment.create).toHaveBeenCalled();
+      expect(result.paymentStatus).toBe('PARTIAL');
+      expect(result.paidAmount).toBe('40.00');
+      expect(result.remainingAmount).toBe('60.00');
+    });
+
+    it('rejects overpayment', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        amount: new Decimal(100),
+        expensePayments: [{ amount: new Decimal(90) }],
+      });
+
+      await expect(
+        service.addPayment('e1', { amount: 20, paymentDate: '2026-04-28T00:00:00.000Z' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.expensePayment.create).not.toHaveBeenCalled();
+    });
+  });
+
   describe('update', () => {
     it('returns findById shape after update', async () => {
       prisma.expense.findUnique.mockResolvedValue({
         id: 'e1',
         name: 'Updated',
-        amount: 100,
+        amount: new Decimal(100),
+        expensePayments: [],
         project: null,
       });
       const result = await service.update('e1', { name: 'Updated' });
@@ -164,7 +216,8 @@ describe('ExpensesService', () => {
       prisma.expense.findUnique.mockResolvedValue({
         id: 'e1',
         name: 'x',
-        amount: 100,
+        amount: new Decimal(100),
+        expensePayments: [],
         project: null,
       });
       await expect(service.update('e1', { category: 'INVALID' })).rejects.toThrow(
