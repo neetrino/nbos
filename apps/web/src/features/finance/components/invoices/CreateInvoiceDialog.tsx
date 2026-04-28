@@ -98,7 +98,11 @@ function InvoiceForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <InvoiceContextFields state={state} order={order} />
       <InvoiceAmountFields form={state.form} setForm={state.setForm} />
-      {state.error && <p className="text-destructive text-sm">{state.error}</p>}
+      {state.error ? (
+        <p className="text-destructive text-sm" role="alert">
+          {state.error}
+        </p>
+      ) : null}
       <DialogFooter>
         <Button type="button" variant="outline" onClick={() => state.onOpenChange(false)}>
           Cancel
@@ -131,7 +135,11 @@ function InvoiceContextFields({
   }
 
   if (state.loadError) {
-    return <p className="text-destructive text-sm">{state.loadError}</p>;
+    return (
+      <p className="text-destructive text-sm" role="alert">
+        {state.loadError}
+      </p>
+    );
   }
 
   if (state.subscriptionDetail) {

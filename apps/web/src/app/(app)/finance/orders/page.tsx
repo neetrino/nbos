@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, RefreshCcw, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,15 @@ function OrdersPageContent() {
   const gap = parseOrderReconciliationGap(searchParams.get(ORDER_RECONCILIATION_GAP_QUERY));
   const partnerIdFromUrl = searchParams.get(PARTNER_ORDERS_DRILLDOWN_QUERY);
 
-  useFinanceDocumentTitle('Orders');
+  const ordersDocumentTitle = useMemo(() => {
+    const partner = partnerIdFromUrl?.trim();
+    if (partner && gap) return 'Orders · partner & gap filter';
+    if (partner) return 'Orders · partner filter';
+    if (gap) return 'Orders · reconciliation filter';
+    return 'Orders';
+  }, [gap, partnerIdFromUrl]);
+
+  useFinanceDocumentTitle(ordersDocumentTitle);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);

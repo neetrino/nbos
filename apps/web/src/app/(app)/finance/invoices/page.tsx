@@ -22,7 +22,9 @@ function InvoicesPageInner() {
 
   const state = useInvoicesPageState({ subscriptionIdFromUrl });
 
-  useFinanceDocumentTitle('Invoices');
+  useFinanceDocumentTitle(
+    subscriptionIdFromUrl?.trim() ? 'Invoices · subscription filter' : 'Invoices',
+  );
 
   const clearSubscriptionDrilldown = () => {
     router.replace(pathname);
