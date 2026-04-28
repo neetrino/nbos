@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { CalendarDays, FileOutput, Loader2, Plus, RefreshCcw, Trash2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,27 +20,11 @@ import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import {
+  expensePlanFrequencyLabel,
+  formatExpensePlanShortDate,
+} from '@/features/finance/utils/expense-plan-display';
 import { toast } from 'sonner';
-
-function formatShortDate(iso: string | null): string {
-  if (!iso) return '—';
-  try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
-
-function frequencyLabel(value: string): string {
-  const map: Record<string, string> = {
-    ONE_TIME: 'One-time',
-    MONTHLY: 'Monthly',
-    QUARTERLY: 'Quarterly',
-    YEARLY: 'Yearly',
-    MULTI_YEAR: 'Multi-year',
-  };
-  return map[value] ?? value;
-}
 
 export default function ExpensePlansPage() {
   useFinanceDocumentTitle(expensePlansListPageTitle());
@@ -170,12 +155,19 @@ export default function ExpensePlansPage() {
             <TableBody>
               {plans.map((plan) => (
                 <TableRow key={plan.id}>
-                  <TableCell className="font-medium">{plan.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/finance/expenses/plans/${plan.id}`}
+                      className="text-primary hover:underline"
+                    >
+                      {plan.name}
+                    </Link>
+                  </TableCell>
                   <TableCell>{plan.category}</TableCell>
                   <TableCell>{formatAmount(Number(plan.amount))}</TableCell>
-                  <TableCell>{frequencyLabel(plan.frequency)}</TableCell>
+                  <TableCell>{expensePlanFrequencyLabel(plan.frequency)}</TableCell>
                   <TableCell>{plan.autoGenerate ? 'Yes' : '—'}</TableCell>
-                  <TableCell>{formatShortDate(plan.nextDueDate)}</TableCell>
+                  <TableCell>{formatExpensePlanShortDate(plan.nextDueDate)}</TableCell>
                   <TableCell>{plan.project ? `${plan.project.code}` : '—'}</TableCell>
                   <TableCell className="text-right">{plan._count.expenses}</TableCell>
                   <TableCell className="text-right">

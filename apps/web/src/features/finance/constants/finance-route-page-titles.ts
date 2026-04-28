@@ -55,6 +55,21 @@ export function expensePlansListPageTitle(): string {
   return 'Expense plans';
 }
 
+export interface ExpensePlanDetailPageTitleParams {
+  loading: boolean;
+  loadFailed: boolean;
+  planName: string | null | undefined;
+}
+
+/** `undefined` while loading so the shell title is unchanged. */
+export function expensePlanDetailPageTitle(
+  params: ExpensePlanDetailPageTitleParams,
+): string | undefined {
+  if (params.loading) return undefined;
+  if (params.loadFailed || !params.planName?.trim()) return 'Expense plan';
+  return `Plan · ${params.planName.trim()}`;
+}
+
 export function expenseBacklogPageTitle(hasProjectDrilldown: boolean): string {
   return hasProjectDrilldown ? 'Expense backlog · project filter' : 'Expense backlog';
 }

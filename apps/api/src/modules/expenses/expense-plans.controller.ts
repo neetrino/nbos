@@ -71,7 +71,10 @@ export class ExpensePlansController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get expense plan by id' })
+  @ApiOperation({
+    summary: 'Get expense plan by id',
+    description: 'Read-only plan row with project and linked expense count (Finance plan detail).',
+  })
   async findOne(@Param('id') id: string) {
     return this.expensePlansService.findById(id);
   }

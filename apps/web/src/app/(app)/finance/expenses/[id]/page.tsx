@@ -239,8 +239,11 @@ function ExpenseDetailPageInner() {
         onConfirm={handleDeleteExpense}
       />
 
-      {expense.linkedExpensePlan?.name ? (
-        <ExpensePlanLinkBanner planName={expense.linkedExpensePlan.name} />
+      {expense.linkedExpensePlan?.id && expense.linkedExpensePlan.name ? (
+        <ExpensePlanLinkBanner
+          planId={expense.linkedExpensePlan.id}
+          planName={expense.linkedExpensePlan.name}
+        />
       ) : null}
 
       {payrollBanner ? (
