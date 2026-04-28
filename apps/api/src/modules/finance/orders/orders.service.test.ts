@@ -192,5 +192,33 @@ describe('OrdersService', () => {
       });
       expect(prisma.order.groupBy).toHaveBeenCalled();
     });
+
+    it('uses gap SQL aggregates when reconciliationGap is set', async () => {
+      prisma.$queryRaw
+        .mockResolvedValueOnce([
+          {
+            order_count: BigInt(2),
+            total_amount_sum: 300000,
+            collected_sum: 100000,
+          },
+        ])
+        .mockResolvedValueOnce([{ status: 'ACTIVE', cnt: BigInt(2), amt: 300000 }]);
+
+      const stats = await service.getStats({ reconciliationGap: 'outstanding' });
+
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(2);
+      expect(stats).toMatchObject({
+        totalOrders: 2,
+        totalAmount: 300000,
+        collectedAmount: 100000,
+        outstandingAmount: 200000,
+      });
+      expect(stats.byStatus).toHaveLength(1);
+      expect(stats.byStatus[0]).toMatchObject({
+        status: 'ACTIVE',
+        _count: 2,
+        _sum: { totalAmount: 300000 },
+      });
+    });
   });
 });

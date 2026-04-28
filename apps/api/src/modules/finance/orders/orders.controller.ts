@@ -52,8 +52,21 @@ export class OrdersController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get order statistics' })
-  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
-    return this.ordersService.getStats({ dateFrom, dateTo });
+  async getStats(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('gap') gap?: string,
+  ) {
+    const reconciliationGap = parseOrderReconciliationListGap(gap);
+    if (gap !== undefined && reconciliationGap === null) {
+      throw new BadRequestException('gap must be uninvoiced or outstanding');
+    }
+
+    return this.ordersService.getStats({
+      dateFrom,
+      dateTo,
+      reconciliationGap: reconciliationGap ?? undefined,
+    });
   }
 
   @Get(':id')

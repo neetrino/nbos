@@ -56,9 +56,10 @@ function OrdersPageContent() {
         listParams.gap = gap;
       }
 
+      const statsParams = { ...periodParams, ...(gap ? { gap } : {}) };
       const [data, orderStats] = await Promise.all([
         ordersApi.getAll(listParams),
-        ordersApi.getStats(periodParams),
+        ordersApi.getStats(statsParams),
       ]);
       setOrders(data.items);
       setListMeta(data.meta);
@@ -118,7 +119,12 @@ function OrdersPageContent() {
 
       {gap ? <ReconciliationGapBanner gap={gap} onClear={clearReconciliationGap} /> : null}
 
-      <OrdersStatsCards stats={stats} />
+      <OrdersStatsCards
+        stats={stats}
+        statsScopeNote={
+          gap ? 'Totals match the reconciliation filter and selected period.' : undefined
+        }
+      />
 
       <FilterBar
         search={search}

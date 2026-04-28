@@ -147,6 +147,11 @@ export interface OrderStats {
   }>;
 }
 
+/** Query params for `ordersApi.getStats` (optional reconciliation drill-down). */
+export interface OrderStatsQueryParams extends FinanceDateRangeParams {
+  gap?: 'uninvoiced' | 'outstanding';
+}
+
 export interface PaymentStats {
   totalPayments: number;
   totalCollected: number | null;
@@ -272,7 +277,7 @@ export const ordersApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/orders/${id}`);
   },
-  async getStats(params?: FinanceDateRangeParams): Promise<OrderStats> {
+  async getStats(params?: OrderStatsQueryParams): Promise<OrderStats> {
     const resp = await api.get<OrderStats>('/api/finance/orders/stats', { params });
     return resp.data;
   },

@@ -50,7 +50,12 @@ function buildGapConditionSql(gap: OrderReconciliationListGap) {
   if (gap === 'uninvoiced') {
     return sql`COALESCE((SELECT SUM(i.amount) FROM invoices i WHERE i.order_id = o.id), 0) < o.total_amount`;
   }
-  return sql`COALESCE((SELECT SUM(p.amount) FROM payments p INNER JOIN invoices i ON i.id = p.invoice_id WHERE i.order_id = o.id), 0) < o.total_amount`;
+  return sql`${orderPaidThroughInvoicesSql()} < o.total_amount`;
+}
+
+/** Total payments recorded on invoices linked to order alias `o` (reconciliation paid total). */
+export function orderPaidThroughInvoicesSql() {
+  return sql`COALESCE((SELECT SUM(p.amount) FROM payments p INNER JOIN invoices i ON i.id = p.invoice_id WHERE i.order_id = o.id), 0)`;
 }
 
 function escapeLikePattern(value: string): string {

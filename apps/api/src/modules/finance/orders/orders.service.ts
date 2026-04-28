@@ -11,6 +11,7 @@ import { attachOrderReconciliation } from './order-reconciliation';
 import type { OrderReconciliationListGap } from './order-reconciliation-list-filter';
 import { ORDER_LIST_INCLUDE, type OrderListRow } from './orders-list-include';
 import { queryOrderIdsPageForReconciliationGap } from './orders-reconciliation-gap-query';
+import { queryOrderStatsForReconciliationGap } from './orders-reconciliation-gap-stats-query';
 
 interface CreateOrderDto {
   projectId: string;
@@ -40,6 +41,7 @@ interface OrderQueryParams {
 interface OrderStatsParams {
   dateFrom?: string;
   dateTo?: string;
+  reconciliationGap?: OrderReconciliationListGap;
 }
 
 @Injectable()
@@ -214,6 +216,14 @@ export class OrdersService {
   }
 
   async getStats(params: OrderStatsParams = {}) {
+    if (params.reconciliationGap) {
+      return queryOrderStatsForReconciliationGap(this.prisma, {
+        gap: params.reconciliationGap,
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
+      });
+    }
+
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
 

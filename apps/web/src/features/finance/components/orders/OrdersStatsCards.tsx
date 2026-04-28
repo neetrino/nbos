@@ -3,26 +3,31 @@ import type { OrderStats } from '@/lib/api/finance';
 
 interface OrdersStatsCardsProps {
   stats: OrderStats | null;
+  /** Shown above the cards when stats are scoped (e.g. reconciliation drill-down). */
+  statsScopeNote?: string;
 }
 
-export function OrdersStatsCards({ stats }: OrdersStatsCardsProps) {
+export function OrdersStatsCards({ stats, statsScopeNote }: OrdersStatsCardsProps) {
   const totalOrders = Number(stats?.totalAmount ?? 0);
   const totalPaid = Number(stats?.collectedAmount ?? 0);
   const outstandingAmount = Number(stats?.outstandingAmount ?? 0);
 
   return (
-    <div className="grid grid-cols-3 gap-4">
-      <OrderStatCard label="Total Orders" value={formatAmount(totalOrders)} />
-      <OrderStatCard
-        label="Total Collected"
-        value={formatAmount(totalPaid)}
-        valueClassName="text-green-600"
-      />
-      <OrderStatCard
-        label="Outstanding"
-        value={formatAmount(outstandingAmount)}
-        valueClassName="text-amber-500"
-      />
+    <div className="space-y-2">
+      {statsScopeNote ? <p className="text-muted-foreground text-xs">{statsScopeNote}</p> : null}
+      <div className="grid grid-cols-3 gap-4">
+        <OrderStatCard label="Total Orders" value={formatAmount(totalOrders)} />
+        <OrderStatCard
+          label="Total Collected"
+          value={formatAmount(totalPaid)}
+          valueClassName="text-green-600"
+        />
+        <OrderStatCard
+          label="Outstanding"
+          value={formatAmount(outstandingAmount)}
+          valueClassName="text-amber-500"
+        />
+      </div>
     </div>
   );
 }
