@@ -1,6 +1,6 @@
-import { Plus, FileText, X } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import type { Invoice } from '@/lib/api/finance';
 import type { InvoiceViewMode } from './invoice-page-types';
 import { InvoiceKanban } from './InvoiceKanban';
@@ -16,27 +16,6 @@ interface InvoicesPageContentProps {
   onRetry: () => void;
   onInvoiceClick: (invoice: Invoice) => void;
   onMove: (itemId: string, from: string, to: string) => void;
-}
-
-function InvoiceMutationBanner({ message, onDismiss }: { message: string; onDismiss: () => void }) {
-  return (
-    <div
-      className="border-destructive/40 bg-destructive/5 flex flex-wrap items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm"
-      role="alert"
-    >
-      <p className="text-destructive max-w-prose">{message}</p>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="text-destructive hover:text-destructive shrink-0"
-        onClick={onDismiss}
-        aria-label="Dismiss error"
-      >
-        <X size={16} />
-      </Button>
-    </div>
-  );
 }
 
 export function InvoicesPageContent({
@@ -56,7 +35,7 @@ export function InvoicesPageContent({
     return (
       <div className="flex flex-col gap-4">
         {mutationError ? (
-          <InvoiceMutationBanner message={mutationError} onDismiss={onDismissMutationError} />
+          <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
         ) : null}
         <InvoicesEmptyState />
       </div>
@@ -65,7 +44,7 @@ export function InvoicesPageContent({
   return (
     <div className="flex flex-col gap-4">
       {mutationError ? (
-        <InvoiceMutationBanner message={mutationError} onDismiss={onDismissMutationError} />
+        <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
       ) : null}
       {view === 'kanban' ? (
         <InvoiceKanban invoices={invoices} onInvoiceClick={onInvoiceClick} onMove={onMove} />

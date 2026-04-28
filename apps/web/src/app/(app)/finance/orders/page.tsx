@@ -1,11 +1,17 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, RefreshCcw, ShoppingCart, X } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { PageHeader, FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { Button } from '@/components/ui/button';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+} from '@/components/shared';
 import {
   FINANCE_PERIOD_OPTIONS,
   getFinancePeriodParams,
@@ -13,14 +19,16 @@ import {
 } from '@/features/finance/constants/finance';
 import {
   ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE,
-  ORDER_RECONCILIATION_GAP,
   ORDER_RECONCILIATION_GAP_QUERY,
-  type OrderReconciliationGap,
   parseOrderReconciliationGap,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
 import { PARTNER_ORDERS_DRILLDOWN_QUERY } from '@/features/finance/constants/partner-orders-drilldown';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { ORDER_STATUSES } from '@/features/finance/components/orders/order-statuses';
+import {
+  buildOrdersDescription,
+  ReconciliationGapBanner,
+} from '@/features/finance/components/orders/orders-page-helpers';
 import { OrdersStatsCards } from '@/features/finance/components/orders/OrdersStatsCards';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
 import type { ListData } from '@/lib/api/finance-common';
@@ -31,7 +39,6 @@ import {
   type OrderStatsQueryParams,
 } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { cn } from '@/lib/utils';
 
 function OrdersPageContent() {
   const router = useRouter();
@@ -48,6 +55,11 @@ function OrdersPageContent() {
   const [period, setPeriod] = useState<FinancePeriod>('month');
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
   const [listMeta, setListMeta] = useState<ListData<Order>['meta'] | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+
+  const clearMutationError = useCallback(() => {
+    setMutationError(null);
+  }, []);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -84,6 +96,7 @@ function OrdersPageContent() {
       setListMeta(data.meta);
       setStats(orderStats);
       setError(null);
+      setMutationError(null);
     } catch (caught) {
       setError(
         getApiErrorMessage(
@@ -98,6 +111,19 @@ function OrdersPageContent() {
 
   useEffect(() => {
     fetchOrders();
+  }, [fetchOrders]);
+
+  const refreshOrdersAfterInvoice = useCallback(async () => {
+    try {
+      await fetchOrders();
+    } catch (caught) {
+      setMutationError(
+        getApiErrorMessage(
+          caught,
+          'Invoice was created but orders could not be refreshed. Use Refresh.',
+        ),
+      );
+    }
   }, [fetchOrders]);
 
   const filterConfigs = [
@@ -193,46 +219,53 @@ function OrdersPageContent() {
         <LoadingState />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchOrders} />
-      ) : orders.length === 0 ? (
-        partnerIdFromUrl ? (
-          <EmptyState
-            icon={ShoppingCart}
-            title="No orders for this partner"
-            description="There are no finance orders linked to this partner in the selected period."
-            action={
-              <Button variant="outline" onClick={clearPartnerDrilldown}>
-                <X size={16} />
-                Clear partner filter
-              </Button>
-            }
-          />
-        ) : gap ? (
-          <EmptyState
-            icon={ShoppingCart}
-            title="No orders match this reconciliation filter"
-            description="Try clearing the filter or widening the reporting period."
-            action={
-              <Button variant="outline" onClick={clearReconciliationGap}>
-                <X size={16} />
-                Clear reconciliation filter
-              </Button>
-            }
-          />
-        ) : (
-          <EmptyState
-            icon={ShoppingCart}
-            title="No orders yet"
-            description="Orders are created from closed deals"
-            action={
-              <Button>
-                <Plus size={16} />
-                Create Order
-              </Button>
-            }
-          />
-        )
       ) : (
-        <OrdersTable orders={orders} onCreateInvoice={setInvoiceOrder} />
+        <div className="flex flex-col gap-4">
+          {mutationError ? (
+            <ListMutationErrorBanner message={mutationError} onDismiss={clearMutationError} />
+          ) : null}
+          {orders.length === 0 ? (
+            partnerIdFromUrl ? (
+              <EmptyState
+                icon={ShoppingCart}
+                title="No orders for this partner"
+                description="There are no finance orders linked to this partner in the selected period."
+                action={
+                  <Button variant="outline" onClick={clearPartnerDrilldown}>
+                    <X size={16} />
+                    Clear partner filter
+                  </Button>
+                }
+              />
+            ) : gap ? (
+              <EmptyState
+                icon={ShoppingCart}
+                title="No orders match this reconciliation filter"
+                description="Try clearing the filter or widening the reporting period."
+                action={
+                  <Button variant="outline" onClick={clearReconciliationGap}>
+                    <X size={16} />
+                    Clear reconciliation filter
+                  </Button>
+                }
+              />
+            ) : (
+              <EmptyState
+                icon={ShoppingCart}
+                title="No orders yet"
+                description="Orders are created from closed deals"
+                action={
+                  <Button>
+                    <Plus size={16} />
+                    Create Order
+                  </Button>
+                }
+              />
+            )
+          ) : (
+            <OrdersTable orders={orders} onCreateInvoice={setInvoiceOrder} />
+          )}
+        </div>
       )}
       <CreateInvoiceDialog
         open={Boolean(invoiceOrder)}
@@ -240,7 +273,7 @@ function OrdersPageContent() {
         onOpenChange={(open) => {
           if (!open) setInvoiceOrder(null);
         }}
-        onCreated={fetchOrders}
+        onCreated={refreshOrdersAfterInvoice}
       />
     </div>
   );
@@ -252,47 +285,4 @@ export default function OrdersPage() {
       <OrdersPageContent />
     </Suspense>
   );
-}
-
-function ReconciliationGapBanner({
-  gap,
-  onClear,
-}: {
-  gap: OrderReconciliationGap;
-  onClear: () => void;
-}) {
-  const label =
-    gap === ORDER_RECONCILIATION_GAP.UNINVOICED
-      ? 'Server-filtered list: orders that still have uninvoiced amounts.'
-      : 'Server-filtered list: orders that still have outstanding payment amounts.';
-
-  return (
-    <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
-      <p className="text-foreground max-w-prose">{label}</p>
-      <div className="flex flex-wrap items-center gap-2">
-        <Link
-          href="/finance/dashboard"
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-        >
-          Back to Finance dashboard
-        </Link>
-        <Button variant="outline" size="sm" onClick={onClear}>
-          <X size={14} className="mr-1" />
-          Clear filter
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function buildOrdersDescription(
-  pageCount: number,
-  meta: ListData<Order>['meta'] | null,
-  gap: ReturnType<typeof parseOrderReconciliationGap>,
-): string {
-  if (!gap) {
-    return `${pageCount} orders`;
-  }
-  const total = meta?.total ?? pageCount;
-  return `${pageCount} on this page · ${total} matching filter`;
 }

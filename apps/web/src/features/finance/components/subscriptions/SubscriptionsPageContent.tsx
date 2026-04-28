@@ -1,6 +1,6 @@
-import { Plus, RefreshCw, X } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import type { Subscription } from '@/lib/api/finance';
 import { SubscriptionCoverageGrid } from './SubscriptionCoverageGrid';
 import { SubscriptionsTable } from './SubscriptionsTable';
@@ -43,22 +43,7 @@ export function SubscriptionsPageContent({
   return (
     <>
       {mutationError ? (
-        <div
-          className="border-destructive/40 bg-destructive/5 flex flex-wrap items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm"
-          role="alert"
-        >
-          <p className="text-destructive max-w-prose">{mutationError}</p>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:text-destructive shrink-0"
-            onClick={onDismissMutationError}
-            aria-label="Dismiss error"
-          >
-            <X size={16} />
-          </Button>
-        </div>
+        <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
       ) : null}
       <SubscriptionCoverageGrid subscriptions={subscriptions} />
       <SubscriptionsTable
