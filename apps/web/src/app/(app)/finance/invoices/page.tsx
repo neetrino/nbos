@@ -57,6 +57,8 @@ function InvoicesPageInner() {
         invoices={state.invoices}
         loading={state.loading}
         error={state.error}
+        mutationError={state.mutationError}
+        onDismissMutationError={state.clearMutationError}
         view={state.view}
         onRetry={state.fetchInvoices}
         onInvoiceClick={state.handleInvoiceClick}

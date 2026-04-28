@@ -24,6 +24,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<InvoiceViewMode>('kanban');
@@ -31,6 +32,10 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [period, setPeriod] = useState<FinancePeriod>('month');
+
+  const clearMutationError = useCallback(() => {
+    setMutationError(null);
+  }, []);
 
   const fetchInvoices = useFetchInvoices({
     search,
@@ -41,9 +46,14 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     setStats,
     setError,
     setLoading,
+    setMutationError,
   });
   const handleStatusChange = useInvoiceStatusChange(invoices, setInvoices);
-  const handlePaymentRecorded = usePaymentRecorder(fetchInvoices, setSelectedInvoice);
+  const handlePaymentRecorded = usePaymentRecorder(
+    fetchInvoices,
+    setSelectedInvoice,
+    setMutationError,
+  );
 
   useEffect(() => {
     fetchInvoices();
@@ -54,6 +64,8 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     stats,
     loading,
     error,
+    mutationError,
+    clearMutationError,
     search,
     setSearch,
     filters,
@@ -87,6 +99,7 @@ function useFetchInvoices({
   setStats,
   setError,
   setLoading,
+  setMutationError,
 }: {
   search: string;
   filters: Record<string, string>;
@@ -96,6 +109,7 @@ function useFetchInvoices({
   setStats: (stats: InvoiceStats) => void;
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
+  setMutationError: (message: string | null) => void;
 }) {
   return useCallback(async () => {
     setLoading(true);
@@ -113,6 +127,7 @@ function useFetchInvoices({
       setInvoices(data.items);
       setStats(invoiceStats);
       setError(null);
+      setMutationError(null);
     } catch (caught) {
       setError(
         getApiErrorMessage(
@@ -123,7 +138,17 @@ function useFetchInvoices({
     } finally {
       setLoading(false);
     }
-  }, [filters, period, search, subscriptionIdFromUrl, setError, setInvoices, setLoading, setStats]);
+  }, [
+    filters,
+    period,
+    search,
+    subscriptionIdFromUrl,
+    setError,
+    setInvoices,
+    setLoading,
+    setMutationError,
+    setStats,
+  ]);
 }
 
 function buildInvoiceQuery(
@@ -170,15 +195,25 @@ function useInvoiceStatusChange(
 function usePaymentRecorder(
   fetchInvoices: () => Promise<void>,
   setSelectedInvoice: (invoice: Invoice | null) => void,
+  setMutationError: (message: string | null) => void,
 ) {
   return useCallback(
     async (data: RecordPaymentInput) => {
       await paymentsApi.create(data);
       const updated = await invoicesApi.getById(data.invoiceId);
       setSelectedInvoice(updated);
-      await fetchInvoices();
+      try {
+        await fetchInvoices();
+      } catch (caught) {
+        setMutationError(
+          getApiErrorMessage(
+            caught,
+            'Payment was recorded but the invoice list could not be refreshed. Use Refresh.',
+          ),
+        );
+      }
     },
-    [fetchInvoices, setSelectedInvoice],
+    [fetchInvoices, setMutationError, setSelectedInvoice],
   );
 }
 
