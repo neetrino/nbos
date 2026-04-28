@@ -2,112 +2,17 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
+import { attachDealHandoffReferences } from './deal-handoff';
+import {
+  dealCreateInclude,
+  dealDetailInclude,
+  dealListInclude,
+  dealUpdateInclude,
+} from './deal.includes';
+import type { CreateDealDto, DealQueryParams, UpdateDealDto } from './deal.types';
 import { DealWonHandler } from './deal-won.handler';
 import { validateDealStageGate } from './deal-stage-gate';
 import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
-
-interface CreateDealDto {
-  name?: string;
-  leadId?: string;
-  contactId: string;
-  type: string;
-  amount?: number;
-  paymentType?: string;
-  taxStatus?: string;
-  companyId?: string | null;
-  sellerId: string;
-  projectId?: string;
-  source?: string;
-  sourceDetail?: string | null;
-  sourcePartnerId?: string | null;
-  sourceContactId?: string | null;
-  marketingAccountId?: string | null;
-  marketingActivityId?: string | null;
-  notes?: string;
-  productCategory?: string | null;
-  productType?: string | null;
-  pmId?: string | null;
-  deadline?: string | null;
-  existingProductId?: string | null;
-  offerSentAt?: string | null;
-  offerLink?: string | null;
-  offerFileUrl?: string | null;
-  offerScreenshotUrl?: string | null;
-  responseDueAt?: string | null;
-  contractSignedAt?: string | null;
-  contractFileUrl?: string | null;
-  maintenanceStartAt?: string | null;
-}
-
-interface UpdateDealDto {
-  name?: string;
-  status?: string;
-  type?: string;
-  amount?: number;
-  paymentType?: string;
-  taxStatus?: string;
-  companyId?: string | null;
-  contactId?: string;
-  projectId?: string | null;
-  source?: string;
-  sourceDetail?: string | null;
-  sourcePartnerId?: string | null;
-  sourceContactId?: string | null;
-  marketingAccountId?: string | null;
-  marketingActivityId?: string | null;
-  notes?: string;
-  productCategory?: string | null;
-  productType?: string | null;
-  pmId?: string | null;
-  deadline?: string | null;
-  existingProductId?: string | null;
-  offerSentAt?: string | null;
-  offerLink?: string | null;
-  offerFileUrl?: string | null;
-  offerScreenshotUrl?: string | null;
-  responseDueAt?: string | null;
-  contractSignedAt?: string | null;
-  contractFileUrl?: string | null;
-  maintenanceStartAt?: string | null;
-}
-
-interface DealQueryParams {
-  page?: number;
-  pageSize?: number;
-  status?: string;
-  type?: string;
-  sellerId?: string;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-interface DealHandoffReferences {
-  project: { id: string; code: string; name: string } | null;
-  product: { id: string; name: string; productType: string; status?: string } | null;
-  subscriptions: Array<{
-    id: string;
-    code: string;
-    type: string;
-    status: string;
-    amount: unknown;
-  }>;
-  maintenanceDeal: {
-    id: string;
-    code: string;
-    name: string | null;
-    status: string;
-    amount: unknown;
-    maintenanceStartAt: Date | null;
-  } | null;
-}
-
-interface DealForHandoff {
-  id: string;
-  type: string;
-  projectId: string | null;
-  existingProduct?: { id: string; name: string; productType: string; status?: string } | null;
-}
 
 @Injectable()
 export class DealsService {
@@ -152,36 +57,7 @@ export class DealsService {
     const [items, total] = await Promise.all([
       this.prisma.deal.findMany({
         where,
-        include: {
-          lead: { select: { id: true, code: true, contactName: true } },
-          contact: { select: { id: true, firstName: true, lastName: true, email: true } },
-          company: { select: { id: true, name: true } },
-          seller: { select: { id: true, firstName: true, lastName: true } },
-          pm: { select: { id: true, firstName: true, lastName: true } },
-          orders: {
-            select: {
-              id: true,
-              code: true,
-              status: true,
-              totalAmount: true,
-              projectId: true,
-              invoices: {
-                select: {
-                  id: true,
-                  code: true,
-                  status: true,
-                  amount: true,
-                  payments: { select: { id: true, amount: true } },
-                },
-              },
-            },
-          },
-          existingProduct: { select: { id: true, name: true, productType: true, status: true } },
-          sourcePartner: { select: { id: true, name: true } },
-          sourceContact: { select: { id: true, firstName: true, lastName: true } },
-          marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
-          marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
-        },
+        include: dealListInclude,
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -207,32 +83,7 @@ export class DealsService {
   async findById(id: string) {
     const deal = await this.prisma.deal.findUnique({
       where: { id },
-      include: {
-        lead: true,
-        contact: true,
-        company: { select: { id: true, name: true } },
-        seller: { select: { id: true, firstName: true, lastName: true } },
-        pm: { select: { id: true, firstName: true, lastName: true } },
-        orders: {
-          include: {
-            invoices: {
-              select: {
-                id: true,
-                code: true,
-                status: true,
-                amount: true,
-                paidDate: true,
-                payments: { select: { id: true, amount: true, paymentDate: true } },
-              },
-            },
-          },
-        },
-        existingProduct: { select: { id: true, name: true, productType: true, status: true } },
-        sourcePartner: { select: { id: true, name: true } },
-        sourceContact: { select: { id: true, firstName: true, lastName: true } },
-        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
-        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
-      },
+      include: dealDetailInclude,
     });
     if (!deal) {
       throw new NotFoundException(`Deal ${id} not found`);
@@ -276,12 +127,7 @@ export class DealsService {
         contractFileUrl: data.contractFileUrl,
         maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : undefined,
       },
-      include: {
-        contact: { select: { id: true, firstName: true, lastName: true } },
-        seller: { select: { id: true, firstName: true, lastName: true } },
-        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
-        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
-      },
+      include: dealCreateInclude,
     });
     return this.attachHandoffReferences(deal);
   }
@@ -344,37 +190,7 @@ export class DealsService {
           maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : null,
         }),
       },
-      include: {
-        lead: { select: { id: true, code: true, contactName: true } },
-        contact: { select: { id: true, firstName: true, lastName: true, email: true } },
-        company: { select: { id: true, name: true } },
-        seller: { select: { id: true, firstName: true, lastName: true } },
-        pm: { select: { id: true, firstName: true, lastName: true } },
-        orders: {
-          select: {
-            id: true,
-            code: true,
-            status: true,
-            totalAmount: true,
-            projectId: true,
-            invoices: {
-              select: {
-                id: true,
-                code: true,
-                status: true,
-                amount: true,
-                paidDate: true,
-                payments: { select: { id: true, amount: true } },
-              },
-            },
-          },
-        },
-        existingProduct: { select: { id: true, name: true, productType: true, status: true } },
-        sourcePartner: { select: { id: true, name: true } },
-        sourceContact: { select: { id: true, firstName: true, lastName: true } },
-        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
-        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
-      },
+      include: dealUpdateInclude,
     });
     return this.attachHandoffReferences(deal);
   }
@@ -454,64 +270,9 @@ export class DealsService {
     return notes ? `${notes}\n${line}` : line;
   }
 
-  private async attachHandoffReferences<T extends DealForHandoff>(
+  private attachHandoffReferences<T extends Parameters<typeof attachDealHandoffReferences>[1]>(
     deal: T,
-  ): Promise<T & { handoff: DealHandoffReferences }> {
-    if (!deal.projectId) {
-      return { ...deal, handoff: this.emptyHandoff() };
-    }
-
-    const [project, maintenanceDeal] = await Promise.all([
-      this.prisma.project.findUnique({
-        where: { id: deal.projectId },
-        select: {
-          id: true,
-          code: true,
-          name: true,
-          products: {
-            select: { id: true, name: true, productType: true, status: true },
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-          },
-          subscriptions: {
-            select: { id: true, code: true, type: true, status: true, amount: true },
-            orderBy: { startDate: 'desc' },
-          },
-        },
-      }),
-      deal.type === 'PRODUCT'
-        ? this.prisma.deal.findFirst({
-            where: { projectId: deal.projectId, type: 'MAINTENANCE' },
-            select: {
-              id: true,
-              code: true,
-              name: true,
-              status: true,
-              amount: true,
-              maintenanceStartAt: true,
-            },
-            orderBy: { createdAt: 'desc' },
-          })
-        : Promise.resolve(null),
-    ]);
-
-    return {
-      ...deal,
-      handoff: {
-        project: project ? { id: project.id, code: project.code, name: project.name } : null,
-        product: deal.existingProduct ?? project?.products[0] ?? null,
-        subscriptions: project?.subscriptions ?? [],
-        maintenanceDeal,
-      },
-    };
-  }
-
-  private emptyHandoff(): DealHandoffReferences {
-    return {
-      project: null,
-      product: null,
-      subscriptions: [],
-      maintenanceDeal: null,
-    };
+  ) {
+    return attachDealHandoffReferences(this.prisma, deal);
   }
 }
