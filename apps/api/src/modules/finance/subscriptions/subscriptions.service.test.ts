@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { SUBSCRIPTION_PARTNER_FILTER_UNLINKED } from '@nbos/shared';
 import { SubscriptionsService } from './subscriptions.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -59,6 +60,24 @@ describe('SubscriptionsService', () => {
     it('applies filters', async () => {
       await service.findAll({ projectId: 'p1', status: 'PENDING', type: 'MAINTENANCE_ONLY' });
       expect(prisma.subscription.findMany).toHaveBeenCalled();
+    });
+
+    it('filters by partner id', async () => {
+      await service.findAll({ partnerId: 'part-1' });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ partnerId: 'part-1' }),
+        }),
+      );
+    });
+
+    it('filters unlinked subscriptions via sentinel value', async () => {
+      await service.findAll({ partnerId: SUBSCRIPTION_PARTNER_FILTER_UNLINKED });
+      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ partnerId: null }),
+        }),
+      );
     });
 
     it('applies search filter', async () => {

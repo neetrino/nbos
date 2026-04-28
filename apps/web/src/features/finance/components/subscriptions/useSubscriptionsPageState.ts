@@ -122,12 +122,19 @@ function buildSubscriptionQuery(
   params: { search: string; filters: Record<string, string> },
   periodParams?: FinanceDateRangeParams,
 ) {
+  const partnerRaw = params.filters.partner;
+  let partnerId: string | undefined;
+  if (partnerRaw && partnerRaw !== 'all') {
+    partnerId = partnerRaw;
+  }
+
   return {
     pageSize: 100,
     search: params.search || undefined,
     type: params.filters.type && params.filters.type !== 'all' ? params.filters.type : undefined,
     status:
       params.filters.status && params.filters.status !== 'all' ? params.filters.status : undefined,
+    partnerId,
     ...periodParams,
   };
 }

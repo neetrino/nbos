@@ -1,6 +1,16 @@
 import { api } from '../api';
 import type { FinanceDateRangeParams, ListData } from './finance-common';
 
+export interface SubscriptionListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  projectId?: string;
+  partnerId?: string;
+  status?: string;
+  type?: string;
+  search?: string;
+}
+
 export interface Subscription {
   id: string;
   code: string;
@@ -54,7 +64,7 @@ export interface SubscriptionStats {
 }
 
 export const subscriptionsApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Subscription>> {
+  async getAll(params?: SubscriptionListParams): Promise<ListData<Subscription>> {
     const resp = await api.get<ListData<Subscription>>('/api/finance/subscriptions', { params });
     return resp.data;
   },

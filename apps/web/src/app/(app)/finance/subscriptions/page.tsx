@@ -2,6 +2,7 @@
 
 import { FilterBar } from '@/components/shared';
 import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/constants/finance';
+import { usePartnerFilterOptions } from '@/features/finance/hooks/usePartnerFilterOptions';
 import { SubscriptionsPageContent } from '@/features/finance/components/subscriptions/SubscriptionsPageContent';
 import { SubscriptionsPageHeader } from '@/features/finance/components/subscriptions/SubscriptionsPageHeader';
 import { SubscriptionStatsCards } from '@/features/finance/components/subscriptions/SubscriptionStatsCards';
@@ -9,6 +10,7 @@ import { useSubscriptionsPageState } from '@/features/finance/components/subscri
 
 export default function SubscriptionsPage() {
   const page = useSubscriptionsPageState();
+  const { partnerFilterOptions } = usePartnerFilterOptions();
 
   const totalMRR = Number(page.stats?.monthlyRevenue ?? 0);
   const activeCount = page.subscriptions.filter(
@@ -27,6 +29,15 @@ export default function SubscriptionsPage() {
       label: 'Status',
       options: SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
     },
+    ...(partnerFilterOptions.length > 0
+      ? [
+          {
+            key: 'partner',
+            label: 'Partner',
+            options: partnerFilterOptions,
+          },
+        ]
+      : []),
   ];
 
   return (

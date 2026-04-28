@@ -1,4 +1,5 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { SUBSCRIPTION_PARTNER_FILTER_UNLINKED } from '@nbos/shared';
 import {
   PrismaClient,
   type Prisma,
@@ -34,6 +35,7 @@ interface SubscriptionQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  partnerId?: string;
   status?: string;
   type?: string;
   search?: string;
@@ -54,10 +56,25 @@ export class SubscriptionsService {
   ) {}
 
   async findAll(params: SubscriptionQueryParams) {
-    const { page = 1, pageSize = 20, projectId, status, type, search, dateFrom, dateTo } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      projectId,
+      partnerId,
+      status,
+      type,
+      search,
+      dateFrom,
+      dateTo,
+    } = params;
     const where: Prisma.SubscriptionWhereInput = {};
 
     if (projectId) where.projectId = projectId;
+    if (partnerId === SUBSCRIPTION_PARTNER_FILTER_UNLINKED) {
+      where.partnerId = null;
+    } else if (partnerId) {
+      where.partnerId = partnerId;
+    }
     if (status) where.status = status as SubscriptionStatusEnum;
     if (type) where.type = type as SubscriptionTypeEnum;
     if (search) {
