@@ -198,20 +198,22 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `OFFER/WON FOUNDATION DONE / MAINTENANCE DEPTH NEXT`
+Статус: `MAINTENANCE ENTRY FOUNDATION DONE / HANDOFF DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
 Deal Won foundation уже блокирует non-maintenance Won без linked paid invoice,
 а offer/contract foundation добавил dedicated поля и gates для `SEND_OFFER`, `GET_ANSWER`
-и `DEPOSIT_AND_CONTRACT`.
+и `DEPOSIT_AND_CONTRACT`. Maintenance entry foundation добавил canonical subscription statuses,
+Product subscription entry, auto-created linked `MAINTENANCE Deal`, and `Pending` subscription
+creation for won Maintenance deals.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
-- `MAINTENANCE` должен иметь отдельную won-логику и planned start semantics;
-- `PRODUCT + Subscription` должен запускать активную подписку только после первой оплаченной invoice;
-- `MAINTENANCE` должен создавать подписку в `Pending`.
+- добавить UI shortcuts для созданных Maintenance Deal / Subscription links;
+- углубить Finance subscription grid, coverage months and activation workflow;
+- добавить CRM handoff checklist / Project intake depth.
 
 Опорные места в коде:
 
@@ -220,9 +222,9 @@ Deal Won foundation уже блокирует non-maintenance Won без linked 
 
 Что потом нужно сделать:
 
-- углубить `MAINTENANCE` planned start / subscription semantics;
-- добавить `PRODUCT + Subscription` first-paid-invoice activation rules;
-- добавить maintenance auto-create flow после основного Product Won.
+- добавить direct links from CRM to created subscriptions / maintenance deal;
+- углубить Finance-owned subscription activation and coverage semantics;
+- добавить handoff checklist before delivery starts.
 
 ### C3. Автосоздание связанного `MAINTENANCE Deal` пока надо считать функциональным backlog item
 
@@ -235,14 +237,14 @@ Deal Won foundation уже блокирует non-maintenance Won без linked 
 
 Текущее состояние:
 
-- в текущем коде это поведение пока не подтверждено как реализованное;
-- до отдельной проверки считать это не реализованным backlog item.
+- Phase 2 Maintenance entry foundation creates a linked `MAINTENANCE Deal` after Product Won;
+- карточка связана с исходным `Project/Product` through `projectId` and `existingProductId`;
+- seller still fills `amount`, offer details and planned maintenance start later.
 
 Что потом нужно сделать:
 
-- отдельно проверить CRM create/won flows;
-- если автосоздания нет, реализовать как post-won automation;
-- если есть частично, выровнять под новый канон.
+- добавить UI links and visibility around the created maintenance deal;
+- later deepen activation rules in Finance instead of CRM.
 
 ---
 

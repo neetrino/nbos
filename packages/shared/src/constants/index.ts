@@ -44,7 +44,13 @@ export const ORDER_STATUSES = ['ACTIVE', 'PARTIALLY_PAID', 'FULLY_PAID', 'CLOSED
 
 export const PAYMENT_TYPES = ['CLASSIC', 'SUBSCRIPTION'] as const;
 
-export const SUBSCRIPTION_STATUSES = ['ACTIVE', 'PAUSED', 'CANCELLED'] as const;
+export const SUBSCRIPTION_STATUSES = [
+  'PENDING',
+  'ACTIVE',
+  'ON_HOLD',
+  'CANCELLED',
+  'COMPLETED',
+] as const;
 
 export const SUBSCRIPTION_TYPES = [
   'MAINTENANCE_ONLY',

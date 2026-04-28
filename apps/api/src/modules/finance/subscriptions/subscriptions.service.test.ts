@@ -19,7 +19,7 @@ describe('SubscriptionsService', () => {
     });
 
     it('applies filters', async () => {
-      await service.findAll({ projectId: 'p1', status: 'ACTIVE', type: 'MAINTENANCE_ONLY' });
+      await service.findAll({ projectId: 'p1', status: 'PENDING', type: 'MAINTENANCE_ONLY' });
       expect(prisma.subscription.findMany).toHaveBeenCalled();
     });
 
@@ -80,9 +80,9 @@ describe('SubscriptionsService', () => {
   describe('updateStatus', () => {
     it('updates status', async () => {
       prisma.subscription.findUnique.mockResolvedValue({ id: '1' });
-      prisma.subscription.update.mockResolvedValue({ id: '1', status: 'CANCELLED' });
-      const result = await service.updateStatus('1', 'CANCELLED');
-      expect(result.status).toBe('CANCELLED');
+      prisma.subscription.update.mockResolvedValue({ id: '1', status: 'ON_HOLD' });
+      const result = await service.updateStatus('1', 'ON_HOLD');
+      expect(result.status).toBe('ON_HOLD');
     });
   });
 

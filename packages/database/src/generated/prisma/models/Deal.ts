@@ -66,6 +66,7 @@ export type DealMinAggregateOutputType = {
   responseDueAt: Date | null;
   contractSignedAt: Date | null;
   contractFileUrl: string | null;
+  maintenanceStartAt: Date | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -103,6 +104,7 @@ export type DealMaxAggregateOutputType = {
   responseDueAt: Date | null;
   contractSignedAt: Date | null;
   contractFileUrl: string | null;
+  maintenanceStartAt: Date | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -140,6 +142,7 @@ export type DealCountAggregateOutputType = {
   responseDueAt: number;
   contractSignedAt: number;
   contractFileUrl: number;
+  maintenanceStartAt: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
@@ -186,6 +189,7 @@ export type DealMinAggregateInputType = {
   responseDueAt?: true;
   contractSignedAt?: true;
   contractFileUrl?: true;
+  maintenanceStartAt?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -223,6 +227,7 @@ export type DealMaxAggregateInputType = {
   responseDueAt?: true;
   contractSignedAt?: true;
   contractFileUrl?: true;
+  maintenanceStartAt?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -260,6 +265,7 @@ export type DealCountAggregateInputType = {
   responseDueAt?: true;
   contractSignedAt?: true;
   contractFileUrl?: true;
+  maintenanceStartAt?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -385,6 +391,7 @@ export type DealGroupByOutputType = {
   responseDueAt: Date | null;
   contractSignedAt: Date | null;
   contractFileUrl: string | null;
+  maintenanceStartAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   _count: DealCountAggregateOutputType | null;
@@ -451,6 +458,7 @@ export type DealWhereInput = {
   responseDueAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
   contractSignedAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
   contractFileUrl?: Prisma.StringNullableFilter<'Deal'> | string | null;
+  maintenanceStartAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'Deal'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Deal'> | Date | string;
   lead?: Prisma.XOR<Prisma.LeadNullableScalarRelationFilter, Prisma.LeadWhereInput> | null;
@@ -514,6 +522,7 @@ export type DealOrderByWithRelationInput = {
   responseDueAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   contractSignedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   contractFileUrl?: Prisma.SortOrderInput | Prisma.SortOrder;
+  maintenanceStartAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   lead?: Prisma.LeadOrderByWithRelationInput;
@@ -575,6 +584,7 @@ export type DealWhereUniqueInput = Prisma.AtLeast<
     responseDueAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
     contractSignedAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
     contractFileUrl?: Prisma.StringNullableFilter<'Deal'> | string | null;
+    maintenanceStartAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
     createdAt?: Prisma.DateTimeFilter<'Deal'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Deal'> | Date | string;
     lead?: Prisma.XOR<Prisma.LeadNullableScalarRelationFilter, Prisma.LeadWhereInput> | null;
@@ -643,6 +653,7 @@ export type DealOrderByWithAggregationInput = {
   responseDueAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   contractSignedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   contractFileUrl?: Prisma.SortOrderInput | Prisma.SortOrder;
+  maintenanceStartAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.DealCountOrderByAggregateInput;
@@ -703,6 +714,7 @@ export type DealScalarWhereWithAggregatesInput = {
   responseDueAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Deal'> | Date | string | null;
   contractSignedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Deal'> | Date | string | null;
   contractFileUrl?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
+  maintenanceStartAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Deal'> | Date | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Deal'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Deal'> | Date | string;
 };
@@ -730,6 +742,7 @@ export type DealCreateInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -778,6 +791,7 @@ export type DealUncheckedCreateInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -821,6 +835,7 @@ export type DealUpdateInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -884,6 +899,7 @@ export type DealUncheckedUpdateInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -922,6 +938,7 @@ export type DealCreateManyInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -964,6 +981,7 @@ export type DealUpdateManyMutationInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1016,6 +1034,7 @@ export type DealUncheckedUpdateManyInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1068,6 +1087,7 @@ export type DealCountOrderByAggregateInput = {
   responseDueAt?: Prisma.SortOrder;
   contractSignedAt?: Prisma.SortOrder;
   contractFileUrl?: Prisma.SortOrder;
+  maintenanceStartAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -1109,6 +1129,7 @@ export type DealMaxOrderByAggregateInput = {
   responseDueAt?: Prisma.SortOrder;
   contractSignedAt?: Prisma.SortOrder;
   contractFileUrl?: Prisma.SortOrder;
+  maintenanceStartAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -1146,6 +1167,7 @@ export type DealMinOrderByAggregateInput = {
   responseDueAt?: Prisma.SortOrder;
   contractSignedAt?: Prisma.SortOrder;
   contractFileUrl?: Prisma.SortOrder;
+  maintenanceStartAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -2025,6 +2047,7 @@ export type DealCreateWithoutContactInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -2071,6 +2094,7 @@ export type DealUncheckedCreateWithoutContactInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -2112,6 +2136,7 @@ export type DealCreateWithoutSourceContactInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -2158,6 +2183,7 @@ export type DealUncheckedCreateWithoutSourceContactInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -2249,6 +2275,7 @@ export type DealScalarWhereInput = {
   responseDueAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
   contractSignedAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
   contractFileUrl?: Prisma.StringNullableFilter<'Deal'> | string | null;
+  maintenanceStartAt?: Prisma.DateTimeNullableFilter<'Deal'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'Deal'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Deal'> | Date | string;
 };
@@ -2304,6 +2331,7 @@ export type DealCreateWithoutCompanyInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -2350,6 +2378,7 @@ export type DealUncheckedCreateWithoutCompanyInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -2419,6 +2448,7 @@ export type DealCreateWithoutExistingProductInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -2465,6 +2495,7 @@ export type DealUncheckedCreateWithoutExistingProductInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -2534,6 +2565,7 @@ export type DealCreateWithoutMarketingAccountInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -2580,6 +2612,7 @@ export type DealUncheckedCreateWithoutMarketingAccountInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -2649,6 +2682,7 @@ export type DealCreateWithoutMarketingActivityInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -2695,6 +2729,7 @@ export type DealUncheckedCreateWithoutMarketingActivityInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -2764,6 +2799,7 @@ export type DealCreateWithoutLeadInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
@@ -2810,6 +2846,7 @@ export type DealUncheckedCreateWithoutLeadInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -2869,6 +2906,7 @@ export type DealUpdateWithoutLeadInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
@@ -2930,6 +2968,7 @@ export type DealUncheckedUpdateWithoutLeadInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -2958,6 +2997,7 @@ export type DealCreateWithoutOrdersInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -3005,6 +3045,7 @@ export type DealUncheckedCreateWithoutOrdersInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -3075,6 +3116,7 @@ export type DealUpdateWithoutOrdersInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -3137,6 +3179,7 @@ export type DealUncheckedUpdateWithoutOrdersInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -3164,6 +3207,7 @@ export type DealCreateWithoutSellerInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -3210,6 +3254,7 @@ export type DealUncheckedCreateWithoutSellerInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -3251,6 +3296,7 @@ export type DealCreateWithoutPmInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -3297,6 +3343,7 @@ export type DealUncheckedCreateWithoutPmInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -3382,6 +3429,7 @@ export type DealCreateWithoutSourcePartnerInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
@@ -3428,6 +3476,7 @@ export type DealUncheckedCreateWithoutSourcePartnerInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
@@ -3506,6 +3555,7 @@ export type DealCreateManyContactInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -3542,6 +3592,7 @@ export type DealCreateManySourceContactInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -3584,6 +3635,7 @@ export type DealUpdateWithoutContactInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -3645,6 +3697,7 @@ export type DealUncheckedUpdateWithoutContactInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -3697,6 +3750,7 @@ export type DealUncheckedUpdateManyWithoutContactInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -3739,6 +3793,7 @@ export type DealUpdateWithoutSourceContactInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -3800,6 +3855,7 @@ export type DealUncheckedUpdateWithoutSourceContactInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -3852,6 +3908,7 @@ export type DealUncheckedUpdateManyWithoutSourceContactInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -3888,6 +3945,7 @@ export type DealCreateManyCompanyInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -3930,6 +3988,7 @@ export type DealUpdateWithoutCompanyInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -3991,6 +4050,7 @@ export type DealUncheckedUpdateWithoutCompanyInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -4043,6 +4103,7 @@ export type DealUncheckedUpdateManyWithoutCompanyInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -4079,6 +4140,7 @@ export type DealCreateManyExistingProductInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -4121,6 +4183,7 @@ export type DealUpdateWithoutExistingProductInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -4182,6 +4245,7 @@ export type DealUncheckedUpdateWithoutExistingProductInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -4234,6 +4298,7 @@ export type DealUncheckedUpdateManyWithoutExistingProductInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -4270,6 +4335,7 @@ export type DealCreateManyMarketingAccountInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -4312,6 +4378,7 @@ export type DealUpdateWithoutMarketingAccountInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -4373,6 +4440,7 @@ export type DealUncheckedUpdateWithoutMarketingAccountInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -4425,6 +4493,7 @@ export type DealUncheckedUpdateManyWithoutMarketingAccountInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -4461,6 +4530,7 @@ export type DealCreateManyMarketingActivityInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -4503,6 +4573,7 @@ export type DealUpdateWithoutMarketingActivityInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -4564,6 +4635,7 @@ export type DealUncheckedUpdateWithoutMarketingActivityInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -4616,6 +4688,7 @@ export type DealUncheckedUpdateManyWithoutMarketingActivityInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -4652,6 +4725,7 @@ export type DealCreateManySellerInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -4688,6 +4762,7 @@ export type DealCreateManyPmInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -4730,6 +4805,7 @@ export type DealUpdateWithoutSellerInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -4791,6 +4867,7 @@ export type DealUncheckedUpdateWithoutSellerInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -4843,6 +4920,7 @@ export type DealUncheckedUpdateManyWithoutSellerInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -4885,6 +4963,7 @@ export type DealUpdateWithoutPmInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -4946,6 +5025,7 @@ export type DealUncheckedUpdateWithoutPmInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -4998,6 +5078,7 @@ export type DealUncheckedUpdateManyWithoutPmInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -5034,6 +5115,7 @@ export type DealCreateManySourcePartnerInput = {
   responseDueAt?: Date | string | null;
   contractSignedAt?: Date | string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -5076,6 +5158,7 @@ export type DealUpdateWithoutSourcePartnerInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
@@ -5137,6 +5220,7 @@ export type DealUncheckedUpdateWithoutSourcePartnerInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
@@ -5189,6 +5273,7 @@ export type DealUncheckedUpdateManyWithoutSourcePartnerInput = {
   responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -5264,6 +5349,7 @@ export type DealSelect<
     responseDueAt?: boolean;
     contractSignedAt?: boolean;
     contractFileUrl?: boolean;
+    maintenanceStartAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
@@ -5318,6 +5404,7 @@ export type DealSelectCreateManyAndReturn<
     responseDueAt?: boolean;
     contractSignedAt?: boolean;
     contractFileUrl?: boolean;
+    maintenanceStartAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
@@ -5370,6 +5457,7 @@ export type DealSelectUpdateManyAndReturn<
     responseDueAt?: boolean;
     contractSignedAt?: boolean;
     contractFileUrl?: boolean;
+    maintenanceStartAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     lead?: boolean | Prisma.Deal$leadArgs<ExtArgs>;
@@ -5419,6 +5507,7 @@ export type DealSelectScalar = {
   responseDueAt?: boolean;
   contractSignedAt?: boolean;
   contractFileUrl?: boolean;
+  maintenanceStartAt?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -5458,6 +5547,7 @@ export type DealOmit<
   | 'responseDueAt'
   | 'contractSignedAt'
   | 'contractFileUrl'
+  | 'maintenanceStartAt'
   | 'createdAt'
   | 'updatedAt',
   ExtArgs['result']['deal']
@@ -5558,6 +5648,7 @@ export type $DealPayload<
       responseDueAt: Date | null;
       contractSignedAt: Date | null;
       contractFileUrl: string | null;
+      maintenanceStartAt: Date | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -6276,6 +6367,7 @@ export interface DealFieldRefs {
   readonly responseDueAt: Prisma.FieldRef<'Deal', 'DateTime'>;
   readonly contractSignedAt: Prisma.FieldRef<'Deal', 'DateTime'>;
   readonly contractFileUrl: Prisma.FieldRef<'Deal', 'String'>;
+  readonly maintenanceStartAt: Prisma.FieldRef<'Deal', 'DateTime'>;
   readonly createdAt: Prisma.FieldRef<'Deal', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Deal', 'DateTime'>;
 }

@@ -245,9 +245,11 @@ export const SubscriptionTypeEnum = {
 export type SubscriptionTypeEnum = (typeof SubscriptionTypeEnum)[keyof typeof SubscriptionTypeEnum];
 
 export const SubscriptionStatusEnum = {
+  PENDING: 'PENDING',
   ACTIVE: 'ACTIVE',
-  PAUSED: 'PAUSED',
+  ON_HOLD: 'ON_HOLD',
   CANCELLED: 'CANCELLED',
+  COMPLETED: 'COMPLETED',
 } as const;
 
 export type SubscriptionStatusEnum =

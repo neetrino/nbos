@@ -408,6 +408,24 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
               onSave={(v) => saveField('type', v)}
             />
 
+            {deal.type === 'MAINTENANCE' && (
+              <InlineField
+                label="Planned Maintenance Start"
+                value={toDateInputValue(deal.maintenanceStartAt)}
+                displayValue={
+                  deal.maintenanceStartAt ? (
+                    <span className="text-foreground text-sm font-medium">
+                      {formatDate(deal.maintenanceStartAt)}
+                    </span>
+                  ) : undefined
+                }
+                type="date"
+                placeholder="Select start date..."
+                icon={<Calendar size={12} />}
+                onSave={(v) => saveField('maintenanceStartAt', v)}
+              />
+            )}
+
             {(deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE') && (
               <InlineField
                 label="Product Category"

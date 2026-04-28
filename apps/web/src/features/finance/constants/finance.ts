@@ -42,16 +42,18 @@ export const EXPENSE_CATEGORIES = [
 ] as const;
 
 export const SUBSCRIPTION_TYPES = [
-  { value: 'MAINTENANCE', label: 'Maintenance', variant: 'green' as StatusVariant },
-  { value: 'DEV_MAINTENANCE', label: 'Dev + Maintenance', variant: 'blue' as StatusVariant },
+  { value: 'MAINTENANCE_ONLY', label: 'Maintenance', variant: 'green' as StatusVariant },
+  { value: 'DEV_AND_MAINTENANCE', label: 'Dev + Maintenance', variant: 'blue' as StatusVariant },
   { value: 'DEV_ONLY', label: 'Development Only', variant: 'purple' as StatusVariant },
   { value: 'PARTNER_SERVICE', label: 'Partner Service', variant: 'orange' as StatusVariant },
 ] as const;
 
 export const SUBSCRIPTION_STATUSES = [
+  { value: 'PENDING', label: 'Pending', variant: 'amber' as StatusVariant },
   { value: 'ACTIVE', label: 'Active', variant: 'green' as StatusVariant },
-  { value: 'PAUSED', label: 'Paused', variant: 'amber' as StatusVariant },
+  { value: 'ON_HOLD', label: 'On Hold', variant: 'gray' as StatusVariant },
   { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant },
+  { value: 'COMPLETED', label: 'Completed', variant: 'blue' as StatusVariant },
 ] as const;
 
 export const FINANCE_PERIOD_OPTIONS = [

@@ -280,6 +280,7 @@ export const DealScalarFieldEnum = {
   responseDueAt: 'responseDueAt',
   contractSignedAt: 'contractSignedAt',
   contractFileUrl: 'contractFileUrl',
+  maintenanceStartAt: 'maintenanceStartAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;

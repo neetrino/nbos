@@ -92,6 +92,7 @@ export class DealsController {
       responseDueAt?: string | null;
       contractSignedAt?: string | null;
       contractFileUrl?: string | null;
+      maintenanceStartAt?: string | null;
     },
   ) {
     return this.dealsService.create(body);
@@ -126,6 +127,7 @@ export class DealsController {
       responseDueAt?: string | null;
       contractSignedAt?: string | null;
       contractFileUrl?: string | null;
+      maintenanceStartAt?: string | null;
     },
   ) {
     return this.dealsService.update(id, body);

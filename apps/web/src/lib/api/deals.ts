@@ -51,6 +51,7 @@ export interface Deal {
   responseDueAt: string | null;
   contractSignedAt: string | null;
   contractFileUrl: string | null;
+  maintenanceStartAt: string | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
@@ -124,6 +125,7 @@ export const dealsApi = {
     responseDueAt?: string;
     contractSignedAt?: string;
     contractFileUrl?: string;
+    maintenanceStartAt?: string;
   }): Promise<Deal> {
     const resp = await api.post<Deal>('/api/crm/deals', data);
     return resp.data;

@@ -36,6 +36,7 @@ interface CreateDealDto {
   responseDueAt?: string | null;
   contractSignedAt?: string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: string | null;
 }
 
 interface UpdateDealDto {
@@ -67,6 +68,7 @@ interface UpdateDealDto {
   responseDueAt?: string | null;
   contractSignedAt?: string | null;
   contractFileUrl?: string | null;
+  maintenanceStartAt?: string | null;
 }
 
 interface DealQueryParams {
@@ -241,6 +243,7 @@ export class DealsService {
         responseDueAt: data.responseDueAt ? new Date(data.responseDueAt) : undefined,
         contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : undefined,
         contractFileUrl: data.contractFileUrl,
+        maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : undefined,
       },
       include: {
         contact: { select: { id: true, firstName: true, lastName: true } },
@@ -305,6 +308,9 @@ export class DealsService {
           contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : null,
         }),
         ...(data.contractFileUrl !== undefined && { contractFileUrl: data.contractFileUrl }),
+        ...(data.maintenanceStartAt !== undefined && {
+          maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : null,
+        }),
       },
       include: {
         lead: { select: { id: true, code: true, contactName: true } },
@@ -325,6 +331,7 @@ export class DealsService {
                 code: true,
                 status: true,
                 amount: true,
+                paidDate: true,
                 payments: { select: { id: true, amount: true } },
               },
             },

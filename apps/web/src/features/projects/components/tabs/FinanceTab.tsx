@@ -43,10 +43,15 @@ const INVOICE_STATUS_MAP: Record<
   UNPAID: { label: 'Unpaid', variant: 'amber' },
 };
 
-const SUB_STATUS_MAP: Record<string, { label: string; variant: 'green' | 'amber' | 'red' }> = {
+const SUB_STATUS_MAP: Record<
+  string,
+  { label: string; variant: 'green' | 'amber' | 'red' | 'gray' | 'blue' }
+> = {
+  PENDING: { label: 'Pending', variant: 'amber' },
   ACTIVE: { label: 'Active', variant: 'green' },
-  PAUSED: { label: 'Paused', variant: 'amber' },
+  ON_HOLD: { label: 'On Hold', variant: 'gray' },
   CANCELLED: { label: 'Cancelled', variant: 'red' },
+  COMPLETED: { label: 'Completed', variant: 'blue' },
 };
 
 export function FinanceTab({ orders, subscriptions, expenses, domains }: FinanceTabProps) {

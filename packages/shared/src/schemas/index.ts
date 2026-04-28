@@ -74,6 +74,7 @@ export const createDealSchema = z.object({
   sourceContactId: z.string().uuid().optional(),
   marketingAccountId: z.string().uuid().optional(),
   marketingActivityId: z.string().uuid().optional(),
+  maintenanceStartAt: z.string().datetime().optional(),
   notes: z.string().max(2000).optional(),
 });
 
@@ -95,6 +96,7 @@ export const updateDealSchema = z.object({
   responseDueAt: z.string().datetime().nullable().optional(),
   contractSignedAt: z.string().datetime().nullable().optional(),
   contractFileUrl: z.string().url().max(500).nullable().optional(),
+  maintenanceStartAt: z.string().datetime().nullable().optional(),
   notes: z.string().max(2000).optional(),
 });
 

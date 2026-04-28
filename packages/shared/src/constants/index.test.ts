@@ -15,6 +15,7 @@ import {
   DEAL_TYPES,
   PRODUCT_TYPES,
   PAYMENT_TYPES,
+  SUBSCRIPTION_STATUSES,
 } from './index';
 
 describe('Constants', () => {
@@ -102,6 +103,16 @@ describe('Constants', () => {
 
   it('PAYMENT_TYPES are valid', () => {
     expect(PAYMENT_TYPES).toEqual(['CLASSIC', 'SUBSCRIPTION']);
+  });
+
+  it('SUBSCRIPTION_STATUSES are canonical', () => {
+    expect(SUBSCRIPTION_STATUSES).toEqual([
+      'PENDING',
+      'ACTIVE',
+      'ON_HOLD',
+      'CANCELLED',
+      'COMPLETED',
+    ]);
   });
 
   it('all constants are arrays', () => {

@@ -389,6 +389,7 @@ model Deal {
   responseDueAt      DateTime?            @map("response_due_at")
   contractSignedAt   DateTime?            @map("contract_signed_at")
   contractFileUrl    String?              @map("contract_file_url")
+  maintenanceStartAt DateTime?            @map("maintenance_start_at")
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
 
@@ -529,9 +530,11 @@ enum SubscriptionTypeEnum {
 }
 
 enum SubscriptionStatusEnum {
+  PENDING
   ACTIVE
-  PAUSED
+  ON_HOLD
   CANCELLED
+  COMPLETED
 }
 
 model Subscription {
