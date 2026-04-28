@@ -3,6 +3,16 @@ import type { ListData } from './finance-common';
 
 export type PayrollRunStatus = 'DRAFT' | 'REVIEW' | 'APPROVED' | 'PAYING' | 'CLOSED';
 
+export type PayrollJournalKind = 'CREATED' | 'APPROVED' | 'CLOSED';
+
+export interface PayrollJournalEntry {
+  kind: PayrollJournalKind;
+  at: string;
+  actorEmployeeId: string | null;
+  actorName: string | null;
+  summary: string;
+}
+
 export type SalaryLineStatus = 'PENDING' | 'APPROVED' | 'PARTIALLY_PAID' | 'PAID' | 'HELD';
 
 export interface PayrollRunListRow {
@@ -59,6 +69,8 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   approvedBy: { id: string; firstName: string; lastName: string } | null;
   approvedAt: string | null;
   closedAt: string | null;
+  /** Read-only milestones from run timestamps (no intermediate status audit yet). */
+  journal: PayrollJournalEntry[];
 }
 
 export interface PayrollRunListParams {

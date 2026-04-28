@@ -11,6 +11,7 @@ import { isValidPayrollMonth } from './payroll-runs.constants';
 import { canTransitionPayrollRun } from './payroll-run-status-transitions';
 import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
+import { buildPayrollRunJournal } from './payroll-run-journal';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
 const PAYROLL_RUN_STATUSES: PayrollRunStatusEnum[] = [
@@ -103,7 +104,10 @@ export class PayrollRunsService {
       },
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
-    return run;
+    return {
+      ...run,
+      journal: buildPayrollRunJournal(run),
+    };
   }
 
   async create(body: CreatePayrollRunBody, createdById?: string | null) {

@@ -17,6 +17,7 @@ import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollRunDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
+  PAYROLL_JOURNAL_KIND_LABEL,
   PAYROLL_RUN_STATUS_LABEL,
   payrollRunActionOptions,
 } from '@/features/finance/constants/payroll-run-ui';
@@ -35,6 +36,12 @@ function parseAmount(value: string): number {
 
 function employeeName(emp: { firstName: string; lastName: string }): string {
   return `${emp.firstName} ${emp.lastName}`.trim();
+}
+
+function formatJournalAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 export default function PayrollRunDetailPage() {
@@ -166,6 +173,38 @@ export default function PayrollRunDetailPage() {
         <Summary label="Payable" value={formatAmount(parseAmount(run.totalPayable))} accent />
         <Summary label="Paid" value={formatAmount(parseAmount(run.totalPaid))} />
       </div>
+
+      <section className="border-border bg-card rounded-xl border p-4">
+        <h2 className="text-foreground text-sm font-semibold">Run journal</h2>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Milestones from stored timestamps only. Intermediate workflow steps (e.g. review or
+          paying) are not listed until NBOS audit logging covers payroll runs.
+        </p>
+        <ul className="mt-3 space-y-0">
+          {run.journal.map((entry) => (
+            <li
+              key={`${entry.kind}-${entry.at}`}
+              className="border-border flex flex-wrap items-start justify-between gap-2 border-t py-3 first:border-t-0 first:pt-0"
+            >
+              <div className="min-w-0">
+                <p className="text-foreground text-sm font-medium">
+                  {PAYROLL_JOURNAL_KIND_LABEL[entry.kind]}
+                </p>
+                <p className="text-muted-foreground mt-0.5 text-xs">{entry.summary}</p>
+                {entry.actorName ? (
+                  <p className="text-muted-foreground mt-1 text-xs">By {entry.actorName}</p>
+                ) : null}
+              </div>
+              <time
+                className="text-muted-foreground shrink-0 text-xs tabular-nums"
+                dateTime={entry.at}
+              >
+                {formatJournalAt(entry.at)}
+              </time>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <div className="border-border overflow-x-auto rounded-xl border">
         <Table>

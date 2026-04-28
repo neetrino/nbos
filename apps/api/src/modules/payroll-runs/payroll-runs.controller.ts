@@ -33,7 +33,11 @@ export class PayrollRunsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get payroll run with salary lines' })
+  @ApiOperation({
+    summary: 'Get payroll run with salary lines',
+    description:
+      'Includes `journal`: read-only milestones from createdAt / approvedAt / closedAt (no intermediate status history until audit logging).',
+  })
   async findOne(@Param('id') id: string) {
     return this.payrollRunsService.findById(id);
   }

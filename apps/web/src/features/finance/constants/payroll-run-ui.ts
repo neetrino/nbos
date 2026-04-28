@@ -1,4 +1,10 @@
-import type { PayrollRunStatus } from '@/lib/api/payroll-runs';
+import type { PayrollJournalKind, PayrollRunStatus } from '@/lib/api/payroll-runs';
+
+export const PAYROLL_JOURNAL_KIND_LABEL: Record<PayrollJournalKind, string> = {
+  CREATED: 'Created',
+  APPROVED: 'Approved',
+  CLOSED: 'Closed',
+};
 
 export const PAYROLL_RUN_STATUS_LABEL: Record<PayrollRunStatus, string> = {
   DRAFT: 'Draft',

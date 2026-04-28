@@ -29,6 +29,34 @@ describe('PayrollRunsService', () => {
     it('throws NotFoundException when missing', async () => {
       await expect(service.findById('missing')).rejects.toThrow(NotFoundException);
     });
+
+    it('returns journal derived from durable timestamps', async () => {
+      prisma.payrollRun.findUnique.mockResolvedValue({
+        id: 'p1',
+        payrollMonth: '2026-04',
+        status: 'CLOSED',
+        totalBaseSalary: 0,
+        totalBonuses: 0,
+        totalAdjustments: 0,
+        totalDeductions: 0,
+        totalPayable: 0,
+        totalPaid: 0,
+        createdAt: new Date('2026-04-01T10:00:00.000Z'),
+        updatedAt: new Date('2026-04-10T10:00:00.000Z'),
+        approvedAt: new Date('2026-04-05T12:00:00.000Z'),
+        closedAt: new Date('2026-04-06T08:00:00.000Z'),
+        salaryLines: [],
+        createdBy: { id: 'e1', firstName: 'A', lastName: 'B' },
+        approvedBy: { id: 'e2', firstName: 'C', lastName: 'D' },
+      });
+      const result = await service.findById('p1');
+      expect(result.journal).toHaveLength(3);
+      expect(result.journal.map((j: { kind: string }) => j.kind)).toEqual([
+        'CREATED',
+        'APPROVED',
+        'CLOSED',
+      ]);
+    });
   });
 
   describe('create', () => {
