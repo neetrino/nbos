@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import { buildSubscriptionListQuery } from '@/features/finance/utils/build-subscription-list-query';
+import { subscriptionMatchesPartnerStatsScope } from '@/features/finance/utils/subscription-partner-stats-scope';
 import { subscriptionsApi, type Subscription, type SubscriptionStats } from '@/lib/api/finance';
 
 interface UseSubscriptionsPageStateOptions {
@@ -28,6 +29,11 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     return { ...filters, partner: pid };
   }, [filters, partnerIdFromUrl]);
 
+  const statsPartnerScope = useMemo(
+    () => buildSubscriptionListQuery({ filters, search, partnerIdFromUrl }).partnerId,
+    [filters, search, partnerIdFromUrl],
+  );
+
   const fetchSubscriptions = useSubscriptionFetch({
     search,
     filters,
@@ -44,6 +50,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     setStats,
     setError,
     setActivatingId,
+    statsPartnerScope,
   );
 
   const handleCancel = useSubscriptionCancellation(
@@ -51,9 +58,16 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     setStats,
     setError,
     setCancellingId,
+    statsPartnerScope,
   );
 
-  const handleHold = useSubscriptionHold(setSubscriptions, setStats, setError, setHoldingId);
+  const handleHold = useSubscriptionHold(
+    setSubscriptions,
+    setStats,
+    setError,
+    setHoldingId,
+    statsPartnerScope,
+  );
 
   const handlePartnerLinked = useCallback(
     (updated: Subscription) => {
@@ -147,6 +161,7 @@ function useSubscriptionActivation(
   setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
   setError: (error: string | null) => void,
   setActivatingId: (id: string | null) => void,
+  statsPartnerScope: string | undefined,
 ) {
   return useCallback(
     async (subscription: Subscription) => {
@@ -157,6 +172,8 @@ function useSubscriptionActivation(
         setStats((current) =>
           applyOptimisticSubscriptionStats(
             current,
+            subscription,
+            statsPartnerScope,
             subscription.status,
             'ACTIVE',
             Number(updated.amount),
@@ -169,7 +186,7 @@ function useSubscriptionActivation(
         setActivatingId(null);
       }
     },
-    [setActivatingId, setError, setStats, setSubscriptions],
+    [setActivatingId, setError, setStats, setSubscriptions, statsPartnerScope],
   );
 }
 
@@ -181,11 +198,16 @@ function replaceSubscription(subscriptions: Subscription[], updated: Subscriptio
 
 function applyOptimisticSubscriptionStats(
   stats: SubscriptionStats | null,
+  subscription: Subscription,
+  statsPartnerScope: string | undefined,
   from: string,
   to: string,
   amount: number,
 ): SubscriptionStats | null {
   if (!stats) return stats;
+  if (!subscriptionMatchesPartnerStatsScope(subscription, statsPartnerScope)) {
+    return stats;
+  }
 
   const mrr = Number(stats.monthlyRevenue ?? 0);
   if ((from === 'PENDING' || from === 'ON_HOLD') && to === 'ACTIVE') {
@@ -210,6 +232,7 @@ function useSubscriptionCancellation(
   setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
   setError: (error: string | null) => void,
   setCancellingId: (id: string | null) => void,
+  statsPartnerScope: string | undefined,
 ) {
   return useCallback(
     async (subscription: Subscription) => {
@@ -220,6 +243,8 @@ function useSubscriptionCancellation(
         setStats((current) =>
           applyOptimisticSubscriptionStats(
             current,
+            subscription,
+            statsPartnerScope,
             subscription.status,
             'CANCELLED',
             Number(subscription.amount),
@@ -233,7 +258,7 @@ function useSubscriptionCancellation(
         setCancellingId(null);
       }
     },
-    [setCancellingId, setError, setStats, setSubscriptions],
+    [setCancellingId, setError, setStats, setSubscriptions, statsPartnerScope],
   );
 }
 
@@ -242,6 +267,7 @@ function useSubscriptionHold(
   setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
   setError: (error: string | null) => void,
   setHoldingId: (id: string | null) => void,
+  statsPartnerScope: string | undefined,
 ) {
   return useCallback(
     async (subscription: Subscription) => {
@@ -252,6 +278,8 @@ function useSubscriptionHold(
         setStats((current) =>
           applyOptimisticSubscriptionStats(
             current,
+            subscription,
+            statsPartnerScope,
             'ACTIVE',
             'ON_HOLD',
             Number(subscription.amount),
@@ -265,6 +293,6 @@ function useSubscriptionHold(
         setHoldingId(null);
       }
     },
-    [setError, setHoldingId, setStats, setSubscriptions],
+    [setError, setHoldingId, setStats, setSubscriptions, statsPartnerScope],
   );
 }
