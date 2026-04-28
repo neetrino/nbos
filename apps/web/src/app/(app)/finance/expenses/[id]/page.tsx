@@ -35,6 +35,9 @@ import { EditExpenseDialog } from '@/features/finance/components/expenses/EditEx
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
+/** Browser tab label suffix (aligned with root metadata branding). */
+const FINANCE_EXPENSE_DETAIL_TITLE_SUFFIX = ' · Finance · NBOS';
+
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
   try {
@@ -85,6 +88,24 @@ function ExpenseDetailPageInner() {
   useEffect(() => {
     fetchExpense();
   }, [fetchExpense]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const previousTitle = document.title;
+
+    if (error || !expense) {
+      document.title = `Expense${FINANCE_EXPENSE_DETAIL_TITLE_SUFFIX}`;
+      return () => {
+        document.title = previousTitle;
+      };
+    }
+
+    document.title = `${expense.name}${FINANCE_EXPENSE_DETAIL_TITLE_SUFFIX}`;
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [loading, error, expense]);
 
   if (loading) {
     return (
