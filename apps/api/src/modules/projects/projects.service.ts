@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { buildProjectIntake } from './project-intake';
 
 interface CreateProjectDto {
   name: string;
@@ -155,7 +156,7 @@ export class ProjectsService {
       },
     });
     if (!project) throw new NotFoundException(`Project ${id} not found`);
-    return project;
+    return { ...project, intake: buildProjectIntake(project) };
   }
 
   async create(data: CreateProjectDto) {

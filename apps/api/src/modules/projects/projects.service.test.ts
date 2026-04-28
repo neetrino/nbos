@@ -34,6 +34,8 @@ describe('ProjectsService', () => {
             id: 'prod-1',
             name: 'Website',
             status: 'DEVELOPMENT',
+            deadline: new Date('2026-05-10T00:00:00.000Z'),
+            pm: { id: 'pm-1', firstName: 'Project', lastName: 'Manager' },
             _count: { extensions: 1, tasks: 3, tickets: 2 },
           },
         ],
@@ -46,6 +48,14 @@ describe('ProjectsService', () => {
             _count: { tasks: 2 },
           },
         ],
+        orders: [
+          {
+            id: 'order-1',
+            invoices: [{ id: 'invoice-1', status: 'PAID', paidDate: new Date('2026-04-28') }],
+          },
+        ],
+        subscriptions: [{ id: 'sub-1', status: 'ACTIVE' }],
+        credentials: [{ id: 'cred-1' }],
         _count: {
           products: 1,
           extensions: 1,
@@ -60,6 +70,16 @@ describe('ProjectsService', () => {
 
       expect(result.products).toHaveLength(1);
       expect(result.extensions).toHaveLength(1);
+      expect(result.intake).toMatchObject({
+        hasProduct: true,
+        hasPm: true,
+        hasDeadline: true,
+        hasPaidInvoice: true,
+        hasSubscriptionContext: true,
+        hasCredentials: true,
+        openTaskCount: 5,
+        credentialCount: 1,
+      });
       expect(result._count).toMatchObject({ products: 1, extensions: 1 });
       expect(prisma.project.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({

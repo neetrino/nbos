@@ -140,6 +140,27 @@ export interface ProjectAuditLog {
   createdAt: string;
 }
 
+export interface ProjectIntakeSummary {
+  primaryProduct: {
+    id: string;
+    name: string;
+    status: string;
+    deadline: string | null;
+    pm: EmployeeRef | null;
+  } | null;
+  hasProduct: boolean;
+  hasPm: boolean;
+  hasDeadline: boolean;
+  hasPaidInvoice: boolean;
+  hasSubscriptionContext: boolean;
+  hasCredentials: boolean;
+  productCount: number;
+  extensionCount: number;
+  openTaskCount: number;
+  credentialCount: number;
+  subscriptionStatuses: string[];
+}
+
 export interface FullProject extends Project {
   products: ProjectProductSummary[];
   extensions: ProjectExtensionSummary[];
@@ -150,6 +171,7 @@ export interface FullProject extends Project {
   domains: ProjectDomain[];
   expenses: ProjectExpense[];
   auditLogs: ProjectAuditLog[];
+  intake?: ProjectIntakeSummary;
   _count: {
     products: number;
     extensions: number;

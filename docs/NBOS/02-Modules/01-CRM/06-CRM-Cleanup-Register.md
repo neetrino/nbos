@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `HANDOFF VISIBILITY FOUNDATION DONE / PROJECT INTAKE DEPTH NEXT`
+Статус: `PROJECT INTAKE VISIBILITY FOUNDATION DONE / DELIVERY DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -206,14 +206,15 @@ Deal Won foundation уже блокирует non-maintenance Won без linked 
 а offer/contract foundation добавил dedicated поля и gates для `SEND_OFFER`, `GET_ANSWER`
 и `DEPOSIT_AND_CONTRACT`. Maintenance entry foundation добавил canonical subscription statuses,
 Product subscription entry, auto-created linked `MAINTENANCE Deal`, `Pending` subscription
-creation for won Maintenance deals, and Deal card handoff links/readiness visibility.
+creation for won Maintenance deals, Deal card handoff links/readiness visibility,
+and Project detail read-only PM intake visibility.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
 - углубить direct actions из popup там, где нужны create/open shortcuts;
 - углубить Finance subscription grid, coverage months and activation workflow;
-- добавить Project intake checklist depth after CRM handoff visibility.
+- добавить persisted PM kickoff checklist before delivery starts.
 
 Опорные места в коде:
 
@@ -223,7 +224,7 @@ creation for won Maintenance deals, and Deal card handoff links/readiness visibi
 Что потом нужно сделать:
 
 - углубить Finance-owned subscription activation and coverage semantics;
-- добавить handoff checklist before delivery starts.
+- добавить persisted handoff checklist before delivery starts.
 
 ### C3. Автосоздание связанного `MAINTENANCE Deal` пока надо считать функциональным backlog item
 
@@ -243,7 +244,7 @@ creation for won Maintenance deals, and Deal card handoff links/readiness visibi
 
 Что потом нужно сделать:
 
-- углубить Project intake checklist and PM kickoff context;
+- углубить persisted Project intake checklist and PM kickoff acceptance;
 - later deepen activation rules in Finance instead of CRM.
 
 ---
