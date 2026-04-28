@@ -139,6 +139,11 @@ const NAV_ITEMS: NavItem[] = [
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {
+        label: 'Bonus board',
+        href: '/bonus',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
         label: 'Orders',
         href: '/finance/orders',
         permission: { module: 'ORDERS', action: 'VIEW' },
@@ -390,7 +395,9 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-3">
         <ul className="space-y-1">
           {visibleItems.map((item) => {
-            const active = isActive(item.href);
+            const childPathActive =
+              item.children?.some((child) => isChildRouteActive(pathname, child.href)) ?? false;
+            const active = childPathActive || isActive(item.href);
             const expanded = expandedSection === item.label;
             const firstChildHref = getFirstChildHref(item);
 
