@@ -1,5 +1,7 @@
 import { api } from '../api';
+import type { CreateInvoiceInput } from './finance-create';
 import type { FinanceDateRangeParams, ListData } from './finance-common';
+export type { CreateInvoiceInput } from './finance-create';
 export type { Subscription, SubscriptionCoverageSummary, SubscriptionStats } from './subscriptions';
 export { subscriptionsApi } from './subscriptions';
 
@@ -175,7 +177,7 @@ export const invoicesApi = {
     const resp = await api.get<Invoice>(`/api/finance/invoices/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Invoice> {
+  async create(data: CreateInvoiceInput): Promise<Invoice> {
     const resp = await api.post<Invoice>('/api/finance/invoices', data);
     return resp.data;
   },

@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `MARKETING PERFORMANCE SNAPSHOT DONE / FINANCE OR DELIVERY DEPTH NEXT`
+Статус: `INVOICE GENERATION FOUNDATION DONE / FINANCE RECONCILIATION OR DELIVERY DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -212,13 +212,14 @@ Product Development gate blockers, Finance Pending subscription activation with
 derived coverage month visibility, Extension Development readiness blockers,
 Finance invoice paid/outstanding coverage with controlled Record Payment action,
 field-aware blocker popup direct actions for CRM, Product and Extension gates,
-and a read-only Marketing performance snapshot from real spend links and attributed paid revenue.
+read-only Marketing performance snapshot from real spend links and attributed paid revenue,
+and controlled manual invoice generation from Finance invoice/order screens.
 
 Новые требования, которые надо будет реализовать:
 
-- проверить, где нужны remaining create shortcuts beyond direct open actions;
+- проверить, где нужны remaining create shortcuts beyond invoice generation;
 - углубить direct actions там, где понадобится actual create flow, not only open target;
-- углубить invoice generation and later finance reconciliation workflow;
+- углубить later finance reconciliation workflow after controlled invoice generation;
 - later deepen Marketing ROI after Finance reconciliation becomes reliable;
 - углубить remaining delivery lifecycle depth after readiness foundations.
 
@@ -229,7 +230,7 @@ and a read-only Marketing performance snapshot from real spend links and attribu
 
 Что потом нужно сделать:
 
-- углубить remaining Finance-owned invoice/subscription semantics;
+- углубить remaining Finance-owned reconciliation/subscription semantics;
 - добавить shortened Extension checklist and later delivery board depth.
 
 ### C3. Автосоздание связанного `MAINTENANCE Deal` пока надо считать функциональным backlog item
@@ -263,7 +264,7 @@ and a read-only Marketing performance snapshot from real spend links and attribu
 2. привести subscription statuses к новому канону в shared/backend/frontend;
 3. расширить CRM stage gates и popup transitions;
 4. реализовать maintenance auto-created flow;
-5. углубить Extension checklist, remaining Finance payment/subscription depth and create shortcuts;
+5. углубить Extension checklist and remaining Finance reconciliation/subscription depth;
 6. только после этого полировать вторичные UI детали и automation texts.
 
 ---

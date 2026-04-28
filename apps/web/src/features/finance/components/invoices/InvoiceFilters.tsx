@@ -8,6 +8,7 @@ interface InvoiceFiltersProps {
   filters: Record<string, string>;
   onSearchChange: (search: string) => void;
   onFilterChange: (updater: (current: Record<string, string>) => Record<string, string>) => void;
+  onCreateInvoice: () => void;
 }
 
 const FILTER_CONFIGS = [
@@ -28,6 +29,7 @@ export function InvoiceFilters({
   filters,
   onSearchChange,
   onFilterChange,
+  onCreateInvoice,
 }: InvoiceFiltersProps) {
   return (
     <div className="flex items-center gap-3">
@@ -44,7 +46,7 @@ export function InvoiceFilters({
           onClearFilters={() => onFilterChange(() => ({}))}
         />
       </div>
-      <Button className="shrink-0">
+      <Button className="shrink-0" onClick={onCreateInvoice}>
         <Plus size={16} />
         New Invoice
       </Button>

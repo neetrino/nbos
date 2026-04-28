@@ -26,6 +26,7 @@ import {
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
+import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { ordersApi, type Order, type OrderStats } from '@/lib/api/finance';
 
 const ORDER_STATUSES: Record<
@@ -48,6 +49,7 @@ export default function OrdersPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -169,6 +171,7 @@ export default function OrdersPage() {
                 <TableHead>Payment</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-center">Invoices</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -217,6 +220,12 @@ export default function OrdersPage() {
                     <TableCell className="text-center font-medium">
                       {order._count?.invoices ?? 0}
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" onClick={() => setInvoiceOrder(order)}>
+                        <Plus size={14} />
+                        Create Invoice
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -224,6 +233,14 @@ export default function OrdersPage() {
           </Table>
         </div>
       )}
+      <CreateInvoiceDialog
+        open={Boolean(invoiceOrder)}
+        order={invoiceOrder}
+        onOpenChange={(open) => {
+          if (!open) setInvoiceOrder(null);
+        }}
+        onCreated={fetchOrders}
+      />
     </div>
   );
 }

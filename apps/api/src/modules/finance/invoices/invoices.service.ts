@@ -102,6 +102,7 @@ export class InvoicesService {
   }
 
   async create(data: CreateInvoiceDto) {
+    this.assertCreateInvoiceInput(data);
     const code = await this.generateCode();
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
 
@@ -226,6 +227,20 @@ export class InvoicesService {
 
     if (derivedStatus === 'PAID' && requestedStatus !== 'PAID') {
       throw new BadRequestException('Fully paid invoices must stay in PAID status');
+    }
+  }
+
+  private assertCreateInvoiceInput(data: CreateInvoiceDto) {
+    if (!data.projectId?.trim()) {
+      throw new BadRequestException('projectId is required to create an invoice');
+    }
+
+    if (!data.type?.trim()) {
+      throw new BadRequestException('type is required to create an invoice');
+    }
+
+    if (!Number.isFinite(data.amount) || data.amount <= 0) {
+      throw new BadRequestException('Invoice amount must be greater than zero');
     }
   }
 

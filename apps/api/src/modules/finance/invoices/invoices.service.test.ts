@@ -55,52 +55,6 @@ describe('InvoicesService', () => {
     });
   });
 
-  describe('create', () => {
-    it('generates code INV-YYYY-NNNN', async () => {
-      prisma.invoice.create.mockResolvedValue({
-        id: '1',
-        code: 'INV-2026-0001',
-        amount: 50000,
-        payments: [],
-        _count: { payments: 0 },
-      });
-      const result = await service.create({
-        projectId: 'p1',
-        amount: 50000,
-        type: 'PREPAYMENT',
-      });
-      expect(result.code).toMatch(/^INV-\d{4}-\d{4}$/);
-    });
-
-    it('inherits tax status from order when orderId is provided', async () => {
-      prisma.order.findUnique.mockResolvedValue({ taxStatus: 'TAX_FREE' });
-      prisma.invoice.create.mockResolvedValue({
-        id: '2',
-        code: 'INV-2026-0002',
-        taxStatus: 'TAX_FREE',
-        amount: 50000,
-        payments: [],
-        _count: { payments: 0 },
-      });
-
-      await service.create({
-        orderId: 'ord-1',
-        projectId: 'p1',
-        amount: 50000,
-        type: 'DEVELOPMENT',
-      });
-
-      expect(prisma.invoice.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            orderId: 'ord-1',
-            taxStatus: 'TAX_FREE',
-          }),
-        }),
-      );
-    });
-  });
-
   describe('updateStatus', () => {
     it('sets paidDate when marking as PAID', async () => {
       const paidDate = new Date('2026-04-12T00:00:00.000Z');

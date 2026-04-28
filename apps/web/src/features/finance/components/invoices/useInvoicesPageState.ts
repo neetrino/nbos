@@ -22,6 +22,7 @@ export function useInvoicesPageState() {
   const [view, setView] = useState<InvoiceViewMode>('kanban');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [period, setPeriod] = useState<FinancePeriod>('month');
 
   const fetchInvoices = useFetchInvoices({
@@ -54,6 +55,8 @@ export function useInvoicesPageState() {
     selectedInvoice,
     sheetOpen,
     setSheetOpen,
+    createOpen,
+    setCreateOpen,
     period,
     setPeriod,
     fetchInvoices,
@@ -63,6 +66,7 @@ export function useInvoicesPageState() {
     },
     handleStatusChange,
     handlePaymentRecorded,
+    handleInvoiceCreated: fetchInvoices,
   };
 }
 
