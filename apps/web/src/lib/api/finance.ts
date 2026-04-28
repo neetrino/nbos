@@ -144,6 +144,21 @@ export interface ExpenseStats {
   unpaidAmount: number | null;
 }
 
+/** Body for `PUT /expenses/:id` (aligned with ExpensesController). */
+export interface UpdateExpensePayload {
+  name?: string;
+  type?: string;
+  category?: string;
+  amount?: number;
+  frequency?: string;
+  dueDate?: string | null;
+  status?: string;
+  projectId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: string;
+  notes?: string | null;
+}
+
 export interface InvoiceStats {
   total: number;
   byStatus: Array<{
@@ -323,7 +338,7 @@ export const expensesApi = {
     const resp = await api.post<Expense>('/api/expenses', data);
     return resp.data;
   },
-  async update(id: string, data: Record<string, unknown>): Promise<Expense> {
+  async update(id: string, data: UpdateExpensePayload): Promise<Expense> {
     const resp = await api.put<Expense>(`/api/expenses/${id}`, data);
     return resp.data;
   },

@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, ExternalLink, FolderKanban, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, ExternalLink, FolderKanban, Pencil, RefreshCcw } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { formatAmount, getExpenseStage } from '@/features/finance/constants/finance';
 import { cn } from '@/lib/utils';
+import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
 function formatDate(iso: string | null): string {
@@ -25,6 +26,7 @@ export default function ExpenseDetailPage() {
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const fetchExpense = useCallback(async () => {
     if (!id) return;
@@ -89,10 +91,23 @@ export default function ExpenseDetailPage() {
             <p className="text-muted-foreground mt-1 font-mono text-xs">{expense.id}</p>
           </div>
         </div>
-        <Button variant="outline" size="icon" type="button" onClick={fetchExpense}>
-          <RefreshCcw size={16} />
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="icon" type="button" onClick={fetchExpense}>
+            <RefreshCcw size={16} />
+          </Button>
+          <Button type="button" onClick={() => setEditOpen(true)}>
+            <Pencil size={16} />
+            Edit
+          </Button>
+        </div>
       </div>
+
+      <EditExpenseDialog
+        expense={expense}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onSaved={(updated) => setExpense(updated)}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="border-border bg-card rounded-xl border p-4">
