@@ -43,6 +43,8 @@ interface EditExpenseDialogFormProps {
   canSubmit: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
+  submitIdleLabel?: string;
+  submitLoadingLabel?: string;
 }
 
 export function EditExpenseDialogForm({
@@ -58,6 +60,8 @@ export function EditExpenseDialogForm({
   canSubmit,
   onSubmit,
   onCancel,
+  submitIdleLabel = 'Save',
+  submitLoadingLabel = 'Saving…',
 }: EditExpenseDialogFormProps) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -254,7 +258,7 @@ export function EditExpenseDialogForm({
           Cancel
         </Button>
         <Button type="submit" disabled={loading || !canSubmit}>
-          {loading ? 'Saving…' : 'Save'}
+          {loading ? submitLoadingLabel : submitIdleLabel}
         </Button>
       </DialogFooter>
     </form>

@@ -23,6 +23,7 @@ import {
 } from '@/features/finance/constants/finance';
 import { expensesApi, type Expense, type ExpenseStats } from '@/lib/api/finance';
 import { projectsApi } from '@/lib/api/projects';
+import { CreateExpenseDialog } from './CreateExpenseDialog';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
 import { ExpensesTableSection } from './ExpensesTableSection';
 
@@ -46,6 +47,7 @@ export function ExpensesPageContent({
   const [view, setView] = useState<ViewMode>('list');
   const [period, setPeriod] = useState<FinancePeriod>('month');
   const [projectBannerLabel, setProjectBannerLabel] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     if (!projectIdFromUrl) {
@@ -165,7 +167,7 @@ export function ExpensesPageContent({
             <LayoutGrid size={14} />
           </Button>
         </div>
-        <Button>
+        <Button type="button" onClick={() => setCreateOpen(true)}>
           <Plus size={16} />
           New Expense
         </Button>
@@ -210,7 +212,7 @@ export function ExpensesPageContent({
           title="No expenses yet"
           description="Track company expenses here"
           action={
-            <Button>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
               <Plus size={16} />
               Add First Expense
             </Button>
@@ -246,6 +248,15 @@ export function ExpensesPageContent({
       ) : (
         <ExpensesTableSection expenses={expenses} />
       )}
+
+      <CreateExpenseDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        defaultProjectId={projectIdFromUrl}
+        onCreated={() => {
+          fetchExpenses();
+        }}
+      />
     </div>
   );
 }

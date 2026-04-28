@@ -163,6 +163,20 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
 }
 
 /** Body for `PUT /expenses/:id` (aligned with ExpensesController). */
+export interface CreateExpensePayload {
+  name: string;
+  type: string;
+  category: string;
+  amount: number;
+  frequency?: string;
+  dueDate?: string | null;
+  status?: string;
+  projectId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: string;
+  notes?: string | null;
+}
+
 export interface UpdateExpensePayload {
   name?: string;
   type?: string;
@@ -352,7 +366,7 @@ export const expensesApi = {
     const resp = await api.get<Expense>(`/api/expenses/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Expense> {
+  async create(data: CreateExpensePayload): Promise<Expense> {
     const resp = await api.post<Expense>('/api/expenses', data);
     return resp.data;
   },
