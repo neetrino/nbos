@@ -9,9 +9,15 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import {
   getLatestPaymentDate,
   resolveBaseInvoiceStatus,
-  resolveOrderStatus,
   sumAmounts,
 } from '../finance-status.utils';
+import { attachInvoicePaymentCoverage } from './invoice-payment-coverage';
+import {
+  buildDateRange,
+  getInvoiceStats,
+  resolveInvoiceTaxStatus,
+  syncInvoiceOrderStatus,
+} from './invoice-service-helpers';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -54,7 +60,7 @@ export class InvoicesService {
       where.code = { contains: search, mode: 'insensitive' };
     }
 
-    const createdAt = this.buildDateRange(dateFrom, dateTo);
+    const createdAt = buildDateRange(dateFrom, dateTo);
     if (createdAt) {
       where.createdAt = createdAt;
     }
@@ -76,7 +82,7 @@ export class InvoicesService {
     ]);
 
     return {
-      items,
+      items: items.map(attachInvoicePaymentCoverage),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -92,14 +98,14 @@ export class InvoicesService {
       },
     });
     if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
-    return invoice;
+    return attachInvoicePaymentCoverage(invoice);
   }
 
   async create(data: CreateInvoiceDto) {
     const code = await this.generateCode();
-    const taxStatus = await this.resolveTaxStatus(data);
+    const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
 
-    return this.prisma.invoice.create({
+    const invoice = await this.prisma.invoice.create({
       data: {
         code,
         orderId: data.orderId,
@@ -114,8 +120,11 @@ export class InvoicesService {
       include: {
         order: { select: { id: true, code: true } },
         company: { select: { id: true, name: true } },
+        payments: { select: { id: true, amount: true, paymentDate: true } },
+        _count: { select: { payments: true } },
       },
     });
+    return attachInvoicePaymentCoverage(invoice);
   }
 
   async updateStatus(id: string, status: string) {
@@ -158,17 +167,23 @@ export class InvoicesService {
     const updated = await this.prisma.invoice.update({
       where: { id },
       data: updateData,
+      include: {
+        order: { select: { id: true, code: true } },
+        company: { select: { id: true, name: true } },
+        payments: { select: { id: true, amount: true, paymentDate: true } },
+        _count: { select: { payments: true } },
+      },
     });
 
     if (invoice.orderId) {
-      await this.syncOrderStatus(invoice.orderId);
+      await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
     }
 
     if (status === 'PAID' && invoice.orderId) {
       await this.checkAndPromoteDeal(invoice.orderId);
     }
 
-    return updated;
+    return attachInvoicePaymentCoverage(updated);
   }
 
   private async checkAndPromoteDeal(orderId: string) {
@@ -215,68 +230,7 @@ export class InvoicesService {
   }
 
   async getStats(params: InvoiceStatsParams = {}) {
-    const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
-    const paidDate = this.buildDateRange(params.dateFrom, params.dateTo);
-
-    const [total, byStatus, totalRevenue, outstanding, overdue] = await Promise.all([
-      this.prisma.invoice.count({
-        ...(createdAt ? { where: { createdAt } } : {}),
-      }),
-      this.prisma.invoice.groupBy({
-        by: ['status'],
-        ...(createdAt ? { where: { createdAt } } : {}),
-        _count: true,
-        _sum: { amount: true },
-      }),
-      this.prisma.invoice.aggregate({
-        where: {
-          status: 'PAID',
-          ...(paidDate ? { paidDate } : {}),
-        },
-        _sum: { amount: true },
-      }),
-      this.prisma.invoice.aggregate({
-        where: {
-          status: { not: 'PAID' },
-          ...(createdAt ? { createdAt } : {}),
-        },
-        _count: true,
-        _sum: { amount: true },
-      }),
-      this.prisma.invoice.aggregate({
-        where: {
-          status: 'DELAYED',
-          ...(createdAt ? { createdAt } : {}),
-        },
-        _count: true,
-        _sum: { amount: true },
-      }),
-    ]);
-
-    return {
-      total,
-      byStatus,
-      totalRevenue: totalRevenue._sum.amount,
-      outstanding: {
-        count: outstanding._count,
-        amount: outstanding._sum.amount,
-      },
-      overdue: {
-        count: overdue._count,
-        amount: overdue._sum.amount,
-      },
-    };
-  }
-
-  private buildDateRange(dateFrom?: string, dateTo?: string): Prisma.DateTimeFilter | undefined {
-    if (!dateFrom && !dateTo) {
-      return undefined;
-    }
-
-    return {
-      ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-      ...(dateTo ? { lte: new Date(dateTo) } : {}),
-    };
+    return getInvoiceStats(this.prisma, params);
   }
 
   private async generateCode(): Promise<string> {
@@ -287,59 +241,5 @@ export class InvoicesService {
     });
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `INV-${year}-${String(nextNum).padStart(4, '0')}`;
-  }
-
-  private async syncOrderStatus(orderId: string) {
-    const invoices = await this.prisma.invoice.findMany({
-      where: { orderId },
-      select: {
-        status: true,
-        payments: { select: { amount: true } },
-      },
-    });
-    if (invoices.length === 0) {
-      return;
-    }
-
-    await this.prisma.order.update({
-      where: { id: orderId },
-      data: { status: resolveOrderStatus(invoices) },
-    });
-  }
-
-  private async resolveTaxStatus(
-    data: CreateInvoiceDto,
-  ): Promise<Prisma.InvoiceCreateInput['taxStatus']> {
-    if (data.orderId) {
-      const order = await this.prisma.order.findUnique({
-        where: { id: data.orderId },
-        select: { taxStatus: true },
-      });
-      if (order?.taxStatus) {
-        return order.taxStatus as Prisma.InvoiceCreateInput['taxStatus'];
-      }
-    }
-
-    if (data.subscriptionId) {
-      const subscription = await this.prisma.subscription.findUnique({
-        where: { id: data.subscriptionId },
-        select: { taxStatus: true },
-      });
-      if (subscription?.taxStatus) {
-        return subscription.taxStatus as Prisma.InvoiceCreateInput['taxStatus'];
-      }
-    }
-
-    if (data.companyId) {
-      const company = await this.prisma.company.findUnique({
-        where: { id: data.companyId },
-        select: { taxStatus: true },
-      });
-      if (company?.taxStatus) {
-        return company.taxStatus as Prisma.InvoiceCreateInput['taxStatus'];
-      }
-    }
-
-    return 'TAX';
   }
 }

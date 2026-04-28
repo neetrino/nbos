@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `EXTENSION READINESS FOUNDATION DONE / FINANCE DEPTH NEXT`
+Статус: `PAYMENT APPLICATION FOUNDATION DONE / POPUP SHORTCUTS OR FINANCE DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -209,13 +209,14 @@ Product subscription entry, auto-created linked `MAINTENANCE Deal`, `Pending` su
 creation for won Maintenance deals, Deal card handoff links/readiness visibility,
 Project detail read-only PM intake visibility, persisted PM kickoff checklist rows,
 Product Development gate blockers, Finance Pending subscription activation with
-derived coverage month visibility, and Extension Development readiness blockers.
+derived coverage month visibility, Extension Development readiness blockers,
+and Finance invoice paid/outstanding coverage with controlled Record Payment action.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
 - углубить direct actions из popup там, где нужны create/open shortcuts;
-- углубить payment confirmation, invoice generation and finance reconciliation workflow;
+- углубить invoice generation and later finance reconciliation workflow;
 - углубить remaining delivery lifecycle depth after readiness foundations.
 
 Опорные места в коде:
@@ -225,7 +226,7 @@ derived coverage month visibility, and Extension Development readiness blockers.
 
 Что потом нужно сделать:
 
-- углубить Finance-owned subscription activation and coverage semantics;
+- углубить remaining Finance-owned invoice/subscription semantics;
 - добавить shortened Extension checklist and later delivery board depth.
 
 ### C3. Автосоздание связанного `MAINTENANCE Deal` пока надо считать функциональным backlog item
@@ -247,7 +248,7 @@ derived coverage month visibility, and Extension Development readiness blockers.
 Что потом нужно сделать:
 
 - углубить Extension delivery board depth after readiness foundation;
-- later deepen activation rules in Finance instead of CRM.
+- later deepen reconciliation and activation rules in Finance instead of CRM.
 
 ---
 
@@ -259,7 +260,7 @@ derived coverage month visibility, and Extension Development readiness blockers.
 2. привести subscription statuses к новому канону в shared/backend/frontend;
 3. расширить CRM stage gates и popup transitions;
 4. реализовать maintenance auto-created flow;
-5. углубить Extension checklist and Finance subscription activation;
+5. углубить Extension checklist and remaining Finance payment/subscription depth;
 6. только после этого полировать вторичные UI детали и automation texts.
 
 ---

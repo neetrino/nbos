@@ -25,7 +25,15 @@ export interface Invoice {
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   payments: Payment[];
+  paymentCoverage?: InvoicePaymentCoverage;
   _count: { payments: number };
+}
+
+export interface InvoicePaymentCoverage {
+  paidAmount: number;
+  outstandingAmount: number;
+  paymentCount: number;
+  isFullyPaid: boolean;
 }
 
 export interface Payment {
