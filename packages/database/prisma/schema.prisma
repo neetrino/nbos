@@ -382,6 +382,13 @@ model Deal {
   pmId               String?              @map("pm_id")
   deadline           DateTime?
   existingProductId  String?              @map("existing_product_id")
+  offerSentAt        DateTime?            @map("offer_sent_at")
+  offerLink          String?              @map("offer_link")
+  offerFileUrl       String?              @map("offer_file_url")
+  offerScreenshotUrl String?              @map("offer_screenshot_url")
+  responseDueAt      DateTime?            @map("response_due_at")
+  contractSignedAt   DateTime?            @map("contract_signed_at")
+  contractFileUrl    String?              @map("contract_file_url")
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
 

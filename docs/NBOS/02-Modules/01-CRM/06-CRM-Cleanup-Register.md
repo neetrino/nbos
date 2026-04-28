@@ -198,21 +198,18 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `PARTIAL FOUNDATION DONE / MAINTENANCE DEPTH NEXT`
+Статус: `OFFER/WON FOUNDATION DONE / MAINTENANCE DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
-а Deal Won foundation уже блокирует non-maintenance Won без linked paid invoice.
+Deal Won foundation уже блокирует non-maintenance Won без linked paid invoice,
+а offer/contract foundation добавил dedicated поля и gates для `SEND_OFFER`, `GET_ANSWER`
+и `DEPOSIT_AND_CONTRACT`.
 
 Новые требования, которые надо будет реализовать:
 
-- marketing block обязателен для переходов `Lead` и `Deal`;
-- `Lead -> Deal` переносит полный attribution block, включая `Which one`;
-- popup при перетаскивании должен показывать только недостающие поля и blocker-условия;
-- `Offer` должен допускать `file / link / messenger screenshot`;
-- `PRODUCT / EXTENSION / OUTSOURCE` должны требовать `deadline` перед `Deal Won`;
+- проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
 - `MAINTENANCE` должен иметь отдельную won-логику и planned start semantics;
-- non-maintenance deals должны проверять invoice paid перед `Deal Won`;
 - `PRODUCT + Subscription` должен запускать активную подписку только после первой оплаченной invoice;
 - `MAINTENANCE` должен создавать подписку в `Pending`.
 

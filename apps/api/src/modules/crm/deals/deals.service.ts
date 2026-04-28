@@ -29,6 +29,13 @@ interface CreateDealDto {
   pmId?: string | null;
   deadline?: string | null;
   existingProductId?: string | null;
+  offerSentAt?: string | null;
+  offerLink?: string | null;
+  offerFileUrl?: string | null;
+  offerScreenshotUrl?: string | null;
+  responseDueAt?: string | null;
+  contractSignedAt?: string | null;
+  contractFileUrl?: string | null;
 }
 
 interface UpdateDealDto {
@@ -53,6 +60,13 @@ interface UpdateDealDto {
   pmId?: string | null;
   deadline?: string | null;
   existingProductId?: string | null;
+  offerSentAt?: string | null;
+  offerLink?: string | null;
+  offerFileUrl?: string | null;
+  offerScreenshotUrl?: string | null;
+  responseDueAt?: string | null;
+  contractSignedAt?: string | null;
+  contractFileUrl?: string | null;
 }
 
 interface DealQueryParams {
@@ -220,6 +234,13 @@ export class DealsService {
         pmId: data.pmId ?? undefined,
         deadline: data.deadline ? new Date(data.deadline) : undefined,
         existingProductId: data.existingProductId ?? undefined,
+        offerSentAt: data.offerSentAt ? new Date(data.offerSentAt) : undefined,
+        offerLink: data.offerLink,
+        offerFileUrl: data.offerFileUrl,
+        offerScreenshotUrl: data.offerScreenshotUrl,
+        responseDueAt: data.responseDueAt ? new Date(data.responseDueAt) : undefined,
+        contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : undefined,
+        contractFileUrl: data.contractFileUrl,
       },
       include: {
         contact: { select: { id: true, firstName: true, lastName: true } },
@@ -269,6 +290,21 @@ export class DealsService {
         ...(data.existingProductId !== undefined && {
           existingProductId: data.existingProductId,
         }),
+        ...(data.offerSentAt !== undefined && {
+          offerSentAt: data.offerSentAt ? new Date(data.offerSentAt) : null,
+        }),
+        ...(data.offerLink !== undefined && { offerLink: data.offerLink }),
+        ...(data.offerFileUrl !== undefined && { offerFileUrl: data.offerFileUrl }),
+        ...(data.offerScreenshotUrl !== undefined && {
+          offerScreenshotUrl: data.offerScreenshotUrl,
+        }),
+        ...(data.responseDueAt !== undefined && {
+          responseDueAt: data.responseDueAt ? new Date(data.responseDueAt) : null,
+        }),
+        ...(data.contractSignedAt !== undefined && {
+          contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : null,
+        }),
+        ...(data.contractFileUrl !== undefined && { contractFileUrl: data.contractFileUrl }),
       },
       include: {
         lead: { select: { id: true, code: true, contactName: true } },

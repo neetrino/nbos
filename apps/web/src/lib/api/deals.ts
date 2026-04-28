@@ -44,6 +44,13 @@ export interface Deal {
   pm: { id: string; firstName: string; lastName: string } | null;
   existingProductId: string | null;
   existingProduct: { id: string; name: string; productType: string } | null;
+  offerSentAt: string | null;
+  offerLink: string | null;
+  offerFileUrl: string | null;
+  offerScreenshotUrl: string | null;
+  responseDueAt: string | null;
+  contractSignedAt: string | null;
+  contractFileUrl: string | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
@@ -110,6 +117,13 @@ export const dealsApi = {
     pmId?: string;
     deadline?: string;
     existingProductId?: string;
+    offerSentAt?: string;
+    offerLink?: string;
+    offerFileUrl?: string;
+    offerScreenshotUrl?: string;
+    responseDueAt?: string;
+    contractSignedAt?: string;
+    contractFileUrl?: string;
   }): Promise<Deal> {
     const resp = await api.post<Deal>('/api/crm/deals', data);
     return resp.data;

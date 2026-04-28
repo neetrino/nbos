@@ -85,6 +85,13 @@ export class DealsController {
       marketingAccountId?: string | null;
       marketingActivityId?: string | null;
       notes?: string;
+      offerSentAt?: string | null;
+      offerLink?: string | null;
+      offerFileUrl?: string | null;
+      offerScreenshotUrl?: string | null;
+      responseDueAt?: string | null;
+      contractSignedAt?: string | null;
+      contractFileUrl?: string | null;
     },
   ) {
     return this.dealsService.create(body);
@@ -112,6 +119,13 @@ export class DealsController {
       marketingAccountId?: string | null;
       marketingActivityId?: string | null;
       notes?: string;
+      offerSentAt?: string | null;
+      offerLink?: string | null;
+      offerFileUrl?: string | null;
+      offerScreenshotUrl?: string | null;
+      responseDueAt?: string | null;
+      contractSignedAt?: string | null;
+      contractFileUrl?: string | null;
     },
   ) {
     return this.dealsService.update(id, body);

@@ -3216,6 +3216,13 @@ export const DealScalarFieldEnum = {
   pmId: 'pmId',
   deadline: 'deadline',
   existingProductId: 'existingProductId',
+  offerSentAt: 'offerSentAt',
+  offerLink: 'offerLink',
+  offerFileUrl: 'offerFileUrl',
+  offerScreenshotUrl: 'offerScreenshotUrl',
+  responseDueAt: 'responseDueAt',
+  contractSignedAt: 'contractSignedAt',
+  contractFileUrl: 'contractFileUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;

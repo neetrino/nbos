@@ -33,6 +33,13 @@ export const createLeadSchema = z.object({
   sourceContactId: z.string().uuid().optional(),
   marketingAccountId: z.string().uuid().optional(),
   marketingActivityId: z.string().uuid().optional(),
+  offerSentAt: z.string().datetime().optional(),
+  offerLink: z.string().url().max(500).optional(),
+  offerFileUrl: z.string().url().max(500).optional(),
+  offerScreenshotUrl: z.string().url().max(500).optional(),
+  responseDueAt: z.string().datetime().optional(),
+  contractSignedAt: z.string().datetime().optional(),
+  contractFileUrl: z.string().url().max(500).optional(),
   notes: z.string().max(2000).optional(),
 });
 
@@ -81,6 +88,13 @@ export const updateDealSchema = z.object({
   sourceContactId: z.string().uuid().nullable().optional(),
   marketingAccountId: z.string().uuid().nullable().optional(),
   marketingActivityId: z.string().uuid().nullable().optional(),
+  offerSentAt: z.string().datetime().nullable().optional(),
+  offerLink: z.string().url().max(500).nullable().optional(),
+  offerFileUrl: z.string().url().max(500).nullable().optional(),
+  offerScreenshotUrl: z.string().url().max(500).nullable().optional(),
+  responseDueAt: z.string().datetime().nullable().optional(),
+  contractSignedAt: z.string().datetime().nullable().optional(),
+  contractFileUrl: z.string().url().max(500).nullable().optional(),
   notes: z.string().max(2000).optional(),
 });
 

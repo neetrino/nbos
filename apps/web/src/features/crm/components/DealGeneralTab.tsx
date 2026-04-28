@@ -52,6 +52,20 @@ const TAX_STATUS_OPTIONS = [
   { value: 'TAX_FREE', label: 'Tax Free' },
 ] as const;
 
+function formatDate(value: string | null) {
+  if (!value) return null;
+  return new Date(value).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function toDateInputValue(value: string | null) {
+  if (!value) return null;
+  return value.slice(0, 10);
+}
+
 interface DealGeneralTabProps {
   deal: Deal;
   onUpdate: (id: string, data: Partial<Deal>) => Promise<void>;
@@ -472,6 +486,100 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
                 onSave={(v) => saveField('companyId', v)}
               />
             )}
+          </div>
+        </section>
+
+        {/* Offer & Contract */}
+        <section className="rounded-2xl border border-stone-100 bg-gradient-to-br from-blue-50/40 to-white p-5 dark:border-stone-800 dark:from-blue-950/10 dark:to-transparent">
+          <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
+            <FileText size={12} />
+            Offer & Contract
+          </h4>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            <InlineField
+              label="Offer Sent Date"
+              value={toDateInputValue(deal.offerSentAt)}
+              displayValue={
+                deal.offerSentAt ? (
+                  <span className="text-foreground text-sm font-medium">
+                    {formatDate(deal.offerSentAt)}
+                  </span>
+                ) : undefined
+              }
+              type="date"
+              placeholder="Select offer date..."
+              icon={<Calendar size={12} />}
+              onSave={(v) => saveField('offerSentAt', v)}
+            />
+
+            <InlineField
+              label="Response Due Date"
+              value={toDateInputValue(deal.responseDueAt)}
+              displayValue={
+                deal.responseDueAt ? (
+                  <span className="text-foreground text-sm font-medium">
+                    {formatDate(deal.responseDueAt)}
+                  </span>
+                ) : undefined
+              }
+              type="date"
+              placeholder="Select response date..."
+              icon={<Clock size={12} />}
+              onSave={(v) => saveField('responseDueAt', v)}
+            />
+
+            <InlineField
+              label="Offer Link"
+              value={deal.offerLink}
+              type="link"
+              placeholder="https://..."
+              icon={<ExternalLink size={12} />}
+              onSave={(v) => saveField('offerLink', v)}
+            />
+
+            <InlineField
+              label="Offer File URL"
+              value={deal.offerFileUrl}
+              type="link"
+              placeholder="https://..."
+              icon={<FileText size={12} />}
+              onSave={(v) => saveField('offerFileUrl', v)}
+            />
+
+            <InlineField
+              label="Offer Screenshot URL"
+              value={deal.offerScreenshotUrl}
+              type="link"
+              placeholder="https://..."
+              icon={<ExternalLink size={12} />}
+              onSave={(v) => saveField('offerScreenshotUrl', v)}
+            />
+
+            <InlineField
+              label="Contract Signed Date"
+              value={toDateInputValue(deal.contractSignedAt)}
+              displayValue={
+                deal.contractSignedAt ? (
+                  <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    <Check size={13} />
+                    {formatDate(deal.contractSignedAt)}
+                  </span>
+                ) : undefined
+              }
+              type="date"
+              placeholder="Select contract date..."
+              icon={<CheckSquare size={12} />}
+              onSave={(v) => saveField('contractSignedAt', v)}
+            />
+
+            <InlineField
+              label="Contract File URL"
+              value={deal.contractFileUrl}
+              type="link"
+              placeholder="https://..."
+              icon={<FileText size={12} />}
+              onSave={(v) => saveField('contractFileUrl', v)}
+            />
           </div>
         </section>
 

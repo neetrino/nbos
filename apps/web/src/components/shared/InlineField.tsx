@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
-type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link';
+type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
 
 interface SelectOption {
   value: string;
@@ -154,7 +154,15 @@ export function InlineField({
           ) : (
             <Input
               ref={inputRef as React.Ref<HTMLInputElement>}
-              type={type === 'number' ? 'number' : type === 'email' ? 'email' : 'text'}
+              type={
+                type === 'number'
+                  ? 'number'
+                  : type === 'email'
+                    ? 'email'
+                    : type === 'date'
+                      ? 'date'
+                      : 'text'
+              }
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={handleKeyDown}
