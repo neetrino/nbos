@@ -36,6 +36,7 @@ import { createExpensePaymentRecord, type AddExpensePaymentInput } from './expen
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { toExpenseLedgerJson } from './expense-detail-mapper';
 import { mapSalaryLineToLinkedPayrollRun } from './expense-payroll-link-map';
+import { mapExpensePlanToLinkedPlan } from './expense-plan-link-map';
 import {
   attachLedgerFieldsToExpenseListItems,
   fetchExpensePaidTotalsByExpenseIds,
@@ -102,6 +103,7 @@ export class ExpensesService {
         where,
         include: {
           project: { select: { id: true, code: true, name: true } },
+          expensePlan: { select: { id: true, name: true } },
           salaryLine: {
             select: {
               id: true,
@@ -121,10 +123,11 @@ export class ExpensesService {
     const paidTotals = await fetchExpensePaidTotalsByExpenseIds(this.prisma, ids);
     const withLedger = attachLedgerFieldsToExpenseListItems(items, paidTotals);
     const enrichedItems = withLedger.map((row) => {
-      const { salaryLine, ...rest } = row;
+      const { salaryLine, expensePlan, ...rest } = row;
       return {
         ...rest,
         linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
+        linkedExpensePlan: mapExpensePlanToLinkedPlan(expensePlan),
       };
     });
 
@@ -139,6 +142,7 @@ export class ExpensesService {
       where: { id },
       include: {
         project: { select: { id: true, code: true, name: true } },
+        expensePlan: { select: { id: true, name: true } },
         expensePayments: { orderBy: { paymentDate: 'desc' } },
         salaryLine: {
           select: {
@@ -150,11 +154,12 @@ export class ExpensesService {
       },
     });
     if (!row) throw new NotFoundException(`Expense ${id} not found`);
-    const { salaryLine, ...expense } = row;
+    const { salaryLine, expensePlan, ...expense } = row;
     const ledger = toExpenseLedgerJson(expense);
     return {
       ...ledger,
       linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
+      linkedExpensePlan: mapExpensePlanToLinkedPlan(expensePlan),
     };
   }
 

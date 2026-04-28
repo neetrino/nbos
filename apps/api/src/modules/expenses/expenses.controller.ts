@@ -23,7 +23,7 @@ export class ExpensesController {
   @ApiOperation({
     summary: 'Get all expenses with filters',
     description:
-      'Each item may include linkedPayrollRun when the expense is tied to a payroll salary line.',
+      'Each item may include linkedPayrollRun (payroll salary line) and linkedExpensePlan (Plan→Card).',
   })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false, description: 'Capped server-side (max 500).' })
@@ -113,7 +113,7 @@ export class ExpensesController {
   @ApiOperation({
     summary: 'Get expense by ID',
     description:
-      'Expense ledger JSON may include linkedPayrollRun when the row is tied to a salary line (payroll materialization).',
+      'Ledger JSON may include linkedPayrollRun (payroll) and linkedExpensePlan (expense plan link).',
   })
   async findOne(@Param('id') id: string) {
     return this.expensesService.findById(id);

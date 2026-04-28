@@ -34,6 +34,7 @@ import { DeleteExpenseDialog } from '@/features/finance/components/expenses/Dele
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
 import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
+import { ExpensePlanLinkBanner } from '@/features/finance/components/expenses/ExpensePlanLinkBanner';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { cn } from '@/lib/utils';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -237,6 +238,10 @@ function ExpenseDetailPageInner() {
         }}
         onConfirm={handleDeleteExpense}
       />
+
+      {expense.linkedExpensePlan?.name ? (
+        <ExpensePlanLinkBanner planName={expense.linkedExpensePlan.name} />
+      ) : null}
 
       {payrollBanner ? (
         <ExpensePayrollLinkBanner

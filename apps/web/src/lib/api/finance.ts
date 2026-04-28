@@ -143,6 +143,8 @@ export interface Expense {
     payrollMonth: string;
     salaryLineId: string;
   } | null;
+  /** Present when this expense was created from an Expense Plan (Plan→Card). */
+  linkedExpensePlan?: { id: string; name: string } | null;
   project?: { id: string; code: string; name: string } | null;
   paidAmount?: string;
   remainingAmount?: string;

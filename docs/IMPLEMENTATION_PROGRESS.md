@@ -25,13 +25,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                                                                                                                        |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Current phase        | Phase 3 - Finance core                                                                                                                       |
-| Current module/block | Finance + Partners (cross-linked; bounded slices per roadmap)                                                                                |
-| Current task         | Payroll list/detail **materializedExpenseLineCount**; wallet drill-down; expense **linkedPayrollRun**; audit + journal + cron + bonus pools. |
-| Status               | Open                                                                                                                                         |
-| Last updated         | 2026-04-29                                                                                                                                   |
+| Field                | Value                                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Current phase        | Phase 3 - Finance core                                                                                                                                       |
+| Current module/block | Finance + Partners (cross-linked; bounded slices per roadmap)                                                                                                |
+| Current task         | Expense **linkedExpensePlan** (API + detail banner); payroll **materializedExpenseLineCount**; wallet; **linkedPayrollRun**; audit + journal + cron + bonus. |
+| Status               | Open                                                                                                                                                         |
+| Last updated         | 2026-04-29                                                                                                                                                   |
 
 ## Phase Progress
 
@@ -61,7 +61,7 @@ Roadmap Phase 3 spans invoices, payments, subscriptions, expenses, partners/payo
 ### Phase 3 — quick snapshot (where we are)
 
 - **Money flows:** orders, invoices, payments, subscriptions — CRUD-ish lists, stats, reconciliation gap filters, create-invoice from order/subscription, mutation recovery banners, document titles.
-- **Expenses:** backlog + **Closed**; partial payments + delete; ledger sync/guards; CSV (**payrollRunId** / **payrollMonth** columns from API link or notes); **Expense Plan** + **manual card** + **auto due** (finance API + **scheduler** POST + **optional in-process cron** when `SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED=true`); **Expense Board** (`activeBoard`); **`GET /expenses`** and **`GET /expenses/:id`** expose **`linkedPayrollRun`** (Prisma `salary_lines` → `payroll_runs`) with **notes-marker fallback**; list **Payroll** column + kanban **payroll** marker; expense detail **banner**. Payroll-linked expenses also roll up to **salary_lines** + **payroll_runs.total_paid**.
+- **Expenses:** backlog + **Closed**; partial payments + delete; ledger sync/guards; CSV (**payrollRunId** / **payrollMonth** columns from API link or notes); **Expense Plan** + **manual card** + **auto due** (finance API + **scheduler** POST + **optional in-process cron** when `SCHEDULER_EXPENSE_PLAN_AUTO_DUE_ENABLED=true`); **Expense Board** (`activeBoard`); **`GET /expenses`** and **`GET /expenses/:id`** expose **`linkedPayrollRun`** and **`linkedExpensePlan`** (`expense_plans` id+name when linked); expense detail **plan banner** + **payroll banner**; list **Payroll** column + kanban **payroll** marker. Payroll-linked expenses also roll up to **salary_lines** + **payroll_runs.total_paid**.
 - **Partners:** CRUD, primary contact, links into Finance; list/detail fetch and create/edit (incl. contacts preload) use **`getApiErrorMessage`** like Finance screens.
 - **Payroll / bonus:** **Bonus board** (`GET /api/bonus` + stats); **`GET /api/bonus/projects/pools`** project roll-ups (pipeline / paid / clawback from `bonus_entries`); **Payroll runs** + **APPROVED** → **`Expense`**; **`GET /payroll-runs`** and **`GET /payroll-runs/:id`** expose **`materializedExpenseLineCount`** (salary lines with **`expense_id`**); Finance payroll **list** (expense cards column) + **detail** subtitle; **`ExpensePayment`** ↔ salary lines + **`payroll_runs.total_paid`**; **Employee Wallet** (`payrollRunId` on salary rows, links to run detail). Payroll detail **`journal`** + **`auditTrail`**. **Next:** optional NBOS pool entity when schema lands; deeper payroll reporting when roadmap calls for it.
 
@@ -94,6 +94,7 @@ Roadmap Phase 3 spans invoices, payments, subscriptions, expenses, partners/payo
 | 2026-04-29    | Expense list + CSV payroll linkage             | **`GET /expenses`** items include **`linkedPayrollRun`** (same Prisma include); shared **`mapSalaryLineToLinkedPayrollRun`**; Finance table **Payroll** column + kanban icon; CSV **`payrollRunId`** / **`payrollMonth`**; **`resolveExpensePayrollRunId`** helpers             | Vitest `expenses.service` findAll + `export-expenses-csv` + parse helpers; api/web `tsc` + ESLint         | NBOS pool entity; payroll reporting depth         |
 | 2026-04-29    | Wallet salary rows → payroll run drill-down    | **`GET /api/me/wallet`** `salaryHistory[]` adds **`payrollRunId`**; Finance **`/finance/wallet`** **Payroll run** column links to **`/finance/payroll/:id`** + run status; Swagger note                                                                                         | Vitest `employee-wallet.service`; api/web `tsc` + ESLint                                                  | NBOS pool entity; payroll reporting depth         |
 | 2026-04-29    | Payroll run materialized line counts (read)    | **`fetchMaterializedSalaryLineCountByPayrollRunId`** + **`materializedExpenseLineCount`** on **`GET /payroll-runs`** and **`GET …/:id`**; Finance list **Expense cards** column; detail subtitle; Swagger                                                                       | Vitest `payroll-runs.service`; api/web `tsc` + ESLint                                                     | NBOS pool entity; payroll reporting depth         |
+| 2026-04-29    | Expense ↔ plan link on list/detail (read)      | **`linkedExpensePlan`** on **`GET /expenses`** + **`GET /expenses/:id`** (`expensePlan` include); **`mapExpensePlanToLinkedPlan`**; Finance expense detail **Expense plan** banner → **`/finance/expenses/plans`**; Swagger                                                     | Vitest `expenses.service` + `expense-plan-link-map`; api/web `tsc` + ESLint                               | NBOS pool entity; plan detail route when canon    |
 
 ## Phase 1 Checklist
 

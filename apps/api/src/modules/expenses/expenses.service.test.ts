@@ -135,6 +135,7 @@ describe('ExpensesService', () => {
           id: 'e1',
           amount: new Decimal(100),
           project: null,
+          expensePlan: null,
           salaryLine: null,
         },
       ]);
@@ -149,6 +150,7 @@ describe('ExpensesService', () => {
         remainingAmount: '75.00',
         paymentStatus: 'PARTIAL',
         linkedPayrollRun: null,
+        linkedExpensePlan: null,
       });
       expect(prisma.expensePayment.groupBy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -162,6 +164,7 @@ describe('ExpensesService', () => {
       expect(prisma.expense.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           include: expect.objectContaining({
+            expensePlan: { select: { id: true, name: true } },
             salaryLine: {
               select: {
                 id: true,
@@ -180,6 +183,7 @@ describe('ExpensesService', () => {
           id: 'e-pay',
           amount: new Decimal(500),
           project: null,
+          expensePlan: null,
           salaryLine: {
             id: 'sl-1',
             payrollRunId: 'run-9',
@@ -196,6 +200,23 @@ describe('ExpensesService', () => {
         payrollMonth: '2026-03',
         salaryLineId: 'sl-1',
       });
+    });
+
+    it('attaches linkedExpensePlan on list items when plan is linked', async () => {
+      prisma.expense.findMany.mockResolvedValue([
+        {
+          id: 'e-plan',
+          amount: new Decimal(99),
+          project: null,
+          expensePlan: { id: 'plan-a', name: 'Internet' },
+          salaryLine: null,
+        },
+      ]);
+      prisma.expensePayment.groupBy.mockResolvedValue([]);
+
+      const result = await service.findAll({});
+
+      expect(result.items[0].linkedExpensePlan).toEqual({ id: 'plan-a', name: 'Internet' });
     });
   });
 
@@ -224,6 +245,7 @@ describe('ExpensesService', () => {
         amount: new Decimal(1000),
         project: null,
         expensePayments: [],
+        expensePlan: null,
         salaryLine: {
           id: 'sl1',
           payrollRunId: 'run1',
@@ -238,6 +260,7 @@ describe('ExpensesService', () => {
         payrollMonth: '2026-04',
         salaryLineId: 'sl1',
       });
+      expect(result.linkedExpensePlan).toBeNull();
     });
 
     it('returns linkedPayrollRun null when there is no salary line', async () => {
@@ -260,11 +283,42 @@ describe('ExpensesService', () => {
         amount: new Decimal(100),
         project: null,
         expensePayments: [],
+        expensePlan: null,
         salaryLine: null,
       });
 
       const result = await service.findById('e1');
 
+      expect(result.linkedPayrollRun).toBeNull();
+    });
+
+    it('returns linkedExpensePlan when expense plan is linked', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e-plan',
+        name: 'Internet Apr',
+        type: 'PLANNED',
+        category: 'TOOLS',
+        frequency: 'ONE_TIME',
+        dueDate: null,
+        status: 'THIS_MONTH',
+        projectId: null,
+        expensePlanId: 'plan-1',
+        isPassThrough: false,
+        taxStatus: 'TAX',
+        backlogReason: null,
+        notes: null,
+        createdAt: new Date('2026-04-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-04-01T00:00:00.000Z'),
+        amount: new Decimal(50),
+        project: null,
+        expensePayments: [],
+        expensePlan: { id: 'plan-1', name: 'Internet recurring' },
+        salaryLine: null,
+      });
+
+      const result = await service.findById('e-plan');
+
+      expect(result.linkedExpensePlan).toEqual({ id: 'plan-1', name: 'Internet recurring' });
       expect(result.linkedPayrollRun).toBeNull();
     });
   });
