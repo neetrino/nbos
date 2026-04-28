@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { AlertTriangle, ExternalLink, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import type { ApiFieldError } from '@/lib/api-errors';
 
 export interface TransitionBlockerState<TItem> {
@@ -28,6 +30,9 @@ interface TransitionBlockerDialogProps<TItem> {
   onOpenChange: (open: boolean) => void;
   onOpenDetails: () => void;
   onRetry: () => Promise<void>;
+  businessActionLabel?: string;
+  onBusinessAction?: () => void;
+  onOverride?: (reason: string) => Promise<void>;
 }
 
 const ACTION_BLOCKER_FIELDS = new Set(['invoice', 'payment', 'contract', 'override']);
@@ -40,9 +45,28 @@ export function TransitionBlockerDialog<TItem>({
   onOpenChange,
   onOpenDetails,
   onRetry,
+  businessActionLabel,
+  onBusinessAction,
+  onOverride,
 }: TransitionBlockerDialogProps<TItem>) {
+  const [overrideReason, setOverrideReason] = useState('');
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const missingFields = blocker?.errors.filter((error) => !isActionBlocker(error)) ?? [];
   const actionBlockers = blocker?.errors.filter(isActionBlocker) ?? [];
+  const canOverride = Boolean(onOverride && blocker?.targetStatus === 'WON');
+
+  const runAction = async (action: () => Promise<void>) => {
+    setSaving(true);
+    setActionError(null);
+    try {
+      await action();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Action failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,15 +113,55 @@ export function TransitionBlockerDialog<TItem>({
                 </div>
               </section>
             )}
+
+            {canOverride && (
+              <section className="space-y-2">
+                <h4 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                  Privileged override
+                </h4>
+                <Textarea
+                  value={overrideReason}
+                  onChange={(event) => setOverrideReason(event.target.value)}
+                  placeholder="Explain why Deal Won should proceed before Finance marks the invoice as paid."
+                />
+                <p className="text-muted-foreground text-xs">
+                  Override does not mark invoices paid. Finance still owns payment confirmation.
+                </p>
+              </section>
+            )}
+
+            {actionError && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                {actionError}
+              </div>
+            )}
           </div>
         )}
 
         <DialogFooter>
+          {onBusinessAction && businessActionLabel && (
+            <Button type="button" variant="outline" onClick={onBusinessAction}>
+              {businessActionLabel}
+            </Button>
+          )}
           <Button type="button" variant="outline" onClick={onOpenDetails}>
             <ExternalLink size={14} />
             Open details
           </Button>
-          <Button type="button" onClick={onRetry}>
+          {canOverride && (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={saving || !overrideReason.trim()}
+              onClick={() => {
+                if (!onOverride) return;
+                runAction(() => onOverride(overrideReason.trim()));
+              }}
+            >
+              Apply override
+            </Button>
+          )}
+          <Button type="button" disabled={saving} onClick={() => runAction(onRetry)}>
             <RefreshCcw size={14} />
             Retry move
           </Button>

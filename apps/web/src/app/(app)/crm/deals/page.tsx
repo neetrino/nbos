@@ -122,6 +122,18 @@ export default function DealsPipelinePage() {
     setTransitionBlocker((current) => (current === blocker ? null : current));
   };
 
+  const handleOverrideBlockedMove = async (reason: string) => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+    const updated = await dealsApi.updateStatus(blocker.item.id, blocker.targetStatus, {
+      overrideReason: reason,
+    });
+    setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
+    setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
+    setTransitionBlocker(null);
+    await fetchDeals();
+  };
+
   const handleUpdate = async (id: string, data: Partial<Deal>) => {
     const previousDeals = deals;
     const previousSelected = selectedDeal;
@@ -346,6 +358,9 @@ export default function DealsPipelinePage() {
         }}
         onOpenDetails={handleOpenBlockedDeal}
         onRetry={handleRetryBlockedMove}
+        businessActionLabel="Open deal finance"
+        onBusinessAction={handleOpenBlockedDeal}
+        onOverride={handleOverrideBlockedMove}
       />
     </div>
   );

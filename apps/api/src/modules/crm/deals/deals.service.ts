@@ -1,8 +1,10 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { AuditService } from '../../audit/audit.service';
 import { DealWonHandler } from './deal-won.handler';
 import { validateDealStageGate } from './deal-stage-gate';
+import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
 
 interface CreateDealDto {
   name?: string;
@@ -69,6 +71,7 @@ export class DealsService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly dealWonHandler: DealWonHandler,
+    private readonly auditService: AuditService,
   ) {}
 
   async findAll(params: DealQueryParams) {
@@ -300,17 +303,34 @@ export class DealsService {
     });
   }
 
-  async updateStatus(id: string, status: string) {
+  async updateStatus(id: string, status: string, override: DealWonOverrideContext = {}) {
     const current = await this.findById(id);
     if (current.status === status) {
       return current;
     }
 
     validateDealStageGate(current, status);
+    if (status === 'WON') {
+      validateDealWonGate(current, override);
+    }
 
-    const deal = await this.update(id, { status });
+    const deal = await this.update(id, {
+      status,
+      ...(status === 'WON' && override.reason?.trim()
+        ? { notes: this.appendOverrideNote(current.notes, override.reason.trim()) }
+        : {}),
+    });
 
     if (status === 'WON') {
+      if (override.reason?.trim() && override.actorId) {
+        await this.auditService.log({
+          entityType: 'DEAL',
+          entityId: id,
+          action: 'DEAL_WON_OVERRIDE',
+          userId: override.actorId,
+          changes: { reason: override.reason.trim() },
+        });
+      }
       await this.dealWonHandler.handle(deal);
     }
 
@@ -350,5 +370,10 @@ export class DealsService {
     const nextNum = lastDeal ? parseInt(lastDeal.code.split('-')[2] ?? '0', 10) + 1 : 1;
 
     return `D-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private appendOverrideNote(notes: string | null, reason: string): string {
+    const line = `Deal Won override reason: ${reason}`;
+    return notes ? `${notes}\n${line}` : line;
   }
 }

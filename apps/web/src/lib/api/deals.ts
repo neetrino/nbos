@@ -75,6 +75,10 @@ interface DealQueryParams {
   search?: string;
 }
 
+interface DealStatusOptions {
+  overrideReason?: string | null;
+}
+
 export const dealsApi = {
   async getAll(params?: DealQueryParams): Promise<DealListData> {
     const resp = await api.get<DealListData>('/api/crm/deals', { params });
@@ -116,8 +120,11 @@ export const dealsApi = {
     return resp.data;
   },
 
-  async updateStatus(id: string, status: string): Promise<Deal> {
-    const resp = await api.patch<Deal>(`/api/crm/deals/${id}/status`, { status });
+  async updateStatus(id: string, status: string, options: DealStatusOptions = {}): Promise<Deal> {
+    const resp = await api.patch<Deal>(`/api/crm/deals/${id}/status`, {
+      status,
+      ...(options.overrideReason && { overrideReason: options.overrideReason }),
+    });
     return resp.data;
   },
 

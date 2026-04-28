@@ -3,16 +3,23 @@ import { DealsService } from './deals.service';
 import { DealWonHandler } from './deal-won.handler';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
+import type { AuditService } from '../../audit/audit.service';
 
 describe('DealsService', () => {
   let service: DealsService;
   let prisma: MockPrisma;
   let wonHandler: { handle: ReturnType<typeof vi.fn> };
+  let auditService: Pick<AuditService, 'log'>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     wonHandler = { handle: vi.fn().mockResolvedValue(undefined) };
-    service = new DealsService(prisma as never, wonHandler as unknown as DealWonHandler);
+    auditService = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
+    service = new DealsService(
+      prisma as never,
+      wonHandler as unknown as DealWonHandler,
+      auditService as never,
+    );
   });
 
   const attribution = {
@@ -183,18 +190,7 @@ describe('DealsService', () => {
     });
 
     it('allows WON when all required fields present', async () => {
-      prisma.deal.findUnique.mockResolvedValue({
-        id: '1',
-        type: 'PRODUCT',
-        amount: 5000,
-        paymentType: 'CLASSIC',
-        productCategory: 'CODE',
-        productType: 'COMPANY_WEBSITE',
-        pmId: 'pm-1',
-        deadline: new Date(),
-        existingProductId: null,
-        ...attribution,
-      });
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal());
       prisma.deal.update.mockResolvedValue({
         id: '1',
         status: 'WON',
@@ -203,6 +199,89 @@ describe('DealsService', () => {
       const result = await service.updateStatus('1', 'WON');
       expect(result.status).toBe('WON');
       expect(wonHandler.handle).toHaveBeenCalledTimes(1);
+    });
+
+    it('blocks WON when no invoice is linked', async () => {
+      prisma.deal.findUnique.mockResolvedValue({ ...completeProductDeal(), orders: [] });
+
+      await expect(service.updateStatus('1', 'WON')).rejects.toMatchObject({
+        response: {
+          code: 'STAGE_GATE_VALIDATION',
+          errors: [{ field: 'invoice', message: expect.any(String) }],
+        },
+      });
+      expect(wonHandler.handle).not.toHaveBeenCalled();
+    });
+
+    it('blocks WON when first invoice is unpaid', async () => {
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+
+      await expect(service.updateStatus('1', 'WON')).rejects.toMatchObject({
+        response: {
+          code: 'STAGE_GATE_VALIDATION',
+          errors: [{ field: 'payment', message: expect.any(String) }],
+        },
+      });
+      expect(wonHandler.handle).not.toHaveBeenCalled();
+    });
+
+    it('allows MAINTENANCE WON without deposit invoice in this foundation slice', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        ...completeProductDeal(),
+        type: 'MAINTENANCE',
+        productCategory: null,
+        productType: null,
+        pmId: null,
+        deadline: null,
+        orders: [],
+      });
+      prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'MAINTENANCE' });
+
+      const result = await service.updateStatus('1', 'WON');
+
+      expect(result.status).toBe('WON');
+      expect(wonHandler.handle).toHaveBeenCalledTimes(1);
+    });
+
+    it('allows Owner or CEO override without marking invoices paid', async () => {
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+      prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'PRODUCT' });
+
+      await service.updateStatus('1', 'WON', {
+        reason: 'Client confirmed transfer; Finance will reconcile later.',
+        actorId: 'ceo-1',
+        actorRoleLevel: 2,
+      });
+
+      expect(prisma.deal.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'WON',
+            notes: expect.stringContaining('Deal Won override reason'),
+          }),
+        }),
+      );
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'DEAL_WON_OVERRIDE',
+          userId: 'ceo-1',
+        }),
+      );
+      expect(wonHandler.handle).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects non-privileged override', async () => {
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+
+      await expect(
+        service.updateStatus('1', 'WON', {
+          reason: 'Seller override attempt',
+          actorId: 'seller-1',
+          actorRoleLevel: 4,
+        }),
+      ).rejects.toThrow('Only Owner or CEO can override');
+      expect(wonHandler.handle).not.toHaveBeenCalled();
     });
   });
 
@@ -214,3 +293,31 @@ describe('DealsService', () => {
     });
   });
 });
+
+function completeProductDeal(invoiceStatus = 'PAID') {
+  return {
+    id: '1',
+    status: 'DEPOSIT_AND_CONTRACT',
+    type: 'PRODUCT',
+    amount: 5000,
+    paymentType: 'CLASSIC',
+    productCategory: 'CODE',
+    productType: 'COMPANY_WEBSITE',
+    pmId: 'pm-1',
+    deadline: new Date(),
+    existingProductId: null,
+    notes: null,
+    source: 'SALES',
+    sourceDetail: 'COLD_CALL',
+    sourcePartnerId: null,
+    sourceContactId: null,
+    marketingAccountId: null,
+    marketingActivityId: null,
+    orders: [
+      {
+        id: 'order-1',
+        invoices: [{ id: 'invoice-1', status: invoiceStatus, amount: 5000, payments: [] }],
+      },
+    ],
+  };
+}
