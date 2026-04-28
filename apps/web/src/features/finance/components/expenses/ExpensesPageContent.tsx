@@ -10,7 +10,6 @@ import {
   type ExpenseListSortField,
   type ExpenseStats,
 } from '@/lib/api/finance';
-import { projectsApi } from '@/lib/api/projects';
 import {
   EXPENSE_BACKLOG_FIXED_STATUS,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
@@ -34,6 +33,7 @@ import {
   EXPENSE_LIST_UI_PAGE_SIZE,
 } from '@/features/finance/utils/build-expense-list-api-params';
 import { useExpenseCsvExport } from './use-expense-csv-export';
+import { useExpenseProjectBannerLabel } from './use-expense-project-banner-label';
 
 interface ExpensesPageContentProps {
   /** Backlog route: deferred expenses list (Delayed status) per NBOS Finance UI spec. */
@@ -68,7 +68,6 @@ export function ExpensesPageContent({
   );
   const [view, setView] = useState<ExpensesViewMode>('list');
   const [period, setPeriod] = useState<FinancePeriod>('month');
-  const [projectBanner, setProjectBanner] = useState<{ id: string; text: string } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
@@ -79,26 +78,6 @@ export function ExpensesPageContent({
     if (projectIdFromUrl) {
       setFilters((prev) => ({ ...prev, project: projectIdFromUrl }));
     }
-  }, [projectIdFromUrl]);
-
-  useEffect(() => {
-    if (!projectIdFromUrl) return;
-    let cancelled = false;
-    projectsApi
-      .getById(projectIdFromUrl)
-      .then((p) => {
-        if (!cancelled) {
-          setProjectBanner({ id: projectIdFromUrl, text: `${p.code} · ${p.name}` });
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setProjectBanner({ id: projectIdFromUrl, text: '' });
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [projectIdFromUrl]);
 
   const effectiveProjectId = useMemo(() => {
@@ -122,8 +101,7 @@ export function ExpensesPageContent({
 
   const { exportCsvSubmitting, handleExportCsv } = useExpenseCsvExport(listApiParams);
 
-  const projectBannerLabel =
-    projectIdFromUrl && projectBanner?.id === projectIdFromUrl ? projectBanner.text || null : null;
+  const projectBannerLabel = useExpenseProjectBannerLabel(projectIdFromUrl);
 
   const handleClearProjectDrilldown = useCallback(() => {
     setFilters((prev) => expenseFiltersWithoutProjectDrilldown(prev, pageVariant));
@@ -189,9 +167,6 @@ export function ExpensesPageContent({
     fetchExpenses();
   }, [fetchExpenses]);
 
-  const totalExpenses = Number(stats?.totalAmount ?? 0);
-  const paidExpenses = Number(stats?.paidAmount ?? 0);
-
   const filterConfigs = useMemo(
     () =>
       buildExpenseFilterConfigs(projectFilterOptions, {
@@ -203,9 +178,6 @@ export function ExpensesPageContent({
   const clearFilters = useCallback(() => {
     setFilters(clearedExpenseFilterRecord(pageVariant, projectIdFromUrl));
   }, [pageVariant, projectIdFromUrl]);
-
-  const panelView = pageVariant === 'backlog' ? 'list' : view;
-  const fromBacklogList = pageVariant === 'backlog';
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -225,8 +197,7 @@ export function ExpensesPageContent({
       />
 
       <ExpenseSummaryCards
-        totalExpenses={totalExpenses}
-        paidExpenses={paidExpenses}
+        stats={stats}
         variant={pageVariant === 'backlog' ? 'backlog' : 'default'}
       />
 
@@ -261,8 +232,8 @@ export function ExpensesPageContent({
         error={error}
         onRetry={fetchExpenses}
         expenses={expenses}
-        view={panelView}
-        fromBacklog={fromBacklogList}
+        view={pageVariant === 'backlog' ? 'list' : view}
+        fromBacklog={pageVariant === 'backlog'}
         effectiveProjectId={effectiveProjectId ?? null}
         listSort={{ sortBy, sortOrder }}
         onRequestDelete={(row) => {
@@ -285,7 +256,7 @@ export function ExpensesPageContent({
               effectiveProjectId ?? null,
               { sortBy, sortOrder },
               {
-                fromBacklog: fromBacklogList,
+                fromBacklog: pageVariant === 'backlog',
               },
             ),
           );
