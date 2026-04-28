@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -90,7 +90,17 @@ function ExpenseDetailPageInner() {
     fetchExpense();
   }, [fetchExpense]);
 
-  const financeDocTitle = loading ? undefined : error || !expense ? 'Expense' : expense.name;
+  const financeDocTitle = useMemo(() => {
+    if (loading) return undefined;
+    if (error || !expense) return 'Expense';
+    const hasBacklog = fromBacklog;
+    const hasProject = Boolean(listProjectId?.trim());
+    if (!hasBacklog && !hasProject) return expense.name;
+    if (hasBacklog && hasProject) return `${expense.name} · backlog · project filter`;
+    if (hasBacklog) return `${expense.name} · backlog`;
+    return `${expense.name} · project filter`;
+  }, [loading, error, expense, fromBacklog, listProjectId]);
+
   useFinanceDocumentTitle(financeDocTitle);
 
   if (loading) {
