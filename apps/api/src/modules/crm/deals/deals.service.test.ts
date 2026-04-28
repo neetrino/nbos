@@ -109,6 +109,56 @@ describe('DealsService', () => {
       );
     });
 
+    it('adds handoff references for won deal downstream visibility', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: 'deal-1',
+        code: 'D-2026-0001',
+        type: 'PRODUCT',
+        status: 'WON',
+        projectId: 'project-1',
+        existingProduct: null,
+      });
+      prisma.project.findUnique.mockResolvedValue({
+        id: 'project-1',
+        code: 'P-2026-0001',
+        name: 'Acme Website',
+        products: [
+          {
+            id: 'product-1',
+            name: 'Acme Website',
+            productType: 'COMPANY_WEBSITE',
+            status: 'NEW',
+          },
+        ],
+        subscriptions: [
+          {
+            id: 'sub-1',
+            code: 'SUB-2026-0001',
+            type: 'DEV_AND_MAINTENANCE',
+            status: 'ACTIVE',
+            amount: 5000,
+          },
+        ],
+      });
+      prisma.deal.findFirst.mockResolvedValue({
+        id: 'maint-1',
+        code: 'D-2026-0002',
+        name: 'Maintenance - Acme Website',
+        status: 'START_CONVERSATION',
+        amount: 5000,
+        maintenanceStartAt: new Date('2026-05-01T00:00:00.000Z'),
+      });
+
+      const result = await service.findById('deal-1');
+
+      expect(result.handoff).toMatchObject({
+        project: { id: 'project-1', code: 'P-2026-0001', name: 'Acme Website' },
+        product: { id: 'product-1', name: 'Acme Website' },
+        subscriptions: [{ id: 'sub-1', code: 'SUB-2026-0001' }],
+        maintenanceDeal: { id: 'maint-1', code: 'D-2026-0002' },
+      });
+    });
+
     it('throws NotFoundException when not found', async () => {
       await expect(service.findById('missing')).rejects.toThrow(NotFoundException);
     });
@@ -159,7 +209,13 @@ describe('DealsService', () => {
 
       const result = await service.updateStatus('1', 'WON');
 
-      expect(result).toEqual(currentDeal);
+      expect(result).toMatchObject(currentDeal);
+      expect(result.handoff).toEqual({
+        project: null,
+        product: null,
+        subscriptions: [],
+        maintenanceDeal: null,
+      });
       expect(prisma.deal.update).not.toHaveBeenCalled();
       expect(wonHandler.handle).not.toHaveBeenCalled();
     });
@@ -217,7 +273,16 @@ describe('DealsService', () => {
     });
 
     it('allows WON when all required fields present', async () => {
-      prisma.deal.findUnique.mockResolvedValue(completeProductDeal());
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(completeProductDeal())
+        .mockResolvedValueOnce(completeProductDeal())
+        .mockResolvedValueOnce({
+          id: '1',
+          status: 'WON',
+          type: 'PRODUCT',
+          projectId: null,
+          existingProduct: null,
+        });
       prisma.deal.update.mockResolvedValue({
         id: '1',
         status: 'WON',
@@ -253,7 +318,7 @@ describe('DealsService', () => {
     });
 
     it('allows MAINTENANCE WON without deposit invoice in this foundation slice', async () => {
-      prisma.deal.findUnique.mockResolvedValue({
+      const maintenanceDeal = {
         ...completeProductDeal(),
         type: 'MAINTENANCE',
         paymentType: 'SUBSCRIPTION',
@@ -262,7 +327,17 @@ describe('DealsService', () => {
         pmId: null,
         deadline: null,
         orders: [],
-      });
+      };
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(maintenanceDeal)
+        .mockResolvedValueOnce(maintenanceDeal)
+        .mockResolvedValueOnce({
+          id: '1',
+          status: 'WON',
+          type: 'MAINTENANCE',
+          projectId: null,
+          existingProduct: null,
+        });
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'MAINTENANCE' });
 
       const result = await service.updateStatus('1', 'WON');

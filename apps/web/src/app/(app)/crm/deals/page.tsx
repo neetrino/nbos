@@ -85,7 +85,9 @@ export default function DealsPipelinePage() {
     }
 
     try {
-      await dealsApi.updateStatus(id, status);
+      const updated = await dealsApi.updateStatus(id, status);
+      setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
+      setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
     } catch (err) {
       setDeals(previousDeals);
       if (selectedDeal?.id === id) {
@@ -168,6 +170,19 @@ export default function DealsPipelinePage() {
   const handleCardClick = (deal: Deal) => {
     setSelectedDeal(deal);
     setSheetOpen(true);
+  };
+
+  const handleOpenDealById = async (id: string) => {
+    const existingDeal = deals.find((deal) => deal.id === id);
+    setSelectedDeal(existingDeal ?? null);
+    setSheetOpen(true);
+    const fullDeal = await dealsApi.getById(id);
+    setSelectedDeal(fullDeal);
+    setDeals((prev) => {
+      const hasDeal = prev.some((deal) => deal.id === fullDeal.id);
+      if (!hasDeal) return [fullDeal, ...prev];
+      return prev.map((deal) => (deal.id === fullDeal.id ? fullDeal : deal));
+    });
   };
 
   const handleMove = (itemId: string, _from: string, toColumn: string) => {
@@ -346,6 +361,7 @@ export default function DealsPipelinePage() {
         onStatusChange={handleStatusChange}
         onDelete={handleDelete}
         onRefresh={fetchDeals}
+        onOpenDeal={handleOpenDealById}
       />
 
       <TransitionBlockerDialog

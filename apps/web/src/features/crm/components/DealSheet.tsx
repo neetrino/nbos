@@ -29,6 +29,7 @@ interface DealSheetProps {
   onStatusChange: (id: string, status: string) => Promise<void>;
   onDelete?: (id: string) => void;
   onRefresh?: () => void;
+  onOpenDeal?: (id: string) => void;
 }
 
 export function DealSheet({
@@ -39,6 +40,7 @@ export function DealSheet({
   onStatusChange,
   onDelete,
   onRefresh,
+  onOpenDeal,
 }: DealSheetProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
@@ -155,6 +157,7 @@ export function DealSheet({
                 onUpdate={onUpdate}
                 onRefresh={onRefresh}
                 onOpenTaskTab={() => setActiveTab('task')}
+                onOpenDeal={onOpenDeal}
               />
             )}
             {activeTab === 'history' && <DealHistoryTab />}

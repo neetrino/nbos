@@ -198,22 +198,22 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `MAINTENANCE ENTRY FOUNDATION DONE / HANDOFF DEPTH NEXT`
+Статус: `HANDOFF VISIBILITY FOUNDATION DONE / PROJECT INTAKE DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
 Deal Won foundation уже блокирует non-maintenance Won без linked paid invoice,
 а offer/contract foundation добавил dedicated поля и gates для `SEND_OFFER`, `GET_ANSWER`
 и `DEPOSIT_AND_CONTRACT`. Maintenance entry foundation добавил canonical subscription statuses,
-Product subscription entry, auto-created linked `MAINTENANCE Deal`, and `Pending` subscription
-creation for won Maintenance deals.
+Product subscription entry, auto-created linked `MAINTENANCE Deal`, `Pending` subscription
+creation for won Maintenance deals, and Deal card handoff links/readiness visibility.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
-- добавить UI shortcuts для созданных Maintenance Deal / Subscription links;
+- углубить direct actions из popup там, где нужны create/open shortcuts;
 - углубить Finance subscription grid, coverage months and activation workflow;
-- добавить CRM handoff checklist / Project intake depth.
+- добавить Project intake checklist depth after CRM handoff visibility.
 
 Опорные места в коде:
 
@@ -222,7 +222,6 @@ creation for won Maintenance deals.
 
 Что потом нужно сделать:
 
-- добавить direct links from CRM to created subscriptions / maintenance deal;
 - углубить Finance-owned subscription activation and coverage semantics;
 - добавить handoff checklist before delivery starts.
 
@@ -239,11 +238,12 @@ creation for won Maintenance deals.
 
 - Phase 2 Maintenance entry foundation creates a linked `MAINTENANCE Deal` after Product Won;
 - карточка связана с исходным `Project/Product` through `projectId` and `existingProductId`;
+- CRM Deal card now exposes links to created Project/Product/Subscription/Maintenance Deal refs;
 - seller still fills `amount`, offer details and planned maintenance start later.
 
 Что потом нужно сделать:
 
-- добавить UI links and visibility around the created maintenance deal;
+- углубить Project intake checklist and PM kickoff context;
 - later deepen activation rules in Finance instead of CRM.
 
 ---
@@ -256,7 +256,8 @@ creation for won Maintenance deals.
 2. привести subscription statuses к новому канону в shared/backend/frontend;
 3. расширить CRM stage gates и popup transitions;
 4. реализовать maintenance auto-created flow;
-5. только после этого полировать вторичные UI детали и automation texts.
+5. углубить Project intake checklist and Finance subscription activation;
+6. только после этого полировать вторичные UI детали и automation texts.
 
 ---
 

@@ -82,6 +82,33 @@ interface DealQueryParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+interface DealHandoffReferences {
+  project: { id: string; code: string; name: string } | null;
+  product: { id: string; name: string; productType: string; status?: string } | null;
+  subscriptions: Array<{
+    id: string;
+    code: string;
+    type: string;
+    status: string;
+    amount: unknown;
+  }>;
+  maintenanceDeal: {
+    id: string;
+    code: string;
+    name: string | null;
+    status: string;
+    amount: unknown;
+    maintenanceStartAt: Date | null;
+  } | null;
+}
+
+interface DealForHandoff {
+  id: string;
+  type: string;
+  projectId: string | null;
+  existingProduct?: { id: string; name: string; productType: string; status?: string } | null;
+}
+
 @Injectable()
 export class DealsService {
   constructor(
@@ -149,7 +176,7 @@ export class DealsService {
               },
             },
           },
-          existingProduct: { select: { id: true, name: true, productType: true } },
+          existingProduct: { select: { id: true, name: true, productType: true, status: true } },
           sourcePartner: { select: { id: true, name: true } },
           sourceContact: { select: { id: true, firstName: true, lastName: true } },
           marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
@@ -162,8 +189,12 @@ export class DealsService {
       this.prisma.deal.count({ where }),
     ]);
 
+    const itemsWithHandoff = await Promise.all(
+      items.map((deal) => this.attachHandoffReferences(deal)),
+    );
+
     return {
-      items,
+      items: itemsWithHandoff,
       meta: {
         total,
         page,
@@ -196,7 +227,7 @@ export class DealsService {
             },
           },
         },
-        existingProduct: { select: { id: true, name: true, productType: true } },
+        existingProduct: { select: { id: true, name: true, productType: true, status: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
         marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
@@ -206,12 +237,12 @@ export class DealsService {
     if (!deal) {
       throw new NotFoundException(`Deal ${id} not found`);
     }
-    return deal;
+    return this.attachHandoffReferences(deal);
   }
 
   async create(data: CreateDealDto) {
     const code = await this.generateCode();
-    return this.prisma.deal.create({
+    const deal = await this.prisma.deal.create({
       data: {
         code,
         name: data.name,
@@ -252,12 +283,13 @@ export class DealsService {
         marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
       },
     });
+    return this.attachHandoffReferences(deal);
   }
 
   async update(id: string, data: UpdateDealDto) {
     await this.findById(id);
 
-    return this.prisma.deal.update({
+    const deal = await this.prisma.deal.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
@@ -337,13 +369,14 @@ export class DealsService {
             },
           },
         },
-        existingProduct: { select: { id: true, name: true, productType: true } },
+        existingProduct: { select: { id: true, name: true, productType: true, status: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
         marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
         marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
       },
     });
+    return this.attachHandoffReferences(deal);
   }
 
   async updateStatus(id: string, status: string, override: DealWonOverrideContext = {}) {
@@ -375,6 +408,7 @@ export class DealsService {
         });
       }
       await this.dealWonHandler.handle(deal);
+      return this.findById(id);
     }
 
     return deal;
@@ -418,5 +452,66 @@ export class DealsService {
   private appendOverrideNote(notes: string | null, reason: string): string {
     const line = `Deal Won override reason: ${reason}`;
     return notes ? `${notes}\n${line}` : line;
+  }
+
+  private async attachHandoffReferences<T extends DealForHandoff>(
+    deal: T,
+  ): Promise<T & { handoff: DealHandoffReferences }> {
+    if (!deal.projectId) {
+      return { ...deal, handoff: this.emptyHandoff() };
+    }
+
+    const [project, maintenanceDeal] = await Promise.all([
+      this.prisma.project.findUnique({
+        where: { id: deal.projectId },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          products: {
+            select: { id: true, name: true, productType: true, status: true },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+          subscriptions: {
+            select: { id: true, code: true, type: true, status: true, amount: true },
+            orderBy: { startDate: 'desc' },
+          },
+        },
+      }),
+      deal.type === 'PRODUCT'
+        ? this.prisma.deal.findFirst({
+            where: { projectId: deal.projectId, type: 'MAINTENANCE' },
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              status: true,
+              amount: true,
+              maintenanceStartAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          })
+        : Promise.resolve(null),
+    ]);
+
+    return {
+      ...deal,
+      handoff: {
+        project: project ? { id: project.id, code: project.code, name: project.name } : null,
+        product: deal.existingProduct ?? project?.products[0] ?? null,
+        subscriptions: project?.subscriptions ?? [],
+        maintenanceDeal,
+      },
+    };
+  }
+
+  private emptyHandoff(): DealHandoffReferences {
+    return {
+      project: null,
+      product: null,
+      subscriptions: [],
+      maintenanceDeal: null,
+    };
   }
 }

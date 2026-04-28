@@ -36,7 +36,10 @@ export default function SubscriptionsPage() {
   const [stats, setStats] = useState<SubscriptionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return new URLSearchParams(window.location.search).get('search') ?? '';
+  });
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
 

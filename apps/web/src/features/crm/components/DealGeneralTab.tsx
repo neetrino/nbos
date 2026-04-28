@@ -44,6 +44,7 @@ import { invoicesApi, ordersApi } from '@/lib/api/finance';
 import { tasksApi } from '@/lib/api/tasks';
 import { systemListsApi } from '@/lib/api/systemLists';
 import { marketingApi } from '@/lib/api/marketing';
+import { DealHandoffPanel } from './DealHandoffPanel';
 
 const PARTNER_PERCENT = 30;
 
@@ -71,6 +72,7 @@ interface DealGeneralTabProps {
   onUpdate: (id: string, data: Partial<Deal>) => Promise<void>;
   onRefresh?: () => void;
   onOpenTaskTab?: () => void;
+  onOpenDeal?: (id: string) => void;
 }
 
 function computeFinance(deal: Deal) {
@@ -96,7 +98,13 @@ function computeFinance(deal: Deal) {
   return { total, partnerAmount, revenue, toReceive, isFromPartner };
 }
 
-export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: DealGeneralTabProps) {
+export function DealGeneralTab({
+  deal,
+  onUpdate,
+  onRefresh,
+  onOpenTaskTab,
+  onOpenDeal,
+}: DealGeneralTabProps) {
   const [isNewProject, setIsNewProject] = useState(false);
   const [linkedProjectName, setLinkedProjectName] = useState<string | null>(null);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
@@ -845,6 +853,8 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
 
       {/* Right column — Finance + Actions */}
       <div className="flex w-72 shrink-0 flex-col gap-4">
+        <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
+
         {/* Finance block (green) */}
         <section className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-4 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-transparent">
           <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">

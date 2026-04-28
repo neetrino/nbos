@@ -18,6 +18,26 @@ export interface DealOrder {
   invoices: DealInvoice[];
 }
 
+export interface DealHandoffReferences {
+  project: { id: string; code: string; name: string } | null;
+  product: { id: string; name: string; productType: string; status?: string | null } | null;
+  subscriptions: Array<{
+    id: string;
+    code: string;
+    type: string;
+    status: string;
+    amount: number | string;
+  }>;
+  maintenanceDeal: {
+    id: string;
+    code: string;
+    name: string | null;
+    status: string;
+    amount: number | string | null;
+    maintenanceStartAt: string | null;
+  } | null;
+}
+
 export interface Deal {
   id: string;
   code: string;
@@ -58,6 +78,7 @@ export interface Deal {
   contact: { id: string; firstName: string; lastName: string; email: string | null };
   seller: { id: string; firstName: string; lastName: string };
   orders: DealOrder[];
+  handoff?: DealHandoffReferences;
   sourcePartner: { id: string; name: string } | null;
   sourceContact: { id: string; firstName: string; lastName: string } | null;
   marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;
