@@ -12,13 +12,16 @@ import {
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import { getExpenseStage, formatAmount } from '@/features/finance/constants/finance';
+import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
 
 interface ExpensesTableSectionProps {
   expenses: Expense[];
+  /** When set, row links include `?projectId=` for back-navigation parity. */
+  listProjectId?: string | null;
 }
 
-export function ExpensesTableSection({ expenses }: ExpensesTableSectionProps) {
+export function ExpensesTableSection({ expenses, listProjectId }: ExpensesTableSectionProps) {
   return (
     <div className="border-border overflow-hidden rounded-xl border">
       <Table>
@@ -40,7 +43,7 @@ export function ExpensesTableSection({ expenses }: ExpensesTableSectionProps) {
               <TableRow key={expense.id}>
                 <TableCell>
                   <Link
-                    href={`/finance/expenses/${expense.id}`}
+                    href={expenseDetailHref(expense.id, listProjectId)}
                     className="text-primary font-medium hover:underline"
                   >
                     {expense.name}

@@ -1,12 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ExternalLink, FolderKanban, Pencil, RefreshCcw } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { formatAmount, getExpenseStage } from '@/features/finance/constants/finance';
+import {
+  PROJECT_EXPENSES_DRILLDOWN_QUERY,
+  financeExpensesListHref,
+} from '@/features/finance/constants/project-expenses-drilldown';
 import { cn } from '@/lib/utils';
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { expensesApi, type Expense } from '@/lib/api/finance';
@@ -20,9 +24,13 @@ function formatDate(iso: string | null): string {
   }
 }
 
-export default function ExpenseDetailPage() {
+function ExpenseDetailPageInner() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const id = typeof params.id === 'string' ? params.id : '';
+  const listProjectId = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
+  const expensesListHref = financeExpensesListHref(listProjectId);
+
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +68,7 @@ export default function ExpenseDetailPage() {
       <div className="flex h-full flex-col gap-5">
         <div className="flex items-center gap-2">
           <Link
-            href="/finance/expenses"
+            href={expensesListHref}
             className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
             aria-label="Back to expenses"
           >
@@ -80,7 +88,7 @@ export default function ExpenseDetailPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-start gap-3">
           <Link
-            href="/finance/expenses"
+            href={expensesListHref}
             className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'mt-0.5 shrink-0')}
             aria-label="Back to expenses"
           >
@@ -184,5 +192,19 @@ export default function ExpenseDetailPage() {
 
       <p className="text-muted-foreground text-xs">Created {formatDate(expense.createdAt)}</p>
     </div>
+  );
+}
+
+export default function ExpenseDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full flex-col gap-5">
+          <LoadingState count={4} />
+        </div>
+      }
+    >
+      <ExpenseDetailPageInner />
+    </Suspense>
   );
 }

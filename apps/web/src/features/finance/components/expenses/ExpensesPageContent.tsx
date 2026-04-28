@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Plus, RefreshCcw, Receipt, FolderKanban, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +24,7 @@ import {
 } from '@/features/finance/constants/finance';
 import { expensesApi, type Expense, type ExpenseStats } from '@/lib/api/finance';
 import { projectsApi } from '@/lib/api/projects';
+import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
 import { CreateExpenseDialog } from './CreateExpenseDialog';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
 import { ExpensesTableSection } from './ExpensesTableSection';
@@ -38,6 +40,7 @@ export function ExpensesPageContent({
   projectIdFromUrl,
   onClearProjectFilter,
 }: ExpensesPageContentProps) {
+  const router = useRouter();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -224,7 +227,7 @@ export function ExpensesPageContent({
           getItemId={(e: Expense) => e.id}
           renderCard={(expense: Expense) => (
             <Link
-              href={`/finance/expenses/${expense.id}`}
+              href={expenseDetailHref(expense.id, projectIdFromUrl)}
               className="border-border bg-card focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
             >
               <div className="flex items-center justify-between">
@@ -246,15 +249,16 @@ export function ExpensesPageContent({
           )}
         />
       ) : (
-        <ExpensesTableSection expenses={expenses} />
+        <ExpensesTableSection expenses={expenses} listProjectId={projectIdFromUrl} />
       )}
 
       <CreateExpenseDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         defaultProjectId={projectIdFromUrl}
-        onCreated={() => {
+        onCreated={(created) => {
           fetchExpenses();
+          router.push(expenseDetailHref(created.id, projectIdFromUrl));
         }}
       />
     </div>
