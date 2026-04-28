@@ -95,6 +95,7 @@ model Project {
   domains               Domain[]
   tickets               SupportTicket[]
   expenses              Expense[]
+  expensePlans          ExpensePlan[]
   bonusEntries          BonusEntry[]
   auditLogs             AuditLog[]
   kickoffChecklistItems ProjectKickoffChecklistItem[]
@@ -624,6 +625,27 @@ enum ExpenseBacklogReasonEnum {
   OTHER
 }
 
+model ExpensePlan {
+  id           String              @id @default(uuid())
+  name         String
+  category     ExpenseCategoryEnum
+  amount       Decimal             @db.Decimal(12, 2)
+  frequency    ExpenseFrequency    @default(ONE_TIME)
+  nextDueDate  DateTime?           @map("next_due_date")
+  provider     String?
+  projectId    String?             @map("project_id")
+  autoGenerate Boolean             @default(false) @map("auto_generate")
+  notes        String?
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  project  Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  expenses Expense[]
+
+  @@index([projectId])
+  @@map("expense_plans")
+}
+
 model Expense {
   id            String              @id @default(uuid())
   type          ExpenseTypeEnum
@@ -634,6 +656,7 @@ model Expense {
   dueDate       DateTime?           @map("due_date")
   status        ExpenseStatusEnum   @default(THIS_MONTH)
   projectId     String?             @map("project_id")
+  expensePlanId String?             @map("expense_plan_id")
   isPassThrough Boolean             @default(false) @map("is_pass_through")
   taxStatus     TaxStatus           @default(TAX) @map("tax_status")
   backlogReason ExpenseBacklogReasonEnum? @map("backlog_reason")
@@ -642,8 +665,10 @@ model Expense {
   updatedAt     DateTime            @updatedAt @map("updated_at")
 
   project          Project?           @relation(fields: [projectId], references: [id])
+  expensePlan    ExpensePlan?       @relation(fields: [expensePlanId], references: [id], onDelete: SetNull)
   expensePayments ExpensePayment[]
 
+  @@index([expensePlanId])
   @@map("expenses")
 }
 

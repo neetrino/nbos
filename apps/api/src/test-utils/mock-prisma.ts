@@ -36,6 +36,7 @@ export function createMockPrisma() {
     task: createModelMock(),
     supportTicket: createModelMock(),
     expense: createModelMock(),
+    expensePlan: createModelMock(),
     expensePayment: createModelMock(),
     bonusEntry: createModelMock(),
     credential: createModelMock(),

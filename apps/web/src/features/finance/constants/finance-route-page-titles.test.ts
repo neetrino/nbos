@@ -3,6 +3,7 @@ import {
   expenseBacklogPageTitle,
   expenseDetailPageTitle,
   expensesListPageTitle,
+  expensePlansListPageTitle,
   financeDashboardPageTitle,
   invoicesListPageTitle,
   ordersListPageTitle,
@@ -40,6 +41,10 @@ describe('finance route page titles', () => {
   it('expensesListPageTitle', () => {
     expect(expensesListPageTitle(false)).toBe('Expenses');
     expect(expensesListPageTitle(true)).toBe('Expenses · project filter');
+  });
+
+  it('expensePlansListPageTitle', () => {
+    expect(expensePlansListPageTitle()).toBe('Expense plans');
   });
 
   it('expenseBacklogPageTitle', () => {

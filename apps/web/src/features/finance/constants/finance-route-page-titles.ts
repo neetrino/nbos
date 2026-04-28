@@ -33,6 +33,10 @@ export function expensesListPageTitle(hasProjectDrilldown: boolean): string {
   return hasProjectDrilldown ? 'Expenses · project filter' : 'Expenses';
 }
 
+export function expensePlansListPageTitle(): string {
+  return 'Expense plans';
+}
+
 export function expenseBacklogPageTitle(hasProjectDrilldown: boolean): string {
   return hasProjectDrilldown ? 'Expense backlog · project filter' : 'Expense backlog';
 }
