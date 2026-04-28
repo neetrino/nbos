@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ExpensesService } from './expenses.service';
+import { EXPENSE_LIST_MAX_PAGE_SIZE } from './expenses-list-pagination';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
 
@@ -62,6 +63,16 @@ describe('ExpensesService', () => {
       expect(prisma.expense.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           orderBy: { amount: 'asc' },
+        }),
+      );
+    });
+
+    it('caps pageSize at maximum', async () => {
+      await service.findAll({ pageSize: 999_999 });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          take: EXPENSE_LIST_MAX_PAGE_SIZE,
         }),
       );
     });

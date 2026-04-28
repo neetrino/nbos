@@ -22,7 +22,7 @@ export class ExpensesController {
   @Get()
   @ApiOperation({ summary: 'Get all expenses with filters' })
   @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'pageSize', required: false })
+  @ApiQuery({ name: 'pageSize', required: false, description: 'Capped server-side (max 500).' })
   @ApiQuery({ name: 'type', required: false })
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'status', required: false })

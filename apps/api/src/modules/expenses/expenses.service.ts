@@ -8,6 +8,7 @@ import {
   type ExpenseFrequency,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 
 interface CreateExpenseDto {
   name: string;
@@ -67,8 +68,8 @@ export class ExpensesService {
 
   async findAll(params: ExpenseQueryParams) {
     const {
-      page = 1,
-      pageSize = 20,
+      page: pageIn,
+      pageSize: pageSizeIn,
       type,
       category,
       status,
@@ -80,6 +81,9 @@ export class ExpensesService {
       sortBy,
       sortOrder,
     } = params;
+
+    const page = normalizeExpenseListPage(pageIn);
+    const pageSize = normalizeExpenseListPageSize(pageSizeIn);
 
     const orderBy = this.buildExpenseListOrderBy(sortBy, sortOrder);
 

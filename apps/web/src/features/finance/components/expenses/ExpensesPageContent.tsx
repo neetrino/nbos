@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Receipt } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { FilterBar, EmptyState, ErrorState, LoadingState, KanbanBoard } from '@/components/shared';
-import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { FilterBar } from '@/components/shared';
+import { type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   expensesApi,
   type Expense,
@@ -20,17 +18,16 @@ import {
 import { ExpenseSortControls } from './ExpenseSortControls';
 import { ExpensesPageHeader } from './ExpensesPageHeader';
 import { ExpenseSummaryCards } from './ExpenseSummaryCards';
-import { CreateExpenseDialog } from './CreateExpenseDialog';
-import { DeleteExpenseDialog } from './DeleteExpenseDialog';
-import { ExpenseKanbanCard } from './ExpenseKanbanCard';
+import { ExpensesPageDialogs } from './ExpensesPageDialogs';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
-import { buildExpenseKanbanColumns } from './expense-kanban-columns';
 import { buildExpenseFilterConfigs } from './expenses-filter-config';
-import { ExpensesTableSection } from './ExpensesTableSection';
+import { ExpensesPageMainPanel, type ExpensesViewMode } from './ExpensesPageMainPanel';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
-import { downloadExpensesCsv } from '@/features/finance/utils/export-expenses-csv';
-
-type ViewMode = 'kanban' | 'list';
+import {
+  buildExpenseListApiParams,
+  EXPENSE_LIST_UI_PAGE_SIZE,
+} from '@/features/finance/utils/build-expense-list-api-params';
+import { useExpenseCsvExport } from './use-expense-csv-export';
 
 interface ExpensesPageContentProps {
   projectIdFromUrl: string | null;
@@ -58,9 +55,9 @@ export function ExpensesPageContent({
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setView] = useState<ViewMode>('list');
+  const [view, setView] = useState<ExpensesViewMode>('list');
   const [period, setPeriod] = useState<FinancePeriod>('month');
-  const [projectBannerLabel, setProjectBannerLabel] = useState<string | null>(null);
+  const [projectBanner, setProjectBanner] = useState<{ id: string; text: string } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
@@ -74,18 +71,19 @@ export function ExpensesPageContent({
   }, [projectIdFromUrl]);
 
   useEffect(() => {
-    if (!projectIdFromUrl) {
-      setProjectBannerLabel(null);
-      return;
-    }
+    if (!projectIdFromUrl) return;
     let cancelled = false;
     projectsApi
       .getById(projectIdFromUrl)
       .then((p) => {
-        if (!cancelled) setProjectBannerLabel(`${p.code} · ${p.name}`);
+        if (!cancelled) {
+          setProjectBanner({ id: projectIdFromUrl, text: `${p.code} · ${p.name}` });
+        }
       })
       .catch(() => {
-        if (!cancelled) setProjectBannerLabel(null);
+        if (!cancelled) {
+          setProjectBanner({ id: projectIdFromUrl, text: '' });
+        }
       });
     return () => {
       cancelled = true;
@@ -97,6 +95,24 @@ export function ExpensesPageContent({
     const fp = filters.project;
     return fp && fp !== 'all' ? fp : undefined;
   }, [projectIdFromUrl, filters.project]);
+
+  const listApiParams = useMemo(
+    () =>
+      buildExpenseListApiParams({
+        search,
+        filters,
+        period,
+        effectiveProjectId,
+        sortBy,
+        sortOrder,
+      }),
+    [search, filters, period, effectiveProjectId, sortBy, sortOrder],
+  );
+
+  const { exportCsvSubmitting, handleExportCsv } = useExpenseCsvExport(listApiParams);
+
+  const projectBannerLabel =
+    projectIdFromUrl && projectBanner?.id === projectIdFromUrl ? projectBanner.text || null : null;
 
   const handleClearProjectDrilldown = useCallback(() => {
     setFilters((prev) => {
@@ -122,21 +138,16 @@ export function ExpensesPageContent({
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
-      const periodParams = getFinancePeriodParams(period);
-      const projectParams =
-        effectiveProjectId !== undefined ? { projectId: effectiveProjectId } : {};
       const [data, expenseStats] = await Promise.all([
         expensesApi.getAll({
-          pageSize: 100,
-          search: search || undefined,
-          category: filters.category && filters.category !== 'all' ? filters.category : undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-          sortBy,
-          sortOrder,
-          ...periodParams,
-          ...projectParams,
+          ...listApiParams,
+          pageSize: EXPENSE_LIST_UI_PAGE_SIZE,
         }),
-        expensesApi.getStats({ ...periodParams, ...projectParams }),
+        expensesApi.getStats({
+          dateFrom: listApiParams.dateFrom,
+          dateTo: listApiParams.dateTo,
+          projectId: listApiParams.projectId,
+        }),
       ]);
       setExpenses(data.items);
       setStats(expenseStats);
@@ -146,7 +157,7 @@ export function ExpensesPageContent({
     } finally {
       setLoading(false);
     }
-  }, [search, filters.category, filters.status, period, effectiveProjectId, sortBy, sortOrder]);
+  }, [listApiParams]);
 
   const handleConfirmDeleteExpense = async () => {
     if (!deleteTarget) return;
@@ -175,12 +186,6 @@ export function ExpensesPageContent({
     [projectFilterOptions],
   );
 
-  const kanbanColumns = buildExpenseKanbanColumns(expenses);
-
-  const handleExportCsv = useCallback(() => {
-    downloadExpensesCsv(expenses);
-  }, [expenses]);
-
   return (
     <div className="flex h-full flex-col gap-5">
       <ExpensesPageHeader
@@ -191,7 +196,8 @@ export function ExpensesPageContent({
         onViewChange={setView}
         onRefresh={fetchExpenses}
         onExportCsv={handleExportCsv}
-        exportDisabled={loading || expenses.length === 0}
+        exportDisabled={loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
         onCreateClick={() => setCreateOpen(true)}
       />
 
@@ -223,74 +229,41 @@ export function ExpensesPageContent({
         }
       />
 
-      {loading ? (
-        <LoadingState />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchExpenses} />
-      ) : expenses.length === 0 ? (
-        <EmptyState
-          icon={Receipt}
-          title="No expenses yet"
-          description="Track company expenses here"
-          action={
-            <Button type="button" onClick={() => setCreateOpen(true)}>
-              <Plus size={16} />
-              Add First Expense
-            </Button>
-          }
-        />
-      ) : view === 'kanban' ? (
-        <KanbanBoard
-          columns={kanbanColumns}
-          getItemId={(e: Expense) => e.id}
-          renderCard={(expense: Expense) => (
-            <ExpenseKanbanCard
-              expense={expense}
-              listProjectId={effectiveProjectId ?? null}
-              listSort={{ sortBy, sortOrder }}
-              onRequestDelete={(row) => {
-                setDeleteError(null);
-                setDeleteTarget(row);
-              }}
-            />
-          )}
-        />
-      ) : (
-        <ExpensesTableSection
-          expenses={expenses}
-          listProjectId={effectiveProjectId ?? null}
-          listSort={{ sortBy, sortOrder }}
-          onRequestDelete={(row) => {
-            setDeleteError(null);
-            setDeleteTarget(row);
-          }}
-        />
-      )}
+      <ExpensesPageMainPanel
+        loading={loading}
+        error={error}
+        onRetry={fetchExpenses}
+        expenses={expenses}
+        view={view}
+        effectiveProjectId={effectiveProjectId ?? null}
+        listSort={{ sortBy, sortOrder }}
+        onRequestDelete={(row) => {
+          setDeleteError(null);
+          setDeleteTarget(row);
+        }}
+        onAddFirstExpense={() => setCreateOpen(true)}
+      />
 
-      <CreateExpenseDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        defaultProjectId={effectiveProjectId ?? null}
-        onCreated={(created) => {
+      <ExpensesPageDialogs
+        createOpen={createOpen}
+        onCreateOpenChange={setCreateOpen}
+        effectiveProjectId={effectiveProjectId ?? null}
+        onExpenseCreated={(created) => {
           fetchExpenses();
           router.push(
             expenseDetailHref(created.id, effectiveProjectId ?? null, { sortBy, sortOrder }),
           );
         }}
-      />
-
-      <DeleteExpenseDialog
-        expenseName={deleteTarget?.name ?? ''}
-        open={deleteTarget !== null}
-        isSubmitting={deleteSubmitting}
-        errorMessage={deleteError}
-        onOpenChange={(open) => {
+        deleteTarget={deleteTarget}
+        deleteSubmitting={deleteSubmitting}
+        deleteError={deleteError}
+        onDeleteOpenChange={(open) => {
           if (!open) {
             setDeleteTarget(null);
             setDeleteError(null);
           }
         }}
-        onConfirm={handleConfirmDeleteExpense}
+        onConfirmDeleteExpense={handleConfirmDeleteExpense}
       />
     </div>
   );

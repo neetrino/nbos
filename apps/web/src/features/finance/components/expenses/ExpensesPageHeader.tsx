@@ -1,22 +1,23 @@
 'use client';
 
-import { Download, Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
+import { Download, Loader2, Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
 
-type ViewMode = 'kanban' | 'list';
+import type { ExpensesViewMode } from './ExpensesPageMainPanel';
 
 interface ExpensesPageHeaderProps {
   expenseCount: number;
   period: FinancePeriod;
   onPeriodChange: (value: FinancePeriod) => void;
-  view: ViewMode;
-  onViewChange: (value: ViewMode) => void;
+  view: ExpensesViewMode;
+  onViewChange: (value: ExpensesViewMode) => void;
   onRefresh: () => void;
-  /** Exports the currently loaded expense rows (same filters as on screen). */
-  onExportCsv: () => void;
+  /** Fetches all pages matching current list filters and downloads CSV. */
+  onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
+  exportInProgress: boolean;
   onCreateClick: () => void;
 }
 
@@ -29,6 +30,7 @@ export function ExpensesPageHeader({
   onRefresh,
   onExportCsv,
   exportDisabled,
+  exportInProgress,
   onCreateClick,
 }: ExpensesPageHeaderProps) {
   return (
@@ -53,11 +55,17 @@ export function ExpensesPageHeader({
         variant="outline"
         size="icon"
         disabled={exportDisabled}
-        onClick={onExportCsv}
+        onClick={() => {
+          void onExportCsv();
+        }}
         aria-label="Export expenses as CSV"
-        title="Export current list as CSV"
+        title="Export all rows matching current filters (paginated fetch)"
       >
-        <Download size={16} />
+        {exportInProgress ? (
+          <Loader2 size={16} className="animate-spin" aria-hidden />
+        ) : (
+          <Download size={16} aria-hidden />
+        )}
       </Button>
       <div className="border-border flex rounded-lg border">
         <Button
