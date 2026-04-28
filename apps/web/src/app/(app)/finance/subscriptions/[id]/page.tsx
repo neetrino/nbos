@@ -13,6 +13,7 @@ import {
 } from '@/features/finance/constants/finance';
 import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/subscription-invoice-drilldown';
 import { cn } from '@/lib/utils';
+import { SubscriptionDetailActions } from '@/features/finance/components/subscriptions/SubscriptionDetailActions';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 
 function formatDate(iso: string): string {
@@ -29,6 +30,7 @@ export default function SubscriptionDetailPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const fetchSubscription = useCallback(async () => {
     if (!id) return;
@@ -37,6 +39,7 @@ export default function SubscriptionDetailPage() {
       const data = await subscriptionsApi.getById(id);
       setSubscription(data);
       setError(null);
+      setActionError(null);
     } catch {
       setSubscription(null);
       setError('Subscription could not be loaded. It may have been removed.');
@@ -102,6 +105,11 @@ export default function SubscriptionDetailPage() {
           <Button variant="outline" size="icon" type="button" onClick={fetchSubscription}>
             <RefreshCcw size={16} />
           </Button>
+          <SubscriptionDetailActions
+            subscription={subscription}
+            onSubscriptionChange={setSubscription}
+            onError={setActionError}
+          />
           <Link
             href={subscriptionInvoicesDrilldownHref(subscription.id)}
             className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'gap-1.5')}
@@ -111,6 +119,12 @@ export default function SubscriptionDetailPage() {
           </Link>
         </div>
       </div>
+
+      {actionError ? (
+        <p className="text-destructive text-sm" role="alert">
+          {actionError}
+        </p>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="border-border bg-card rounded-xl border p-4">

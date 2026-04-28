@@ -2,8 +2,11 @@ import { PauseCircle, PlayCircle, RotateCcw, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TableCell } from '@/components/ui/table';
 import type { Subscription } from '@/lib/api/finance';
-
-const CANCELLABLE_STATUSES = new Set(['PENDING', 'ACTIVE', 'ON_HOLD']);
+import {
+  subscriptionCanActivateOrResume,
+  subscriptionCanCancel,
+  subscriptionCanHold,
+} from './subscription-action-eligibility';
 
 export function SubscriptionTableActionCell({
   subscription,
@@ -24,10 +27,9 @@ export function SubscriptionTableActionCell({
   onOpenCancelDialog: () => void;
   onOpenHoldDialog: () => void;
 }) {
-  const showActivateOrResume =
-    subscription.status === 'PENDING' || subscription.status === 'ON_HOLD';
-  const showHold = subscription.status === 'ACTIVE';
-  const showCancel = CANCELLABLE_STATUSES.has(subscription.status);
+  const showActivateOrResume = subscriptionCanActivateOrResume(subscription);
+  const showHold = subscriptionCanHold(subscription);
+  const showCancel = subscriptionCanCancel(subscription);
 
   if (!showActivateOrResume && !showHold && !showCancel) {
     return (
