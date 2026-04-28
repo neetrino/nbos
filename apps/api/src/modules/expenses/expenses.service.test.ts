@@ -54,8 +54,14 @@ describe('ExpensesService', () => {
   });
 
   describe('create', () => {
-    it('creates expense', async () => {
-      prisma.expense.create.mockResolvedValue({ id: '1', name: 'Hosting', amount: 20000 });
+    it('creates expense and returns findById shape', async () => {
+      prisma.expense.create.mockResolvedValue({ id: '1' });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: '1',
+        name: 'Hosting',
+        amount: 20000,
+        project: null,
+      });
       const result = await service.create({
         name: 'Hosting',
         type: 'PLANNED',
@@ -63,6 +69,22 @@ describe('ExpensesService', () => {
         amount: 20000,
       });
       expect(result.name).toBe('Hosting');
+      expect(prisma.expense.findUnique).toHaveBeenCalled();
+    });
+  });
+
+  describe('update', () => {
+    it('returns findById shape after update', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Updated',
+        amount: 100,
+        project: null,
+      });
+      const result = await service.update('e1', { name: 'Updated' });
+      expect(result.name).toBe('Updated');
+      expect(prisma.expense.update).toHaveBeenCalled();
+      expect(prisma.expense.findUnique).toHaveBeenCalled();
     });
   });
 

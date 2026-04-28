@@ -119,7 +119,7 @@ export class ExpensesService {
   }
 
   async create(data: CreateExpenseDto) {
-    return this.prisma.expense.create({
+    const created = await this.prisma.expense.create({
       data: {
         name: data.name,
         type: data.type as ExpenseTypeEnum,
@@ -133,15 +133,13 @@ export class ExpensesService {
         taxStatus: data.taxStatus as Prisma.ExpenseCreateInput['taxStatus'],
         notes: data.notes,
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-      },
     });
+    return this.findById(created.id);
   }
 
   async update(id: string, data: UpdateExpenseDto) {
     await this.findById(id);
-    return this.prisma.expense.update({
+    await this.prisma.expense.update({
       where: { id },
       data: {
         ...(data.name && { name: data.name }),
@@ -160,10 +158,8 @@ export class ExpensesService {
         }),
         ...(data.notes !== undefined && { notes: data.notes }),
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-      },
     });
+    return this.findById(id);
   }
 
   async delete(id: string) {
