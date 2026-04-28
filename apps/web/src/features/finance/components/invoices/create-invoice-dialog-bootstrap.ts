@@ -1,3 +1,4 @@
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import { projectsApi, type Project } from '@/lib/api/projects';
@@ -62,9 +63,9 @@ async function loadSubscriptionById(
     setSubscriptionDetail(sub);
     setForm(getInitialInvoiceFormFromSubscription(sub));
     setLoadError(null);
-  } catch {
+  } catch (caught) {
     setSubscriptionDetail(null);
-    setLoadError('Subscription could not be loaded.');
+    setLoadError(getApiErrorMessage(caught, 'Subscription could not be loaded.'));
   } finally {
     setSubscriptionLoading(false);
   }
@@ -77,7 +78,7 @@ async function loadProjects(
   try {
     const data = await projectsApi.getAll({ pageSize: 100 });
     setProjects(data.items);
-  } catch {
-    setLoadError('Projects could not be loaded.');
+  } catch (caught) {
+    setLoadError(getApiErrorMessage(caught, 'Projects could not be loaded.'));
   }
 }

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SUBSCRIPTION_PARTNER_FILTER_UNLINKED } from '@nbos/shared';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { partnersApi } from '@/lib/api/partners';
 
 export interface PartnerFilterOption {
@@ -10,6 +11,11 @@ export interface PartnerFilterOption {
 /** Loads partner names for finance filters (e.g. subscriptions by partner). */
 export function usePartnerFilterOptions() {
   const [options, setOptions] = useState<PartnerFilterOption[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const clearPartnerOptionsLoadError = useCallback(() => {
+    setLoadError(null);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,12 +24,20 @@ export function usePartnerFilterOptions() {
         const { items } = await partnersApi.getAll({ pageSize: 200 });
         if (cancelled) return;
         const sorted = [...items].sort((a, b) => a.name.localeCompare(b.name));
+        setLoadError(null);
         setOptions([
           { value: SUBSCRIPTION_PARTNER_FILTER_UNLINKED, label: 'No partner' },
           ...sorted.map((p) => ({ value: p.id, label: p.name })),
         ]);
-      } catch {
-        if (!cancelled) setOptions([]);
+      } catch (caught) {
+        if (cancelled) return;
+        setOptions([{ value: SUBSCRIPTION_PARTNER_FILTER_UNLINKED, label: 'No partner' }]);
+        setLoadError(
+          getApiErrorMessage(
+            caught,
+            'Partners could not be loaded. The partner filter may be incomplete.',
+          ),
+        );
       }
     })();
     return () => {
@@ -31,5 +45,9 @@ export function usePartnerFilterOptions() {
     };
   }, []);
 
-  return { partnerFilterOptions: options };
+  return {
+    partnerFilterOptions: options,
+    partnerOptionsLoadError: loadError,
+    clearPartnerOptionsLoadError,
+  };
 }

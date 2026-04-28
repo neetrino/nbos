@@ -100,7 +100,7 @@ export function SubscriptionsTable({
             await onCancel(cancelTarget);
             setCancelTarget(null);
           } catch {
-            /* Error surfaced via page ErrorState; keep dialog open for retry. */
+            /* Error surfaced via list mutation banner; keep dialog open for retry. */
           }
         }}
       />
@@ -117,7 +117,7 @@ export function SubscriptionsTable({
             await onHold(holdTarget);
             setHoldTarget(null);
           } catch {
-            /* Error surfaced via page ErrorState; keep dialog open for retry. */
+            /* Error surfaced via list mutation banner; keep dialog open for retry. */
           }
         }}
       />

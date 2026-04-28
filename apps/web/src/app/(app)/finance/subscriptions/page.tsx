@@ -19,7 +19,8 @@ function SubscriptionsPageInner() {
   const partnerIdFromUrl = searchParams.get(PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY);
 
   const page = useSubscriptionsPageState({ partnerIdFromUrl });
-  const { partnerFilterOptions } = usePartnerFilterOptions();
+  const { partnerFilterOptions, partnerOptionsLoadError, clearPartnerOptionsLoadError } =
+    usePartnerFilterOptions();
 
   const totalMRR = Number(page.stats?.monthlyRevenue ?? 0);
   const activeCount = page.subscriptions.filter(
@@ -105,10 +106,31 @@ function SubscriptionsPageInner() {
         onClearFilters={handleClearFilters}
       />
 
+      {partnerOptionsLoadError ? (
+        <div
+          className="border-destructive/40 bg-destructive/5 flex flex-wrap items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm"
+          role="alert"
+        >
+          <p className="text-destructive max-w-prose">{partnerOptionsLoadError}</p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive shrink-0"
+            onClick={clearPartnerOptionsLoadError}
+            aria-label="Dismiss partner load error"
+          >
+            Dismiss
+          </Button>
+        </div>
+      ) : null}
+
       <SubscriptionsPageContent
         subscriptions={page.subscriptions}
         loading={page.loading}
         error={page.error}
+        mutationError={page.mutationError}
+        onDismissMutationError={page.clearMutationError}
         activatingId={page.activatingId}
         cancellingId={page.cancellingId}
         holdingId={page.holdingId}

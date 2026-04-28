@@ -1,4 +1,4 @@
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import type { Subscription } from '@/lib/api/finance';
@@ -9,6 +9,8 @@ interface SubscriptionsPageContentProps {
   subscriptions: Subscription[];
   loading: boolean;
   error: string | null;
+  mutationError: string | null;
+  onDismissMutationError: () => void;
   activatingId: string | null;
   cancellingId: string | null;
   holdingId: string | null;
@@ -23,6 +25,8 @@ export function SubscriptionsPageContent({
   subscriptions,
   loading,
   error,
+  mutationError,
+  onDismissMutationError,
   activatingId,
   cancellingId,
   holdingId,
@@ -38,6 +42,24 @@ export function SubscriptionsPageContent({
 
   return (
     <>
+      {mutationError ? (
+        <div
+          className="border-destructive/40 bg-destructive/5 flex flex-wrap items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm"
+          role="alert"
+        >
+          <p className="text-destructive max-w-prose">{mutationError}</p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive shrink-0"
+            onClick={onDismissMutationError}
+            aria-label="Dismiss error"
+          >
+            <X size={16} />
+          </Button>
+        </div>
+      ) : null}
       <SubscriptionCoverageGrid subscriptions={subscriptions} />
       <SubscriptionsTable
         subscriptions={subscriptions}

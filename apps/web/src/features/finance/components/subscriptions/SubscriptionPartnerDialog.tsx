@@ -41,12 +41,14 @@ export function SubscriptionPartnerDialog({
   const [partnersLoading, setPartnersLoading] = useState(false);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+  const [partnerListError, setPartnerListError] = useState<string | null>(null);
   const [partnerId, setPartnerId] = useState<string>('none');
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setPartnersLoading(true);
+    setPartnerListError(null);
     partnersApi
       .getAll({
         page: 1,
@@ -54,10 +56,21 @@ export function SubscriptionPartnerDialog({
         status: 'ACTIVE',
       })
       .then((res) => {
-        if (!cancelled) setPartners(res.items);
+        if (!cancelled) {
+          setPartners(res.items);
+          setPartnerListError(null);
+        }
       })
-      .catch(() => {
-        if (!cancelled) setPartners([]);
+      .catch((caught) => {
+        if (!cancelled) {
+          setPartners([]);
+          setPartnerListError(
+            getApiErrorMessage(
+              caught,
+              'Partners could not be loaded. Try again or save without changing partner.',
+            ),
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setPartnersLoading(false);
@@ -107,6 +120,11 @@ export function SubscriptionPartnerDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {partnerListError ? (
+            <p className="text-destructive text-sm" role="alert">
+              {partnerListError}
+            </p>
+          ) : null}
           {formError ? (
             <p className="text-destructive text-sm" role="alert">
               {formError}

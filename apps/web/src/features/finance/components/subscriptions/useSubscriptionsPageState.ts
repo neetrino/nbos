@@ -22,6 +22,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
   const [stats, setStats] = useState<SubscriptionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
   const [search, setSearch] = useInitialSearch();
   const [activatingId, setActivatingId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -42,6 +43,10 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     [filters, search, partnerIdFromUrl],
   );
 
+  const clearMutationError = useCallback(() => {
+    setMutationError(null);
+  }, []);
+
   const fetchSubscriptions = useSubscriptionFetch({
     search,
     filters,
@@ -51,12 +56,13 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     setStats,
     setLoading,
     setError,
+    setMutationError,
   });
 
   const handleActivate = useSubscriptionActivation(
     setSubscriptions,
     setStats,
-    setError,
+    setMutationError,
     setActivatingId,
     statsPartnerScope,
   );
@@ -64,7 +70,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
   const handleCancel = useSubscriptionCancellation(
     setSubscriptions,
     setStats,
-    setError,
+    setMutationError,
     setCancellingId,
     statsPartnerScope,
   );
@@ -72,7 +78,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
   const handleHold = useSubscriptionHold(
     setSubscriptions,
     setStats,
-    setError,
+    setMutationError,
     setHoldingId,
     statsPartnerScope,
   );
@@ -81,10 +87,11 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     (updated: Subscription) => {
       setSubscriptions((current) => replaceSubscription(current, updated));
       setError(null);
+      setMutationError(null);
       void fetchSubscriptionPageStats({ filters, search, partnerIdFromUrl, period })
         .then(setStats)
         .catch((caught) =>
-          setError(
+          setMutationError(
             getApiErrorMessage(
               caught,
               'Could not refresh subscription stats. Use Refresh or try again.',
@@ -92,7 +99,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
           ),
         );
     },
-    [filters, partnerIdFromUrl, period, search, setSubscriptions, setError, setStats],
+    [filters, partnerIdFromUrl, period, search, setSubscriptions, setMutationError, setStats],
   );
 
   useEffect(() => {
@@ -104,6 +111,8 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     stats,
     loading,
     error,
+    mutationError,
+    clearMutationError,
     search,
     setSearch,
     activatingId,
@@ -138,6 +147,7 @@ function useSubscriptionFetch({
   setStats,
   setLoading,
   setError,
+  setMutationError,
 }: {
   search: string;
   filters: Record<string, string>;
@@ -147,6 +157,7 @@ function useSubscriptionFetch({
   setStats: (stats: SubscriptionStats) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  setMutationError: (message: string | null) => void;
 }) {
   return useCallback(async () => {
     setLoading(true);
@@ -162,6 +173,7 @@ function useSubscriptionFetch({
       setSubscriptions(data.items);
       setStats(subscriptionStats);
       setError(null);
+      setMutationError(null);
     } catch (caught) {
       setError(
         getApiErrorMessage(
@@ -172,13 +184,23 @@ function useSubscriptionFetch({
     } finally {
       setLoading(false);
     }
-  }, [filters, partnerIdFromUrl, period, search, setError, setLoading, setStats, setSubscriptions]);
+  }, [
+    filters,
+    partnerIdFromUrl,
+    period,
+    search,
+    setError,
+    setLoading,
+    setMutationError,
+    setStats,
+    setSubscriptions,
+  ]);
 }
 
 function useSubscriptionActivation(
   setSubscriptions: (updater: (current: Subscription[]) => Subscription[]) => void,
   setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
-  setError: (error: string | null) => void,
+  setMutationError: (message: string | null) => void,
   setActivatingId: (id: string | null) => void,
   statsPartnerScope: string | undefined,
 ) {
@@ -198,23 +220,23 @@ function useSubscriptionActivation(
             Number(updated.amount),
           ),
         );
-        setError(null);
+        setMutationError(null);
       } catch (caught) {
-        setError(
+        setMutationError(
           getApiErrorMessage(caught, 'Subscription could not be activated or resumed. Try again.'),
         );
       } finally {
         setActivatingId(null);
       }
     },
-    [setActivatingId, setError, setStats, setSubscriptions, statsPartnerScope],
+    [setActivatingId, setMutationError, setStats, setSubscriptions, statsPartnerScope],
   );
 }
 
 function useSubscriptionCancellation(
   setSubscriptions: (updater: (current: Subscription[]) => Subscription[]) => void,
   setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
-  setError: (error: string | null) => void,
+  setMutationError: (message: string | null) => void,
   setCancellingId: (id: string | null) => void,
   statsPartnerScope: string | undefined,
 ) {
@@ -234,22 +256,24 @@ function useSubscriptionCancellation(
             Number(subscription.amount),
           ),
         );
-        setError(null);
+        setMutationError(null);
       } catch (caught) {
-        setError(getApiErrorMessage(caught, 'Subscription could not be cancelled. Try again.'));
+        setMutationError(
+          getApiErrorMessage(caught, 'Subscription could not be cancelled. Try again.'),
+        );
         throw new Error('subscription_cancel_failed');
       } finally {
         setCancellingId(null);
       }
     },
-    [setCancellingId, setError, setStats, setSubscriptions, statsPartnerScope],
+    [setCancellingId, setMutationError, setStats, setSubscriptions, statsPartnerScope],
   );
 }
 
 function useSubscriptionHold(
   setSubscriptions: (updater: (current: Subscription[]) => Subscription[]) => void,
   setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
-  setError: (error: string | null) => void,
+  setMutationError: (message: string | null) => void,
   setHoldingId: (id: string | null) => void,
   statsPartnerScope: string | undefined,
 ) {
@@ -269,14 +293,16 @@ function useSubscriptionHold(
             Number(subscription.amount),
           ),
         );
-        setError(null);
+        setMutationError(null);
       } catch (caught) {
-        setError(getApiErrorMessage(caught, 'Subscription could not be put on hold. Try again.'));
+        setMutationError(
+          getApiErrorMessage(caught, 'Subscription could not be put on hold. Try again.'),
+        );
         throw new Error('subscription_hold_failed');
       } finally {
         setHoldingId(null);
       }
     },
-    [setError, setHoldingId, setStats, setSubscriptions, statsPartnerScope],
+    [setMutationError, setHoldingId, setStats, setSubscriptions, statsPartnerScope],
   );
 }
