@@ -40,6 +40,7 @@ export function EditExpenseDialog({
     projectId: 'none',
     isPassThrough: false,
     taxStatus: 'TAX',
+    backlogReason: 'none',
     notes: '',
   });
 
@@ -101,6 +102,7 @@ export function EditExpenseDialog({
       projectId: expense.projectId ?? 'none',
       isPassThrough: expense.isPassThrough,
       taxStatus: expense.taxStatus,
+      backlogReason: expense.backlogReason ?? 'none',
       notes: expense.notes ?? '',
     });
     setFormError(null);
@@ -117,6 +119,13 @@ export function EditExpenseDialog({
     setLoading(true);
     setFormError(null);
     try {
+      const backlogReason =
+        form.status === 'DELAYED'
+          ? form.backlogReason === 'none'
+            ? null
+            : form.backlogReason
+          : null;
+
       const payload: UpdateExpensePayload = {
         name: form.name.trim(),
         type: form.type,
@@ -128,6 +137,7 @@ export function EditExpenseDialog({
         projectId: form.projectId === 'none' ? null : form.projectId,
         isPassThrough: form.isPassThrough,
         taxStatus: form.taxStatus,
+        backlogReason,
         notes: form.notes.trim() ? form.notes.trim() : null,
       };
       const updated = await expensesApi.update(expense.id, payload);

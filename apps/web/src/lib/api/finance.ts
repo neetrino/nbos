@@ -123,6 +123,7 @@ export interface Expense {
   projectId: string | null;
   isPassThrough: boolean;
   taxStatus: string;
+  backlogReason: string | null;
   notes: string | null;
   createdAt: string;
   project?: { id: string; code: string; name: string } | null;
@@ -163,6 +164,8 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   projectId?: string;
   type?: string;
   frequency?: string;
+  /** Filter by `ExpenseBacklogReasonEnum` when present (ignored if unknown). */
+  backlogReason?: string;
   sortBy?: ExpenseListSortField;
   sortOrder?: 'asc' | 'desc';
 }
@@ -179,6 +182,7 @@ export interface CreateExpensePayload {
   projectId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: string;
+  backlogReason?: string | null;
   notes?: string | null;
 }
 
@@ -193,6 +197,7 @@ export interface UpdateExpensePayload {
   projectId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: string;
+  backlogReason?: string | null;
   notes?: string | null;
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BadRequestException } from '@nestjs/common';
 import {
+  parseExpenseBacklogReasonField,
   requireExpenseCategory,
   requireExpenseType,
   resolveExpenseTaxStatus,
@@ -19,5 +20,12 @@ describe('expense-mutation-enum-validators', () => {
     expect(resolveExpenseTaxStatus(undefined)).toBe('TAX');
     expect(resolveExpenseTaxStatus(null)).toBe('TAX');
     expect(() => resolveExpenseTaxStatus('NOPE')).toThrow(BadRequestException);
+  });
+
+  it('parseExpenseBacklogReasonField handles undefined, null, and invalid', () => {
+    expect(parseExpenseBacklogReasonField(undefined)).toBeUndefined();
+    expect(parseExpenseBacklogReasonField(null)).toBeNull();
+    expect(parseExpenseBacklogReasonField('WAITING_CLIENT')).toBe('WAITING_CLIENT');
+    expect(() => parseExpenseBacklogReasonField('BAD')).toThrow(BadRequestException);
   });
 });

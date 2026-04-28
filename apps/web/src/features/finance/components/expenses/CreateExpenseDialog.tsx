@@ -29,6 +29,7 @@ const EMPTY_FORM: EditExpenseFormState = {
   projectId: 'none',
   isPassThrough: false,
   taxStatus: 'TAX',
+  backlogReason: 'none',
   notes: '',
 };
 
@@ -104,6 +105,13 @@ export function CreateExpenseDialog({
     setLoading(true);
     setFormError(null);
     try {
+      const backlogReason =
+        form.status === 'DELAYED'
+          ? form.backlogReason === 'none'
+            ? null
+            : form.backlogReason
+          : undefined;
+
       const payload: CreateExpensePayload = {
         name: form.name.trim(),
         type: form.type,
@@ -116,6 +124,7 @@ export function CreateExpenseDialog({
         isPassThrough: form.isPassThrough,
         taxStatus: form.taxStatus,
         notes: form.notes.trim() ? form.notes.trim() : null,
+        ...(form.status === 'DELAYED' ? { backlogReason } : {}),
       };
       const created = await expensesApi.create(payload);
       onCreated(created);

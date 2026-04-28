@@ -3418,6 +3418,7 @@ export const ExpenseScalarFieldEnum = {
   projectId: 'projectId',
   isPassThrough: 'isPassThrough',
   taxStatus: 'taxStatus',
+  backlogReason: 'backlogReason',
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -4279,6 +4280,22 @@ export type EnumExpenseStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType
 export type ListEnumExpenseStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'ExpenseStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ExpenseBacklogReasonEnum'
+ */
+export type EnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExpenseBacklogReasonEnum'
+>;
+
+/**
+ * Reference to a field of type 'ExpenseBacklogReasonEnum[]'
+ */
+export type ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExpenseBacklogReasonEnum[]'
 >;
 
 /**

@@ -616,6 +616,14 @@ enum ExpenseStatusEnum {
   UNPAID
 }
 
+enum ExpenseBacklogReasonEnum {
+  DEBT_PAY_LATER
+  WAITING_DECISION
+  WAITING_CLIENT
+  WAITING_PROVIDER
+  OTHER
+}
+
 model Expense {
   id            String              @id @default(uuid())
   type          ExpenseTypeEnum
@@ -628,6 +636,7 @@ model Expense {
   projectId     String?             @map("project_id")
   isPassThrough Boolean             @default(false) @map("is_pass_through")
   taxStatus     TaxStatus           @default(TAX) @map("tax_status")
+  backlogReason ExpenseBacklogReasonEnum? @map("backlog_reason")
   notes         String?
   createdAt     DateTime            @default(now()) @map("created_at")
   updatedAt     DateTime            @updatedAt @map("updated_at")

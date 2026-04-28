@@ -16,6 +16,21 @@ export const TAX_STATUSES = [
   { value: 'TAX_FREE', label: 'Tax-free' },
 ] as const;
 
+/** Matches NBOS Expense Backlog reasons (`docs/NBOS/02-Modules/04-Finance/04-Expenses.md`). */
+export const EXPENSE_BACKLOG_REASONS = [
+  { value: 'DEBT_PAY_LATER', label: 'Debt to pay later' },
+  { value: 'WAITING_DECISION', label: 'Waiting for decision' },
+  { value: 'WAITING_CLIENT', label: 'Waiting for client' },
+  { value: 'WAITING_PROVIDER', label: 'Waiting for provider' },
+  { value: 'OTHER', label: 'Other' },
+] as const;
+
+export function formatExpenseBacklogReasonLabel(value: string | null | undefined): string {
+  if (!value) return '—';
+  const row = EXPENSE_BACKLOG_REASONS.find((r) => r.value === value);
+  return row?.label ?? value;
+}
+
 export const PROJECTS_PAGE_SIZE = 150;
 
 export const SCHEMA_EXPENSE_STATUSES = new Set([

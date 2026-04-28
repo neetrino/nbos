@@ -398,6 +398,7 @@ export const ExpenseScalarFieldEnum = {
   projectId: 'projectId',
   isPassThrough: 'isPassThrough',
   taxStatus: 'taxStatus',
+  backlogReason: 'backlogReason',
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

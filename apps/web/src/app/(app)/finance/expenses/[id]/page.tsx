@@ -19,6 +19,7 @@ import {
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   financeExpensesListHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
+import { formatExpenseBacklogReasonLabel } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { cn } from '@/lib/utils';
 import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
@@ -200,6 +201,15 @@ function ExpenseDetailPageInner() {
           <p className="mt-2 font-medium">{expense.category}</p>
         </div>
       </div>
+
+      {expense.status === 'DELAYED' || expense.backlogReason ? (
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Backlog reason</p>
+          <p className="text-foreground mt-2 font-medium">
+            {formatExpenseBacklogReasonLabel(expense.backlogReason)}
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="border-border bg-card rounded-xl border p-4">

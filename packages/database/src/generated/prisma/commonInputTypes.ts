@@ -1075,6 +1075,25 @@ export type EnumExpenseStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumExpenseStatusEnumFilter<$PrismaModel> | $Enums.ExpenseStatusEnum;
 };
 
+export type EnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ExpenseBacklogReasonEnum
+    | Prisma.EnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.ExpenseBacklogReasonEnum[]
+    | Prisma.ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.ExpenseBacklogReasonEnum[]
+    | Prisma.ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+};
+
 export type EnumExpenseTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ExpenseTypeEnum | Prisma.EnumExpenseTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.ExpenseTypeEnum[] | Prisma.ListEnumExpenseTypeEnumFieldRefInput<$PrismaModel>;
@@ -1121,6 +1140,28 @@ export type EnumExpenseStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumExpenseStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumExpenseStatusEnumFilter<$PrismaModel>;
+};
+
+export type EnumExpenseBacklogReasonEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ExpenseBacklogReasonEnum
+    | Prisma.EnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.ExpenseBacklogReasonEnum[]
+    | Prisma.ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.ExpenseBacklogReasonEnum[]
+    | Prisma.ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumExpenseBacklogReasonEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel>;
 };
 
 export type EnumBonusTypeEnumFilter<$PrismaModel = never> = {
@@ -2548,6 +2589,25 @@ export type NestedEnumExpenseStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumExpenseStatusEnumFilter<$PrismaModel> | $Enums.ExpenseStatusEnum;
 };
 
+export type NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ExpenseBacklogReasonEnum
+    | Prisma.EnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.ExpenseBacklogReasonEnum[]
+    | Prisma.ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.ExpenseBacklogReasonEnum[]
+    | Prisma.ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+};
+
 export type NestedEnumExpenseTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ExpenseTypeEnum | Prisma.EnumExpenseTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.ExpenseTypeEnum[] | Prisma.ListEnumExpenseTypeEnumFieldRefInput<$PrismaModel>;
@@ -2594,6 +2654,28 @@ export type NestedEnumExpenseStatusEnumWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumExpenseStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumExpenseStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumExpenseBacklogReasonEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ExpenseBacklogReasonEnum
+    | Prisma.EnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.ExpenseBacklogReasonEnum[]
+    | Prisma.ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.ExpenseBacklogReasonEnum[]
+    | Prisma.ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumExpenseBacklogReasonEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel>;
 };
 
 export type NestedEnumBonusTypeEnumFilter<$PrismaModel = never> = {

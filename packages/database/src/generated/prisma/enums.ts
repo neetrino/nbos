@@ -297,6 +297,17 @@ export const ExpenseStatusEnum = {
 
 export type ExpenseStatusEnum = (typeof ExpenseStatusEnum)[keyof typeof ExpenseStatusEnum];
 
+export const ExpenseBacklogReasonEnum = {
+  DEBT_PAY_LATER: 'DEBT_PAY_LATER',
+  WAITING_DECISION: 'WAITING_DECISION',
+  WAITING_CLIENT: 'WAITING_CLIENT',
+  WAITING_PROVIDER: 'WAITING_PROVIDER',
+  OTHER: 'OTHER',
+} as const;
+
+export type ExpenseBacklogReasonEnum =
+  (typeof ExpenseBacklogReasonEnum)[keyof typeof ExpenseBacklogReasonEnum];
+
 export const BonusTypeEnum = {
   SALES: 'SALES',
   DELIVERY: 'DELIVERY',

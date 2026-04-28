@@ -28,6 +28,11 @@ export class ExpensesController {
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'frequency', required: false })
+  @ApiQuery({
+    name: 'backlogReason',
+    required: false,
+    description: 'Filter by backlog reason (ExpenseBacklogReasonEnum).',
+  })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
@@ -38,6 +43,7 @@ export class ExpensesController {
     @Query('category') category?: string,
     @Query('status') status?: string,
     @Query('projectId') projectId?: string,
+    @Query('backlogReason') backlogReason?: string,
     @Query('frequency') frequency?: string,
     @Query('search') search?: string,
     @Query('dateFrom') dateFrom?: string,
@@ -52,6 +58,7 @@ export class ExpensesController {
       category,
       status,
       projectId,
+      backlogReason,
       frequency,
       search,
       dateFrom,
@@ -99,6 +106,7 @@ export class ExpensesController {
       projectId?: string;
       isPassThrough?: boolean;
       taxStatus?: string;
+      backlogReason?: string | null;
       notes?: string;
     },
   ) {
@@ -121,6 +129,7 @@ export class ExpensesController {
       projectId?: string;
       isPassThrough?: boolean;
       taxStatus?: string;
+      backlogReason?: string | null;
       notes?: string;
     },
   ) {

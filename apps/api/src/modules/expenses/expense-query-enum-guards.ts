@@ -1,4 +1,5 @@
 import {
+  ExpenseBacklogReasonEnum,
   ExpenseCategoryEnum,
   ExpenseFrequency,
   ExpenseStatusEnum,
@@ -19,6 +20,7 @@ const EXPENSE_CATEGORY_SET = new Set<string>(Object.values(ExpenseCategoryEnum))
 const EXPENSE_FREQUENCY_SET = new Set<string>(Object.values(ExpenseFrequency));
 const EXPENSE_STATUS_SET = new Set<string>(Object.values(ExpenseStatusEnum));
 const TAX_STATUS_SET = new Set<string>(Object.values(TaxStatus));
+const EXPENSE_BACKLOG_REASON_SET = new Set<string>(Object.values(ExpenseBacklogReasonEnum));
 
 /** Drops unknown values so Prisma never receives invalid enum strings from query params. */
 export function pickExpenseTypeFilter(value: string | undefined | null): string | undefined {
@@ -39,4 +41,10 @@ export function pickExpenseStatusFilter(value: string | undefined | null): strin
 
 export function pickTaxStatusFilter(value: string | undefined | null): string | undefined {
   return pickEnumMember(TAX_STATUS_SET, value);
+}
+
+export function pickExpenseBacklogReasonFilter(
+  value: string | undefined | null,
+): string | undefined {
+  return pickEnumMember(EXPENSE_BACKLOG_REASON_SET, value);
 }

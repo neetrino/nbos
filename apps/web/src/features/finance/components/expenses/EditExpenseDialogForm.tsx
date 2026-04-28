@@ -14,7 +14,12 @@ import {
 } from '@/components/ui/select';
 import { DialogFooter } from '@/components/ui/dialog';
 import type { Project } from '@/lib/api/projects';
-import { EXPENSE_FREQUENCIES, EXPENSE_TYPES, TAX_STATUSES } from './edit-expense-dialog-constants';
+import {
+  EXPENSE_BACKLOG_REASONS,
+  EXPENSE_FREQUENCIES,
+  EXPENSE_TYPES,
+  TAX_STATUSES,
+} from './edit-expense-dialog-constants';
 
 export interface EditExpenseFormState {
   name: string;
@@ -27,6 +32,7 @@ export interface EditExpenseFormState {
   projectId: string;
   isPassThrough: boolean;
   taxStatus: string;
+  backlogReason: string;
   notes: string;
 }
 
@@ -186,6 +192,30 @@ export function EditExpenseDialogForm({
           </Select>
         </div>
       </div>
+
+      {form.status === 'DELAYED' ? (
+        <div>
+          <Label>Backlog reason</Label>
+          <Select
+            value={form.backlogReason}
+            onValueChange={(v) => {
+              if (v) setForm({ ...form, backlogReason: v });
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Optional" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {EXPENSE_BACKLOG_REASONS.map((r) => (
+                <SelectItem key={r.value} value={r.value}>
+                  {r.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-3">
         <div>

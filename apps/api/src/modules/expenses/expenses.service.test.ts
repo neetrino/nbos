@@ -83,6 +83,7 @@ describe('ExpensesService', () => {
         category: 'INVALID_CAT',
         status: 'OLD',
         frequency: 'NEVER',
+        backlogReason: 'NOT_A_REASON',
       });
 
       const call = prisma.expense.findMany.mock.calls.at(-1)?.[0] as {
@@ -93,6 +94,17 @@ describe('ExpensesService', () => {
       expect(call?.where).not.toHaveProperty('category');
       expect(call?.where).not.toHaveProperty('status');
       expect(call?.where).not.toHaveProperty('frequency');
+      expect(call?.where).not.toHaveProperty('backlogReason');
+    });
+
+    it('applies backlogReason filter when valid', async () => {
+      await service.findAll({ backlogReason: 'WAITING_DECISION' });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ backlogReason: 'WAITING_DECISION' }),
+        }),
+      );
     });
   });
 

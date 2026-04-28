@@ -45,6 +45,7 @@ export type ExpenseMinAggregateOutputType = {
   projectId: string | null;
   isPassThrough: boolean | null;
   taxStatus: $Enums.TaxStatus | null;
+  backlogReason: $Enums.ExpenseBacklogReasonEnum | null;
   notes: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -62,6 +63,7 @@ export type ExpenseMaxAggregateOutputType = {
   projectId: string | null;
   isPassThrough: boolean | null;
   taxStatus: $Enums.TaxStatus | null;
+  backlogReason: $Enums.ExpenseBacklogReasonEnum | null;
   notes: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -79,6 +81,7 @@ export type ExpenseCountAggregateOutputType = {
   projectId: number;
   isPassThrough: number;
   taxStatus: number;
+  backlogReason: number;
   notes: number;
   createdAt: number;
   updatedAt: number;
@@ -105,6 +108,7 @@ export type ExpenseMinAggregateInputType = {
   projectId?: true;
   isPassThrough?: true;
   taxStatus?: true;
+  backlogReason?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -122,6 +126,7 @@ export type ExpenseMaxAggregateInputType = {
   projectId?: true;
   isPassThrough?: true;
   taxStatus?: true;
+  backlogReason?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -139,6 +144,7 @@ export type ExpenseCountAggregateInputType = {
   projectId?: true;
   isPassThrough?: true;
   taxStatus?: true;
+  backlogReason?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -244,6 +250,7 @@ export type ExpenseGroupByOutputType = {
   projectId: string | null;
   isPassThrough: boolean;
   taxStatus: $Enums.TaxStatus;
+  backlogReason: $Enums.ExpenseBacklogReasonEnum | null;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -286,6 +293,10 @@ export type ExpenseWhereInput = {
   projectId?: Prisma.StringNullableFilter<'Expense'> | string | null;
   isPassThrough?: Prisma.BoolFilter<'Expense'> | boolean;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Expense'> | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.EnumExpenseBacklogReasonEnumNullableFilter<'Expense'>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.StringNullableFilter<'Expense'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
@@ -304,6 +315,7 @@ export type ExpenseOrderByWithRelationInput = {
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -331,6 +343,10 @@ export type ExpenseWhereUniqueInput = Prisma.AtLeast<
     projectId?: Prisma.StringNullableFilter<'Expense'> | string | null;
     isPassThrough?: Prisma.BoolFilter<'Expense'> | boolean;
     taxStatus?: Prisma.EnumTaxStatusFilter<'Expense'> | $Enums.TaxStatus;
+    backlogReason?:
+      | Prisma.EnumExpenseBacklogReasonEnumNullableFilter<'Expense'>
+      | $Enums.ExpenseBacklogReasonEnum
+      | null;
     notes?: Prisma.StringNullableFilter<'Expense'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
@@ -354,6 +370,7 @@ export type ExpenseOrderByWithAggregationInput = {
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -390,6 +407,10 @@ export type ExpenseScalarWhereWithAggregatesInput = {
   projectId?: Prisma.StringNullableWithAggregatesFilter<'Expense'> | string | null;
   isPassThrough?: Prisma.BoolWithAggregatesFilter<'Expense'> | boolean;
   taxStatus?: Prisma.EnumTaxStatusWithAggregatesFilter<'Expense'> | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.EnumExpenseBacklogReasonEnumNullableWithAggregatesFilter<'Expense'>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.StringNullableWithAggregatesFilter<'Expense'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Expense'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Expense'> | Date | string;
@@ -406,6 +427,7 @@ export type ExpenseCreateInput = {
   status?: $Enums.ExpenseStatusEnum;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -424,6 +446,7 @@ export type ExpenseUncheckedCreateInput = {
   projectId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -445,6 +468,10 @@ export type ExpenseUpdateInput = {
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -468,6 +495,10 @@ export type ExpenseUncheckedUpdateInput = {
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -485,6 +516,7 @@ export type ExpenseCreateManyInput = {
   projectId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -506,6 +538,10 @@ export type ExpenseUpdateManyMutationInput = {
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -528,6 +564,10 @@ export type ExpenseUncheckedUpdateManyInput = {
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -555,6 +595,7 @@ export type ExpenseCountOrderByAggregateInput = {
   projectId?: Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -576,6 +617,7 @@ export type ExpenseMaxOrderByAggregateInput = {
   projectId?: Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -593,6 +635,7 @@ export type ExpenseMinOrderByAggregateInput = {
   projectId?: Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -704,6 +747,10 @@ export type EnumExpenseStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.ExpenseStatusEnum;
 };
 
+export type NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ExpenseBacklogReasonEnum | null;
+};
+
 export type ExpenseCreateWithoutProjectInput = {
   id?: string;
   type: $Enums.ExpenseTypeEnum;
@@ -715,6 +762,7 @@ export type ExpenseCreateWithoutProjectInput = {
   status?: $Enums.ExpenseStatusEnum;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -731,6 +779,7 @@ export type ExpenseUncheckedCreateWithoutProjectInput = {
   status?: $Enums.ExpenseStatusEnum;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -797,6 +846,10 @@ export type ExpenseScalarWhereInput = {
   projectId?: Prisma.StringNullableFilter<'Expense'> | string | null;
   isPassThrough?: Prisma.BoolFilter<'Expense'> | boolean;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Expense'> | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.EnumExpenseBacklogReasonEnumNullableFilter<'Expense'>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.StringNullableFilter<'Expense'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
@@ -813,6 +866,7 @@ export type ExpenseCreateManyProjectInput = {
   status?: $Enums.ExpenseStatusEnum;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -834,6 +888,10 @@ export type ExpenseUpdateWithoutProjectInput = {
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -855,6 +913,10 @@ export type ExpenseUncheckedUpdateWithoutProjectInput = {
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -876,6 +938,10 @@ export type ExpenseUncheckedUpdateManyWithoutProjectInput = {
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -896,6 +962,7 @@ export type ExpenseSelect<
     projectId?: boolean;
     isPassThrough?: boolean;
     taxStatus?: boolean;
+    backlogReason?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
@@ -919,6 +986,7 @@ export type ExpenseSelectCreateManyAndReturn<
     projectId?: boolean;
     isPassThrough?: boolean;
     taxStatus?: boolean;
+    backlogReason?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
@@ -942,6 +1010,7 @@ export type ExpenseSelectUpdateManyAndReturn<
     projectId?: boolean;
     isPassThrough?: boolean;
     taxStatus?: boolean;
+    backlogReason?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
@@ -962,6 +1031,7 @@ export type ExpenseSelectScalar = {
   projectId?: boolean;
   isPassThrough?: boolean;
   taxStatus?: boolean;
+  backlogReason?: boolean;
   notes?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
@@ -981,6 +1051,7 @@ export type ExpenseOmit<
   | 'projectId'
   | 'isPassThrough'
   | 'taxStatus'
+  | 'backlogReason'
   | 'notes'
   | 'createdAt'
   | 'updatedAt',
@@ -1022,6 +1093,7 @@ export type $ExpensePayload<
       projectId: string | null;
       isPassThrough: boolean;
       taxStatus: $Enums.TaxStatus;
+      backlogReason: $Enums.ExpenseBacklogReasonEnum | null;
       notes: string | null;
       createdAt: Date;
       updatedAt: Date;
@@ -1595,6 +1667,7 @@ export interface ExpenseFieldRefs {
   readonly projectId: Prisma.FieldRef<'Expense', 'String'>;
   readonly isPassThrough: Prisma.FieldRef<'Expense', 'Boolean'>;
   readonly taxStatus: Prisma.FieldRef<'Expense', 'TaxStatus'>;
+  readonly backlogReason: Prisma.FieldRef<'Expense', 'ExpenseBacklogReasonEnum'>;
   readonly notes: Prisma.FieldRef<'Expense', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Expense', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Expense', 'DateTime'>;

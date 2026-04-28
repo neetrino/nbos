@@ -2,6 +2,7 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
+  type ExpenseBacklogReasonEnum,
   type ExpenseTypeEnum,
   type ExpenseCategoryEnum,
   type ExpenseStatusEnum,
@@ -9,6 +10,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import {
+  pickExpenseBacklogReasonFilter,
   pickExpenseCategoryFilter,
   pickExpenseFrequencyFilter,
   pickExpenseStatusFilter,
@@ -22,6 +24,7 @@ import {
   requireExpenseType,
   requireExpenseTypeIfPresent,
   requireTaxStatusIfPresent,
+  parseExpenseBacklogReasonField,
   resolveExpenseFrequency,
   resolveExpenseStatus,
   resolveExpenseTaxStatus,
@@ -40,6 +43,7 @@ interface CreateExpenseDto {
   projectId?: string;
   isPassThrough?: boolean;
   taxStatus?: string;
+  backlogReason?: string | null;
   notes?: string;
 }
 
@@ -54,6 +58,7 @@ interface UpdateExpenseDto {
   projectId?: string;
   isPassThrough?: boolean;
   taxStatus?: string;
+  backlogReason?: string | null;
   notes?: string;
 }
 
@@ -63,6 +68,7 @@ interface ExpenseQueryParams {
   type?: string;
   category?: string;
   status?: string;
+  backlogReason?: string;
   projectId?: string;
   frequency?: string;
   search?: string;
@@ -94,6 +100,7 @@ export class ExpensesService {
       type,
       category,
       status,
+      backlogReason,
       projectId,
       frequency,
       search,
@@ -112,11 +119,13 @@ export class ExpensesService {
     const safeCategory = pickExpenseCategoryFilter(category);
     const safeStatus = pickExpenseStatusFilter(status);
     const safeFrequency = pickExpenseFrequencyFilter(frequency);
+    const safeBacklogReason = pickExpenseBacklogReasonFilter(backlogReason);
 
     const where = this.buildWhere({
       type: safeType,
       category: safeCategory,
       status: safeStatus,
+      backlogReason: safeBacklogReason,
       projectId,
       frequency: safeFrequency,
       search,
@@ -169,6 +178,11 @@ export class ExpensesService {
         taxStatus: resolveExpenseTaxStatus(
           data.taxStatus,
         ) as Prisma.ExpenseCreateInput['taxStatus'],
+        ...(data.backlogReason !== undefined && {
+          backlogReason: parseExpenseBacklogReasonField(
+            data.backlogReason,
+          ) as ExpenseBacklogReasonEnum | null,
+        }),
         notes: data.notes,
       },
     });
@@ -187,6 +201,10 @@ export class ExpensesService {
       data.status !== undefined ? requireExpenseStatusIfPresent(data.status) : undefined;
     const taxStatusPatch =
       data.taxStatus !== undefined ? requireTaxStatusIfPresent(data.taxStatus) : undefined;
+    const backlogReasonPatch =
+      data.backlogReason !== undefined
+        ? parseExpenseBacklogReasonField(data.backlogReason)
+        : undefined;
 
     await this.prisma.expense.update({
       where: { id },
@@ -204,6 +222,9 @@ export class ExpensesService {
         ...(data.isPassThrough !== undefined && { isPassThrough: data.isPassThrough }),
         ...(taxStatusPatch !== undefined && {
           taxStatus: taxStatusPatch as Prisma.ExpenseUpdateInput['taxStatus'],
+        }),
+        ...(backlogReasonPatch !== undefined && {
+          backlogReason: backlogReasonPatch as ExpenseBacklogReasonEnum | null,
         }),
         ...(data.notes !== undefined && { notes: data.notes }),
       },
@@ -247,6 +268,9 @@ export class ExpensesService {
     if (filters.type) where.type = filters.type as ExpenseTypeEnum;
     if (filters.category) where.category = filters.category as ExpenseCategoryEnum;
     if (filters.status) where.status = filters.status as ExpenseStatusEnum;
+    if (filters.backlogReason) {
+      where.backlogReason = filters.backlogReason as ExpenseBacklogReasonEnum;
+    }
     if (filters.projectId) where.projectId = filters.projectId;
     if (filters.frequency) where.frequency = filters.frequency as ExpenseFrequency;
     if (filters.search) {

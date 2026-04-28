@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import {
+  pickExpenseBacklogReasonFilter,
   pickExpenseCategoryFilter,
   pickExpenseFrequencyFilter,
   pickExpenseStatusFilter,
@@ -8,6 +9,7 @@ import {
 } from './expense-query-enum-guards';
 
 const INVALID = {
+  backlogReason: 'Invalid expense backlog reason',
   category: 'Invalid expense category',
   frequency: 'Invalid expense frequency',
   status: 'Invalid expense status',
@@ -78,5 +80,16 @@ export function requireTaxStatusIfPresent(value: string | undefined | null): str
   if (value === undefined || value === null) return undefined;
   const v = pickTaxStatusFilter(value);
   if (!v) throw new BadRequestException(INVALID.taxStatus);
+  return v;
+}
+
+/** Undefined skips field; null clears optional backlog reason; otherwise validates enum. */
+export function parseExpenseBacklogReasonField(
+  value: string | null | undefined,
+): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const v = pickExpenseBacklogReasonFilter(value);
+  if (!v) throw new BadRequestException(INVALID.backlogReason);
   return v;
 }

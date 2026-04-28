@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  pickExpenseBacklogReasonFilter,
   pickExpenseCategoryFilter,
   pickExpenseFrequencyFilter,
   pickExpenseStatusFilter,
@@ -26,5 +27,11 @@ describe('expense-query-enum-guards', () => {
   it('accepts tax status members', () => {
     expect(pickTaxStatusFilter('TAX')).toBe('TAX');
     expect(pickTaxStatusFilter('TAX_FREE')).toBe('TAX_FREE');
+  });
+
+  it('accepts backlog reason members', () => {
+    expect(pickExpenseBacklogReasonFilter('DEBT_PAY_LATER')).toBe('DEBT_PAY_LATER');
+    expect(pickExpenseBacklogReasonFilter('OTHER')).toBe('OTHER');
+    expect(pickExpenseBacklogReasonFilter('NOT_A_REASON')).toBeUndefined();
   });
 });
