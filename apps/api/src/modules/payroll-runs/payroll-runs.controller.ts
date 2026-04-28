@@ -17,7 +17,11 @@ export class PayrollRunsController {
   })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
-  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filter runs by NBOS status (DRAFT, REVIEW, APPROVED, PAYING, CLOSED).',
+  })
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
   async findAll(
