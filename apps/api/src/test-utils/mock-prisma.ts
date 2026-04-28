@@ -19,7 +19,7 @@ function createModelMock() {
 }
 
 export function createMockPrisma() {
-  return {
+  const prisma = {
     lead: createModelMock(),
     deal: createModelMock(),
     project: createModelMock(),
@@ -39,6 +39,8 @@ export function createMockPrisma() {
     expensePlan: createModelMock(),
     expensePayment: createModelMock(),
     bonusEntry: createModelMock(),
+    payrollRun: createModelMock(),
+    salaryLine: createModelMock(),
     credential: createModelMock(),
     auditLog: createModelMock(),
     partner: createModelMock(),
@@ -46,7 +48,14 @@ export function createMockPrisma() {
     marketingActivity: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
+    $transaction: vi.fn(),
   };
+
+  prisma.$transaction.mockImplementation(async (fn: (tx: typeof prisma) => Promise<unknown>) =>
+    fn(prisma),
+  );
+
+  return prisma;
 }
 
 export type MockPrisma = ReturnType<typeof createMockPrisma>;

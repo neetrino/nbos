@@ -11,6 +11,16 @@ export function paymentsListPageTitle(): string {
   return 'Payments';
 }
 
+export function payrollRunsListPageTitle(): string {
+  return 'Payroll';
+}
+
+export function payrollRunDetailPageTitle(payrollMonth: string | null | undefined): string {
+  const m = payrollMonth?.trim();
+  if (!m) return 'Payroll run';
+  return `Payroll · ${m}`;
+}
+
 export function invoicesListPageTitle(hasSubscriptionDrilldown: boolean): string {
   return hasSubscriptionDrilldown ? 'Invoices · subscription filter' : 'Invoices';
 }

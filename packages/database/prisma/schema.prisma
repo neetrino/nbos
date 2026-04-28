@@ -667,6 +667,7 @@ model Expense {
   project          Project?           @relation(fields: [projectId], references: [id])
   expensePlan    ExpensePlan?       @relation(fields: [expensePlanId], references: [id], onDelete: SetNull)
   expensePayments ExpensePayment[]
+  salaryLine      SalaryLine?
 
   @@index([expensePlanId])
   @@map("expenses")
@@ -726,6 +727,73 @@ model BonusEntry {
   project  Project  @relation(fields: [projectId], references: [id])
 
   @@map("bonus_entries")
+}
+
+enum PayrollRunStatusEnum {
+  DRAFT
+  REVIEW
+  APPROVED
+  PAYING
+  CLOSED
+}
+
+enum SalaryLineStatusEnum {
+  PENDING
+  APPROVED
+  PARTIALLY_PAID
+  PAID
+  HELD
+}
+
+model PayrollRun {
+  id               String                 @id @default(uuid())
+  payrollMonth     String                 @map("payroll_month") @db.VarChar(7)
+  status           PayrollRunStatusEnum   @default(DRAFT)
+  totalBaseSalary  Decimal                @default(0) @map("total_base_salary") @db.Decimal(14, 2)
+  totalBonuses     Decimal                @default(0) @map("total_bonuses") @db.Decimal(14, 2)
+  totalAdjustments Decimal                @default(0) @map("total_adjustments") @db.Decimal(14, 2)
+  totalDeductions  Decimal                @default(0) @map("total_deductions") @db.Decimal(14, 2)
+  totalPayable     Decimal                @default(0) @map("total_payable") @db.Decimal(14, 2)
+  totalPaid        Decimal                @default(0) @map("total_paid") @db.Decimal(14, 2)
+  createdById      String?                @map("created_by_id")
+  approvedById     String?                @map("approved_by_id")
+  approvedAt       DateTime?              @map("approved_at")
+  closedAt         DateTime?              @map("closed_at")
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+
+  createdBy   Employee?    @relation("PayrollRunCreator", fields: [createdById], references: [id])
+  approvedBy  Employee?    @relation("PayrollRunApprover", fields: [approvedById], references: [id])
+  salaryLines SalaryLine[]
+
+  @@unique([payrollMonth])
+  @@map("payroll_runs")
+}
+
+model SalaryLine {
+  id               String               @id @default(uuid())
+  payrollRunId     String               @map("payroll_run_id")
+  employeeId       String               @map("employee_id")
+  baseSalary       Decimal              @default(0) @map("base_salary") @db.Decimal(12, 2)
+  bonusesTotal     Decimal              @default(0) @map("bonuses_total") @db.Decimal(12, 2)
+  adjustmentsTotal Decimal              @default(0) @map("adjustments_total") @db.Decimal(12, 2)
+  deductionsTotal  Decimal              @default(0) @map("deductions_total") @db.Decimal(12, 2)
+  totalPayable     Decimal              @default(0) @map("total_payable") @db.Decimal(12, 2)
+  paidAmount       Decimal              @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  remainingAmount  Decimal              @default(0) @map("remaining_amount") @db.Decimal(12, 2)
+  status           SalaryLineStatusEnum @default(PENDING)
+  expenseId        String?              @unique @map("expense_id")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+  expense    Expense?   @relation(fields: [expenseId], references: [id])
+
+  @@unique([payrollRunId, employeeId])
+  @@index([payrollRunId])
+  @@index([employeeId])
+  @@map("salary_lines")
 }
 
 // ─── TASKS ────────────────────────────────────────────────
@@ -1139,6 +1207,9 @@ model Employee {
   tasksAssigned            Task[]                  @relation("TaskAssignee")
   ticketsAssigned          SupportTicket[]         @relation("TicketAssignee")
   bonusEntries             BonusEntry[]
+  payrollRunsCreated       PayrollRun[]            @relation("PayrollRunCreator")
+  payrollRunsApproved      PayrollRun[]            @relation("PayrollRunApprover")
+  salaryLines              SalaryLine[]
   recurringTasksCreated    RecurringTaskTemplate[] @relation("RecurringTaskCreator")
   recurringTasksAssigned   RecurringTaskTemplate[] @relation("RecurringTaskAssignee")
   invitationsSent          Invitation[]            @relation("InvitedBy")

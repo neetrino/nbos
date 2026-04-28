@@ -8,6 +8,8 @@ import {
   invoicesListPageTitle,
   ordersListPageTitle,
   paymentsListPageTitle,
+  payrollRunDetailPageTitle,
+  payrollRunsListPageTitle,
   subscriptionDetailPageTitle,
   subscriptionsListPageTitle,
 } from './finance-route-page-titles';
@@ -19,6 +21,15 @@ describe('finance route page titles', () => {
 
   it('paymentsListPageTitle', () => {
     expect(paymentsListPageTitle()).toBe('Payments');
+  });
+
+  it('payrollRunsListPageTitle', () => {
+    expect(payrollRunsListPageTitle()).toBe('Payroll');
+  });
+
+  it('payrollRunDetailPageTitle', () => {
+    expect(payrollRunDetailPageTitle(null)).toBe('Payroll run');
+    expect(payrollRunDetailPageTitle('2026-03')).toBe('Payroll · 2026-03');
   });
 
   it('invoicesListPageTitle', () => {
