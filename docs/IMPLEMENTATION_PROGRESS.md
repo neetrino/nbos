@@ -25,8 +25,8 @@ Rules:
 | Field                | Value                                            |
 | -------------------- | ------------------------------------------------ |
 | Current phase        | Phase 2 - CRM, Marketing and Lead-to-Cash intake |
-| Current module/block | Order reconciliation snapshot foundation         |
-| Current task         | Read-only order invoice/payment coverage         |
+| Current module/block | Delivery Done gates foundation                   |
+| Current task         | Product and Extension Done blockers              |
 | Status               | Slice completed; waiting approval for next step  |
 | Last updated         | 2026-04-28                                       |
 
@@ -35,7 +35,7 @@ Rules:
 | Phase                                            | Status      | Progress | Current blocker                | Notes                                        |
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                  |
-| Phase 2 - CRM, Marketing and Lead-to-Cash intake | In progress |      93% | None                           | Order reconciliation snapshot done           |
+| Phase 2 - CRM, Marketing and Lead-to-Cash intake | In progress |      96% | None                           | Delivery Done gates foundation done          |
 | Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications |
@@ -70,6 +70,7 @@ Rules:
 | 2026-04-28 | Marketing performance snapshot done      | Marketing dashboard reads real activity, Finance expense-link readiness and attributed paid revenue signals                  | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
 | 2026-04-28 | Invoice generation foundation done       | Finance invoices and order rows create controlled manual invoices through the existing invoice service path                  | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
 | 2026-04-28 | Order reconciliation snapshot done       | Orders expose read-only invoiced/paid/uninvoiced/outstanding coverage from linked invoices and payments                      | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
+| 2026-04-28 | Delivery Done gates foundation done      | Product and Extension Done transitions block while delivery tasks, tickets or child extensions remain open                   | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Wait for approval; next Phase 2 slice           |
 
 ## Phase 1 Checklist
 
@@ -113,7 +114,7 @@ Make NBOS navigable, permission-aware and safe to extend.
 | Marketing                   | Yes        | Yes          | Partial     | Partial | Launch gates, Finance spend links and performance snapshot added                                        |
 | Finance                     | Yes        | Yes          | Partial     | Partial | Subscription activation, invoice payment, invoice generation and order reconciliation foundations added |
 | Partners                    | Yes        | No           | No          | No      | Phase 3/Finance dependency                                                                              |
-| Projects Hub                | Yes        | Yes          | Partial     | Partial | PM intake, Product/Extension gates and blocker shortcuts added                                          |
+| Projects Hub                | Yes        | Yes          | Partial     | Partial | PM intake, Product/Extension readiness, Done gates and blocker shortcuts added                          |
 | Tasks / Work Spaces         | Yes        | No           | No          | No      | Phase 4                                                                                                 |
 | Support                     | Yes        | No           | No          | No      | Phase 4                                                                                                 |
 | Drive                       | Yes        | No           | No          | No      | Phase 5                                                                                                 |
@@ -142,7 +143,7 @@ Continue Phase 2 after approval:
 
 ```text
 Next Phase 2 slice candidates:
-- Remaining delivery lifecycle depth after readiness foundations;
 - Remaining Marketing analytics after Finance reconciliation deepens;
 - Remaining Finance reconciliation depth after order coverage visibility.
+- Remaining delivery board depth after Done gate foundation.
 ```

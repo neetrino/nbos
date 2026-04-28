@@ -59,6 +59,12 @@ const PRODUCT_ACTION_RULES = [
     target: 'project',
     fields: ['kickoffChecklist', 'description', 'deadline', 'order'],
   },
+  {
+    key: 'delivery-context',
+    label: 'Open delivery context',
+    target: 'project',
+    fields: ['extensions', 'tasks', 'tickets'],
+  },
 ] as const;
 
 const EXTENSION_ACTION_RULES = [
@@ -66,7 +72,7 @@ const EXTENSION_ACTION_RULES = [
     key: 'extension-readiness',
     label: 'Open extension context',
     target: 'project',
-    fields: ['description', 'assignedTo', 'order'],
+    fields: ['description', 'assignedTo', 'order', 'tasks'],
   },
 ] as const;
 

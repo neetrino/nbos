@@ -211,6 +211,36 @@ describe('ExtensionsService', () => {
       const result = await service.updateStatus('e1', 'DEVELOPMENT');
       expect(result.status).toBe('DEVELOPMENT');
     });
+
+    it('blocks TRANSFER → DONE when extension tasks are still open', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'TRANSFER',
+        tasks: [{ status: 'IN_PROGRESS' }, { status: 'DONE' }],
+      });
+
+      const error = await service.updateStatus('e1', 'DONE').catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: EXTENSION_STAGE_GATE_ERROR_CODE,
+        errors: [{ field: 'tasks', message: expect.any(String) }],
+      });
+      expect(prisma.extension.update).not.toHaveBeenCalled();
+    });
+
+    it('allows TRANSFER → DONE when extension tasks are closed', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'TRANSFER',
+        tasks: [{ status: 'DONE' }, { status: 'CANCELLED' }],
+      });
+      prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
+
+      const result = await service.updateStatus('e1', 'DONE');
+
+      expect(result.status).toBe('DONE');
+    });
   });
 
   describe('delete', () => {

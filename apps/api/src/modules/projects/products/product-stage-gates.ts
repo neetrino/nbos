@@ -28,6 +28,9 @@ interface ProductForStageGate {
   description?: string | null;
   deadline?: Date | string | null;
   order?: { id: string } | null;
+  extensions?: Array<{ status: string }>;
+  tasks?: Array<{ status: string }>;
+  tickets?: Array<{ status: string }>;
 }
 
 interface KickoffChecklistItemForGate {
@@ -48,8 +51,16 @@ export function validateProductTransition(current: ProductStatusEnum, target: Pr
 }
 
 export function validateProductStageGate(product: ProductForStageGate, target: ProductStatusEnum) {
-  if (product.status !== 'NEW' || target !== 'CREATING') return;
+  if (product.status === 'NEW' && target === 'CREATING') {
+    validateProductCreatingGate(product);
+  }
 
+  if (target === 'DONE') {
+    validateProductDoneGate(product);
+  }
+}
+
+function validateProductCreatingGate(product: ProductForStageGate) {
   const missing: string[] = [];
   if (!product.description?.trim()) missing.push('description');
   if (!product.deadline) missing.push('deadline');
@@ -60,6 +71,39 @@ export function validateProductStageGate(product: ProductForStageGate, target: P
       `Cannot transition to CREATING: missing required fields ${missing.join(', ')}`,
     );
   }
+}
+
+function validateProductDoneGate(product: ProductForStageGate) {
+  const errors = [
+    ...buildOpenItemError('extensions', product.extensions ?? [], ['DONE', 'LOST']),
+    ...buildOpenItemError('tasks', product.tasks ?? [], ['DONE', 'DEFERRED', 'CANCELLED']),
+    ...buildOpenItemError('tickets', product.tickets ?? [], ['RESOLVED', 'CLOSED']),
+  ];
+
+  if (errors.length === 0) return;
+
+  throw new BadRequestException({
+    statusCode: 400,
+    code: 'STAGE_GATE_VALIDATION',
+    message: 'Cannot complete product while delivery items are still open.',
+    errors,
+  });
+}
+
+function buildOpenItemError(
+  field: string,
+  items: Array<{ status: string }>,
+  closedStatuses: string[],
+) {
+  const openCount = items.filter((item) => !closedStatuses.includes(item.status)).length;
+  if (openCount === 0) return [];
+
+  return [
+    {
+      field,
+      message: `${openCount} ${field} still require completion before Product Done.`,
+    },
+  ];
 }
 
 export function validateKickoffChecklistGate(items: KickoffChecklistItemForGate[]) {

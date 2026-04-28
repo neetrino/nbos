@@ -17,6 +17,7 @@ interface ExtensionForReadiness {
   description?: string | null;
   assignedTo?: string | null;
   order?: { id: string } | null;
+  tasks?: Array<{ status: string }>;
 }
 
 export interface ExtensionReadinessIssue {
@@ -45,8 +46,16 @@ export function validateExtensionStageGate(
   extension: ExtensionForReadiness,
   target: ExtensionStatusEnum,
 ) {
-  if (extension.status !== 'NEW' || target !== 'DEVELOPMENT') return;
+  if (extension.status === 'NEW' && target === 'DEVELOPMENT') {
+    validateExtensionDevelopmentGate(extension);
+  }
 
+  if (target === 'DONE') {
+    validateExtensionDoneGate(extension);
+  }
+}
+
+function validateExtensionDevelopmentGate(extension: ExtensionForReadiness) {
   const missing = buildExtensionReadiness(extension).missing;
   if (missing.length === 0) return;
 
@@ -56,6 +65,27 @@ export function validateExtensionStageGate(
     message: 'Cannot move extension to Development: missing required readiness items',
     errors: missing,
   });
+}
+
+function validateExtensionDoneGate(extension: ExtensionForReadiness) {
+  const openTaskCount = (extension.tasks ?? []).filter((task) => !isClosedTask(task.status)).length;
+  if (openTaskCount === 0) return;
+
+  throw new BadRequestException({
+    statusCode: 400,
+    code: EXTENSION_STAGE_GATE_ERROR_CODE,
+    message: 'Cannot complete extension while tasks are still open.',
+    errors: [
+      {
+        field: 'tasks',
+        message: `${openTaskCount} tasks still require completion before Extension Done.`,
+      },
+    ],
+  });
+}
+
+function isClosedTask(status: string) {
+  return ['DONE', 'DEFERRED', 'CANCELLED'].includes(status);
 }
 
 export function buildExtensionReadiness(

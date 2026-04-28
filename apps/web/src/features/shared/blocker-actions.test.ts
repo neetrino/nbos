@@ -26,10 +26,32 @@ describe('resolveBlockerDirectActions', () => {
     expect(actions).toEqual([{ key: 'pm-intake', label: 'Open PM intake', target: 'project' }]);
   });
 
+  it('maps product Done blockers to delivery context', () => {
+    const actions = resolveBlockerDirectActions({
+      context: 'product',
+      errors: [{ field: 'tasks', message: 'Tasks remain open' }],
+    });
+
+    expect(actions).toEqual([
+      { key: 'delivery-context', label: 'Open delivery context', target: 'project' },
+    ]);
+  });
+
   it('maps extension readiness blockers to extension context', () => {
     const actions = resolveBlockerDirectActions({
       context: 'extension',
       errors: [{ field: 'assignedTo', message: 'Assignee is required' }],
+    });
+
+    expect(actions).toEqual([
+      { key: 'extension-readiness', label: 'Open extension context', target: 'project' },
+    ]);
+  });
+
+  it('maps extension Done task blockers to extension context', () => {
+    const actions = resolveBlockerDirectActions({
+      context: 'extension',
+      errors: [{ field: 'tasks', message: 'Tasks remain open' }],
     });
 
     expect(actions).toEqual([

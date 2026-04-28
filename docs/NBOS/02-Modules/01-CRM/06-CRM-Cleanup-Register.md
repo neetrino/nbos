@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `ORDER RECONCILIATION SNAPSHOT DONE / DELIVERY DEPTH OR MARKETING ANALYTICS NEXT`
+Статус: `DELIVERY DONE GATES FOUNDATION DONE / MARKETING ANALYTICS OR FINANCE DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -214,7 +214,8 @@ Finance invoice paid/outstanding coverage with controlled Record Payment action,
 field-aware blocker popup direct actions for CRM, Product and Extension gates,
 read-only Marketing performance snapshot from real spend links and attributed paid revenue,
 controlled manual invoice generation from Finance invoice/order screens,
-and read-only Order reconciliation coverage from linked invoices/payments.
+read-only Order reconciliation coverage from linked invoices/payments,
+and Product/Extension Done blockers for open delivery work.
 
 Новые требования, которые надо будет реализовать:
 
@@ -222,7 +223,7 @@ and read-only Order reconciliation coverage from linked invoices/payments.
 - углубить direct actions там, где понадобится actual create flow, not only open target;
 - углубить later finance reconciliation workflow after read-only order coverage visibility;
 - later deepen Marketing ROI after Finance reconciliation becomes reliable;
-- углубить remaining delivery lifecycle depth after readiness foundations.
+- углубить remaining delivery board depth after Done gate foundation.
 
 Опорные места в коде:
 
@@ -232,7 +233,7 @@ and read-only Order reconciliation coverage from linked invoices/payments.
 Что потом нужно сделать:
 
 - углубить remaining Finance-owned reconciliation/subscription semantics;
-- добавить shortened Extension checklist and later delivery board depth.
+- добавить later delivery board depth and operational task workflows.
 
 ### C3. Автосоздание связанного `MAINTENANCE Deal` пока надо считать функциональным backlog item
 
@@ -252,7 +253,7 @@ and read-only Order reconciliation coverage from linked invoices/payments.
 
 Что потом нужно сделать:
 
-- углубить Extension delivery board depth after readiness foundation;
+- углубить Extension delivery board depth after Done gate foundation;
 - later deepen reconciliation and activation rules in Finance instead of CRM.
 
 ---

@@ -179,6 +179,44 @@ describe('ProductsService', () => {
       expect(result.status).toBe('DEVELOPMENT');
     });
 
+    it('blocks TRANSFER → DONE when delivery items are still open', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'TRANSFER',
+        extensions: [{ status: 'DEVELOPMENT' }],
+        tasks: [{ status: 'IN_PROGRESS' }],
+        tickets: [{ status: 'NEW' }],
+      });
+
+      const error = await service.updateStatus('p1', 'DONE').catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: 'STAGE_GATE_VALIDATION',
+        errors: [
+          { field: 'extensions', message: expect.any(String) },
+          { field: 'tasks', message: expect.any(String) },
+          { field: 'tickets', message: expect.any(String) },
+        ],
+      });
+      expect(prisma.product.update).not.toHaveBeenCalled();
+    });
+
+    it('allows TRANSFER → DONE when delivery items are closed', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'TRANSFER',
+        extensions: [{ status: 'DONE' }, { status: 'LOST' }],
+        tasks: [{ status: 'DONE' }, { status: 'DEFERRED' }],
+        tickets: [{ status: 'RESOLVED' }, { status: 'CLOSED' }],
+      });
+      prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DONE' });
+
+      const result = await service.updateStatus('p1', 'DONE');
+
+      expect(result.status).toBe('DONE');
+    });
+
     it('blocks CREATING → DEVELOPMENT when kickoff checklist has missing required items', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
@@ -247,3 +285,9 @@ describe('ProductsService', () => {
     });
   });
 });
+
+function readExceptionResponse(error: unknown) {
+  if (!(error instanceof BadRequestException)) return {};
+  const response = error.getResponse();
+  return typeof response === 'object' && response !== null ? response : {};
+}
