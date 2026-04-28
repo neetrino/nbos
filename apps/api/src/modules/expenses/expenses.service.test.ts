@@ -76,6 +76,24 @@ describe('ExpensesService', () => {
         }),
       );
     });
+
+    it('strips invalid enum query filters', async () => {
+      await service.findAll({
+        type: 'NOT_A_TYPE',
+        category: 'INVALID_CAT',
+        status: 'OLD',
+        frequency: 'NEVER',
+      });
+
+      const call = prisma.expense.findMany.mock.calls.at(-1)?.[0] as {
+        where?: Record<string, unknown>;
+      };
+      expect(call?.where).toBeDefined();
+      expect(call?.where).not.toHaveProperty('type');
+      expect(call?.where).not.toHaveProperty('category');
+      expect(call?.where).not.toHaveProperty('status');
+      expect(call?.where).not.toHaveProperty('frequency');
+    });
   });
 
   describe('findById', () => {
@@ -192,6 +210,20 @@ describe('ExpensesService', () => {
           }),
         }),
       );
+    });
+
+    it('ignores invalid stats status param', async () => {
+      await service.getStats({
+        status: 'OLD',
+        dateFrom: '2026-04-01T00:00:00.000Z',
+        dateTo: '2026-04-30T23:59:59.999Z',
+      });
+
+      const groupWhere = prisma.expense.groupBy.mock.calls.at(-1)?.[0] as {
+        where?: Record<string, unknown>;
+      };
+      expect(groupWhere?.where).toBeDefined();
+      expect(groupWhere?.where).not.toHaveProperty('status');
     });
   });
 });

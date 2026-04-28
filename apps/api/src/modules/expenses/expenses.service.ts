@@ -8,6 +8,12 @@ import {
   type ExpenseFrequency,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  pickExpenseCategoryFilter,
+  pickExpenseFrequencyFilter,
+  pickExpenseStatusFilter,
+  pickExpenseTypeFilter,
+} from './expense-query-enum-guards';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 
 interface CreateExpenseDto {
@@ -89,12 +95,17 @@ export class ExpensesService {
 
     const orderBy = this.buildExpenseListOrderBy(sortBy, sortOrder);
 
+    const safeType = pickExpenseTypeFilter(type);
+    const safeCategory = pickExpenseCategoryFilter(category);
+    const safeStatus = pickExpenseStatusFilter(status);
+    const safeFrequency = pickExpenseFrequencyFilter(frequency);
+
     const where = this.buildWhere({
-      type,
-      category,
-      status,
+      type: safeType,
+      category: safeCategory,
+      status: safeStatus,
       projectId,
-      frequency,
+      frequency: safeFrequency,
       search,
       dateFrom,
       dateTo,
@@ -180,12 +191,10 @@ export class ExpensesService {
   }
 
   async getStats(params: ExpenseStatsParams = {}) {
+    const safeStatus = pickExpenseStatusFilter(params.status);
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const projectWhere = params.projectId ? { projectId: params.projectId } : {};
-    const statusWhere =
-      params.status !== undefined && params.status !== ''
-        ? { status: params.status as ExpenseStatusEnum }
-        : {};
+    const statusWhere = safeStatus ? { status: safeStatus as ExpenseStatusEnum } : {};
 
     const scopeWhere: Prisma.ExpenseWhereInput = {
       ...projectWhere,
