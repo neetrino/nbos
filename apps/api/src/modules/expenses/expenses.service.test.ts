@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ExpensesService } from './expenses.service';
 import { EXPENSE_LIST_MAX_PAGE_SIZE } from './expenses-list-pagination';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('ExpensesService', () => {
   let service: ExpensesService;
@@ -120,6 +120,18 @@ describe('ExpensesService', () => {
       expect(result.name).toBe('Hosting');
       expect(prisma.expense.findUnique).toHaveBeenCalled();
     });
+
+    it('rejects invalid type', async () => {
+      await expect(
+        service.create({
+          name: 'x',
+          type: 'INVALID_TYPE',
+          category: 'OTHER',
+          amount: 1,
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.expense.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('update', () => {
@@ -134,6 +146,19 @@ describe('ExpensesService', () => {
       expect(result.name).toBe('Updated');
       expect(prisma.expense.update).toHaveBeenCalled();
       expect(prisma.expense.findUnique).toHaveBeenCalled();
+    });
+
+    it('rejects invalid category', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'x',
+        amount: 100,
+        project: null,
+      });
+      await expect(service.update('e1', { category: 'INVALID' })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.expense.update).not.toHaveBeenCalled();
     });
   });
 

@@ -14,7 +14,20 @@ import {
   pickExpenseStatusFilter,
   pickExpenseTypeFilter,
 } from './expense-query-enum-guards';
+import {
+  requireExpenseCategory,
+  requireExpenseCategoryIfPresent,
+  requireExpenseFrequencyIfPresent,
+  requireExpenseStatusIfPresent,
+  requireExpenseType,
+  requireExpenseTypeIfPresent,
+  requireTaxStatusIfPresent,
+  resolveExpenseFrequency,
+  resolveExpenseStatus,
+  resolveExpenseTaxStatus,
+} from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
+import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
 
 interface CreateExpenseDto {
   name: string;
@@ -145,15 +158,17 @@ export class ExpensesService {
     const created = await this.prisma.expense.create({
       data: {
         name: data.name,
-        type: data.type as ExpenseTypeEnum,
-        category: data.category as ExpenseCategoryEnum,
+        type: requireExpenseType(data.type) as ExpenseTypeEnum,
+        category: requireExpenseCategory(data.category) as ExpenseCategoryEnum,
         amount: data.amount,
-        frequency: (data.frequency as ExpenseFrequency) ?? 'ONE_TIME',
+        frequency: resolveExpenseFrequency(data.frequency) as ExpenseFrequency,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-        status: (data.status as ExpenseStatusEnum) ?? 'THIS_MONTH',
+        status: resolveExpenseStatus(data.status) as ExpenseStatusEnum,
         projectId: data.projectId,
         isPassThrough: data.isPassThrough ?? false,
-        taxStatus: data.taxStatus as Prisma.ExpenseCreateInput['taxStatus'],
+        taxStatus: resolveExpenseTaxStatus(
+          data.taxStatus,
+        ) as Prisma.ExpenseCreateInput['taxStatus'],
         notes: data.notes,
       },
     });
@@ -162,22 +177,33 @@ export class ExpensesService {
 
   async update(id: string, data: UpdateExpenseDto) {
     await this.findById(id);
+
+    const typePatch = data.type !== undefined ? requireExpenseTypeIfPresent(data.type) : undefined;
+    const categoryPatch =
+      data.category !== undefined ? requireExpenseCategoryIfPresent(data.category) : undefined;
+    const frequencyPatch =
+      data.frequency !== undefined ? requireExpenseFrequencyIfPresent(data.frequency) : undefined;
+    const statusPatch =
+      data.status !== undefined ? requireExpenseStatusIfPresent(data.status) : undefined;
+    const taxStatusPatch =
+      data.taxStatus !== undefined ? requireTaxStatusIfPresent(data.taxStatus) : undefined;
+
     await this.prisma.expense.update({
       where: { id },
       data: {
         ...(data.name && { name: data.name }),
-        ...(data.type && { type: data.type as ExpenseTypeEnum }),
-        ...(data.category && { category: data.category as ExpenseCategoryEnum }),
+        ...(typePatch !== undefined && { type: typePatch as ExpenseTypeEnum }),
+        ...(categoryPatch !== undefined && { category: categoryPatch as ExpenseCategoryEnum }),
         ...(data.amount !== undefined && { amount: data.amount }),
-        ...(data.frequency && { frequency: data.frequency as ExpenseFrequency }),
+        ...(frequencyPatch !== undefined && { frequency: frequencyPatch as ExpenseFrequency }),
         ...(data.dueDate !== undefined && {
           dueDate: data.dueDate ? new Date(data.dueDate) : null,
         }),
-        ...(data.status && { status: data.status as ExpenseStatusEnum }),
+        ...(statusPatch !== undefined && { status: statusPatch as ExpenseStatusEnum }),
         ...(data.projectId !== undefined && { projectId: data.projectId || null }),
         ...(data.isPassThrough !== undefined && { isPassThrough: data.isPassThrough }),
-        ...(data.taxStatus && {
-          taxStatus: data.taxStatus as Prisma.ExpenseUpdateInput['taxStatus'],
+        ...(taxStatusPatch !== undefined && {
+          taxStatus: taxStatusPatch as Prisma.ExpenseUpdateInput['taxStatus'],
         }),
         ...(data.notes !== undefined && { notes: data.notes }),
       },
@@ -201,48 +227,8 @@ export class ExpensesService {
       ...statusWhere,
       ...(createdAt ? { createdAt } : {}),
     };
-    const hasScope = Object.keys(scopeWhere).length > 0;
 
-    const [byCategory, byStatus, totalAmount, paidAmount, unpaidAmount] = await Promise.all([
-      this.prisma.expense.groupBy({
-        by: ['category'],
-        ...(hasScope ? { where: scopeWhere } : {}),
-        _count: true,
-        _sum: { amount: true },
-      }),
-      this.prisma.expense.groupBy({
-        by: ['status'],
-        ...(hasScope ? { where: scopeWhere } : {}),
-        _count: true,
-        _sum: { amount: true },
-      }),
-      this.prisma.expense.aggregate({
-        ...(hasScope ? { where: scopeWhere } : {}),
-        _sum: { amount: true },
-      }),
-      this.prisma.expense.aggregate({
-        where: {
-          ...scopeWhere,
-          status: 'PAID',
-        },
-        _sum: { amount: true },
-      }),
-      this.prisma.expense.aggregate({
-        where: {
-          ...scopeWhere,
-          status: { not: 'PAID' },
-        },
-        _sum: { amount: true },
-      }),
-    ]);
-
-    return {
-      byCategory,
-      byStatus,
-      totalAmount: totalAmount._sum.amount,
-      paidAmount: paidAmount._sum.amount,
-      unpaidAmount: unpaidAmount._sum.amount,
-    };
+    return fetchExpenseStatsAggregates(this.prisma, scopeWhere);
   }
 
   private buildExpenseListOrderBy(
