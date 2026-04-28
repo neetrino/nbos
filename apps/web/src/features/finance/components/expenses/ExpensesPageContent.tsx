@@ -198,6 +198,7 @@ export function ExpensesPageContent({
 
       <ExpenseSummaryCards
         stats={stats}
+        loading={loading}
         variant={pageVariant === 'backlog' ? 'backlog' : 'default'}
       />
 
