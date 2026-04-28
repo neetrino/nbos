@@ -147,7 +147,7 @@ describe('ExpensesService', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             status: 'PAID',
-            paidDate: expect.objectContaining({
+            createdAt: expect.objectContaining({
               gte: expect.any(Date),
               lte: expect.any(Date),
             }),
@@ -172,6 +172,26 @@ describe('ExpensesService', () => {
           }),
         );
       }
+    });
+
+    it('applies status filter to stats scope', async () => {
+      await service.getStats({
+        status: 'DELAYED',
+        dateFrom: '2026-04-01T00:00:00.000Z',
+        dateTo: '2026-04-30T23:59:59.999Z',
+      });
+
+      expect(prisma.expense.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: 'DELAYED',
+            createdAt: expect.objectContaining({
+              gte: expect.any(Date),
+              lte: expect.any(Date),
+            }),
+          }),
+        }),
+      );
     });
   });
 });

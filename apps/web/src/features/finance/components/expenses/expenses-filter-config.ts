@@ -8,6 +8,7 @@ export type ExpenseFilterBarConfig = {
 
 export function buildExpenseFilterConfigs(
   projectFilterOptions: Array<{ value: string; label: string }>,
+  options?: { omitStatus?: boolean },
 ): ExpenseFilterBarConfig[] {
   const configs: ExpenseFilterBarConfig[] = [
     {
@@ -15,12 +16,14 @@ export function buildExpenseFilterConfigs(
       label: 'Category',
       options: EXPENSE_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
     },
-    {
+  ];
+  if (!options?.omitStatus) {
+    configs.push({
       key: 'status',
       label: 'Status',
       options: EXPENSE_STAGES.map((s) => ({ value: s.value, label: s.label })),
-    },
-  ];
+    });
+  }
   if (projectFilterOptions.length > 0) {
     configs.push({
       key: 'project',

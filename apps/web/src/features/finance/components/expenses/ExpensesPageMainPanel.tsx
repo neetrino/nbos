@@ -17,6 +17,8 @@ interface ExpensesPageMainPanelProps {
   onRetry: () => void;
   expenses: Expense[];
   view: ExpensesViewMode;
+  /** Detail links include `from=backlog` when opened from `/finance/expenses/backlog`. */
+  fromBacklog?: boolean;
   effectiveProjectId: string | null;
   listSort: ExpenseListNavigationSort;
   onRequestDelete: (expense: Expense) => void;
@@ -29,6 +31,7 @@ export function ExpensesPageMainPanel({
   onRetry,
   expenses,
   view,
+  fromBacklog = false,
   effectiveProjectId,
   listSort,
   onRequestDelete,
@@ -46,8 +49,12 @@ export function ExpensesPageMainPanel({
     return (
       <EmptyState
         icon={Receipt}
-        title="No expenses yet"
-        description="Track company expenses here"
+        title={fromBacklog ? 'No deferred expenses' : 'No expenses yet'}
+        description={
+          fromBacklog
+            ? 'Nothing matches this backlog scope for the selected period.'
+            : 'Track company expenses here'
+        }
         action={
           <Button type="button" onClick={onAddFirstExpense}>
             <Plus size={16} />
@@ -67,6 +74,7 @@ export function ExpensesPageMainPanel({
             expense={expense}
             listProjectId={effectiveProjectId}
             listSort={listSort}
+            fromBacklog={fromBacklog}
             onRequestDelete={onRequestDelete}
           />
         )}
@@ -78,6 +86,7 @@ export function ExpensesPageMainPanel({
       expenses={expenses}
       listProjectId={effectiveProjectId}
       listSort={listSort}
+      fromBacklog={fromBacklog}
       onRequestDelete={onRequestDelete}
     />
   );

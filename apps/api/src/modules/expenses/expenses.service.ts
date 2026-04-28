@@ -58,6 +58,8 @@ interface ExpenseStatsParams {
   dateTo?: string;
   /** When set, stats match `findAll` list filter for the same project. */
   projectId?: string;
+  /** When set, aggregates are scoped to this status (list/stats parity). */
+  status?: string;
 }
 
 const EXPENSE_LIST_SORT_FIELDS = new Set(['createdAt', 'dueDate', 'amount', 'name', 'status']);
@@ -179,45 +181,47 @@ export class ExpensesService {
 
   async getStats(params: ExpenseStatsParams = {}) {
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
-    const paidDate = this.buildDateRange(params.dateFrom, params.dateTo);
     const projectWhere = params.projectId ? { projectId: params.projectId } : {};
+    const statusWhere =
+      params.status !== undefined && params.status !== ''
+        ? { status: params.status as ExpenseStatusEnum }
+        : {};
 
-    const whereCreated: Prisma.ExpenseWhereInput = {
+    const scopeWhere: Prisma.ExpenseWhereInput = {
       ...projectWhere,
+      ...statusWhere,
       ...(createdAt ? { createdAt } : {}),
     };
-    const hasCreatedScope = Object.keys(whereCreated).length > 0;
+    const hasScope = Object.keys(scopeWhere).length > 0;
 
     const [byCategory, byStatus, totalAmount, paidAmount, unpaidAmount] = await Promise.all([
       this.prisma.expense.groupBy({
         by: ['category'],
-        ...(hasCreatedScope ? { where: whereCreated } : {}),
+        ...(hasScope ? { where: scopeWhere } : {}),
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.expense.groupBy({
         by: ['status'],
-        ...(hasCreatedScope ? { where: whereCreated } : {}),
+        ...(hasScope ? { where: scopeWhere } : {}),
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.expense.aggregate({
-        ...(hasCreatedScope ? { where: whereCreated } : {}),
+        ...(hasScope ? { where: scopeWhere } : {}),
         _sum: { amount: true },
       }),
       this.prisma.expense.aggregate({
         where: {
-          ...projectWhere,
+          ...scopeWhere,
           status: 'PAID',
-          ...(paidDate ? { paidDate } : {}),
         },
         _sum: { amount: true },
       }),
       this.prisma.expense.aggregate({
         where: {
-          ...projectWhere,
+          ...scopeWhere,
           status: { not: 'PAID' },
-          ...(createdAt ? { createdAt } : {}),
         },
         _sum: { amount: true },
       }),

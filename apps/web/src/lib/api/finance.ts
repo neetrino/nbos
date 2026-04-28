@@ -147,6 +147,8 @@ export interface ExpenseStats {
 /** Query params for `expensesApi.getStats` (optional project drill-down parity). */
 export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   projectId?: string;
+  /** When set, aggregates match the same status scope as the expenses list. */
+  status?: string;
 }
 
 /** Allowed `sortBy` values for `GET /expenses` (aligned with ExpensesService allowlist). */

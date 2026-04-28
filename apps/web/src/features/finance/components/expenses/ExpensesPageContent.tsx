@@ -12,9 +12,15 @@ import {
 } from '@/lib/api/finance';
 import { projectsApi } from '@/lib/api/projects';
 import {
+  EXPENSE_BACKLOG_FIXED_STATUS,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   expenseDetailHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
+import {
+  clearedExpenseFilterRecord,
+  expenseFiltersWithoutProjectDrilldown,
+  initialExpenseFilterRecord,
+} from './expenses-page-filter-helpers';
 import { ExpenseSortControls } from './ExpenseSortControls';
 import { ExpensesPageHeader } from './ExpensesPageHeader';
 import { ExpenseSummaryCards } from './ExpenseSummaryCards';
@@ -30,6 +36,8 @@ import {
 import { useExpenseCsvExport } from './use-expense-csv-export';
 
 interface ExpensesPageContentProps {
+  /** Backlog route: deferred expenses list (Delayed status) per NBOS Finance UI spec. */
+  pageVariant?: 'default' | 'backlog';
   projectIdFromUrl: string | null;
   onClearProjectFilter: () => void;
   replaceExpensesUrl: (mutate: (params: URLSearchParams) => void) => void;
@@ -40,6 +48,7 @@ interface ExpensesPageContentProps {
 }
 
 export function ExpensesPageContent({
+  pageVariant = 'default',
   projectIdFromUrl,
   onClearProjectFilter,
   replaceExpensesUrl,
@@ -54,7 +63,9 @@ export function ExpensesPageContent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<Record<string, string>>(() =>
+    initialExpenseFilterRecord(pageVariant),
+  );
   const [view, setView] = useState<ExpensesViewMode>('list');
   const [period, setPeriod] = useState<FinancePeriod>('month');
   const [projectBanner, setProjectBanner] = useState<{ id: string; text: string } | null>(null);
@@ -115,16 +126,15 @@ export function ExpensesPageContent({
     projectIdFromUrl && projectBanner?.id === projectIdFromUrl ? projectBanner.text || null : null;
 
   const handleClearProjectDrilldown = useCallback(() => {
-    setFilters((prev) => {
-      const next = { ...prev };
-      delete next.project;
-      return next;
-    });
+    setFilters((prev) => expenseFiltersWithoutProjectDrilldown(prev, pageVariant));
     onClearProjectFilter();
-  }, [onClearProjectFilter]);
+  }, [onClearProjectFilter, pageVariant]);
 
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
+      if (pageVariant === 'backlog' && key === 'status') {
+        return;
+      }
       if (projectIdFromUrl && key === 'project') {
         replaceExpensesUrl((params) => {
           params.delete(PROJECT_EXPENSES_DRILLDOWN_QUERY);
@@ -132,7 +142,7 @@ export function ExpensesPageContent({
       }
       setFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [projectIdFromUrl, replaceExpensesUrl],
+    [pageVariant, projectIdFromUrl, replaceExpensesUrl],
   );
 
   const fetchExpenses = useCallback(async () => {
@@ -147,6 +157,7 @@ export function ExpensesPageContent({
           dateFrom: listApiParams.dateFrom,
           dateTo: listApiParams.dateTo,
           projectId: listApiParams.projectId,
+          status: listApiParams.status,
         }),
       ]);
       setExpenses(data.items);
@@ -182,9 +193,19 @@ export function ExpensesPageContent({
   const paidExpenses = Number(stats?.paidAmount ?? 0);
 
   const filterConfigs = useMemo(
-    () => buildExpenseFilterConfigs(projectFilterOptions),
-    [projectFilterOptions],
+    () =>
+      buildExpenseFilterConfigs(projectFilterOptions, {
+        omitStatus: pageVariant === 'backlog',
+      }),
+    [projectFilterOptions, pageVariant],
   );
+
+  const clearFilters = useCallback(() => {
+    setFilters(clearedExpenseFilterRecord(pageVariant, projectIdFromUrl));
+  }, [pageVariant, projectIdFromUrl]);
+
+  const panelView = pageVariant === 'backlog' ? 'list' : view;
+  const fromBacklogList = pageVariant === 'backlog';
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -194,6 +215,8 @@ export function ExpensesPageContent({
         onPeriodChange={setPeriod}
         view={view}
         onViewChange={setView}
+        hideViewToggle={pageVariant === 'backlog'}
+        pageVariant={pageVariant}
         onRefresh={fetchExpenses}
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
@@ -218,7 +241,7 @@ export function ExpensesPageContent({
         filters={filterConfigs}
         filterValues={filters}
         onFilterChange={handleFilterChange}
-        onClearFilters={() => setFilters({})}
+        onClearFilters={clearFilters}
         actions={
           <ExpenseSortControls
             sortBy={sortBy}
@@ -234,7 +257,8 @@ export function ExpensesPageContent({
         error={error}
         onRetry={fetchExpenses}
         expenses={expenses}
-        view={view}
+        view={panelView}
+        fromBacklog={fromBacklogList}
         effectiveProjectId={effectiveProjectId ?? null}
         listSort={{ sortBy, sortOrder }}
         onRequestDelete={(row) => {
@@ -248,10 +272,18 @@ export function ExpensesPageContent({
         createOpen={createOpen}
         onCreateOpenChange={setCreateOpen}
         effectiveProjectId={effectiveProjectId ?? null}
+        defaultCreateStatus={pageVariant === 'backlog' ? EXPENSE_BACKLOG_FIXED_STATUS : undefined}
         onExpenseCreated={(created) => {
           fetchExpenses();
           router.push(
-            expenseDetailHref(created.id, effectiveProjectId ?? null, { sortBy, sortOrder }),
+            expenseDetailHref(
+              created.id,
+              effectiveProjectId ?? null,
+              { sortBy, sortOrder },
+              {
+                fromBacklog: fromBacklogList,
+              },
+            ),
           );
         }}
         deleteTarget={deleteTarget}

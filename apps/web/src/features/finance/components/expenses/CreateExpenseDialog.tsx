@@ -14,6 +14,8 @@ interface CreateExpenseDialogProps {
   onCreated: (created: Expense) => void;
   /** Pre-select project when opening from `/finance/expenses?projectId=`. */
   defaultProjectId?: string | null;
+  /** Pre-select status (e.g. Delayed when creating from backlog). */
+  defaultStatus?: string;
 }
 
 const EMPTY_FORM: EditExpenseFormState = {
@@ -35,6 +37,7 @@ export function CreateExpenseDialog({
   onOpenChange,
   onCreated,
   defaultProjectId = null,
+  defaultStatus,
 }: CreateExpenseDialogProps) {
   const [loading, setLoading] = useState(false);
   const [projectsLoading, setProjectsLoading] = useState(false);
@@ -64,12 +67,17 @@ export function CreateExpenseDialog({
 
   useEffect(() => {
     if (!open) return;
+    const status =
+      defaultStatus && SCHEMA_EXPENSE_STATUSES.has(defaultStatus)
+        ? defaultStatus
+        : EMPTY_FORM.status;
     setForm({
       ...EMPTY_FORM,
+      status,
       projectId: defaultProjectId && defaultProjectId.length > 0 ? defaultProjectId : 'none',
     });
     setFormError(null);
-  }, [open, defaultProjectId]);
+  }, [open, defaultProjectId, defaultStatus]);
 
   const categoryItems = useMemo(
     (): Array<{ value: string; label: string }> =>

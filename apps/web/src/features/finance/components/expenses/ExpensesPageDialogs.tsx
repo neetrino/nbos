@@ -8,6 +8,8 @@ interface ExpensesPageDialogsProps {
   createOpen: boolean;
   onCreateOpenChange: (open: boolean) => void;
   effectiveProjectId: string | null;
+  /** When set, new expense form defaults to this status (backlog → Delayed). */
+  defaultCreateStatus?: string;
   onExpenseCreated: (created: Expense) => void;
   deleteTarget: Expense | null;
   deleteSubmitting: boolean;
@@ -20,6 +22,7 @@ export function ExpensesPageDialogs({
   createOpen,
   onCreateOpenChange,
   effectiveProjectId,
+  defaultCreateStatus,
   onExpenseCreated,
   deleteTarget,
   deleteSubmitting,
@@ -33,6 +36,7 @@ export function ExpensesPageDialogs({
         open={createOpen}
         onOpenChange={onCreateOpenChange}
         defaultProjectId={effectiveProjectId}
+        defaultStatus={defaultCreateStatus}
         onCreated={onExpenseCreated}
       />
       <DeleteExpenseDialog

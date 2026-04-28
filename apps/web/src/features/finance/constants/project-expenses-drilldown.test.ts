@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { EXPENSE_LIST_SORT_BY_QUERY, EXPENSE_LIST_SORT_ORDER_QUERY } from './expenses-list-query';
 import {
+  EXPENSE_FROM_BACKLOG_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
+  EXPENSE_BACKLOG_LIST_PATH,
   expenseDetailHref,
   financeExpensesListHref,
   projectExpensesDrilldownHref,
@@ -25,6 +27,12 @@ describe('project-expenses-drilldown', () => {
     expect(href).toContain(`${EXPENSE_LIST_SORT_ORDER_QUERY}=asc`);
   });
 
+  it('financeExpensesListHref targets backlog path when option set', () => {
+    expect(financeExpensesListHref(null, undefined, { fromBacklog: true })).toBe(
+      EXPENSE_BACKLOG_LIST_PATH,
+    );
+  });
+
   it('expenseDetailHref adds project query when provided', () => {
     expect(expenseDetailHref('ex-1', 'proj-x')).toContain('ex-1');
     expect(expenseDetailHref('ex-1', 'proj-x')).toContain(
@@ -38,5 +46,11 @@ describe('project-expenses-drilldown', () => {
     expect(href).toContain('/finance/expenses/ex-1?');
     expect(href).toContain(`${EXPENSE_LIST_SORT_BY_QUERY}=name`);
     expect(href).toContain(`${EXPENSE_LIST_SORT_ORDER_QUERY}=asc`);
+  });
+
+  it('expenseDetailHref adds from=backlog when option set', () => {
+    expect(expenseDetailHref('ex-1', null, undefined, { fromBacklog: true })).toBe(
+      `/finance/expenses/ex-1?${EXPENSE_FROM_BACKLOG_QUERY}=backlog`,
+    );
   });
 });

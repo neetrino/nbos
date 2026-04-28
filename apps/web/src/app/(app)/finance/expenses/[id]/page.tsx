@@ -14,6 +14,8 @@ import {
   parseExpenseListSortOrderParam,
 } from '@/features/finance/constants/expenses-list-query';
 import {
+  EXPENSE_FROM_BACKLOG_QUERY,
+  EXPENSE_FROM_BACKLOG_VALUE,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   financeExpensesListHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
@@ -41,7 +43,8 @@ function ExpenseDetailPageInner() {
     sortBy: parseExpenseListSortByParam(searchParams.get(EXPENSE_LIST_SORT_BY_QUERY)),
     sortOrder: parseExpenseListSortOrderParam(searchParams.get(EXPENSE_LIST_SORT_ORDER_QUERY)),
   };
-  const expensesListHref = financeExpensesListHref(listProjectId, listSort);
+  const fromBacklog = searchParams.get(EXPENSE_FROM_BACKLOG_QUERY) === EXPENSE_FROM_BACKLOG_VALUE;
+  const expensesListHref = financeExpensesListHref(listProjectId, listSort, { fromBacklog });
 
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);

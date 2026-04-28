@@ -31,6 +31,7 @@ interface ExpensesTableSectionProps {
   listProjectId?: string | null;
   /** When set, detail links include the current list sort for back navigation. */
   listSort?: ExpenseListNavigationSort;
+  fromBacklog?: boolean;
   onRequestDelete: (expense: Expense) => void;
 }
 
@@ -38,6 +39,7 @@ export function ExpensesTableSection({
   expenses,
   listProjectId,
   listSort,
+  fromBacklog = false,
   onRequestDelete,
 }: ExpensesTableSectionProps) {
   return (
@@ -64,7 +66,7 @@ export function ExpensesTableSection({
               <TableRow key={expense.id}>
                 <TableCell>
                   <Link
-                    href={expenseDetailHref(expense.id, listProjectId, listSort)}
+                    href={expenseDetailHref(expense.id, listProjectId, listSort, { fromBacklog })}
                     className="text-primary font-medium hover:underline"
                   >
                     {expense.name}
