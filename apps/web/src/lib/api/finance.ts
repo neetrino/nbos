@@ -413,6 +413,10 @@ export const expensesApi = {
     const resp = await api.post<Expense>(`/api/expenses/${id}/payments`, data);
     return resp.data;
   },
+  async deletePayment(expenseId: string, paymentId: string): Promise<Expense> {
+    const resp = await api.delete<Expense>(`/api/expenses/${expenseId}/payments/${paymentId}`);
+    return resp.data;
+  },
   async getStats(params?: ExpenseStatsQueryParams): Promise<ExpenseStats> {
     const resp = await api.get<ExpenseStats>('/api/expenses/stats', { params });
     return resp.data;

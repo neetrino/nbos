@@ -174,6 +174,37 @@ describe('ExpensesService', () => {
     });
   });
 
+  describe('deletePayment', () => {
+    it('throws when payment row is missing', async () => {
+      prisma.expensePayment.findFirst.mockResolvedValue(null);
+
+      await expect(service.deletePayment('e1', 'pay-missing')).rejects.toThrow(NotFoundException);
+      expect(prisma.expensePayment.delete).not.toHaveBeenCalled();
+    });
+
+    it('deletes payment and returns ledger shape', async () => {
+      prisma.expensePayment.findFirst.mockResolvedValue({
+        id: 'pay1',
+        expenseId: 'e1',
+        amount: new Decimal(10),
+      });
+      prisma.expensePayment.delete.mockResolvedValue({ id: 'pay1' });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        amount: new Decimal(100),
+        expensePayments: [],
+        project: null,
+      });
+
+      const result = await service.deletePayment('e1', 'pay1');
+
+      expect(prisma.expensePayment.delete).toHaveBeenCalledWith({ where: { id: 'pay1' } });
+      expect(result.paymentStatus).toBe('UNPAID');
+      expect(result.paidAmount).toBe('0.00');
+    });
+  });
+
   describe('addPayment', () => {
     it('records payment and returns ledger shape', async () => {
       prisma.expense.findUnique.mockResolvedValueOnce({

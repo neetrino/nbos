@@ -1,6 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -11,7 +14,8 @@ import {
 } from '@/components/ui/table';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { formatAmount } from '@/features/finance/constants/finance';
-import type { Expense } from '@/lib/api/finance';
+import { expensesApi, type Expense, type ExpensePaymentEntry } from '@/lib/api/finance';
+import { DeleteExpensePaymentDialog } from './DeleteExpensePaymentDialog';
 
 function formatPaymentDate(iso: string | null): string {
   if (!iso) return '—';
@@ -24,13 +28,41 @@ function formatPaymentDate(iso: string | null): string {
 
 interface ExpenseDetailPaymentSectionProps {
   expense: Expense;
+  onExpenseUpdated: (expense: Expense) => void;
 }
 
-export function ExpenseDetailPaymentSection({ expense }: ExpenseDetailPaymentSectionProps) {
+export function ExpenseDetailPaymentSection({
+  expense,
+  onExpenseUpdated,
+}: ExpenseDetailPaymentSectionProps) {
+  const [paymentToRemove, setPaymentToRemove] = useState<ExpensePaymentEntry | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const ledgerPresentation =
     expense.paymentStatus !== undefined
       ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
       : null;
+
+  const paymentSummary =
+    paymentToRemove !== null
+      ? `${formatAmount(parseFloat(paymentToRemove.amount))} · ${formatPaymentDate(paymentToRemove.paymentDate)}`
+      : '';
+
+  const handleConfirmRemovePayment = async () => {
+    if (!paymentToRemove) return;
+    setDeleteSubmitting(true);
+    setDeleteError(null);
+    try {
+      const updated = await expensesApi.deletePayment(expense.id, paymentToRemove.id);
+      onExpenseUpdated(updated);
+      setPaymentToRemove(null);
+    } catch {
+      setDeleteError('Payment could not be removed. Try again.');
+    } finally {
+      setDeleteSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -78,6 +110,9 @@ export function ExpenseDetailPaymentSection({ expense }: ExpenseDetailPaymentSec
                   <TableHead>Date</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Notes</TableHead>
+                  <TableHead className="w-[52px] text-right">
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -87,8 +122,23 @@ export function ExpenseDetailPaymentSection({ expense }: ExpenseDetailPaymentSec
                     <TableCell className="text-right tabular-nums">
                       {formatAmount(parseFloat(row.amount))}
                     </TableCell>
-                    <TableCell className="text-muted-foreground max-w-[240px] truncate">
+                    <TableCell className="text-muted-foreground max-w-[200px] truncate">
                       {row.notes ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        className="text-muted-foreground hover:text-destructive"
+                        aria-label={`Remove payment ${formatAmount(parseFloat(row.amount))}`}
+                        onClick={() => {
+                          setDeleteError(null);
+                          setPaymentToRemove(row);
+                        }}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -97,6 +147,20 @@ export function ExpenseDetailPaymentSection({ expense }: ExpenseDetailPaymentSec
           )}
         </div>
       ) : null}
+
+      <DeleteExpensePaymentDialog
+        paymentSummary={paymentSummary}
+        open={paymentToRemove !== null}
+        isSubmitting={deleteSubmitting}
+        errorMessage={deleteError}
+        onOpenChange={(next) => {
+          if (!next) {
+            setPaymentToRemove(null);
+            setDeleteError(null);
+          }
+        }}
+        onConfirm={handleConfirmRemovePayment}
+      />
     </>
   );
 }

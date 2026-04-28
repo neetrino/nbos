@@ -224,7 +224,7 @@ function ExpenseDetailPageInner() {
         </div>
       </div>
 
-      <ExpenseDetailPaymentSection expense={expense} />
+      <ExpenseDetailPaymentSection expense={expense} onExpenseUpdated={setExpense} />
 
       {expense.status === 'DELAYED' || expense.backlogReason ? (
         <div className="border-border bg-card rounded-xl border p-4">

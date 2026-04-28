@@ -130,6 +130,17 @@ export class ExpensesService {
     return this.findById(id);
   }
 
+  async deletePayment(expenseId: string, paymentId: string) {
+    const row = await this.prisma.expensePayment.findFirst({
+      where: { id: paymentId, expenseId },
+    });
+    if (!row) {
+      throw new NotFoundException(`Expense payment ${paymentId} not found`);
+    }
+    await this.prisma.expensePayment.delete({ where: { id: paymentId } });
+    return this.findById(expenseId);
+  }
+
   async create(data: CreateExpenseDto) {
     const created = await this.prisma.expense.create({
       data: {

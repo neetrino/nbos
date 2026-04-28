@@ -105,6 +105,15 @@ export class ExpensesController {
     return this.expensesService.addPayment(id, body);
   }
 
+  @Delete(':expenseId/payments/:paymentId')
+  @ApiOperation({ summary: 'Remove a recorded payment line from an expense' })
+  async removePayment(
+    @Param('expenseId') expenseId: string,
+    @Param('paymentId') paymentId: string,
+  ) {
+    return this.expensesService.deletePayment(expenseId, paymentId);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create expense' })
   async create(
