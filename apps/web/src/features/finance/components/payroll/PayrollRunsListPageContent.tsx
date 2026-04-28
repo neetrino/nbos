@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus, RefreshCcw } from 'lucide-react';
+import { Download, Loader2, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -29,6 +29,7 @@ import {
 } from '@/lib/api/payroll-runs';
 import { payrollRunsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
+import { usePayrollRunsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-csv-export';
 
 const STATUS_OPTIONS: PayrollRunStatus[] = ['DRAFT', 'REVIEW', 'APPROVED', 'PAYING', 'CLOSED'];
 
@@ -117,6 +118,8 @@ export function PayrollRunsListPageContent() {
     return { payable, paid, lines, materialized };
   }, [items]);
 
+  const { exportCsvSubmitting, handleExportCsv } = usePayrollRunsCsvExport(statusFilter);
+
   const handleStatusChange = useCallback(
     (value: string) => {
       const next = value === 'ALL' ? 'ALL' : (value as PayrollRunStatus);
@@ -156,6 +159,23 @@ export function PayrollRunsListPageContent() {
           </div>
           <Button variant="outline" size="icon" onClick={() => void load()} aria-label="Refresh">
             <RefreshCcw size={16} />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || exportCsvSubmitting}
+            onClick={() => {
+              void handleExportCsv();
+            }}
+            aria-label="Export payroll runs as CSV"
+            title="Export all runs matching current status filter (paginated fetch)"
+          >
+            {exportCsvSubmitting ? (
+              <Loader2 size={16} className="animate-spin" aria-hidden />
+            ) : (
+              <Download size={16} aria-hidden />
+            )}
           </Button>
           <Button onClick={openDialog}>
             <Plus size={16} className="mr-1.5" />
