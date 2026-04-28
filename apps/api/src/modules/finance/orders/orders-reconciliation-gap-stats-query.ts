@@ -12,6 +12,7 @@ interface GapStatsParams {
   dateTo?: string;
   status?: string;
   projectId?: string;
+  partnerId?: string;
   search?: string;
 }
 
@@ -45,6 +46,7 @@ export async function queryOrderStatsForReconciliationGap(
     dateTo: params.dateTo,
     status: params.status,
     projectId: params.projectId,
+    partnerId: params.partnerId,
     search: params.search,
   });
 

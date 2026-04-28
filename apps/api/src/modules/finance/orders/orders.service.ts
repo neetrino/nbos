@@ -32,6 +32,8 @@ interface OrderQueryParams {
   pageSize?: number;
   status?: string;
   projectId?: string;
+  /** Filter orders by linked partner (Parity with subscriptions partner drill-down). */
+  partnerId?: string;
   search?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -45,6 +47,7 @@ interface OrderStatsParams {
   /** With reconciliation gap: same dimensions as list (`findAll`). */
   status?: string;
   projectId?: string;
+  partnerId?: string;
   search?: string;
 }
 
@@ -60,11 +63,21 @@ export class OrdersService {
   }
 
   private async findAllDefault(params: OrderQueryParams) {
-    const { page = 1, pageSize = 20, status, projectId, search, dateFrom, dateTo } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      status,
+      projectId,
+      partnerId,
+      search,
+      dateFrom,
+      dateTo,
+    } = params;
     const where: Prisma.OrderWhereInput = {};
 
     if (status) where.status = status as OrderStatusEnum;
     if (projectId) where.projectId = projectId;
+    if (partnerId) where.partnerId = partnerId;
     if (search) {
       where.code = { contains: search, mode: 'insensitive' };
     }
@@ -106,6 +119,7 @@ export class OrdersService {
       dateTo: params.dateTo,
       status: params.status,
       projectId: params.projectId,
+      partnerId: params.partnerId,
       search: params.search,
       page,
       pageSize,
@@ -226,24 +240,31 @@ export class OrdersService {
         dateTo: params.dateTo,
         status: params.status,
         projectId: params.projectId,
+        partnerId: params.partnerId,
         search: params.search,
       });
     }
 
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
+    const partnerScope = params.partnerId ? { partnerId: params.partnerId } : {};
+    const orderWhere = {
+      ...partnerScope,
+      ...(createdAt ? { createdAt } : {}),
+    };
+    const hasOrderWhere = Object.keys(orderWhere).length > 0;
 
     const [totalOrders, totalAmount, byStatus, collected] = await Promise.all([
       this.prisma.order.count({
-        ...(createdAt ? { where: { createdAt } } : {}),
+        ...(hasOrderWhere ? { where: orderWhere } : {}),
       }),
       this.prisma.order.aggregate({
-        ...(createdAt ? { where: { createdAt } } : {}),
+        ...(hasOrderWhere ? { where: orderWhere } : {}),
         _sum: { totalAmount: true },
       }),
       this.prisma.order.groupBy({
         by: ['status'],
-        ...(createdAt ? { where: { createdAt } } : {}),
+        ...(hasOrderWhere ? { where: orderWhere } : {}),
         _count: true,
         _sum: { totalAmount: true },
       }),
@@ -252,6 +273,7 @@ export class OrdersService {
           ...(paymentDate ? { paymentDate } : {}),
           invoice: {
             orderId: { not: null },
+            ...(params.partnerId ? { order: { partnerId: params.partnerId } } : {}),
           },
         },
         _sum: { amount: true },

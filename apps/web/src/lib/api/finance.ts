@@ -174,6 +174,8 @@ export interface OrderStatsQueryParams extends FinanceDateRangeParams {
   /** With gap: align stats with the orders list. */
   status?: string;
   projectId?: string;
+  /** Partner drill-down: stats scoped like `GET /finance/orders?partnerId=`. */
+  partnerId?: string;
   search?: string;
 }
 

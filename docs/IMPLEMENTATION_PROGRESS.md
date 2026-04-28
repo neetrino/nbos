@@ -25,7 +25,7 @@ Rules:
 | Field                | Value                            |
 | -------------------- | -------------------------------- |
 | Current phase        | Phase 3 - Finance core           |
-| Current module/block | Finance core API mutation parity |
+| Current module/block | Phase 3 Finance (bounded slices) |
 | Current task         | Next Phase 3 Finance slice       |
 | Status               | Open                             |
 | Last updated         | 2026-04-28                       |
@@ -36,11 +36,24 @@ Rules:
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                          |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations |
-| Phase 3 - Finance core                           | In progress |      32% | None                           | Subscription list UX refinements                                     |
+| Phase 3 - Finance core                           | In progress |     ~43% | None                           | Core flows + drill-downs; canon payroll/expense depth still pending  |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                          |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                         |
 | Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                   |
 | Phase 7 - Integrations and migration             | Not started |       0% | Waits stable workflows         | WhatsApp, bank/gov, Bitrix migration                                 |
+
+### Phase 3 completion estimate (approximate)
+
+Roadmap Phase 3 spans invoices, payments, subscriptions, expenses, partners/payouts, salary/bonus surfaces, and trustworthy aggregates. Percentages are planning hints only (not financial figures).
+
+| Track                                                                                             | Approx. complete |
+| ------------------------------------------------------------------------------------------------- | ---------------: |
+| Operational money flows (orders ↔ invoices ↔ payments, subscriptions, reconciliation lists/stats) |             ~55% |
+| Partner linking + Finance drill-downs (subscriptions, orders, filtered stats)                     |             ~45% |
+| Expenses vs canon (Expense Plan / Card / Payment split)                                           |             ~15% |
+| Payroll / bonus pools / operational journal                                                       |              ~5% |
+
+**Phase 3 overall:** ~**43%** — operational Finance paths and partner-linked drill-downs are maturing; large canon work remains on expenses architecture and compensation before Phase 3 exit criteria are fully met.
 
 ## Active Work Log
 
@@ -100,6 +113,7 @@ Rules:
 | 2026-04-28 | Invoice API mutation payloads parity done      | `create` / `updateStatus` return full `findById` (order, subscription, company, payments); UI/lists get consistent shape after mutations | `pnpm exec vitest run apps/api/src/modules/finance/invoices/invoices.service.test.ts`; `pnpm --filter @nbos/api typecheck`                                                                                                                                                                                | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Payment API mutation payloads parity done      | `create` returns full `findById` after invoice/order sync (derived project, company, invoice graph)                                      | `pnpm exec vitest run apps/api/src/modules/finance/payments/payments.service.test.ts`; `pnpm --filter @nbos/api typecheck`                                                                                                                                                                                | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Order API mutation payloads parity done        | `create` / `updateStatus` return full `findById` with reconciliation and project-linked company/contact                                  | `pnpm exec vitest run apps/api/src/modules/finance/orders/orders.service.test.ts`; `pnpm --filter @nbos/api typecheck`                                                                                                                                                                                    | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Partner → orders drill-down parity done        | `GET /finance/orders?partnerId=` + stats gap/non-gap SQL alignment; orders page banner + `/partners/[id]` orders count links to Finance  | `pnpm exec vitest run apps/api/src/modules/finance/orders/orders.service.test.ts`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web typecheck`                                                                                                                                               | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 
@@ -133,27 +147,27 @@ Make NBOS navigable, permission-aware and safe to extend.
 
 ## Module Progress Matrix
 
-| Module / Area               | Docs ready | Code checked | Implemented | Tested  | Status / Notes                                                                                                |
-| --------------------------- | ---------- | ------------ | ----------- | ------- | ------------------------------------------------------------------------------------------------------------- |
-| Platform Shell / Navigation | Yes        | Yes          | Done        | Yes     | Phase 1 shell foundation completed                                                                            |
-| Shared UI States            | Yes        | Yes          | Done        | Yes     | Loading/error/empty state baseline completed                                                                  |
-| My Company                  | Yes        | Yes          | Partial     | Yes     | Foundation dashboard completed; deep HR/payroll later                                                         |
-| Settings / Admin            | Yes        | Yes          | Partial     | Yes     | Admin/audit foundation completed; deep settings later                                                         |
-| CRM                         | Yes        | Yes          | Partial     | Partial | Offer/contract, Deal Won, handoff visibility and popup shortcuts done                                         |
-| Marketing                   | Yes        | Yes          | Partial     | Partial | Launch gates, Finance spend links, performance and efficiency snapshots added                                 |
-| Finance                     | Yes        | Yes          | Partial     | Partial | Subscriptions + partner link UI; activate/cancel/hold; invoice payment; reconciliation drill-down foundations |
-| Partners                    | Yes        | Yes          | Partial     | Partial | List/detail/create/edit; primary contact name via Partner→Contact include                                     |
-| Projects Hub                | Yes        | Yes          | Partial     | Partial | PM intake, Product/Extension readiness, Done gates and blocker shortcuts added                                |
-| Tasks / Work Spaces         | Yes        | No           | No          | No      | Phase 4                                                                                                       |
-| Support                     | Yes        | No           | No          | No      | Phase 4                                                                                                       |
-| Drive                       | Yes        | No           | No          | No      | Phase 5                                                                                                       |
-| Credentials                 | Yes        | No           | No          | No      | Phase 5                                                                                                       |
-| Messenger                   | Yes        | No           | No          | No      | Phase 5                                                                                                       |
-| Notifications               | Yes        | No           | No          | No      | Phase 5                                                                                                       |
-| Calendar                    | Yes        | No           | No          | No      | Phase 6                                                                                                       |
-| Dashboard Control Center    | Yes        | No           | No          | No      | Phase 6                                                                                                       |
-| Reports / Analytics         | Yes        | No           | No          | No      | Phase 6                                                                                                       |
-| Integrations / Migration    | Partial    | No           | No          | No      | Phase 7                                                                                                       |
+| Module / Area               | Docs ready | Code checked | Implemented | Tested  | Status / Notes                                                                                                                       |
+| --------------------------- | ---------- | ------------ | ----------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Platform Shell / Navigation | Yes        | Yes          | Done        | Yes     | Phase 1 shell foundation completed                                                                                                   |
+| Shared UI States            | Yes        | Yes          | Done        | Yes     | Loading/error/empty state baseline completed                                                                                         |
+| My Company                  | Yes        | Yes          | Partial     | Yes     | Foundation dashboard completed; deep HR/payroll later                                                                                |
+| Settings / Admin            | Yes        | Yes          | Partial     | Yes     | Admin/audit foundation completed; deep settings later                                                                                |
+| CRM                         | Yes        | Yes          | Partial     | Partial | Offer/contract, Deal Won, handoff visibility and popup shortcuts done                                                                |
+| Marketing                   | Yes        | Yes          | Partial     | Partial | Launch gates, Finance spend links, performance and efficiency snapshots added                                                        |
+| Finance                     | Yes        | Yes          | Partial     | Partial | Orders/invoices/payments/subscriptions + reconciliation; partner filters on orders/subscriptions; mutation payloads aligned with GET |
+| Partners                    | Yes        | Yes          | Partial     | Partial | List/detail/create/edit; contact link; drill-down to Finance orders/subscriptions                                                    |
+| Projects Hub                | Yes        | Yes          | Partial     | Partial | PM intake, Product/Extension readiness, Done gates and blocker shortcuts added                                                       |
+| Tasks / Work Spaces         | Yes        | No           | No          | No      | Phase 4                                                                                                                              |
+| Support                     | Yes        | No           | No          | No      | Phase 4                                                                                                                              |
+| Drive                       | Yes        | No           | No          | No      | Phase 5                                                                                                                              |
+| Credentials                 | Yes        | No           | No          | No      | Phase 5                                                                                                                              |
+| Messenger                   | Yes        | No           | No          | No      | Phase 5                                                                                                                              |
+| Notifications               | Yes        | No           | No          | No      | Phase 5                                                                                                                              |
+| Calendar                    | Yes        | No           | No          | No      | Phase 6                                                                                                                              |
+| Dashboard Control Center    | Yes        | No           | No          | No      | Phase 6                                                                                                                              |
+| Reports / Analytics         | Yes        | No           | No          | No      | Phase 6                                                                                                                              |
+| Integrations / Migration    | Partial    | No           | No          | No      | Phase 7                                                                                                                              |
 
 ## Definition Of Done For Each Slice
 
@@ -168,10 +182,11 @@ A slice is done only when:
 
 ## Next Action
 
-Continue with Phase 3:
+Continue with Phase 3 at bounded scope (avoid tiny-only fixes and avoid multi-module breaking refactors in one PR):
 
 ```text
 Next Phase 3 slice candidates:
-- Subscription and invoice lifecycle depth with no fake money states.
+- Expenses: deepen safe slices toward canon (partial payments / backlog) without full schema rewrite in one step.
+- Subscription and invoice lifecycle depth when priorities require it (no fake money states).
 - Reporting or exports only when product priorities are confirmed.
 ```

@@ -18,18 +18,25 @@ import {
   type OrderReconciliationGap,
   parseOrderReconciliationGap,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
+import { PARTNER_ORDERS_DRILLDOWN_QUERY } from '@/features/finance/constants/partner-orders-drilldown';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { ORDER_STATUSES } from '@/features/finance/components/orders/order-statuses';
 import { OrdersStatsCards } from '@/features/finance/components/orders/OrdersStatsCards';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
 import type { ListData } from '@/lib/api/finance-common';
-import { ordersApi, type Order, type OrderStats } from '@/lib/api/finance';
+import {
+  ordersApi,
+  type Order,
+  type OrderStats,
+  type OrderStatsQueryParams,
+} from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 
 function OrdersPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const gap = parseOrderReconciliationGap(searchParams.get(ORDER_RECONCILIATION_GAP_QUERY));
+  const partnerIdFromUrl = searchParams.get(PARTNER_ORDERS_DRILLDOWN_QUERY);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);
@@ -52,12 +59,14 @@ function OrdersPageContent() {
         search: search || undefined,
         status: statusFilter,
         ...periodParams,
+        ...(partnerIdFromUrl ? { partnerId: partnerIdFromUrl } : {}),
       };
       if (gap) {
         listParams.gap = gap;
       }
-      const statsParams = {
+      const statsParams: OrderStatsQueryParams = {
         ...periodParams,
+        ...(partnerIdFromUrl ? { partnerId: partnerIdFromUrl } : {}),
         ...(gap
           ? {
               gap,
@@ -79,7 +88,7 @@ function OrdersPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters, period, gap]);
+  }, [search, filters, period, gap, partnerIdFromUrl]);
 
   useEffect(() => {
     fetchOrders();
@@ -100,6 +109,13 @@ function OrdersPageContent() {
 
   const clearReconciliationGap = () => {
     router.replace('/finance/orders');
+  };
+
+  const clearPartnerDrilldown = () => {
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete(PARTNER_ORDERS_DRILLDOWN_QUERY);
+    const q = next.toString();
+    router.replace(q ? `/finance/orders?${q}` : '/finance/orders');
   };
 
   return (
@@ -131,11 +147,31 @@ function OrdersPageContent() {
       <OrdersStatsCards
         stats={stats}
         statsScopeNote={
-          gap
-            ? 'Totals match the reconciliation filter, selected period, and list filters.'
+          gap || partnerIdFromUrl
+            ? [
+                gap
+                  ? 'Totals match the reconciliation filter, selected period, and list filters.'
+                  : '',
+                partnerIdFromUrl
+                  ? 'Partner scope: counts include only orders linked to this partner.'
+                  : '',
+              ]
+                .filter(Boolean)
+                .join(' ')
             : undefined
         }
       />
+
+      {partnerIdFromUrl ? (
+        <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
+          <p className="text-foreground max-w-prose">
+            Showing orders linked to this partner (server filter).
+          </p>
+          <Button variant="outline" size="sm" type="button" onClick={clearPartnerDrilldown}>
+            Clear partner filter
+          </Button>
+        </div>
+      ) : null}
 
       <FilterBar
         search={search}
@@ -152,29 +188,43 @@ function OrdersPageContent() {
       ) : error ? (
         <ErrorState description={error} onRetry={fetchOrders} />
       ) : orders.length === 0 ? (
-        <EmptyState
-          icon={ShoppingCart}
-          title="No orders yet"
-          description="Orders are created from closed deals"
-          action={
-            <Button>
-              <Plus size={16} />
-              Create Order
-            </Button>
-          }
-        />
-      ) : gap && orders.length === 0 ? (
-        <EmptyState
-          icon={ShoppingCart}
-          title="No orders match this reconciliation filter"
-          description="Try clearing the filter or widening the reporting period."
-          action={
-            <Button variant="outline" onClick={clearReconciliationGap}>
-              <X size={16} />
-              Clear reconciliation filter
-            </Button>
-          }
-        />
+        partnerIdFromUrl ? (
+          <EmptyState
+            icon={ShoppingCart}
+            title="No orders for this partner"
+            description="There are no finance orders linked to this partner in the selected period."
+            action={
+              <Button variant="outline" onClick={clearPartnerDrilldown}>
+                <X size={16} />
+                Clear partner filter
+              </Button>
+            }
+          />
+        ) : gap ? (
+          <EmptyState
+            icon={ShoppingCart}
+            title="No orders match this reconciliation filter"
+            description="Try clearing the filter or widening the reporting period."
+            action={
+              <Button variant="outline" onClick={clearReconciliationGap}>
+                <X size={16} />
+                Clear reconciliation filter
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={ShoppingCart}
+            title="No orders yet"
+            description="Orders are created from closed deals"
+            action={
+              <Button>
+                <Plus size={16} />
+                Create Order
+              </Button>
+            }
+          />
+        )
       ) : (
         <OrdersTable orders={orders} onCreateInvoice={setInvoiceOrder} />
       )}

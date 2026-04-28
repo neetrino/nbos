@@ -21,6 +21,7 @@ import {
   getPartnerStatus,
   getPartnerType,
 } from '@/features/partners/constants/partners';
+import { partnerOrdersDrilldownHref } from '@/features/finance/constants/partner-orders-drilldown';
 import { partnerSubscriptionsDrilldownHref } from '@/features/finance/constants/subscription-partner-drilldown';
 import { partnersApi, type Partner } from '@/lib/api/partners';
 
@@ -173,7 +174,18 @@ export default function PartnerDetailPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Orders</p>
-          <p className="mt-2 text-xl font-bold tabular-nums">{orders}</p>
+          <p className="mt-2 text-xl font-bold tabular-nums">
+            {orders > 0 ? (
+              <Link
+                href={partnerOrdersDrilldownHref(partner.id)}
+                className="text-primary hover:underline"
+              >
+                {orders}
+              </Link>
+            ) : (
+              orders
+            )}
+          </p>
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Subscriptions</p>

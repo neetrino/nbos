@@ -11,6 +11,7 @@ interface GapPageParams {
   dateTo?: string;
   status?: string;
   projectId?: string;
+  partnerId?: string;
   search?: string;
   page: number;
   pageSize: number;
@@ -27,6 +28,7 @@ export async function queryOrderIdsPageForReconciliationGap(
     dateTo: params.dateTo,
     status: params.status,
     projectId: params.projectId,
+    partnerId: params.partnerId,
     search: params.search,
   });
 

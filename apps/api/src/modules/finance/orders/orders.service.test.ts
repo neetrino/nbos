@@ -83,6 +83,15 @@ describe('OrdersService', () => {
       );
     });
 
+    it('filters by partner id for partner drill-down parity', async () => {
+      await service.findAll({ partnerId: 'partner-uuid-1' });
+      expect(prisma.order.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ partnerId: 'partner-uuid-1' }),
+        }),
+      );
+    });
+
     it('applies createdAt date range filter', async () => {
       await service.findAll({
         dateFrom: '2026-04-01T00:00:00.000Z',

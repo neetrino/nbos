@@ -28,6 +28,7 @@ export class OrdersController {
     @Query('pageSize') pageSize?: string,
     @Query('status') status?: string,
     @Query('projectId') projectId?: string,
+    @Query('partnerId') partnerId?: string,
     @Query('search') search?: string,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
@@ -43,6 +44,7 @@ export class OrdersController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       status,
       projectId,
+      partnerId,
       search,
       dateFrom,
       dateTo,
@@ -58,6 +60,7 @@ export class OrdersController {
     @Query('gap') gap?: string,
     @Query('status') status?: string,
     @Query('projectId') projectId?: string,
+    @Query('partnerId') partnerId?: string,
     @Query('search') search?: string,
   ) {
     const reconciliationGap = parseOrderReconciliationListGap(gap);
@@ -71,6 +74,7 @@ export class OrdersController {
       reconciliationGap: reconciliationGap ?? undefined,
       status,
       projectId,
+      partnerId,
       search,
     });
   }

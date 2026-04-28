@@ -16,6 +16,8 @@ interface OrdersWhereSqlParams {
   dateTo?: string;
   status?: string;
   projectId?: string;
+  /** When set, restricts reconciliation queries to orders linked to this partner. */
+  partnerId?: string;
   search?: string;
   gap: OrderReconciliationListGap;
 }
@@ -34,6 +36,9 @@ export function buildOrdersReconciliationWhereSql(params: OrdersWhereSqlParams) 
   }
   if (params.projectId) {
     conditions.push(sql`o.project_id = ${params.projectId}`);
+  }
+  if (params.partnerId) {
+    conditions.push(sql`o.partner_id = ${params.partnerId}`);
   }
   const trimmedSearch = params.search?.trim();
   if (trimmedSearch) {
