@@ -44,6 +44,7 @@ interface InvoiceQueryParams {
 interface InvoiceStatsParams {
   dateFrom?: string;
   dateTo?: string;
+  subscriptionId?: string;
 }
 
 @Injectable()

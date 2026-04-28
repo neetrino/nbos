@@ -4,6 +4,8 @@ import { resolveOrderStatus } from '../finance-status.utils';
 interface InvoiceStatsParams {
   dateFrom?: string;
   dateTo?: string;
+  /** Align KPI aggregates with `GET /finance/invoices?subscriptionId=` drill-down. */
+  subscriptionId?: string;
 }
 
 interface CreateInvoiceTaxStatusInput {
@@ -18,26 +20,34 @@ export async function getInvoiceStats(
 ) {
   const createdAt = buildDateRange(params.dateFrom, params.dateTo);
   const paidDate = buildDateRange(params.dateFrom, params.dateTo);
+  const subscriptionId = params.subscriptionId?.trim();
+  const sub = subscriptionId ? { subscriptionId } : {};
+
+  const whereCreated: Prisma.InvoiceWhereInput = {
+    ...sub,
+    ...(createdAt ? { createdAt } : {}),
+  };
+  const hasCreatedWhere = Object.keys(whereCreated).length > 0;
 
   const [total, byStatus, totalRevenue, outstanding, overdue] = await Promise.all([
-    prisma.invoice.count({ ...(createdAt ? { where: { createdAt } } : {}) }),
+    hasCreatedWhere ? prisma.invoice.count({ where: whereCreated }) : prisma.invoice.count(),
     prisma.invoice.groupBy({
       by: ['status'],
-      ...(createdAt ? { where: { createdAt } } : {}),
+      ...(hasCreatedWhere ? { where: whereCreated } : {}),
       _count: true,
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { status: 'PAID', ...(paidDate ? { paidDate } : {}) },
+      where: { status: 'PAID', ...sub, ...(paidDate ? { paidDate } : {}) },
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { status: { not: 'PAID' }, ...(createdAt ? { createdAt } : {}) },
+      where: { status: { not: 'PAID' }, ...sub, ...(createdAt ? { createdAt } : {}) },
       _count: true,
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { status: 'DELAYED', ...(createdAt ? { createdAt } : {}) },
+      where: { status: 'DELAYED', ...sub, ...(createdAt ? { createdAt } : {}) },
       _count: true,
       _sum: { amount: true },
     }),

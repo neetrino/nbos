@@ -47,8 +47,12 @@ export class InvoicesController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get invoice statistics' })
-  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
-    return this.invoicesService.getStats({ dateFrom, dateTo });
+  async getStats(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('subscriptionId') subscriptionId?: string,
+  ) {
+    return this.invoicesService.getStats({ dateFrom, dateTo, subscriptionId });
   }
 
   @Get(':id')

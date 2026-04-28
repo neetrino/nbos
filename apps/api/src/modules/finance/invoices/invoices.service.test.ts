@@ -283,5 +283,36 @@ describe('InvoicesService', () => {
         }),
       );
     });
+
+    it('applies subscriptionId to stats queries', async () => {
+      prisma.invoice.count.mockResolvedValue(2);
+      prisma.invoice.groupBy.mockResolvedValue([]);
+      prisma.invoice.aggregate
+        .mockResolvedValueOnce({ _sum: { amount: 50000 } })
+        .mockResolvedValueOnce({ _count: 1, _sum: { amount: 10000 } })
+        .mockResolvedValueOnce({ _count: 0, _sum: { amount: 0 } });
+
+      await service.getStats({ subscriptionId: 'sub-abc' });
+
+      expect(prisma.invoice.count).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ subscriptionId: 'sub-abc' }),
+        }),
+      );
+      expect(prisma.invoice.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ subscriptionId: 'sub-abc' }),
+        }),
+      );
+      expect(prisma.invoice.aggregate).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: 'PAID',
+            subscriptionId: 'sub-abc',
+          }),
+        }),
+      );
+    });
   });
 });

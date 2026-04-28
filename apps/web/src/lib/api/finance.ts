@@ -20,6 +20,11 @@ export interface InvoiceListParams extends FinanceDateRangeParams {
   search?: string;
 }
 
+/** Query params for `invoicesApi.getStats` (optional subscription drill-down parity). */
+export interface InvoiceStatsQueryParams extends FinanceDateRangeParams {
+  subscriptionId?: string;
+}
+
 export interface Invoice {
   id: string;
   code: string;
@@ -245,7 +250,7 @@ export const invoicesApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/invoices/${id}`);
   },
-  async getStats(params?: FinanceDateRangeParams): Promise<InvoiceStats> {
+  async getStats(params?: InvoiceStatsQueryParams): Promise<InvoiceStats> {
     const resp = await api.get<InvoiceStats>('/api/finance/invoices/stats', { params });
     return resp.data;
   },

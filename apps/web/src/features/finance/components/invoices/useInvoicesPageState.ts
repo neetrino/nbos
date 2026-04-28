@@ -103,7 +103,10 @@ function useFetchInvoices({
         invoicesApi.getAll(
           buildInvoiceQuery({ filters, search, subscriptionIdFromUrl }, periodParams),
         ),
-        invoicesApi.getStats(periodParams),
+        invoicesApi.getStats({
+          ...periodParams,
+          ...(subscriptionIdFromUrl ? { subscriptionId: subscriptionIdFromUrl } : {}),
+        }),
       ]);
       setInvoices(data.items);
       setStats(invoiceStats);
