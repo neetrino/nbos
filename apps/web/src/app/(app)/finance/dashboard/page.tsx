@@ -24,19 +24,28 @@ import {
   type FinanceKpi,
 } from '@/features/finance/components/dashboard/finance-dashboard-data';
 import { financeSummaryApi } from '@/lib/api/finance';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 export default function FinanceDashboardPage() {
   const [data, setData] = useState<FinanceDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const summary = await financeSummaryApi.getDashboard(getFinancePeriodParams(period));
       setData(buildFinanceDashboardData(summary));
-    } catch {
+    } catch (caught) {
       setData(null);
+      setLoadError(
+        getApiErrorMessage(
+          caught,
+          'Could not load finance dashboard data. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -53,7 +62,9 @@ export default function FinanceDashboardPage() {
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-muted-foreground mb-4">Could not load finance dashboard data</p>
+        <p className="text-muted-foreground mb-4 max-w-md text-center">
+          {loadError ?? 'Could not load finance dashboard data.'}
+        </p>
         <Button onClick={fetchDashboard}>
           <RefreshCw size={16} className="mr-2" />
           Retry

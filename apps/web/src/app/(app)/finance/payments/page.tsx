@@ -26,6 +26,7 @@ import {
   formatAmount,
 } from '@/features/finance/constants/finance';
 import { paymentsApi, type Payment, type PaymentStats } from '@/lib/api/finance';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -50,8 +51,13 @@ export default function PaymentsPage() {
       setPayments(data.items);
       setStats(paymentStats);
       setError(null);
-    } catch {
-      setError('Payments could not be loaded. Check your connection and try again.');
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Payments could not be loaded. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }

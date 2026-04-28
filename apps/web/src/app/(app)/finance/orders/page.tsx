@@ -30,6 +30,7 @@ import {
   type OrderStats,
   type OrderStatsQueryParams,
 } from '@/lib/api/finance';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 
 function OrdersPageContent() {
@@ -83,8 +84,13 @@ function OrdersPageContent() {
       setListMeta(data.meta);
       setStats(orderStats);
       setError(null);
-    } catch {
-      setError('Orders could not be loaded. Check your connection and try again.');
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Orders could not be loaded. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
