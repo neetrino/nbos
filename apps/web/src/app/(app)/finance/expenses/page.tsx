@@ -21,7 +21,7 @@ function ExpensesPageInner() {
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
 
-  useFinanceDocumentTitle('Expenses');
+  useFinanceDocumentTitle(projectIdFromUrl?.trim() ? 'Expenses · project filter' : 'Expenses');
 
   const replaceExpensesUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {

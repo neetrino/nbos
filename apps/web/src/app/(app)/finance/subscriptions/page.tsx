@@ -23,7 +23,9 @@ function SubscriptionsPageInner() {
   const { partnerFilterOptions, partnerOptionsLoadError, clearPartnerOptionsLoadError } =
     usePartnerFilterOptions();
 
-  useFinanceDocumentTitle('Subscriptions');
+  useFinanceDocumentTitle(
+    partnerIdFromUrl?.trim() ? 'Subscriptions · partner filter' : 'Subscriptions',
+  );
 
   const totalMRR = Number(page.stats?.monthlyRevenue ?? 0);
   const activeCount = page.subscriptions.filter(

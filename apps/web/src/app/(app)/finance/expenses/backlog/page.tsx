@@ -24,7 +24,9 @@ function ExpensesBacklogPageInner() {
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
 
-  useFinanceDocumentTitle('Expense backlog');
+  useFinanceDocumentTitle(
+    projectIdFromUrl?.trim() ? 'Expense backlog · project filter' : 'Expense backlog',
+  );
 
   const replaceExpensesUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
