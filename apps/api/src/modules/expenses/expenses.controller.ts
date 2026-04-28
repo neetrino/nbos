@@ -36,6 +36,12 @@ export class ExpensesController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'dateFrom', required: false })
   @ApiQuery({ name: 'dateTo', required: false })
+  @ApiQuery({
+    name: 'activeBoard',
+    required: false,
+    description:
+      'When true and status is omitted: exclude PAID and DELAYED (NBOS Expense Board list scope).',
+  })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -50,6 +56,7 @@ export class ExpensesController {
     @Query('dateTo') dateTo?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('activeBoard') activeBoard?: string,
   ) {
     return this.expensesService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -65,6 +72,7 @@ export class ExpensesController {
       dateTo,
       sortBy,
       sortOrder,
+      activeBoard: activeBoard === 'true',
     });
   }
 
@@ -76,13 +84,25 @@ export class ExpensesController {
     required: false,
     description: 'Align stats with filtered list (e.g. backlog).',
   })
+  @ApiQuery({
+    name: 'activeBoard',
+    required: false,
+    description: 'When true and status is omitted: align stats with active-board list scope.',
+  })
   async getStats(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('projectId') projectId?: string,
     @Query('status') status?: string,
+    @Query('activeBoard') activeBoard?: string,
   ) {
-    return this.expensesService.getStats({ dateFrom, dateTo, projectId, status });
+    return this.expensesService.getStats({
+      dateFrom,
+      dateTo,
+      projectId,
+      status,
+      activeBoard: activeBoard === 'true',
+    });
   }
 
   @Get(':id')
@@ -131,6 +151,7 @@ export class ExpensesController {
       taxStatus?: string;
       backlogReason?: string | null;
       notes?: string;
+      expensePlanId?: string;
     },
   ) {
     return this.expensesService.create(body);

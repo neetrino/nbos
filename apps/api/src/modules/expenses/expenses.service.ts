@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   Decimal,
   PrismaClient,
@@ -6,7 +6,7 @@ import {
   type ExpenseBacklogReasonEnum,
   type ExpenseTypeEnum,
   type ExpenseCategoryEnum,
-  type ExpenseStatusEnum,
+  ExpenseStatusEnum,
   type ExpenseFrequency,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -68,6 +68,7 @@ export class ExpensesService {
       dateTo,
       sortBy,
       sortOrder,
+      activeBoard,
     } = params;
 
     const page = normalizeExpenseListPage(pageIn);
@@ -91,6 +92,7 @@ export class ExpensesService {
       search,
       dateFrom,
       dateTo,
+      activeBoard: activeBoard === true,
     });
 
     const [items, total] = await Promise.all([
@@ -146,6 +148,19 @@ export class ExpensesService {
   }
 
   async create(data: CreateExpenseDto) {
+    if (data.expensePlanId) {
+      const plan = await this.prisma.expensePlan.findUnique({
+        where: { id: data.expensePlanId },
+        select: { id: true, projectId: true },
+      });
+      if (!plan) {
+        throw new BadRequestException('Expense plan not found');
+      }
+      if (data.projectId && plan.projectId && data.projectId !== plan.projectId) {
+        throw new BadRequestException('Project does not match the selected expense plan');
+      }
+    }
+
     const created = await this.prisma.expense.create({
       data: {
         name: data.name,
@@ -156,6 +171,7 @@ export class ExpensesService {
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         status: resolveExpenseStatus(data.status) as ExpenseStatusEnum,
         projectId: data.projectId,
+        ...(data.expensePlanId ? { expensePlanId: data.expensePlanId } : {}),
         isPassThrough: data.isPassThrough ?? false,
         taxStatus: resolveExpenseTaxStatus(
           data.taxStatus,
@@ -230,7 +246,15 @@ export class ExpensesService {
     const safeStatus = pickExpenseStatusFilter(params.status);
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const projectWhere = params.projectId ? { projectId: params.projectId } : {};
-    const statusWhere = safeStatus ? { status: safeStatus as ExpenseStatusEnum } : {};
+    const statusWhere = safeStatus
+      ? { status: safeStatus as ExpenseStatusEnum }
+      : params.activeBoard === true
+        ? {
+            status: {
+              notIn: [ExpenseStatusEnum.PAID, ExpenseStatusEnum.DELAYED],
+            },
+          }
+        : {};
 
     const scopeWhere: Prisma.ExpenseWhereInput = {
       ...projectWhere,
@@ -256,7 +280,13 @@ export class ExpensesService {
     const where: Prisma.ExpenseWhereInput = {};
     if (filters.type) where.type = filters.type as ExpenseTypeEnum;
     if (filters.category) where.category = filters.category as ExpenseCategoryEnum;
-    if (filters.status) where.status = filters.status as ExpenseStatusEnum;
+    if (filters.status) {
+      where.status = filters.status as ExpenseStatusEnum;
+    } else if (filters.activeBoard) {
+      where.status = {
+        notIn: [ExpenseStatusEnum.PAID, ExpenseStatusEnum.DELAYED],
+      };
+    }
     if (filters.backlogReason) {
       where.backlogReason = filters.backlogReason as ExpenseBacklogReasonEnum;
     }

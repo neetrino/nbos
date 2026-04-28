@@ -96,8 +96,9 @@ export function ExpensesPageContent({
         effectiveProjectId,
         sortBy,
         sortOrder,
+        pageVariant,
       }),
-    [search, filters, period, effectiveProjectId, sortBy, sortOrder],
+    [search, filters, period, effectiveProjectId, sortBy, sortOrder, pageVariant],
   );
 
   const { exportCsvSubmitting, handleExportCsv } = useExpenseCsvExport(listApiParams);
@@ -137,6 +138,7 @@ export function ExpensesPageContent({
           dateTo: listApiParams.dateTo,
           projectId: listApiParams.projectId,
           status: listApiParams.status,
+          activeBoard: listApiParams.activeBoard,
         }),
       ]);
       setExpenses(data.items);

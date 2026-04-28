@@ -1,30 +1,27 @@
 import type { Expense } from '../../../../lib/api/finance';
-import { EXPENSE_STAGES } from '../../constants/finance';
+import {
+  EXPENSE_BOARD_COLUMNS,
+  type ExpenseBoardColumnKey,
+  resolveExpenseBoardColumn,
+} from '../../constants/expense-board';
 
-const STAGE_COLORS: Record<string, string> = {
-  THIS_MONTH: 'bg-blue-500',
-  PAY_NOW: 'bg-orange-500',
-  DELAYED: 'bg-amber-500',
+const COLUMN_COLORS: Record<ExpenseBoardColumnKey, string> = {
+  PLANNED: 'bg-slate-500',
+  DUE_SOON: 'bg-amber-500',
+  DUE_NOW: 'bg-orange-500',
+  OVERDUE: 'bg-red-600',
   ON_HOLD: 'bg-gray-400',
-  PAID: 'bg-green-500',
-  UNPAID: 'bg-red-500',
 };
 
-/** Prisma-backed statuses only (`OLD` exists in legacy UI labels but not in API enum). */
-const KANBAN_STAGE_KEYS = new Set([
-  'THIS_MONTH',
-  'PAY_NOW',
-  'DELAYED',
-  'ON_HOLD',
-  'PAID',
-  'UNPAID',
-]);
-
+/**
+ * NBOS Expense Board columns (`Planned`, `Due Soon`, `Due Now`, `Overdue`, `On Hold`).
+ * `Paid` / deferred backlog cards belong off this board; list API uses `activeBoard` to match.
+ */
 export function buildExpenseKanbanColumns(expenses: Expense[]) {
-  return EXPENSE_STAGES.filter((s) => KANBAN_STAGE_KEYS.has(s.value)).map((stage) => ({
-    key: stage.value,
-    label: stage.label,
-    color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
-    items: expenses.filter((e) => e.status === stage.value),
+  return EXPENSE_BOARD_COLUMNS.map((col) => ({
+    key: col.key,
+    label: col.label,
+    color: COLUMN_COLORS[col.key],
+    items: expenses.filter((e) => resolveExpenseBoardColumn(e) === col.key),
   }));
 }

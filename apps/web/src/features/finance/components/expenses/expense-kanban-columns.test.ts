@@ -23,13 +23,14 @@ function mockExpense(overrides: Partial<Expense>): Expense {
 }
 
 describe('buildExpenseKanbanColumns', () => {
-  it('places UNPAID expenses in the Unpaid column', () => {
+  it('places UNPAID without due date in Due Now and omits PAID from NBOS board columns', () => {
     const columns = buildExpenseKanbanColumns([
-      mockExpense({ id: 'a', status: 'UNPAID' }),
+      mockExpense({ id: 'a', status: 'UNPAID', dueDate: null }),
       mockExpense({ id: 'b', status: 'PAID' }),
     ]);
-    const unpaidCol = columns.find((c) => c.key === 'UNPAID');
-    expect(unpaidCol?.items.map((e) => e.id)).toEqual(['a']);
-    expect(columns.find((c) => c.key === 'PAID')?.items.map((e) => e.id)).toEqual(['b']);
+    const dueNow = columns.find((c) => c.key === 'DUE_NOW');
+    expect(dueNow?.items.map((e) => e.id)).toContain('a');
+    const allIds = columns.flatMap((c) => c.items.map((e) => e.id));
+    expect(allIds).not.toContain('b');
   });
 });

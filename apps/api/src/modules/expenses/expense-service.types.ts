@@ -7,6 +7,8 @@ export interface CreateExpenseDto {
   dueDate?: string;
   status?: string;
   projectId?: string;
+  /** When set, links the expense to an existing `ExpensePlan` (validated server-side). */
+  expensePlanId?: string;
   isPassThrough?: boolean;
   taxStatus?: string;
   backlogReason?: string | null;
@@ -42,6 +44,8 @@ export interface ExpenseQueryParams {
   dateTo?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  /** When true and `status` is unset: exclude PAID + DELAYED (NBOS Expense Board scope). */
+  activeBoard?: boolean;
 }
 
 export interface ExpenseStatsParams {
@@ -51,4 +55,6 @@ export interface ExpenseStatsParams {
   projectId?: string;
   /** When set, aggregates are scoped to this status (list/stats parity). */
   status?: string;
+  /** When true and `status` is unset: same scope as `findAll` with `activeBoard`. */
+  activeBoard?: boolean;
 }

@@ -65,7 +65,9 @@ export function ExpensesPageHeader({
     <PageHeader
       title={pageVariant === 'backlog' ? 'Expense backlog' : 'Expenses'}
       description={
-        pageVariant === 'backlog' ? `${expenseCount} deferred (Delayed)` : `${expenseCount} total`
+        pageVariant === 'backlog'
+          ? `${expenseCount} deferred (Delayed)`
+          : `${expenseCount} active on board`
       }
     >
       {listNav}

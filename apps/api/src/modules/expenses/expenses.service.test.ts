@@ -108,6 +108,27 @@ describe('ExpensesService', () => {
       );
     });
 
+    it('applies activeBoard scope when no status filter', async () => {
+      await service.findAll({ activeBoard: true });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { notIn: ['PAID', 'DELAYED'] },
+          }),
+        }),
+      );
+    });
+
+    it('does not apply activeBoard when status is set', async () => {
+      await service.findAll({ activeBoard: true, status: 'PAID' });
+
+      const call = prisma.expense.findMany.mock.calls.at(-1)?.[0] as {
+        where?: Record<string, unknown>;
+      };
+      expect(call?.where?.status).toBe('PAID');
+    });
+
     it('attaches payment ledger fields using grouped payment totals', async () => {
       prisma.expense.findMany.mockResolvedValue([
         {

@@ -10,6 +10,7 @@ describe('buildExpenseListApiParams', () => {
       effectiveProjectId: 'proj-1',
       sortBy: 'amount',
       sortOrder: 'asc',
+      pageVariant: 'default',
     });
     expect(params.search).toBe('host');
     expect(params.category).toBe('TOOLS');
@@ -19,6 +20,7 @@ describe('buildExpenseListApiParams', () => {
     expect(params.sortOrder).toBe('asc');
     expect(params.dateFrom).toBeDefined();
     expect(params.dateTo).toBeDefined();
+    expect(params.activeBoard).toBeUndefined();
   });
 
   it('omits category/status when set to all', () => {
@@ -32,5 +34,18 @@ describe('buildExpenseListApiParams', () => {
     expect(params.category).toBeUndefined();
     expect(params.status).toBeUndefined();
     expect(params.projectId).toBeUndefined();
+    expect(params.activeBoard).toBe(true);
+  });
+
+  it('does not set activeBoard on backlog variant', () => {
+    const params = buildExpenseListApiParams({
+      search: '',
+      filters: { category: 'all', status: 'all' },
+      period: 'month',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      pageVariant: 'backlog',
+    });
+    expect(params.activeBoard).toBeUndefined();
   });
 });

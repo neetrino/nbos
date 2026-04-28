@@ -165,6 +165,8 @@ export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   projectId?: string;
   /** When set, aggregates match the same status scope as the expenses list. */
   status?: string;
+  /** When true and `status` is omitted: same scope as `GET /expenses?activeBoard=true`. */
+  activeBoard?: boolean;
 }
 
 /** Allowed `sortBy` values for `GET /expenses` (aligned with ExpensesService allowlist). */
@@ -183,6 +185,10 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   backlogReason?: string;
   sortBy?: ExpenseListSortField;
   sortOrder?: 'asc' | 'desc';
+  /**
+   * When true and `status` is omitted: exclude `PAID` and `DELAYED` (board vs closed/backlog), per NBOS.
+   */
+  activeBoard?: boolean;
 }
 
 /** Body for `PUT /expenses/:id` (aligned with ExpensesController). */
@@ -195,6 +201,7 @@ export interface CreateExpensePayload {
   dueDate?: string | null;
   status?: string;
   projectId?: string | null;
+  expensePlanId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: string;
   backlogReason?: string | null;
