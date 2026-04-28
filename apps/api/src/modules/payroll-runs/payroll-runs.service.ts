@@ -12,6 +12,12 @@ import { canTransitionPayrollRun } from './payroll-run-status-transitions';
 import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { buildPayrollRunJournal } from './payroll-run-journal';
+import {
+  PAYROLL_RUN_AUDIT_ACTION_CREATED,
+  PAYROLL_RUN_AUDIT_ACTION_STATUS_CHANGED,
+  PAYROLL_RUN_AUDIT_ENTITY_TYPE,
+} from './payroll-run-audit.constants';
+import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
 const PAYROLL_RUN_STATUSES: PayrollRunStatusEnum[] = [
@@ -51,6 +57,12 @@ export interface CreatePayrollRunBody {
   payrollMonth: string;
   /** When true (default), create salary lines from active employees using `Employee.baseSalary`. */
   seedLines?: boolean;
+}
+
+/** Actor for audit rows on status transitions (`PATCH …/status`). */
+export interface PayrollRunStatusMeta {
+  actorUserId: string;
+  approvedById?: string | null;
 }
 
 @Injectable()
@@ -104,9 +116,15 @@ export class PayrollRunsService {
       },
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
+    const auditTrail = await loadPayrollRunAuditTrail(
+      this.prisma,
+      PAYROLL_RUN_AUDIT_ENTITY_TYPE,
+      id,
+    );
     return {
       ...run,
       journal: buildPayrollRunJournal(run),
+      auditTrail,
     };
   }
 
@@ -158,13 +176,26 @@ export class PayrollRunsService {
       }
 
       await recalculatePayrollRunTotalsFromSalaryLines(tx, run.id);
+
+      if (createdById) {
+        await tx.auditLog.create({
+          data: {
+            entityType: PAYROLL_RUN_AUDIT_ENTITY_TYPE,
+            entityId: run.id,
+            action: PAYROLL_RUN_AUDIT_ACTION_CREATED,
+            userId: createdById,
+            changes: { payrollMonth: month, status: 'DRAFT' },
+          },
+        });
+      }
+
       return run.id;
     });
 
     return this.findById(newId);
   }
 
-  async updateStatus(id: string, nextStatus: string, meta?: { approvedById?: string | null }) {
+  async updateStatus(id: string, nextStatus: string, meta: PayrollRunStatusMeta) {
     const status = parsePayrollRunStatus(nextStatus);
     const run = await this.prisma.payrollRun.findUnique({ where: { id } });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
@@ -177,7 +208,7 @@ export class PayrollRunsService {
 
     if (status === 'APPROVED') {
       data.approvedAt = new Date();
-      if (meta?.approvedById) {
+      if (meta.approvedById) {
         data.approvedBy = { connect: { id: meta.approvedById } };
       }
     }
@@ -194,6 +225,15 @@ export class PayrollRunsService {
           payrollMonth: run.payrollMonth,
         });
       }
+      await tx.auditLog.create({
+        data: {
+          entityType: PAYROLL_RUN_AUDIT_ENTITY_TYPE,
+          entityId: id,
+          action: PAYROLL_RUN_AUDIT_ACTION_STATUS_CHANGED,
+          userId: meta.actorUserId,
+          changes: { from: run.status, to: status },
+        },
+      });
     });
 
     return this.findById(id);

@@ -6,6 +6,13 @@ export const PAYROLL_JOURNAL_KIND_LABEL: Record<PayrollJournalKind, string> = {
   CLOSED: 'Closed',
 };
 
+/** Labels for `audit_logs.action` values written by the payroll API. */
+export function payrollAuditActionLabel(action: string): string {
+  if (action === 'CREATED') return 'Created';
+  if (action === 'STATUS_CHANGED') return 'Status changed';
+  return action;
+}
+
 export const PAYROLL_RUN_STATUS_LABEL: Record<PayrollRunStatus, string> = {
   DRAFT: 'Draft',
   REVIEW: 'Review',

@@ -36,7 +36,7 @@ export class PayrollRunsController {
   @ApiOperation({
     summary: 'Get payroll run with salary lines',
     description:
-      'Includes `journal`: read-only milestones from createdAt / approvedAt / closedAt (no intermediate status history until audit logging).',
+      'Includes `journal` (milestone timestamps) and `auditTrail` (`audit_logs` for this run: create + status changes).',
   })
   async findOne(@Param('id') id: string) {
     return this.payrollRunsService.findById(id);
@@ -59,6 +59,7 @@ export class PayrollRunsController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.payrollRunsService.updateStatus(id, body.status, {
+      actorUserId: user.id,
       approvedById: user.id,
     });
   }

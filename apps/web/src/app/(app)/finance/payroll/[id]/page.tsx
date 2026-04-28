@@ -19,6 +19,7 @@ import { payrollRunDetailPageTitle } from '@/features/finance/constants/finance-
 import {
   PAYROLL_JOURNAL_KIND_LABEL,
   PAYROLL_RUN_STATUS_LABEL,
+  payrollAuditActionLabel,
   payrollRunActionOptions,
 } from '@/features/finance/constants/payroll-run-ui';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -42,6 +43,15 @@ function formatJournalAt(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function formatAuditChanges(value: unknown): string {
+  if (value == null) return '—';
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
 }
 
 export default function PayrollRunDetailPage() {
@@ -174,11 +184,47 @@ export default function PayrollRunDetailPage() {
         <Summary label="Paid" value={formatAmount(parseAmount(run.totalPaid))} />
       </div>
 
+      {run.auditTrail.length > 0 ? (
+        <section className="border-border bg-card rounded-xl border p-4">
+          <h2 className="text-foreground text-sm font-semibold">Audit trail</h2>
+          <p className="text-muted-foreground mt-1 text-xs">
+            Immutable log from NBOS audit storage (create and each status change after this feature
+            shipped). Older runs may have an empty trail until new activity occurs.
+          </p>
+          <ul className="mt-3 space-y-0">
+            {run.auditTrail.map((row) => (
+              <li key={row.id} className="border-border border-t py-3 first:border-t-0 first:pt-0">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-foreground text-sm font-medium">
+                      {payrollAuditActionLabel(row.action)}
+                    </p>
+                    <p className="text-muted-foreground mt-0.5 text-xs">
+                      {employeeName(row.actor)}
+                    </p>
+                  </div>
+                  <time
+                    className="text-muted-foreground shrink-0 text-xs tabular-nums"
+                    dateTime={row.createdAt}
+                  >
+                    {formatJournalAt(row.createdAt)}
+                  </time>
+                </div>
+                <pre className="bg-muted/50 text-muted-foreground mt-2 max-h-40 overflow-auto rounded-md p-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap">
+                  {formatAuditChanges(row.changes)}
+                </pre>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <section className="border-border bg-card rounded-xl border p-4">
         <h2 className="text-foreground text-sm font-semibold">Run journal</h2>
         <p className="text-muted-foreground mt-1 text-xs">
-          Milestones from stored timestamps only. Intermediate workflow steps (e.g. review or
-          paying) are not listed until NBOS audit logging covers payroll runs.
+          {run.auditTrail.length > 0
+            ? 'Summary milestones from payroll run timestamps. Every status hop is recorded in the audit trail above.'
+            : 'Milestones from stored timestamps only. Intermediate workflow steps (e.g. review or paying) are not listed here until audit events exist for this run.'}
         </p>
         <ul className="mt-3 space-y-0">
           {run.journal.map((entry) => (

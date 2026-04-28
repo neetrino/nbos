@@ -13,6 +13,14 @@ export interface PayrollJournalEntry {
   summary: string;
 }
 
+export interface PayrollAuditTrailRow {
+  id: string;
+  action: string;
+  createdAt: string;
+  changes: unknown;
+  actor: { id: string; firstName: string; lastName: string };
+}
+
 export type SalaryLineStatus = 'PENDING' | 'APPROVED' | 'PARTIALLY_PAID' | 'PAID' | 'HELD';
 
 export interface PayrollRunListRow {
@@ -71,6 +79,8 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   closedAt: string | null;
   /** Read-only milestones from run timestamps (no intermediate status audit yet). */
   journal: PayrollJournalEntry[];
+  /** Audit log rows for this run (`CREATED`, `STATUS_CHANGED`, …). */
+  auditTrail: PayrollAuditTrailRow[];
 }
 
 export interface PayrollRunListParams {

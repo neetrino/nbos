@@ -31,6 +31,8 @@ describe('PayrollRunsService', () => {
     });
 
     it('returns journal derived from durable timestamps', async () => {
+      prisma.auditLog.findMany.mockResolvedValue([]);
+      prisma.employee.findMany.mockResolvedValue([]);
       prisma.payrollRun.findUnique.mockResolvedValue({
         id: 'p1',
         payrollMonth: '2026-04',
