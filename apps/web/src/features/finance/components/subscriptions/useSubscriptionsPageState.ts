@@ -1,9 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { buildSubscriptionListQuery } from '@/features/finance/utils/build-subscription-list-query';
 import { subscriptionsApi, type Subscription, type SubscriptionStats } from '@/lib/api/finance';
-import type { FinanceDateRangeParams } from '@/lib/api/finance-common';
 
-export function useSubscriptionsPageState() {
+interface UseSubscriptionsPageStateOptions {
+  partnerIdFromUrl?: string | null;
+}
+
+export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOptions) {
+  const partnerIdFromUrl = options?.partnerIdFromUrl?.trim() || null;
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [stats, setStats] = useState<SubscriptionStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -15,9 +20,18 @@ export function useSubscriptionsPageState() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
 
+  const filtersForBar = useMemo(() => {
+    const pid = partnerIdFromUrl?.trim();
+    if (!pid) return filters;
+    const current = filters.partner;
+    if (current && current !== 'all') return filters;
+    return { ...filters, partner: pid };
+  }, [filters, partnerIdFromUrl]);
+
   const fetchSubscriptions = useSubscriptionFetch({
     search,
     filters,
+    partnerIdFromUrl,
     period,
     setSubscriptions,
     setStats,
@@ -64,6 +78,7 @@ export function useSubscriptionsPageState() {
     cancellingId,
     holdingId,
     filters,
+    filtersForBar,
     setFilters,
     period,
     setPeriod,
@@ -85,6 +100,7 @@ function useInitialSearch() {
 function useSubscriptionFetch({
   search,
   filters,
+  partnerIdFromUrl,
   period,
   setSubscriptions,
   setStats,
@@ -93,6 +109,7 @@ function useSubscriptionFetch({
 }: {
   search: string;
   filters: Record<string, string>;
+  partnerIdFromUrl: string | null;
   period: FinancePeriod;
   setSubscriptions: (subscriptions: Subscription[]) => void;
   setStats: (stats: SubscriptionStats) => void;
@@ -104,7 +121,9 @@ function useSubscriptionFetch({
     try {
       const periodParams = getFinancePeriodParams(period);
       const [data, subscriptionStats] = await Promise.all([
-        subscriptionsApi.getAll(buildSubscriptionQuery({ filters, search }, periodParams)),
+        subscriptionsApi.getAll(
+          buildSubscriptionListQuery({ filters, search, partnerIdFromUrl }, periodParams),
+        ),
         subscriptionsApi.getStats(periodParams),
       ]);
       setSubscriptions(data.items);
@@ -115,28 +134,7 @@ function useSubscriptionFetch({
     } finally {
       setLoading(false);
     }
-  }, [filters, period, search, setError, setLoading, setStats, setSubscriptions]);
-}
-
-function buildSubscriptionQuery(
-  params: { search: string; filters: Record<string, string> },
-  periodParams?: FinanceDateRangeParams,
-) {
-  const partnerRaw = params.filters.partner;
-  let partnerId: string | undefined;
-  if (partnerRaw && partnerRaw !== 'all') {
-    partnerId = partnerRaw;
-  }
-
-  return {
-    pageSize: 100,
-    search: params.search || undefined,
-    type: params.filters.type && params.filters.type !== 'all' ? params.filters.type : undefined,
-    status:
-      params.filters.status && params.filters.status !== 'all' ? params.filters.status : undefined,
-    partnerId,
-    ...periodParams,
-  };
+  }, [filters, partnerIdFromUrl, period, search, setError, setLoading, setStats, setSubscriptions]);
 }
 
 function useSubscriptionActivation(

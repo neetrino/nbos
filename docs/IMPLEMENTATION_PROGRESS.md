@@ -22,13 +22,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                           |
-| -------------------- | ----------------------------------------------- |
-| Current phase        | Phase 3 - Finance core                          |
-| Current module/block | Finance subscriptions ↔ partner                 |
-| Current task         | Subscription detail lifecycle + partner actions |
-| Status               | Slice done; next invoice/subscription depth     |
-| Last updated         | 2026-04-28                                      |
+| Field                | Value                                  |
+| -------------------- | -------------------------------------- |
+| Current phase        | Phase 3 - Finance core                 |
+| Current module/block | Finance subscriptions ↔ partner        |
+| Current task         | Partner → subscriptions URL drill-down |
+| Status               | Slice done                             |
+| Last updated         | 2026-04-28                             |
 
 ## Phase Progress
 
@@ -36,7 +36,7 @@ Rules:
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                          |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations |
-| Phase 3 - Finance core                           | In progress |      28% | None                           | Subscriptions hold/resume/cancel UX                                  |
+| Phase 3 - Finance core                           | In progress |      29% | None                           | Partner/subscription drill-downs                                     |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                          |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                         |
 | Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                   |
@@ -92,6 +92,7 @@ Rules:
 | 2026-04-28 | Create invoice from subscription done    | `CreateInvoiceDialog` + `subscriptionId` loads sub; `buildCreateInvoicePayload` sends `subscriptionId`; utils tests             | `pnpm exec vitest run apps/web/src/features/finance/components/invoices/create-invoice-dialog-utils.test.ts`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                         | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscription detail page done            | `/finance/subscriptions/[id]` GET detail UI; list row → detail; invoices shortcut stops propagation                             | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                                                                                                                       | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscription detail actions done         | `SubscriptionDetailActions`: partner dialog + activate/resume/pause/cancel; `subscription-action-eligibility` shared with table | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                                                                                                                       | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Partner → subscriptions drill-down done  | `?partnerId=` on subscriptions list; banner + clear; partner detail links count to filtered list; `buildSubscriptionListQuery`  | `pnpm exec vitest run apps/web/src/features/finance/utils/build-subscription-list-query.test.ts`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                            | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 
@@ -165,5 +166,5 @@ Continue with Phase 3:
 ```text
 Next Phase 3 slice candidates:
 - Subscription and invoice lifecycle depth with no fake money states.
-- Finance filters (e.g. subscriptions by partnerId) if product needs reporting slices.
+- Reporting or exports only when product priorities are confirmed.
 ```

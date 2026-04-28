@@ -1,15 +1,24 @@
 'use client';
 
-import { FilterBar } from '@/components/shared';
+import { Suspense } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { FilterBar, LoadingState } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/constants/finance';
+import { PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-partner-drilldown';
 import { usePartnerFilterOptions } from '@/features/finance/hooks/usePartnerFilterOptions';
 import { SubscriptionsPageContent } from '@/features/finance/components/subscriptions/SubscriptionsPageContent';
 import { SubscriptionsPageHeader } from '@/features/finance/components/subscriptions/SubscriptionsPageHeader';
 import { SubscriptionStatsCards } from '@/features/finance/components/subscriptions/SubscriptionStatsCards';
 import { useSubscriptionsPageState } from '@/features/finance/components/subscriptions/useSubscriptionsPageState';
 
-export default function SubscriptionsPage() {
-  const page = useSubscriptionsPageState();
+function SubscriptionsPageInner() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const partnerIdFromUrl = searchParams.get(PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY);
+
+  const page = useSubscriptionsPageState({ partnerIdFromUrl });
   const { partnerFilterOptions } = usePartnerFilterOptions();
 
   const totalMRR = Number(page.stats?.monthlyRevenue ?? 0);
@@ -17,6 +26,29 @@ export default function SubscriptionsPage() {
     (subscription) => subscription.status === 'ACTIVE',
   ).length;
   const activeSubscriptions = page.stats?.activeSubscriptions ?? activeCount;
+
+  const clearPartnerDrilldown = () => {
+    router.replace(pathname ?? '/finance/subscriptions');
+    page.setFilters((prev) => {
+      const next = { ...prev };
+      delete next.partner;
+      return next;
+    });
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    if (partnerIdFromUrl && key === 'partner') {
+      router.replace(pathname ?? '/finance/subscriptions');
+    }
+    page.setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleClearFilters = () => {
+    if (partnerIdFromUrl) {
+      router.replace(pathname ?? '/finance/subscriptions');
+    }
+    page.setFilters({});
+  };
 
   const filterConfigs = [
     {
@@ -52,14 +84,25 @@ export default function SubscriptionsPage() {
 
       <SubscriptionStatsCards subscriptions={page.subscriptions} stats={page.stats} />
 
+      {partnerIdFromUrl ? (
+        <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
+          <p className="text-foreground max-w-prose">
+            Showing subscriptions linked to this partner (server filter).
+          </p>
+          <Button variant="outline" size="sm" type="button" onClick={clearPartnerDrilldown}>
+            Clear filter
+          </Button>
+        </div>
+      ) : null}
+
       <FilterBar
         search={page.search}
         onSearchChange={page.setSearch}
         searchPlaceholder="Search by project or company..."
         filters={filterConfigs}
-        filterValues={page.filters}
-        onFilterChange={(key, value) => page.setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => page.setFilters({})}
+        filterValues={page.filtersForBar}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
       />
 
       <SubscriptionsPageContent
@@ -76,5 +119,13 @@ export default function SubscriptionsPage() {
         onPartnerLinked={page.handlePartnerLinked}
       />
     </div>
+  );
+}
+
+export default function SubscriptionsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <SubscriptionsPageInner />
+    </Suspense>
   );
 }

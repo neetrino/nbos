@@ -21,6 +21,7 @@ import {
   getPartnerStatus,
   getPartnerType,
 } from '@/features/partners/constants/partners';
+import { partnerSubscriptionsDrilldownHref } from '@/features/finance/constants/subscription-partner-drilldown';
 import { partnersApi, type Partner } from '@/lib/api/partners';
 
 function formatPercent(value: string | number): string {
@@ -176,7 +177,18 @@ export default function PartnerDetailPage() {
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Subscriptions</p>
-          <p className="mt-2 text-xl font-bold tabular-nums">{subs}</p>
+          <p className="mt-2 text-xl font-bold tabular-nums">
+            {subs > 0 ? (
+              <Link
+                href={partnerSubscriptionsDrilldownHref(partner.id)}
+                className="text-primary hover:underline"
+              >
+                {subs}
+              </Link>
+            ) : (
+              subs
+            )}
+          </p>
         </div>
       </div>
 
