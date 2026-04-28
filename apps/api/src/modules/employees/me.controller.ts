@@ -24,6 +24,8 @@ export class MeController {
   @Get('wallet')
   @ApiOperation({
     summary: 'Read-only employee wallet (base pay, bonus pipeline, payroll salary lines)',
+    description:
+      'Salary history rows include payrollRunId for linking to Finance payroll run detail.',
   })
   async getWallet(@CurrentUser() user: CurrentUserPayload) {
     if (!user?.id) {

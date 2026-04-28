@@ -23,6 +23,7 @@ export interface EmployeeWalletBonusRow {
 
 export interface EmployeeWalletSalaryRow {
   id: string;
+  payrollRunId: string;
   payrollMonth: string;
   runStatus: string;
   baseSalary: string;
@@ -113,6 +114,7 @@ export class EmployeeWalletService {
       })),
       salaryHistory: salaryRows.map((s) => ({
         id: s.id,
+        payrollRunId: s.payrollRunId,
         payrollMonth: s.payrollRun.payrollMonth,
         runStatus: s.payrollRun.status,
         baseSalary: s.baseSalary.toString(),

@@ -21,6 +21,7 @@ export interface EmployeeWalletBonusRow {
 
 export interface EmployeeWalletSalaryRow {
   id: string;
+  payrollRunId: string;
   payrollMonth: string;
   runStatus: string;
   baseSalary: string;

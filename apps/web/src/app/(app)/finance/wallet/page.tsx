@@ -170,7 +170,7 @@ export default function EmployeeWalletPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Month</TableHead>
-                <TableHead>Run</TableHead>
+                <TableHead>Payroll run</TableHead>
                 <TableHead className="text-right">Payable</TableHead>
                 <TableHead className="text-right">Paid</TableHead>
                 <TableHead className="text-right">Remaining</TableHead>
@@ -189,7 +189,17 @@ export default function EmployeeWalletPage() {
                 data.salaryHistory.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell className="font-medium">{row.payrollMonth}</TableCell>
-                    <TableCell className="text-muted-foreground text-xs">{row.runStatus}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-0.5">
+                        <Link
+                          href={`/finance/payroll/${row.payrollRunId}`}
+                          className="text-primary text-xs font-medium hover:underline"
+                        >
+                          Open run
+                        </Link>
+                        <span className="text-muted-foreground text-xs">{row.runStatus}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       {formatAmount(parseAmount(row.totalPayable))}
                     </TableCell>

@@ -43,6 +43,7 @@ describe('EmployeeWalletService', () => {
     prisma.salaryLine.findMany.mockResolvedValue([
       {
         id: 'sl1',
+        payrollRunId: 'run-1',
         baseSalary: new Decimal(100_000),
         bonusesTotal: new Decimal(0),
         totalPayable: new Decimal(100_000),
@@ -60,5 +61,6 @@ describe('EmployeeWalletService', () => {
     expect(snap.bonuses[0].walletGroup).toBe('IN_PROGRESS');
     expect(snap.salaryHistory).toHaveLength(1);
     expect(snap.salaryHistory[0].expenseId).toBe('ex1');
+    expect(snap.salaryHistory[0].payrollRunId).toBe('run-1');
   });
 });
