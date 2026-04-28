@@ -3,6 +3,14 @@
  * Used with `useFinanceDocumentTitle` / `buildFinanceDocumentTitle`.
  */
 
+export function financeDashboardPageTitle(): string {
+  return 'Dashboard';
+}
+
+export function paymentsListPageTitle(): string {
+  return 'Payments';
+}
+
 export function invoicesListPageTitle(hasSubscriptionDrilldown: boolean): string {
   return hasSubscriptionDrilldown ? 'Invoices · subscription filter' : 'Invoices';
 }
@@ -49,4 +57,22 @@ export function expenseDetailPageTitle(params: ExpenseDetailPageTitleParams): st
   if (params.fromBacklog && params.hasProjectDrilldown) return `${name} · backlog · project filter`;
   if (params.fromBacklog) return `${name} · backlog`;
   return `${name} · project filter`;
+}
+
+export interface SubscriptionDetailPageTitleParams {
+  loading: boolean;
+  /** True when fetch finished and subscription is missing or an error was set. */
+  loadFailed: boolean;
+  subscriptionCode: string | null | undefined;
+}
+
+/**
+ * `undefined` means leave the current document title unchanged (still loading).
+ */
+export function subscriptionDetailPageTitle(
+  params: SubscriptionDetailPageTitleParams,
+): string | undefined {
+  if (params.loading) return undefined;
+  if (params.loadFailed || !params.subscriptionCode?.trim()) return 'Subscription';
+  return params.subscriptionCode.trim();
 }

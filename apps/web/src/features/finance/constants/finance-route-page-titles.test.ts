@@ -3,12 +3,23 @@ import {
   expenseBacklogPageTitle,
   expenseDetailPageTitle,
   expensesListPageTitle,
+  financeDashboardPageTitle,
   invoicesListPageTitle,
   ordersListPageTitle,
+  paymentsListPageTitle,
+  subscriptionDetailPageTitle,
   subscriptionsListPageTitle,
 } from './finance-route-page-titles';
 
 describe('finance route page titles', () => {
+  it('financeDashboardPageTitle', () => {
+    expect(financeDashboardPageTitle()).toBe('Dashboard');
+  });
+
+  it('paymentsListPageTitle', () => {
+    expect(paymentsListPageTitle()).toBe('Payments');
+  });
+
   it('invoicesListPageTitle', () => {
     expect(invoicesListPageTitle(false)).toBe('Invoices');
     expect(invoicesListPageTitle(true)).toBe('Invoices · subscription filter');
@@ -96,5 +107,39 @@ describe('finance route page titles', () => {
         hasProjectDrilldown: true,
       }),
     ).toBe('Rent · backlog · project filter');
+  });
+
+  it('subscriptionDetailPageTitle', () => {
+    expect(
+      subscriptionDetailPageTitle({
+        loading: true,
+        loadFailed: false,
+        subscriptionCode: 'SUB-1',
+      }),
+    ).toBeUndefined();
+
+    expect(
+      subscriptionDetailPageTitle({
+        loading: false,
+        loadFailed: true,
+        subscriptionCode: null,
+      }),
+    ).toBe('Subscription');
+
+    expect(
+      subscriptionDetailPageTitle({
+        loading: false,
+        loadFailed: false,
+        subscriptionCode: '  ',
+      }),
+    ).toBe('Subscription');
+
+    expect(
+      subscriptionDetailPageTitle({
+        loading: false,
+        loadFailed: false,
+        subscriptionCode: 'SUB-42',
+      }),
+    ).toBe('SUB-42');
   });
 });

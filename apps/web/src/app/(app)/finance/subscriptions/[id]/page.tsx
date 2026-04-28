@@ -16,6 +16,7 @@ import {
   getSubscriptionStatus,
   getSubscriptionType,
 } from '@/features/finance/constants/finance';
+import { subscriptionDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/subscription-invoice-drilldown';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
@@ -61,12 +62,13 @@ export default function SubscriptionDetailPage() {
     fetchSubscription();
   }, [fetchSubscription]);
 
-  const financeDocTitle = loading
-    ? undefined
-    : error || !subscription
-      ? 'Subscription'
-      : subscription.code;
-  useFinanceDocumentTitle(financeDocTitle);
+  useFinanceDocumentTitle(
+    subscriptionDetailPageTitle({
+      loading,
+      loadFailed: Boolean(error || !subscription),
+      subscriptionCode: subscription?.code,
+    }),
+  );
 
   if (loading) {
     return (
