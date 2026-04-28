@@ -1,7 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, MoreHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableHeader,
@@ -19,9 +26,14 @@ interface ExpensesTableSectionProps {
   expenses: Expense[];
   /** When set, row links include `?projectId=` for back-navigation parity. */
   listProjectId?: string | null;
+  onRequestDelete: (expense: Expense) => void;
 }
 
-export function ExpensesTableSection({ expenses, listProjectId }: ExpensesTableSectionProps) {
+export function ExpensesTableSection({
+  expenses,
+  listProjectId,
+  onRequestDelete,
+}: ExpensesTableSectionProps) {
   return (
     <div className="border-border overflow-hidden rounded-xl border">
       <Table>
@@ -34,6 +46,9 @@ export function ExpensesTableSection({ expenses, listProjectId }: ExpensesTableS
             <TableHead>Status</TableHead>
             <TableHead>Project</TableHead>
             <TableHead>Due Date</TableHead>
+            <TableHead className="w-[52px] text-right">
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -75,6 +90,36 @@ export function ExpensesTableSection({ expenses, listProjectId }: ExpensesTableS
                 </TableCell>
                 <TableCell className="text-muted-foreground text-xs">
                   {expense.dueDate ? new Date(expense.dueDate).toLocaleDateString() : '—'}
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={(props) => (
+                        <Button
+                          {...props}
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          className="text-muted-foreground"
+                          aria-label={`Actions for ${expense.name}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            props.onClick?.(e);
+                          }}
+                        >
+                          <MoreHorizontal size={14} />
+                        </Button>
+                      )}
+                    />
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => onRequestDelete(expense)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             );

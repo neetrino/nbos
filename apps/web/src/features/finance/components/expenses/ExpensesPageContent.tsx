@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, RefreshCcw, Receipt, FolderKanban, LayoutGrid, List } from 'lucide-react';
+import { Plus, RefreshCcw, Receipt, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   PageHeader,
@@ -11,7 +10,6 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  StatusBadge,
   KanbanBoard,
 } from '@/components/shared';
 import {
@@ -26,6 +24,8 @@ import { expensesApi, type Expense, type ExpenseStats } from '@/lib/api/finance'
 import { projectsApi } from '@/lib/api/projects';
 import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
 import { CreateExpenseDialog } from './CreateExpenseDialog';
+import { DeleteExpenseDialog } from './DeleteExpenseDialog';
+import { ExpenseKanbanCard } from './ExpenseKanbanCard';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
 import { ExpensesTableSection } from './ExpensesTableSection';
 
@@ -51,6 +51,9 @@ export function ExpensesPageContent({
   const [period, setPeriod] = useState<FinancePeriod>('month');
   const [projectBannerLabel, setProjectBannerLabel] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!projectIdFromUrl) {
@@ -96,6 +99,21 @@ export function ExpensesPageContent({
       setLoading(false);
     }
   }, [search, filters, period, projectIdFromUrl]);
+
+  const handleConfirmDeleteExpense = async () => {
+    if (!deleteTarget) return;
+    setDeleteError(null);
+    setDeleteSubmitting(true);
+    try {
+      await expensesApi.delete(deleteTarget.id);
+      setDeleteTarget(null);
+      await fetchExpenses();
+    } catch {
+      setDeleteError('Expense could not be deleted. Check your connection and try again.');
+    } finally {
+      setDeleteSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     fetchExpenses();
@@ -226,30 +244,25 @@ export function ExpensesPageContent({
           columns={kanbanColumns}
           getItemId={(e: Expense) => e.id}
           renderCard={(expense: Expense) => (
-            <Link
-              href={expenseDetailHref(expense.id, projectIdFromUrl)}
-              className="border-border bg-card focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">{expense.category}</span>
-                <StatusBadge
-                  label={expense.type}
-                  variant={expense.type === 'PLANNED' ? 'blue' : 'orange'}
-                />
-              </div>
-              <p className="text-sm font-medium">{expense.name}</p>
-              <p className="text-sm font-bold">{formatAmount(parseFloat(expense.amount))}</p>
-              {expense.project && (
-                <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                  <FolderKanban size={10} />
-                  {expense.project.name}
-                </div>
-              )}
-            </Link>
+            <ExpenseKanbanCard
+              expense={expense}
+              listProjectId={projectIdFromUrl}
+              onRequestDelete={(row) => {
+                setDeleteError(null);
+                setDeleteTarget(row);
+              }}
+            />
           )}
         />
       ) : (
-        <ExpensesTableSection expenses={expenses} listProjectId={projectIdFromUrl} />
+        <ExpensesTableSection
+          expenses={expenses}
+          listProjectId={projectIdFromUrl}
+          onRequestDelete={(row) => {
+            setDeleteError(null);
+            setDeleteTarget(row);
+          }}
+        />
       )}
 
       <CreateExpenseDialog
@@ -260,6 +273,20 @@ export function ExpensesPageContent({
           fetchExpenses();
           router.push(expenseDetailHref(created.id, projectIdFromUrl));
         }}
+      />
+
+      <DeleteExpenseDialog
+        expenseName={deleteTarget?.name ?? ''}
+        open={deleteTarget !== null}
+        isSubmitting={deleteSubmitting}
+        errorMessage={deleteError}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteError(null);
+          }
+        }}
+        onConfirm={handleConfirmDeleteExpense}
       />
     </div>
   );
