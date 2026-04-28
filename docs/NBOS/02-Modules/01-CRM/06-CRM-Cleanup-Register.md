@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `PM KICKOFF CHECKLIST FOUNDATION DONE / DELIVERY GATES NEXT`
+Статус: `PRODUCT DEVELOPMENT GATE FOUNDATION DONE / FINANCE DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -208,13 +208,14 @@ Deal Won foundation уже блокирует non-maintenance Won без linked 
 Product subscription entry, auto-created linked `MAINTENANCE Deal`, `Pending` subscription
 creation for won Maintenance deals, Deal card handoff links/readiness visibility,
 Project detail read-only PM intake visibility, and persisted PM kickoff checklist rows.
+Product Development gate now blocks on missing required PM kickoff checklist acceptance.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, что все remaining popup actions получают direct create/open shortcuts, а не только `Open details`;
 - углубить direct actions из popup там, где нужны create/open shortcuts;
 - углубить Finance subscription grid, coverage months and activation workflow;
-- добавить delivery lifecycle gates after PM kickoff checklist acceptance.
+- добавить shortened Extension checklist and remaining delivery lifecycle depth.
 
 Опорные места в коде:
 
@@ -224,7 +225,7 @@ Project detail read-only PM intake visibility, and persisted PM kickoff checklis
 Что потом нужно сделать:
 
 - углубить Finance-owned subscription activation and coverage semantics;
-- добавить delivery transition blockers after PM kickoff checklist acceptance.
+- добавить shortened Extension checklist and later delivery board depth.
 
 ### C3. Автосоздание связанного `MAINTENANCE Deal` пока надо считать функциональным backlog item
 
@@ -244,7 +245,7 @@ Project detail read-only PM intake visibility, and persisted PM kickoff checklis
 
 Что потом нужно сделать:
 
-- углубить delivery lifecycle gates around PM kickoff acceptance;
+- углубить Extension-specific checklist and later delivery board depth;
 - later deepen activation rules in Finance instead of CRM.
 
 ---
@@ -257,7 +258,7 @@ Project detail read-only PM intake visibility, and persisted PM kickoff checklis
 2. привести subscription statuses к новому канону в shared/backend/frontend;
 3. расширить CRM stage gates и popup transitions;
 4. реализовать maintenance auto-created flow;
-5. углубить delivery lifecycle gates and Finance subscription activation;
+5. углубить Extension checklist and Finance subscription activation;
 6. только после этого полировать вторичные UI детали и automation texts.
 
 ---

@@ -161,9 +161,61 @@ describe('ProductsService', () => {
     });
 
     it('allows ON_HOLD → back to any active stage', async () => {
-      prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'ON_HOLD' });
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'ON_HOLD',
+      });
+      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
+        {
+          key: 'scope_confirmed',
+          title: 'Scope confirmed',
+          isRequired: true,
+          isChecked: true,
+        },
+      ]);
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
       const result = await service.updateStatus('p1', 'DEVELOPMENT');
+      expect(result.status).toBe('DEVELOPMENT');
+    });
+
+    it('blocks CREATING → DEVELOPMENT when kickoff checklist has missing required items', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'CREATING',
+      });
+      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
+        {
+          key: 'scope_confirmed',
+          title: 'Scope confirmed',
+          isRequired: true,
+          isChecked: false,
+        },
+      ]);
+
+      await expect(service.updateStatus('p1', 'DEVELOPMENT')).rejects.toThrow(BadRequestException);
+      expect(prisma.product.update).not.toHaveBeenCalled();
+    });
+
+    it('allows CREATING → DEVELOPMENT when required kickoff checklist is accepted', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'CREATING',
+      });
+      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
+        {
+          key: 'scope_confirmed',
+          title: 'Scope confirmed',
+          isRequired: true,
+          isChecked: true,
+        },
+      ]);
+      prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
+
+      const result = await service.updateStatus('p1', 'DEVELOPMENT');
+
       expect(result.status).toBe('DEVELOPMENT');
     });
 

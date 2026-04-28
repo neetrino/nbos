@@ -7,51 +7,13 @@ import {
   type ProductStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-
-const STATUS_ORDER: ProductStatusEnum[] = [
-  'NEW',
-  'CREATING',
-  'DEVELOPMENT',
-  'QA',
-  'TRANSFER',
-  'ON_HOLD',
-  'DONE',
-  'LOST',
-];
-
-const ALLOWED_TRANSITIONS: Record<ProductStatusEnum, ProductStatusEnum[]> = {
-  NEW: ['CREATING', 'LOST'],
-  CREATING: ['DEVELOPMENT', 'ON_HOLD', 'LOST'],
-  DEVELOPMENT: ['QA', 'ON_HOLD', 'LOST'],
-  QA: ['TRANSFER', 'DEVELOPMENT', 'ON_HOLD', 'LOST'],
-  TRANSFER: ['DONE', 'ON_HOLD', 'LOST'],
-  ON_HOLD: ['CREATING', 'DEVELOPMENT', 'QA', 'TRANSFER', 'LOST'],
-  DONE: [],
-  LOST: [],
-};
-
-function validateProductStageGate(
-  product: {
-    status?: string | null;
-    description?: string | null;
-    deadline?: Date | string | null;
-    order?: { id: string } | null;
-  },
-  target: ProductStatusEnum,
-) {
-  if (product.status === 'NEW' && target === 'CREATING') {
-    const missing: string[] = [];
-    if (!product.description?.trim()) missing.push('description');
-    if (!product.deadline) missing.push('deadline');
-    if (!product.order?.id) missing.push('order');
-
-    if (missing.length > 0) {
-      throw new BadRequestException(
-        `Cannot transition to CREATING: missing required fields ${missing.join(', ')}`,
-      );
-    }
-  }
-}
+import {
+  PRODUCT_STATUS_ORDER,
+  validateKickoffChecklistGate,
+  validateProductStageGate,
+  validateProductTransition,
+} from './product-stage-gates';
+import { PROJECT_KICKOFF_CHECKLIST_ITEMS } from '../project-kickoff-checklist.constants';
 
 interface CreateProductDto {
   projectId: string;
@@ -223,18 +185,13 @@ export class ProductsService {
     const current = product.status as ProductStatusEnum;
     const target = newStatus as ProductStatusEnum;
 
-    if (!STATUS_ORDER.includes(target)) {
+    if (!PRODUCT_STATUS_ORDER.includes(target)) {
       throw new BadRequestException(`Invalid status: ${newStatus}`);
     }
 
-    const allowed = ALLOWED_TRANSITIONS[current];
-    if (!allowed?.includes(target)) {
-      throw new BadRequestException(
-        `Cannot transition from ${current} to ${target}. Allowed: ${allowed?.join(', ') || 'none'}`,
-      );
-    }
-
+    validateProductTransition(current, target);
     validateProductStageGate(product, target);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product.projectId);
 
     return this.prisma.product.update({
       where: { id },
@@ -262,4 +219,22 @@ export class ProductsService {
 
     return { total, byStatus, byType };
   }
+
+  private async validateDevelopmentGate(projectId: string) {
+    const checklist = await this.prisma.projectKickoffChecklistItem.findMany({
+      where: { projectId, isRequired: true },
+      select: { key: true, title: true, isRequired: true, isChecked: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+    validateKickoffChecklistGate(checklist.length > 0 ? checklist : getMissingKickoffChecklist());
+  }
+}
+
+function getMissingKickoffChecklist() {
+  return PROJECT_KICKOFF_CHECKLIST_ITEMS.filter((item) => item.isRequired).map((item) => ({
+    key: item.key,
+    title: item.title,
+    isRequired: item.isRequired,
+    isChecked: false,
+  }));
 }
