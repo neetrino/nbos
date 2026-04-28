@@ -25,13 +25,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                                                                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Current phase        | Phase 3 - Finance core                                                                                                                                 |
-| Current module/block | Finance + Partners (cross-linked; bounded slices per roadmap)                                                                                          |
-| Current task         | **Payroll / bonus** depth and optional **scheduled** auto-run (cron) for due plans—agreement on ops model; manual **Run auto-generate** + API shipped. |
-| Status               | Open                                                                                                                                                   |
-| Last updated         | 2026-04-29                                                                                                                                             |
+| Field                | Value                                                                                                                        |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Current phase        | Phase 3 - Finance core                                                                                                       |
+| Current module/block | Finance + Partners (cross-linked; bounded slices per roadmap)                                                                |
+| Current task         | **Payroll / bonus** smallest vertical per NBOS; expense plan auto already callable via **Scheduler** POST for external cron. |
+| Status               | Open                                                                                                                         |
+| Last updated         | 2026-04-29                                                                                                                   |
 
 ## Phase Progress
 
@@ -56,12 +56,12 @@ Roadmap Phase 3 spans invoices, payments, subscriptions, expenses, partners/payo
 | Expenses (ledger, backlog, **closed**, CSV, guards; **ExpensePlan** + **auto due** + `/plans` + manual card + **board** + `activeBoard`) |             ~56% |
 | Payroll / bonus pools / operational journal                                                                                              |              ~5% |
 
-**Phase 3 overall:** ~**61%** — money-flow surfaces, drill-downs, and expense **payment ledger** are in active use; **Expense Plan** + manual **Plan→Card** + **`POST …/actions/auto-generate-due`** (plans with `autoGenerate` and `nextDueDate` ≤ end of UTC day); main expenses list + stats default to **active board** scope; **Closed** paid list; NBOS kanban lanes. **Remaining for Phase 3 “done”:** optional **cron** for auto-run + **payroll / bonus** depth.
+**Phase 3 overall:** ~**61%** — money-flow surfaces, drill-downs, and expense **payment ledger** are in active use; **Expense Plan** + manual **Plan→Card** + **`POST …/actions/auto-generate-due`** (plans with `autoGenerate` and `nextDueDate` ≤ end of UTC day); main expenses list + stats default to **active board** scope; **Closed** paid list; NBOS kanban lanes. **Remaining for Phase 3 “done”:** **payroll / bonus** depth (wire external cron to `POST /api/scheduler/expense-plan-auto-due` when ready).
 
 ### Phase 3 — quick snapshot (where we are)
 
 - **Money flows:** orders, invoices, payments, subscriptions — CRUD-ish lists, stats, reconciliation gap filters, create-invoice from order/subscription, mutation recovery banners, document titles.
-- **Expenses:** backlog + **Closed**; partial payments + delete; ledger sync/guards; CSV; **Expense Plan** + **manual card** + **auto-generate due** (API + plans UI); **Expense Board** (`activeBoard`). **Next:** payroll; optional cron for auto-run.
+- **Expenses:** backlog + **Closed**; partial payments + delete; ledger sync/guards; CSV; **Expense Plan** + **manual card** + **auto due** (finance API + **scheduler** POST for cron); **Expense Board** (`activeBoard`). **Next:** payroll.
 - **Partners:** CRUD, primary contact, links into Finance; list/detail fetch and create/edit (incl. contacts preload) use **`getApiErrorMessage`** like Finance screens.
 - **Payroll / bonus:** still a thin slice (~5% of Phase 3 scope by plan); largest **structural** gap together with expense canon.
 
@@ -80,6 +80,7 @@ Roadmap Phase 3 spans invoices, payments, subscriptions, expenses, partners/payo
 | 2026-04-29    | Expense Board NBOS alignment               | Five kanban lanes + `resolveExpenseBoardColumn` (due window); `activeBoard` on `GET /expenses` + stats excludes `PAID`/`DELAYED` unless status filter set; web list/stats/CSV parity | Vitest expense-board + kanban columns + build-expense-list-api-params + `expenses.service`; api/web `tsc` | Auto-generate; payroll; optional Closed route |
 | 2026-04-29    | Expense Closed list (NBOS)                 | `/finance/expenses/closed` + subnav; fixed `PAID` scope (list-only); main header Backlog + Closed links; `expenseClosedPageTitle`                                                    | Vitest filter helpers + build-expense-list-api-params; web `tsc` + ESLint                                 | Auto-generate from plan; payroll              |
 | 2026-04-29    | Expense plan auto-generate (due)           | `POST /expense-plans/actions/auto-generate-due` (`asOf` optional); UTC end-of-day scope; plans UI **Run auto-generate** + Auto column; per-plan failure isolation                    | Vitest `expense-plan-auto-due-scope` + `expense-plans.service`; api/web `tsc` + ESLint                    | Payroll; optional Nest cron / external runner |
+| 2026-04-29    | Scheduler hook for plan auto-due           | `POST /scheduler/expense-plan-auto-due` → `ExpensePlansService.autoGenerateDuePlans`; `SchedulerModule` imports `ExpensesModule`; cleaned scheduler JSDoc                            | Vitest `scheduler.service`; api `tsc` + ESLint                                                            | Payroll                                       |
 
 ## Phase 1 Checklist
 
@@ -152,15 +153,15 @@ Continue Phase 3 with **coherent slices** (one narrative per iteration, one comm
 
 **Suggested order (adjust with product):**
 
-1. **Expense automation (ops)** — optional **Nest `@Cron`** or external runner calling `POST …/actions/auto-generate-due` on a schedule (same auth as today).
+1. **Expense automation (ops)** — wire external cron to **`POST /api/scheduler/expense-plan-auto-due`** (or `…/expense-plans/actions/auto-generate-due` with `asOf`); optional Nest `@Cron` later.
 2. **Payroll / bonus / operational journal** — smallest vertical per `docs/NBOS` once staffing canon is clear.
 3. **Invoice / subscription lifecycle** — deeper edge cases only when roadmap prioritizes them; keep **no fabricated money state**.
 
-**Already shipped (do not re-scope as “next” unless regression):** expense sort/URL/CSV, backlog route, **Closed** paid route, partial payments + sync guards, Finance `getApiErrorMessage` sweep, mutation banners, Finance tab title helpers, Partners `getApiErrorMessage` parity, **Expense Plan + manual card from plan**, **NBOS Expense Board (five lanes + activeBoard scope)**, **auto-generate due plans (API + plans UI)**.
+**Already shipped (do not re-scope as “next” unless regression):** expense sort/URL/CSV, backlog route, **Closed** paid route, partial payments + sync guards, Finance `getApiErrorMessage` sweep, mutation banners, Finance tab title helpers, Partners `getApiErrorMessage` parity, **Expense Plan + manual card from plan**, **NBOS Expense Board (five lanes + activeBoard scope)**, **auto-generate due plans (finance API + plans UI + scheduler POST)**.
 
 ```text
 Phase 3 slice ideas (pick one cohesive unit per iteration):
-- Expenses: partial payments, backlog, **Closed list**, ledger, **Plan + manual card + auto due batch + NBOS board + activeBoard**—shipped; **next = cron/ops wiring + payroll** (by agreement).
+- Expenses: partial payments, backlog, **Closed list**, ledger, **Plan + manual card + auto due + scheduler POST + NBOS board + activeBoard**—shipped; **next = payroll** (by agreement).
 - Subscriptions/invoices: lifecycle depth when roadmap calls for it (no fake money states).
 - Partners: CRUD + drill-downs + error parity—baseline done; payouts/advanced tiers only when canon demands.
 - Server-side reporting or bulk exports when product confirms priorities.
