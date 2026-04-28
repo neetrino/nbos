@@ -59,6 +59,8 @@ interface ExpenseStatsParams {
   projectId?: string;
 }
 
+const EXPENSE_LIST_SORT_FIELDS = new Set(['createdAt', 'dueDate', 'amount', 'name', 'status']);
+
 @Injectable()
 export class ExpensesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
@@ -75,9 +77,11 @@ export class ExpensesService {
       search,
       dateFrom,
       dateTo,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
+      sortBy,
+      sortOrder,
     } = params;
+
+    const orderBy = this.buildExpenseListOrderBy(sortBy, sortOrder);
 
     const where = this.buildWhere({
       type,
@@ -96,7 +100,7 @@ export class ExpensesService {
         include: {
           project: { select: { id: true, code: true, name: true } },
         },
-        orderBy: { [sortBy]: sortOrder },
+        orderBy,
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -222,6 +226,15 @@ export class ExpensesService {
       paidAmount: paidAmount._sum.amount,
       unpaidAmount: unpaidAmount._sum.amount,
     };
+  }
+
+  private buildExpenseListOrderBy(
+    sortBy?: string,
+    sortOrder?: string,
+  ): Prisma.ExpenseOrderByWithRelationInput {
+    const field = sortBy && EXPENSE_LIST_SORT_FIELDS.has(sortBy) ? sortBy : 'createdAt';
+    const order: 'asc' | 'desc' = sortOrder === 'asc' ? 'asc' : 'desc';
+    return { [field]: order };
   }
 
   private buildWhere(

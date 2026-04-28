@@ -149,6 +149,9 @@ export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   projectId?: string;
 }
 
+/** Allowed `sortBy` values for `GET /expenses` (aligned with ExpensesService allowlist). */
+export type ExpenseListSortField = 'createdAt' | 'dueDate' | 'amount' | 'name' | 'status';
+
 export interface ExpenseListParams extends FinanceDateRangeParams {
   page?: number;
   pageSize?: number;
@@ -158,7 +161,7 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   projectId?: string;
   type?: string;
   frequency?: string;
-  sortBy?: string;
+  sortBy?: ExpenseListSortField;
   sortOrder?: 'asc' | 'desc';
 }
 

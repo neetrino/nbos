@@ -45,6 +45,26 @@ describe('ExpensesService', () => {
         }),
       );
     });
+
+    it('ignores invalid sortBy and defaults order', async () => {
+      await service.findAll({ sortBy: 'invalidField', sortOrder: 'desc' });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: { createdAt: 'desc' },
+        }),
+      );
+    });
+
+    it('applies allowed sortBy', async () => {
+      await service.findAll({ sortBy: 'amount', sortOrder: 'asc' });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: { amount: 'asc' },
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

@@ -2,24 +2,20 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Plus, RefreshCcw, Receipt, LayoutGrid, List } from 'lucide-react';
+import { Plus, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { FilterBar, EmptyState, ErrorState, LoadingState, KanbanBoard } from '@/components/shared';
+import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import {
-  PageHeader,
-  FilterBar,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  KanbanBoard,
-} from '@/components/shared';
-import {
-  FINANCE_PERIOD_OPTIONS,
-  getFinancePeriodParams,
-  type FinancePeriod,
-} from '@/features/finance/constants/finance';
-import { expensesApi, type Expense, type ExpenseStats } from '@/lib/api/finance';
+  expensesApi,
+  type Expense,
+  type ExpenseListSortField,
+  type ExpenseStats,
+} from '@/lib/api/finance';
 import { projectsApi } from '@/lib/api/projects';
 import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
+import { ExpenseSortControls } from './ExpenseSortControls';
+import { ExpensesPageHeader } from './ExpensesPageHeader';
 import { ExpenseSummaryCards } from './ExpenseSummaryCards';
 import { CreateExpenseDialog } from './CreateExpenseDialog';
 import { DeleteExpenseDialog } from './DeleteExpenseDialog';
@@ -56,6 +52,8 @@ export function ExpensesPageContent({
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<ExpenseListSortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const projectFilterOptions = useExpenseProjectFilterOptions();
 
   useEffect(() => {
@@ -120,6 +118,8 @@ export function ExpensesPageContent({
           search: search || undefined,
           category: filters.category && filters.category !== 'all' ? filters.category : undefined,
           status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+          sortBy,
+          sortOrder,
           ...periodParams,
           ...projectParams,
         }),
@@ -133,7 +133,7 @@ export function ExpensesPageContent({
     } finally {
       setLoading(false);
     }
-  }, [search, filters.category, filters.status, period, effectiveProjectId]);
+  }, [search, filters.category, filters.status, period, effectiveProjectId, sortBy, sortOrder]);
 
   const handleConfirmDeleteExpense = async () => {
     if (!deleteTarget) return;
@@ -166,45 +166,15 @@ export function ExpensesPageContent({
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Expenses" description={`${expenses.length} total`}>
-        <div className="border-border flex rounded-lg border p-1">
-          {FINANCE_PERIOD_OPTIONS.map((option) => (
-            <Button
-              key={option.value}
-              variant={period === option.value ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setPeriod(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
-        <Button variant="outline" size="icon" onClick={fetchExpenses}>
-          <RefreshCcw size={16} />
-        </Button>
-        <div className="border-border flex rounded-lg border">
-          <Button
-            variant={view === 'list' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('list')}
-            className="rounded-r-none"
-          >
-            <List size={14} />
-          </Button>
-          <Button
-            variant={view === 'kanban' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('kanban')}
-            className="rounded-l-none"
-          >
-            <LayoutGrid size={14} />
-          </Button>
-        </div>
-        <Button type="button" onClick={() => setCreateOpen(true)}>
-          <Plus size={16} />
-          New Expense
-        </Button>
-      </PageHeader>
+      <ExpensesPageHeader
+        expenseCount={expenses.length}
+        period={period}
+        onPeriodChange={setPeriod}
+        view={view}
+        onViewChange={setView}
+        onRefresh={fetchExpenses}
+        onCreateClick={() => setCreateOpen(true)}
+      />
 
       <ExpenseSummaryCards totalExpenses={totalExpenses} paidExpenses={paidExpenses} />
 
@@ -224,6 +194,14 @@ export function ExpensesPageContent({
         filterValues={filters}
         onFilterChange={handleFilterChange}
         onClearFilters={() => setFilters({})}
+        actions={
+          <ExpenseSortControls
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortByChange={setSortBy}
+            onSortOrderChange={setSortOrder}
+          />
+        }
       />
 
       {loading ? (
