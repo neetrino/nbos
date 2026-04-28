@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, DollarSign, FolderKanban, PlayCircle, XCircle } from 'lucide-react';
+import { Calendar, DollarSign, FolderKanban, PlayCircle, RotateCcw, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -209,10 +209,11 @@ function SubscriptionActionCell({
   onActivate: (subscription: Subscription) => void;
   onOpenCancelDialog: () => void;
 }) {
-  const showActivate = subscription.status === 'PENDING';
+  const showActivateOrResume =
+    subscription.status === 'PENDING' || subscription.status === 'ON_HOLD';
   const showCancel = CANCELLABLE_STATUSES.has(subscription.status);
 
-  if (!showActivate && !showCancel) {
+  if (!showActivateOrResume && !showCancel) {
     return (
       <TableCell className="text-muted-foreground text-right text-xs">
         <span aria-hidden>—</span>
@@ -223,15 +224,21 @@ function SubscriptionActionCell({
   return (
     <TableCell className="text-right">
       <div className="flex flex-wrap items-center justify-end gap-2">
-        {showActivate ? (
+        {showActivateOrResume ? (
           <Button
             size="sm"
             variant="outline"
             disabled={isLockedOut || isActivating || isCancelling}
             onClick={() => onActivate(subscription)}
           >
-            <PlayCircle size={14} />
-            {isActivating ? 'Activating…' : 'Activate'}
+            {subscription.status === 'ON_HOLD' ? <RotateCcw size={14} /> : <PlayCircle size={14} />}
+            {subscription.status === 'ON_HOLD'
+              ? isActivating
+                ? 'Resuming…'
+                : 'Resume'
+              : isActivating
+                ? 'Activating…'
+                : 'Activate'}
           </Button>
         ) : null}
         {showCancel ? (

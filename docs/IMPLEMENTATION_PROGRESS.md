@@ -22,13 +22,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                    |
-| -------------------- | ---------------------------------------- |
-| Current phase        | Phase 3 - Finance core                   |
-| Current module/block | Subscription cancel + status transitions |
-| Current task         | Cancel UX + API transition guards        |
-| Status               | Slice completed; waiting approval        |
-| Last updated         | 2026-04-28                               |
+| Field                | Value                              |
+| -------------------- | ---------------------------------- |
+| Current phase        | Phase 3 - Finance core             |
+| Current module/block | Subscriptions ON_HOLD resume in UI |
+| Current task         | Resume button + optimistic MRR     |
+| Status               | Slice completed; waiting approval  |
+| Last updated         | 2026-04-28                         |
 
 ## Phase Progress
 
@@ -79,6 +79,7 @@ Rules:
 | 2026-04-28 | Orders stats aligned with gap done       | GET /finance/orders/stats accepts gap; SQL aggregates over same reconciliation WHERE as list; Orders page passes gap to stats | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Gap stats list-filter parity done        | Orders stats with gap accepts status/search/projectId; web passes filters with drill-down                                     | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscription cancel lifecycle done       | API validates subscription status transitions; subscriptions UI Cancel with dialog; optimistic stats for ACTIVE→CANCELLED     | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Subscription resume ON_HOLD done         | Subscriptions table Resume for ON_HOLD→ACTIVE; optimistic MRR/active count aligned with activation                            | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                                                                                                                       | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 

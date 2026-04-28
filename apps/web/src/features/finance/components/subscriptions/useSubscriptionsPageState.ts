@@ -131,11 +131,16 @@ function useSubscriptionActivation(
         const updated = await subscriptionsApi.updateStatus(subscription.id, 'ACTIVE');
         setSubscriptions((current) => replaceSubscription(current, updated));
         setStats((current) =>
-          applyOptimisticSubscriptionStats(current, 'PENDING', 'ACTIVE', Number(updated.amount)),
+          applyOptimisticSubscriptionStats(
+            current,
+            subscription.status,
+            'ACTIVE',
+            Number(updated.amount),
+          ),
         );
         setError(null);
       } catch {
-        setError('Subscription could not be activated. Check the subscription and try again.');
+        setError('Subscription could not be activated or resumed. Try again.');
       } finally {
         setActivatingId(null);
       }
@@ -159,7 +164,7 @@ function applyOptimisticSubscriptionStats(
   if (!stats) return stats;
 
   const mrr = Number(stats.monthlyRevenue ?? 0);
-  if (from === 'PENDING' && to === 'ACTIVE') {
+  if ((from === 'PENDING' || from === 'ON_HOLD') && to === 'ACTIVE') {
     return {
       ...stats,
       activeSubscriptions: stats.activeSubscriptions + 1,
