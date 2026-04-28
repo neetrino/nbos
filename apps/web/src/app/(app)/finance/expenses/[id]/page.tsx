@@ -33,10 +33,12 @@ import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/
 import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
+import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { cn } from '@/lib/utils';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type Expense } from '@/lib/api/finance';
+import { parsePayrollLinkFromExpenseNotes } from '@/features/finance/utils/parse-payroll-expense-notes';
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
@@ -104,6 +106,11 @@ function ExpenseDetailPageInner() {
   );
 
   useFinanceDocumentTitle(financeDocTitle);
+
+  const payrollLink = useMemo(
+    () => parsePayrollLinkFromExpenseNotes(expense?.notes ?? null),
+    [expense?.notes],
+  );
 
   if (loading) {
     return (
@@ -219,6 +226,8 @@ function ExpenseDetailPageInner() {
         }}
         onConfirm={handleDeleteExpense}
       />
+
+      {payrollLink ? <ExpensePayrollLinkBanner payrollRunId={payrollLink.payrollRunId} /> : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="border-border bg-card rounded-xl border p-4">
