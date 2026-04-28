@@ -1,6 +1,11 @@
+import Link from 'next/link';
 import { AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  orderReconciliationDrilldownHref,
+  orderReconciliationGapForFinanceWarningCode,
+} from '@/features/finance/constants/order-reconciliation-drilldown';
 import type {
   FinanceDashboardData,
   FinanceKpi,
@@ -259,12 +264,22 @@ function ReconciliationWarnings({ data }: { data: FinanceDashboardData }) {
       {data.reconciliation.warnings.map((warning) => (
         <div
           key={warning.code}
-          className="flex gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-800"
+          className="flex flex-wrap items-start justify-between gap-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-800"
         >
-          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-          <span>
-            {warning.message} ({warning.count})
-          </span>
+          <div className="flex min-w-0 flex-1 gap-2">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+            <span>
+              {warning.message} ({warning.count})
+            </span>
+          </div>
+          <Link
+            href={orderReconciliationDrilldownHref(
+              orderReconciliationGapForFinanceWarningCode(warning.code),
+            )}
+            className="text-foreground shrink-0 text-sm font-medium underline underline-offset-2"
+          >
+            Open orders
+          </Link>
         </div>
       ))}
     </div>
