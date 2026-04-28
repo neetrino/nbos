@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, PieChart, RefreshCcw } from 'lucide-react';
+import { Download, ExternalLink, Loader2, PieChart, RefreshCcw } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Table,
@@ -16,6 +16,7 @@ import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/s
 import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusProjectPoolsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { useBonusProjectPoolsCsvExport } from '@/features/finance/components/bonus/use-bonus-project-pools-csv-export';
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { bonusesApi, type BonusProjectPoolRow } from '@/lib/api/bonus';
@@ -32,6 +33,8 @@ export default function BonusPoolsPage() {
   const [rows, setRows] = useState<BonusProjectPoolRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { exportCsvSubmitting, handleExportCsv } = useBonusProjectPoolsCsvExport(rows);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,6 +70,21 @@ export default function BonusPoolsPage() {
           </Link>
           <Button variant="outline" size="icon" onClick={() => void load()} aria-label="Refresh">
             <RefreshCcw size={16} />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || Boolean(error) || rows.length === 0 || exportCsvSubmitting}
+            onClick={() => handleExportCsv()}
+            aria-label="Export bonus project pools as CSV"
+            title="UTF-8 CSV of current roll-up rows (GET /api/bonus/projects/pools)"
+          >
+            {exportCsvSubmitting ? (
+              <Loader2 size={16} className="animate-spin" aria-hidden />
+            ) : (
+              <Download size={16} aria-hidden />
+            )}
           </Button>
         </div>
       </PageHeader>
