@@ -10,6 +10,7 @@ import {
   type ExpenseListSortField,
   type ExpenseStats,
 } from '@/lib/api/finance';
+import { ApiError } from '@/lib/api-errors';
 import {
   EXPENSE_BACKLOG_FIXED_STATUS,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
@@ -141,8 +142,12 @@ export function ExpensesPageContent({
       setExpenses(data.items);
       setStats(expenseStats);
       setError(null);
-    } catch {
-      setError('Expenses could not be loaded. Check your connection and try again.');
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'Expenses could not be loaded. Check your connection and try again.',
+      );
     } finally {
       setLoading(false);
     }
@@ -156,8 +161,12 @@ export function ExpensesPageContent({
       await expensesApi.delete(deleteTarget.id);
       setDeleteTarget(null);
       await fetchExpenses();
-    } catch {
-      setDeleteError('Expense could not be deleted. Check your connection and try again.');
+    } catch (caught) {
+      setDeleteError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'Expense could not be deleted. Check your connection and try again.',
+      );
     } finally {
       setDeleteSubmitting(false);
     }
