@@ -168,6 +168,21 @@ export interface FinanceDashboardSummary {
     count: number;
     amount: number | null;
   }>;
+  reconciliation: {
+    orderCount: number;
+    orderAmount: number;
+    invoicedAmount: number;
+    paidAmount: number;
+    uninvoicedAmount: number;
+    outstandingAmount: number;
+    fullyInvoicedCount: number;
+    fullyPaidCount: number;
+    warnings: Array<{
+      code: 'UNINVOICED_ORDERS' | 'OUTSTANDING_ORDERS';
+      message: string;
+      count: number;
+    }>;
+  };
   recentPayments: Array<{
     id: string;
     amount: number | null;

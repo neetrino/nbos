@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `MARKETING EFFICIENCY SNAPSHOT DONE / PHASE 2 WRAP-UP OR FINANCE DEPTH NEXT`
+Статус: `FINANCE RECONCILIATION SUMMARY DONE / PHASE 2 WRAP-UP NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -216,13 +216,15 @@ read-only Marketing performance snapshot from real spend links and attributed pa
 controlled manual invoice generation from Finance invoice/order screens,
 read-only Order reconciliation coverage from linked invoices/payments,
 Product/Extension Done blockers for open delivery work,
-and read-only Marketing efficiency signals with partial-data warnings.
+read-only Marketing efficiency signals with partial-data warnings,
+and Finance dashboard reconciliation summary for order amount, invoiced, paid,
+uninvoiced and outstanding coverage.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, где нужны remaining create shortcuts beyond invoice generation;
 - углубить direct actions там, где понадобится actual create flow, not only open target;
-- углубить later finance reconciliation workflow after read-only order coverage visibility;
+- углубить later Finance-owned reconciliation workflow beyond read-only dashboard visibility;
 - later deepen Marketing analytics after Finance reconciliation becomes richer;
 - углубить remaining delivery board depth after Done gate foundation.
 
@@ -233,7 +235,7 @@ and read-only Marketing efficiency signals with partial-data warnings.
 
 Что потом нужно сделать:
 
-- углубить remaining Finance-owned reconciliation/subscription semantics;
+- углубить remaining Finance-owned reconciliation/subscription semantics in Phase 3;
 - добавить later delivery board depth and operational task workflows.
 
 ### C3. Автосоздание связанного `MAINTENANCE Deal` пока надо считать функциональным backlog item

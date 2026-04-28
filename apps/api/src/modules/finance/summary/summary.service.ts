@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { getFinanceReconciliationSummary } from './finance-reconciliation-summary';
 
 interface FinanceSummaryParams {
   dateFrom?: string;
@@ -12,12 +13,14 @@ export class FinanceSummaryService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async getDashboardSummary(params: FinanceSummaryParams = {}) {
-    const [invoiceStats, subscriptionStats, recentPayments, upcomingInvoices] = await Promise.all([
-      this.getInvoiceStats(params),
-      this.getSubscriptionStats(params),
-      this.getRecentPayments(params),
-      this.getUpcomingInvoices(params),
-    ]);
+    const [invoiceStats, subscriptionStats, recentPayments, upcomingInvoices, reconciliation] =
+      await Promise.all([
+        this.getInvoiceStats(params),
+        this.getSubscriptionStats(params),
+        this.getRecentPayments(params),
+        this.getUpcomingInvoices(params),
+        getFinanceReconciliationSummary(this.prisma),
+      ]);
 
     return {
       kpis: {
@@ -30,6 +33,7 @@ export class FinanceSummaryService {
         activeSubscriptions: subscriptionStats.activeSubscriptions,
       },
       invoiceStatusItems: invoiceStats.byStatus,
+      reconciliation,
       recentPayments,
       upcomingInvoices,
     };

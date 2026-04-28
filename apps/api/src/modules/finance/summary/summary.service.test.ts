@@ -49,6 +49,17 @@ describe('FinanceSummaryService', () => {
         projectId: 'proj-2',
       },
     ]);
+    prisma.order.findMany.mockResolvedValue([
+      {
+        totalAmount: 100000,
+        invoices: [
+          {
+            amount: 90000,
+            payments: [{ amount: 70000 }],
+          },
+        ],
+      },
+    ]);
 
     const result = await service.getDashboardSummary();
 
@@ -66,6 +77,14 @@ describe('FinanceSummaryService', () => {
       { status: 'DELAYED', count: 1, amount: 15000 },
       { status: 'WAITING', count: 2, amount: 30000 },
     ]);
+    expect(result.reconciliation).toMatchObject({
+      orderCount: 1,
+      orderAmount: 100000,
+      invoicedAmount: 90000,
+      paidAmount: 70000,
+      uninvoicedAmount: 10000,
+      outstandingAmount: 30000,
+    });
     expect(result.recentPayments[0]).toMatchObject({
       id: 'pay-1',
       invoice: { id: 'inv-1', code: 'INV-1' },
@@ -90,6 +109,7 @@ describe('FinanceSummaryService', () => {
     prisma.subscription.count.mockResolvedValue(0);
     prisma.payment.findMany.mockResolvedValue([]);
     prisma.invoice.findMany.mockResolvedValue([]);
+    prisma.order.findMany.mockResolvedValue([]);
 
     await service.getDashboardSummary({
       dateFrom: '2026-04-01T00:00:00.000Z',
