@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { ApiError } from '@/lib/api-errors';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Invoice } from '@/lib/api/finance';
 
 interface RecordPaymentFormProps {
@@ -42,7 +42,7 @@ export function RecordPaymentForm({ invoice, onRecordPayment }: RecordPaymentFor
         notes: notes || undefined,
       });
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Payment could not be recorded.');
+      setError(getApiErrorMessage(caught, 'Payment could not be recorded.'));
     } finally {
       setSubmitting(false);
     }

@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import { ApiError } from '@/lib/api-errors';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, type Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import {
@@ -30,7 +30,7 @@ export async function runCreateInvoiceSubmit(
     await params.onCreated();
     params.onOpenChange(false);
   } catch (err) {
-    params.setError(err instanceof ApiError ? err.message : 'Invoice could not be created.');
+    params.setError(getApiErrorMessage(err, 'Invoice could not be created.'));
   } finally {
     params.setLoading(false);
   }
