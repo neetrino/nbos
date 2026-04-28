@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, DollarSign, FolderKanban, PlayCircle, RotateCcw, XCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Calendar, DollarSign, FolderKanban } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -19,25 +18,30 @@ import {
   getSubscriptionType,
 } from '@/features/finance/constants/finance';
 import { SubscriptionCancelDialog } from './SubscriptionCancelDialog';
-
-const CANCELLABLE_STATUSES = new Set(['PENDING', 'ACTIVE', 'ON_HOLD']);
+import { SubscriptionHoldDialog } from './SubscriptionHoldDialog';
+import { SubscriptionTableActionCell } from './SubscriptionTableActionCell';
 
 interface SubscriptionsTableProps {
   subscriptions: Subscription[];
   activatingId: string | null;
   cancellingId: string | null;
+  holdingId: string | null;
   onActivate: (subscription: Subscription) => void;
   onCancel: (subscription: Subscription) => Promise<void>;
+  onHold: (subscription: Subscription) => Promise<void>;
 }
 
 export function SubscriptionsTable({
   subscriptions,
   activatingId,
   cancellingId,
+  holdingId,
   onActivate,
   onCancel,
+  onHold,
 }: SubscriptionsTableProps) {
   const [cancelTarget, setCancelTarget] = useState<Subscription | null>(null);
+  const [holdTarget, setHoldTarget] = useState<Subscription | null>(null);
 
   return (
     <>
@@ -63,8 +67,10 @@ export function SubscriptionsTable({
                 subscription={subscription}
                 activatingId={activatingId}
                 cancellingId={cancellingId}
+                holdingId={holdingId}
                 onActivate={onActivate}
                 onOpenCancelDialog={() => setCancelTarget(subscription)}
+                onOpenHoldDialog={() => setHoldTarget(subscription)}
               />
             ))}
           </TableBody>
@@ -87,6 +93,23 @@ export function SubscriptionsTable({
           }
         }}
       />
+      <SubscriptionHoldDialog
+        subscription={holdTarget}
+        open={holdTarget !== null}
+        isSubmitting={Boolean(holdingId && holdTarget && holdingId === holdTarget.id)}
+        onOpenChange={(open) => {
+          if (!open) setHoldTarget(null);
+        }}
+        onConfirm={async () => {
+          if (!holdTarget) return;
+          try {
+            await onHold(holdTarget);
+            setHoldTarget(null);
+          } catch {
+            /* Error surfaced via page ErrorState; keep dialog open for retry. */
+          }
+        }}
+      />
     </>
   );
 }
@@ -95,21 +118,26 @@ function SubscriptionTableRow({
   subscription,
   activatingId,
   cancellingId,
+  holdingId,
   onActivate,
   onOpenCancelDialog,
+  onOpenHoldDialog,
 }: {
   subscription: Subscription;
   activatingId: string | null;
   cancellingId: string | null;
+  holdingId: string | null;
   onActivate: (subscription: Subscription) => void;
   onOpenCancelDialog: () => void;
+  onOpenHoldDialog: () => void;
 }) {
   const subscriptionType = getSubscriptionType(subscription.type);
   const subscriptionStatus = getSubscriptionStatus(subscription.status);
-  const opLock = activatingId ?? cancellingId;
+  const opLock = activatingId ?? cancellingId ?? holdingId;
   const isLockedOut = Boolean(opLock && opLock !== subscription.id);
   const isActivating = activatingId === subscription.id;
   const isCancelling = cancellingId === subscription.id;
+  const isHolding = holdingId === subscription.id;
 
   return (
     <TableRow>
@@ -132,13 +160,15 @@ function SubscriptionTableRow({
       <TableCell className="text-muted-foreground text-xs">
         {new Date(subscription.startDate).toLocaleDateString()}
       </TableCell>
-      <SubscriptionActionCell
+      <SubscriptionTableActionCell
         subscription={subscription}
         isLockedOut={isLockedOut}
         isActivating={isActivating}
         isCancelling={isCancelling}
+        isHolding={isHolding}
         onActivate={onActivate}
         onOpenCancelDialog={onOpenCancelDialog}
+        onOpenHoldDialog={onOpenHoldDialog}
       />
     </TableRow>
   );
@@ -189,70 +219,6 @@ function SubscriptionBillingCell({ billingDay }: { billingDay: number }) {
       <div className="flex items-center gap-1">
         <Calendar size={12} className="text-muted-foreground" />
         {billingDay}th
-      </div>
-    </TableCell>
-  );
-}
-
-function SubscriptionActionCell({
-  subscription,
-  isLockedOut,
-  isActivating,
-  isCancelling,
-  onActivate,
-  onOpenCancelDialog,
-}: {
-  subscription: Subscription;
-  isLockedOut: boolean;
-  isActivating: boolean;
-  isCancelling: boolean;
-  onActivate: (subscription: Subscription) => void;
-  onOpenCancelDialog: () => void;
-}) {
-  const showActivateOrResume =
-    subscription.status === 'PENDING' || subscription.status === 'ON_HOLD';
-  const showCancel = CANCELLABLE_STATUSES.has(subscription.status);
-
-  if (!showActivateOrResume && !showCancel) {
-    return (
-      <TableCell className="text-muted-foreground text-right text-xs">
-        <span aria-hidden>—</span>
-      </TableCell>
-    );
-  }
-
-  return (
-    <TableCell className="text-right">
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        {showActivateOrResume ? (
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={isLockedOut || isActivating || isCancelling}
-            onClick={() => onActivate(subscription)}
-          >
-            {subscription.status === 'ON_HOLD' ? <RotateCcw size={14} /> : <PlayCircle size={14} />}
-            {subscription.status === 'ON_HOLD'
-              ? isActivating
-                ? 'Resuming…'
-                : 'Resume'
-              : isActivating
-                ? 'Activating…'
-                : 'Activate'}
-          </Button>
-        ) : null}
-        {showCancel ? (
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-destructive hover:bg-destructive/10 border-destructive/40"
-            disabled={isLockedOut || isActivating || isCancelling}
-            onClick={onOpenCancelDialog}
-          >
-            <XCircle size={14} />
-            {isCancelling ? 'Cancelling…' : 'Cancel'}
-          </Button>
-        ) : null}
       </div>
     </TableCell>
   );

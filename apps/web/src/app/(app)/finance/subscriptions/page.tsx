@@ -57,9 +57,11 @@ export default function SubscriptionsPage() {
         error={page.error}
         activatingId={page.activatingId}
         cancellingId={page.cancellingId}
+        holdingId={page.holdingId}
         onRetry={page.fetchSubscriptions}
         onActivate={page.handleActivate}
         onCancel={page.handleCancel}
+        onHold={page.handleHold}
       />
     </div>
   );

@@ -25,8 +25,8 @@ Rules:
 | Field                | Value                              |
 | -------------------- | ---------------------------------- |
 | Current phase        | Phase 3 - Finance core             |
-| Current module/block | Subscriptions ON_HOLD resume in UI |
-| Current task         | Resume button + optimistic MRR     |
+| Current module/block | Subscription ACTIVE pause (hold)   |
+| Current task         | Pause dialog + optimistic MRR drop |
 | Status               | Slice completed; waiting approval  |
 | Last updated         | 2026-04-28                         |
 
@@ -36,7 +36,7 @@ Rules:
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                          |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations |
-| Phase 3 - Finance core                           | In progress |      15% | None                           | Subscription cancel flow + status transition rules                   |
+| Phase 3 - Finance core                           | In progress |      16% | None                           | Subscriptions hold/resume/cancel UX                                  |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                          |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                         |
 | Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                   |
@@ -80,6 +80,7 @@ Rules:
 | 2026-04-28 | Gap stats list-filter parity done        | Orders stats with gap accepts status/search/projectId; web passes filters with drill-down                                     | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscription cancel lifecycle done       | API validates subscription status transitions; subscriptions UI Cancel with dialog; optimistic stats for ACTIVE→CANCELLED     | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscription resume ON_HOLD done         | Subscriptions table Resume for ON_HOLD→ACTIVE; optimistic MRR/active count aligned with activation                            | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                                                                                                                       | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Subscription pause ACTIVE done           | Pause→ON_HOLD with confirm dialog; optimistic stats; action row extracted to SubscriptionTableActionCell                      | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                                                                                                                                                                                  | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 

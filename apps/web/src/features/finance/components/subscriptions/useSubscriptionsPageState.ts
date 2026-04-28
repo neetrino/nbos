@@ -11,6 +11,7 @@ export function useSubscriptionsPageState() {
   const [search, setSearch] = useInitialSearch();
   const [activatingId, setActivatingId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [holdingId, setHoldingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
 
@@ -38,6 +39,8 @@ export function useSubscriptionsPageState() {
     setCancellingId,
   );
 
+  const handleHold = useSubscriptionHold(setSubscriptions, setStats, setError, setHoldingId);
+
   useEffect(() => {
     fetchSubscriptions();
   }, [fetchSubscriptions]);
@@ -51,6 +54,7 @@ export function useSubscriptionsPageState() {
     setSearch,
     activatingId,
     cancellingId,
+    holdingId,
     filters,
     setFilters,
     period,
@@ -58,6 +62,7 @@ export function useSubscriptionsPageState() {
     fetchSubscriptions,
     handleActivate,
     handleCancel,
+    handleHold,
   };
 }
 
@@ -171,7 +176,7 @@ function applyOptimisticSubscriptionStats(
       monthlyRevenue: mrr + amount,
     };
   }
-  if (from === 'ACTIVE' && to === 'CANCELLED') {
+  if (from === 'ACTIVE' && (to === 'CANCELLED' || to === 'ON_HOLD')) {
     return {
       ...stats,
       activeSubscriptions: Math.max(0, stats.activeSubscriptions - 1),
@@ -210,5 +215,37 @@ function useSubscriptionCancellation(
       }
     },
     [setCancellingId, setError, setStats, setSubscriptions],
+  );
+}
+
+function useSubscriptionHold(
+  setSubscriptions: (updater: (current: Subscription[]) => Subscription[]) => void,
+  setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
+  setError: (error: string | null) => void,
+  setHoldingId: (id: string | null) => void,
+) {
+  return useCallback(
+    async (subscription: Subscription) => {
+      setHoldingId(subscription.id);
+      try {
+        const updated = await subscriptionsApi.updateStatus(subscription.id, 'ON_HOLD');
+        setSubscriptions((current) => replaceSubscription(current, updated));
+        setStats((current) =>
+          applyOptimisticSubscriptionStats(
+            current,
+            'ACTIVE',
+            'ON_HOLD',
+            Number(subscription.amount),
+          ),
+        );
+        setError(null);
+      } catch {
+        setError('Subscription could not be put on hold. Try again.');
+        throw new Error('subscription_hold_failed');
+      } finally {
+        setHoldingId(null);
+      }
+    },
+    [setError, setHoldingId, setStats, setSubscriptions],
   );
 }

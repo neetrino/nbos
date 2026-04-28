@@ -11,9 +11,11 @@ interface SubscriptionsPageContentProps {
   error: string | null;
   activatingId: string | null;
   cancellingId: string | null;
+  holdingId: string | null;
   onRetry: () => void;
   onActivate: (subscription: Subscription) => void;
   onCancel: (subscription: Subscription) => Promise<void>;
+  onHold: (subscription: Subscription) => Promise<void>;
 }
 
 export function SubscriptionsPageContent({
@@ -22,9 +24,11 @@ export function SubscriptionsPageContent({
   error,
   activatingId,
   cancellingId,
+  holdingId,
   onRetry,
   onActivate,
   onCancel,
+  onHold,
 }: SubscriptionsPageContentProps) {
   if (loading) return <LoadingState count={4} />;
   if (error) return <ErrorState description={error} onRetry={onRetry} />;
@@ -37,8 +41,10 @@ export function SubscriptionsPageContent({
         subscriptions={subscriptions}
         activatingId={activatingId}
         cancellingId={cancellingId}
+        holdingId={holdingId}
         onActivate={onActivate}
         onCancel={onCancel}
+        onHold={onHold}
       />
     </>
   );
