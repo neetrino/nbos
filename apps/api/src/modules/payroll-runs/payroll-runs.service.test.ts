@@ -82,7 +82,7 @@ describe('PayrollRunsService', () => {
         {
           status: 'APPROVED',
           _count: 2,
-          _sum: { totalPayable: new Decimal('90.50') },
+          _sum: { totalPayable: new Decimal('90.50'), totalPaid: new Decimal('40.00') },
         },
       ]);
 
@@ -95,6 +95,9 @@ describe('PayrollRunsService', () => {
       expect(result.byStatus).toHaveLength(1);
       expect(result.byStatus[0].status).toBe('APPROVED');
       expect(result.byStatus[0].runCount).toBe(2);
+      expect(result.byStatus[0].totalPayable).toBe('90.50');
+      expect(result.byStatus[0].totalPaid).toBe('40.00');
+      expect(result.byStatus[0].totalRemaining).toBe('50.50');
       expect(prisma.payrollRun.count).toHaveBeenCalledWith(
         expect.objectContaining({ where: { status: 'APPROVED' } }),
       );
@@ -117,6 +120,38 @@ describe('PayrollRunsService', () => {
       const result = await service.getStats({});
 
       expect(result.totals.totalRemaining).toBe('-15.00');
+    });
+
+    it('sorts byStatus rows in DRAFT→CLOSED order', async () => {
+      prisma.payrollRun.count.mockResolvedValue(2);
+      prisma.payrollRun.aggregate.mockResolvedValue({
+        _sum: {
+          totalBaseSalary: new Decimal('0'),
+          totalBonuses: new Decimal('0'),
+          totalAdjustments: new Decimal('0'),
+          totalDeductions: new Decimal('0'),
+          totalPayable: new Decimal('100.00'),
+          totalPaid: new Decimal('0'),
+        },
+      });
+      prisma.payrollRun.groupBy.mockResolvedValue([
+        {
+          status: 'CLOSED',
+          _count: 1,
+          _sum: { totalPayable: new Decimal('60.00'), totalPaid: new Decimal('60.00') },
+        },
+        {
+          status: 'DRAFT',
+          _count: 1,
+          _sum: { totalPayable: new Decimal('40.00'), totalPaid: new Decimal('0') },
+        },
+      ]);
+
+      const result = await service.getStats({});
+
+      expect(result.byStatus.map((r) => r.status)).toEqual(['DRAFT', 'CLOSED']);
+      expect(result.byStatus[0].totalRemaining).toBe('40.00');
+      expect(result.byStatus[1].totalRemaining).toBe('0.00');
     });
   });
 

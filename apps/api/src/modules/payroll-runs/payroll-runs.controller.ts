@@ -58,7 +58,7 @@ export class PayrollRunsController {
   @ApiOperation({
     summary: 'Aggregate payroll run totals for list filters',
     description:
-      'Uses the same filters as GET /payroll-runs (status, payrollMonthFrom, payrollMonthTo). Totals sum run-level decimals across all matching rows (not paginated). totals.totalRemaining is sum(totalPayable) − sum(totalPaid) for that scope (Decimal).',
+      'Uses the same filters as GET /payroll-runs (status, payrollMonthFrom, payrollMonthTo). Totals sum run-level decimals across all matching rows (not paginated). totals.totalRemaining is sum(totalPayable) − sum(totalPaid) for that scope (Decimal). byStatus rows include totalPayable, totalPaid, totalRemaining per status (sorted DRAFT→CLOSED).',
   })
   @ApiQuery({
     name: 'status',

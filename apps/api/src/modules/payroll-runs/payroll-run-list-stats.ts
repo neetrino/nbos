@@ -1,5 +1,14 @@
 import { Decimal, PrismaClient, type PayrollRunStatusEnum, type Prisma } from '@nbos/database';
 
+/** Stable UI / reporting order for payroll run status breakdown rows. */
+const PAYROLL_RUN_STATUS_STATS_ORDER: readonly PayrollRunStatusEnum[] = [
+  'DRAFT',
+  'REVIEW',
+  'APPROVED',
+  'PAYING',
+  'CLOSED',
+];
+
 function decimalSumToString(value: Decimal | null | undefined): string {
   if (value == null) {
     return '0.00';
@@ -33,6 +42,8 @@ export interface PayrollRunStatsResult {
     status: PayrollRunStatusEnum;
     runCount: number;
     totalPayable: string;
+    totalPaid: string;
+    totalRemaining: string;
   }>;
 }
 
@@ -57,7 +68,7 @@ export async function computePayrollRunListStats(
       by: ['status'],
       where,
       _count: true,
-      _sum: { totalPayable: true },
+      _sum: { totalPayable: true, totalPaid: true },
     }),
   ]);
 
@@ -73,10 +84,18 @@ export async function computePayrollRunListStats(
       totalPaid: decimalSumToString(s.totalPaid),
       totalRemaining: decimalRemainingString(s.totalPayable, s.totalPaid),
     },
-    byStatus: byStatus.map((row) => ({
-      status: row.status,
-      runCount: row._count,
-      totalPayable: decimalSumToString(row._sum.totalPayable),
-    })),
+    byStatus: byStatus
+      .map((row) => ({
+        status: row.status,
+        runCount: row._count,
+        totalPayable: decimalSumToString(row._sum.totalPayable),
+        totalPaid: decimalSumToString(row._sum.totalPaid),
+        totalRemaining: decimalRemainingString(row._sum.totalPayable, row._sum.totalPaid),
+      }))
+      .sort(
+        (a, b) =>
+          PAYROLL_RUN_STATUS_STATS_ORDER.indexOf(a.status) -
+          PAYROLL_RUN_STATUS_STATS_ORDER.indexOf(b.status),
+      ),
   };
 }

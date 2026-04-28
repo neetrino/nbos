@@ -110,6 +110,8 @@ export interface PayrollRunStats {
     status: PayrollRunStatus;
     runCount: number;
     totalPayable: string;
+    totalPaid: string;
+    totalRemaining: string;
   }>;
 }
 

@@ -73,19 +73,24 @@ export function PayrollRunsScopeStatsCard(props: {
               </div>
             </div>
             {stats.byStatus.length > 0 ? (
-              <div className="border-border flex flex-wrap gap-2 border-t pt-3">
+              <div className="border-border flex flex-col gap-2 border-t pt-3">
                 <span className="text-muted-foreground text-xs font-medium">By status:</span>
-                {stats.byStatus.map((row) => (
-                  <span
-                    key={row.status}
-                    className="bg-muted/60 text-foreground inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs"
-                  >
-                    <span>{PAYROLL_RUN_STATUS_LABEL[row.status]}</span>
-                    <span className="text-muted-foreground tabular-nums">
-                      {row.runCount} · {formatAmount(parseAmount(row.totalPayable))}
+                <div className="flex flex-wrap gap-2">
+                  {stats.byStatus.map((row) => (
+                    <span
+                      key={row.status}
+                      className="bg-muted/60 text-foreground flex min-w-[10rem] flex-col gap-0.5 rounded-md px-2.5 py-1.5 text-xs"
+                    >
+                      <span className="font-medium">{PAYROLL_RUN_STATUS_LABEL[row.status]}</span>
+                      <span className="text-muted-foreground text-[11px] leading-snug tabular-nums">
+                        {row.runCount} run{row.runCount === 1 ? '' : 's'} · payable{' '}
+                        {formatAmount(parseAmount(row.totalPayable))} · paid{' '}
+                        {formatAmount(parseAmount(row.totalPaid))} · rem{' '}
+                        {formatAmount(parseAmount(row.totalRemaining))}
+                      </span>
                     </span>
-                  </span>
-                ))}
+                  ))}
+                </div>
               </div>
             ) : null}
           </>
