@@ -16,10 +16,10 @@ import {
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollRunDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
 import {
   PAYROLL_JOURNAL_KIND_LABEL,
   PAYROLL_RUN_STATUS_LABEL,
-  payrollAuditActionLabel,
   payrollRunActionOptions,
 } from '@/features/finance/constants/payroll-run-ui';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -43,15 +43,6 @@ function formatJournalAt(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-}
-
-function formatAuditChanges(value: unknown): string {
-  if (value == null) return '—';
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return String(value);
-  }
 }
 
 export default function PayrollRunDetailPage() {
@@ -193,27 +184,12 @@ export default function PayrollRunDetailPage() {
           </p>
           <ul className="mt-3 space-y-0">
             {run.auditTrail.map((row) => (
-              <li key={row.id} className="border-border border-t py-3 first:border-t-0 first:pt-0">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-foreground text-sm font-medium">
-                      {payrollAuditActionLabel(row.action)}
-                    </p>
-                    <p className="text-muted-foreground mt-0.5 text-xs">
-                      {employeeName(row.actor)}
-                    </p>
-                  </div>
-                  <time
-                    className="text-muted-foreground shrink-0 text-xs tabular-nums"
-                    dateTime={row.createdAt}
-                  >
-                    {formatJournalAt(row.createdAt)}
-                  </time>
-                </div>
-                <pre className="bg-muted/50 text-muted-foreground mt-2 max-h-40 overflow-auto rounded-md p-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap">
-                  {formatAuditChanges(row.changes)}
-                </pre>
-              </li>
+              <PayrollAuditTrailEntry
+                key={row.id}
+                row={row}
+                actorLabel={employeeName(row.actor)}
+                formatAt={formatJournalAt}
+              />
             ))}
           </ul>
         </section>
