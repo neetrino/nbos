@@ -76,6 +76,7 @@ function MarketingDashboardContent({ summary }: { summary: MarketingDashboardSum
 
       <div className="grid gap-4 lg:grid-cols-2">
         <SpendReadinessCard summary={summary} />
+        <EfficiencyCard summary={summary} />
         <DataQualityCard summary={summary} />
       </div>
     </>
@@ -114,6 +115,30 @@ function SpendReadinessCard({ summary }: { summary: MarketingDashboardSummary })
       </div>
       <p className="text-muted-foreground mt-3 text-xs">
         Revenue is counted from real payments on invoices linked to attributed deals.
+      </p>
+    </div>
+  );
+}
+
+function EfficiencyCard({ summary }: { summary: MarketingDashboardSummary }) {
+  return (
+    <div className="border-border bg-card rounded-2xl border p-5">
+      <h2 className="mb-3 flex items-center gap-2 font-semibold">
+        <AreaChart size={18} />
+        Efficiency snapshot
+      </h2>
+      <div className="space-y-2 text-sm">
+        <SummaryRow label="ROAS" value={formatRatio(summary.money.roas)} />
+        <SummaryRow label="Net return" value={formatMoney(summary.money.netReturn)} />
+        <SummaryRow
+          label="Cost per won attributed deal"
+          value={formatOptionalMoney(summary.money.costPerWonDeal)}
+        />
+      </div>
+      <p className="text-muted-foreground mt-3 text-xs">
+        {summary.efficiency.isReliable
+          ? 'Efficiency uses linked spend and paid attributed revenue.'
+          : `Efficiency is partial: ${summary.efficiency.reason ?? 'insufficient data'}.`}
       </p>
     </div>
   );
@@ -168,4 +193,16 @@ function formatMoney(value: number) {
     currency: MARKETING_CURRENCY,
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function formatOptionalMoney(value: number | null) {
+  return value === null ? 'Not enough data' : formatMoney(value);
+}
+
+function formatRatio(value: number | null) {
+  if (value === null) {
+    return 'Not enough data';
+  }
+
+  return `${value.toFixed(2)}x`;
 }

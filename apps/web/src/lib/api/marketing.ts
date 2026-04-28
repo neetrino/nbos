@@ -50,6 +50,13 @@ export interface MarketingDashboardSummary {
   money: {
     plannedSpend: number;
     paidRevenue: number;
+    netReturn: number;
+    roas: number | null;
+    costPerWonDeal: number | null;
+  };
+  efficiency: {
+    isReliable: boolean;
+    reason: string | null;
   };
   warnings: Array<{
     code: string;

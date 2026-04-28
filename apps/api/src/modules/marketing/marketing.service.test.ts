@@ -163,11 +163,19 @@ describe('MarketingService', () => {
       money: {
         plannedSpend: 75000,
         paidRevenue: 50000,
+        netReturn: -25000,
+        roas: 50000 / 75000,
+        costPerWonDeal: 75000,
+      },
+      efficiency: {
+        isReliable: false,
+        reason: 'Missing Finance links',
       },
     });
     expect(summary.warnings).toEqual([
       expect.objectContaining({ code: 'MISSING_ACCOUNT_FINANCE_LINKS', count: 1 }),
       expect.objectContaining({ code: 'MISSING_ACTIVITY_EXPENSE_LINKS', count: 1 }),
+      expect.objectContaining({ code: 'EFFICIENCY_PARTIAL_DATA', count: 2 }),
     ]);
   });
 });
