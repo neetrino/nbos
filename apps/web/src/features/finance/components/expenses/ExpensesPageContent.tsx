@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Plus, RefreshCcw, Receipt, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,21 +13,22 @@ import {
   KanbanBoard,
 } from '@/components/shared';
 import {
-  EXPENSE_CATEGORIES,
-  EXPENSE_STAGES,
   FINANCE_PERIOD_OPTIONS,
   getFinancePeriodParams,
   type FinancePeriod,
-  formatAmount,
 } from '@/features/finance/constants/finance';
 import { expensesApi, type Expense, type ExpenseStats } from '@/lib/api/finance';
 import { projectsApi } from '@/lib/api/projects';
 import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
+import { ExpenseSummaryCards } from './ExpenseSummaryCards';
 import { CreateExpenseDialog } from './CreateExpenseDialog';
 import { DeleteExpenseDialog } from './DeleteExpenseDialog';
 import { ExpenseKanbanCard } from './ExpenseKanbanCard';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
+import { buildExpenseKanbanColumns } from './expense-kanban-columns';
+import { buildExpenseFilterConfigs } from './expenses-filter-config';
 import { ExpensesTableSection } from './ExpensesTableSection';
+import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 
 type ViewMode = 'kanban' | 'list';
 
@@ -41,6 +42,7 @@ export function ExpensesPageContent({
   onClearProjectFilter,
 }: ExpensesPageContentProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,6 +56,13 @@ export function ExpensesPageContent({
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const projectFilterOptions = useExpenseProjectFilterOptions();
+
+  useEffect(() => {
+    if (projectIdFromUrl) {
+      setFilters((prev) => ({ ...prev, project: projectIdFromUrl }));
+    }
+  }, [projectIdFromUrl]);
 
   useEffect(() => {
     if (!projectIdFromUrl) {
@@ -74,11 +83,37 @@ export function ExpensesPageContent({
     };
   }, [projectIdFromUrl]);
 
+  const effectiveProjectId = useMemo(() => {
+    if (projectIdFromUrl) return projectIdFromUrl;
+    const fp = filters.project;
+    return fp && fp !== 'all' ? fp : undefined;
+  }, [projectIdFromUrl, filters.project]);
+
+  const handleClearProjectDrilldown = useCallback(() => {
+    setFilters((prev) => {
+      const next = { ...prev };
+      delete next.project;
+      return next;
+    });
+    onClearProjectFilter();
+  }, [onClearProjectFilter]);
+
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (projectIdFromUrl && key === 'project') {
+        router.replace(pathname ?? '/finance/expenses');
+      }
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [pathname, projectIdFromUrl, router],
+  );
+
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
       const periodParams = getFinancePeriodParams(period);
-      const projectParams = projectIdFromUrl !== null ? { projectId: projectIdFromUrl } : {};
+      const projectParams =
+        effectiveProjectId !== undefined ? { projectId: effectiveProjectId } : {};
       const [data, expenseStats] = await Promise.all([
         expensesApi.getAll({
           pageSize: 100,
@@ -98,7 +133,7 @@ export function ExpensesPageContent({
     } finally {
       setLoading(false);
     }
-  }, [search, filters, period, projectIdFromUrl]);
+  }, [search, filters.category, filters.status, period, effectiveProjectId]);
 
   const handleConfirmDeleteExpense = async () => {
     if (!deleteTarget) return;
@@ -122,35 +157,12 @@ export function ExpensesPageContent({
   const totalExpenses = Number(stats?.totalAmount ?? 0);
   const paidExpenses = Number(stats?.paidAmount ?? 0);
 
-  const filterConfigs = [
-    {
-      key: 'category',
-      label: 'Category',
-      options: EXPENSE_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      options: EXPENSE_STAGES.map((s) => ({ value: s.value, label: s.label })),
-    },
-  ];
+  const filterConfigs = useMemo(
+    () => buildExpenseFilterConfigs(projectFilterOptions),
+    [projectFilterOptions],
+  );
 
-  const STAGE_COLORS: Record<string, string> = {
-    THIS_MONTH: 'bg-blue-500',
-    PAY_NOW: 'bg-orange-500',
-    DELAYED: 'bg-amber-500',
-    ON_HOLD: 'bg-gray-400',
-    PAID: 'bg-green-500',
-  };
-
-  const kanbanColumns = EXPENSE_STAGES.filter((s) =>
-    ['THIS_MONTH', 'PAY_NOW', 'DELAYED', 'ON_HOLD', 'PAID'].includes(s.value),
-  ).map((stage) => ({
-    key: stage.value,
-    label: stage.label,
-    color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
-    items: expenses.filter((e) => e.status === stage.value),
-  }));
+  const kanbanColumns = buildExpenseKanbanColumns(expenses);
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -194,22 +206,13 @@ export function ExpensesPageContent({
         </Button>
       </PageHeader>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Expenses</p>
-          <p className="mt-1 text-xl font-bold">{formatAmount(totalExpenses)}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Paid</p>
-          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(paidExpenses)}</p>
-        </div>
-      </div>
+      <ExpenseSummaryCards totalExpenses={totalExpenses} paidExpenses={paidExpenses} />
 
       {projectIdFromUrl ? (
         <ExpenseProjectDrilldownBanner
           projectId={projectIdFromUrl}
           projectBannerLabel={projectBannerLabel}
-          onClearProjectFilter={onClearProjectFilter}
+          onClearProjectFilter={handleClearProjectDrilldown}
         />
       ) : null}
 
@@ -219,7 +222,7 @@ export function ExpensesPageContent({
         searchPlaceholder="Search expenses..."
         filters={filterConfigs}
         filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+        onFilterChange={handleFilterChange}
         onClearFilters={() => setFilters({})}
       />
 
@@ -246,7 +249,7 @@ export function ExpensesPageContent({
           renderCard={(expense: Expense) => (
             <ExpenseKanbanCard
               expense={expense}
-              listProjectId={projectIdFromUrl}
+              listProjectId={effectiveProjectId ?? null}
               onRequestDelete={(row) => {
                 setDeleteError(null);
                 setDeleteTarget(row);
@@ -257,7 +260,7 @@ export function ExpensesPageContent({
       ) : (
         <ExpensesTableSection
           expenses={expenses}
-          listProjectId={projectIdFromUrl}
+          listProjectId={effectiveProjectId ?? null}
           onRequestDelete={(row) => {
             setDeleteError(null);
             setDeleteTarget(row);
@@ -268,10 +271,10 @@ export function ExpensesPageContent({
       <CreateExpenseDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        defaultProjectId={projectIdFromUrl}
+        defaultProjectId={effectiveProjectId ?? null}
         onCreated={(created) => {
           fetchExpenses();
-          router.push(expenseDetailHref(created.id, projectIdFromUrl));
+          router.push(expenseDetailHref(created.id, effectiveProjectId ?? null));
         }}
       />
 
