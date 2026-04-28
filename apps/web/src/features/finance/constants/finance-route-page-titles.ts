@@ -41,6 +41,10 @@ export function expenseBacklogPageTitle(hasProjectDrilldown: boolean): string {
   return hasProjectDrilldown ? 'Expense backlog · project filter' : 'Expense backlog';
 }
 
+export function expenseClosedPageTitle(hasProjectDrilldown: boolean): string {
+  return hasProjectDrilldown ? 'Closed expenses · project filter' : 'Closed expenses';
+}
+
 export interface ExpenseDetailPageTitleParams {
   loading: boolean;
   /** True when fetch finished and expense is missing or an error was set. */

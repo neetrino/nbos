@@ -48,4 +48,17 @@ describe('buildExpenseListApiParams', () => {
     });
     expect(params.activeBoard).toBeUndefined();
   });
+
+  it('does not set activeBoard on closed variant (fixed PAID scope)', () => {
+    const params = buildExpenseListApiParams({
+      search: '',
+      filters: { category: 'all', status: 'PAID' },
+      period: 'month',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      pageVariant: 'closed',
+    });
+    expect(params.status).toBe('PAID');
+    expect(params.activeBoard).toBeUndefined();
+  });
 });

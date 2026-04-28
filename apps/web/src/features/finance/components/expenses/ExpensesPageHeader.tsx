@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   EXPENSE_BACKLOG_LIST_PATH,
+  EXPENSE_CLOSED_LIST_PATH,
   EXPENSE_LIST_PATH,
 } from '@/features/finance/constants/project-expenses-drilldown';
 import { cn } from '@/lib/utils';
@@ -21,7 +22,7 @@ interface ExpensesPageHeaderProps {
   onViewChange: (value: ExpensesViewMode) => void;
   /** Backlog route uses list-only layout (see NBOS Finance UI spec). */
   hideViewToggle?: boolean;
-  pageVariant?: 'default' | 'backlog';
+  pageVariant?: 'default' | 'backlog' | 'closed';
   onRefresh: () => void;
   /** Fetches all pages matching current list filters and downloads CSV. */
   onExportCsv: () => void | Promise<void>;
@@ -45,31 +46,46 @@ export function ExpensesPageHeader({
   onCreateClick,
 }: ExpensesPageHeaderProps) {
   const listNav =
-    pageVariant === 'backlog' ? (
+    pageVariant === 'backlog' || pageVariant === 'closed' ? (
       <Link
         href={EXPENSE_LIST_PATH}
         className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
       >
-        All expenses
+        Active board
       </Link>
     ) : (
-      <Link
-        href={EXPENSE_BACKLOG_LIST_PATH}
-        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-      >
-        Backlog
-      </Link>
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href={EXPENSE_BACKLOG_LIST_PATH}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+        >
+          Backlog
+        </Link>
+        <Link
+          href={EXPENSE_CLOSED_LIST_PATH}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+        >
+          Closed
+        </Link>
+      </div>
     );
 
+  const pageTitle =
+    pageVariant === 'backlog'
+      ? 'Expense backlog'
+      : pageVariant === 'closed'
+        ? 'Closed expenses'
+        : 'Expenses';
+
+  const pageDescription =
+    pageVariant === 'backlog'
+      ? `${expenseCount} deferred (Delayed)`
+      : pageVariant === 'closed'
+        ? `${expenseCount} paid`
+        : `${expenseCount} active on board`;
+
   return (
-    <PageHeader
-      title={pageVariant === 'backlog' ? 'Expense backlog' : 'Expenses'}
-      description={
-        pageVariant === 'backlog'
-          ? `${expenseCount} deferred (Delayed)`
-          : `${expenseCount} active on board`
-      }
-    >
+    <PageHeader title={pageTitle} description={pageDescription}>
       {listNav}
       <div className="border-border flex rounded-lg border p-1">
         {FINANCE_PERIOD_OPTIONS.map((option) => (
@@ -123,10 +139,12 @@ export function ExpensesPageHeader({
           </Button>
         </div>
       )}
-      <Button type="button" onClick={onCreateClick}>
-        <Plus size={16} />
-        New Expense
-      </Button>
+      {pageVariant === 'closed' ? null : (
+        <Button type="button" onClick={onCreateClick}>
+          <Plus size={16} />
+          New Expense
+        </Button>
+      )}
     </PageHeader>
   );
 }

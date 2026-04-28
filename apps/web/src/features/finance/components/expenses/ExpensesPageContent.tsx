@@ -37,8 +37,8 @@ import { useExpenseCsvExport } from './use-expense-csv-export';
 import { useExpenseProjectBannerLabel } from './use-expense-project-banner-label';
 
 interface ExpensesPageContentProps {
-  /** Backlog route: deferred expenses list (Delayed status) per NBOS Finance UI spec. */
-  pageVariant?: 'default' | 'backlog';
+  /** Backlog: deferred (`DELAYED`). Closed: paid (`PAID`) off active board. Default: active board scope. */
+  pageVariant?: 'default' | 'backlog' | 'closed';
   projectIdFromUrl: string | null;
   onClearProjectFilter: () => void;
   replaceExpensesUrl: (mutate: (params: URLSearchParams) => void) => void;
@@ -112,7 +112,7 @@ export function ExpensesPageContent({
 
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
-      if (pageVariant === 'backlog' && key === 'status') {
+      if ((pageVariant === 'backlog' || pageVariant === 'closed') && key === 'status') {
         return;
       }
       if (projectIdFromUrl && key === 'project') {
@@ -193,7 +193,7 @@ export function ExpensesPageContent({
   const filterConfigs = useMemo(
     () =>
       buildExpenseFilterConfigs(projectFilterOptions, {
-        omitStatus: pageVariant === 'backlog',
+        omitStatus: pageVariant === 'backlog' || pageVariant === 'closed',
       }),
     [projectFilterOptions, pageVariant],
   );
@@ -210,7 +210,7 @@ export function ExpensesPageContent({
         onPeriodChange={setPeriod}
         view={view}
         onViewChange={setView}
-        hideViewToggle={pageVariant === 'backlog'}
+        hideViewToggle={pageVariant === 'backlog' || pageVariant === 'closed'}
         pageVariant={pageVariant}
         onRefresh={fetchExpenses}
         onExportCsv={handleExportCsv}
@@ -256,7 +256,7 @@ export function ExpensesPageContent({
         error={error}
         onRetry={fetchExpenses}
         expenses={expenses}
-        view={pageVariant === 'backlog' ? 'list' : view}
+        view={pageVariant === 'backlog' || pageVariant === 'closed' ? 'list' : view}
         fromBacklog={pageVariant === 'backlog'}
         effectiveProjectId={effectiveProjectId ?? null}
         listSort={{ sortBy, sortOrder }}

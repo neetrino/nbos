@@ -12,7 +12,7 @@ export function buildExpenseListApiParams(input: {
   sortBy: ExpenseListSortField;
   sortOrder: 'asc' | 'desc';
   /** Main board omits paid + backlog statuses unless a specific status filter is set (NBOS Expense Board). */
-  pageVariant?: 'default' | 'backlog';
+  pageVariant?: 'default' | 'backlog' | 'closed';
 }): Omit<ExpenseListParams, 'page' | 'pageSize'> {
   const periodParams = getFinancePeriodParams(input.period);
   const projectParams =
