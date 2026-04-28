@@ -26,8 +26,8 @@ export function ExpensePlanDetailBody({ plan }: ExpensePlanDetailBodyProps) {
   return (
     <>
       <p className="text-muted-foreground text-sm">
-        Read-only summary from NBOS Expense Plan. Edit or delete the plan from the plans list; use
-        Refresh after list changes.
+        NBOS Expense Plan summary. Use header actions to edit or delete; Refresh reloads from the
+        server.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

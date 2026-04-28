@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, FileOutput, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, FileOutput, Pencil, RefreshCcw, Trash2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
@@ -10,12 +10,16 @@ export interface ExpensePlanDetailHeaderProps {
   plan: ExpensePlan;
   onRefresh: () => void;
   onGenerateClick: () => void;
+  onEditClick: () => void;
+  onDeleteClick: () => void;
 }
 
 export function ExpensePlanDetailHeader({
   plan,
   onRefresh,
   onGenerateClick,
+  onEditClick,
+  onDeleteClick,
 }: ExpensePlanDetailHeaderProps) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
@@ -36,6 +40,14 @@ export function ExpensePlanDetailHeader({
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" size="icon" onClick={() => void onRefresh()}>
           <RefreshCcw size={16} />
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={onEditClick}>
+          <Pencil size={16} />
+          Edit plan
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={onDeleteClick}>
+          <Trash2 size={16} />
+          Delete
         </Button>
         <Button type="button" onClick={onGenerateClick}>
           <FileOutput size={16} />

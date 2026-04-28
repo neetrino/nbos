@@ -32,6 +32,11 @@ import {
   type ExpensePlan,
 } from '@/lib/api/expense-plans';
 import { projectsApi, type Project } from '@/lib/api/projects';
+import {
+  EMPTY_EXPENSE_PLAN_FORM,
+  expensePlanToFormState,
+  type ExpensePlanFormState,
+} from '@/features/finance/utils/expense-plan-form-state';
 
 /** Prisma `ExpenseCategoryEnum` has no `OFFICE`; UI list includes it for legacy cards only. */
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE');
@@ -39,29 +44,24 @@ const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFI
 interface CreateExpensePlanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: (plan: ExpensePlan) => void;
+  /** When set, dialog updates this plan instead of creating a new one. */
+  planToEdit?: ExpensePlan | null;
+  onCreated?: (plan: ExpensePlan) => void;
+  onUpdated?: (plan: ExpensePlan) => void;
 }
 
 export function CreateExpensePlanDialog({
   open,
   onOpenChange,
+  planToEdit = null,
   onCreated,
+  onUpdated,
 }: CreateExpensePlanDialogProps) {
   const [loading, setLoading] = useState(false);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    name: '',
-    amount: '',
-    category: 'OTHER',
-    frequency: 'ONE_TIME',
-    nextDueDate: '',
-    provider: '',
-    projectId: 'none',
-    autoGenerate: false,
-    notes: '',
-  });
+  const [form, setForm] = useState<ExpensePlanFormState>({ ...EMPTY_EXPENSE_PLAN_FORM });
 
   useEffect(() => {
     if (!open) return;
@@ -85,19 +85,13 @@ export function CreateExpensePlanDialog({
 
   useEffect(() => {
     if (!open) return;
-    setForm({
-      name: '',
-      amount: '',
-      category: 'OTHER',
-      frequency: 'ONE_TIME',
-      nextDueDate: '',
-      provider: '',
-      projectId: 'none',
-      autoGenerate: false,
-      notes: '',
-    });
     setFormError(null);
-  }, [open]);
+    if (planToEdit) {
+      setForm(expensePlanToFormState(planToEdit));
+    } else {
+      setForm({ ...EMPTY_EXPENSE_PLAN_FORM });
+    }
+  }, [open, planToEdit]);
 
   const parsedAmount = parseFloat(form.amount.replace(/\s/g, ''));
   const canSubmit = Boolean(form.name.trim()) && Number.isFinite(parsedAmount) && parsedAmount > 0;
@@ -118,13 +112,24 @@ export function CreateExpensePlanDialog({
       autoGenerate: form.autoGenerate,
       notes: form.notes.trim() || null,
     };
+    const isEdit = Boolean(planToEdit);
     try {
-      const created = await expensePlansApi.create(payload);
-      onCreated(created);
+      if (isEdit && planToEdit) {
+        const updated = await expensePlansApi.update(planToEdit.id, payload);
+        onUpdated?.(updated);
+      } else {
+        const created = await expensePlansApi.create(payload);
+        onCreated?.(created);
+      }
       onOpenChange(false);
     } catch (caught) {
       setFormError(
-        getApiErrorMessage(caught, 'Expense plan could not be created. Check your connection.'),
+        getApiErrorMessage(
+          caught,
+          isEdit
+            ? 'Expense plan could not be saved. Check your connection.'
+            : 'Expense plan could not be created. Check your connection.',
+        ),
       );
     } finally {
       setLoading(false);
@@ -135,7 +140,7 @@ export function CreateExpensePlanDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New expense plan</DialogTitle>
+          <DialogTitle>{planToEdit ? 'Edit expense plan' : 'New expense plan'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           {formError ? (
@@ -266,7 +271,13 @@ export function CreateExpensePlanDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Creating…' : 'Create plan'}
+              {loading
+                ? planToEdit
+                  ? 'Saving…'
+                  : 'Creating…'
+                : planToEdit
+                  ? 'Save changes'
+                  : 'Create plan'}
             </Button>
           </DialogFooter>
         </form>
