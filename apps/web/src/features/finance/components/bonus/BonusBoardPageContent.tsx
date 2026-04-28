@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Hash, CheckCircle2, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Download, Hash, Loader2, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { BONUS_BOARD_PROJECT_FILTER_QUERY } from '@/features/finance/constants/bonus-board-url';
@@ -15,6 +16,7 @@ import {
   uniqueEmployeesFromRows,
   uniqueProjectsFromRows,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
+import { useBonusBoardCsvExport } from '@/features/finance/components/bonus/use-bonus-board-csv-export';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -131,6 +133,14 @@ export function BonusBoardPageContent() {
     });
   }, [rows, search, typeFilter, employeeFilter, projectFilter]);
 
+  const serverProjectScope =
+    projectFilter !== 'ALL' && projectFilter.trim().length > 0 ? projectFilter : undefined;
+
+  const { exportCsvSubmitting, handleExportCsv } = useBonusBoardCsvExport(
+    filtered,
+    serverProjectScope,
+  );
+
   const totalAmountDisplay = useMemo(() => {
     if (stats?.totalAmount != null && stats.totalAmount !== '' && projectFilter === 'ALL') {
       return formatAmount(parseBonusAmount(stats.totalAmount));
@@ -172,7 +182,7 @@ export function BonusBoardPageContent() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -182,6 +192,22 @@ export function BonusBoardPageContent() {
             ) : null}
           </p>
         </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0 gap-1.5"
+          disabled={exportCsvSubmitting || filtered.length === 0}
+          onClick={() => handleExportCsv()}
+          title="CSV matches visible board (search, type, employee, project filters)"
+        >
+          {exportCsvSubmitting ? (
+            <Loader2 size={14} className="animate-spin" aria-hidden />
+          ) : (
+            <Download size={14} aria-hidden />
+          )}
+          Export CSV
+        </Button>
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
