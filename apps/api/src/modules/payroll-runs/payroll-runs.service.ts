@@ -219,11 +219,15 @@ export class PayrollRunsService {
 
     await this.prisma.$transaction(async (tx) => {
       await tx.payrollRun.update({ where: { id }, data });
+      let materializedExpenseIds: string[] | undefined;
       if (status === 'APPROVED') {
-        await materializePayrollExpensesForApprovedRun(tx, {
+        const { createdExpenseIds } = await materializePayrollExpensesForApprovedRun(tx, {
           payrollRunId: id,
           payrollMonth: run.payrollMonth,
         });
+        if (createdExpenseIds.length > 0) {
+          materializedExpenseIds = createdExpenseIds;
+        }
       }
       await tx.auditLog.create({
         data: {
@@ -231,7 +235,10 @@ export class PayrollRunsService {
           entityId: id,
           action: PAYROLL_RUN_AUDIT_ACTION_STATUS_CHANGED,
           userId: meta.actorUserId,
-          changes: { from: run.status, to: status },
+          changes:
+            materializedExpenseIds && materializedExpenseIds.length > 0
+              ? { from: run.status, to: status, materializedExpenseIds }
+              : { from: run.status, to: status },
         },
       });
     });

@@ -29,6 +29,11 @@ function employeeDisplayName(emp: { firstName: string; lastName: string }): stri
   return `${emp.firstName} ${emp.lastName}`.trim();
 }
 
+export interface MaterializePayrollExpensesResult {
+  /** New expense primary keys created in this run (empty if nothing payable). */
+  createdExpenseIds: string[];
+}
+
 /**
  * Creates one `Expense` per payable salary line and links `salary_lines.expense_id`.
  * Call only while transitioning a run to `APPROVED`, inside the same DB transaction.
@@ -36,7 +41,8 @@ function employeeDisplayName(emp: { firstName: string; lastName: string }): stri
 export async function materializePayrollExpensesForApprovedRun(
   tx: TransactionClient,
   params: { payrollRunId: string; payrollMonth: string },
-): Promise<void> {
+): Promise<MaterializePayrollExpensesResult> {
+  const createdExpenseIds: string[] = [];
   const lines = await tx.salaryLine.findMany({
     where: { payrollRunId: params.payrollRunId, expenseId: null },
     include: { employee: { select: { firstName: true, lastName: true } } },
@@ -62,9 +68,13 @@ export async function materializePayrollExpensesForApprovedRun(
       },
     });
 
+    createdExpenseIds.push(expense.id);
+
     await tx.salaryLine.update({
       where: { id: line.id },
       data: { expenseId: expense.id, status: 'APPROVED' },
     });
   }
+
+  return { createdExpenseIds };
 }

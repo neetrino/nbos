@@ -69,11 +69,12 @@ describe('materializePayrollExpensesForApprovedRun', () => {
       expense: { create: expenseCreate },
     };
 
-    await materializePayrollExpensesForApprovedRun(tx as never, {
+    const result = await materializePayrollExpensesForApprovedRun(tx as never, {
       payrollRunId: 'run-1',
       payrollMonth: '2026-04',
     });
 
+    expect(result.createdExpenseIds).toEqual(['exp-1']);
     expect(expenseCreate).toHaveBeenCalledTimes(1);
     expect(expenseCreate.mock.calls[0][0].data.name).toContain('2026-04');
     expect(expenseCreate.mock.calls[0][0].data.name).toContain('Ada');
@@ -102,11 +103,12 @@ describe('materializePayrollExpensesForApprovedRun', () => {
       expense: { create: expenseCreate },
     };
 
-    await materializePayrollExpensesForApprovedRun(tx as never, {
+    const result = await materializePayrollExpensesForApprovedRun(tx as never, {
       payrollRunId: 'run-1',
       payrollMonth: '2026-05',
     });
 
+    expect(result.createdExpenseIds).toEqual([]);
     expect(expenseCreate).not.toHaveBeenCalled();
   });
 });
