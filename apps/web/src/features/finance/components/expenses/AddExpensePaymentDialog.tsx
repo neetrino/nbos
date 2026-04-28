@@ -12,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ApiError } from '@/lib/api-errors';
 import { expensesApi, type AddExpensePaymentPayload, type Expense } from '@/lib/api/finance';
 
 function todayDateInputValue(): string {
@@ -64,8 +65,12 @@ export function AddExpensePaymentDialog({
       const updated = await expensesApi.addPayment(expenseId, payload);
       onRecorded(updated);
       onOpenChange(false);
-    } catch {
-      setError('Payment could not be recorded. Check the amount and try again.');
+    } catch (caught) {
+      setError(
+        caught instanceof ApiError
+          ? caught.message
+          : 'Payment could not be recorded. Check the amount and try again.',
+      );
     } finally {
       setLoading(false);
     }
