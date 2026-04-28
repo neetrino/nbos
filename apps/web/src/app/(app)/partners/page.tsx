@@ -34,6 +34,7 @@ import {
   getPartnerDirection,
   getPartnerStatus,
 } from '@/features/partners/constants/partners';
+import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
 import { partnersApi, type Partner, type PartnerStats } from '@/lib/api/partners';
 
 const PARTNERS_LIST_PAGE_SIZE = 100;
@@ -52,6 +53,7 @@ export default function PartnersPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [createOpen, setCreateOpen] = useState(false);
 
   const fetchPartners = useCallback(async () => {
     setLoading(true);
@@ -116,11 +118,17 @@ export default function PartnersPage() {
         <Button variant="outline" size="icon" onClick={fetchPartners}>
           <RefreshCcw size={16} />
         </Button>
-        <Button>
+        <Button type="button" onClick={() => setCreateOpen(true)}>
           <Plus size={16} />
           Add Partner
         </Button>
       </PageHeader>
+
+      <CreatePartnerDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={fetchPartners}
+      />
 
       <div className="grid grid-cols-3 gap-4">
         <div className="border-border bg-card rounded-xl border p-4">
@@ -157,7 +165,7 @@ export default function PartnersPage() {
           title="No partners yet"
           description="Start building your partner network"
           action={
-            <Button>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
               <Plus size={16} /> Add First Partner
             </Button>
           }

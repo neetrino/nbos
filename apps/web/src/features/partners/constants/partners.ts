@@ -29,3 +29,8 @@ export function getPartnerDirection(value: string) {
 export function getPartnerStatus(value: string) {
   return PARTNER_STATUSES.find((s) => s.value === value);
 }
+
+/** Matches Prisma `Partner.defaultPercent` default and UI slider/input bounds. */
+export const DEFAULT_PARTNER_DEFAULT_PERCENT = 30;
+export const PARTNER_DEFAULT_PERCENT_MIN = 0;
+export const PARTNER_DEFAULT_PERCENT_MAX = 100;

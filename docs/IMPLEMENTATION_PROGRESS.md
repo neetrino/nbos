@@ -25,9 +25,9 @@ Rules:
 | Field                | Value                                     |
 | -------------------- | ----------------------------------------- |
 | Current phase        | Phase 3 - Finance core                    |
-| Current module/block | Partners list + API filters               |
-| Current task         | Partners page aligned to Prisma partner   |
-| Status               | Partners slice completed; next Finance UX |
+| Current module/block | Partners create dialog                    |
+| Current task         | New Partner form wired to POST /partners  |
+| Status               | Create flow done; next Finance / Partners |
 | Last updated         | 2026-04-28                                |
 
 ## Phase Progress
@@ -82,6 +82,7 @@ Rules:
 | 2026-04-28 | Subscription resume ON_HOLD done         | Subscriptions table Resume for ON_HOLD→ACTIVE; optimistic MRR/active count aligned with activation                            | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                                                                                                                                       | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscription pause ACTIVE done           | Pause→ON_HOLD with confirm dialog; optimistic stats; action row extracted to SubscriptionTableActionCell                      | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                                                                                                                                                                                  | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Partners list aligned with API done      | GET /partners forwards status, type, direction; web uses partnersApi, real columns and stats (no fake revenue)                | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Partners create dialog done              | CreatePartnerDialog posts to API; optional contact from clients list; CreatePartnerPayload typed                              | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                                                                                                                                              | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 
@@ -124,7 +125,7 @@ Make NBOS navigable, permission-aware and safe to extend.
 | CRM                         | Yes        | Yes          | Partial     | Partial | Offer/contract, Deal Won, handoff visibility and popup shortcuts done                                              |
 | Marketing                   | Yes        | Yes          | Partial     | Partial | Launch gates, Finance spend links, performance and efficiency snapshots added                                      |
 | Finance                     | Yes        | Yes          | Partial     | Partial | Subscriptions activate/cancel with transition guards, invoice payment, reconciliation drill-down foundations added |
-| Partners                    | Yes        | Yes          | Partial     | Partial | List + filters + stats wired to API; create/edit flows still shallow                                               |
+| Partners                    | Yes        | Yes          | Partial     | Partial | List + filters + stats + create dialog; edit/detail still shallow                                                  |
 | Projects Hub                | Yes        | Yes          | Partial     | Partial | PM intake, Product/Extension readiness, Done gates and blocker shortcuts added                                     |
 | Tasks / Work Spaces         | Yes        | No           | No          | No      | Phase 4                                                                                                            |
 | Support                     | Yes        | No           | No          | No      | Phase 4                                                                                                            |
@@ -154,6 +155,6 @@ Continue with Phase 3:
 
 ```text
 Next Phase 3 slice candidates:
-- Partner create/edit flows or subscription–partner linkage UX.
+- Partner detail / edit or subscription–partner linkage UX.
 - Subscription and invoice lifecycle depth with no fake money states.
 ```

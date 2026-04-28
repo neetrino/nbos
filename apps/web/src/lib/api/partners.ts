@@ -18,6 +18,15 @@ export interface PartnerStats {
   avgPayoutPercent: number;
 }
 
+export interface CreatePartnerPayload {
+  name: string;
+  type?: string;
+  direction?: string;
+  defaultPercent?: number;
+  status?: string;
+  contactId?: string;
+}
+
 interface ListData<T> {
   items: T[];
   meta: { total: number; page: number; pageSize: number; totalPages: number };
@@ -32,7 +41,7 @@ export const partnersApi = {
     const resp = await api.get<Partner>(`/api/partners/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Partner> {
+  async create(data: CreatePartnerPayload): Promise<Partner> {
     const resp = await api.post<Partner>('/api/partners', data);
     return resp.data;
   },
