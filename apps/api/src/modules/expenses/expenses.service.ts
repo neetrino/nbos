@@ -55,6 +55,8 @@ interface ExpenseQueryParams {
 interface ExpenseStatsParams {
   dateFrom?: string;
   dateTo?: string;
+  /** When set, stats match `findAll` list filter for the same project. */
+  projectId?: string;
 }
 
 @Injectable()
@@ -170,26 +172,34 @@ export class ExpensesService {
   async getStats(params: ExpenseStatsParams = {}) {
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const paidDate = this.buildDateRange(params.dateFrom, params.dateTo);
+    const projectWhere = params.projectId ? { projectId: params.projectId } : {};
+
+    const whereCreated: Prisma.ExpenseWhereInput = {
+      ...projectWhere,
+      ...(createdAt ? { createdAt } : {}),
+    };
+    const hasCreatedScope = Object.keys(whereCreated).length > 0;
 
     const [byCategory, byStatus, totalAmount, paidAmount, unpaidAmount] = await Promise.all([
       this.prisma.expense.groupBy({
         by: ['category'],
-        ...(createdAt ? { where: { createdAt } } : {}),
+        ...(hasCreatedScope ? { where: whereCreated } : {}),
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.expense.groupBy({
         by: ['status'],
-        ...(createdAt ? { where: { createdAt } } : {}),
+        ...(hasCreatedScope ? { where: whereCreated } : {}),
         _count: true,
         _sum: { amount: true },
       }),
       this.prisma.expense.aggregate({
-        ...(createdAt ? { where: { createdAt } } : {}),
+        ...(hasCreatedScope ? { where: whereCreated } : {}),
         _sum: { amount: true },
       }),
       this.prisma.expense.aggregate({
         where: {
+          ...projectWhere,
           status: 'PAID',
           ...(paidDate ? { paidDate } : {}),
         },
@@ -197,6 +207,7 @@ export class ExpensesService {
       }),
       this.prisma.expense.aggregate({
         where: {
+          ...projectWhere,
           status: { not: 'PAID' },
           ...(createdAt ? { createdAt } : {}),
         },

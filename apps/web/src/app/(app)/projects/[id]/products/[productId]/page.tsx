@@ -250,6 +250,7 @@ export default function ProductDetailPage() {
         <TabsContent value="finance" className="mt-5">
           {projectData ? (
             <FinanceTab
+              projectId={params.id}
               orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}
               expenses={projectData.expenses as never[]}

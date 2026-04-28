@@ -144,6 +144,24 @@ export interface ExpenseStats {
   unpaidAmount: number | null;
 }
 
+/** Query params for `expensesApi.getStats` (optional project drill-down parity). */
+export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
+  projectId?: string;
+}
+
+export interface ExpenseListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  category?: string;
+  status?: string;
+  projectId?: string;
+  type?: string;
+  frequency?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
 /** Body for `PUT /expenses/:id` (aligned with ExpensesController). */
 export interface UpdateExpensePayload {
   name?: string;
@@ -326,7 +344,7 @@ export const ordersApi = {
 };
 
 export const expensesApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Expense>> {
+  async getAll(params?: ExpenseListParams): Promise<ListData<Expense>> {
     const resp = await api.get<ListData<Expense>>('/api/expenses', { params });
     return resp.data;
   },
@@ -345,7 +363,7 @@ export const expensesApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/expenses/${id}`);
   },
-  async getStats(params?: FinanceDateRangeParams): Promise<ExpenseStats> {
+  async getStats(params?: ExpenseStatsQueryParams): Promise<ExpenseStats> {
     const resp = await api.get<ExpenseStats>('/api/expenses/stats', { params });
     return resp.data;
   },

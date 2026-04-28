@@ -63,8 +63,13 @@ export class ExpensesController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get expense statistics' })
-  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
-    return this.expensesService.getStats({ dateFrom, dateTo });
+  @ApiQuery({ name: 'projectId', required: false })
+  async getStats(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('projectId') projectId?: string,
+  ) {
+    return this.expensesService.getStats({ dateFrom, dateTo, projectId });
   }
 
   @Get(':id')

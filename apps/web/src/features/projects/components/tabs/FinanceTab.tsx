@@ -1,7 +1,9 @@
 'use client';
 
-import { DollarSign, TrendingUp, TrendingDown, CreditCard } from 'lucide-react';
+import Link from 'next/link';
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, ExternalLink } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
+import { projectExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
 import type {
   ProjectOrder,
   ProjectSubscription,
@@ -14,6 +16,8 @@ interface FinanceTabProps {
   subscriptions: ProjectSubscription[];
   expenses: ProjectExpense[];
   domains: ProjectDomain[];
+  /** When set, Finance expenses section links to filtered `/finance/expenses`. */
+  projectId?: string;
 }
 
 function formatAmount(amount: number | string): string {
@@ -54,7 +58,13 @@ const SUB_STATUS_MAP: Record<
   COMPLETED: { label: 'Completed', variant: 'blue' },
 };
 
-export function FinanceTab({ orders, subscriptions, expenses, domains }: FinanceTabProps) {
+export function FinanceTab({
+  orders,
+  subscriptions,
+  expenses,
+  domains,
+  projectId,
+}: FinanceTabProps) {
   const totalRevenue = orders.reduce((s, o) => s + Number(o.totalAmount), 0);
   const paidInvoices = orders.flatMap((o) => o.invoices).filter((i) => i.status === 'PAID');
   const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
@@ -191,7 +201,18 @@ export function FinanceTab({ orders, subscriptions, expenses, domains }: Finance
 
       {expenses.length > 0 && (
         <section>
-          <h3 className="mb-3 text-sm font-semibold">Expenses ({expenses.length})</h3>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold">Expenses ({expenses.length})</h3>
+            {projectId ? (
+              <Link
+                href={projectExpensesDrilldownHref(projectId)}
+                className="text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline"
+              >
+                Open in Finance
+                <ExternalLink size={12} className="opacity-70" aria-hidden />
+              </Link>
+            ) : null}
+          </div>
           <div className="border-border overflow-hidden rounded-xl border">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">

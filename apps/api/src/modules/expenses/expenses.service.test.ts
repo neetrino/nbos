@@ -124,5 +124,23 @@ describe('ExpensesService', () => {
         }),
       );
     });
+
+    it('applies projectId to stats queries', async () => {
+      await service.getStats({ projectId: 'proj-a' });
+
+      expect(prisma.expense.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ projectId: 'proj-a' }),
+        }),
+      );
+      expect(prisma.expense.aggregate.mock.calls.length).toBeGreaterThanOrEqual(3);
+      for (const call of prisma.expense.aggregate.mock.calls) {
+        expect(call[0]).toEqual(
+          expect.objectContaining({
+            where: expect.objectContaining({ projectId: 'proj-a' }),
+          }),
+        );
+      }
+    });
   });
 });
