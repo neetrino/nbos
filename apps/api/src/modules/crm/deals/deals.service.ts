@@ -16,6 +16,11 @@ interface CreateDealDto {
   sellerId: string;
   projectId?: string;
   source?: string;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
+  marketingAccountId?: string | null;
+  marketingActivityId?: string | null;
   notes?: string;
   productCategory?: string | null;
   productType?: string | null;
@@ -38,6 +43,8 @@ interface UpdateDealDto {
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
+  marketingAccountId?: string | null;
+  marketingActivityId?: string | null;
   notes?: string;
   productCategory?: string | null;
   productType?: string | null;
@@ -126,6 +133,8 @@ export class DealsService {
           existingProduct: { select: { id: true, name: true, productType: true } },
           sourcePartner: { select: { id: true, name: true } },
           sourceContact: { select: { id: true, firstName: true, lastName: true } },
+          marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+          marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
         },
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * pageSize,
@@ -171,6 +180,8 @@ export class DealsService {
         existingProduct: { select: { id: true, name: true, productType: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
       },
     });
     if (!deal) {
@@ -194,6 +205,11 @@ export class DealsService {
         companyId: data.companyId ?? undefined,
         sellerId: data.sellerId,
         source: data.source as Prisma.DealCreateInput['source'],
+        sourceDetail: data.sourceDetail,
+        sourcePartnerId: data.sourcePartnerId,
+        sourceContactId: data.sourceContactId,
+        marketingAccountId: data.marketingAccountId,
+        marketingActivityId: data.marketingActivityId,
         notes: data.notes,
         productCategory:
           (data.productCategory as Prisma.DealCreateInput['productCategory']) ?? undefined,
@@ -205,6 +221,8 @@ export class DealsService {
       include: {
         contact: { select: { id: true, firstName: true, lastName: true } },
         seller: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
       },
     });
   }
@@ -230,6 +248,12 @@ export class DealsService {
         ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
         ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
         ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
+        ...(data.marketingAccountId !== undefined && {
+          marketingAccountId: data.marketingAccountId,
+        }),
+        ...(data.marketingActivityId !== undefined && {
+          marketingActivityId: data.marketingActivityId,
+        }),
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.productCategory !== undefined && {
           productCategory: data.productCategory as Prisma.DealUpdateInput['productCategory'],
@@ -270,6 +294,8 @@ export class DealsService {
         existingProduct: { select: { id: true, name: true, productType: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
       },
     });
   }

@@ -22,6 +22,7 @@ import { AutomationModule } from './modules/automation/automation.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MessengerModule } from './modules/messenger/messenger.module';
 import { PartnersModule } from './modules/partners/partners.module';
+import { MarketingModule } from './modules/marketing/marketing.module';
 import { SystemListsModule } from './modules/system-lists/system-lists.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
@@ -59,6 +60,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     AutomationModule,
     SchedulerModule,
     PartnersModule,
+    MarketingModule,
     MessengerModule,
     SystemListsModule,
     RolesModule,

@@ -2,6 +2,7 @@ import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { PrismaClient, DealTypeEnum, PaymentTypeEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { LeadsService } from './leads.service';
+import { validateAttributionGate } from '../attribution-gate';
 
 interface ConvertLeadDto {
   dealType: string;
@@ -25,6 +26,7 @@ export class LeadConversionService {
         `Lead must be in SQL status to convert. Current: ${lead.status}`,
       );
     }
+    validateAttributionGate(lead, 'Lead', 'SQL');
 
     if (lead.deal) {
       throw new BadRequestException('Lead already has an associated deal');
@@ -62,6 +64,11 @@ export class LeadConversionService {
         paymentType: data.paymentType ? (data.paymentType as PaymentTypeEnum) : undefined,
         sellerId: data.sellerId,
         source: lead.source,
+        sourceDetail: lead.sourceDetail,
+        sourcePartnerId: lead.sourcePartnerId,
+        sourceContactId: lead.sourceContactId,
+        marketingAccountId: lead.marketingAccountId,
+        marketingActivityId: lead.marketingActivityId,
       },
       include: {
         contact: { select: { id: true, firstName: true, lastName: true } },

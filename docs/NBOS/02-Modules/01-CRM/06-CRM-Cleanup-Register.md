@@ -198,11 +198,12 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Текущая база есть, но правила уже шире, чем текущая реализация.
+Текущая база есть, и Phase 2 attribution foundation уже расширил обязательные source gates.
 
 Новые требования, которые надо будет реализовать:
 
 - marketing block обязателен для переходов `Lead` и `Deal`;
+- `Lead -> Deal` переносит полный attribution block, включая `Which one`;
 - popup при перетаскивании должен показывать только недостающие поля и blocker-условия;
 - `Offer` должен допускать `file / link / messenger screenshot`;
 - `PRODUCT / EXTENSION / OUTSOURCE` должны требовать `deadline` перед `Deal Won`;

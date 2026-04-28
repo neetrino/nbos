@@ -34,6 +34,8 @@ export interface Deal {
   sourceDetail: string | null;
   sourcePartnerId: string | null;
   sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
   notes: string | null;
   productCategory: string | null;
   productType: string | null;
@@ -50,6 +52,8 @@ export interface Deal {
   orders: DealOrder[];
   sourcePartner: { id: string; name: string } | null;
   sourceContact: { id: string; firstName: string; lastName: string } | null;
+  marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;
+  marketingActivity: { id: string; title: string; channel: string; status: string } | null;
 }
 
 export interface DealListData {
@@ -91,6 +95,11 @@ export const dealsApi = {
     paymentType?: string;
     sellerId: string;
     source?: string;
+    sourceDetail?: string;
+    sourcePartnerId?: string;
+    sourceContactId?: string;
+    marketingAccountId?: string;
+    marketingActivityId?: string;
     notes?: string;
     productCategory?: string;
     productType?: string;

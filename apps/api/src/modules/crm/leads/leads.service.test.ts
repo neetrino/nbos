@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { LeadsService } from './leads.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('LeadsService', () => {
   let service: LeadsService;
@@ -124,11 +124,33 @@ describe('LeadsService', () => {
 
   describe('updateStatus', () => {
     it('updates status', async () => {
-      prisma.lead.findUnique.mockResolvedValue({ id: '1' });
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
       prisma.lead.update.mockResolvedValue({ id: '1', status: 'MQL' });
 
       const result = await service.updateStatus('1', 'MQL');
       expect(result.status).toBe('MQL');
+    });
+
+    it('blocks meaningful movement without attribution', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        source: 'MARKETING',
+        sourceDetail: null,
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+
+      await expect(service.updateStatus('1', 'MQL')).rejects.toThrow(BadRequestException);
     });
   });
 

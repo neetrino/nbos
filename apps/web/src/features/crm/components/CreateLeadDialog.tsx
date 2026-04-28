@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { LEAD_SOURCES, INTEREST_TYPES } from '../constants/leadPipeline';
 import { leadsApi } from '@/lib/api/leads';
+import { marketingApi, type AttributionOption } from '@/lib/api/marketing';
 
 interface CreateLeadDialogProps {
   open: boolean;
@@ -35,7 +36,9 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
     contactName: '',
     phone: '',
     email: '',
-    source: 'WEBSITE',
+    source: 'MARKETING',
+    sourceDetail: '',
+    attributionOption: '',
     interestType: '',
     estimatedBudget: '',
     notes: '',
@@ -49,12 +52,31 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
       contactName: '',
       phone: '',
       email: '',
-      source: 'WEBSITE',
+      source: 'MARKETING',
+      sourceDetail: '',
+      attributionOption: '',
       interestType: '',
       estimatedBudget: '',
       notes: '',
     });
   };
+
+  const [attributionOptions, setAttributionOptions] = useState<AttributionOption[]>([]);
+
+  useEffect(() => {
+    if (form.source !== 'MARKETING' || !form.sourceDetail) {
+      setAttributionOptions([]);
+      return;
+    }
+    marketingApi
+      .getAttributionOptions(form.sourceDetail)
+      .then(setAttributionOptions)
+      .catch(() => setAttributionOptions([]));
+  }, [form.source, form.sourceDetail]);
+
+  const selectedAttribution = attributionOptions.find(
+    (option) => `${option.type}:${option.id}` === form.attributionOption,
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +89,11 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
         phone: form.phone || undefined,
         email: form.email || undefined,
         source: form.source,
+        sourceDetail: form.sourceDetail || undefined,
+        marketingAccountId:
+          selectedAttribution?.type === 'ACCOUNT' ? selectedAttribution.id : undefined,
+        marketingActivityId:
+          selectedAttribution?.type === 'ACTIVITY' ? selectedAttribution.id : undefined,
         notes: form.notes || undefined,
       });
       onCreated();
@@ -133,7 +160,14 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
               <Label>Source *</Label>
               <Select
                 value={form.source}
-                onValueChange={(v) => setForm({ ...form, source: v as string })}
+                onValueChange={(v) =>
+                  setForm({
+                    ...form,
+                    source: v as string,
+                    sourceDetail: '',
+                    attributionOption: '',
+                  })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -148,23 +182,82 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
               </Select>
             </div>
             <div>
-              <Label>Interest Type</Label>
+              <Label>Where</Label>
               <Select
-                value={form.interestType || undefined}
-                onValueChange={(v) => setForm({ ...form, interestType: v as string })}
+                value={form.sourceDetail || undefined}
+                onValueChange={(v) =>
+                  setForm({ ...form, sourceDetail: v as string, attributionOption: '' })
+                }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select..." />
+                  <SelectValue placeholder="Select channel..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {INTEREST_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
+                  {[
+                    { value: 'SMM', label: 'SMM' },
+                    { value: 'WEBSITE', label: 'Website' },
+                    { value: 'LIST_AM', label: 'List.am' },
+                    { value: 'GOOGLE_ADS', label: 'Google Ads' },
+                    { value: 'META_ADS', label: 'Meta Ads' },
+                    { value: 'CONTENT', label: 'Content Marketing' },
+                    { value: 'SEO', label: 'SEO' },
+                    { value: 'OFFLINE', label: 'Offline' },
+                    { value: 'OTHER', label: 'Other' },
+                  ].map((channel) => (
+                    <SelectItem key={channel.value} value={channel.value}>
+                      {channel.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {form.source === 'MARKETING' && form.sourceDetail && (
+            <div>
+              <Label>Which one</Label>
+              <Select
+                value={form.attributionOption || undefined}
+                onValueChange={(v) => setForm({ ...form, attributionOption: v as string })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select account or launched activity..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {attributionOptions.map((option) => (
+                    <SelectItem
+                      key={`${option.type}:${option.id}`}
+                      value={`${option.type}:${option.id}`}
+                    >
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Required before the lead moves beyond the first working stage for account-based
+                channels.
+              </p>
+            </div>
+          )}
+
+          <div>
+            <Label>Interest Type</Label>
+            <Select
+              value={form.interestType || undefined}
+              onValueChange={(v) => setForm({ ...form, interestType: v as string })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {INTEREST_TYPES.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

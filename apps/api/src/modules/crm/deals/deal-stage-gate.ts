@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { validateAttributionGate } from '../attribution-gate';
 
 interface DealForValidation {
   type: string;
@@ -9,6 +10,12 @@ interface DealForValidation {
   pmId: string | null;
   deadline: Date | null;
   existingProductId: string | null;
+  source: string | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
 }
 
 interface ValidationError {
@@ -44,6 +51,10 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
 
   const reachesStage = (stage: string) =>
     targetIdx >= STAGE_ORDER.indexOf(stage as (typeof STAGE_ORDER)[number]);
+
+  if (reachesStage('DISCUSS_NEEDS')) {
+    validateAttributionGate(deal, 'Deal', targetStatus);
+  }
 
   if (reachesStage('SEND_OFFER')) {
     if (!deal.amount) {

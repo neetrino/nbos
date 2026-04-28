@@ -11,6 +11,12 @@ const baseDeal = {
   pmId: null as string | null,
   deadline: null as Date | null,
   existingProductId: null as string | null,
+  source: 'SALES' as string | null,
+  sourceDetail: 'COLD_CALL' as string | null,
+  sourcePartnerId: null as string | null,
+  sourceContactId: null as string | null,
+  marketingAccountId: null as string | null,
+  marketingActivityId: null as string | null,
 };
 
 describe('validateDealStageGate', () => {
@@ -22,6 +28,11 @@ describe('validateDealStageGate', () => {
 
   it('always allows FAILED', () => {
     expect(() => validateDealStageGate(baseDeal, 'FAILED')).not.toThrow();
+  });
+
+  it('requires attribution before meaningful deal movement', () => {
+    const deal = { ...baseDeal, sourceDetail: null };
+    expect(() => validateDealStageGate(deal, 'DISCUSS_NEEDS')).toThrow(BadRequestException);
   });
 
   it('requires amount and paymentType at SEND_OFFER', () => {

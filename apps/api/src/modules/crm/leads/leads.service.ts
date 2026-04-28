@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { validateAttributionGate } from '../attribution-gate';
 
 interface CreateLeadDto {
   name?: string;
@@ -8,6 +9,11 @@ interface CreateLeadDto {
   phone?: string;
   email?: string;
   source: string;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
+  marketingAccountId?: string | null;
+  marketingActivityId?: string | null;
   assignedTo?: string;
   notes?: string;
 }
@@ -21,6 +27,8 @@ interface UpdateLeadDto {
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
+  marketingAccountId?: string | null;
+  marketingActivityId?: string | null;
   status?: string;
   assignedTo?: string;
   notes?: string;
@@ -80,6 +88,8 @@ export class LeadsService {
           assignee: { select: { id: true, firstName: true, lastName: true } },
           sourcePartner: { select: { id: true, name: true } },
           sourceContact: { select: { id: true, firstName: true, lastName: true } },
+          marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+          marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
           deal: { select: { id: true, code: true, status: true } },
         },
         orderBy: { [sortBy]: sortOrder },
@@ -107,6 +117,8 @@ export class LeadsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
         contact: true,
         deal: true,
       },
@@ -127,11 +139,18 @@ export class LeadsService {
         phone: data.phone,
         email: data.email,
         source: data.source as Prisma.LeadCreateInput['source'],
+        sourceDetail: data.sourceDetail,
+        sourcePartnerId: data.sourcePartnerId,
+        sourceContactId: data.sourceContactId,
+        marketingAccountId: data.marketingAccountId,
+        marketingActivityId: data.marketingActivityId,
         assignedTo: data.assignedTo,
         notes: data.notes,
       },
       include: {
         assignee: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
       },
     });
   }
@@ -150,6 +169,12 @@ export class LeadsService {
         ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
         ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
         ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
+        ...(data.marketingAccountId !== undefined && {
+          marketingAccountId: data.marketingAccountId,
+        }),
+        ...(data.marketingActivityId !== undefined && {
+          marketingActivityId: data.marketingActivityId,
+        }),
         ...(data.status && { status: data.status as Prisma.LeadUpdateInput['status'] }),
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.notes !== undefined && { notes: data.notes }),
@@ -158,6 +183,8 @@ export class LeadsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
         deal: { select: { id: true, code: true, status: true } },
       },
     });
@@ -169,6 +196,10 @@ export class LeadsService {
   }
 
   async updateStatus(id: string, status: string) {
+    const lead = await this.findById(id);
+    if (this.requiresAttribution(status)) {
+      validateAttributionGate(lead, 'Lead', status);
+    }
     return this.update(id, { status });
   }
 
@@ -198,5 +229,9 @@ export class LeadsService {
     const nextNum = lastLead ? parseInt(lastLead.code.split('-')[2] ?? '0', 10) + 1 : 1;
 
     return `L-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private requiresAttribution(status: string): boolean {
+    return !['NEW', 'SPAM'].includes(status);
   }
 }

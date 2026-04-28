@@ -78,6 +78,11 @@ export class LeadsController {
       phone?: string;
       email?: string;
       source: string;
+      sourceDetail?: string | null;
+      sourcePartnerId?: string | null;
+      sourceContactId?: string | null;
+      marketingAccountId?: string | null;
+      marketingActivityId?: string | null;
       assignedTo?: string;
       notes?: string;
     },
@@ -96,6 +101,11 @@ export class LeadsController {
       phone?: string;
       email?: string;
       source?: string;
+      sourceDetail?: string | null;
+      sourcePartnerId?: string | null;
+      sourceContactId?: string | null;
+      marketingAccountId?: string | null;
+      marketingActivityId?: string | null;
       status?: string;
       assignedTo?: string;
       notes?: string;

@@ -42,6 +42,16 @@ export type Product = Prisma.ProductModel;
  */
 export type Extension = Prisma.ExtensionModel;
 /**
+ * Model MarketingAccount
+ *
+ */
+export type MarketingAccount = Prisma.MarketingAccountModel;
+/**
+ * Model MarketingActivity
+ *
+ */
+export type MarketingActivity = Prisma.MarketingActivityModel;
+/**
  * Model Lead
  *
  */

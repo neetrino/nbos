@@ -53,6 +53,8 @@ export const ModelName = {
   Project: 'Project',
   Product: 'Product',
   Extension: 'Extension',
+  MarketingAccount: 'MarketingAccount',
+  MarketingActivity: 'MarketingActivity',
   Lead: 'Lead',
   Deal: 'Deal',
   Order: 'Order',
@@ -180,6 +182,48 @@ export const ExtensionScalarFieldEnum = {
 export type ExtensionScalarFieldEnum =
   (typeof ExtensionScalarFieldEnum)[keyof typeof ExtensionScalarFieldEnum];
 
+export const MarketingAccountScalarFieldEnum = {
+  id: 'id',
+  channel: 'channel',
+  name: 'name',
+  identifier: 'identifier',
+  phone: 'phone',
+  status: 'status',
+  financeExpensePlanId: 'financeExpensePlanId',
+  defaultCost: 'defaultCost',
+  ownerId: 'ownerId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MarketingAccountScalarFieldEnum =
+  (typeof MarketingAccountScalarFieldEnum)[keyof typeof MarketingAccountScalarFieldEnum];
+
+export const MarketingActivityScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  channel: 'channel',
+  type: 'type',
+  status: 'status',
+  accountId: 'accountId',
+  ownerId: 'ownerId',
+  description: 'description',
+  budget: 'budget',
+  currency: 'currency',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  expectedPayAt: 'expectedPayAt',
+  expenseCardId: 'expenseCardId',
+  expensePlanId: 'expensePlanId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MarketingActivityScalarFieldEnum =
+  (typeof MarketingActivityScalarFieldEnum)[keyof typeof MarketingActivityScalarFieldEnum];
+
 export const LeadScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -191,6 +235,8 @@ export const LeadScalarFieldEnum = {
   sourceDetail: 'sourceDetail',
   sourcePartnerId: 'sourcePartnerId',
   sourceContactId: 'sourceContactId',
+  marketingAccountId: 'marketingAccountId',
+  marketingActivityId: 'marketingActivityId',
   status: 'status',
   assignedTo: 'assignedTo',
   contactId: 'contactId',
@@ -219,6 +265,8 @@ export const DealScalarFieldEnum = {
   sourceDetail: 'sourceDetail',
   sourcePartnerId: 'sourcePartnerId',
   sourceContactId: 'sourceContactId',
+  marketingAccountId: 'marketingAccountId',
+  marketingActivityId: 'marketingActivityId',
   notes: 'notes',
   productCategory: 'productCategory',
   productType: 'productType',

@@ -116,6 +116,55 @@ export const LeadSourceEnum = {
 
 export type LeadSourceEnum = (typeof LeadSourceEnum)[keyof typeof LeadSourceEnum];
 
+export const MarketingChannelEnum = {
+  SMM: 'SMM',
+  WEBSITE: 'WEBSITE',
+  LIST_AM: 'LIST_AM',
+  GOOGLE_ADS: 'GOOGLE_ADS',
+  META_ADS: 'META_ADS',
+  CONTENT: 'CONTENT',
+  SEO: 'SEO',
+  OFFLINE: 'OFFLINE',
+  OTHER: 'OTHER',
+} as const;
+
+export type MarketingChannelEnum = (typeof MarketingChannelEnum)[keyof typeof MarketingChannelEnum];
+
+export const MarketingAccountStatusEnum = {
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type MarketingAccountStatusEnum =
+  (typeof MarketingAccountStatusEnum)[keyof typeof MarketingAccountStatusEnum];
+
+export const MarketingActivityStatusEnum = {
+  IDEA: 'IDEA',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  LAUNCHED: 'LAUNCHED',
+  FINISHED: 'FINISHED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type MarketingActivityStatusEnum =
+  (typeof MarketingActivityStatusEnum)[keyof typeof MarketingActivityStatusEnum];
+
+export const MarketingActivityTypeEnum = {
+  AD_CAMPAIGN: 'AD_CAMPAIGN',
+  SMM_POST: 'SMM_POST',
+  STORY_REEL: 'STORY_REEL',
+  LIST_AM_PROMOTION: 'LIST_AM_PROMOTION',
+  WEBSITE_LANDING: 'WEBSITE_LANDING',
+  SEO_WORK: 'SEO_WORK',
+  OFFLINE_ACTIVITY: 'OFFLINE_ACTIVITY',
+  OTHER: 'OTHER',
+} as const;
+
+export type MarketingActivityTypeEnum =
+  (typeof MarketingActivityTypeEnum)[keyof typeof MarketingActivityTypeEnum];
+
 export const DealStatusEnum = {
   START_CONVERSATION: 'START_CONVERSATION',
   DISCUSS_NEEDS: 'DISCUSS_NEEDS',

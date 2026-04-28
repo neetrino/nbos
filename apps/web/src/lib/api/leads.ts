@@ -11,6 +11,8 @@ export interface Lead {
   sourceDetail: string | null;
   sourcePartnerId: string | null;
   sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
   status: string;
   assignedTo: string | null;
   contactId: string | null;
@@ -20,6 +22,8 @@ export interface Lead {
   assignee: { id: string; firstName: string; lastName: string } | null;
   sourcePartner: { id: string; name: string } | null;
   sourceContact: { id: string; firstName: string; lastName: string } | null;
+  marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;
+  marketingActivity: { id: string; title: string; channel: string; status: string } | null;
   deal: { id: string; code: string; status: string } | null;
 }
 
@@ -66,6 +70,11 @@ export const leadsApi = {
     phone?: string;
     email?: string;
     source: string;
+    sourceDetail?: string;
+    sourcePartnerId?: string;
+    sourceContactId?: string;
+    marketingAccountId?: string;
+    marketingActivityId?: string;
     notes?: string;
   }): Promise<Lead> {
     const resp = await api.post<Lead>('/api/crm/leads', data);

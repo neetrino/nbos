@@ -32,6 +32,7 @@ import {
 import type { Lead } from '@/lib/api/leads';
 import { partnersApi } from '@/lib/api/partners';
 import { contactsApi } from '@/lib/api/clients';
+import { marketingApi } from '@/lib/api/marketing';
 import { useCallback } from 'react';
 
 const TABS = [
@@ -256,6 +257,21 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
     }));
   }, []);
 
+  const searchAttributionOptions = useCallback(
+    async (query: string) => {
+      if (!lead.sourceDetail) return [];
+      const options = await marketingApi.getAttributionOptions(lead.sourceDetail);
+      return options
+        .filter((option) => option.label.toLowerCase().includes(query.toLowerCase()))
+        .map((option) => ({
+          value: `${option.type}:${option.id}`,
+          label: option.label,
+          subtitle: option.subtitle ?? option.type,
+        }));
+    },
+    [lead.sourceDetail],
+  );
+
   const whereOptions = (() => {
     if (lead.source === 'SALES')
       return SALES_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
@@ -355,6 +371,8 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
                 sourceDetail: null,
                 sourcePartnerId: null,
                 sourceContactId: null,
+                marketingAccountId: null,
+                marketingActivityId: null,
               });
             }}
           />
@@ -375,7 +393,41 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               options={whereOptions}
               placeholder="Select channel..."
               icon={<ExternalLink size={12} />}
-              onSave={(v) => saveField('sourceDetail', v)}
+              onSave={async (v) => {
+                await saveMultipleFields({
+                  sourceDetail: v,
+                  marketingAccountId: null,
+                  marketingActivityId: null,
+                });
+              }}
+            />
+          )}
+
+          {lead.source === 'MARKETING' && lead.sourceDetail && (
+            <SearchField
+              label="Which one"
+              value={
+                lead.marketingAccount
+                  ? lead.marketingAccount.name
+                  : (lead.marketingActivity?.title ?? null)
+              }
+              displayValue={
+                lead.marketingAccount || lead.marketingActivity ? (
+                  <span className="text-foreground text-sm font-medium">
+                    {lead.marketingAccount?.name ?? lead.marketingActivity?.title}
+                  </span>
+                ) : undefined
+              }
+              placeholder="Search accounts or activities..."
+              icon={<ExternalLink size={12} />}
+              onSearch={searchAttributionOptions}
+              onSave={async (v) => {
+                const [type, id] = v.split(':');
+                await saveMultipleFields({
+                  marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
+                  marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
+                });
+              }}
             />
           )}
 

@@ -78,11 +78,12 @@ export default function DealsPipelinePage() {
 
     try {
       await dealsApi.updateStatus(id, status);
-    } catch {
+    } catch (err) {
       setDeals(previousDeals);
       if (selectedDeal?.id === id) {
         setSelectedDeal(previousSelected);
       }
+      setError(err instanceof Error ? err.message : 'Deal stage change was blocked.');
     }
   };
 

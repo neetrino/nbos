@@ -174,6 +174,42 @@ export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
 
 export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT'] as const;
 
+export const MARKETING_CHANNELS = [
+  'SMM',
+  'WEBSITE',
+  'LIST_AM',
+  'GOOGLE_ADS',
+  'META_ADS',
+  'CONTENT',
+  'SEO',
+  'OFFLINE',
+  'OTHER',
+] as const;
+
+export const MARKETING_ACCOUNT_STATUSES = ['ACTIVE', 'PAUSED', 'ARCHIVED'] as const;
+
+export const MARKETING_ACTIVITY_STATUSES = [
+  'IDEA',
+  'PREPARING',
+  'READY',
+  'LAUNCHED',
+  'FINISHED',
+  'ARCHIVED',
+] as const;
+
+export const MARKETING_ACTIVITY_TYPES = [
+  'AD_CAMPAIGN',
+  'SMM_POST',
+  'STORY_REEL',
+  'LIST_AM_PROMOTION',
+  'WEBSITE_LANDING',
+  'SEO_WORK',
+  'OFFLINE_ACTIVITY',
+  'OTHER',
+] as const;
+
+export const MARKETING_ATTRIBUTION_OPTION_TYPES = ['ACCOUNT', 'ACTIVITY', 'ORGANIC'] as const;
+
 export const DEAL_TYPES = ['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE'] as const;
 
 export const EXTENSION_SIZES = ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'] as const;

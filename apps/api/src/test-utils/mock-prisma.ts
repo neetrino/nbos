@@ -39,6 +39,8 @@ export function createMockPrisma() {
     credential: createModelMock(),
     auditLog: createModelMock(),
     partner: createModelMock(),
+    marketingAccount: createModelMock(),
+    marketingActivity: createModelMock(),
     $disconnect: vi.fn(),
   };
 }

@@ -78,6 +78,11 @@ export class DealsController {
       sellerId: string;
       projectId?: string;
       source?: string;
+      sourceDetail?: string | null;
+      sourcePartnerId?: string | null;
+      sourceContactId?: string | null;
+      marketingAccountId?: string | null;
+      marketingActivityId?: string | null;
       notes?: string;
     },
   ) {
@@ -103,6 +108,8 @@ export class DealsController {
       sourceDetail?: string | null;
       sourcePartnerId?: string | null;
       sourceContactId?: string | null;
+      marketingAccountId?: string | null;
+      marketingActivityId?: string | null;
       notes?: string;
     },
   ) {

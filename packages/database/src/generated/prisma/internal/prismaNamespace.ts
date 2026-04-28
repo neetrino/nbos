@@ -380,6 +380,8 @@ export const ModelName = {
   Project: 'Project',
   Product: 'Product',
   Extension: 'Extension',
+  MarketingAccount: 'MarketingAccount',
+  MarketingActivity: 'MarketingActivity',
   Lead: 'Lead',
   Deal: 'Deal',
   Order: 'Order',
@@ -432,6 +434,8 @@ export type TypeMap<
       | 'project'
       | 'product'
       | 'extension'
+      | 'marketingAccount'
+      | 'marketingActivity'
       | 'lead'
       | 'deal'
       | 'order'
@@ -829,6 +833,158 @@ export type TypeMap<
         count: {
           args: Prisma.ExtensionCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.ExtensionCountAggregateOutputType> | number;
+        };
+      };
+    };
+    MarketingAccount: {
+      payload: Prisma.$MarketingAccountPayload<ExtArgs>;
+      fields: Prisma.MarketingAccountFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MarketingAccountFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MarketingAccountFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>;
+        };
+        findFirst: {
+          args: Prisma.MarketingAccountFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MarketingAccountFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>;
+        };
+        findMany: {
+          args: Prisma.MarketingAccountFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>[];
+        };
+        create: {
+          args: Prisma.MarketingAccountCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>;
+        };
+        createMany: {
+          args: Prisma.MarketingAccountCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MarketingAccountCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>[];
+        };
+        delete: {
+          args: Prisma.MarketingAccountDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>;
+        };
+        update: {
+          args: Prisma.MarketingAccountUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>;
+        };
+        deleteMany: {
+          args: Prisma.MarketingAccountDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MarketingAccountUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MarketingAccountUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>[];
+        };
+        upsert: {
+          args: Prisma.MarketingAccountUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingAccountPayload>;
+        };
+        aggregate: {
+          args: Prisma.MarketingAccountAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketingAccount>;
+        };
+        groupBy: {
+          args: Prisma.MarketingAccountGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MarketingAccountGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MarketingAccountCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MarketingAccountCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    MarketingActivity: {
+      payload: Prisma.$MarketingActivityPayload<ExtArgs>;
+      fields: Prisma.MarketingActivityFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MarketingActivityFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MarketingActivityFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>;
+        };
+        findFirst: {
+          args: Prisma.MarketingActivityFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MarketingActivityFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>;
+        };
+        findMany: {
+          args: Prisma.MarketingActivityFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>[];
+        };
+        create: {
+          args: Prisma.MarketingActivityCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>;
+        };
+        createMany: {
+          args: Prisma.MarketingActivityCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MarketingActivityCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>[];
+        };
+        delete: {
+          args: Prisma.MarketingActivityDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>;
+        };
+        update: {
+          args: Prisma.MarketingActivityUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>;
+        };
+        deleteMany: {
+          args: Prisma.MarketingActivityDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MarketingActivityUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MarketingActivityUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>[];
+        };
+        upsert: {
+          args: Prisma.MarketingActivityUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingActivityPayload>;
+        };
+        aggregate: {
+          args: Prisma.MarketingActivityAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketingActivity>;
+        };
+        groupBy: {
+          args: Prisma.MarketingActivityGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MarketingActivityGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MarketingActivityCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MarketingActivityCountAggregateOutputType>
+            | number;
         };
       };
     };
@@ -2969,6 +3125,48 @@ export const ExtensionScalarFieldEnum = {
 export type ExtensionScalarFieldEnum =
   (typeof ExtensionScalarFieldEnum)[keyof typeof ExtensionScalarFieldEnum];
 
+export const MarketingAccountScalarFieldEnum = {
+  id: 'id',
+  channel: 'channel',
+  name: 'name',
+  identifier: 'identifier',
+  phone: 'phone',
+  status: 'status',
+  financeExpensePlanId: 'financeExpensePlanId',
+  defaultCost: 'defaultCost',
+  ownerId: 'ownerId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MarketingAccountScalarFieldEnum =
+  (typeof MarketingAccountScalarFieldEnum)[keyof typeof MarketingAccountScalarFieldEnum];
+
+export const MarketingActivityScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  channel: 'channel',
+  type: 'type',
+  status: 'status',
+  accountId: 'accountId',
+  ownerId: 'ownerId',
+  description: 'description',
+  budget: 'budget',
+  currency: 'currency',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  expectedPayAt: 'expectedPayAt',
+  expenseCardId: 'expenseCardId',
+  expensePlanId: 'expensePlanId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MarketingActivityScalarFieldEnum =
+  (typeof MarketingActivityScalarFieldEnum)[keyof typeof MarketingActivityScalarFieldEnum];
+
 export const LeadScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -2980,6 +3178,8 @@ export const LeadScalarFieldEnum = {
   sourceDetail: 'sourceDetail',
   sourcePartnerId: 'sourcePartnerId',
   sourceContactId: 'sourceContactId',
+  marketingAccountId: 'marketingAccountId',
+  marketingActivityId: 'marketingActivityId',
   status: 'status',
   assignedTo: 'assignedTo',
   contactId: 'contactId',
@@ -3008,6 +3208,8 @@ export const DealScalarFieldEnum = {
   sourceDetail: 'sourceDetail',
   sourcePartnerId: 'sourcePartnerId',
   sourceContactId: 'sourceContactId',
+  marketingAccountId: 'marketingAccountId',
+  marketingActivityId: 'marketingActivityId',
   notes: 'notes',
   productCategory: 'productCategory',
   productType: 'productType',
@@ -3652,6 +3854,80 @@ export type ListEnumExtensionStatusEnumFieldRefInput<$PrismaModel> = FieldRefInp
 >;
 
 /**
+ * Reference to a field of type 'MarketingChannelEnum'
+ */
+export type EnumMarketingChannelEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MarketingChannelEnum'
+>;
+
+/**
+ * Reference to a field of type 'MarketingChannelEnum[]'
+ */
+export type ListEnumMarketingChannelEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MarketingChannelEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'MarketingAccountStatusEnum'
+ */
+export type EnumMarketingAccountStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MarketingAccountStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'MarketingAccountStatusEnum[]'
+ */
+export type ListEnumMarketingAccountStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MarketingAccountStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>;
+
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>;
+
+/**
+ * Reference to a field of type 'MarketingActivityTypeEnum'
+ */
+export type EnumMarketingActivityTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MarketingActivityTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'MarketingActivityTypeEnum[]'
+ */
+export type ListEnumMarketingActivityTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MarketingActivityTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'MarketingActivityStatusEnum'
+ */
+export type EnumMarketingActivityStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MarketingActivityStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'MarketingActivityStatusEnum[]'
+ */
+export type ListEnumMarketingActivityStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MarketingActivityStatusEnum[]'
+>;
+
+/**
  * Reference to a field of type 'LeadSourceEnum'
  */
 export type EnumLeadSourceEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -3714,16 +3990,6 @@ export type ListEnumDealStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputTyp
   $PrismaModel,
   'DealStatusEnum[]'
 >;
-
-/**
- * Reference to a field of type 'Decimal'
- */
-export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>;
-
-/**
- * Reference to a field of type 'Decimal[]'
- */
-export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>;
 
 /**
  * Reference to a field of type 'PaymentTypeEnum'
@@ -4269,6 +4535,8 @@ export type GlobalOmitConfig = {
   project?: Prisma.ProjectOmit;
   product?: Prisma.ProductOmit;
   extension?: Prisma.ExtensionOmit;
+  marketingAccount?: Prisma.MarketingAccountOmit;
+  marketingActivity?: Prisma.MarketingActivityOmit;
   lead?: Prisma.LeadOmit;
   deal?: Prisma.DealOmit;
   order?: Prisma.OrderOmit;

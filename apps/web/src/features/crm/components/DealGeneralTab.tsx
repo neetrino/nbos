@@ -43,6 +43,7 @@ import { productsApi } from '@/lib/api/products';
 import { invoicesApi, ordersApi } from '@/lib/api/finance';
 import { tasksApi } from '@/lib/api/tasks';
 import { systemListsApi } from '@/lib/api/systemLists';
+import { marketingApi } from '@/lib/api/marketing';
 
 const PARTNER_PERCENT = 30;
 
@@ -151,6 +152,21 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
       subtitle: c.email ?? undefined,
     }));
   }, []);
+
+  const searchAttributionOptions = useCallback(
+    async (query: string) => {
+      if (!deal.sourceDetail) return [];
+      const options = await marketingApi.getAttributionOptions(deal.sourceDetail);
+      return options
+        .filter((option) => option.label.toLowerCase().includes(query.toLowerCase()))
+        .map((option) => ({
+          value: `${option.type}:${option.id}`,
+          label: option.label,
+          subtitle: option.subtitle ?? option.type,
+        }));
+    },
+    [deal.sourceDetail],
+  );
 
   const searchPartners = useCallback(async (query: string) => {
     const data = await partnersApi.getAll({ pageSize: 5, search: query || undefined });
@@ -484,6 +500,8 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
                   sourceDetail: null,
                   sourcePartnerId: null,
                   sourceContactId: null,
+                  marketingAccountId: null,
+                  marketingActivityId: null,
                 });
               }}
             />
@@ -504,7 +522,41 @@ export function DealGeneralTab({ deal, onUpdate, onRefresh, onOpenTaskTab }: Dea
                 options={whereOptions}
                 placeholder="Select channel..."
                 icon={<ExternalLink size={12} />}
-                onSave={(v) => saveField('sourceDetail', v)}
+                onSave={async (v) => {
+                  await saveMultipleFields({
+                    sourceDetail: v,
+                    marketingAccountId: null,
+                    marketingActivityId: null,
+                  });
+                }}
+              />
+            )}
+
+            {deal.source === 'MARKETING' && deal.sourceDetail && (
+              <SearchField
+                label="Which one"
+                value={
+                  deal.marketingAccount
+                    ? deal.marketingAccount.name
+                    : (deal.marketingActivity?.title ?? null)
+                }
+                displayValue={
+                  deal.marketingAccount || deal.marketingActivity ? (
+                    <span className="text-foreground text-sm font-medium">
+                      {deal.marketingAccount?.name ?? deal.marketingActivity?.title}
+                    </span>
+                  ) : undefined
+                }
+                placeholder="Search accounts or activities..."
+                icon={<ExternalLink size={12} />}
+                onSearch={searchAttributionOptions}
+                onSave={async (v) => {
+                  const [type, id] = v.split(':');
+                  await saveMultipleFields({
+                    marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
+                    marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
+                  });
+                }}
               />
             )}
 

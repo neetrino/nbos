@@ -21,6 +21,11 @@ describe('LeadConversionService', () => {
     contactName: 'John Doe',
     status: 'SQL',
     source: 'MARKETING',
+    sourceDetail: 'LIST_AM',
+    sourcePartnerId: null,
+    sourceContactId: null,
+    marketingAccountId: 'account-1',
+    marketingActivityId: null,
     phone: '+37499123456',
     email: 'john@example.com',
     contactId: null,
@@ -108,6 +113,24 @@ describe('LeadConversionService', () => {
     expect(prisma.deal.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ code: 'D-2026-0043' }),
+      }),
+    );
+  });
+
+  it('copies full attribution block to deal', async () => {
+    prisma.lead.findUnique.mockResolvedValue({ ...baseLead, contactId: 'c1' });
+    prisma.deal.findFirst.mockResolvedValue(null);
+    prisma.deal.create.mockImplementation(({ data }) => Promise.resolve({ id: 'd-1', ...data }));
+
+    await service.convertToDeal('lead-1', convertDto);
+
+    expect(prisma.deal.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          source: 'MARKETING',
+          sourceDetail: 'LIST_AM',
+          marketingAccountId: 'account-1',
+        }),
       }),
     );
   });

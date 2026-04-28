@@ -75,11 +75,12 @@ export default function LeadsPipelinePage() {
 
     try {
       await leadsApi.updateStatus(id, status);
-    } catch {
+    } catch (err) {
       setLeads(previousLeads);
       if (selectedLead?.id === id) {
         setSelectedLead(previousSelected);
       }
+      setError(err instanceof Error ? err.message : 'Lead stage change was blocked.');
     }
   };
 

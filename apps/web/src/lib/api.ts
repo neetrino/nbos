@@ -38,7 +38,8 @@ api.interceptors.response.use(
   },
   (error) => {
     if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.message ?? error.message;
+      const rawMessage = error.response?.data?.message ?? error.message;
+      const message = typeof rawMessage === 'string' ? rawMessage : JSON.stringify(rawMessage);
       return Promise.reject(new Error(message));
     }
     return Promise.reject(error);

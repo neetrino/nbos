@@ -218,6 +218,94 @@ enum LeadSourceEnum {
   CLIENT
 }
 
+enum MarketingChannelEnum {
+  SMM
+  WEBSITE
+  LIST_AM
+  GOOGLE_ADS
+  META_ADS
+  CONTENT
+  SEO
+  OFFLINE
+  OTHER
+}
+
+enum MarketingAccountStatusEnum {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum MarketingActivityStatusEnum {
+  IDEA
+  PREPARING
+  READY
+  LAUNCHED
+  FINISHED
+  ARCHIVED
+}
+
+enum MarketingActivityTypeEnum {
+  AD_CAMPAIGN
+  SMM_POST
+  STORY_REEL
+  LIST_AM_PROMOTION
+  WEBSITE_LANDING
+  SEO_WORK
+  OFFLINE_ACTIVITY
+  OTHER
+}
+
+model MarketingAccount {
+  id                   String                     @id @default(uuid())
+  channel              MarketingChannelEnum
+  name                 String
+  identifier           String?
+  phone                String?
+  status               MarketingAccountStatusEnum @default(ACTIVE)
+  financeExpensePlanId String?                    @map("finance_expense_plan_id")
+  defaultCost          Decimal?                   @map("default_cost") @db.Decimal(12, 2)
+  ownerId              String?                    @map("owner_id")
+  notes                String?
+  createdAt            DateTime                   @default(now()) @map("created_at")
+  updatedAt            DateTime                   @updatedAt @map("updated_at")
+
+  owner      Employee?           @relation("MarketingAccountOwner", fields: [ownerId], references: [id])
+  activities MarketingActivity[]
+  leads      Lead[]
+  deals      Deal[]
+
+  @@map("marketing_accounts")
+}
+
+model MarketingActivity {
+  id             String                      @id @default(uuid())
+  title          String
+  channel        MarketingChannelEnum
+  type           MarketingActivityTypeEnum
+  status         MarketingActivityStatusEnum @default(IDEA)
+  accountId      String?                     @map("account_id")
+  ownerId        String?                     @map("owner_id")
+  description    String?
+  budget         Decimal?                    @db.Decimal(12, 2)
+  currency       String                      @default("AMD")
+  startDate      DateTime?                   @map("start_date")
+  endDate        DateTime?                   @map("end_date")
+  expectedPayAt  DateTime?                   @map("expected_pay_at")
+  expenseCardId  String?                     @map("expense_card_id")
+  expensePlanId  String?                     @map("expense_plan_id")
+  notes          String?
+  createdAt      DateTime                    @default(now()) @map("created_at")
+  updatedAt      DateTime                    @updatedAt @map("updated_at")
+
+  account MarketingAccount? @relation(fields: [accountId], references: [id])
+  owner   Employee?         @relation("MarketingActivityOwner", fields: [ownerId], references: [id])
+  leads   Lead[]
+  deals   Deal[]
+
+  @@map("marketing_activities")
+}
+
 model Lead {
   id               String         @id @default(uuid())
   code             String         @unique
@@ -229,6 +317,8 @@ model Lead {
   sourceDetail     String?        @map("source_detail")
   sourcePartnerId  String?        @map("source_partner_id")
   sourceContactId  String?        @map("source_contact_id")
+  marketingAccountId  String?     @map("marketing_account_id")
+  marketingActivityId String?     @map("marketing_activity_id")
   status           LeadStatusEnum @default(NEW)
   assignedTo       String?        @map("assigned_to")
   contactId        String?        @map("contact_id")
@@ -240,6 +330,8 @@ model Lead {
   assignee      Employee? @relation("LeadAssignee", fields: [assignedTo], references: [id])
   sourcePartner Partner?  @relation("LeadSourcePartner", fields: [sourcePartnerId], references: [id])
   sourceContact Contact?  @relation("LeadSourceContact", fields: [sourceContactId], references: [id])
+  marketingAccount  MarketingAccount?  @relation(fields: [marketingAccountId], references: [id])
+  marketingActivity MarketingActivity? @relation(fields: [marketingActivityId], references: [id])
   deal          Deal?
 
   @@map("leads")
@@ -282,6 +374,8 @@ model Deal {
   sourceDetail     String?           @map("source_detail")
   sourcePartnerId  String?           @map("source_partner_id")
   sourceContactId  String?           @map("source_contact_id")
+  marketingAccountId  String?        @map("marketing_account_id")
+  marketingActivityId String?        @map("marketing_activity_id")
   notes              String?
   productCategory    ProductCategoryEnum? @map("product_category")
   productType        String?              @map("product_type")
@@ -299,6 +393,8 @@ model Deal {
   existingProduct Product? @relation("DealExistingProduct", fields: [existingProductId], references: [id])
   sourcePartner   Partner? @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
   sourceContact   Contact? @relation("DealSourceContact", fields: [sourceContactId], references: [id])
+  marketingAccount  MarketingAccount?  @relation(fields: [marketingAccountId], references: [id])
+  marketingActivity MarketingActivity? @relation(fields: [marketingActivityId], references: [id])
   orders        Order[]
 
   @@map("deals")
@@ -966,6 +1062,8 @@ model Employee {
   invitationsSent            Invitation[]            @relation("InvitedBy")
   invitationReceived         Invitation?             @relation("InvitationEmployee")
   credentialsOwned           Credential[]            @relation("CredentialOwner")
+  marketingAccountsOwned     MarketingAccount[]      @relation("MarketingAccountOwner")
+  marketingActivitiesOwned   MarketingActivity[]     @relation("MarketingActivityOwner")
 
   @@map("employees")
 }

@@ -22,20 +22,20 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                    |
-| -------------------- | ---------------------------------------- |
-| Current phase        | Phase 1 - Platform shell and foundations |
-| Current module/block | Phase 1 foundation                       |
-| Current task         | Phase 1 foundation completed             |
-| Status               | Waiting approval for Phase 2             |
-| Last updated         | 2026-04-27                               |
+| Field                | Value                                            |
+| -------------------- | ------------------------------------------------ |
+| Current phase        | Phase 2 - CRM, Marketing and Lead-to-Cash intake |
+| Current module/block | CRM + Marketing attribution foundation           |
+| Current task         | Attribution foundation completed                 |
+| Status               | Waiting approval for next Phase 2 slice          |
+| Last updated         | 2026-04-28                                       |
 
 ## Phase Progress
 
 | Phase                                            | Status      | Progress | Current blocker                | Notes                                        |
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                  |
-| Phase 2 - CRM, Marketing and Lead-to-Cash intake | Not started |       0% | Waits Phase 1 foundation       | Requires source attribution and stage gates  |
+| Phase 2 - CRM, Marketing and Lead-to-Cash intake | In progress |      20% | None                           | Attribution foundation completed             |
 | Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications |
@@ -44,15 +44,16 @@ Rules:
 
 ## Active Work Log
 
-| Date       | Done                                    | Scope                                                                                               | Verification                                                                                                                                                                                       | Next                                            |
-| ---------- | --------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| 2026-04-27 | Documentation launch setup completed    | `AI-START-HERE`, docs root cleanup, payment references moved                                        | `git diff --check`; committed as `c50edab`                                                                                                                                                         | Start Phase 1 implementation                    |
-| 2026-04-27 | UI shell navigation cleanup completed   | Sidebar/topbar canon, `My Company`, `Marketing`, `Reports / Analytics`, Settings/Admin placeholders | Focused web ESLint; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/web build`; `pnpm test`; `pnpm build`                                                                                | Wait for approval; next Phase 1 slice           |
-| 2026-04-27 | Database typecheck foundation completed | `@nbos/database` tsconfig and Prisma seed script typing                                             | `pnpm --filter @nbos/database typecheck`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                                              | Existing web lint cleanup or next Phase 1 slice |
-| 2026-04-27 | Quality gate lint cleanup completed     | Web React Compiler lint errors, unused imports/vars, API credentials controller warnings            | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                                                                           | RBAC navigation visibility or shared states     |
-| 2026-04-27 | RBAC navigation visibility completed    | Sidebar parent/child permission filtering for module-level navigation                               | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                      | Shared states or next approved Phase 1 slice    |
-| 2026-04-27 | Shared UI states completed              | Reusable loading/error states and retry UX for key list screens                                     | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                      | My Company org model or Settings/Admin audit    |
-| 2026-04-27 | Phase 1 foundation completed            | My Company foundation, admin/audit hardening, broader shared state coverage                         | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test` | Wait for approval to start Phase 2              |
+| Date       | Done                                    | Scope                                                                                               | Verification                                                                                                                                                                                                                                                                          | Next                                            |
+| ---------- | --------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| 2026-04-27 | Documentation launch setup completed    | `AI-START-HERE`, docs root cleanup, payment references moved                                        | `git diff --check`; committed as `c50edab`                                                                                                                                                                                                                                            | Start Phase 1 implementation                    |
+| 2026-04-27 | UI shell navigation cleanup completed   | Sidebar/topbar canon, `My Company`, `Marketing`, `Reports / Analytics`, Settings/Admin placeholders | Focused web ESLint; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/web build`; `pnpm test`; `pnpm build`                                                                                                                                                                   | Wait for approval; next Phase 1 slice           |
+| 2026-04-27 | Database typecheck foundation completed | `@nbos/database` tsconfig and Prisma seed script typing                                             | `pnpm --filter @nbos/database typecheck`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                                                                                                                                 | Existing web lint cleanup or next Phase 1 slice |
+| 2026-04-27 | Quality gate lint cleanup completed     | Web React Compiler lint errors, unused imports/vars, API credentials controller warnings            | `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                                                                                                                                                              | RBAC navigation visibility or shared states     |
+| 2026-04-27 | RBAC navigation visibility completed    | Sidebar parent/child permission filtering for module-level navigation                               | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                                                                                         | Shared states or next approved Phase 1 slice    |
+| 2026-04-27 | Shared UI states completed              | Reusable loading/error states and retry UX for key list screens                                     | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                                                                                         | My Company org model or Settings/Admin audit    |
+| 2026-04-27 | Phase 1 foundation completed            | My Company foundation, admin/audit hardening, broader shared state coverage                         | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                    | Wait for approval to start Phase 2              |
+| 2026-04-28 | CRM + Marketing attribution completed   | Marketing Account/Activity foundation, dynamic Which one options, CRM attribution gates             | `pnpm --filter @nbos/database generate`; `pnpm --filter @nbos/database typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test` | Wait for approval; next Phase 2 slice           |
 
 ## Phase 1 Checklist
 
@@ -86,27 +87,27 @@ Make NBOS navigable, permission-aware and safe to extend.
 
 ## Module Progress Matrix
 
-| Module / Area               | Docs ready | Code checked | Implemented | Tested | Status / Notes                                        |
-| --------------------------- | ---------- | ------------ | ----------- | ------ | ----------------------------------------------------- |
-| Platform Shell / Navigation | Yes        | Yes          | Done        | Yes    | Phase 1 shell foundation completed                    |
-| Shared UI States            | Yes        | Yes          | Done        | Yes    | Loading/error/empty state baseline completed          |
-| My Company                  | Yes        | Yes          | Partial     | Yes    | Foundation dashboard completed; deep HR/payroll later |
-| Settings / Admin            | Yes        | Yes          | Partial     | Yes    | Admin/audit foundation completed; deep settings later |
-| CRM                         | Yes        | No           | No          | No     | Phase 2                                               |
-| Marketing                   | Yes        | No           | No          | No     | Phase 2                                               |
-| Finance                     | Yes        | No           | No          | No     | Phase 3                                               |
-| Partners                    | Yes        | No           | No          | No     | Phase 3/Finance dependency                            |
-| Projects Hub                | Yes        | No           | No          | No     | Phase 4                                               |
-| Tasks / Work Spaces         | Yes        | No           | No          | No     | Phase 4                                               |
-| Support                     | Yes        | No           | No          | No     | Phase 4                                               |
-| Drive                       | Yes        | No           | No          | No     | Phase 5                                               |
-| Credentials                 | Yes        | No           | No          | No     | Phase 5                                               |
-| Messenger                   | Yes        | No           | No          | No     | Phase 5                                               |
-| Notifications               | Yes        | No           | No          | No     | Phase 5                                               |
-| Calendar                    | Yes        | No           | No          | No     | Phase 6                                               |
-| Dashboard Control Center    | Yes        | No           | No          | No     | Phase 6                                               |
-| Reports / Analytics         | Yes        | No           | No          | No     | Phase 6                                               |
-| Integrations / Migration    | Partial    | No           | No          | No     | Phase 7                                               |
+| Module / Area               | Docs ready | Code checked | Implemented | Tested  | Status / Notes                                        |
+| --------------------------- | ---------- | ------------ | ----------- | ------- | ----------------------------------------------------- |
+| Platform Shell / Navigation | Yes        | Yes          | Done        | Yes     | Phase 1 shell foundation completed                    |
+| Shared UI States            | Yes        | Yes          | Done        | Yes     | Loading/error/empty state baseline completed          |
+| My Company                  | Yes        | Yes          | Partial     | Yes     | Foundation dashboard completed; deep HR/payroll later |
+| Settings / Admin            | Yes        | Yes          | Partial     | Yes     | Admin/audit foundation completed; deep settings later |
+| CRM                         | Yes        | Yes          | Partial     | Partial | Attribution gates and Which one handoff completed     |
+| Marketing                   | Yes        | Yes          | Partial     | Partial | Account/Activity foundation and working screens added |
+| Finance                     | Yes        | No           | No          | No      | Phase 3                                               |
+| Partners                    | Yes        | No           | No          | No      | Phase 3/Finance dependency                            |
+| Projects Hub                | Yes        | No           | No          | No      | Phase 4                                               |
+| Tasks / Work Spaces         | Yes        | No           | No          | No      | Phase 4                                               |
+| Support                     | Yes        | No           | No          | No      | Phase 4                                               |
+| Drive                       | Yes        | No           | No          | No      | Phase 5                                               |
+| Credentials                 | Yes        | No           | No          | No      | Phase 5                                               |
+| Messenger                   | Yes        | No           | No          | No      | Phase 5                                               |
+| Notifications               | Yes        | No           | No          | No      | Phase 5                                               |
+| Calendar                    | Yes        | No           | No          | No      | Phase 6                                               |
+| Dashboard Control Center    | Yes        | No           | No          | No      | Phase 6                                               |
+| Reports / Analytics         | Yes        | No           | No          | No      | Phase 6                                               |
+| Integrations / Migration    | Partial    | No           | No          | No      | Phase 7                                               |
 
 ## Definition Of Done For Each Slice
 
@@ -121,11 +122,11 @@ A slice is done only when:
 
 ## Next Action
 
-Start Phase 2 after approval:
+Continue Phase 2 after approval:
 
 ```text
-Phase 2 - CRM, Marketing and Lead-to-Cash intake:
-- CRM Lead/Deal stage gates;
-- Marketing source attribution;
-- Lead-to-cash handoff reliability.
+Next Phase 2 slice candidates:
+- Marketing Activity launch gates and Finance Expense proposal;
+- CRM transition popup UX for structured blockers;
+- Deal Won invoice-paid rules and privileged override workflow.
 ```

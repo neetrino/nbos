@@ -15,6 +15,15 @@ describe('DealsService', () => {
     service = new DealsService(prisma as never, wonHandler as unknown as DealWonHandler);
   });
 
+  const attribution = {
+    source: 'SALES',
+    sourceDetail: 'COLD_CALL',
+    sourcePartnerId: null,
+    sourceContactId: null,
+    marketingAccountId: null,
+    marketingActivityId: null,
+  };
+
   describe('findAll', () => {
     it('returns paginated result', async () => {
       const result = await service.findAll({});
@@ -127,6 +136,7 @@ describe('DealsService', () => {
         pmId: 'pm-1',
         deadline: new Date(),
         existingProductId: null,
+        ...attribution,
       };
 
       prisma.deal.findUnique.mockResolvedValue(currentDeal);
@@ -149,6 +159,7 @@ describe('DealsService', () => {
         pmId: null,
         deadline: null,
         existingProductId: null,
+        ...attribution,
       });
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'MEETING' });
       const result = await service.updateStatus('1', 'MEETING');
@@ -166,6 +177,7 @@ describe('DealsService', () => {
         pmId: null,
         deadline: null,
         existingProductId: null,
+        ...attribution,
       });
       await expect(service.updateStatus('1', 'WON')).rejects.toThrow('missing required fields');
     });
@@ -181,6 +193,7 @@ describe('DealsService', () => {
         pmId: 'pm-1',
         deadline: new Date(),
         existingProductId: null,
+        ...attribution,
       });
       prisma.deal.update.mockResolvedValue({
         id: '1',
