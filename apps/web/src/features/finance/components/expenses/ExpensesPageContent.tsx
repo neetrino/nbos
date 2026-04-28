@@ -167,6 +167,16 @@ export function ExpensesPageContent({
     fetchExpenses();
   }, [fetchExpenses]);
 
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        void fetchExpenses();
+      }
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, [fetchExpenses]);
+
   const filterConfigs = useMemo(
     () =>
       buildExpenseFilterConfigs(projectFilterOptions, {
