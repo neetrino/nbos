@@ -15,6 +15,10 @@ export function payrollRunsListPageTitle(): string {
   return 'Payroll';
 }
 
+export function employeeWalletPageTitle(): string {
+  return 'My wallet';
+}
+
 export function payrollRunDetailPageTitle(payrollMonth: string | null | undefined): string {
   const m = payrollMonth?.trim();
   if (!m) return 'Payroll run';

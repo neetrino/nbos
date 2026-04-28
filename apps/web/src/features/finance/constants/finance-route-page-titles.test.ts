@@ -10,6 +10,7 @@ import {
   paymentsListPageTitle,
   payrollRunDetailPageTitle,
   payrollRunsListPageTitle,
+  employeeWalletPageTitle,
   subscriptionDetailPageTitle,
   subscriptionsListPageTitle,
 } from './finance-route-page-titles';
@@ -25,6 +26,10 @@ describe('finance route page titles', () => {
 
   it('payrollRunsListPageTitle', () => {
     expect(payrollRunsListPageTitle()).toBe('Payroll');
+  });
+
+  it('employeeWalletPageTitle', () => {
+    expect(employeeWalletPageTitle()).toBe('My wallet');
   });
 
   it('payrollRunDetailPageTitle', () => {

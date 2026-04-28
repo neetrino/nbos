@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Receipt,
   Banknote,
+  Wallet,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,7 @@ const TABS = [
   { href: '/finance/subscriptions', label: 'Subscriptions', icon: RefreshCw },
   { href: '/finance/expenses', label: 'Expenses', icon: Receipt },
   { href: '/finance/payroll', label: 'Payroll', icon: Banknote },
+  { href: '/finance/wallet', label: 'My wallet', icon: Wallet },
 ] as const;
 
 export default function FinanceLayout({ children }: { children: ReactNode }) {

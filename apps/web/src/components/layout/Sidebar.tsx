@@ -149,6 +149,11 @@ const NAV_ITEMS: NavItem[] = [
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
+        label: 'My wallet',
+        href: '/finance/wallet',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
         label: 'Orders',
         href: '/finance/orders',
         permission: { module: 'ORDERS', action: 'VIEW' },
