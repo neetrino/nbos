@@ -41,6 +41,14 @@ export function useSubscriptionsPageState() {
 
   const handleHold = useSubscriptionHold(setSubscriptions, setStats, setError, setHoldingId);
 
+  const handlePartnerLinked = useCallback(
+    (updated: Subscription) => {
+      setSubscriptions((current) => replaceSubscription(current, updated));
+      setError(null);
+    },
+    [setSubscriptions, setError],
+  );
+
   useEffect(() => {
     fetchSubscriptions();
   }, [fetchSubscriptions]);
@@ -63,6 +71,7 @@ export function useSubscriptionsPageState() {
     handleActivate,
     handleCancel,
     handleHold,
+    handlePartnerLinked,
   };
 }
 

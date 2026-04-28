@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, DollarSign, FolderKanban } from 'lucide-react';
+import { Calendar, DollarSign, FolderKanban, Handshake } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -10,6 +10,7 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import type { Subscription } from '@/lib/api/finance';
 import {
@@ -19,6 +20,7 @@ import {
 } from '@/features/finance/constants/finance';
 import { SubscriptionCancelDialog } from './SubscriptionCancelDialog';
 import { SubscriptionHoldDialog } from './SubscriptionHoldDialog';
+import { SubscriptionPartnerDialog } from './SubscriptionPartnerDialog';
 import { SubscriptionTableActionCell } from './SubscriptionTableActionCell';
 
 interface SubscriptionsTableProps {
@@ -29,6 +31,7 @@ interface SubscriptionsTableProps {
   onActivate: (subscription: Subscription) => void;
   onCancel: (subscription: Subscription) => Promise<void>;
   onHold: (subscription: Subscription) => Promise<void>;
+  onPartnerLinked: (subscription: Subscription) => void;
 }
 
 export function SubscriptionsTable({
@@ -39,9 +42,11 @@ export function SubscriptionsTable({
   onActivate,
   onCancel,
   onHold,
+  onPartnerLinked,
 }: SubscriptionsTableProps) {
   const [cancelTarget, setCancelTarget] = useState<Subscription | null>(null);
   const [holdTarget, setHoldTarget] = useState<Subscription | null>(null);
+  const [partnerTarget, setPartnerTarget] = useState<Subscription | null>(null);
 
   return (
     <>
@@ -51,6 +56,7 @@ export function SubscriptionsTable({
             <TableRow>
               <TableHead>Project</TableHead>
               <TableHead>Company</TableHead>
+              <TableHead>Partner</TableHead>
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Amount/mo</TableHead>
               <TableHead>Status</TableHead>
@@ -71,6 +77,7 @@ export function SubscriptionsTable({
                 onActivate={onActivate}
                 onOpenCancelDialog={() => setCancelTarget(subscription)}
                 onOpenHoldDialog={() => setHoldTarget(subscription)}
+                onOpenPartnerDialog={() => setPartnerTarget(subscription)}
               />
             ))}
           </TableBody>
@@ -110,6 +117,14 @@ export function SubscriptionsTable({
           }
         }}
       />
+      <SubscriptionPartnerDialog
+        subscription={partnerTarget}
+        open={partnerTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setPartnerTarget(null);
+        }}
+        onSaved={onPartnerLinked}
+      />
     </>
   );
 }
@@ -122,6 +137,7 @@ function SubscriptionTableRow({
   onActivate,
   onOpenCancelDialog,
   onOpenHoldDialog,
+  onOpenPartnerDialog,
 }: {
   subscription: Subscription;
   activatingId: string | null;
@@ -130,6 +146,7 @@ function SubscriptionTableRow({
   onActivate: (subscription: Subscription) => void;
   onOpenCancelDialog: () => void;
   onOpenHoldDialog: () => void;
+  onOpenPartnerDialog: () => void;
 }) {
   const subscriptionType = getSubscriptionType(subscription.type);
   const subscriptionStatus = getSubscriptionStatus(subscription.status);
@@ -149,6 +166,24 @@ function SubscriptionTableRow({
       </TableCell>
       <TableCell className="text-muted-foreground text-sm">
         {subscription.company?.name ?? '-'}
+      </TableCell>
+      <TableCell>
+        <div className="flex max-w-[200px] flex-col gap-1">
+          <span className="truncate text-sm">{subscription.partner?.name ?? '—'}</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="xs"
+            className="w-fit gap-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenPartnerDialog();
+            }}
+          >
+            <Handshake size={12} />
+            Link
+          </Button>
+        </div>
       </TableCell>
       <SubscriptionTypeCell subscriptionType={subscriptionType} />
       <SubscriptionAmountCell amount={subscription.amount} />

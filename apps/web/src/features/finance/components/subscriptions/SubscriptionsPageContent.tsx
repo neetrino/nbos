@@ -16,6 +16,7 @@ interface SubscriptionsPageContentProps {
   onActivate: (subscription: Subscription) => void;
   onCancel: (subscription: Subscription) => Promise<void>;
   onHold: (subscription: Subscription) => Promise<void>;
+  onPartnerLinked: (subscription: Subscription) => void;
 }
 
 export function SubscriptionsPageContent({
@@ -29,6 +30,7 @@ export function SubscriptionsPageContent({
   onActivate,
   onCancel,
   onHold,
+  onPartnerLinked,
 }: SubscriptionsPageContentProps) {
   if (loading) return <LoadingState count={4} />;
   if (error) return <ErrorState description={error} onRetry={onRetry} />;
@@ -45,6 +47,7 @@ export function SubscriptionsPageContent({
         onActivate={onActivate}
         onCancel={onCancel}
         onHold={onHold}
+        onPartnerLinked={onPartnerLinked}
       />
     </>
   );

@@ -27,7 +27,7 @@ interface UpdateSubscriptionDto {
   taxStatus?: string;
   startDate?: string;
   endDate?: string;
-  partnerId?: string;
+  partnerId?: string | null;
 }
 
 interface SubscriptionQueryParams {

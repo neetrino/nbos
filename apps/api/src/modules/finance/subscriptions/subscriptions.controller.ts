@@ -74,7 +74,7 @@ export class SubscriptionsController {
       taxStatus?: string;
       startDate?: string;
       endDate?: string;
-      partnerId?: string;
+      partnerId?: string | null;
     },
   ) {
     return this.subscriptionsService.update(id, body);

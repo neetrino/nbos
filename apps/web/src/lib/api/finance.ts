@@ -2,7 +2,12 @@ import { api } from '../api';
 import type { CreateInvoiceInput } from './finance-create';
 import type { FinanceDateRangeParams, ListData } from './finance-common';
 export type { CreateInvoiceInput } from './finance-create';
-export type { Subscription, SubscriptionCoverageSummary, SubscriptionStats } from './subscriptions';
+export type {
+  Subscription,
+  SubscriptionCoverageSummary,
+  SubscriptionStats,
+  UpdateSubscriptionPayload,
+} from './subscriptions';
 export { subscriptionsApi } from './subscriptions';
 
 export interface Invoice {

@@ -16,8 +16,19 @@ export interface Subscription {
   project: { id: string; code: string; name: string };
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
+  partner?: { id: string; name: string } | null;
   invoices: Array<{ id: string; code: string; status: string; amount: string }>;
   coverage?: SubscriptionCoverageSummary;
+}
+
+export interface UpdateSubscriptionPayload {
+  type?: string;
+  amount?: number;
+  billingDay?: number;
+  taxStatus?: string;
+  startDate?: string;
+  endDate?: string;
+  partnerId?: string | null;
 }
 
 export interface SubscriptionCoverageSummary {
@@ -55,7 +66,7 @@ export const subscriptionsApi = {
     const resp = await api.post<Subscription>('/api/finance/subscriptions', data);
     return resp.data;
   },
-  async update(id: string, data: Record<string, unknown>): Promise<Subscription> {
+  async update(id: string, data: UpdateSubscriptionPayload): Promise<Subscription> {
     const resp = await api.put<Subscription>(`/api/finance/subscriptions/${id}`, data);
     return resp.data;
   },

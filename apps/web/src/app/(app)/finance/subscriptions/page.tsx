@@ -62,6 +62,7 @@ export default function SubscriptionsPage() {
         onActivate={page.handleActivate}
         onCancel={page.handleCancel}
         onHold={page.handleHold}
+        onPartnerLinked={page.handlePartnerLinked}
       />
     </div>
   );
