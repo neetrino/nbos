@@ -37,6 +37,15 @@ export interface MarketingActivity {
   account?: { id: string; name: string; channel: string } | null;
 }
 
+export interface LaunchMarketingActivityPayload {
+  startDate: string;
+  endDate?: string | null;
+  budget?: number | null;
+  expectedPayAt?: string | null;
+  accountId?: string | null;
+  noExpenseReason?: string | null;
+}
+
 export interface AttributionOption {
   id: string;
   label: string;
@@ -63,6 +72,11 @@ export const marketingApi = {
     return resp.data;
   },
 
+  async updateAccount(id: string, data: Partial<MarketingAccount>): Promise<MarketingAccount> {
+    const resp = await api.patch<MarketingAccount>(`/api/marketing/accounts/${id}`, data);
+    return resp.data;
+  },
+
   async getActivities(params?: MarketingQueryParams): Promise<MarketingActivity[]> {
     const resp = await api.get<MarketingActivity[]>('/api/marketing/activities', { params });
     return resp.data;
@@ -70,6 +84,14 @@ export const marketingApi = {
 
   async createActivity(data: Partial<MarketingActivity>): Promise<MarketingActivity> {
     const resp = await api.post<MarketingActivity>('/api/marketing/activities', data);
+    return resp.data;
+  },
+
+  async launchActivity(
+    id: string,
+    data: LaunchMarketingActivityPayload,
+  ): Promise<MarketingActivity> {
+    const resp = await api.post<MarketingActivity>(`/api/marketing/activities/${id}/launch`, data);
     return resp.data;
   },
 

@@ -71,6 +71,15 @@ export interface UpdateMarketingActivityDto {
   notes?: string | null;
 }
 
+export interface LaunchMarketingActivityDto {
+  startDate: string;
+  endDate?: string | null;
+  budget?: number | null;
+  expectedPayAt?: string | null;
+  accountId?: string | null;
+  noExpenseReason?: string | null;
+}
+
 export interface AttributionOption {
   id: string;
   label: string;

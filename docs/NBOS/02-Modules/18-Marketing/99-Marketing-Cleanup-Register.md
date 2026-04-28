@@ -98,13 +98,13 @@ Which one
 
 ### B5. Marketing Activities are missing
 
-Статус: `FOUNDATION DONE / LAUNCH GATES NEXT`
+Статус: `FOUNDATION DONE / LAUNCH GATES DONE`
 
 Нужно добавить:
 
 - board stages;
 - activity card;
-- launch process;
+- launch process with structured blockers;
 - budget/start/end/expected payment date;
 - linked expense card.
 
@@ -116,17 +116,17 @@ Which one
 
 ### B7. Finance links from Marketing are missing
 
-Статус: `MISSING CODE`
+Статус: `FOUNDATION DONE / NEEDS FINANCE DEPTH`
 
 Нужно добавить:
 
-- Marketing Activity -> Expense Card;
-- Marketing Account -> Expense Plan;
+- Marketing Activity -> Expense Card foundation;
+- Marketing Account -> Expense Plan manual ID link;
 - spend status visible in Marketing.
 
 ### B8. List.am account tracking is missing
 
-Статус: `FOUNDATION DONE / FINANCE LINK NEXT`
+Статус: `FOUNDATION DONE / FINANCE LINK FOUNDATION`
 
 Нужно реализовать List.am как channel with accounts:
 

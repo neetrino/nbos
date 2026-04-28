@@ -4,6 +4,7 @@ import { MarketingService } from './marketing.service';
 import {
   CreateMarketingAccountDto,
   CreateMarketingActivityDto,
+  LaunchMarketingActivityDto,
   UpdateMarketingAccountDto,
   UpdateMarketingActivityDto,
 } from './marketing.types';
@@ -64,6 +65,12 @@ export class MarketingController {
   @ApiOperation({ summary: 'Update marketing activity' })
   async updateActivity(@Param('id') id: string, @Body() body: UpdateMarketingActivityDto) {
     return this.marketingService.updateActivity(id, body);
+  }
+
+  @Post('activities/:id/launch')
+  @ApiOperation({ summary: 'Launch marketing activity and propose finance expense when needed' })
+  async launchActivity(@Param('id') id: string, @Body() body: LaunchMarketingActivityDto) {
+    return this.marketingService.launchActivity(id, body);
   }
 
   @Get('attribution-options')

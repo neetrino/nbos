@@ -21,9 +21,12 @@ import {
   MARKETING_CHANNELS,
   getMarketingLabel,
 } from '@/features/marketing/constants';
+import { MarketingLaunchDialog } from '@/features/marketing/components/MarketingLaunchDialog';
+import type { MarketingAccount } from '@/lib/api/marketing';
 
 export default function MarketingPage() {
   const [activities, setActivities] = useState<MarketingActivity[]>([]);
+  const [accounts, setAccounts] = useState<MarketingAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +41,12 @@ export default function MarketingPage() {
   const fetchActivities = async () => {
     setLoading(true);
     try {
-      setActivities(await marketingApi.getActivities());
+      const [nextActivities, nextAccounts] = await Promise.all([
+        marketingApi.getActivities(),
+        marketingApi.getAccounts({ status: 'ACTIVE' }),
+      ]);
+      setActivities(nextActivities);
+      setAccounts(nextAccounts);
       setError(null);
     } catch {
       setError('Marketing activities could not be loaded.');
@@ -185,9 +193,26 @@ export default function MarketingPage() {
               </p>
               <div className="text-muted-foreground mt-4 grid grid-cols-2 gap-2 text-xs">
                 <span>Type: {getMarketingLabel(MARKETING_ACTIVITY_TYPES, activity.type)}</span>
-                <span>Budget: {activity.budget ?? 'No spend data'}</span>
+                <span>
+                  Budget:{' '}
+                  {activity.budget ? `${activity.budget} ${activity.currency}` : 'No spend data'}
+                </span>
                 <span>Account: {activity.account?.name ?? 'Not linked'}</span>
                 <span>Expense: {activity.expenseCardId ? 'Linked' : 'Missing link'}</span>
+                <span>Start: {activity.startDate?.slice(0, 10) ?? 'Not scheduled'}</span>
+                <span>Pay by: {activity.expectedPayAt?.slice(0, 10) ?? 'Not set'}</span>
+              </div>
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <p className="text-muted-foreground text-xs">
+                  {activity.expenseCardId
+                    ? 'Finance expense proposed. Payment is controlled in Finance.'
+                    : 'Missing finance link: spend analytics incomplete.'}
+                </p>
+                <MarketingLaunchDialog
+                  activity={activity}
+                  accounts={accounts}
+                  onLaunched={fetchActivities}
+                />
               </div>
             </div>
           ))}

@@ -24,7 +24,9 @@ export default function MarketingSettingsPage() {
   const [accounts, setAccounts] = useState<MarketingAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingLinkId, setSavingLinkId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [financeLinks, setFinanceLinks] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     channel: 'LIST_AM',
     name: '',
@@ -35,7 +37,13 @@ export default function MarketingSettingsPage() {
   const fetchAccounts = async () => {
     setLoading(true);
     try {
-      setAccounts(await marketingApi.getAccounts());
+      const nextAccounts = await marketingApi.getAccounts();
+      setAccounts(nextAccounts);
+      setFinanceLinks(
+        Object.fromEntries(
+          nextAccounts.map((account) => [account.id, account.financeExpensePlanId ?? '']),
+        ),
+      );
       setError(null);
     } catch {
       setError('Marketing accounts could not be loaded.');
@@ -63,6 +71,18 @@ export default function MarketingSettingsPage() {
       await fetchAccounts();
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveFinanceLink = async (account: MarketingAccount) => {
+    setSavingLinkId(account.id);
+    try {
+      await marketingApi.updateAccount(account.id, {
+        financeExpensePlanId: financeLinks[account.id]?.trim() || null,
+      });
+      await fetchAccounts();
+    } finally {
+      setSavingLinkId(null);
     }
   };
 
@@ -160,10 +180,26 @@ export default function MarketingSettingsPage() {
               <div className="text-muted-foreground mt-4 space-y-1 text-sm">
                 <p>Identifier: {account.identifier ?? 'Not set'}</p>
                 <p>Phone: {account.phone ?? 'Not set'}</p>
-                <p>
-                  Finance link:{' '}
-                  {account.financeExpensePlanId ? 'Expense plan linked' : 'Missing finance link'}
-                </p>
+                <p>Attribution works without a Finance link; spend analytics stay incomplete.</p>
+              </div>
+              <div className="mt-4 space-y-2">
+                <Label>Finance Expense Plan ID</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={financeLinks[account.id] ?? ''}
+                    onChange={(event) =>
+                      setFinanceLinks({ ...financeLinks, [account.id]: event.target.value })
+                    }
+                    placeholder="Manual finance plan id"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => handleSaveFinanceLink(account)}
+                    disabled={savingLinkId === account.id}
+                  >
+                    {savingLinkId === account.id ? 'Saving...' : 'Link'}
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
