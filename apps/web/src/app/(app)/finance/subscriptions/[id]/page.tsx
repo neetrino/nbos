@@ -5,7 +5,12 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, ExternalLink, FileText, FolderKanban, RefreshCcw } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   formatAmount,
   getSubscriptionStatus,
@@ -132,9 +137,11 @@ export default function SubscriptionDetailPage() {
       </div>
 
       {actionError ? (
-        <p className="text-destructive text-sm" role="alert">
-          {actionError}
-        </p>
+        <ListMutationErrorBanner
+          message={actionError}
+          onDismiss={() => setActionError(null)}
+          dismissAriaLabel="Dismiss subscription action error"
+        />
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
