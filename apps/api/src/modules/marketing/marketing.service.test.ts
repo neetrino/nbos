@@ -122,6 +122,54 @@ describe('MarketingService', () => {
       }),
     );
   });
+
+  it('returns conservative dashboard summary from linked marketing data', async () => {
+    prisma.marketingAccount.findMany.mockResolvedValue([
+      { financeExpensePlanId: 'plan-1' },
+      { financeExpensePlanId: null },
+    ]);
+    prisma.marketingActivity.findMany.mockResolvedValue([
+      { status: 'LAUNCHED', budget: 50000, expenseCardId: 'expense-1' },
+      { status: 'READY', budget: 25000, expenseCardId: null },
+    ]);
+    prisma.deal.findMany.mockResolvedValue([
+      {
+        status: 'WON',
+        orders: [
+          {
+            invoices: [
+              {
+                payments: [{ amount: 40000 }, { amount: 10000 }],
+              },
+            ],
+          },
+        ],
+      },
+      { status: 'SEND_OFFER', orders: [] },
+    ]);
+
+    const summary = await service.getDashboardSummary();
+
+    expect(summary).toMatchObject({
+      totals: {
+        accounts: 2,
+        activities: 2,
+        launchedActivities: 1,
+        activitiesWithFinanceExpense: 1,
+        missingFinanceLinks: 2,
+        attributedDeals: 2,
+        wonAttributedDeals: 1,
+      },
+      money: {
+        plannedSpend: 75000,
+        paidRevenue: 50000,
+      },
+    });
+    expect(summary.warnings).toEqual([
+      expect.objectContaining({ code: 'MISSING_ACCOUNT_FINANCE_LINKS', count: 1 }),
+      expect.objectContaining({ code: 'MISSING_ACTIVITY_EXPENSE_LINKS', count: 1 }),
+    ]);
+  });
 });
 
 function activityFixture() {

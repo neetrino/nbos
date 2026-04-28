@@ -37,6 +37,27 @@ export interface MarketingActivity {
   account?: { id: string; name: string; channel: string } | null;
 }
 
+export interface MarketingDashboardSummary {
+  totals: {
+    accounts: number;
+    activities: number;
+    launchedActivities: number;
+    activitiesWithFinanceExpense: number;
+    missingFinanceLinks: number;
+    attributedDeals: number;
+    wonAttributedDeals: number;
+  };
+  money: {
+    plannedSpend: number;
+    paidRevenue: number;
+  };
+  warnings: Array<{
+    code: string;
+    message: string;
+    count: number;
+  }>;
+}
+
 export interface LaunchMarketingActivityPayload {
   startDate: string;
   endDate?: string | null;
@@ -62,6 +83,11 @@ interface MarketingQueryParams {
 }
 
 export const marketingApi = {
+  async getDashboardSummary(): Promise<MarketingDashboardSummary> {
+    const resp = await api.get<MarketingDashboardSummary>('/api/marketing/dashboard');
+    return resp.data;
+  },
+
   async getAccounts(params?: MarketingQueryParams): Promise<MarketingAccount[]> {
     const resp = await api.get<MarketingAccount[]>('/api/marketing/accounts', { params });
     return resp.data;

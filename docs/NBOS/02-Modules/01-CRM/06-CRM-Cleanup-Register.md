@@ -198,7 +198,7 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Статус: `POPUP DIRECT ACTIONS FOUNDATION DONE / FINANCE OR DELIVERY DEPTH NEXT`
+Статус: `MARKETING PERFORMANCE SNAPSHOT DONE / FINANCE OR DELIVERY DEPTH NEXT`
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
@@ -211,13 +211,15 @@ Project detail read-only PM intake visibility, persisted PM kickoff checklist ro
 Product Development gate blockers, Finance Pending subscription activation with
 derived coverage month visibility, Extension Development readiness blockers,
 Finance invoice paid/outstanding coverage with controlled Record Payment action,
-and field-aware blocker popup direct actions for CRM, Product and Extension gates.
+field-aware blocker popup direct actions for CRM, Product and Extension gates,
+and a read-only Marketing performance snapshot from real spend links and attributed paid revenue.
 
 Новые требования, которые надо будет реализовать:
 
 - проверить, где нужны remaining create shortcuts beyond direct open actions;
 - углубить direct actions там, где понадобится actual create flow, not only open target;
 - углубить invoice generation and later finance reconciliation workflow;
+- later deepen Marketing ROI after Finance reconciliation becomes reliable;
 - углубить remaining delivery lifecycle depth after readiness foundations.
 
 Опорные места в коде:

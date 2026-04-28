@@ -55,6 +55,12 @@ export class MarketingController {
     return this.marketingService.getActivities({ channel, status, accountId, search });
   }
 
+  @Get('dashboard')
+  @ApiOperation({ summary: 'Get read-only marketing performance dashboard summary' })
+  async getDashboardSummary() {
+    return this.marketingService.getDashboardSummary();
+  }
+
   @Post('activities')
   @ApiOperation({ summary: 'Create marketing activity' })
   async createActivity(@Body() body: CreateMarketingActivityDto) {
