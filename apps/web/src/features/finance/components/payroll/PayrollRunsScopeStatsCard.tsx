@@ -29,7 +29,7 @@ export function PayrollRunsScopeStatsCard(props: {
           <p className="text-muted-foreground text-sm">Loading aggregates…</p>
         ) : (
           <>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               <div>
                 <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                   Runs in scope
@@ -50,6 +50,17 @@ export function PayrollRunsScopeStatsCard(props: {
                 </p>
                 <p className="text-lg font-semibold tabular-nums">
                   {formatAmount(parseAmount(stats.totals.totalPaid))}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                  Total remaining
+                </p>
+                <p className="text-lg font-semibold tabular-nums">
+                  {formatAmount(parseAmount(stats.totals.totalRemaining))}
+                </p>
+                <p className="text-muted-foreground mt-0.5 text-[11px] leading-snug">
+                  Sum of run payables minus sum of run paid for this filter.
                 </p>
               </div>
               <div>

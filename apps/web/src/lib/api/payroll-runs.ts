@@ -104,6 +104,7 @@ export interface PayrollRunStats {
     totalDeductions: string;
     totalPayable: string;
     totalPaid: string;
+    totalRemaining: string;
   };
   byStatus: Array<{
     status: PayrollRunStatus;

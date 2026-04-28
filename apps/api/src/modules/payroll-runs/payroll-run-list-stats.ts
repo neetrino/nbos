@@ -7,6 +7,16 @@ function decimalSumToString(value: Decimal | null | undefined): string {
   return value.toFixed(2);
 }
 
+/** Run-level payable minus paid across the filtered scope (Decimal-safe). */
+function decimalRemainingString(
+  totalPayable: Decimal | null | undefined,
+  totalPaid: Decimal | null | undefined,
+): string {
+  const payable = totalPayable ?? new Decimal(0);
+  const paid = totalPaid ?? new Decimal(0);
+  return payable.minus(paid).toFixed(2);
+}
+
 export interface PayrollRunStatsResult {
   runCount: number;
   totals: {
@@ -16,6 +26,8 @@ export interface PayrollRunStatsResult {
     totalDeductions: string;
     totalPayable: string;
     totalPaid: string;
+    /** Sum of (run.totalPayable − run.totalPaid) for runs in scope. */
+    totalRemaining: string;
   };
   byStatus: Array<{
     status: PayrollRunStatusEnum;
@@ -59,6 +71,7 @@ export async function computePayrollRunListStats(
       totalDeductions: decimalSumToString(s.totalDeductions),
       totalPayable: decimalSumToString(s.totalPayable),
       totalPaid: decimalSumToString(s.totalPaid),
+      totalRemaining: decimalRemainingString(s.totalPayable, s.totalPaid),
     },
     byStatus: byStatus.map((row) => ({
       status: row.status,

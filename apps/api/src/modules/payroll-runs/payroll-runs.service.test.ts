@@ -91,12 +91,32 @@ describe('PayrollRunsService', () => {
       expect(result.runCount).toBe(2);
       expect(result.totals.totalPayable).toBe('90.50');
       expect(result.totals.totalPaid).toBe('40.00');
+      expect(result.totals.totalRemaining).toBe('50.50');
       expect(result.byStatus).toHaveLength(1);
       expect(result.byStatus[0].status).toBe('APPROVED');
       expect(result.byStatus[0].runCount).toBe(2);
       expect(prisma.payrollRun.count).toHaveBeenCalledWith(
         expect.objectContaining({ where: { status: 'APPROVED' } }),
       );
+    });
+
+    it('returns negative totalRemaining when aggregate paid exceeds payable', async () => {
+      prisma.payrollRun.count.mockResolvedValue(1);
+      prisma.payrollRun.aggregate.mockResolvedValue({
+        _sum: {
+          totalBaseSalary: new Decimal('0'),
+          totalBonuses: new Decimal('0'),
+          totalAdjustments: new Decimal('0'),
+          totalDeductions: new Decimal('0'),
+          totalPayable: new Decimal('10.00'),
+          totalPaid: new Decimal('25.00'),
+        },
+      });
+      prisma.payrollRun.groupBy.mockResolvedValue([]);
+
+      const result = await service.getStats({});
+
+      expect(result.totals.totalRemaining).toBe('-15.00');
     });
   });
 
