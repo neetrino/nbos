@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { DollarSign, MoreHorizontal } from 'lucide-react';
+import { Banknote, DollarSign, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,6 +25,10 @@ import {
   expenseDetailHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
+import {
+  resolveExpensePayrollMonthLabel,
+  resolveExpensePayrollRunId,
+} from '@/features/finance/utils/parse-payroll-expense-notes';
 
 interface ExpensesTableSectionProps {
   expenses: Expense[];
@@ -55,6 +59,7 @@ export function ExpensesTableSection({
             <TableHead className="text-right">Paid / Remaining</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Project</TableHead>
+            <TableHead>Payroll</TableHead>
             <TableHead>Due Date</TableHead>
             <TableHead className="w-[52px] text-right">
               <span className="sr-only">Actions</span>
@@ -64,6 +69,8 @@ export function ExpensesTableSection({
         <TableBody>
           {expenses.map((expense) => {
             const stage = getExpenseStage(expense.status);
+            const payrollRunId = resolveExpensePayrollRunId(expense);
+            const payrollMonth = resolveExpensePayrollMonthLabel(expense);
             const ledgerPresentation =
               expense.paymentStatus !== undefined
                 ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
@@ -119,6 +126,19 @@ export function ExpensesTableSection({
                 </TableCell>
                 <TableCell className="text-muted-foreground text-xs">
                   {expense.project?.name ?? '—'}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-xs">
+                  {payrollRunId ? (
+                    <Link
+                      href={`/finance/payroll/${payrollRunId}`}
+                      className="text-primary inline-flex items-center gap-1 font-medium hover:underline"
+                    >
+                      <Banknote size={12} className="shrink-0 opacity-80" aria-hidden />
+                      <span>{payrollMonth ?? 'Run'}</span>
+                    </Link>
+                  ) : (
+                    '—'
+                  )}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-xs">
                   {expense.dueDate ? new Date(expense.dueDate).toLocaleDateString() : '—'}

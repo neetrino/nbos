@@ -35,6 +35,7 @@ import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
 import { createExpensePaymentRecord, type AddExpensePaymentInput } from './expense-payment-create';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { toExpenseLedgerJson } from './expense-detail-mapper';
+import { mapSalaryLineToLinkedPayrollRun } from './expense-payroll-link-map';
 import {
   attachLedgerFieldsToExpenseListItems,
   fetchExpensePaidTotalsByExpenseIds,
@@ -101,6 +102,13 @@ export class ExpensesService {
         where,
         include: {
           project: { select: { id: true, code: true, name: true } },
+          salaryLine: {
+            select: {
+              id: true,
+              payrollRunId: true,
+              payrollRun: { select: { payrollMonth: true } },
+            },
+          },
         },
         orderBy,
         skip: (page - 1) * pageSize,
@@ -111,7 +119,14 @@ export class ExpensesService {
 
     const ids = items.map((row) => row.id);
     const paidTotals = await fetchExpensePaidTotalsByExpenseIds(this.prisma, ids);
-    const enrichedItems = attachLedgerFieldsToExpenseListItems(items, paidTotals);
+    const withLedger = attachLedgerFieldsToExpenseListItems(items, paidTotals);
+    const enrichedItems = withLedger.map((row) => {
+      const { salaryLine, ...rest } = row;
+      return {
+        ...rest,
+        linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
+      };
+    });
 
     return {
       items: enrichedItems,
@@ -326,23 +341,4 @@ export class ExpensesService {
       ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
   }
-}
-
-type SalaryLineForPayrollLink = {
-  id: string;
-  payrollRunId: string;
-  payrollRun: { payrollMonth: string } | null;
-} | null;
-
-function mapSalaryLineToLinkedPayrollRun(
-  salaryLine: SalaryLineForPayrollLink | undefined,
-): { payrollRunId: string; payrollMonth: string; salaryLineId: string } | null {
-  if (!salaryLine?.payrollRun) {
-    return null;
-  }
-  return {
-    payrollRunId: salaryLine.payrollRunId,
-    payrollMonth: salaryLine.payrollRun.payrollMonth,
-    salaryLineId: salaryLine.id,
-  };
 }

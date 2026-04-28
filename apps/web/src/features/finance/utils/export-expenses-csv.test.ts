@@ -44,4 +44,21 @@ describe('buildExpensesCsvContent', () => {
     expect(csv).toContain('PRJ-1');
     expect(csv).toContain('Alpha');
   });
+
+  it('includes payroll run id and month from linkedPayrollRun', () => {
+    const csv = buildExpensesCsvContent([
+      minimalExpense({
+        linkedPayrollRun: {
+          payrollRunId: 'run-1',
+          payrollMonth: '2026-05',
+          salaryLineId: 'sl-1',
+        },
+      }),
+    ]);
+    const lines = csv.split('\r\n');
+    expect(lines[0]).toContain('payrollRunId');
+    expect(lines[0]).toContain('payrollMonth');
+    expect(lines[1]).toContain('run-1');
+    expect(lines[1]).toContain('2026-05');
+  });
 });

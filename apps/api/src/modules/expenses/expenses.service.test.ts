@@ -135,6 +135,7 @@ describe('ExpensesService', () => {
           id: 'e1',
           amount: new Decimal(100),
           project: null,
+          salaryLine: null,
         },
       ]);
       prisma.expensePayment.groupBy.mockResolvedValue([
@@ -147,12 +148,54 @@ describe('ExpensesService', () => {
         paidAmount: '25.00',
         remainingAmount: '75.00',
         paymentStatus: 'PARTIAL',
+        linkedPayrollRun: null,
       });
       expect(prisma.expensePayment.groupBy).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { expenseId: { in: ['e1'] } },
         }),
       );
+    });
+
+    it('includes salary line in findMany for linkedPayrollRun', async () => {
+      await service.findAll({});
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            salaryLine: {
+              select: {
+                id: true,
+                payrollRunId: true,
+                payrollRun: { select: { payrollMonth: true } },
+              },
+            },
+          }),
+        }),
+      );
+    });
+
+    it('attaches linkedPayrollRun on list items when salary line exists', async () => {
+      prisma.expense.findMany.mockResolvedValue([
+        {
+          id: 'e-pay',
+          amount: new Decimal(500),
+          project: null,
+          salaryLine: {
+            id: 'sl-1',
+            payrollRunId: 'run-9',
+            payrollRun: { payrollMonth: '2026-03' },
+          },
+        },
+      ]);
+      prisma.expensePayment.groupBy.mockResolvedValue([]);
+
+      const result = await service.findAll({});
+
+      expect(result.items[0].linkedPayrollRun).toEqual({
+        payrollRunId: 'run-9',
+        payrollMonth: '2026-03',
+        salaryLineId: 'sl-1',
+      });
     });
   });
 

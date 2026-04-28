@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FolderKanban, MoreHorizontal } from 'lucide-react';
+import { Banknote, FolderKanban, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
   expenseDetailHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
+import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 
 interface ExpenseKanbanCardProps {
   expense: Expense;
@@ -38,6 +39,7 @@ export function ExpenseKanbanCard({
       ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
       : null;
   const hasLedger = expense.paidAmount !== undefined && expense.remainingAmount !== undefined;
+  const payrollLinked = Boolean(resolveExpensePayrollRunId(expense));
 
   return (
     <div className="border-border bg-card relative rounded-xl border">
@@ -46,7 +48,15 @@ export function ExpenseKanbanCard({
         className="focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl p-3 pr-11 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-medium">{expense.category}</span>
+          <span
+            className="inline-flex items-center gap-1 text-xs font-medium"
+            title={payrollLinked ? 'Linked to a payroll run' : undefined}
+          >
+            {payrollLinked ? (
+              <Banknote size={10} className="text-accent shrink-0" aria-hidden />
+            ) : null}
+            {expense.category}
+          </span>
           <StatusBadge
             label={expense.type}
             variant={expense.type === 'PLANNED' ? 'blue' : 'orange'}

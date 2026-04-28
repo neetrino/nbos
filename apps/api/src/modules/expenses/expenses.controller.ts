@@ -20,7 +20,11 @@ export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all expenses with filters' })
+  @ApiOperation({
+    summary: 'Get all expenses with filters',
+    description:
+      'Each item may include linkedPayrollRun when the expense is tied to a payroll salary line.',
+  })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false, description: 'Capped server-side (max 500).' })
   @ApiQuery({ name: 'type', required: false })

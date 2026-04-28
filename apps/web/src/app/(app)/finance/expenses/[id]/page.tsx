@@ -38,7 +38,10 @@ import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-do
 import { cn } from '@/lib/utils';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type Expense } from '@/lib/api/finance';
-import { parsePayrollLinkFromExpenseNotes } from '@/features/finance/utils/parse-payroll-expense-notes';
+import {
+  resolveExpensePayrollMonthLabel,
+  resolveExpensePayrollRunId,
+} from '@/features/finance/utils/parse-payroll-expense-notes';
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
@@ -112,13 +115,12 @@ function ExpenseDetailPageInner() {
     payrollMonth: string | null;
   } | null => {
     if (!expense) return null;
-    const api = expense.linkedPayrollRun;
-    if (api?.payrollRunId) {
-      return { payrollRunId: api.payrollRunId, payrollMonth: api.payrollMonth };
-    }
-    const fromNotes = parsePayrollLinkFromExpenseNotes(expense.notes);
-    if (!fromNotes) return null;
-    return { payrollRunId: fromNotes.payrollRunId, payrollMonth: null };
+    const payrollRunId = resolveExpensePayrollRunId(expense);
+    if (!payrollRunId) return null;
+    return {
+      payrollRunId,
+      payrollMonth: resolveExpensePayrollMonthLabel(expense),
+    };
   }, [expense]);
 
   if (loading) {

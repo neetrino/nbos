@@ -1,4 +1,8 @@
 import type { Expense } from '@/lib/api/finance';
+import {
+  resolveExpensePayrollMonthLabel,
+  resolveExpensePayrollRunId,
+} from './parse-payroll-expense-notes';
 
 const CSV_HEADERS = [
   'id',
@@ -16,6 +20,8 @@ const CSV_HEADERS = [
   'projectName',
   'isPassThrough',
   'taxStatus',
+  'payrollRunId',
+  'payrollMonth',
   'notes',
   'createdAt',
 ] as const;
@@ -47,6 +53,8 @@ function expenseToCsvCells(expense: Expense): string[] {
     expense.project?.name ?? '',
     expense.isPassThrough ? 'yes' : 'no',
     expense.taxStatus,
+    resolveExpensePayrollRunId(expense) ?? '',
+    resolveExpensePayrollMonthLabel(expense) ?? '',
     expense.notes ?? '',
     expense.createdAt,
   ];

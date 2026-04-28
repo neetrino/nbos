@@ -20,3 +20,20 @@ export function parsePayrollLinkFromExpenseNotes(
   if (!payrollRunId || !salaryLineId) return null;
   return { payrollRunId, salaryLineId };
 }
+
+/** Minimal shape for list/detail/CSV: API link first, then NBOS notes marker. */
+export type ExpensePayrollLinkSource = {
+  linkedPayrollRun?: { payrollRunId: string; payrollMonth?: string } | null;
+  notes: string | null;
+};
+
+export function resolveExpensePayrollRunId(expense: ExpensePayrollLinkSource): string | null {
+  const fromApi = expense.linkedPayrollRun?.payrollRunId?.trim();
+  if (fromApi) return fromApi;
+  return parsePayrollLinkFromExpenseNotes(expense.notes)?.payrollRunId ?? null;
+}
+
+export function resolveExpensePayrollMonthLabel(expense: ExpensePayrollLinkSource): string | null {
+  const month = expense.linkedPayrollRun?.payrollMonth?.trim();
+  return month || null;
+}
