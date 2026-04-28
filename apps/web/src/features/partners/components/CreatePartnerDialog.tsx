@@ -29,6 +29,7 @@ import {
 import { parsePartnerDefaultPercentInput } from '@/features/partners/utils/partner-default-percent';
 import { partnersApi } from '@/lib/api/partners';
 import { contactsApi, type Contact } from '@/lib/api/clients';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 const CONTACTS_PAGE_SIZE = 200;
 
@@ -42,6 +43,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
   const [loading, setLoading] = useState(false);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contactsError, setContactsError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
@@ -56,13 +58,25 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     if (!open) return;
     let cancelled = false;
     setContactsLoading(true);
+    setContactsError(null);
     contactsApi
       .getAll({ page: 1, pageSize: CONTACTS_PAGE_SIZE })
       .then((res) => {
-        if (!cancelled) setContacts(res.items);
+        if (!cancelled) {
+          setContacts(res.items);
+          setContactsError(null);
+        }
       })
-      .catch(() => {
-        if (!cancelled) setContacts([]);
+      .catch((caught) => {
+        if (!cancelled) {
+          setContacts([]);
+          setContactsError(
+            getApiErrorMessage(
+              caught,
+              'Contacts could not be loaded. You can still create the partner without a linked contact.',
+            ),
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setContactsLoading(false);
@@ -82,6 +96,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
       contactId: 'none',
     });
     setFormError(null);
+    setContactsError(null);
   };
 
   const pctPreview = parsePartnerDefaultPercentInput(form.defaultPercent);
@@ -107,8 +122,13 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
       onCreated();
       onOpenChange(false);
       reset();
-    } catch {
-      setFormError('Partner could not be created. Check your connection and try again.');
+    } catch (caught) {
+      setFormError(
+        getApiErrorMessage(
+          caught,
+          'Partner could not be created. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -224,6 +244,11 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
 
           <div>
             <Label>Primary contact</Label>
+            {contactsError ? (
+              <p className="text-destructive mb-1 text-sm" role="alert">
+                {contactsError}
+              </p>
+            ) : null}
             <Select
               value={form.contactId}
               onValueChange={(v) => {

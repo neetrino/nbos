@@ -31,6 +31,7 @@ import {
 } from '@/features/partners/utils/partner-default-percent';
 import { partnersApi, type Partner } from '@/lib/api/partners';
 import { contactsApi, type Contact } from '@/lib/api/clients';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 const CONTACTS_PAGE_SIZE = 200;
 
@@ -50,6 +51,7 @@ export function EditPartnerDialog({
   const [loading, setLoading] = useState(false);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contactsError, setContactsError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
@@ -64,13 +66,25 @@ export function EditPartnerDialog({
     if (!open) return;
     let cancelled = false;
     setContactsLoading(true);
+    setContactsError(null);
     contactsApi
       .getAll({ page: 1, pageSize: CONTACTS_PAGE_SIZE })
       .then((res) => {
-        if (!cancelled) setContacts(res.items);
+        if (!cancelled) {
+          setContacts(res.items);
+          setContactsError(null);
+        }
       })
-      .catch(() => {
-        if (!cancelled) setContacts([]);
+      .catch((caught) => {
+        if (!cancelled) {
+          setContacts([]);
+          setContactsError(
+            getApiErrorMessage(
+              caught,
+              'Contacts could not be loaded. You can still save without changing the linked contact.',
+            ),
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setContactsLoading(false);
@@ -113,8 +127,13 @@ export function EditPartnerDialog({
       });
       onSaved(updated);
       onOpenChange(false);
-    } catch {
-      setFormError('Partner could not be saved. Check your connection and try again.');
+    } catch (caught) {
+      setFormError(
+        getApiErrorMessage(
+          caught,
+          'Partner could not be saved. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -226,6 +245,11 @@ export function EditPartnerDialog({
 
           <div>
             <Label>Primary contact</Label>
+            {contactsError ? (
+              <p className="text-destructive mb-1 text-sm" role="alert">
+                {contactsError}
+              </p>
+            ) : null}
             <Select
               value={form.contactId}
               onValueChange={(v) => {

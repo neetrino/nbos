@@ -37,6 +37,7 @@ import {
 } from '@/features/partners/constants/partners';
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
 import { partnersApi, type Partner, type PartnerStats } from '@/lib/api/partners';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 const PARTNERS_LIST_PAGE_SIZE = 100;
 
@@ -76,8 +77,13 @@ export default function PartnersPage() {
       setListTotal(listRes.meta.total);
       setStats(statsRes);
       setError(null);
-    } catch {
-      setError('Partners could not be loaded. Check your connection and try again.');
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Partners could not be loaded. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }

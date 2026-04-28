@@ -24,6 +24,7 @@ import {
 import { partnerOrdersDrilldownHref } from '@/features/finance/constants/partner-orders-drilldown';
 import { partnerSubscriptionsDrilldownHref } from '@/features/finance/constants/subscription-partner-drilldown';
 import { partnersApi, type Partner } from '@/lib/api/partners';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 function formatPercent(value: string | number): string {
   const n = typeof value === 'string' ? parseFloat(value) : value;
@@ -57,9 +58,14 @@ export default function PartnerDetailPage() {
       const data = await partnersApi.getById(id);
       setPartner(data);
       setError(null);
-    } catch {
+    } catch (caught) {
       setPartner(null);
-      setError('Partner could not be loaded. It may have been removed.');
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Partner could not be loaded. It may have been removed.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
