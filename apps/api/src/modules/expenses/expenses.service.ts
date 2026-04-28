@@ -65,6 +65,7 @@ export class ExpensesService {
       status,
       backlogReason,
       projectId,
+      expensePlanId,
       frequency,
       search,
       dateFrom,
@@ -91,6 +92,7 @@ export class ExpensesService {
       status: safeStatus,
       backlogReason: safeBacklogReason,
       projectId,
+      expensePlanId,
       frequency: safeFrequency,
       search,
       dateFrom,
@@ -280,6 +282,8 @@ export class ExpensesService {
     const safeStatus = pickExpenseStatusFilter(params.status);
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const projectWhere = params.projectId ? { projectId: params.projectId } : {};
+    const planIdTrimmed = params.expensePlanId?.trim();
+    const planWhere = planIdTrimmed ? { expensePlanId: planIdTrimmed } : {};
     const statusWhere = safeStatus
       ? { status: safeStatus as ExpenseStatusEnum }
       : params.activeBoard === true
@@ -292,6 +296,7 @@ export class ExpensesService {
 
     const scopeWhere: Prisma.ExpenseWhereInput = {
       ...projectWhere,
+      ...planWhere,
       ...statusWhere,
       ...(createdAt ? { createdAt } : {}),
     };
@@ -325,6 +330,8 @@ export class ExpensesService {
       where.backlogReason = filters.backlogReason as ExpenseBacklogReasonEnum;
     }
     if (filters.projectId) where.projectId = filters.projectId;
+    const planId = filters.expensePlanId?.trim();
+    if (planId) where.expensePlanId = planId;
     if (filters.frequency) where.frequency = filters.frequency as ExpenseFrequency;
     if (filters.search) {
       where.name = { contains: filters.search, mode: 'insensitive' };

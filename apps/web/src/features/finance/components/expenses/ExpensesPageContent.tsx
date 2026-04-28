@@ -13,6 +13,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   EXPENSE_BACKLOG_FIXED_STATUS,
+  EXPENSE_PLAN_DRILLDOWN_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   expenseDetailHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
@@ -21,6 +22,8 @@ import {
   expenseFiltersWithoutProjectDrilldown,
   initialExpenseFilterRecord,
 } from './expenses-page-filter-helpers';
+import { ExpensePlanDrilldownBanner } from './ExpensePlanDrilldownBanner';
+import { useExpensePlanBannerLabel } from './use-expense-plan-banner-label';
 import { ExpenseSortControls } from './ExpenseSortControls';
 import { ExpensesPageHeader } from './ExpensesPageHeader';
 import { ExpenseSummaryCards } from './ExpenseSummaryCards';
@@ -40,6 +43,7 @@ interface ExpensesPageContentProps {
   /** Backlog: deferred (`DELAYED`). Closed: paid (`PAID`) off active board. Default: active board scope. */
   pageVariant?: 'default' | 'backlog' | 'closed';
   projectIdFromUrl: string | null;
+  expensePlanIdFromUrl: string | null;
   onClearProjectFilter: () => void;
   replaceExpensesUrl: (mutate: (params: URLSearchParams) => void) => void;
   sortBy: ExpenseListSortField;
@@ -51,6 +55,7 @@ interface ExpensesPageContentProps {
 export function ExpensesPageContent({
   pageVariant = 'default',
   projectIdFromUrl,
+  expensePlanIdFromUrl,
   onClearProjectFilter,
   replaceExpensesUrl,
   sortBy,
@@ -97,18 +102,35 @@ export function ExpensesPageContent({
         sortBy,
         sortOrder,
         pageVariant,
+        expensePlanIdFromUrl,
       }),
-    [search, filters, period, effectiveProjectId, sortBy, sortOrder, pageVariant],
+    [
+      search,
+      filters,
+      period,
+      effectiveProjectId,
+      sortBy,
+      sortOrder,
+      pageVariant,
+      expensePlanIdFromUrl,
+    ],
   );
 
   const { exportCsvSubmitting, handleExportCsv } = useExpenseCsvExport(listApiParams);
 
   const projectBannerLabel = useExpenseProjectBannerLabel(projectIdFromUrl);
+  const planBannerLabel = useExpensePlanBannerLabel(expensePlanIdFromUrl);
 
   const handleClearProjectDrilldown = useCallback(() => {
     setFilters((prev) => expenseFiltersWithoutProjectDrilldown(prev, pageVariant));
     onClearProjectFilter();
   }, [onClearProjectFilter, pageVariant]);
+
+  const handleClearPlanDrilldown = useCallback(() => {
+    replaceExpensesUrl((params) => {
+      params.delete(EXPENSE_PLAN_DRILLDOWN_QUERY);
+    });
+  }, [replaceExpensesUrl]);
 
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
@@ -137,6 +159,7 @@ export function ExpensesPageContent({
           dateFrom: listApiParams.dateFrom,
           dateTo: listApiParams.dateTo,
           projectId: listApiParams.projectId,
+          expensePlanId: listApiParams.expensePlanId,
           status: listApiParams.status,
           activeBoard: listApiParams.activeBoard,
         }),
@@ -233,6 +256,14 @@ export function ExpensesPageContent({
         />
       ) : null}
 
+      {expensePlanIdFromUrl?.trim() ? (
+        <ExpensePlanDrilldownBanner
+          expensePlanId={expensePlanIdFromUrl.trim()}
+          planBannerLabel={planBannerLabel}
+          onClearPlanFilter={handleClearPlanDrilldown}
+        />
+      ) : null}
+
       <FilterBar
         search={search}
         onSearchChange={setSearch}
@@ -259,6 +290,7 @@ export function ExpensesPageContent({
         view={pageVariant === 'backlog' || pageVariant === 'closed' ? 'list' : view}
         fromBacklog={pageVariant === 'backlog'}
         effectiveProjectId={effectiveProjectId ?? null}
+        listExpensePlanId={expensePlanIdFromUrl?.trim() ?? null}
         listSort={{ sortBy, sortOrder }}
         onRequestDelete={(row) => {
           setDeleteError(null);
@@ -281,6 +313,7 @@ export function ExpensesPageContent({
               { sortBy, sortOrder },
               {
                 fromBacklog: pageVariant === 'backlog',
+                expensePlanId: expensePlanIdFromUrl?.trim() || undefined,
               },
             ),
           );

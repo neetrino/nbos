@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { EXPENSE_LIST_SORT_BY_QUERY, EXPENSE_LIST_SORT_ORDER_QUERY } from './expenses-list-query';
 import {
   EXPENSE_FROM_BACKLOG_QUERY,
+  EXPENSE_PLAN_DRILLDOWN_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   EXPENSE_BACKLOG_LIST_PATH,
   expenseDetailHref,
   financeExpensesListHref,
+  planExpensesDrilldownHref,
   projectExpensesBacklogDrilldownHref,
   projectExpensesDrilldownHref,
 } from './project-expenses-drilldown';
@@ -14,6 +16,12 @@ describe('project-expenses-drilldown', () => {
   it('projectExpensesDrilldownHref sets query key', () => {
     expect(projectExpensesDrilldownHref('abc')).toBe(
       `/finance/expenses?${PROJECT_EXPENSES_DRILLDOWN_QUERY}=abc`,
+    );
+  });
+
+  it('planExpensesDrilldownHref sets expensePlanId query key', () => {
+    expect(planExpensesDrilldownHref('plan-z')).toBe(
+      `/finance/expenses?${EXPENSE_PLAN_DRILLDOWN_QUERY}=plan-z`,
     );
   });
 
@@ -59,5 +67,15 @@ describe('project-expenses-drilldown', () => {
     expect(expenseDetailHref('ex-1', null, undefined, { fromBacklog: true })).toBe(
       `/finance/expenses/ex-1?${EXPENSE_FROM_BACKLOG_QUERY}=backlog`,
     );
+  });
+
+  it('financeExpensesListHref adds expensePlanId when option set', () => {
+    const href = financeExpensesListHref(null, undefined, { expensePlanId: 'plan-1' });
+    expect(href).toContain(`${EXPENSE_PLAN_DRILLDOWN_QUERY}=plan-1`);
+  });
+
+  it('expenseDetailHref adds expensePlanId when option set', () => {
+    const href = expenseDetailHref('ex-1', null, undefined, { expensePlanId: 'plan-2' });
+    expect(href).toContain(`${EXPENSE_PLAN_DRILLDOWN_QUERY}=plan-2`);
   });
 });

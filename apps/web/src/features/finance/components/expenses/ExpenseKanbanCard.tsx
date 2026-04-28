@@ -22,6 +22,7 @@ import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payro
 interface ExpenseKanbanCardProps {
   expense: Expense;
   listProjectId: string | null;
+  listExpensePlanId?: string | null;
   listSort?: ExpenseListNavigationSort;
   fromBacklog?: boolean;
   onRequestDelete: (expense: Expense) => void;
@@ -30,6 +31,7 @@ interface ExpenseKanbanCardProps {
 export function ExpenseKanbanCard({
   expense,
   listProjectId,
+  listExpensePlanId = null,
   listSort,
   fromBacklog = false,
   onRequestDelete,
@@ -44,7 +46,10 @@ export function ExpenseKanbanCard({
   return (
     <div className="border-border bg-card relative rounded-xl border">
       <Link
-        href={expenseDetailHref(expense.id, listProjectId, listSort, { fromBacklog })}
+        href={expenseDetailHref(expense.id, listProjectId, listSort, {
+          fromBacklog,
+          expensePlanId: listExpensePlanId?.trim() || undefined,
+        })}
         className="focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl p-3 pr-11 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
       >
         <div className="flex items-center justify-between gap-2">

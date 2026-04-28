@@ -61,4 +61,18 @@ describe('buildExpenseListApiParams', () => {
     expect(params.status).toBe('PAID');
     expect(params.activeBoard).toBeUndefined();
   });
+
+  it('sets expensePlanId and omits default activeBoard when plan URL drill-down is set', () => {
+    const params = buildExpenseListApiParams({
+      search: '',
+      filters: { category: 'all', status: 'all' },
+      period: 'month',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      pageVariant: 'default',
+      expensePlanIdFromUrl: 'plan-99',
+    });
+    expect(params.expensePlanId).toBe('plan-99');
+    expect(params.activeBoard).toBeUndefined();
+  });
 });

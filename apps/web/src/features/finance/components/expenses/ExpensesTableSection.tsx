@@ -34,6 +34,8 @@ interface ExpensesTableSectionProps {
   expenses: Expense[];
   /** When set, row links include `?projectId=` for back-navigation parity. */
   listProjectId?: string | null;
+  /** When set, row links include `?expensePlanId=` for back-navigation parity. */
+  listExpensePlanId?: string | null;
   /** When set, detail links include the current list sort for back navigation. */
   listSort?: ExpenseListNavigationSort;
   fromBacklog?: boolean;
@@ -43,6 +45,7 @@ interface ExpensesTableSectionProps {
 export function ExpensesTableSection({
   expenses,
   listProjectId,
+  listExpensePlanId = null,
   listSort,
   fromBacklog = false,
   onRequestDelete,
@@ -81,7 +84,10 @@ export function ExpensesTableSection({
               <TableRow key={expense.id}>
                 <TableCell>
                   <Link
-                    href={expenseDetailHref(expense.id, listProjectId, listSort, { fromBacklog })}
+                    href={expenseDetailHref(expense.id, listProjectId, listSort, {
+                      fromBacklog,
+                      expensePlanId: listExpensePlanId?.trim() || undefined,
+                    })}
                     className="text-primary font-medium hover:underline"
                   >
                     {expense.name}

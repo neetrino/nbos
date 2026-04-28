@@ -13,6 +13,7 @@ import {
 import { expenseClosedPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
   EXPENSE_CLOSED_LIST_PATH,
+  EXPENSE_PLAN_DRILLDOWN_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
 } from '@/features/finance/constants/project-expenses-drilldown';
 import type { ExpenseListSortField } from '@/lib/api/finance';
@@ -24,6 +25,7 @@ function ExpensesClosedPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
+  const expensePlanIdFromUrl = searchParams.get(EXPENSE_PLAN_DRILLDOWN_QUERY);
 
   useFinanceDocumentTitle(expenseClosedPageTitle(Boolean(projectIdFromUrl?.trim())));
 
@@ -70,6 +72,7 @@ function ExpensesClosedPageInner() {
     <ExpensesPageContent
       pageVariant="closed"
       projectIdFromUrl={projectIdFromUrl}
+      expensePlanIdFromUrl={expensePlanIdFromUrl}
       onClearProjectFilter={clearProjectFilter}
       replaceExpensesUrl={replaceExpensesUrl}
       sortBy={sortBy}

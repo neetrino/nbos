@@ -11,7 +11,10 @@ import {
   setExpenseListSortParams,
 } from '@/features/finance/constants/expenses-list-query';
 import { expensesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
-import { PROJECT_EXPENSES_DRILLDOWN_QUERY } from '@/features/finance/constants/project-expenses-drilldown';
+import {
+  EXPENSE_PLAN_DRILLDOWN_QUERY,
+  PROJECT_EXPENSES_DRILLDOWN_QUERY,
+} from '@/features/finance/constants/project-expenses-drilldown';
 import type { ExpenseListSortField } from '@/lib/api/finance';
 import { ExpensesPageContent } from '@/features/finance/components/expenses/ExpensesPageContent';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -21,6 +24,7 @@ function ExpensesPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
+  const expensePlanIdFromUrl = searchParams.get(EXPENSE_PLAN_DRILLDOWN_QUERY);
 
   useFinanceDocumentTitle(expensesListPageTitle(Boolean(projectIdFromUrl?.trim())));
 
@@ -66,6 +70,7 @@ function ExpensesPageInner() {
   return (
     <ExpensesPageContent
       projectIdFromUrl={projectIdFromUrl}
+      expensePlanIdFromUrl={expensePlanIdFromUrl}
       onClearProjectFilter={clearProjectFilter}
       replaceExpensesUrl={replaceExpensesUrl}
       sortBy={sortBy}

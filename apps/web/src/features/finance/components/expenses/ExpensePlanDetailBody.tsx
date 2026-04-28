@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { planExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
 import {
   expensePlanFrequencyLabel,
   formatExpensePlanShortDate,
@@ -42,6 +43,17 @@ export function ExpensePlanDetailBody({ plan }: ExpensePlanDetailBodyProps) {
           value={plan.project ? `${plan.project.code} · ${plan.project.name}` : '—'}
         />
       </div>
+
+      <p className="text-muted-foreground text-sm">
+        Expense cards:{' '}
+        <Link
+          href={planExpensesDrilldownHref(plan.id)}
+          className="text-primary font-medium hover:underline"
+        >
+          View on Finance expenses
+        </Link>{' '}
+        (all statuses, current period filter applies on the list).
+      </p>
 
       {plan.project ? (
         <p className="text-muted-foreground text-sm">

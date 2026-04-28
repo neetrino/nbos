@@ -13,6 +13,8 @@ export function buildExpenseListApiParams(input: {
   sortOrder: 'asc' | 'desc';
   /** Main board omits paid + backlog statuses unless a specific status filter is set (NBOS Expense Board). */
   pageVariant?: 'default' | 'backlog' | 'closed';
+  /** URL drill-down: all statuses for cards linked to this plan (do not apply default active-board scope). */
+  expensePlanIdFromUrl?: string | null;
 }): Omit<ExpenseListParams, 'page' | 'pageSize'> {
   const periodParams = getFinancePeriodParams(input.period);
   const projectParams =
@@ -20,8 +22,12 @@ export function buildExpenseListApiParams(input: {
   const variant = input.pageVariant ?? 'default';
   const status =
     input.filters.status && input.filters.status !== 'all' ? input.filters.status : undefined;
+  const planIdTrimmed = input.expensePlanIdFromUrl?.trim() ?? '';
+  const planParams = planIdTrimmed ? { expensePlanId: planIdTrimmed } : {};
   const activeBoard =
-    variant === 'default' && status === undefined ? ({ activeBoard: true } as const) : {};
+    variant === 'default' && status === undefined && !planIdTrimmed
+      ? ({ activeBoard: true } as const)
+      : {};
   return {
     search: input.search || undefined,
     category:
@@ -33,6 +39,7 @@ export function buildExpenseListApiParams(input: {
     sortOrder: input.sortOrder,
     ...periodParams,
     ...projectParams,
+    ...planParams,
     ...activeBoard,
   };
 }

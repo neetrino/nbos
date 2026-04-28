@@ -38,6 +38,8 @@ export interface ExpenseQueryParams {
   status?: string;
   backlogReason?: string;
   projectId?: string;
+  /** When set, only expenses linked to this `ExpensePlan` (`expenses.expense_plan_id`). */
+  expensePlanId?: string;
   frequency?: string;
   search?: string;
   dateFrom?: string;
@@ -53,6 +55,8 @@ export interface ExpenseStatsParams {
   dateTo?: string;
   /** When set, stats match `findAll` list filter for the same project. */
   projectId?: string;
+  /** When set, stats match `findAll` list filter for the same expense plan. */
+  expensePlanId?: string;
   /** When set, aggregates are scoped to this status (list/stats parity). */
   status?: string;
   /** When true and `status` is unset: same scope as `findAll` with `activeBoard`. */

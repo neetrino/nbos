@@ -24,6 +24,7 @@ import {
 import {
   EXPENSE_FROM_BACKLOG_QUERY,
   EXPENSE_FROM_BACKLOG_VALUE,
+  EXPENSE_PLAN_DRILLDOWN_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   financeExpensesListHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
@@ -59,12 +60,16 @@ function ExpenseDetailPageInner() {
   const searchParams = useSearchParams();
   const id = typeof params.id === 'string' ? params.id : '';
   const listProjectId = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
+  const listExpensePlanId = searchParams.get(EXPENSE_PLAN_DRILLDOWN_QUERY);
   const listSort = {
     sortBy: parseExpenseListSortByParam(searchParams.get(EXPENSE_LIST_SORT_BY_QUERY)),
     sortOrder: parseExpenseListSortOrderParam(searchParams.get(EXPENSE_LIST_SORT_ORDER_QUERY)),
   };
   const fromBacklog = searchParams.get(EXPENSE_FROM_BACKLOG_QUERY) === EXPENSE_FROM_BACKLOG_VALUE;
-  const expensesListHref = financeExpensesListHref(listProjectId, listSort, { fromBacklog });
+  const expensesListHref = financeExpensesListHref(listProjectId, listSort, {
+    fromBacklog,
+    expensePlanId: listExpensePlanId?.trim() || undefined,
+  });
   const expenseBackNavAriaLabel = fromBacklog ? 'Back to deferred backlog' : 'Back to expenses';
 
   const [expense, setExpense] = useState<Expense | null>(null);

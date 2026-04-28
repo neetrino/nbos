@@ -129,6 +129,26 @@ describe('ExpensesService', () => {
       expect(call?.where?.status).toBe('PAID');
     });
 
+    it('applies expensePlanId filter', async () => {
+      await service.findAll({ expensePlanId: 'plan-1' });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ expensePlanId: 'plan-1' }),
+        }),
+      );
+    });
+
+    it('ignores blank expensePlanId', async () => {
+      await service.findAll({ expensePlanId: '   ' });
+
+      const call = prisma.expense.findMany.mock.calls.at(-1)?.[0] as {
+        where?: Record<string, unknown>;
+      };
+      expect(call?.where).toBeDefined();
+      expect(call?.where).not.toHaveProperty('expensePlanId');
+    });
+
     it('attaches payment ledger fields using grouped payment totals', async () => {
       prisma.expense.findMany.mockResolvedValue([
         {
@@ -745,6 +765,16 @@ describe('ExpensesService', () => {
           }),
         );
       }
+    });
+
+    it('applies expensePlanId to stats queries', async () => {
+      await service.getStats({ expensePlanId: 'plan-x' });
+
+      expect(prisma.expense.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ expensePlanId: 'plan-x' }),
+        }),
+      );
     });
 
     it('applies status filter to stats scope', async () => {

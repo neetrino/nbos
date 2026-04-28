@@ -20,6 +20,8 @@ interface ExpensesPageMainPanelProps {
   /** Detail links include `from=backlog` when opened from `/finance/expenses/backlog`. */
   fromBacklog?: boolean;
   effectiveProjectId: string | null;
+  /** When set, detail links preserve `?expensePlanId=` from the list URL. */
+  listExpensePlanId?: string | null;
   listSort: ExpenseListNavigationSort;
   onRequestDelete: (expense: Expense) => void;
   onAddFirstExpense: () => void;
@@ -33,6 +35,7 @@ export function ExpensesPageMainPanel({
   view,
   fromBacklog = false,
   effectiveProjectId,
+  listExpensePlanId = null,
   listSort,
   onRequestDelete,
   onAddFirstExpense,
@@ -73,6 +76,7 @@ export function ExpensesPageMainPanel({
           <ExpenseKanbanCard
             expense={expense}
             listProjectId={effectiveProjectId}
+            listExpensePlanId={listExpensePlanId}
             listSort={listSort}
             fromBacklog={fromBacklog}
             onRequestDelete={onRequestDelete}
@@ -85,6 +89,7 @@ export function ExpensesPageMainPanel({
     <ExpensesTableSection
       expenses={expenses}
       listProjectId={effectiveProjectId}
+      listExpensePlanId={listExpensePlanId}
       listSort={listSort}
       fromBacklog={fromBacklog}
       onRequestDelete={onRequestDelete}

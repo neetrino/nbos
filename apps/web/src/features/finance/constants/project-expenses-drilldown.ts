@@ -4,6 +4,9 @@ import { setExpenseListSortParams } from './expenses-list-query';
 /** Must match `GET /expenses?projectId=` (ExpensesController). */
 export const PROJECT_EXPENSES_DRILLDOWN_QUERY = 'projectId' as const;
 
+/** Must match `GET /expenses?expensePlanId=` (ExpensesController). */
+export const EXPENSE_PLAN_DRILLDOWN_QUERY = 'expensePlanId' as const;
+
 /** Detail URL: return navigation to `/finance/expenses/backlog` instead of main list. */
 export const EXPENSE_FROM_BACKLOG_QUERY = 'from' as const;
 export const EXPENSE_FROM_BACKLOG_VALUE = 'backlog' as const;
@@ -27,11 +30,21 @@ export interface ExpenseListNavigationSort {
 export interface ExpenseListHrefOptions {
   /** When true, list URL targets the deferred/backlog route (canon UI path). */
   fromBacklog?: boolean;
+  /** Preserve plan drill-down when navigating list ↔ detail. */
+  expensePlanId?: string | null;
 }
 
 export function projectExpensesDrilldownHref(projectId: string): string {
   const q = new URLSearchParams({
     [PROJECT_EXPENSES_DRILLDOWN_QUERY]: projectId,
+  });
+  return `/finance/expenses?${q.toString()}`;
+}
+
+/** Main expense list filtered to cards generated from / linked to this plan. */
+export function planExpensesDrilldownHref(expensePlanId: string): string {
+  const q = new URLSearchParams({
+    [EXPENSE_PLAN_DRILLDOWN_QUERY]: expensePlanId,
   });
   return `/finance/expenses?${q.toString()}`;
 }
@@ -57,6 +70,10 @@ export function financeExpensesListHref(
   if (projectId) {
     params.set(PROJECT_EXPENSES_DRILLDOWN_QUERY, projectId);
   }
+  const planId = options?.expensePlanId?.trim();
+  if (planId) {
+    params.set(EXPENSE_PLAN_DRILLDOWN_QUERY, planId);
+  }
   if (listSort) {
     setExpenseListSortParams(params, listSort.sortBy, listSort.sortOrder);
   }
@@ -79,6 +96,10 @@ export function expenseDetailHref(
   }
   if (listProjectId) {
     params.set(PROJECT_EXPENSES_DRILLDOWN_QUERY, listProjectId);
+  }
+  const planFromOptions = options?.expensePlanId?.trim();
+  if (planFromOptions) {
+    params.set(EXPENSE_PLAN_DRILLDOWN_QUERY, planFromOptions);
   }
   if (listSort) {
     setExpenseListSortParams(params, listSort.sortBy, listSort.sortOrder);

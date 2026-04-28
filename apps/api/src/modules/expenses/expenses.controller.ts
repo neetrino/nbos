@@ -31,6 +31,11 @@ export class ExpensesController {
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({
+    name: 'expensePlanId',
+    required: false,
+    description: 'Filter expenses linked to this expense plan (`expenses.expense_plan_id`).',
+  })
   @ApiQuery({ name: 'frequency', required: false })
   @ApiQuery({
     name: 'backlogReason',
@@ -53,6 +58,7 @@ export class ExpensesController {
     @Query('category') category?: string,
     @Query('status') status?: string,
     @Query('projectId') projectId?: string,
+    @Query('expensePlanId') expensePlanId?: string,
     @Query('backlogReason') backlogReason?: string,
     @Query('frequency') frequency?: string,
     @Query('search') search?: string,
@@ -69,6 +75,7 @@ export class ExpensesController {
       category,
       status,
       projectId,
+      expensePlanId,
       backlogReason,
       frequency,
       search,
@@ -84,6 +91,11 @@ export class ExpensesController {
   @ApiOperation({ summary: 'Get expense statistics' })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({
+    name: 'expensePlanId',
+    required: false,
+    description: 'Align stats with list filtered by this expense plan.',
+  })
+  @ApiQuery({
     name: 'status',
     required: false,
     description: 'Align stats with filtered list (e.g. backlog).',
@@ -97,6 +109,7 @@ export class ExpensesController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('projectId') projectId?: string,
+    @Query('expensePlanId') expensePlanId?: string,
     @Query('status') status?: string,
     @Query('activeBoard') activeBoard?: string,
   ) {
@@ -104,6 +117,7 @@ export class ExpensesController {
       dateFrom,
       dateTo,
       projectId,
+      expensePlanId,
       status,
       activeBoard: activeBoard === 'true',
     });
