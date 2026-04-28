@@ -117,11 +117,21 @@ export const bonusesApi = {
 
 /**
  * Loads all bonus rows for kanban-style boards by walking list pages until exhausted.
+ * Optional `projectId` is forwarded to each page request (server filter).
  */
-export async function fetchAllBonusListRows(): Promise<BonusEntryListRow[]> {
+export async function fetchAllBonusListRows(options?: {
+  /** When set, each list page is requested with this server filter (aligned with `GET /api/bonus`). */
+  projectId?: string;
+}): Promise<BonusEntryListRow[]> {
+  const projectId = options?.projectId?.trim();
+  const listParams: BonusListQueryParams = projectId ? { projectId } : {};
   const combined: BonusEntryListRow[] = [];
   for (let page = 1; page <= BONUS_FETCH_MAX_PAGES; page += 1) {
-    const { items, meta } = await bonusesApi.getPage({ page, pageSize: BONUS_LIST_PAGE_SIZE });
+    const { items, meta } = await bonusesApi.getPage({
+      page,
+      pageSize: BONUS_LIST_PAGE_SIZE,
+      ...listParams,
+    });
     combined.push(...items);
     if (page >= meta.totalPages || items.length === 0) {
       break;

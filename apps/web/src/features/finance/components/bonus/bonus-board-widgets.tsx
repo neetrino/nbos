@@ -39,6 +39,20 @@ export function uniqueEmployeesFromRows(
   return [...map.entries()].map(([id, label]) => ({ id, label }));
 }
 
+/** Distinct projects from loaded bonus rows (for board filter dropdown). */
+export function uniqueProjectsFromRows(
+  rows: BonusEntryListRow[],
+): { id: string; code: string; label: string }[] {
+  const map = new Map<string, { id: string; code: string; label: string }>();
+  for (const row of rows) {
+    const p = row.project;
+    if (!p?.id) continue;
+    const label = projectLabel(p) ?? p.code ?? p.id;
+    map.set(p.id, { id: p.id, code: p.code ?? '—', label });
+  }
+  return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
+}
+
 export function SummaryCard({
   label,
   value,
@@ -103,6 +117,9 @@ export function BonusBoardToolbar({
   onSearchChange,
   typeFilter,
   onTypeFilterChange,
+  projectFilter,
+  onProjectFilterChange,
+  uniqueProjects,
   employeeFilter,
   onEmployeeFilterChange,
   uniqueEmployees,
@@ -111,12 +128,15 @@ export function BonusBoardToolbar({
   onSearchChange: (value: string) => void;
   typeFilter: BonusType | 'ALL';
   onTypeFilterChange: (value: BonusType | 'ALL') => void;
+  projectFilter: string;
+  onProjectFilterChange: (value: string) => void;
+  uniqueProjects: { id: string; code: string; label: string }[];
   employeeFilter: string;
   onEmployeeFilterChange: (value: string) => void;
   uniqueEmployees: { id: string; label: string }[];
 }) {
   return (
-    <div className="mt-5 flex items-center gap-3">
+    <div className="mt-5 flex flex-wrap items-center gap-3">
       <div className="relative flex-1">
         <Search
           size={16}
@@ -144,6 +164,24 @@ export function BonusBoardToolbar({
           {(Object.keys(BONUS_BOARD_TYPE_CONFIG) as BonusType[]).map((key) => (
             <option key={key} value={key}>
               {BONUS_BOARD_TYPE_CONFIG[key].label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="relative min-w-[10rem]">
+        <ChevronDown
+          size={14}
+          className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
+        />
+        <select
+          value={projectFilter}
+          onChange={(e) => onProjectFilterChange(e.target.value)}
+          className="border-input bg-card text-foreground focus:ring-ring max-w-[220px] appearance-none rounded-xl border py-2.5 pr-8 pl-3 text-sm focus:ring-2 focus:outline-none"
+        >
+          <option value="ALL">All Projects</option>
+          {uniqueProjects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
             </option>
           ))}
         </select>

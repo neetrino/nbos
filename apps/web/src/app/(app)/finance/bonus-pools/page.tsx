@@ -16,6 +16,7 @@ import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/s
 import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusProjectPoolsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { bonusesApi, type BonusProjectPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
@@ -72,7 +73,8 @@ export default function BonusPoolsPage() {
 
       <p className="text-muted-foreground text-sm">
         Figures are aggregates over bonus entry rows; NBOS may introduce a dedicated project bonus
-        pool entity later. This screen does not create separate ledger lines.
+        pool entity later. Use the Bonus board column to open **`/bonus`** scoped to that project
+        (server list filter **`GET /api/bonus?projectId=`**).
       </p>
 
       {loading ? (
@@ -99,6 +101,7 @@ export default function BonusPoolsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Project</TableHead>
+                <TableHead>Bonus board</TableHead>
                 <TableHead className="text-right">Entries</TableHead>
                 <TableHead className="text-right">Pipeline</TableHead>
                 <TableHead className="text-right">Paid</TableHead>
@@ -119,6 +122,14 @@ export default function BonusPoolsPage() {
                       </Link>
                       <span className="text-muted-foreground text-xs">{row.projectName}</span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={bonusBoardHref(row.projectId)}
+                      className="text-primary text-sm font-medium hover:underline"
+                    >
+                      Filtered board
+                    </Link>
                   </TableCell>
                   <TableCell className="text-right">{row.entryCount}</TableCell>
                   <TableCell className="text-right">
