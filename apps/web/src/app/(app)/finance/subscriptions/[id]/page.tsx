@@ -12,6 +12,7 @@ import {
   getSubscriptionType,
 } from '@/features/finance/constants/finance';
 import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/subscription-invoice-drilldown';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { SubscriptionDetailActions } from '@/features/finance/components/subscriptions/SubscriptionDetailActions';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
@@ -40,9 +41,11 @@ export default function SubscriptionDetailPage() {
       setSubscription(data);
       setError(null);
       setActionError(null);
-    } catch {
+    } catch (caught) {
       setSubscription(null);
-      setError('Subscription could not be loaded. It may have been removed.');
+      setError(
+        getApiErrorMessage(caught, 'Subscription could not be loaded. It may have been removed.'),
+      );
     } finally {
       setLoading(false);
     }
