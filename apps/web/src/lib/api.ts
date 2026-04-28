@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toApiError } from './api-errors';
 
 export interface ApiResponse<T> {
   data: T;
@@ -38,9 +39,7 @@ api.interceptors.response.use(
   },
   (error) => {
     if (axios.isAxiosError(error)) {
-      const rawMessage = error.response?.data?.message ?? error.message;
-      const message = typeof rawMessage === 'string' ? rawMessage : JSON.stringify(rawMessage);
-      return Promise.reject(new Error(message));
+      return Promise.reject(toApiError(error.response?.data, error.message));
     }
     return Promise.reject(error);
   },

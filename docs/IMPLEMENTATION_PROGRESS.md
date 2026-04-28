@@ -25,8 +25,8 @@ Rules:
 | Field                | Value                                            |
 | -------------------- | ------------------------------------------------ |
 | Current phase        | Phase 2 - CRM, Marketing and Lead-to-Cash intake |
-| Current module/block | Marketing launch gates + Expense proposal        |
-| Current task         | Launch workflow implemented                      |
+| Current module/block | CRM transition popup UX                          |
+| Current task         | Structured blocker popup implemented             |
 | Status               | Waiting approval for next Phase 2 slice          |
 | Last updated         | 2026-04-28                                       |
 
@@ -35,7 +35,7 @@ Rules:
 | Phase                                            | Status      | Progress | Current blocker                | Notes                                        |
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                  |
-| Phase 2 - CRM, Marketing and Lead-to-Cash intake | In progress |      30% | None                           | Marketing launch gates completed             |
+| Phase 2 - CRM, Marketing and Lead-to-Cash intake | In progress |      40% | None                           | CRM transition popup UX completed            |
 | Phase 3 - Finance core                           | Not started |       0% | Waits Phase 1/2 alignment      | Money state must not be faked                |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                  |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications |
@@ -55,6 +55,7 @@ Rules:
 | 2026-04-27 | Phase 1 foundation completed            | My Company foundation, admin/audit hardening, broader shared state coverage                         | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`                                                                                    | Wait for approval to start Phase 2              |
 | 2026-04-28 | CRM + Marketing attribution completed   | Marketing Account/Activity foundation, dynamic Which one options, CRM attribution gates             | `pnpm --filter @nbos/database generate`; `pnpm --filter @nbos/database typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test` | Wait for approval; next Phase 2 slice           |
 | 2026-04-28 | Marketing launch workflow completed     | Activity launch gates, planned Finance Expense proposal, manual Account finance link UX             | `pnpm --filter @nbos/database typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                      | Wait for approval; next Phase 2 slice           |
+| 2026-04-28 | CRM transition popup UX completed       | Structured stage gate errors preserved in web, Lead/Deal blocked moves show popup and retry path    | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/api typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                                | Wait for approval; next Phase 2 slice           |
 
 ## Phase 1 Checklist
 
@@ -94,7 +95,7 @@ Make NBOS navigable, permission-aware and safe to extend.
 | Shared UI States            | Yes        | Yes          | Done        | Yes     | Loading/error/empty state baseline completed          |
 | My Company                  | Yes        | Yes          | Partial     | Yes     | Foundation dashboard completed; deep HR/payroll later |
 | Settings / Admin            | Yes        | Yes          | Partial     | Yes     | Admin/audit foundation completed; deep settings later |
-| CRM                         | Yes        | Yes          | Partial     | Partial | Attribution gates and Which one handoff completed     |
+| CRM                         | Yes        | Yes          | Partial     | Partial | Transition popup foundation for structured blockers   |
 | Marketing                   | Yes        | Yes          | Partial     | Partial | Launch gates and Finance spend links foundation added |
 | Finance                     | Yes        | Yes          | Partial     | Partial | Existing Expense runtime linked from Marketing only   |
 | Partners                    | Yes        | No           | No          | No      | Phase 3/Finance dependency                            |
@@ -127,7 +128,7 @@ Continue Phase 2 after approval:
 
 ```text
 Next Phase 2 slice candidates:
-- CRM transition popup UX for structured blockers;
 - Deal Won invoice-paid rules and privileged override workflow;
-- Marketing dashboard spend/revenue analytics after Finance spend runtime deepens.
+- Marketing dashboard spend/revenue analytics after Finance spend runtime deepens;
+- Offer attachment and deal-required fields depth.
 ```

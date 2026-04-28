@@ -17,12 +17,17 @@ import { DealCard } from '@/features/crm/components/DealCard';
 import { DealSheet } from '@/features/crm/components/DealSheet';
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
 import {
+  TransitionBlockerDialog,
+  type TransitionBlockerState,
+} from '@/features/crm/components/TransitionBlockerDialog';
+import {
   DEAL_STAGES,
   DEAL_TYPES,
   getDealStage,
   formatAmount,
 } from '@/features/crm/constants/dealPipeline';
 import { dealsApi, type Deal } from '@/lib/api/deals';
+import { isStageGateApiError } from '@/lib/api-errors';
 import {
   Table,
   TableHeader,
@@ -44,6 +49,9 @@ export default function DealsPipelinePage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [transitionBlocker, setTransitionBlocker] = useState<TransitionBlockerState<Deal> | null>(
+    null,
+  );
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
@@ -83,8 +91,35 @@ export default function DealsPipelinePage() {
       if (selectedDeal?.id === id) {
         setSelectedDeal(previousSelected);
       }
+      if (isStageGateApiError(err)) {
+        const blockedDeal = previousDeals.find((deal) => deal.id === id) ?? previousSelected;
+        if (blockedDeal) {
+          setTransitionBlocker({
+            item: blockedDeal,
+            targetStatus: status,
+            targetLabel: getDealStage(status)?.label ?? status,
+            errors: err.errors,
+            message: err.message,
+          });
+          return;
+        }
+      }
       setError(err instanceof Error ? err.message : 'Deal stage change was blocked.');
     }
+  };
+
+  const handleOpenBlockedDeal = () => {
+    if (!transitionBlocker) return;
+    const currentDeal = deals.find((deal) => deal.id === transitionBlocker.item.id);
+    setSelectedDeal(currentDeal ?? transitionBlocker.item);
+    setSheetOpen(true);
+  };
+
+  const handleRetryBlockedMove = async () => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+    await handleStatusChange(blocker.item.id, blocker.targetStatus);
+    setTransitionBlocker((current) => (current === blocker ? null : current));
   };
 
   const handleUpdate = async (id: string, data: Partial<Deal>) => {
@@ -299,6 +334,18 @@ export default function DealsPipelinePage() {
         onStatusChange={handleStatusChange}
         onDelete={handleDelete}
         onRefresh={fetchDeals}
+      />
+
+      <TransitionBlockerDialog
+        open={Boolean(transitionBlocker)}
+        blocker={transitionBlocker}
+        entityLabel="Deal"
+        itemLabel={transitionBlocker?.item.name ?? transitionBlocker?.item.code ?? ''}
+        onOpenChange={(open) => {
+          if (!open) setTransitionBlocker(null);
+        }}
+        onOpenDetails={handleOpenBlockedDeal}
+        onRetry={handleRetryBlockedMove}
       />
     </div>
   );

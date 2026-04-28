@@ -15,8 +15,13 @@ import {
 import { LeadCard } from '@/features/crm/components/LeadCard';
 import { LeadSheet } from '@/features/crm/components/LeadSheet';
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
+import {
+  TransitionBlockerDialog,
+  type TransitionBlockerState,
+} from '@/features/crm/components/TransitionBlockerDialog';
 import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
 import { leadsApi, type Lead } from '@/lib/api/leads';
+import { isStageGateApiError } from '@/lib/api-errors';
 import {
   Table,
   TableHeader,
@@ -41,6 +46,9 @@ export default function LeadsPipelinePage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [transitionBlocker, setTransitionBlocker] = useState<TransitionBlockerState<Lead> | null>(
+    null,
+  );
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -80,8 +88,35 @@ export default function LeadsPipelinePage() {
       if (selectedLead?.id === id) {
         setSelectedLead(previousSelected);
       }
+      if (isStageGateApiError(err)) {
+        const blockedLead = previousLeads.find((lead) => lead.id === id) ?? previousSelected;
+        if (blockedLead) {
+          setTransitionBlocker({
+            item: blockedLead,
+            targetStatus: status,
+            targetLabel: getLeadStage(status)?.label ?? status,
+            errors: err.errors,
+            message: err.message,
+          });
+          return;
+        }
+      }
       setError(err instanceof Error ? err.message : 'Lead stage change was blocked.');
     }
+  };
+
+  const handleOpenBlockedLead = () => {
+    if (!transitionBlocker) return;
+    const currentLead = leads.find((lead) => lead.id === transitionBlocker.item.id);
+    setSelectedLead(currentLead ?? transitionBlocker.item);
+    setSheetOpen(true);
+  };
+
+  const handleRetryBlockedMove = async () => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+    await handleStatusChange(blocker.item.id, blocker.targetStatus);
+    setTransitionBlocker((current) => (current === blocker ? null : current));
   };
 
   const handleUpdate = async (id: string, data: Partial<Lead>) => {
@@ -288,6 +323,18 @@ export default function LeadsPipelinePage() {
         onUpdate={handleUpdate}
         onStatusChange={handleStatusChange}
         onDelete={handleDelete}
+      />
+
+      <TransitionBlockerDialog
+        open={Boolean(transitionBlocker)}
+        blocker={transitionBlocker}
+        entityLabel="Lead"
+        itemLabel={transitionBlocker?.item.name ?? transitionBlocker?.item.code ?? ''}
+        onOpenChange={(open) => {
+          if (!open) setTransitionBlocker(null);
+        }}
+        onOpenDetails={handleOpenBlockedLead}
+        onRetry={handleRetryBlockedMove}
       />
     </div>
   );

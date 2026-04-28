@@ -198,7 +198,10 @@
 
 ### C2. CRM transition validation пока уже нового канона не покрывает полностью
 
-Текущая база есть, и Phase 2 attribution foundation уже расширил обязательные source gates.
+Статус: `PARTIAL FOUNDATION DONE / WON RULES NEXT`
+
+Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
+а transition popup foundation уже показывает structured blockers вместо общего page error.
 
 Новые требования, которые надо будет реализовать:
 
@@ -219,9 +222,8 @@
 
 Что потом нужно сделать:
 
-- расширить API validation contracts;
-- вернуть структурированные blocker/warning ответы;
-- реализовать transition popup workflow во frontend;
+- расширить API validation contracts для Deal Won invoice/payment blockers;
+- добавить privileged override action в transition popup;
 - добавить тесты по `MAINTENANCE`, `Subscription`, invoice blockers и override cases.
 
 ### C3. Автосоздание связанного `MAINTENANCE Deal` пока надо считать функциональным backlog item
