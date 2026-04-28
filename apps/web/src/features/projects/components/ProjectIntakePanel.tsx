@@ -1,10 +1,20 @@
 'use client';
 
 import { Check, CircleDashed, ClipboardCheck, KeyRound, Package, RefreshCw } from 'lucide-react';
-import type { FullProject, ProjectIntakeSummary } from '@/lib/api/projects';
+import type {
+  FullProject,
+  ProjectIntakeSummary,
+  ProjectKickoffChecklistItem,
+  UpdateKickoffChecklistItemInput,
+} from '@/lib/api/projects';
+import { ProjectKickoffChecklist } from './ProjectKickoffChecklist';
 
 interface ProjectIntakePanelProps {
   project: FullProject;
+  onKickoffChecklistItemUpdate: (
+    itemId: string,
+    data: UpdateKickoffChecklistItemInput,
+  ) => Promise<ProjectKickoffChecklistItem>;
 }
 
 interface IntakeRow {
@@ -13,7 +23,10 @@ interface IntakeRow {
   hint: string;
 }
 
-export function ProjectIntakePanel({ project }: ProjectIntakePanelProps) {
+export function ProjectIntakePanel({
+  project,
+  onKickoffChecklistItemUpdate,
+}: ProjectIntakePanelProps) {
   const intake = project.intake ?? getFallbackIntake(project);
   const rows = getIntakeRows(intake);
 
@@ -60,6 +73,11 @@ export function ProjectIntakePanel({ project }: ProjectIntakePanelProps) {
           value={String(intake.openTaskCount)}
         />
       </div>
+
+      <ProjectKickoffChecklist
+        items={project.kickoffChecklist ?? []}
+        onUpdate={onKickoffChecklistItemUpdate}
+      />
     </section>
   );
 }

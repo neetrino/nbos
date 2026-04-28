@@ -51,6 +51,7 @@ export const ModelName = {
   Contact: 'Contact',
   Company: 'Company',
   Project: 'Project',
+  ProjectKickoffChecklistItem: 'ProjectKickoffChecklistItem',
   Product: 'Product',
   Extension: 'Extension',
   MarketingAccount: 'MarketingAccount',
@@ -147,6 +148,24 @@ export const ProjectScalarFieldEnum = {
 
 export type ProjectScalarFieldEnum =
   (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
+
+export const ProjectKickoffChecklistItemScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  key: 'key',
+  title: 'title',
+  isRequired: 'isRequired',
+  isChecked: 'isChecked',
+  note: 'note',
+  checkedAt: 'checkedAt',
+  checkedById: 'checkedById',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProjectKickoffChecklistItemScalarFieldEnum =
+  (typeof ProjectKickoffChecklistItemScalarFieldEnum)[keyof typeof ProjectKickoffChecklistItemScalarFieldEnum];
 
 export const ProductScalarFieldEnum = {
   id: 'id',

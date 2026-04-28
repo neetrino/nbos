@@ -378,6 +378,7 @@ export const ModelName = {
   Contact: 'Contact',
   Company: 'Company',
   Project: 'Project',
+  ProjectKickoffChecklistItem: 'ProjectKickoffChecklistItem',
   Product: 'Product',
   Extension: 'Extension',
   MarketingAccount: 'MarketingAccount',
@@ -432,6 +433,7 @@ export type TypeMap<
       | 'contact'
       | 'company'
       | 'project'
+      | 'projectKickoffChecklistItem'
       | 'product'
       | 'extension'
       | 'marketingAccount'
@@ -685,6 +687,82 @@ export type TypeMap<
         count: {
           args: Prisma.ProjectCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.ProjectCountAggregateOutputType> | number;
+        };
+      };
+    };
+    ProjectKickoffChecklistItem: {
+      payload: Prisma.$ProjectKickoffChecklistItemPayload<ExtArgs>;
+      fields: Prisma.ProjectKickoffChecklistItemFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ProjectKickoffChecklistItemFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ProjectKickoffChecklistItemFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>;
+        };
+        findFirst: {
+          args: Prisma.ProjectKickoffChecklistItemFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ProjectKickoffChecklistItemFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>;
+        };
+        findMany: {
+          args: Prisma.ProjectKickoffChecklistItemFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>[];
+        };
+        create: {
+          args: Prisma.ProjectKickoffChecklistItemCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>;
+        };
+        createMany: {
+          args: Prisma.ProjectKickoffChecklistItemCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ProjectKickoffChecklistItemCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>[];
+        };
+        delete: {
+          args: Prisma.ProjectKickoffChecklistItemDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>;
+        };
+        update: {
+          args: Prisma.ProjectKickoffChecklistItemUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ProjectKickoffChecklistItemDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ProjectKickoffChecklistItemUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ProjectKickoffChecklistItemUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>[];
+        };
+        upsert: {
+          args: Prisma.ProjectKickoffChecklistItemUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectKickoffChecklistItemPayload>;
+        };
+        aggregate: {
+          args: Prisma.ProjectKickoffChecklistItemAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProjectKickoffChecklistItem>;
+        };
+        groupBy: {
+          args: Prisma.ProjectKickoffChecklistItemGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ProjectKickoffChecklistItemGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ProjectKickoffChecklistItemCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ProjectKickoffChecklistItemCountAggregateOutputType>
+            | number;
         };
       };
     };
@@ -3091,6 +3169,24 @@ export const ProjectScalarFieldEnum = {
 export type ProjectScalarFieldEnum =
   (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
 
+export const ProjectKickoffChecklistItemScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  key: 'key',
+  title: 'title',
+  isRequired: 'isRequired',
+  isChecked: 'isChecked',
+  note: 'note',
+  checkedAt: 'checkedAt',
+  checkedById: 'checkedById',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProjectKickoffChecklistItemScalarFieldEnum =
+  (typeof ProjectKickoffChecklistItemScalarFieldEnum)[keyof typeof ProjectKickoffChecklistItemScalarFieldEnum];
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
@@ -3782,6 +3878,16 @@ export type ListEnumTaxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>;
 
 /**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>;
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
+
+/**
  * Reference to a field of type 'ProductCategoryEnum'
  */
 export type EnumProductCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -4094,16 +4200,6 @@ export type ListEnumSubscriptionTypeEnumFieldRefInput<$PrismaModel> = FieldRefIn
   $PrismaModel,
   'SubscriptionTypeEnum[]'
 >;
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>;
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
 
 /**
  * Reference to a field of type 'SubscriptionStatusEnum'
@@ -4541,6 +4637,7 @@ export type GlobalOmitConfig = {
   contact?: Prisma.ContactOmit;
   company?: Prisma.CompanyOmit;
   project?: Prisma.ProjectOmit;
+  projectKickoffChecklistItem?: Prisma.ProjectKickoffChecklistItemOmit;
   product?: Prisma.ProductOmit;
   extension?: Prisma.ExtensionOmit;
   marketingAccount?: Prisma.MarketingAccountOmit;

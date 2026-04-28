@@ -624,10 +624,6 @@ export type EnumProductStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.ProductStatusEnum;
 };
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null;
-};
-
 export type ProductCreateNestedOneWithoutExtensionsInput = {
   create?: Prisma.XOR<
     Prisma.ProductCreateWithoutExtensionsInput,

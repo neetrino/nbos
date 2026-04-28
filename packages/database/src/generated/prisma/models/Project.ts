@@ -222,6 +222,7 @@ export type ProjectWhereInput = {
   expenses?: Prisma.ExpenseListRelationFilter;
   bonusEntries?: Prisma.BonusEntryListRelationFilter;
   auditLogs?: Prisma.AuditLogListRelationFilter;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemListRelationFilter;
 };
 
 export type ProjectOrderByWithRelationInput = {
@@ -246,6 +247,7 @@ export type ProjectOrderByWithRelationInput = {
   expenses?: Prisma.ExpenseOrderByRelationAggregateInput;
   bonusEntries?: Prisma.BonusEntryOrderByRelationAggregateInput;
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemOrderByRelationAggregateInput;
 };
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<
@@ -277,6 +279,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<
     expenses?: Prisma.ExpenseListRelationFilter;
     bonusEntries?: Prisma.BonusEntryListRelationFilter;
     auditLogs?: Prisma.AuditLogListRelationFilter;
+    kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemListRelationFilter;
   },
   'id' | 'code'
 >;
@@ -335,6 +338,7 @@ export type ProjectCreateInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateInput = {
@@ -357,6 +361,7 @@ export type ProjectUncheckedCreateInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUpdateInput = {
@@ -379,6 +384,7 @@ export type ProjectUpdateInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateInput = {
@@ -401,6 +407,7 @@ export type ProjectUncheckedUpdateInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateManyInput = {
@@ -667,6 +674,32 @@ export type ProjectUncheckedUpdateManyWithoutCompanyNestedInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean;
+};
+
+export type ProjectCreateNestedOneWithoutKickoffChecklistItemsInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutKickoffChecklistItemsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+};
+
+export type ProjectUpdateOneRequiredWithoutKickoffChecklistItemsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutKickoffChecklistItemsInput;
+  upsert?: Prisma.ProjectUpsertWithoutKickoffChecklistItemsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutKickoffChecklistItemsInput,
+      Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
+  >;
 };
 
 export type ProjectCreateNestedOneWithoutProductsInput = {
@@ -954,6 +987,7 @@ export type ProjectCreateWithoutContactInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutContactInput = {
@@ -975,6 +1009,7 @@ export type ProjectUncheckedCreateWithoutContactInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutContactInput = {
@@ -1052,6 +1087,7 @@ export type ProjectCreateWithoutCompanyInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutCompanyInput = {
@@ -1073,6 +1109,7 @@ export type ProjectUncheckedCreateWithoutCompanyInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutCompanyInput = {
@@ -1116,6 +1153,122 @@ export type ProjectUpdateManyWithWhereWithoutCompanyInput = {
   >;
 };
 
+export type ProjectCreateWithoutKickoffChecklistItemsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectUncheckedCreateWithoutKickoffChecklistItemsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutKickoffChecklistItemsInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+  >;
+};
+
+export type ProjectUpsertWithoutKickoffChecklistItemsInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutKickoffChecklistItemsInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
+  >;
+};
+
+export type ProjectUpdateWithoutKickoffChecklistItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+};
+
 export type ProjectCreateWithoutProductsInput = {
   id?: string;
   code: string;
@@ -1135,6 +1288,7 @@ export type ProjectCreateWithoutProductsInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutProductsInput = {
@@ -1156,6 +1310,7 @@ export type ProjectUncheckedCreateWithoutProductsInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutProductsInput = {
@@ -1205,6 +1360,7 @@ export type ProjectUpdateWithoutProductsInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutProductsInput = {
@@ -1226,6 +1382,7 @@ export type ProjectUncheckedUpdateWithoutProductsInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutExtensionsInput = {
@@ -1247,6 +1404,7 @@ export type ProjectCreateWithoutExtensionsInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutExtensionsInput = {
@@ -1268,6 +1426,7 @@ export type ProjectUncheckedCreateWithoutExtensionsInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutExtensionsInput = {
@@ -1317,6 +1476,7 @@ export type ProjectUpdateWithoutExtensionsInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutExtensionsInput = {
@@ -1338,6 +1498,7 @@ export type ProjectUncheckedUpdateWithoutExtensionsInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutOrdersInput = {
@@ -1359,6 +1520,7 @@ export type ProjectCreateWithoutOrdersInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutOrdersInput = {
@@ -1380,6 +1542,7 @@ export type ProjectUncheckedCreateWithoutOrdersInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutOrdersInput = {
@@ -1429,6 +1592,7 @@ export type ProjectUpdateWithoutOrdersInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutOrdersInput = {
@@ -1450,6 +1614,7 @@ export type ProjectUncheckedUpdateWithoutOrdersInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutSubscriptionsInput = {
@@ -1471,6 +1636,7 @@ export type ProjectCreateWithoutSubscriptionsInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutSubscriptionsInput = {
@@ -1492,6 +1658,7 @@ export type ProjectUncheckedCreateWithoutSubscriptionsInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutSubscriptionsInput = {
@@ -1541,6 +1708,7 @@ export type ProjectUpdateWithoutSubscriptionsInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutSubscriptionsInput = {
@@ -1562,6 +1730,7 @@ export type ProjectUncheckedUpdateWithoutSubscriptionsInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutExpensesInput = {
@@ -1583,6 +1752,7 @@ export type ProjectCreateWithoutExpensesInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutExpensesInput = {
@@ -1604,6 +1774,7 @@ export type ProjectUncheckedCreateWithoutExpensesInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutExpensesInput = {
@@ -1653,6 +1824,7 @@ export type ProjectUpdateWithoutExpensesInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutExpensesInput = {
@@ -1674,6 +1846,7 @@ export type ProjectUncheckedUpdateWithoutExpensesInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutBonusEntriesInput = {
@@ -1695,6 +1868,7 @@ export type ProjectCreateWithoutBonusEntriesInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutBonusEntriesInput = {
@@ -1716,6 +1890,7 @@ export type ProjectUncheckedCreateWithoutBonusEntriesInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutBonusEntriesInput = {
@@ -1765,6 +1940,7 @@ export type ProjectUpdateWithoutBonusEntriesInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutBonusEntriesInput = {
@@ -1786,6 +1962,7 @@ export type ProjectUncheckedUpdateWithoutBonusEntriesInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutTicketsInput = {
@@ -1807,6 +1984,7 @@ export type ProjectCreateWithoutTicketsInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutTicketsInput = {
@@ -1828,6 +2006,7 @@ export type ProjectUncheckedCreateWithoutTicketsInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutTicketsInput = {
@@ -1877,6 +2056,7 @@ export type ProjectUpdateWithoutTicketsInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutTicketsInput = {
@@ -1898,6 +2078,7 @@ export type ProjectUncheckedUpdateWithoutTicketsInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutCredentialsInput = {
@@ -1919,6 +2100,7 @@ export type ProjectCreateWithoutCredentialsInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutCredentialsInput = {
@@ -1940,6 +2122,7 @@ export type ProjectUncheckedCreateWithoutCredentialsInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutCredentialsInput = {
@@ -1989,6 +2172,7 @@ export type ProjectUpdateWithoutCredentialsInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutCredentialsInput = {
@@ -2010,6 +2194,7 @@ export type ProjectUncheckedUpdateWithoutCredentialsInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutDomainsInput = {
@@ -2031,6 +2216,7 @@ export type ProjectCreateWithoutDomainsInput = {
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutDomainsInput = {
@@ -2052,6 +2238,7 @@ export type ProjectUncheckedCreateWithoutDomainsInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutDomainsInput = {
@@ -2101,6 +2288,7 @@ export type ProjectUpdateWithoutDomainsInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutDomainsInput = {
@@ -2122,6 +2310,7 @@ export type ProjectUncheckedUpdateWithoutDomainsInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutAuditLogsInput = {
@@ -2143,6 +2332,7 @@ export type ProjectCreateWithoutAuditLogsInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectUncheckedCreateWithoutAuditLogsInput = {
@@ -2164,6 +2354,7 @@ export type ProjectUncheckedCreateWithoutAuditLogsInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
 };
 
 export type ProjectCreateOrConnectWithoutAuditLogsInput = {
@@ -2213,6 +2404,7 @@ export type ProjectUpdateWithoutAuditLogsInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutAuditLogsInput = {
@@ -2234,6 +2426,7 @@ export type ProjectUncheckedUpdateWithoutAuditLogsInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateManyContactInput = {
@@ -2266,6 +2459,7 @@ export type ProjectUpdateWithoutContactInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutContactInput = {
@@ -2287,6 +2481,7 @@ export type ProjectUncheckedUpdateWithoutContactInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateManyWithoutContactInput = {
@@ -2330,6 +2525,7 @@ export type ProjectUpdateWithoutCompanyInput = {
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateWithoutCompanyInput = {
@@ -2351,6 +2547,7 @@ export type ProjectUncheckedUpdateWithoutCompanyInput = {
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectUncheckedUpdateManyWithoutCompanyInput = {
@@ -2379,6 +2576,7 @@ export type ProjectCountOutputType = {
   expenses: number;
   bonusEntries: number;
   auditLogs: number;
+  kickoffChecklistItems: number;
 };
 
 export type ProjectCountOutputTypeSelect<
@@ -2394,6 +2592,7 @@ export type ProjectCountOutputTypeSelect<
   expenses?: boolean | ProjectCountOutputTypeCountExpensesArgs;
   bonusEntries?: boolean | ProjectCountOutputTypeCountBonusEntriesArgs;
   auditLogs?: boolean | ProjectCountOutputTypeCountAuditLogsArgs;
+  kickoffChecklistItems?: boolean | ProjectCountOutputTypeCountKickoffChecklistItemsArgs;
 };
 
 /**
@@ -2498,6 +2697,15 @@ export type ProjectCountOutputTypeCountAuditLogsArgs<
   where?: Prisma.AuditLogWhereInput;
 };
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountKickoffChecklistItemsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ProjectKickoffChecklistItemWhereInput;
+};
+
 export type ProjectSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -2523,6 +2731,7 @@ export type ProjectSelect<
     expenses?: boolean | Prisma.Project$expensesArgs<ExtArgs>;
     bonusEntries?: boolean | Prisma.Project$bonusEntriesArgs<ExtArgs>;
     auditLogs?: boolean | Prisma.Project$auditLogsArgs<ExtArgs>;
+    kickoffChecklistItems?: boolean | Prisma.Project$kickoffChecklistItemsArgs<ExtArgs>;
     _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['project']
@@ -2607,6 +2816,7 @@ export type ProjectInclude<
   expenses?: boolean | Prisma.Project$expensesArgs<ExtArgs>;
   bonusEntries?: boolean | Prisma.Project$bonusEntriesArgs<ExtArgs>;
   auditLogs?: boolean | Prisma.Project$auditLogsArgs<ExtArgs>;
+  kickoffChecklistItems?: boolean | Prisma.Project$kickoffChecklistItemsArgs<ExtArgs>;
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type ProjectIncludeCreateManyAndReturn<
@@ -2639,6 +2849,7 @@ export type $ProjectPayload<
     expenses: Prisma.$ExpensePayload<ExtArgs>[];
     bonusEntries: Prisma.$BonusEntryPayload<ExtArgs>[];
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[];
+    kickoffChecklistItems: Prisma.$ProjectKickoffChecklistItemPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -3297,6 +3508,17 @@ export interface Prisma__ProjectClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$AuditLogPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  kickoffChecklistItems<T extends Prisma.Project$kickoffChecklistItemsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Project$kickoffChecklistItemsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ProjectKickoffChecklistItemPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -4048,6 +4270,36 @@ export type Project$auditLogsArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[];
+};
+
+/**
+ * Project.kickoffChecklistItems
+ */
+export type Project$kickoffChecklistItemsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ProjectKickoffChecklistItem
+   */
+  select?: Prisma.ProjectKickoffChecklistItemSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ProjectKickoffChecklistItem
+   */
+  omit?: Prisma.ProjectKickoffChecklistItemOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProjectKickoffChecklistItemInclude<ExtArgs> | null;
+  where?: Prisma.ProjectKickoffChecklistItemWhereInput;
+  orderBy?:
+    | Prisma.ProjectKickoffChecklistItemOrderByWithRelationInput
+    | Prisma.ProjectKickoffChecklistItemOrderByWithRelationInput[];
+  cursor?: Prisma.ProjectKickoffChecklistItemWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.ProjectKickoffChecklistItemScalarFieldEnum
+    | Prisma.ProjectKickoffChecklistItemScalarFieldEnum[];
 };
 
 /**

@@ -10,6 +10,7 @@
 export type * from './models/Contact';
 export type * from './models/Company';
 export type * from './models/Project';
+export type * from './models/ProjectKickoffChecklistItem';
 export type * from './models/Product';
 export type * from './models/Extension';
 export type * from './models/MarketingAccount';

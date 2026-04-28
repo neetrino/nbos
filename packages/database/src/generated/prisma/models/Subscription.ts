@@ -734,14 +734,6 @@ export type EnumSubscriptionTypeEnumFieldUpdateOperationsInput = {
   set?: $Enums.SubscriptionTypeEnum;
 };
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
-};
-
 export type EnumSubscriptionStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.SubscriptionStatusEnum;
 };

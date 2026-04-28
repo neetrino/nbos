@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ProjectsService } from './projects.service';
+import { ProjectKickoffChecklistService } from './project-kickoff-checklist.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
 
@@ -9,7 +10,10 @@ describe('ProjectsService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ProjectsService(prisma as never);
+    service = new ProjectsService(
+      prisma as never,
+      new ProjectKickoffChecklistService(prisma as never),
+    );
   });
 
   describe('findAll', () => {
@@ -80,6 +84,7 @@ describe('ProjectsService', () => {
         openTaskCount: 5,
         credentialCount: 1,
       });
+      expect(result.kickoffChecklist).toEqual([]);
       expect(result._count).toMatchObject({ products: 1, extensions: 1 });
       expect(prisma.project.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({

@@ -60,6 +60,11 @@ export type Company = Prisma.CompanyModel;
  */
 export type Project = Prisma.ProjectModel;
 /**
+ * Model ProjectKickoffChecklistItem
+ *
+ */
+export type ProjectKickoffChecklistItem = Prisma.ProjectKickoffChecklistItemModel;
+/**
  * Model Product
  *
  */

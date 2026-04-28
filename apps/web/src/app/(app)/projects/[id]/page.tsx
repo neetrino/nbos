@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { projectsApi, type FullProject } from '@/lib/api/projects';
+import {
+  projectsApi,
+  type FullProject,
+  type UpdateKickoffChecklistItemInput,
+} from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
 import { ProjectExtensionsSnapshot } from '@/features/projects/components/ProjectExtensionsSnapshot';
 import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
@@ -36,6 +40,15 @@ export default function ProjectDetailPage() {
     fetchProject();
   }, [fetchProject]);
 
+  const handleKickoffChecklistItemUpdate = useCallback(
+    async (itemId: string, data: UpdateKickoffChecklistItemInput) => {
+      const updated = await projectsApi.updateKickoffChecklistItem(params.id, itemId, data);
+      setProject((current) => updateProjectChecklist(current, updated));
+      return updated;
+    },
+    [params.id],
+  );
+
   if (loading) {
     return <ProjectDetailLoading />;
   }
@@ -57,7 +70,10 @@ export default function ProjectDetailPage() {
       />
 
       <ProjectInfoCard project={project} />
-      <ProjectIntakePanel project={project} />
+      <ProjectIntakePanel
+        project={project}
+        onKickoffChecklistItemUpdate={handleKickoffChecklistItemUpdate}
+      />
       <ProjectExtensionsSnapshot project={project} />
 
       <ProjectProductsSection
@@ -77,6 +93,19 @@ export default function ProjectDetailPage() {
       />
     </div>
   );
+}
+
+function updateProjectChecklist(
+  project: FullProject | null,
+  updated: NonNullable<FullProject['kickoffChecklist']>[number],
+) {
+  if (!project) return project;
+  const checklist = project.kickoffChecklist ?? [];
+  const nextChecklist = checklist
+    .map((item) => (item.id === updated.id ? updated : item))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  return { ...project, kickoffChecklist: nextChecklist };
 }
 
 function ProjectDetailLoading() {

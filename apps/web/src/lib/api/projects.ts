@@ -161,6 +161,26 @@ export interface ProjectIntakeSummary {
   subscriptionStatuses: string[];
 }
 
+export interface ProjectKickoffChecklistItem {
+  id: string;
+  projectId: string;
+  key: string;
+  title: string;
+  isRequired: boolean;
+  isChecked: boolean;
+  note: string | null;
+  checkedAt: string | null;
+  checkedById: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateKickoffChecklistItemInput {
+  isChecked?: boolean;
+  note?: string | null;
+}
+
 export interface FullProject extends Project {
   products: ProjectProductSummary[];
   extensions: ProjectExtensionSummary[];
@@ -172,6 +192,7 @@ export interface FullProject extends Project {
   expenses: ProjectExpense[];
   auditLogs: ProjectAuditLog[];
   intake?: ProjectIntakeSummary;
+  kickoffChecklist?: ProjectKickoffChecklistItem[];
   _count: {
     products: number;
     extensions: number;
@@ -205,6 +226,18 @@ export const projectsApi = {
 
   async update(id: string, data: Record<string, unknown>): Promise<Project> {
     const resp = await api.put<Project>(`/api/projects/${id}`, data);
+    return resp.data;
+  },
+
+  async updateKickoffChecklistItem(
+    projectId: string,
+    itemId: string,
+    data: UpdateKickoffChecklistItemInput,
+  ): Promise<ProjectKickoffChecklistItem> {
+    const resp = await api.put<ProjectKickoffChecklistItem>(
+      `/api/projects/${projectId}/kickoff-checklist/${itemId}`,
+      data,
+    );
     return resp.data;
   },
 
