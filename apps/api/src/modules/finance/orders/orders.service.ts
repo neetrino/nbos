@@ -8,6 +8,9 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { attachOrderReconciliation } from './order-reconciliation';
+import type { OrderReconciliationListGap } from './order-reconciliation-list-filter';
+import { ORDER_LIST_INCLUDE, type OrderListRow } from './orders-list-include';
+import { queryOrderIdsPageForReconciliationGap } from './orders-reconciliation-gap-query';
 
 interface CreateOrderDto {
   projectId: string;
@@ -31,6 +34,7 @@ interface OrderQueryParams {
   search?: string;
   dateFrom?: string;
   dateTo?: string;
+  reconciliationGap?: OrderReconciliationListGap;
 }
 
 interface OrderStatsParams {
@@ -43,6 +47,13 @@ export class OrdersService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: OrderQueryParams) {
+    if (params.reconciliationGap) {
+      return this.findAllWithReconciliationGap(params);
+    }
+    return this.findAllDefault(params);
+  }
+
+  private async findAllDefault(params: OrderQueryParams) {
     const { page = 1, pageSize = 20, status, projectId, search, dateFrom, dateTo } = params;
     const where: Prisma.OrderWhereInput = {};
 
@@ -60,30 +71,7 @@ export class OrdersService {
     const [orders, total] = await Promise.all([
       this.prisma.order.findMany({
         where,
-        include: {
-          project: {
-            select: {
-              id: true,
-              code: true,
-              name: true,
-              company: { select: { id: true, name: true } },
-              contact: { select: { id: true, firstName: true, lastName: true } },
-            },
-          },
-          deal: { select: { id: true, code: true } },
-          product: { select: { id: true, name: true, productType: true } },
-          extension: { select: { id: true, name: true } },
-          invoices: {
-            select: {
-              id: true,
-              code: true,
-              status: true,
-              amount: true,
-              payments: { select: { amount: true } },
-            },
-          },
-          _count: { select: { invoices: true } },
-        },
+        include: ORDER_LIST_INCLUDE,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -91,7 +79,62 @@ export class OrdersService {
       this.prisma.order.count({ where }),
     ]);
 
-    const items = orders.map((order) => {
+    return {
+      items: this.mapOrdersToListItems(orders),
+      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    };
+  }
+
+  private async findAllWithReconciliationGap(params: OrderQueryParams) {
+    const gap = params.reconciliationGap;
+    if (!gap) {
+      throw new Error('reconciliationGap is required');
+    }
+
+    const page = params.page ?? 1;
+    const pageSize = params.pageSize ?? 20;
+
+    const { total, ids } = await queryOrderIdsPageForReconciliationGap(this.prisma, {
+      gap,
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
+      status: params.status,
+      projectId: params.projectId,
+      search: params.search,
+      page,
+      pageSize,
+    });
+
+    if (ids.length === 0) {
+      return {
+        items: [],
+        meta: {
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      };
+    }
+
+    const orders = await this.prisma.order.findMany({
+      where: { id: { in: ids } },
+      include: ORDER_LIST_INCLUDE,
+    });
+
+    const orderById = new Map(orders.map((order) => [order.id, order]));
+    const sortedOrders = ids
+      .map((id) => orderById.get(id))
+      .filter((order): order is (typeof orders)[number] => Boolean(order));
+
+    return {
+      items: this.mapOrdersToListItems(sortedOrders),
+      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    };
+  }
+
+  private mapOrdersToListItems(orders: OrderListRow[]) {
+    return orders.map((order) => {
       const orderWithReconciliation = attachOrderReconciliation(order);
 
       return {
@@ -102,11 +145,6 @@ export class OrdersService {
         contact: order.project.contact,
       };
     });
-
-    return {
-      items,
-      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
-    };
   }
 
   async findById(id: string) {

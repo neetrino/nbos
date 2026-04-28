@@ -22,13 +22,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                  |
-| -------------------- | -------------------------------------- |
-| Current phase        | Phase 3 - Finance core                 |
-| Current module/block | Orders reconciliation drilldown        |
-| Current task         | Dashboard warnings deep-link to Orders |
-| Status               | Slice completed; waiting approval      |
-| Last updated         | 2026-04-28                             |
+| Field                | Value                                     |
+| -------------------- | ----------------------------------------- |
+| Current phase        | Phase 3 - Finance core                    |
+| Current module/block | Orders reconciliation server filter       |
+| Current task         | API gap query + typed SQL for Orders list |
+| Status               | Slice completed; waiting approval         |
+| Last updated         | 2026-04-28                                |
 
 ## Phase Progress
 
@@ -36,7 +36,7 @@ Rules:
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                          |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations |
-| Phase 3 - Finance core                           | In progress |       5% | None                           | First drill-down from dashboard reconciliation warnings              |
+| Phase 3 - Finance core                           | In progress |      10% | None                           | Orders reconciliation gap filtering on the API                       |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                          |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                         |
 | Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                   |
@@ -75,6 +75,7 @@ Rules:
 | 2026-04-28 | Finance reconciliation summary done      | Finance dashboard shows order amount, invoiced, paid, uninvoiced and outstanding coverage with warnings                      | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                                                    | Phase 2 wrap-up review before Phase 3           |
 | 2026-04-28 | Phase 2 closed                           | CRM, Marketing, Projects intake and Finance reconciliation foundations accepted as Phase 2 baseline                          | `git diff --check`                                                                                                                                                                                                                                                                                        | Start Phase 3 Finance core                      |
 | 2026-04-28 | Orders reconciliation drilldown done     | Finance dashboard reconciliation warnings link to Orders with gap filters and in-memory reconciliation highlighting          | `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm vitest run apps/web/src/features/finance/constants/order-reconciliation-drilldown.test.ts`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                                       | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Orders reconciliation API filter done    | GET /finance/orders supports gap uninvoiced/outstanding with SQL filters aligned to reconciliation math                      | `pnpm --filter @nbos/database typecheck`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`; `pnpm lint`; `pnpm typecheck`; `pnpm build`; `pnpm test`; `git diff --check`                                          | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 
@@ -147,7 +148,7 @@ Continue with Phase 3:
 
 ```text
 Next Phase 3 slice candidates:
-- Server-side reconciliation filters when order volume exceeds client drill-down windows.
 - Subscription and invoice lifecycle depth with no fake money states.
 - Partner and payout dependencies once Finance source data is reliable.
+- Optional stats endpoint aligned with gap filters when reporting needs exact totals.
 ```

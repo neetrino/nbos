@@ -1,0 +1,58 @@
+import { join, sql } from '@nbos/database';
+
+export type OrderReconciliationListGap = 'uninvoiced' | 'outstanding';
+
+export function parseOrderReconciliationListGap(
+  raw: string | undefined,
+): OrderReconciliationListGap | null {
+  if (raw === 'uninvoiced' || raw === 'outstanding') {
+    return raw;
+  }
+  return null;
+}
+
+interface OrdersWhereSqlParams {
+  dateFrom?: string;
+  dateTo?: string;
+  status?: string;
+  projectId?: string;
+  search?: string;
+  gap: OrderReconciliationListGap;
+}
+
+export function buildOrdersReconciliationWhereSql(params: OrdersWhereSqlParams) {
+  const conditions: ReturnType<typeof sql>[] = [];
+
+  if (params.dateFrom) {
+    conditions.push(sql`o.created_at >= ${new Date(params.dateFrom)}`);
+  }
+  if (params.dateTo) {
+    conditions.push(sql`o.created_at <= ${new Date(params.dateTo)}`);
+  }
+  if (params.status) {
+    conditions.push(sql`o.status = ${params.status}::"OrderStatusEnum"`);
+  }
+  if (params.projectId) {
+    conditions.push(sql`o.project_id = ${params.projectId}`);
+  }
+  const trimmedSearch = params.search?.trim();
+  if (trimmedSearch) {
+    const pattern = `%${escapeLikePattern(trimmedSearch)}%`;
+    conditions.push(sql`o.code ILIKE ${pattern} ESCAPE '\\'`);
+  }
+
+  conditions.push(buildGapConditionSql(params.gap));
+
+  return join(conditions, ' AND ');
+}
+
+function buildGapConditionSql(gap: OrderReconciliationListGap) {
+  if (gap === 'uninvoiced') {
+    return sql`COALESCE((SELECT SUM(i.amount) FROM invoices i WHERE i.order_id = o.id), 0) < o.total_amount`;
+  }
+  return sql`COALESCE((SELECT SUM(p.amount) FROM payments p INNER JOIN invoices i ON i.id = p.invoice_id WHERE i.order_id = o.id), 0) < o.total_amount`;
+}
+
+function escapeLikePattern(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+}

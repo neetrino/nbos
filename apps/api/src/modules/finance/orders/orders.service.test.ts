@@ -73,6 +73,42 @@ describe('OrdersService', () => {
         }),
       );
     });
+
+    it('uses raw SQL id lookup when reconciliationGap is set', async () => {
+      prisma.$queryRaw
+        .mockResolvedValueOnce([{ count: BigInt(1) }])
+        .mockResolvedValueOnce([{ id: 'ord-gap' }]);
+      prisma.order.findMany.mockResolvedValue([
+        {
+          id: 'ord-gap',
+          code: 'ORD-1',
+          totalAmount: 100000,
+          project: {
+            id: 'p1',
+            code: 'P-1',
+            name: 'Project',
+            company: { id: 'c1', name: 'Company' },
+            contact: { id: 'ct1', firstName: 'Jane', lastName: 'Doe' },
+          },
+          deal: { id: 'd1', code: 'D-1' },
+          product: null,
+          extension: null,
+          invoices: [{ amount: 50000, payments: [{ amount: 10000 }] }],
+          _count: { invoices: 1 },
+        },
+      ]);
+
+      const result = await service.findAll({ reconciliationGap: 'uninvoiced', pageSize: 10 });
+
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(2);
+      expect(prisma.order.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: { in: ['ord-gap'] } },
+        }),
+      );
+      expect(result.meta.total).toBe(1);
+      expect(result.items[0]?.id).toBe('ord-gap');
+    });
   });
 
   describe('findById', () => {

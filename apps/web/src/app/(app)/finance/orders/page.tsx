@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, RefreshCcw, ShoppingCart, X } from 'lucide-react';
@@ -16,13 +16,13 @@ import {
   ORDER_RECONCILIATION_GAP,
   ORDER_RECONCILIATION_GAP_QUERY,
   type OrderReconciliationGap,
-  filterOrdersByReconciliationGap,
   parseOrderReconciliationGap,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { ORDER_STATUSES } from '@/features/finance/components/orders/order-statuses';
 import { OrdersStatsCards } from '@/features/finance/components/orders/OrdersStatsCards';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
+import type { ListData } from '@/lib/api/finance-common';
 import { ordersApi, type Order, type OrderStats } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 
@@ -39,22 +39,29 @@ function OrdersPageContent() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [listMeta, setListMeta] = useState<ListData<Order>['meta'] | null>(null);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const periodParams = getFinancePeriodParams(period);
       const pageSize = gap ? ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE : 100;
+      const listParams: Record<string, unknown> = {
+        pageSize,
+        search: search || undefined,
+        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        ...periodParams,
+      };
+      if (gap) {
+        listParams.gap = gap;
+      }
+
       const [data, orderStats] = await Promise.all([
-        ordersApi.getAll({
-          pageSize,
-          search: search || undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-          ...periodParams,
-        }),
+        ordersApi.getAll(listParams),
         ordersApi.getStats(periodParams),
       ]);
       setOrders(data.items);
+      setListMeta(data.meta);
       setStats(orderStats);
       setError(null);
     } catch {
@@ -68,11 +75,6 @@ function OrdersPageContent() {
     fetchOrders();
   }, [fetchOrders]);
 
-  const displayedOrders = useMemo(() => {
-    if (!gap) return orders;
-    return filterOrdersByReconciliationGap(orders, gap);
-  }, [orders, gap]);
-
   const filterConfigs = [
     {
       key: 'status',
@@ -84,7 +86,7 @@ function OrdersPageContent() {
     },
   ];
 
-  const description = buildOrdersDescription(orders.length, displayedOrders.length, gap);
+  const description = buildOrdersDescription(orders.length, listMeta, gap);
 
   const clearReconciliationGap = () => {
     router.replace('/finance/orders');
@@ -144,11 +146,11 @@ function OrdersPageContent() {
             </Button>
           }
         />
-      ) : displayedOrders.length === 0 ? (
+      ) : gap && orders.length === 0 ? (
         <EmptyState
           icon={ShoppingCart}
           title="No orders match this reconciliation filter"
-          description="Try clearing the filter or loading more orders by widening the period."
+          description="Try clearing the filter or widening the reporting period."
           action={
             <Button variant="outline" onClick={clearReconciliationGap}>
               <X size={16} />
@@ -157,7 +159,7 @@ function OrdersPageContent() {
           }
         />
       ) : (
-        <OrdersTable orders={displayedOrders} onCreateInvoice={setInvoiceOrder} />
+        <OrdersTable orders={orders} onCreateInvoice={setInvoiceOrder} />
       )}
       <CreateInvoiceDialog
         open={Boolean(invoiceOrder)}
@@ -188,8 +190,8 @@ function ReconciliationGapBanner({
 }) {
   const label =
     gap === ORDER_RECONCILIATION_GAP.UNINVOICED
-      ? 'Showing orders with uninvoiced amounts (among loaded orders).'
-      : 'Showing orders with outstanding payment amounts (among loaded orders).';
+      ? 'Server-filtered list: orders that still have uninvoiced amounts.'
+      : 'Server-filtered list: orders that still have outstanding payment amounts.';
 
   return (
     <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
@@ -211,12 +213,13 @@ function ReconciliationGapBanner({
 }
 
 function buildOrdersDescription(
-  loadedCount: number,
-  visibleCount: number,
+  pageCount: number,
+  meta: ListData<Order>['meta'] | null,
   gap: ReturnType<typeof parseOrderReconciliationGap>,
 ): string {
   if (!gap) {
-    return `${loadedCount} orders`;
+    return `${pageCount} orders`;
   }
-  return `${visibleCount} orders (filtered from ${loadedCount} loaded)`;
+  const total = meta?.total ?? pageCount;
+  return `${pageCount} on this page · ${total} matching filter`;
 }
