@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Subscription } from '@/lib/api/finance';
 import { subscriptionsApi } from '@/lib/api/finance';
 import { partnersApi, type Partner } from '@/lib/api/partners';
@@ -84,8 +85,13 @@ export function SubscriptionPartnerDialog({
       });
       onSaved(updated);
       onOpenChange(false);
-    } catch {
-      setFormError('Partner could not be updated. Check your connection and try again.');
+    } catch (caught) {
+      setFormError(
+        getApiErrorMessage(
+          caught,
+          'Partner could not be updated. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
