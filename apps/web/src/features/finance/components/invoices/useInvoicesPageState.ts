@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, paymentsApi, type Invoice, type InvoiceStats } from '@/lib/api/finance';
@@ -157,8 +158,9 @@ function useInvoiceStatusChange(
       try {
         const updated = await invoicesApi.updateStatus(id, status);
         setInvoices((current) => replaceInvoice(current, updated));
-      } catch {
+      } catch (caught) {
         setInvoices(() => previousInvoices);
+        toast.error(getApiErrorMessage(caught, 'Could not update invoice status. Try again.'));
       }
     },
     [invoices, setInvoices],
