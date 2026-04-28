@@ -15,6 +15,7 @@ import {
 import { PRISMA_TOKEN } from '../../database.module';
 import { isValidPayrollMonth } from './payroll-runs.constants';
 import { canTransitionPayrollRun } from './payroll-run-status-transitions';
+import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
 const PAYROLL_RUN_STATUSES: PayrollRunStatusEnum[] = [
@@ -103,6 +104,7 @@ export class PayrollRunsService {
           orderBy: { createdAt: 'asc' },
           include: {
             employee: { select: { id: true, firstName: true, lastName: true, email: true } },
+            expense: { select: { id: true, name: true, amount: true, status: true } },
           },
         },
         createdBy: { select: { id: true, firstName: true, lastName: true } },
@@ -189,7 +191,16 @@ export class PayrollRunsService {
       data.closedAt = new Date();
     }
 
-    await this.prisma.payrollRun.update({ where: { id }, data });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.payrollRun.update({ where: { id }, data });
+      if (status === 'APPROVED') {
+        await materializePayrollExpensesForApprovedRun(tx, {
+          payrollRunId: id,
+          payrollMonth: run.payrollMonth,
+        });
+      }
+    });
+
     return this.findById(id);
   }
 

@@ -153,6 +153,13 @@ export default function PayrollRunDetailPage() {
 
       {actionError ? <p className="text-destructive text-sm">{actionError}</p> : null}
 
+      {run.status === 'APPROVED' || run.status === 'PAYING' || run.status === 'CLOSED' ? (
+        <p className="text-muted-foreground text-sm">
+          Approved runs materialize one expense card per payable salary line (linked below). Pay via
+          Finance → Expenses and partial payments as usual.
+        </p>
+      ) : null}
+
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Summary label="Total base" value={formatAmount(parseAmount(run.totalBaseSalary))} />
         <Summary label="Bonuses" value={formatAmount(parseAmount(run.totalBonuses))} />
@@ -169,12 +176,13 @@ export default function PayrollRunDetailPage() {
               <TableHead className="text-right">Bonuses</TableHead>
               <TableHead className="text-right">Payable</TableHead>
               <TableHead className="text-right">Remaining</TableHead>
+              <TableHead>Expense</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {run.salaryLines.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-muted-foreground py-10 text-center text-sm">
+                <TableCell colSpan={6} className="text-muted-foreground py-10 text-center text-sm">
                   No salary lines. Create the run with “seed lines” or add lines in a future
                   release.
                 </TableCell>
@@ -194,6 +202,18 @@ export default function PayrollRunDetailPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     {formatAmount(parseAmount(line.remainingAmount))}
+                  </TableCell>
+                  <TableCell>
+                    {line.expense ? (
+                      <Link
+                        href={`/finance/expenses/${line.expense.id}`}
+                        className="text-primary text-sm font-medium hover:underline"
+                      >
+                        {line.expense.name}
+                      </Link>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

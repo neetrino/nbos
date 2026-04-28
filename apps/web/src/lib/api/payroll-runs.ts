@@ -27,6 +27,13 @@ export interface PayrollRunEmployeeRef {
   email: string;
 }
 
+export interface SalaryLineExpenseRef {
+  id: string;
+  name: string;
+  amount: string;
+  status: string;
+}
+
 export interface SalaryLineRow {
   id: string;
   payrollRunId: string;
@@ -43,6 +50,7 @@ export interface SalaryLineRow {
   createdAt: string;
   updatedAt: string;
   employee: PayrollRunEmployeeRef;
+  expense: SalaryLineExpenseRef | null;
 }
 
 export interface PayrollRunDetail extends PayrollRunListRow {
