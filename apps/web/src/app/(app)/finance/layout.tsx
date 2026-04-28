@@ -11,6 +11,7 @@ import {
   Receipt,
   Banknote,
   Wallet,
+  PieChart,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,7 @@ const TABS = [
   { href: '/finance/subscriptions', label: 'Subscriptions', icon: RefreshCw },
   { href: '/finance/expenses', label: 'Expenses', icon: Receipt },
   { href: '/finance/payroll', label: 'Payroll', icon: Banknote },
+  { href: '/finance/bonus-pools', label: 'Bonus pools', icon: PieChart },
   { href: '/finance/wallet', label: 'My wallet', icon: Wallet },
 ] as const;
 

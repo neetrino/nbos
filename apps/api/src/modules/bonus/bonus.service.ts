@@ -6,6 +6,11 @@ import {
   type BonusStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  foldBonusProjectPools,
+  type BonusProjectPoolGroupRow,
+  type BonusProjectPoolRow,
+} from './bonus-project-pools';
 
 interface CreateBonusDto {
   employeeId: string;
@@ -130,6 +135,26 @@ export class BonusService {
       this.prisma.bonusEntry.aggregate({ _sum: { amount: true } }),
     ]);
     return { byStatus, totalAmount: totalAmount._sum.amount };
+  }
+
+  async getProjectPools(): Promise<BonusProjectPoolRow[]> {
+    const raw = await this.prisma.bonusEntry.groupBy({
+      by: ['projectId', 'status'] as const,
+      _count: true,
+      _sum: { amount: true },
+    });
+
+    if (raw.length === 0) {
+      return [];
+    }
+
+    const projectIds = [...new Set(raw.map((r) => r.projectId))];
+    const projects = await this.prisma.project.findMany({
+      where: { id: { in: projectIds } },
+      select: { id: true, code: true, name: true },
+    });
+
+    return foldBonusProjectPools(raw as BonusProjectPoolGroupRow[], projects);
   }
 
   private buildWhere(

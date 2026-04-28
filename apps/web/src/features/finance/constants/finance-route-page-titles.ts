@@ -19,6 +19,10 @@ export function employeeWalletPageTitle(): string {
   return 'My wallet';
 }
 
+export function bonusProjectPoolsPageTitle(): string {
+  return 'Bonus pools';
+}
+
 export function payrollRunDetailPageTitle(payrollMonth: string | null | undefined): string {
   const m = payrollMonth?.trim();
   if (!m) return 'Payroll run';

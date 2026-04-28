@@ -47,6 +47,15 @@ export class BonusController {
     return this.bonusService.getStats();
   }
 
+  @Get('projects/pools')
+  @ApiOperation({
+    summary:
+      'Project-level bonus roll-ups from bonus entries (pipeline vs paid vs clawback; read-only aggregate)',
+  })
+  async getProjectPools() {
+    return this.bonusService.getProjectPools();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get bonus entry by ID' })
   async findOne(@Param('id') id: string) {

@@ -64,6 +64,18 @@ export interface BonusStats {
   totalAmount: string | null;
 }
 
+/** Matches `GET /api/bonus/projects/pools` rows (derived from bonus entries, not a separate pool ledger). */
+export interface BonusProjectPoolRow {
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  entryCount: number;
+  sumTotalAmount: string;
+  sumPipelineAmount: string;
+  sumPaidAmount: string;
+  sumClawbackAmount: string;
+}
+
 export interface BonusListQueryParams {
   page?: number;
   pageSize?: number;
@@ -94,6 +106,11 @@ export const bonusesApi = {
 
   async getStats(): Promise<BonusStats> {
     const resp = await api.get<BonusStats>('/api/bonus/stats');
+    return resp.data;
+  },
+
+  async getProjectPools(): Promise<BonusProjectPoolRow[]> {
+    const resp = await api.get<BonusProjectPoolRow[]>('/api/bonus/projects/pools');
     return resp.data;
   },
 };
