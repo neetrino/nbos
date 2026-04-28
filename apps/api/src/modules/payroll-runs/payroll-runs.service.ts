@@ -5,9 +5,13 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
-import { Decimal, PrismaClient, type Prisma, type PayrollRunStatusEnum } from '@nbos/database';
+import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { isValidPayrollMonth } from './payroll-runs.constants';
+import {
+  buildPayrollRunWhereFromScope,
+  parsePayrollRunStatusQuery,
+} from './payroll-run-list-scope';
 import { canTransitionPayrollRun } from './payroll-run-status-transitions';
 import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
@@ -19,15 +23,9 @@ import {
 } from './payroll-run-audit.constants';
 import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
 import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
+import { computePayrollRunListStats, type PayrollRunStatsResult } from './payroll-run-list-stats';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
-const PAYROLL_RUN_STATUSES: PayrollRunStatusEnum[] = [
-  'DRAFT',
-  'REVIEW',
-  'APPROVED',
-  'PAYING',
-  'CLOSED',
-];
 
 function normalizeListPage(page?: number): number {
   const n = page ?? 1;
@@ -39,20 +37,19 @@ function normalizeListPageSize(pageSize?: number): number {
   return Math.min(500, Math.max(1, n));
 }
 
-function parsePayrollRunStatus(value: string): PayrollRunStatusEnum {
-  if (!PAYROLL_RUN_STATUSES.includes(value as PayrollRunStatusEnum)) {
-    throw new BadRequestException(`Invalid payroll run status: ${value}`);
-  }
-  return value as PayrollRunStatusEnum;
-}
-
 export interface PayrollRunListParams {
   page?: number;
   pageSize?: number;
   status?: string;
+  /** Inclusive lower bound `YYYY-MM` (string order matches calendar). */
+  payrollMonthFrom?: string;
+  /** Inclusive upper bound `YYYY-MM`. */
+  payrollMonthTo?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+export type { PayrollRunStatsResult } from './payroll-run-list-stats';
 
 export interface CreatePayrollRunBody {
   payrollMonth: string;
@@ -77,10 +74,11 @@ export class PayrollRunsService {
       params.sortBy && LIST_SORT_FIELDS.has(params.sortBy) ? params.sortBy : 'createdAt';
     const sortOrder = params.sortOrder === 'asc' ? 'asc' : 'desc';
 
-    const where: Prisma.PayrollRunWhereInput = {};
-    if (params.status) {
-      where.status = parsePayrollRunStatus(params.status);
-    }
+    const where = buildPayrollRunWhereFromScope({
+      status: params.status,
+      payrollMonthFrom: params.payrollMonthFrom,
+      payrollMonthTo: params.payrollMonthTo,
+    });
 
     const [items, total] = await Promise.all([
       this.prisma.payrollRun.findMany({
@@ -107,6 +105,17 @@ export class PayrollRunsService {
       })),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
+  }
+
+  async getStats(
+    params: Pick<PayrollRunListParams, 'status' | 'payrollMonthFrom' | 'payrollMonthTo'>,
+  ): Promise<PayrollRunStatsResult> {
+    const where = buildPayrollRunWhereFromScope({
+      status: params.status,
+      payrollMonthFrom: params.payrollMonthFrom,
+      payrollMonthTo: params.payrollMonthTo,
+    });
+    return computePayrollRunListStats(this.prisma, where);
   }
 
   async findById(id: string) {
@@ -207,7 +216,7 @@ export class PayrollRunsService {
   }
 
   async updateStatus(id: string, nextStatus: string, meta: PayrollRunStatusMeta) {
-    const status = parsePayrollRunStatus(nextStatus);
+    const status = parsePayrollRunStatusQuery(nextStatus);
     const run = await this.prisma.payrollRun.findUnique({ where: { id } });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
 

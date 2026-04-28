@@ -51,6 +51,27 @@ describe('fetchAllPayrollRunsForExport', () => {
     );
   });
 
+  it('passes payroll month range to API', async () => {
+    getAll.mockResolvedValueOnce({
+      items: [mockRun('a')],
+      meta: { total: 1, page: 1, pageSize: 500, totalPages: 1 },
+    });
+    await fetchAllPayrollRunsForExport({
+      payrollMonthFrom: '2026-01',
+      payrollMonthTo: '2026-03',
+      sortBy: 'payrollMonth',
+      sortOrder: 'desc',
+    });
+    expect(getAll).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payrollMonthFrom: '2026-01',
+        payrollMonthTo: '2026-03',
+        page: 1,
+        pageSize: 500,
+      }),
+    );
+  });
+
   it('passes status filter to API', async () => {
     getAll.mockResolvedValueOnce({
       items: [mockRun('a')],

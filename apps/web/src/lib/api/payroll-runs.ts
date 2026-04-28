@@ -89,13 +89,42 @@ export interface PayrollRunListParams {
   page?: number;
   pageSize?: number;
   status?: string;
+  payrollMonthFrom?: string;
+  payrollMonthTo?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
 
+export interface PayrollRunStats {
+  runCount: number;
+  totals: {
+    totalBaseSalary: string;
+    totalBonuses: string;
+    totalAdjustments: string;
+    totalDeductions: string;
+    totalPayable: string;
+    totalPaid: string;
+  };
+  byStatus: Array<{
+    status: PayrollRunStatus;
+    runCount: number;
+    totalPayable: string;
+  }>;
+}
+
+export type PayrollRunStatsParams = Pick<
+  PayrollRunListParams,
+  'status' | 'payrollMonthFrom' | 'payrollMonthTo'
+>;
+
 export const payrollRunsApi = {
   async getAll(params?: PayrollRunListParams): Promise<ListData<PayrollRunListRow>> {
     const resp = await api.get<ListData<PayrollRunListRow>>('/api/payroll-runs', { params });
+    return resp.data;
+  },
+
+  async getStats(params?: PayrollRunStatsParams): Promise<PayrollRunStats> {
+    const resp = await api.get<PayrollRunStats>('/api/payroll-runs/stats', { params });
     return resp.data;
   },
 

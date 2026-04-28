@@ -65,13 +65,22 @@ export function triggerPayrollRunsCsvDownload(csvBodyWithoutBom: string, filenam
 
 export function downloadPayrollRunsCsv(
   rows: PayrollRunListRow[],
-  options?: { statusScope?: string },
+  options?: {
+    statusScope?: string;
+    payrollMonthFrom?: string;
+    payrollMonthTo?: string;
+  },
 ): void {
   const content = buildPayrollRunsCsvContent(rows);
   const dateStamp = new Date().toISOString().slice(0, 10);
-  const scope =
+  const statusPart =
     options?.statusScope && options.statusScope !== 'ALL'
       ? `-${options.statusScope.toLowerCase()}`
       : '';
-  triggerPayrollRunsCsvDownload(content, `nbos-payroll-runs-${dateStamp}${scope}.csv`);
+  const fromPart = options?.payrollMonthFrom ? `-from-${options.payrollMonthFrom}` : '';
+  const toPart = options?.payrollMonthTo ? `-to-${options.payrollMonthTo}` : '';
+  triggerPayrollRunsCsvDownload(
+    content,
+    `nbos-payroll-runs-${dateStamp}${statusPart}${fromPart}${toPart}.csv`,
+  );
 }

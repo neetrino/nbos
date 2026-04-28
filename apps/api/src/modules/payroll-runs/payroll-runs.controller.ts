@@ -22,12 +22,24 @@ export class PayrollRunsController {
     required: false,
     description: 'Filter runs by NBOS status (DRAFT, REVIEW, APPROVED, PAYING, CLOSED).',
   })
+  @ApiQuery({
+    name: 'payrollMonthFrom',
+    required: false,
+    description: 'Inclusive lower bound YYYY-MM (string order matches calendar).',
+  })
+  @ApiQuery({
+    name: 'payrollMonthTo',
+    required: false,
+    description: 'Inclusive upper bound YYYY-MM.',
+  })
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('status') status?: string,
+    @Query('payrollMonthFrom') payrollMonthFrom?: string,
+    @Query('payrollMonthTo') payrollMonthTo?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
@@ -35,8 +47,35 @@ export class PayrollRunsController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       status,
+      payrollMonthFrom,
+      payrollMonthTo,
       sortBy,
       sortOrder,
+    });
+  }
+
+  @Get('stats')
+  @ApiOperation({
+    summary: 'Aggregate payroll run totals for list filters',
+    description:
+      'Uses the same filters as GET /payroll-runs (status, payrollMonthFrom, payrollMonthTo). Totals sum run-level decimals across all matching rows (not paginated).',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filter runs by NBOS status (DRAFT, REVIEW, APPROVED, PAYING, CLOSED).',
+  })
+  @ApiQuery({ name: 'payrollMonthFrom', required: false })
+  @ApiQuery({ name: 'payrollMonthTo', required: false })
+  async getStats(
+    @Query('status') status?: string,
+    @Query('payrollMonthFrom') payrollMonthFrom?: string,
+    @Query('payrollMonthTo') payrollMonthTo?: string,
+  ) {
+    return this.payrollRunsService.getStats({
+      status,
+      payrollMonthFrom,
+      payrollMonthTo,
     });
   }
 

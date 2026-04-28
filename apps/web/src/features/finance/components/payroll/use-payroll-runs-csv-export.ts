@@ -7,23 +7,35 @@ import type { PayrollRunStatus } from '@/lib/api/payroll-runs';
 import { downloadPayrollRunsCsv } from '@/features/finance/utils/export-payroll-runs-csv';
 import { fetchAllPayrollRunsForExport } from '@/features/finance/utils/fetch-all-payroll-runs-for-export';
 
-export function usePayrollRunsCsvExport(statusFilter: PayrollRunStatus | 'ALL') {
+export interface PayrollRunsCsvExportScope {
+  status: PayrollRunStatus | 'ALL';
+  payrollMonthFrom?: string;
+  payrollMonthTo?: string;
+}
+
+export function usePayrollRunsCsvExport(scope: PayrollRunsCsvExportScope) {
   const [exportCsvSubmitting, setExportCsvSubmitting] = useState(false);
 
   const listParams = useMemo(
     () => ({
       sortBy: 'payrollMonth' as const,
       sortOrder: 'desc' as const,
-      ...(statusFilter === 'ALL' ? {} : { status: statusFilter }),
+      ...(scope.status === 'ALL' ? {} : { status: scope.status }),
+      ...(scope.payrollMonthFrom ? { payrollMonthFrom: scope.payrollMonthFrom } : {}),
+      ...(scope.payrollMonthTo ? { payrollMonthTo: scope.payrollMonthTo } : {}),
     }),
-    [statusFilter],
+    [scope.status, scope.payrollMonthFrom, scope.payrollMonthTo],
   );
 
   const handleExportCsv = useCallback(async () => {
     setExportCsvSubmitting(true);
     try {
       const rows = await fetchAllPayrollRunsForExport(listParams);
-      downloadPayrollRunsCsv(rows, { statusScope: statusFilter });
+      downloadPayrollRunsCsv(rows, {
+        statusScope: scope.status,
+        payrollMonthFrom: scope.payrollMonthFrom,
+        payrollMonthTo: scope.payrollMonthTo,
+      });
       toast.success(`Exported ${rows.length} payroll run${rows.length === 1 ? '' : 's'}`);
     } catch (caught) {
       toast.error(
@@ -35,7 +47,7 @@ export function usePayrollRunsCsvExport(statusFilter: PayrollRunStatus | 'ALL') 
     } finally {
       setExportCsvSubmitting(false);
     }
-  }, [listParams, statusFilter]);
+  }, [listParams, scope.payrollMonthFrom, scope.payrollMonthTo, scope.status]);
 
   return { exportCsvSubmitting, handleExportCsv };
 }

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Decimal } from '@nbos/database';
 import { PayrollRunsService } from './payroll-runs.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
@@ -34,6 +35,23 @@ describe('PayrollRunsService', () => {
       );
     });
 
+    it('passes payroll month range to findMany', async () => {
+      prisma.payrollRun.findMany.mockResolvedValue([]);
+      prisma.payrollRun.count.mockResolvedValue(0);
+      prisma.salaryLine.groupBy.mockResolvedValue([]);
+      await service.findAll({
+        payrollMonthFrom: '2026-01',
+        payrollMonthTo: '2026-03',
+      });
+      expect(prisma.payrollRun.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            payrollMonth: { gte: '2026-01', lte: '2026-03' },
+          },
+        }),
+      );
+    });
+
     it('adds materializedExpenseLineCount from salary lines with expense_id', async () => {
       prisma.payrollRun.findMany.mockResolvedValue([
         { id: 'r1', payrollMonth: '2026-03', _count: { salaryLines: 5 } },
@@ -44,6 +62,41 @@ describe('PayrollRunsService', () => {
       const result = await service.findAll({});
       expect(result.items[0].materializedExpenseLineCount).toBe(3);
       expect(result.items[1].materializedExpenseLineCount).toBe(0);
+    });
+  });
+
+  describe('getStats', () => {
+    it('returns counts and string totals from aggregate', async () => {
+      prisma.payrollRun.count.mockResolvedValue(2);
+      prisma.payrollRun.aggregate.mockResolvedValue({
+        _sum: {
+          totalBaseSalary: new Decimal('100.50'),
+          totalBonuses: new Decimal('0'),
+          totalAdjustments: new Decimal('0'),
+          totalDeductions: new Decimal('10.00'),
+          totalPayable: new Decimal('90.50'),
+          totalPaid: new Decimal('40.00'),
+        },
+      });
+      prisma.payrollRun.groupBy.mockResolvedValue([
+        {
+          status: 'APPROVED',
+          _count: 2,
+          _sum: { totalPayable: new Decimal('90.50') },
+        },
+      ]);
+
+      const result = await service.getStats({ status: 'APPROVED' });
+
+      expect(result.runCount).toBe(2);
+      expect(result.totals.totalPayable).toBe('90.50');
+      expect(result.totals.totalPaid).toBe('40.00');
+      expect(result.byStatus).toHaveLength(1);
+      expect(result.byStatus[0].status).toBe('APPROVED');
+      expect(result.byStatus[0].runCount).toBe(2);
+      expect(prisma.payrollRun.count).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { status: 'APPROVED' } }),
+      );
     });
   });
 
