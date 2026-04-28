@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Wallet } from 'lucide-react';
+import { Download, Loader2, Wallet } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -18,6 +19,7 @@ import {
   WALLET_BONUS_PIPELINE_ORDER,
 } from '@/features/finance/constants/employee-wallet-ui';
 import { employeeWalletPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { useEmployeeWalletCsvExport } from '@/features/finance/components/wallet/use-employee-wallet-csv-export';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -73,6 +75,9 @@ export default function EmployeeWalletPage() {
 
   const bonusGroups = useMemo(() => (data ? groupBonuses(data.bonuses) : null), [data]);
 
+  const { bonusSubmitting, salarySubmitting, exportBonusesCsv, exportSalaryCsv } =
+    useEmployeeWalletCsvExport(data);
+
   if (loading) {
     return (
       <div className="flex flex-col gap-4">
@@ -105,7 +110,40 @@ export default function EmployeeWalletPage() {
       <PageHeader
         title="My wallet"
         description="Read-only NBOS view: base pay, bonus pipeline, and payroll salary lines tied to expenses."
-      />
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={bonusSubmitting || data.bonuses.length === 0}
+            onClick={() => exportBonusesCsv()}
+            aria-label="Export wallet bonus pipeline as UTF-8 CSV"
+          >
+            {bonusSubmitting ? (
+              <Loader2 size={14} className="mr-1.5 animate-spin" aria-hidden />
+            ) : (
+              <Download size={14} className="mr-1.5" aria-hidden />
+            )}
+            Bonuses CSV
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={salarySubmitting || data.salaryHistory.length === 0}
+            onClick={() => exportSalaryCsv()}
+            aria-label="Export wallet payroll salary lines as UTF-8 CSV"
+          >
+            {salarySubmitting ? (
+              <Loader2 size={14} className="mr-1.5 animate-spin" aria-hidden />
+            ) : (
+              <Download size={14} className="mr-1.5" aria-hidden />
+            )}
+            Payroll CSV
+          </Button>
+        </div>
+      </PageHeader>
 
       <section className="border-border bg-card rounded-2xl border p-5">
         <h2 className="text-foreground text-sm font-semibold">Current compensation</h2>
