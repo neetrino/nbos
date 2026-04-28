@@ -8,6 +8,12 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { formatAmount, getExpenseStage } from '@/features/finance/constants/finance';
 import {
+  EXPENSE_LIST_SORT_BY_QUERY,
+  EXPENSE_LIST_SORT_ORDER_QUERY,
+  parseExpenseListSortByParam,
+  parseExpenseListSortOrderParam,
+} from '@/features/finance/constants/expenses-list-query';
+import {
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   financeExpensesListHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
@@ -31,7 +37,11 @@ function ExpenseDetailPageInner() {
   const searchParams = useSearchParams();
   const id = typeof params.id === 'string' ? params.id : '';
   const listProjectId = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
-  const expensesListHref = financeExpensesListHref(listProjectId);
+  const listSort = {
+    sortBy: parseExpenseListSortByParam(searchParams.get(EXPENSE_LIST_SORT_BY_QUERY)),
+    sortOrder: parseExpenseListSortOrderParam(searchParams.get(EXPENSE_LIST_SORT_ORDER_QUERY)),
+  };
+  const expensesListHref = financeExpensesListHref(listProjectId, listSort);
 
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);

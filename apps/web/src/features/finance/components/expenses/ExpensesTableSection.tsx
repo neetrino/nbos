@@ -19,19 +19,25 @@ import {
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import { getExpenseStage, formatAmount } from '@/features/finance/constants/finance';
-import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
+import {
+  type ExpenseListNavigationSort,
+  expenseDetailHref,
+} from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
 
 interface ExpensesTableSectionProps {
   expenses: Expense[];
   /** When set, row links include `?projectId=` for back-navigation parity. */
   listProjectId?: string | null;
+  /** When set, detail links include the current list sort for back navigation. */
+  listSort?: ExpenseListNavigationSort;
   onRequestDelete: (expense: Expense) => void;
 }
 
 export function ExpensesTableSection({
   expenses,
   listProjectId,
+  listSort,
   onRequestDelete,
 }: ExpensesTableSectionProps) {
   return (
@@ -58,7 +64,7 @@ export function ExpensesTableSection({
               <TableRow key={expense.id}>
                 <TableCell>
                   <Link
-                    href={expenseDetailHref(expense.id, listProjectId)}
+                    href={expenseDetailHref(expense.id, listProjectId, listSort)}
                     className="text-primary font-medium hover:underline"
                   >
                     {expense.name}

@@ -240,6 +240,7 @@ export function ExpensesPageContent({
             <ExpenseKanbanCard
               expense={expense}
               listProjectId={effectiveProjectId ?? null}
+              listSort={{ sortBy, sortOrder }}
               onRequestDelete={(row) => {
                 setDeleteError(null);
                 setDeleteTarget(row);
@@ -251,6 +252,7 @@ export function ExpensesPageContent({
         <ExpensesTableSection
           expenses={expenses}
           listProjectId={effectiveProjectId ?? null}
+          listSort={{ sortBy, sortOrder }}
           onRequestDelete={(row) => {
             setDeleteError(null);
             setDeleteTarget(row);
@@ -264,7 +266,9 @@ export function ExpensesPageContent({
         defaultProjectId={effectiveProjectId ?? null}
         onCreated={(created) => {
           fetchExpenses();
-          router.push(expenseDetailHref(created.id, effectiveProjectId ?? null));
+          router.push(
+            expenseDetailHref(created.id, effectiveProjectId ?? null, { sortBy, sortOrder }),
+          );
         }}
       />
 

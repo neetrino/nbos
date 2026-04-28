@@ -11,24 +11,29 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
+import {
+  type ExpenseListNavigationSort,
+  expenseDetailHref,
+} from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
 
 interface ExpenseKanbanCardProps {
   expense: Expense;
   listProjectId: string | null;
+  listSort?: ExpenseListNavigationSort;
   onRequestDelete: (expense: Expense) => void;
 }
 
 export function ExpenseKanbanCard({
   expense,
   listProjectId,
+  listSort,
   onRequestDelete,
 }: ExpenseKanbanCardProps) {
   return (
     <div className="border-border bg-card relative rounded-xl border">
       <Link
-        href={expenseDetailHref(expense.id, listProjectId)}
+        href={expenseDetailHref(expense.id, listProjectId, listSort)}
         className="focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl p-3 pr-11 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
       >
         <div className="flex items-center justify-between gap-2">
