@@ -3,20 +3,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, Download, Loader2, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollRunDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
+import { PayrollRunSalaryLinesTable } from '@/features/finance/components/payroll/PayrollRunSalaryLinesTable';
+import { usePayrollRunSalaryLinesCsvExport } from '@/features/finance/components/payroll/use-payroll-run-salary-lines-csv-export';
+import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import {
   PAYROLL_JOURNAL_KIND_LABEL,
   PAYROLL_RUN_STATUS_LABEL,
@@ -35,14 +30,14 @@ function parseAmount(value: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function employeeName(emp: { firstName: string; lastName: string }): string {
-  return `${emp.firstName} ${emp.lastName}`.trim();
-}
-
 function formatJournalAt(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function employeeName(emp: { firstName: string; lastName: string }): string {
+  return `${emp.firstName} ${emp.lastName}`.trim();
 }
 
 export default function PayrollRunDetailPage() {
@@ -54,6 +49,9 @@ export default function PayrollRunDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
+
+  const { exportCsvSubmitting, handleExportSalaryLinesCsv } =
+    usePayrollRunSalaryLinesCsvExport(run);
 
   useFinanceDocumentTitle(payrollRunDetailPageTitle(run?.payrollMonth));
 
@@ -121,17 +119,22 @@ export default function PayrollRunDetailPage() {
   }
 
   const actions = payrollRunActionOptions(run.status);
+  const listHrefForRunMonth = payrollRunsListHref(undefined, {
+    payrollMonthFrom: run.payrollMonth,
+    payrollMonthTo: run.payrollMonth,
+  });
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <Link
-            href="/finance/payroll"
+            href={listHrefForRunMonth}
             className="text-muted-foreground hover:text-foreground mb-2 -ml-2 inline-flex items-center gap-1 text-sm"
+            title="Payroll list filtered to this calendar month"
           >
             <ArrowLeft size={14} />
-            Back
+            Back to list
           </Link>
           <h1 className="text-foreground text-2xl font-semibold">Payroll · {run.payrollMonth}</h1>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -144,6 +147,21 @@ export default function PayrollRunDetailPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" onClick={() => void load()} aria-label="Refresh">
             <RefreshCcw size={16} />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={exportCsvSubmitting || run.salaryLines.length === 0}
+            onClick={() => handleExportSalaryLinesCsv()}
+            aria-label="Export salary lines as CSV"
+            title="Download all salary lines for this run (UTF-8 CSV)"
+          >
+            {exportCsvSubmitting ? (
+              <Loader2 size={16} className="animate-spin" aria-hidden />
+            ) : (
+              <Download size={16} aria-hidden />
+            )}
           </Button>
           {actions.map((a) => (
             <Button
@@ -228,60 +246,7 @@ export default function PayrollRunDetailPage() {
         </ul>
       </section>
 
-      <div className="border-border overflow-x-auto rounded-xl border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Employee</TableHead>
-              <TableHead className="text-right">Base</TableHead>
-              <TableHead className="text-right">Bonuses</TableHead>
-              <TableHead className="text-right">Payable</TableHead>
-              <TableHead className="text-right">Remaining</TableHead>
-              <TableHead>Expense</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {run.salaryLines.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground py-10 text-center text-sm">
-                  No salary lines. Create the run with “seed lines” or add lines in a future
-                  release.
-                </TableCell>
-              </TableRow>
-            ) : (
-              run.salaryLines.map((line) => (
-                <TableRow key={line.id}>
-                  <TableCell className="font-medium">{employeeName(line.employee)}</TableCell>
-                  <TableCell className="text-right">
-                    {formatAmount(parseAmount(line.baseSalary))}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatAmount(parseAmount(line.bonusesTotal))}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatAmount(parseAmount(line.totalPayable))}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatAmount(parseAmount(line.remainingAmount))}
-                  </TableCell>
-                  <TableCell>
-                    {line.expense ? (
-                      <Link
-                        href={`/finance/expenses/${line.expense.id}`}
-                        className="text-primary text-sm font-medium hover:underline"
-                      >
-                        {line.expense.name}
-                      </Link>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">—</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <PayrollRunSalaryLinesTable lines={run.salaryLines} />
     </div>
   );
 }
