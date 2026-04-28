@@ -22,13 +22,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                                  |
-| -------------------- | ------------------------------------------------------ |
-| Current phase        | Phase 3 - Finance core                                 |
-| Current module/block | Phase 3 Finance (bounded slices)                       |
-| Current task         | Phase 3 Finance UX (subscriptions + invoice bootstrap) |
-| Status               | Open                                                   |
-| Last updated         | 2026-04-29                                             |
+| Field                | Value                                                                                                                                                       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current phase        | Phase 3 - Finance core                                                                                                                                      |
+| Current module/block | Finance + Partners (cross-linked; bounded slices per roadmap)                                                                                             |
+| Current task         | Close **consistency** gaps (tab titles, `getApiErrorMessage`); next **substantive** work needs product/schema agreement (expense Plan·Card canon, payroll). |
+| Status               | Open                                                                                                                                                        |
+| Last updated         | 2026-04-29                                                                                                                                                  |
 
 ## Phase Progress
 
@@ -36,7 +36,7 @@ Rules:
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                                                                              |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations                                                     |
-| Phase 3 - Finance core                           | In progress |     ~53% | None                           | Expense ledger + status sync + Finance `ApiError` UX; lists/stats; canon payroll / expense Plan·Card split still pending |
+| Phase 3 - Finance core                           | In progress |     ~56% | None                           | Finance + Partners primary paths use `getApiErrorMessage`; Finance tab titles centralized; expense ledger live; **exit** still blocked on Plan·Card canon + payroll depth |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                                                                              |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                                                                             |
 | Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                                                                       |
@@ -48,12 +48,19 @@ Roadmap Phase 3 spans invoices, payments, subscriptions, expenses, partners/payo
 
 | Track                                                                                             | Approx. complete |
 | ------------------------------------------------------------------------------------------------- | ---------------: |
-| Operational money flows (orders ↔ invoices ↔ payments, subscriptions, reconciliation lists/stats) |             ~58% |
-| Partner linking + Finance drill-downs (subscriptions, orders, filtered stats)                     |             ~48% |
-| Expenses (legacy entity UX + reporting period; canon Plan/Card split still pending)               |             ~42% |
+| Operational money flows (orders ↔ invoices ↔ payments, subscriptions, reconciliation lists/stats) |             ~60% |
+| Partner linking + Finance drill-downs (subscriptions, orders, filtered stats) + **Partners UI errors** |             ~55% |
+| Expenses (ledger, backlog, CSV, guards; canon Plan/Card split still pending)                         |             ~45% |
 | Payroll / bonus pools / operational journal                                                       |              ~5% |
 
-**Phase 3 overall:** ~**53%** — operational Finance paths, partner drill-downs, expense payment ledger (API + list/kanban), status sync vs ledger, validation guards, and consistent Finance UI error surfacing (`getApiErrorMessage`) are maturing; large canon work remains on expenses architecture (Plan/Card) and compensation before Phase 3 exit criteria are fully met.
+**Phase 3 overall:** ~**56%** — money-flow surfaces, drill-downs, and expense **payment ledger** are in active use; Finance **and** Partners list/detail/dialog paths surface server errors via `getApiErrorMessage`; Finance **browser tab titles** are centralized for main routes (lists, dashboard, payments, subscription/expense detail). **Remaining for Phase 3 “done”:** agreed **Plan vs Card** expense model (and related UI/API), plus **payroll / bonus** depth—not incremental polish alone.
+
+### Phase 3 — quick snapshot (where we are)
+
+- **Money flows:** orders, invoices, payments, subscriptions — CRUD-ish lists, stats, reconciliation gap filters, create-invoice from order/subscription, mutation recovery banners, document titles.
+- **Expenses:** backlog route, partial payments + delete, status vs ledger sync, amount vs payments guard, CSV export, project drill-down; **no** full Plan·Card split until canon is agreed.
+- **Partners:** CRUD, primary contact, links into Finance; list/detail fetch and create/edit (incl. contacts preload) use **`getApiErrorMessage`** like Finance screens.
+- **Payroll / bonus:** still a thin slice (~5% of Phase 3 scope by plan); largest **structural** gap together with expense canon.
 
 ## Active Work Log
 
@@ -215,8 +222,8 @@ Make NBOS navigable, permission-aware and safe to extend.
 | Settings / Admin            | Yes        | Yes          | Partial     | Yes     | Admin/audit foundation completed; deep settings later                                                                                                                                                                                                                                    |
 | CRM                         | Yes        | Yes          | Partial     | Partial | Offer/contract, Deal Won, handoff visibility and popup shortcuts done                                                                                                                                                                                                                    |
 | Marketing                   | Yes        | Yes          | Partial     | Partial | Launch gates, Finance spend links, performance and efficiency snapshots added                                                                                                                                                                                                            |
-| Finance                     | Yes        | Yes          | Partial     | Partial | Orders/invoices/payments/subscriptions/expenses + reconciliation; partner filters; expense backlog + payments ledger (detail/list), status sync vs ledger, amount vs payments guard; CSV + list UX; Finance surfaces server errors via `getApiErrorMessage`; legacy `/expenses` redirect |
-| Partners                    | Yes        | Yes          | Partial     | Partial | List/detail/create/edit; contact link; drill-down to Finance orders/subscriptions                                                                                                                                                                                                        |
+| Finance                     | Yes        | Yes          | Partial     | Partial | Orders/invoices/payments/subscriptions/expenses + reconciliation; partner filters; expense backlog + ledger (list/detail), status sync, guards, CSV; `getApiErrorMessage`; **tab title helpers** (`finance-route-page-titles`, incl. dashboard/payments/subscription detail); legacy `/expenses` redirect |
+| Partners                    | Yes        | Yes          | Partial     | Partial | List/detail/create/edit; contact link; Finance drill-downs; **list/detail + dialogs use `getApiErrorMessage`** (incl. contacts dropdown load failures)                                                                                                                                   |
 | Projects Hub                | Yes        | Yes          | Partial     | Partial | PM intake, Product/Extension readiness, Done gates and blocker shortcuts added                                                                                                                                                                                                           |
 | Tasks / Work Spaces         | Yes        | No           | No          | No      | Phase 4                                                                                                                                                                                                                                                                                  |
 | Support                     | Yes        | No           | No          | No      | Phase 4                                                                                                                                                                                                                                                                                  |
@@ -242,11 +249,20 @@ A slice is done only when:
 
 ## Next Action
 
-Continue Phase 3 with **coherent slices**: prefer one **reviewable unit** per iteration (small or larger), as long as it is a single narrative (e.g. one UX thread, one API surface) — avoid unrelated drive-by edits or multi-module megarefactors unless agreed. Tiny one-line-only fragments are optional; scope creep stays off-limits.
+Continue Phase 3 with **coherent slices** (one narrative per iteration, one commit when practical). **Polish** (titles, error text, banners) is largely caught up—**next gains** are mostly **product/schema-sized**.
+
+**Suggested order (adjust with product):**
+
+1. **Expense Plan·Card (canon)** — single agreed migration + API/UI slice (not drive-by schema drift); unlocks “real” backlog/plan semantics beyond interim Delayed scope.
+2. **Payroll / bonus / operational journal** — pick smallest vertical that matches `docs/NBOS` canon once Finance expense direction is clear.
+3. **Invoice / subscription lifecycle** — deeper edge cases only when roadmap prioritizes them; keep **no fabricated money state**.
+
+**Already shipped (do not re-scope as “next” unless regression):** expense sort/URL/CSV, backlog route, partial payments + sync guards, Finance `getApiErrorMessage` sweep, mutation banners, Finance tab title helpers, Partners `getApiErrorMessage` parity.
 
 ```text
 Phase 3 slice ideas (pick one cohesive unit per iteration):
-- Expenses: list/kanban sort, URL sync, API order allowlist, CSV export (paged fetch), legacy `/expenses` redirect, `/finance/expenses/backlog` (interim Delayed scope) + stats `status` parity shipped; next deepen toward canon (partial payments, backlog reasons) without full schema rewrite in one step.
-- Subscription and invoice lifecycle depth when priorities require it (no fake money states).
-- Server-side reporting or bulk exports when product priorities are confirmed.
+- Expenses: partial payments, backlog reasons, ledger—shipped; **next = Plan/Card canon by agreement** (schema + API + UI in planned chunks).
+- Subscriptions/invoices: lifecycle depth when roadmap calls for it (no fake money states).
+- Partners: CRUD + drill-downs + error parity—baseline done; payouts/advanced tiers only when canon demands.
+- Server-side reporting or bulk exports when product confirms priorities.
 ```
