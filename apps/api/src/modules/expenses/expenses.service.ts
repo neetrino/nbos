@@ -33,6 +33,7 @@ import {
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
 import { createExpensePaymentRecord, type AddExpensePaymentInput } from './expense-payment-create';
+import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { toExpenseLedgerJson } from './expense-detail-mapper';
 import {
   attachLedgerFieldsToExpenseListItems,
@@ -144,6 +145,7 @@ export class ExpensesService {
     }
     await this.prisma.expensePayment.delete({ where: { id: paymentId } });
     await syncExpenseStatusWithPaymentLedger(this.prisma, expenseId);
+    await syncSalaryLinePaidFromExpenseLedger(this.prisma, expenseId);
     return this.findById(expenseId);
   }
 

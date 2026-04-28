@@ -5,17 +5,12 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
-import {
-  Decimal,
-  PrismaClient,
-  type Prisma,
-  type PayrollRunStatusEnum,
-  type TransactionClient,
-} from '@nbos/database';
+import { Decimal, PrismaClient, type Prisma, type PayrollRunStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { isValidPayrollMonth } from './payroll-runs.constants';
 import { canTransitionPayrollRun } from './payroll-run-status-transitions';
 import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
+import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
 const PAYROLL_RUN_STATUSES: PayrollRunStatusEnum[] = [
@@ -41,10 +36,6 @@ function parsePayrollRunStatus(value: string): PayrollRunStatusEnum {
     throw new BadRequestException(`Invalid payroll run status: ${value}`);
   }
   return value as PayrollRunStatusEnum;
-}
-
-function sumDecimal(value: Decimal | null | undefined): Decimal {
-  return value ?? new Decimal(0);
 }
 
 export interface PayrollRunListParams {
@@ -162,7 +153,7 @@ export class PayrollRunsService {
         }
       }
 
-      await this.recalculateRunTotals(tx, run.id);
+      await recalculatePayrollRunTotalsFromSalaryLines(tx, run.id);
       return run.id;
     });
 
@@ -202,31 +193,5 @@ export class PayrollRunsService {
     });
 
     return this.findById(id);
-  }
-
-  private async recalculateRunTotals(tx: TransactionClient, payrollRunId: string) {
-    const sums = await tx.salaryLine.aggregate({
-      where: { payrollRunId },
-      _sum: {
-        baseSalary: true,
-        bonusesTotal: true,
-        adjustmentsTotal: true,
-        deductionsTotal: true,
-        totalPayable: true,
-        paidAmount: true,
-      },
-    });
-
-    await tx.payrollRun.update({
-      where: { id: payrollRunId },
-      data: {
-        totalBaseSalary: sumDecimal(sums._sum.baseSalary),
-        totalBonuses: sumDecimal(sums._sum.bonusesTotal),
-        totalAdjustments: sumDecimal(sums._sum.adjustmentsTotal),
-        totalDeductions: sumDecimal(sums._sum.deductionsTotal),
-        totalPayable: sumDecimal(sums._sum.totalPayable),
-        totalPaid: sumDecimal(sums._sum.paidAmount),
-      },
-    });
   }
 }

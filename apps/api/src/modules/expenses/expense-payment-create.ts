@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
 import { sumExpensePaymentAmounts } from './expense-payment-rollup';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
+import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 
 export interface AddExpensePaymentInput {
   amount: number;
@@ -53,4 +54,5 @@ export async function createExpensePaymentRecord(
   });
 
   await syncExpenseStatusWithPaymentLedger(prisma, expenseId);
+  await syncSalaryLinePaidFromExpenseLedger(prisma, expenseId);
 }
