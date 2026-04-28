@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Plus,
   RefreshCcw,
@@ -46,6 +47,7 @@ function formatPercent(value: string | number): string {
 }
 
 export default function PartnersPage() {
+  const router = useRouter();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [listTotal, setListTotal] = useState(0);
@@ -192,7 +194,11 @@ export default function PartnersPage() {
                 const orders = partner._count?.orders ?? 0;
                 const subs = partner._count?.subscriptions ?? 0;
                 return (
-                  <TableRow key={partner.id} className="cursor-pointer">
+                  <TableRow
+                    key={partner.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/partners/${partner.id}`)}
+                  >
                     <TableCell>
                       <p className="font-medium">{partner.name}</p>
                     </TableCell>

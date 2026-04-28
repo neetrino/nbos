@@ -22,23 +22,31 @@ import {
   PARTNER_TYPES,
   PARTNER_DIRECTIONS,
   PARTNER_STATUSES,
-  DEFAULT_PARTNER_DEFAULT_PERCENT,
   PARTNER_DEFAULT_PERCENT_MIN,
   PARTNER_DEFAULT_PERCENT_MAX,
 } from '@/features/partners/constants/partners';
-import { parsePartnerDefaultPercentInput } from '@/features/partners/utils/partner-default-percent';
-import { partnersApi } from '@/lib/api/partners';
+import {
+  parsePartnerDefaultPercentInput,
+  formatPartnerDefaultPercentForForm,
+} from '@/features/partners/utils/partner-default-percent';
+import { partnersApi, type Partner } from '@/lib/api/partners';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 
 const CONTACTS_PAGE_SIZE = 200;
 
-interface CreatePartnerDialogProps {
+interface EditPartnerDialogProps {
+  partner: Partner | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onSaved: (updated: Partner) => void;
 }
 
-export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePartnerDialogProps) {
+export function EditPartnerDialog({
+  partner,
+  open,
+  onOpenChange,
+  onSaved,
+}: EditPartnerDialogProps) {
   const [loading, setLoading] = useState(false);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -47,7 +55,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     name: '',
     type: 'REGULAR',
     direction: 'INBOUND',
-    defaultPercent: String(DEFAULT_PARTNER_DEFAULT_PERCENT),
+    defaultPercent: '',
     status: 'ACTIVE',
     contactId: 'none',
   });
@@ -72,59 +80,53 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     };
   }, [open]);
 
-  const reset = () => {
+  useEffect(() => {
+    if (!open || !partner) return;
     setForm({
-      name: '',
-      type: 'REGULAR',
-      direction: 'INBOUND',
-      defaultPercent: String(DEFAULT_PARTNER_DEFAULT_PERCENT),
-      status: 'ACTIVE',
-      contactId: 'none',
+      name: partner.name,
+      type: partner.type,
+      direction: partner.direction,
+      defaultPercent: formatPartnerDefaultPercentForForm(partner.defaultPercent),
+      status: partner.status,
+      contactId: partner.contactId ?? 'none',
     });
     setFormError(null);
-  };
+  }, [open, partner]);
 
-  const pctPreview = parsePartnerDefaultPercentInput(form.defaultPercent);
-  const canSubmit = Boolean(form.name.trim()) && pctPreview !== null;
+  const pct = parsePartnerDefaultPercentInput(form.defaultPercent);
+  const canSubmit = Boolean(partner && form.name.trim()) && pct !== null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
-    const pct = parsePartnerDefaultPercentInput(form.defaultPercent);
-    if (pct === null) return;
+    if (!partner || !canSubmit || pct === null) return;
 
     setLoading(true);
     setFormError(null);
     try {
-      await partnersApi.create({
+      const updated = await partnersApi.update(partner.id, {
         name: form.name.trim(),
         type: form.type,
         direction: form.direction,
         defaultPercent: pct,
         status: form.status,
-        ...(form.contactId !== 'none' ? { contactId: form.contactId } : {}),
+        contactId: form.contactId === 'none' ? null : form.contactId,
       });
-      onCreated();
+      onSaved(updated);
       onOpenChange(false);
-      reset();
     } catch {
-      setFormError('Partner could not be created. Check your connection and try again.');
+      setFormError('Partner could not be saved. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  if (!partner) return null;
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) reset();
-        onOpenChange(next);
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>New Partner</DialogTitle>
+          <DialogTitle>Edit Partner</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -194,7 +196,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
                 inputMode="decimal"
                 value={form.defaultPercent}
                 onChange={(e) => setForm({ ...form, defaultPercent: e.target.value })}
-                aria-invalid={form.defaultPercent.trim() !== '' && pctPreview === null}
+                aria-invalid={form.defaultPercent.trim() !== '' && pct === null}
               />
               <p className="text-muted-foreground mt-1 text-xs">
                 {PARTNER_DEFAULT_PERCENT_MIN}–{PARTNER_DEFAULT_PERCENT_MAX}
@@ -250,7 +252,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
               Cancel
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Creating…' : 'Create Partner'}
+              {loading ? 'Saving…' : 'Save'}
             </Button>
           </DialogFooter>
         </form>

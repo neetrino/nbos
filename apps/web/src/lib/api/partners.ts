@@ -27,6 +27,15 @@ export interface CreatePartnerPayload {
   contactId?: string;
 }
 
+export interface UpdatePartnerPayload {
+  name?: string;
+  type?: string;
+  direction?: string;
+  defaultPercent?: number;
+  status?: string;
+  contactId?: string | null;
+}
+
 interface ListData<T> {
   items: T[];
   meta: { total: number; page: number; pageSize: number; totalPages: number };
@@ -45,7 +54,7 @@ export const partnersApi = {
     const resp = await api.post<Partner>('/api/partners', data);
     return resp.data;
   },
-  async update(id: string, data: Record<string, unknown>): Promise<Partner> {
+  async update(id: string, data: UpdatePartnerPayload): Promise<Partner> {
     const resp = await api.put<Partner>(`/api/partners/${id}`, data);
     return resp.data;
   },
