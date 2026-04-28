@@ -9,6 +9,7 @@ import {
   applyOptimisticSubscriptionStats,
   replaceSubscription,
 } from '@/features/finance/utils/subscription-list-optimistic-stats';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Subscription, type SubscriptionStats } from '@/lib/api/finance';
 
 interface UseSubscriptionsPageStateOptions {
@@ -82,7 +83,14 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
       setError(null);
       void fetchSubscriptionPageStats({ filters, search, partnerIdFromUrl, period })
         .then(setStats)
-        .catch(() => setError('Could not refresh subscription stats. Use Refresh or try again.'));
+        .catch((caught) =>
+          setError(
+            getApiErrorMessage(
+              caught,
+              'Could not refresh subscription stats. Use Refresh or try again.',
+            ),
+          ),
+        );
     },
     [filters, partnerIdFromUrl, period, search, setSubscriptions, setError, setStats],
   );
@@ -154,8 +162,13 @@ function useSubscriptionFetch({
       setSubscriptions(data.items);
       setStats(subscriptionStats);
       setError(null);
-    } catch {
-      setError('Subscriptions could not be loaded. Check your connection and try again.');
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Subscriptions could not be loaded. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -186,8 +199,10 @@ function useSubscriptionActivation(
           ),
         );
         setError(null);
-      } catch {
-        setError('Subscription could not be activated or resumed. Try again.');
+      } catch (caught) {
+        setError(
+          getApiErrorMessage(caught, 'Subscription could not be activated or resumed. Try again.'),
+        );
       } finally {
         setActivatingId(null);
       }
@@ -220,8 +235,8 @@ function useSubscriptionCancellation(
           ),
         );
         setError(null);
-      } catch {
-        setError('Subscription could not be cancelled. Try again.');
+      } catch (caught) {
+        setError(getApiErrorMessage(caught, 'Subscription could not be cancelled. Try again.'));
         throw new Error('subscription_cancel_failed');
       } finally {
         setCancellingId(null);
@@ -255,8 +270,8 @@ function useSubscriptionHold(
           ),
         );
         setError(null);
-      } catch {
-        setError('Subscription could not be put on hold. Try again.');
+      } catch (caught) {
+        setError(getApiErrorMessage(caught, 'Subscription could not be put on hold. Try again.'));
         throw new Error('subscription_hold_failed');
       } finally {
         setHoldingId(null);

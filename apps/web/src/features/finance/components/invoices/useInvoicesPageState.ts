@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, paymentsApi, type Invoice, type InvoiceStats } from '@/lib/api/finance';
 import type { FinanceDateRangeParams } from '@/lib/api/finance-common';
 import type { InvoiceViewMode } from './invoice-page-types';
@@ -111,8 +112,13 @@ function useFetchInvoices({
       setInvoices(data.items);
       setStats(invoiceStats);
       setError(null);
-    } catch {
-      setError('Invoices could not be loaded. Check your connection and try again.');
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Invoices could not be loaded. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
