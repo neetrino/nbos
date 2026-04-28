@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, Clock, DollarSign, RefreshCw } from 'lucide-react';
+import { ErrorState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   FINANCE_PERIOD_OPTIONS,
@@ -64,15 +65,14 @@ export default function FinanceDashboardPage() {
 
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-muted-foreground mb-4 max-w-md text-center">
-          {loadError ?? 'Could not load finance dashboard data.'}
-        </p>
-        <Button onClick={fetchDashboard}>
-          <RefreshCw size={16} className="mr-2" />
-          Retry
-        </Button>
-      </div>
+      <ErrorState
+        title="Finance dashboard unavailable"
+        description={
+          loadError ?? 'Could not load finance dashboard data. Check your connection and try again.'
+        }
+        actionLabel="Retry"
+        onRetry={fetchDashboard}
+      />
     );
   }
 
