@@ -22,13 +22,13 @@ Rules:
 
 ## Current Focus
 
-| Field                | Value                                                 |
-| -------------------- | ----------------------------------------------------- |
-| Current phase        | Phase 3 - Finance core                                |
-| Current module/block | Finance subscriptions ↔ partner                       |
-| Current task         | Invoice stats parity with `subscriptionId` drill-down |
-| Status               | Slice done; next invoice/subscription depth           |
-| Last updated         | 2026-04-28                                            |
+| Field                | Value                                               |
+| -------------------- | --------------------------------------------------- |
+| Current phase        | Phase 3 - Finance core                              |
+| Current module/block | Finance subscriptions ↔ partner                     |
+| Current task         | Create invoice from subscription drill-down context |
+| Status               | Slice done; next invoice/subscription depth         |
+| Last updated         | 2026-04-28                                          |
 
 ## Phase Progress
 
@@ -36,7 +36,7 @@ Rules:
 | ------------------------------------------------ | ----------- | -------: | ------------------------------ | -------------------------------------------------------------------- |
 | Phase 1 - Platform shell and foundations         | Done        |     100% | None                           | Full quality gate completed                                          |
 | Phase 2 - CRM, Marketing and Lead-to-Cash intake | Done        |     100% | None                           | Closed after CRM, Marketing, Projects and Finance intake foundations |
-| Phase 3 - Finance core                           | In progress |      22% | None                           | Subscriptions hold/resume/cancel UX                                  |
+| Phase 3 - Finance core                           | In progress |      24% | None                           | Subscriptions hold/resume/cancel UX                                  |
 | Phase 4 - Delivery operations                    | Not started |       0% | Waits Projects/Tasks alignment | Product/Extension lifecycle                                          |
 | Phase 5 - Collaboration and knowledge            | Not started |       0% | Waits core modules             | Drive, Credentials, Messenger, Notifications                         |
 | Phase 6 - Control layer                          | Not started |       0% | Waits reliable source data     | Dashboard, Reports, Calendar views                                   |
@@ -89,6 +89,7 @@ Rules:
 | 2026-04-28 | Subscriptions partner filter done        | `GET /finance/subscriptions?partnerId=` + `SUBSCRIPTION_PARTNER_FILTER_UNLINKED`; FilterBar Partner; `usePartnerFilterOptions` | `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web typecheck`; `pnpm --filter @nbos/shared typecheck`; `pnpm exec vitest run apps/api/src/modules/finance/subscriptions/subscriptions.service.test.ts`                                                                                         | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Subscription → invoices drilldown done   | `GET /finance/invoices?subscriptionId=`; invoices page banner + clear; subscriptions table link; `InvoiceListParams`           | `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm exec vitest run apps/api/src/modules/finance/invoices/invoices.service.test.ts`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                           | Next Phase 3 Finance slice                      |
 | 2026-04-28 | Invoice stats subscription parity done   | `GET /finance/invoices/stats?subscriptionId=`; `getInvoiceStats` WHERE aligned with list; web passes drill-down to stats       | `pnpm exec vitest run apps/api/src/modules/finance/invoices/invoices.service.test.ts`; `pnpm --filter @nbos/api lint`; `pnpm --filter @nbos/api typecheck`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                           | Next Phase 3 Finance slice                      |
+| 2026-04-28 | Create invoice from subscription done    | `CreateInvoiceDialog` + `subscriptionId` loads sub; `buildCreateInvoicePayload` sends `subscriptionId`; utils tests            | `pnpm exec vitest run apps/web/src/features/finance/components/invoices/create-invoice-dialog-utils.test.ts`; `pnpm --filter @nbos/web lint`; `pnpm --filter @nbos/web typecheck`                                                                                                                         | Next Phase 3 Finance slice                      |
 
 ## Phase 1 Checklist
 

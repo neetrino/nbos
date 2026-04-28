@@ -72,6 +72,7 @@ function InvoicesPageInner() {
         open={state.createOpen}
         onOpenChange={state.setCreateOpen}
         onCreated={state.handleInvoiceCreated}
+        subscriptionId={subscriptionIdFromUrl}
       />
     </div>
   );

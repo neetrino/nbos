@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,42 +20,65 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { INVOICE_TYPES, formatAmount } from '@/features/finance/constants/finance';
-import { ApiError } from '@/lib/api-errors';
-import { invoicesApi, type Order } from '@/lib/api/finance';
-import { projectsApi, type Project } from '@/lib/api/projects';
+import type { Order } from '@/lib/api/finance';
+import type { Subscription } from '@/lib/api/subscriptions';
+import { canSubmitCreateInvoice, type CreateInvoiceFormState } from './create-invoice-dialog-utils';
 import {
-  buildCreateInvoicePayload,
-  canSubmitCreateInvoice,
-  getInitialInvoiceForm,
-  type CreateInvoiceFormState,
-} from './create-invoice-dialog-utils';
+  useCreateInvoiceDialogState,
+  type CreateInvoiceDialogState,
+} from './use-create-invoice-dialog-state';
 
 interface CreateInvoiceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: () => Promise<void> | void;
   order?: Order | null;
+  subscriptionId?: string | null;
 }
 
 export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
   const state = useCreateInvoiceDialogState(props);
-  const canSubmit = canSubmitCreateInvoice(state.form) && !state.loading;
+  const subscriptionBlocked = computeSubscriptionBlocked(props.subscriptionId, state);
+  const canSubmit = canSubmitCreateInvoice(state.form) && !state.loading && !subscriptionBlocked;
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>{props.order ? 'Create Order Invoice' : 'New Invoice'}</DialogTitle>
+          <DialogTitle>{dialogTitle(props.order, state.subscriptionDetail)}</DialogTitle>
           <DialogDescription>
-            {props.order
-              ? `Generate an invoice for ${props.order.code}.`
-              : 'Create a manual invoice.'}
+            {dialogDescription(props.order, props.subscriptionId, state.subscriptionDetail)}
           </DialogDescription>
         </DialogHeader>
         <InvoiceForm state={state} order={props.order} canSubmit={canSubmit} />
       </DialogContent>
     </Dialog>
   );
+}
+
+function dialogTitle(order: Order | null | undefined, subscriptionDetail: Subscription | null) {
+  if (order) return 'Create Order Invoice';
+  if (subscriptionDetail) return 'Create Subscription Invoice';
+  return 'New Invoice';
+}
+
+function dialogDescription(
+  order: Order | null | undefined,
+  subscriptionId: string | null | undefined,
+  subscriptionDetail: Subscription | null,
+) {
+  if (order) return `Generate an invoice for ${order.code}.`;
+  if (subscriptionDetail) return `Bill against subscription ${subscriptionDetail.code}.`;
+  if (subscriptionId) return 'Loading subscription context…';
+  return 'Create a manual invoice.';
+}
+
+function computeSubscriptionBlocked(
+  subscriptionId: string | null | undefined,
+  state: Pick<CreateInvoiceDialogState, 'subscriptionLoading' | 'loadError' | 'subscriptionDetail'>,
+) {
+  if (!subscriptionId?.trim()) return false;
+  return state.subscriptionLoading || state.loadError !== null || !state.subscriptionDetail;
 }
 
 function InvoiceForm({
@@ -68,8 +90,12 @@ function InvoiceForm({
   order?: Order | null;
   canSubmit: boolean;
 }) {
+  const handleSubmit = (event: FormEvent) => {
+    void state.handleSubmit(event);
+  };
+
   return (
-    <form onSubmit={state.handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <InvoiceContextFields state={state} order={order} />
       <InvoiceAmountFields form={state.form} setForm={state.setForm} />
       {state.error && <p className="text-destructive text-sm">{state.error}</p>}
@@ -85,16 +111,6 @@ function InvoiceForm({
   );
 }
 
-interface CreateInvoiceDialogState {
-  form: CreateInvoiceFormState;
-  setForm: (form: CreateInvoiceFormState) => void;
-  projects: Project[];
-  loading: boolean;
-  error: string | null;
-  onOpenChange: (open: boolean) => void;
-  handleSubmit: (event: FormEvent) => Promise<void>;
-}
-
 function InvoiceContextFields({
   state,
   order,
@@ -104,6 +120,22 @@ function InvoiceContextFields({
 }) {
   if (order) {
     return <OrderInvoiceContext order={order} />;
+  }
+
+  if (state.subscriptionLoading) {
+    return (
+      <p className="text-muted-foreground text-sm" role="status">
+        Loading subscription…
+      </p>
+    );
+  }
+
+  if (state.loadError) {
+    return <p className="text-destructive text-sm">{state.loadError}</p>;
+  }
+
+  if (state.subscriptionDetail) {
+    return <SubscriptionInvoiceContext subscription={state.subscriptionDetail} />;
   }
 
   return (
@@ -137,6 +169,21 @@ function OrderInvoiceContext({ order }: { order: Order }) {
       </p>
       <p className="text-muted-foreground mt-1">
         Order total: {formatAmount(Number(order.amount))}
+      </p>
+    </div>
+  );
+}
+
+function SubscriptionInvoiceContext({ subscription }: { subscription: Subscription }) {
+  return (
+    <div className="bg-muted/40 rounded-lg border p-3 text-sm">
+      <p className="font-medium">{subscription.code}</p>
+      <p className="text-muted-foreground">
+        {subscription.project.name}
+        {subscription.company?.name ? ` · ${subscription.company.name}` : ''}
+      </p>
+      <p className="text-muted-foreground mt-1">
+        Monthly amount: {formatAmount(parseFloat(subscription.amount))}
       </p>
     </div>
   );
@@ -189,52 +236,4 @@ function InvoiceAmountFields({
       </div>
     </div>
   );
-}
-
-function useCreateInvoiceDialogState({
-  open,
-  onOpenChange,
-  onCreated,
-  order,
-}: CreateInvoiceDialogProps): CreateInvoiceDialogState {
-  const [form, setForm] = useState(() => getInitialInvoiceForm(order));
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    setForm(getInitialInvoiceForm(order));
-    setError(null);
-    if (!order) void loadProjects(setProjects, setError);
-  }, [open, order]);
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!canSubmitCreateInvoice(form)) return;
-    setLoading(true);
-    try {
-      await invoicesApi.create(buildCreateInvoicePayload(form, order));
-      await onCreated();
-      onOpenChange(false);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Invoice could not be created.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { form, setForm, projects, loading, error, onOpenChange, handleSubmit };
-}
-
-async function loadProjects(
-  setProjects: (projects: Project[]) => void,
-  setError: (error: string | null) => void,
-) {
-  try {
-    const data = await projectsApi.getAll({ pageSize: 100 });
-    setProjects(data.items);
-  } catch {
-    setError('Projects could not be loaded.');
-  }
 }
