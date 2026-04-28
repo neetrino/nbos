@@ -31,6 +31,7 @@ import {
 } from '@/features/finance/components/orders/orders-page-helpers';
 import { OrdersStatsCards } from '@/features/finance/components/orders/OrdersStatsCards';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import type { ListData } from '@/lib/api/finance-common';
 import {
   ordersApi,
@@ -45,6 +46,8 @@ function OrdersPageContent() {
   const searchParams = useSearchParams();
   const gap = parseOrderReconciliationGap(searchParams.get(ORDER_RECONCILIATION_GAP_QUERY));
   const partnerIdFromUrl = searchParams.get(PARTNER_ORDERS_DRILLDOWN_QUERY);
+
+  useFinanceDocumentTitle('Orders');
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);

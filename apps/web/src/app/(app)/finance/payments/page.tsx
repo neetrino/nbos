@@ -25,6 +25,7 @@ import {
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { paymentsApi, type Payment, type PaymentStats } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -35,6 +36,8 @@ export default function PaymentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [period, setPeriod] = useState<FinancePeriod>('month');
+
+  useFinanceDocumentTitle('Payments');
 
   const fetchPayments = useCallback(async () => {
     setLoading(true);

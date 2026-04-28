@@ -11,6 +11,7 @@ import { InvoicesPageHeader } from '@/features/finance/components/invoices/Invoi
 import { InvoiceStatsCards } from '@/features/finance/components/invoices/InvoiceStatsCards';
 import { useInvoicesPageState } from '@/features/finance/components/invoices/useInvoicesPageState';
 import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { Button } from '@/components/ui/button';
 
 function InvoicesPageInner() {
@@ -20,6 +21,8 @@ function InvoicesPageInner() {
   const subscriptionIdFromUrl = searchParams.get(SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY);
 
   const state = useInvoicesPageState({ subscriptionIdFromUrl });
+
+  useFinanceDocumentTitle('Invoices');
 
   const clearSubscriptionDrilldown = () => {
     router.replace(pathname);

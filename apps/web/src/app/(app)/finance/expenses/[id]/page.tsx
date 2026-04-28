@@ -27,13 +27,13 @@ import {
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   financeExpensesListHref,
 } from '@/features/finance/constants/project-expenses-drilldown';
-import { FINANCE_DOCUMENT_TITLE_SUFFIX } from '@/features/finance/constants/finance-document-title';
 import { formatExpenseBacklogReasonLabel } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
-import { cn } from '@/lib/utils';
 import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/AddExpensePaymentDialog';
 import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { cn } from '@/lib/utils';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
@@ -90,23 +90,8 @@ function ExpenseDetailPageInner() {
     fetchExpense();
   }, [fetchExpense]);
 
-  useEffect(() => {
-    if (loading) return;
-
-    const previousTitle = document.title;
-
-    if (error || !expense) {
-      document.title = `Expense${FINANCE_DOCUMENT_TITLE_SUFFIX}`;
-      return () => {
-        document.title = previousTitle;
-      };
-    }
-
-    document.title = `${expense.name}${FINANCE_DOCUMENT_TITLE_SUFFIX}`;
-    return () => {
-      document.title = previousTitle;
-    };
-  }, [loading, error, expense]);
+  const financeDocTitle = loading ? undefined : error || !expense ? 'Expense' : expense.name;
+  useFinanceDocumentTitle(financeDocTitle);
 
   if (loading) {
     return (

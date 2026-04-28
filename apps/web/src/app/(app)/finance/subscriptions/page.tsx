@@ -11,6 +11,7 @@ import { SubscriptionsPageContent } from '@/features/finance/components/subscrip
 import { SubscriptionsPageHeader } from '@/features/finance/components/subscriptions/SubscriptionsPageHeader';
 import { SubscriptionStatsCards } from '@/features/finance/components/subscriptions/SubscriptionStatsCards';
 import { useSubscriptionsPageState } from '@/features/finance/components/subscriptions/useSubscriptionsPageState';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 
 function SubscriptionsPageInner() {
   const router = useRouter();
@@ -21,6 +22,8 @@ function SubscriptionsPageInner() {
   const page = useSubscriptionsPageState({ partnerIdFromUrl });
   const { partnerFilterOptions, partnerOptionsLoadError, clearPartnerOptionsLoadError } =
     usePartnerFilterOptions();
+
+  useFinanceDocumentTitle('Subscriptions');
 
   const totalMRR = Number(page.stats?.monthlyRevenue ?? 0);
   const activeCount = page.subscriptions.filter(

@@ -23,6 +23,7 @@ import {
   type FinanceDashboardData,
   type FinanceKpi,
 } from '@/features/finance/components/dashboard/finance-dashboard-data';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { financeSummaryApi } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -31,6 +32,8 @@ export default function FinanceDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<FinancePeriod>('month');
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  useFinanceDocumentTitle('Dashboard');
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);

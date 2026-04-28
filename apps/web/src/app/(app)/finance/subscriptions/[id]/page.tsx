@@ -15,6 +15,7 @@ import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { SubscriptionDetailActions } from '@/features/finance/components/subscriptions/SubscriptionDetailActions';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 
 function formatDate(iso: string): string {
@@ -54,6 +55,13 @@ export default function SubscriptionDetailPage() {
   useEffect(() => {
     fetchSubscription();
   }, [fetchSubscription]);
+
+  const financeDocTitle = loading
+    ? undefined
+    : error || !subscription
+      ? 'Subscription'
+      : subscription.code;
+  useFinanceDocumentTitle(financeDocTitle);
 
   if (loading) {
     return (
