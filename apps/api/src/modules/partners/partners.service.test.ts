@@ -52,6 +52,19 @@ describe('PartnersService', () => {
         }),
       );
     });
+
+    it('should filter by direction', async () => {
+      prisma.partner.findMany.mockResolvedValue([]);
+      prisma.partner.count.mockResolvedValue(0);
+
+      await service.findAll({ direction: 'OUTBOUND' });
+
+      expect(prisma.partner.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ direction: 'OUTBOUND' }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

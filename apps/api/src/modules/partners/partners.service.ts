@@ -14,6 +14,7 @@ interface PartnerQueryParams {
   search?: string;
   status?: string;
   type?: string;
+  direction?: string;
 }
 
 interface CreatePartnerDto {
@@ -46,7 +47,7 @@ export class PartnersService {
   ) {}
 
   async findAll(params: PartnerQueryParams) {
-    const { page = 1, pageSize = 20, search, status, type } = params;
+    const { page = 1, pageSize = 20, search, status, type, direction } = params;
     const where: Prisma.PartnerWhereInput = {};
 
     if (search) {
@@ -54,6 +55,7 @@ export class PartnersService {
     }
     if (status) where.status = status as PartnerStatusEnum;
     if (type) where.type = type as PartnerTypeEnum;
+    if (direction) where.direction = direction as PartnerDirectionEnum;
 
     const [items, total] = await Promise.all([
       this.prisma.partner.findMany({

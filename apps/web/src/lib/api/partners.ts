@@ -12,6 +12,12 @@ export interface Partner {
   _count?: { orders: number; subscriptions: number };
 }
 
+export interface PartnerStats {
+  total: number;
+  totalSubscriptions: number;
+  avgPayoutPercent: number;
+}
+
 interface ListData<T> {
   items: T[];
   meta: { total: number; page: number; pageSize: number; totalPages: number };
@@ -37,8 +43,8 @@ export const partnersApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/partners/${id}`);
   },
-  async getStats() {
-    const resp = await api.get('/api/partners/stats');
+  async getStats(): Promise<PartnerStats> {
+    const resp = await api.get<PartnerStats>('/api/partners/stats');
     return resp.data;
   },
 };
