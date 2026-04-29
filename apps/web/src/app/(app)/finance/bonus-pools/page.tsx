@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Download, ExternalLink, Loader2, PieChart, RefreshCcw } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-do
 import { useBonusProjectPoolsCsvExport } from '@/features/finance/components/bonus/use-bonus-project-pools-csv-export';
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import { bonusesApi, type BonusProjectPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -53,6 +54,17 @@ export default function BonusPoolsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const poolTotals = useMemo(() => {
+    return {
+      projects: rows.length,
+      entries: rows.reduce((acc, r) => acc + r.entryCount, 0),
+      pipeline: sumMoneyStringsMajorUnits(rows.map((r) => r.sumPipelineAmount)),
+      paid: sumMoneyStringsMajorUnits(rows.map((r) => r.sumPaidAmount)),
+      clawback: sumMoneyStringsMajorUnits(rows.map((r) => r.sumClawbackAmount)),
+      total: sumMoneyStringsMajorUnits(rows.map((r) => r.sumTotalAmount)),
+    };
+  }, [rows]);
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -165,6 +177,26 @@ export default function BonusPoolsPage() {
                 </TableRow>
               ))}
             </TableBody>
+            <tfoot>
+              <TableRow className="bg-muted/30 font-medium">
+                <TableCell colSpan={2} className="text-muted-foreground text-xs">
+                  All projects ({poolTotals.projects})
+                </TableCell>
+                <TableCell className="text-right tabular-nums">{poolTotals.entries}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatAmount(poolTotals.pipeline)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatAmount(poolTotals.paid)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatAmount(poolTotals.clawback)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatAmount(poolTotals.total)}
+                </TableCell>
+              </TableRow>
+            </tfoot>
           </Table>
         </div>
       )}
