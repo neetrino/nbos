@@ -127,6 +127,63 @@ describe('DriveService', () => {
       expect(result.mimeType).toBe('image/png');
     });
 
+    it('getAssetViewUrl with document gate rejects when file not linked to document', async () => {
+      prisma.employeeDepartment.findMany.mockResolvedValueOnce([]);
+      prisma.document.findUnique.mockResolvedValueOnce({
+        ownerId: 'e1',
+        createdById: 'e1',
+        listScopeOverride: null,
+        section: { defaultListScope: 'ALL' },
+      });
+      prisma.documentAttachment.findFirst.mockResolvedValueOnce(null);
+      prisma.fileLink.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        service.getAssetViewUrl('f1', {
+          forDocumentId: 'doc-1',
+          documentsAccess: {
+            employeeId: 'e1',
+            departmentIds: [],
+            documentsViewScope: 'ALL',
+          },
+        }),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(prisma.fileAsset.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('getAssetViewUrl with document gate returns url when attachment exists', async () => {
+      prisma.employeeDepartment.findMany.mockResolvedValueOnce([]);
+      prisma.document.findUnique.mockResolvedValueOnce({
+        ownerId: 'e1',
+        createdById: 'e1',
+        listScopeOverride: null,
+        section: { defaultListScope: 'ALL' },
+      });
+      prisma.documentAttachment.findFirst.mockResolvedValueOnce({ id: 'att-1' });
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({
+        id: 'f1',
+        deletedAt: null,
+        status: 'ACTIVE',
+        storageProvider: 'R2',
+        externalUrl: null,
+        storageKey: 'Drive/k',
+        mimeType: 'image/png',
+        versions: [{ storageKey: 'Drive/k-v1', isCurrent: true }],
+      });
+
+      const result = await service.getAssetViewUrl('f1', {
+        forDocumentId: 'doc-1',
+        documentsAccess: {
+          employeeId: 'e1',
+          departmentIds: [],
+          documentsViewScope: 'ALL',
+        },
+      });
+
+      expect(result.url).toBe('https://presigned-url.example.com');
+    });
+
     it('returns external url for EXTERNAL_URL file asset', async () => {
       prisma.fileAsset.findFirst.mockResolvedValueOnce({
         id: 'f1',

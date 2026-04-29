@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto';
 import { DriveService } from './drive.service';
 import { DriveUploadSessionService } from './drive-upload-session.service';
 import type {
@@ -60,9 +61,24 @@ export class DriveController {
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({
     summary: 'Short-lived presigned URL to view/download file bytes (R2 or external)',
+    description:
+      'Optional `forDocumentId`: when set, also requires Documents read access to that document and an attachment or DOCUMENT FileLink for this file (recommended for document HTML/images).',
   })
-  async getFileAssetPreviewUrl(@Param('id') id: string) {
-    return this.driveService.getAssetViewUrl(id);
+  @ApiQuery({
+    name: 'forDocumentId',
+    required: false,
+    description: 'Native document id — tightens preview to document-scoped file access.',
+  })
+  async getFileAssetPreviewUrl(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Query('forDocumentId') forDocumentId?: string,
+  ) {
+    const docId = forDocumentId?.trim();
+    return this.driveService.getAssetViewUrl(
+      id,
+      docId ? { forDocumentId: docId, documentsAccess: buildDocumentsReadAccess(user) } : undefined,
+    );
   }
 
   @Get('files/:id')

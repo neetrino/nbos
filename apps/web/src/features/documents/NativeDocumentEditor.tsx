@@ -129,23 +129,26 @@ export function NativeDocumentEditor({
     }, DOCUMENT_AUTOSAVE_DEBOUNCE_MS);
   }, [clearDebounce, runSave]);
 
-  const editor = useEditor({
-    extensions: buildNativeDocumentEditorExtensions(),
-    content: resolveInitialJson(initialContentJson),
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        class:
-          'nbos-document-editor ProseMirror min-h-[240px] px-3 py-2 text-sm outline-none focus:outline-none',
+  const editor = useEditor(
+    {
+      extensions: buildNativeDocumentEditorExtensions(documentId),
+      content: resolveInitialJson(initialContentJson),
+      immediatelyRender: false,
+      editorProps: {
+        attributes: {
+          class:
+            'nbos-document-editor ProseMirror min-h-[240px] px-3 py-2 text-sm outline-none focus:outline-none',
+        },
+      },
+      onCreate: ({ editor: ed }) => {
+        lastFingerprintRef.current = fingerprintEditorJson(ed);
+      },
+      onUpdate: () => {
+        scheduleAutosave();
       },
     },
-    onCreate: ({ editor: ed }) => {
-      lastFingerprintRef.current = fingerprintEditorJson(ed);
-    },
-    onUpdate: () => {
-      scheduleAutosave();
-    },
-  });
+    [documentId],
+  );
 
   useEffect(() => {
     editorRef.current = editor;

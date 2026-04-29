@@ -10,7 +10,7 @@ import StarterKit from '@tiptap/starter-kit';
 import type { Extensions } from '@tiptap/react';
 import { DocumentImageNode } from '@/features/documents/document-image-node';
 
-export function buildNativeDocumentEditorExtensions(): Extensions {
+export function buildNativeDocumentEditorExtensions(documentId: string): Extensions {
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
@@ -23,6 +23,6 @@ export function buildNativeDocumentEditorExtensions(): Extensions {
     TableRow,
     TableHeader,
     TableCell,
-    DocumentImageNode,
+    DocumentImageNode.configure({ documentId }),
   ];
 }

@@ -40,6 +40,8 @@ import {
 } from './drive-storage';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { DriveR2Client } from './drive-r2.client';
+import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
+import type { DocumentsReadAccess } from '../documents/documents-access-read';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
 
@@ -149,8 +151,21 @@ export class DriveService {
 
   /**
    * Returns a time-limited URL suitable for `<img src>` or download redirects.
+   * When `gate` is set, requires the same document read rules as Documents detail and a
+   * `DocumentAttachment` or active `DOCUMENT` `FileLink` for the file on that document.
    */
-  async getAssetViewUrl(assetId: string): Promise<{ url: string; mimeType: string | null }> {
+  async getAssetViewUrl(
+    assetId: string,
+    gate?: { forDocumentId: string; documentsAccess: DocumentsReadAccess },
+  ): Promise<{ url: string; mimeType: string | null }> {
+    if (gate?.forDocumentId) {
+      await assertFilePreviewableForDocument(
+        this.prisma,
+        assetId,
+        gate.forDocumentId,
+        gate.documentsAccess,
+      );
+    }
     const file = await this.prisma.fileAsset.findFirst({
       where: { id: assetId, deletedAt: null, status: 'ACTIVE' },
       include: {

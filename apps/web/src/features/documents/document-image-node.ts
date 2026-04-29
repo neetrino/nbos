@@ -8,6 +8,12 @@ export const DocumentImageNode = Node.create({
   atom: true,
   draggable: true,
 
+  addOptions() {
+    return {
+      documentId: '',
+    };
+  },
+
   addAttributes() {
     return {
       fileAssetId: {

@@ -67,6 +67,26 @@ export async function assertFileLinkedToDocument(
   }
 }
 
+/** Ensures the caller may load bytes for this file in the context of a native document (preview / img). */
+export async function assertFilePreviewableForDocument(
+  prisma: InstanceType<typeof PrismaClient>,
+  fileAssetId: string,
+  documentId: string,
+  access: DocumentsReadAccess,
+): Promise<void> {
+  await assertDocumentReadableByAccess(prisma, documentId, access);
+  const attachment = await prisma.documentAttachment.findFirst({
+    where: { documentId, fileAssetId },
+  });
+  if (attachment) return;
+  const link = await prisma.fileLink.findFirst({
+    where: { fileAssetId, entityType: 'DOCUMENT', entityId: documentId, unlinkedAt: null },
+  });
+  if (!link) {
+    throw new NotFoundException(`File asset ${fileAssetId} not found`);
+  }
+}
+
 export async function assertPurposeMatchesMime(
   prisma: InstanceType<typeof PrismaClient>,
   purpose: DocumentAttachmentPurposeEnum,

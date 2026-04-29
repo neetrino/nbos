@@ -204,7 +204,7 @@ export default function DocumentDetailPage() {
                     <TabsTrigger value="edit">Edit</TabsTrigger>
                   </TabsList>
                   <TabsContent value="view" className="mt-4">
-                    <DocumentHtmlViewer html={doc.contentHtml} />
+                    <DocumentHtmlViewer documentId={doc.id} html={doc.contentHtml} />
                   </TabsContent>
                   <TabsContent value="edit" className="mt-4">
                     <NativeDocumentEditor
@@ -218,7 +218,7 @@ export default function DocumentDetailPage() {
                   </TabsContent>
                 </Tabs>
               ) : (
-                <DocumentHtmlViewer html={doc.contentHtml} />
+                <DocumentHtmlViewer documentId={doc.id} html={doc.contentHtml} />
               )}
             </CardContent>
           </Card>

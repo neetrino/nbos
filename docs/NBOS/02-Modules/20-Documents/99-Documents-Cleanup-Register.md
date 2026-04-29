@@ -99,7 +99,7 @@ Done:
 
 Still missing vs full canon:
 
-- TipTap image node → File Asset wiring is shipped; depth: list-scope enforcement + section `default_list_scope` admin (`MANAGE_SECTIONS`); stronger Drive permission matrix on preview (`search_vector` list search shipped).
+- TipTap image node → File Asset wiring is shipped; depth: list-scope enforcement + section `default_list_scope` admin (`MANAGE_SECTIONS`); Drive preview with `forDocumentId` ties bytes to Documents read + attachment or DOCUMENT `FileLink` (`search_vector` list search shipped).
 
 ### B4. TipTap editor is missing
 
@@ -119,7 +119,7 @@ Need editor with:
 
 ### B5. Drive/R2 attachment flow is missing
 
-Статус: `PARTIAL` — upload session with `entityType: DOCUMENT` + `DocumentAttachment` rows + preview URL shipped; deeper Drive↔Documents permission UX remains.
+Статус: `PARTIAL` — upload session with `entityType: DOCUMENT` + `DocumentAttachment` rows + preview URL shipped; document-scoped preview (`forDocumentId`) shipped; further Drive matrix polish optional.
 
 ### B6. Search is missing
 

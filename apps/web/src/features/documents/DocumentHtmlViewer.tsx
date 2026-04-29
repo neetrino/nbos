@@ -11,9 +11,11 @@ const PURIFY_CONFIG = {
 
 export interface DocumentHtmlViewerProps {
   html: string | null | undefined;
+  /** When set, preview URLs are scoped to this document (Documents read + attachment/link). */
+  documentId?: string;
 }
 
-export function DocumentHtmlViewer({ html }: DocumentHtmlViewerProps) {
+export function DocumentHtmlViewer({ html, documentId }: DocumentHtmlViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const safe = useMemo(() => {
     const raw = html?.trim();
@@ -30,7 +32,7 @@ export function DocumentHtmlViewer({ html }: DocumentHtmlViewerProps) {
       const id = img.getAttribute('data-nbos-file');
       if (!id || img.dataset.nbosResolved === '1') return;
       void driveApi
-        .getFileAssetPreviewUrl(id)
+        .getFileAssetPreviewUrl(id, documentId ? { forDocumentId: documentId } : undefined)
         .then(({ url }) => {
           img.src = url;
           img.dataset.nbosResolved = '1';
@@ -39,7 +41,7 @@ export function DocumentHtmlViewer({ html }: DocumentHtmlViewerProps) {
           /* leave without src */
         });
     });
-  }, [safe]);
+  }, [safe, documentId]);
 
   if (!safe) {
     return <p className="text-muted-foreground text-sm">No content yet.</p>;

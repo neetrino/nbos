@@ -73,7 +73,9 @@ export function DocumentAttachmentsPanel({
   const handleOpen = async (fileAssetId: string) => {
     setError(null);
     try {
-      const { url } = await driveApi.getFileAssetPreviewUrl(fileAssetId);
+      const { url } = await driveApi.getFileAssetPreviewUrl(fileAssetId, {
+        forDocumentId: documentId,
+      });
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch {
       setError('Could not open file preview.');

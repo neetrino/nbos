@@ -7,6 +7,7 @@ import { driveApi } from '@/lib/api/drive';
 
 export function DocumentImageNodeView(props: NodeViewProps) {
   const fileAssetId = props.node.attrs.fileAssetId as string | null | undefined;
+  const documentId = (props.extension.options as { documentId?: string }).documentId ?? '';
   const alt = (props.node.attrs.alt as string) ?? '';
   const validId = typeof fileAssetId === 'string' && fileAssetId.length > 0;
   const [src, setSrc] = useState<string | null>(null);
@@ -20,7 +21,7 @@ export function DocumentImageNodeView(props: NodeViewProps) {
       setFailed(false);
     });
     void driveApi
-      .getFileAssetPreviewUrl(fileAssetId)
+      .getFileAssetPreviewUrl(fileAssetId, documentId ? { forDocumentId: documentId } : undefined)
       .then(({ url }) => {
         if (!cancelled) {
           startTransition(() => setSrc(url));
@@ -34,7 +35,7 @@ export function DocumentImageNodeView(props: NodeViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [fileAssetId, validId]);
+  }, [documentId, fileAssetId, validId]);
 
   if (!validId) {
     return (
