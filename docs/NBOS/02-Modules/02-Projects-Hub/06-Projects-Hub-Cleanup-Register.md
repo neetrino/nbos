@@ -383,6 +383,20 @@ Product Done readiness now reads existing CRM/Order handoff file metadata:
 
 This makes Drive gaps visible in Product Done readiness without querying R2 folders as business truth or inventing FileAsset state before the Drive module refactor.
 
+### A28. Projects Hub delivery closure gate exists
+
+Статус: `PHASE 4 CLOSURE REVIEW`
+
+The delivery lifecycle slice now has a formal closure gate in `docs/PHASE_4_CLOSURE_GATE.md`.
+
+The gate marks Projects Hub delivery as ready for closure review, but keeps full Phase 4 open until remaining roadmap scope is resolved:
+
+- `Tasks / Work Space` runtime foundation;
+- Scrum/backlog/sprint planning separation;
+- Support task/change-control/SLA runtime depth.
+
+This prevents prematurely marking Phase 4 complete while the Projects Hub delivery lifecycle work is already reviewable as a coherent slice.
+
 ---
 
 ## B. Устарело только в документации или описаниях
