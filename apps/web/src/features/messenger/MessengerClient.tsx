@@ -37,6 +37,7 @@ export function MessengerClient() {
   const [search, setSearch] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [remoteTypingHint, setRemoteTypingHint] = useState<string | null>(null);
+  const [onlineInMessengerById, setOnlineInMessengerById] = useState<Record<string, true>>({});
 
   const typingClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLocalTypingEmitRef = useRef(0);
@@ -82,6 +83,24 @@ export function MessengerClient() {
     }, MESSENGER_REMOTE_TYPING_HINT_MS);
   }, []);
 
+  const onPresenceSnapshot = useCallback((employeeIds: readonly string[]) => {
+    const next: Record<string, true> = {};
+    for (const id of employeeIds) next[id] = true;
+    setOnlineInMessengerById(next);
+  }, []);
+
+  const onPresenceDelta = useCallback((employeeId: string, state: 'online' | 'offline') => {
+    setOnlineInMessengerById((prev) => {
+      if (state === 'offline') {
+        if (!(employeeId in prev)) return prev;
+        const { [employeeId]: _removed, ...rest } = prev;
+        return rest;
+      }
+      if (prev[employeeId]) return prev;
+      return { ...prev, [employeeId]: true };
+    });
+  }, []);
+
   const { emitChannelTyping, emitDmTyping } = useMessengerRealtime({
     canViewMessenger,
     meId: me?.id,
@@ -90,6 +109,8 @@ export function MessengerClient() {
     onInboundDmMessage,
     onDmSidebarRefresh: refreshDmSidebar,
     onRemoteTypingHint: showRemoteTypingHint,
+    onPresenceSnapshot,
+    onPresenceDelta,
   });
 
   const fireLocalTypingIntent = useCallback(() => {
@@ -246,7 +267,7 @@ export function MessengerClient() {
       id: c.recipientId,
       name,
       initials: initialsFromDisplayName(resolved ?? c.recipientId),
-      online: false,
+      online: Boolean(onlineInMessengerById[c.recipientId]),
     };
   });
 

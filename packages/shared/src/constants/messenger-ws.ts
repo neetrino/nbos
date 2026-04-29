@@ -25,6 +25,12 @@ export const MESSENGER_WS_SERVER_CHANNEL_TYPING = 'messenger.channel.typing';
 /** Server → client: DM peer is typing (`counterpartId` is the typist from your perspective). */
 export const MESSENGER_WS_SERVER_DM_TYPING = 'messenger.dm.typing';
 
+/** Server → client: employee joined or left `/messenger` (reference-counted per employee). */
+export const MESSENGER_WS_SERVER_PRESENCE = 'messenger.presence';
+
+/** Server → client (this socket only): ids currently connected to `/messenger`. */
+export const MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT = 'messenger.presence.snapshot';
+
 export function messengerSocketUserRoom(employeeId: string): string {
   return `messenger:user:${employeeId}`;
 }

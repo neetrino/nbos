@@ -12,6 +12,8 @@ import {
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_TYPING,
+  MESSENGER_WS_SERVER_PRESENCE,
+  MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
 } from '@nbos/shared';
 import type { MessengerMessageRow } from '@/lib/api/messenger';
 import { mapMessengerRowToView, type MessengerViewMessage } from './messenger-message-mapper';
@@ -22,6 +24,24 @@ const MESSENGER_SOCKET_DEV_ORIGIN = 'http://localhost:4000';
 function messengerSocketOrigin(): string {
   const o = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
   return o && o.length > 0 ? o : MESSENGER_SOCKET_DEV_ORIGIN;
+}
+
+function parsePresenceSnapshot(payload: unknown): string[] {
+  if (!payload || typeof payload !== 'object') return [];
+  const raw = (payload as { employeeIds?: unknown }).employeeIds;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
+}
+
+function parsePresenceDelta(
+  payload: unknown,
+): { employeeId: string; state: 'online' | 'offline' } | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const e = (payload as { employeeId?: unknown }).employeeId;
+  const s = (payload as { state?: unknown }).state;
+  if (typeof e !== 'string' || e.trim().length === 0) return null;
+  if (s !== 'online' && s !== 'offline') return null;
+  return { employeeId: e, state: s };
 }
 
 export interface MessengerRealtimeControls {
@@ -37,6 +57,8 @@ export function useMessengerRealtime(options: {
   onInboundDmMessage: (counterpartId: string, msg: MessengerViewMessage) => void;
   onDmSidebarRefresh: () => void;
   onRemoteTypingHint: (hint: string) => void;
+  onPresenceSnapshot?: (employeeIds: readonly string[]) => void;
+  onPresenceDelta?: (employeeId: string, state: 'online' | 'offline') => void;
 }): MessengerRealtimeControls {
   const { data: session } = useSession();
   const accessToken = session?.accessToken ?? null;
@@ -47,6 +69,8 @@ export function useMessengerRealtime(options: {
   const onDm = useRef(options.onInboundDmMessage);
   const onSidebar = useRef(options.onDmSidebarRefresh);
   const onTypingHint = useRef(options.onRemoteTypingHint);
+  const onPresenceSnapshotRef = useRef(options.onPresenceSnapshot);
+  const onPresenceDeltaRef = useRef(options.onPresenceDelta);
 
   useLayoutEffect(() => {
     activeRef.current = options.active;
@@ -55,6 +79,8 @@ export function useMessengerRealtime(options: {
     onDm.current = options.onInboundDmMessage;
     onSidebar.current = options.onDmSidebarRefresh;
     onTypingHint.current = options.onRemoteTypingHint;
+    onPresenceSnapshotRef.current = options.onPresenceSnapshot;
+    onPresenceDeltaRef.current = options.onPresenceDelta;
   });
 
   const emitChannelTyping = useCallback((channelId: string) => {
@@ -128,7 +154,17 @@ export function useMessengerRealtime(options: {
       },
     );
 
+    socket.on(MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT, (payload: unknown) => {
+      onPresenceSnapshotRef.current?.(parsePresenceSnapshot(payload));
+    });
+
+    socket.on(MESSENGER_WS_SERVER_PRESENCE, (payload: unknown) => {
+      const p = parsePresenceDelta(payload);
+      if (p) onPresenceDeltaRef.current?.(p.employeeId, p.state);
+    });
+
     return () => {
+      onPresenceSnapshotRef.current?.([]);
       socket.removeAllListeners();
       socket.close();
       socketRef.current = null;

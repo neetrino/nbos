@@ -5,6 +5,7 @@ import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -22,9 +23,12 @@ import {
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_TYPING,
+  MESSENGER_WS_SERVER_PRESENCE,
+  MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   messengerSocketChannelRoom,
   messengerSocketUserRoom,
 } from '@nbos/shared';
+import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
 
@@ -36,13 +40,14 @@ interface JwtSubPayload {
   namespace: MESSENGER_SOCKET_NAMESPACE,
   cors: { origin: true, credentials: true },
 })
-export class MessengerGateway implements OnGatewayConnection {
+export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
   private readonly logger = new Logger(MessengerGateway.name);
   private readonly jwtSecret: string;
   private readonly typingThrottle = new MessengerTypingThrottle();
+  private readonly presenceTracker = new MessengerPresenceTracker();
 
   constructor(
     private readonly configService: ConfigService,
@@ -53,6 +58,18 @@ export class MessengerGateway implements OnGatewayConnection {
 
   handleConnection(client: Socket): void {
     void this.authenticateAndJoinUserRoom(client);
+  }
+
+  handleDisconnect(client: Socket): void {
+    const employeeId = client.data.employeeId as string | undefined;
+    if (!employeeId) return;
+    const { becameOffline } = this.presenceTracker.decrement(employeeId);
+    if (becameOffline) {
+      this.server?.emit(MESSENGER_WS_SERVER_PRESENCE, {
+        employeeId,
+        state: 'offline' as const,
+      });
+    }
   }
 
   @SubscribeMessage(MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL)
@@ -150,6 +167,16 @@ export class MessengerGateway implements OnGatewayConnection {
       const employeeId = payload.sub;
       client.data.employeeId = employeeId;
       await client.join(messengerSocketUserRoom(employeeId));
+      const { becameOnline } = this.presenceTracker.increment(employeeId);
+      if (becameOnline) {
+        this.server.emit(MESSENGER_WS_SERVER_PRESENCE, {
+          employeeId,
+          state: 'online' as const,
+        });
+      }
+      client.emit(MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT, {
+        employeeIds: this.presenceTracker.snapshotEmployeeIds(),
+      });
     } catch {
       this.logger.warn('Messenger socket auth failed');
       client.disconnect(true);

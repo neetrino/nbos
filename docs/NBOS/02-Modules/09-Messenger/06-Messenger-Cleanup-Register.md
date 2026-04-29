@@ -31,7 +31,7 @@
 
 - ~~backend использует in-memory `Map`~~ **Done (2026-04-30):** internal channels + channel messages + DM threads/messages в PostgreSQL через Prisma;
 - нет `Conversation`, `Message`, `Participant`, `Delivery`, `ReadState` моделей;
-- ~~нет WebSocket gateway~~ **Partial (2026-04-30):** Socket.IO `/messenger`, JWT, channel subscribe, push on send; **typing** (channel + DM) via `messenger.*typing*`; no presence/unread yet.
+- ~~нет WebSocket gateway~~ **Partial (2026-04-30):** Socket.IO `/messenger`, JWT, channel subscribe, push on send; **typing** (channel + DM) via `messenger.*typing*`; **presence** (per-employee socket ref-count, `messenger.presence` + `messenger.presence.snapshot`); no unread/read receipts yet.
 - нет очереди для внешних каналов;
 - нет External Channel Adapter;
 - web page: channels/DM/history/send call API (names for DM peers via `employees` list when `COMPANY` VIEW allows);
