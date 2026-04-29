@@ -1,3 +1,4 @@
+import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 
 const CSV_HEADERS = [
@@ -65,13 +66,38 @@ function rowToCsvCells(row: BonusEntryListRow): string[] {
   return cells.map((c) => escapeCsvCell(String(c)));
 }
 
+function grandTotalBonusBoardCsvLine(rows: BonusEntryListRow[]): string {
+  const amountSum = sumMoneyStringsMajorUnits(rows.map((r) => r.amount)).toFixed(2);
+  const cells = [
+    '_grand_total',
+    '',
+    `Visible rows (${rows.length})`,
+    '',
+    '—',
+    '—',
+    '',
+    '—',
+    '',
+    amountSum,
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ];
+  return cells.map((c) => escapeCsvCell(String(c))).join(',');
+}
+
 export function buildBonusBoardCsvContent(rows: BonusEntryListRow[]): string {
   const headerLine = CSV_HEADERS.join(',');
   if (rows.length === 0) {
     return headerLine;
   }
   const body = rows.map((r) => rowToCsvCells(r).join(',')).join('\r\n');
-  return `${headerLine}\r\n${body}`;
+  return `${headerLine}\r\n${body}\r\n${grandTotalBonusBoardCsvLine(rows)}`;
 }
 
 function triggerCsvDownload(csvBodyWithoutBom: string, filename: string): void {

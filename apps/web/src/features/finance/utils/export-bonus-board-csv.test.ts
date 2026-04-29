@@ -39,4 +39,19 @@ describe('buildBonusBoardCsvContent', () => {
       'id,employeeId,employeeName,projectId,projectCode,projectName,orderId,orderCode,type,amount,percent,status,kpiGatePassed,holdbackPercent,holdbackReleaseDate,payoutMonth,createdAt,updatedAt',
     );
   });
+
+  it('appends grand total row with summed amount', () => {
+    const row2: BonusEntryListRow = {
+      ...sampleRow,
+      id: 'b2',
+      amount: '100.00',
+      status: 'PAID',
+    };
+    const csv = buildBonusBoardCsvContent([sampleRow, row2]);
+    const lines = csv.split('\r\n');
+    expect(lines).toHaveLength(4);
+    expect(lines[3]).toContain('_grand_total');
+    expect(lines[3]).toContain('Visible rows (2)');
+    expect(lines[3]).toContain('600.00');
+  });
 });

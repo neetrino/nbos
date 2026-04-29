@@ -219,7 +219,7 @@ export function BonusBoardPageContent() {
           className="shrink-0 gap-1.5"
           disabled={exportCsvSubmitting || filtered.length === 0}
           onClick={() => handleExportCsv()}
-          title="CSV matches visible board (search, type, employee, project filters)"
+          title="UTF-8 CSV of visible rows plus a final amount total row (same filters as the board)"
         >
           {exportCsvSubmitting ? (
             <Loader2 size={14} className="animate-spin" aria-hidden />
