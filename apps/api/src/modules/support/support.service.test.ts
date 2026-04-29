@@ -168,6 +168,91 @@ describe('SupportService', () => {
     });
   });
 
+  describe('createExtensionDeal', () => {
+    it('creates linked Extension Deal for change request ticket', async () => {
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: 'ticket-1',
+        code: 'TKT-2026-0001',
+        title: 'Add reports page',
+        description: 'Client asks for a new reports page',
+        projectId: 'project-1',
+        productId: 'product-1',
+        contactId: 'contact-1',
+        category: 'CHANGE_REQUEST',
+        priority: 'P2',
+        status: 'TRIAGED',
+        extensionDealId: null,
+      });
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockResolvedValue({ id: 'deal-1', code: 'D-2026-0001' });
+
+      const result = await service.createExtensionDeal('ticket-1', { sellerId: 'seller-1' });
+
+      expect(result.id).toBe('deal-1');
+      expect(prisma.deal.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            name: '[TKT-2026-0001] Add reports page',
+            contactId: 'contact-1',
+            projectId: 'project-1',
+            type: 'EXTENSION',
+            paymentType: 'CLASSIC',
+            sellerId: 'seller-1',
+            source: 'CLIENT',
+            sourceDetail: 'Support ticket TKT-2026-0001',
+            existingProductId: 'product-1',
+          }),
+        }),
+      );
+      expect(prisma.supportTicket.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'ticket-1' },
+          data: expect.objectContaining({ extensionDealId: 'deal-1' }),
+        }),
+      );
+    });
+
+    it('returns existing linked Extension Deal without duplication', async () => {
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: 'ticket-1',
+        code: 'TKT-2026-0001',
+        title: 'Existing deal',
+        projectId: 'project-1',
+        productId: 'product-1',
+        contactId: 'contact-1',
+        category: 'CHANGE_REQUEST',
+        priority: 'P2',
+        status: 'TRIAGED',
+        extensionDealId: 'deal-1',
+      });
+      prisma.deal.findUnique.mockResolvedValue({ id: 'deal-1', code: 'D-2026-0001' });
+
+      const result = await service.createExtensionDeal('ticket-1', { sellerId: 'seller-1' });
+
+      expect(result.id).toBe('deal-1');
+      expect(prisma.deal.create).not.toHaveBeenCalled();
+    });
+
+    it('blocks non-change request tickets from creating Extension Deals', async () => {
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: 'ticket-1',
+        code: 'TKT-2026-0001',
+        title: 'Bug',
+        projectId: 'project-1',
+        productId: 'product-1',
+        contactId: 'contact-1',
+        category: 'INCIDENT',
+        priority: 'P2',
+        status: 'TRIAGED',
+      });
+
+      await expect(
+        service.createExtensionDeal('ticket-1', { sellerId: 'seller-1' }),
+      ).rejects.toThrow('Only CHANGE_REQUEST tickets can create Extension Deals.');
+      expect(prisma.deal.create).not.toHaveBeenCalled();
+    });
+  });
+
   describe('getStats', () => {
     it('returns stats', async () => {
       const stats = await service.getStats();

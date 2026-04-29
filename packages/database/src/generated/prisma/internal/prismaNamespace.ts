@@ -4125,6 +4125,7 @@ export const SupportTicketScalarFieldEnum = {
   projectId: 'projectId',
   productId: 'productId',
   contactId: 'contactId',
+  extensionDealId: 'extensionDealId',
   category: 'category',
   priority: 'priority',
   status: 'status',

@@ -131,6 +131,23 @@ export class SupportController {
     return this.supportService.createExecutionTask(id, body);
   }
 
+  @Post(':id/actions/create-extension-deal')
+  @ApiOperation({ summary: 'Create linked Extension Deal for change request ticket' })
+  async createExtensionDeal(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      sellerId: string;
+      contactId?: string;
+      amount?: number;
+      paymentType?: string;
+      name?: string;
+      notes?: string;
+    },
+  ) {
+    return this.supportService.createExtensionDeal(id, body);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete support ticket' })

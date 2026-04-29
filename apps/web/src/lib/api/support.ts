@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { Deal } from './deals';
 import type { Task } from './tasks';
 
 export interface SupportTicket {
@@ -8,6 +9,7 @@ export interface SupportTicket {
   description: string | null;
   projectId: string;
   productId: string | null;
+  extensionDealId: string | null;
   category: string;
   priority: string;
   status: string;
@@ -17,6 +19,13 @@ export interface SupportTicket {
   updatedAt: string;
   project: { id: string; code: string; name: string };
   product: { id: string; name: string; status: string } | null;
+  extensionDeal: {
+    id: string;
+    code: string;
+    name: string | null;
+    status: string;
+    amount: number | string | null;
+  } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   assignee: { id: string; firstName: string; lastName: string } | null;
   executionTasks?: Task[];
@@ -80,6 +89,20 @@ export const supportApi = {
     data: { creatorId: string; title?: string; description?: string; dueDate?: string | null },
   ): Promise<Task> {
     const resp = await api.post<Task>(`/api/support/${id}/actions/create-task`, data);
+    return resp.data;
+  },
+  async createExtensionDeal(
+    id: string,
+    data: {
+      sellerId: string;
+      contactId?: string;
+      amount?: number;
+      paymentType?: string;
+      name?: string;
+      notes?: string;
+    },
+  ): Promise<Deal> {
+    const resp = await api.post<Deal>(`/api/support/${id}/actions/create-extension-deal`, data);
     return resp.data;
   },
   async delete(id: string): Promise<void> {

@@ -3,6 +3,7 @@ import {
   PrismaClient,
   type Prisma,
   type TaskPriorityEnum,
+  type PaymentTypeEnum,
   type TicketStatusEnum,
   type TicketPriorityEnum,
   type TicketCategoryEnum,
@@ -28,6 +29,7 @@ const TICKET_PRIORITY_TO_TASK_PRIORITY: Record<TicketPriorityEnum, TaskPriorityE
 const SUPPORT_TICKET_INCLUDE = {
   project: { select: { id: true, code: true, name: true } },
   product: { select: { id: true, name: true, status: true } },
+  extensionDeal: { select: { id: true, code: true, name: true, status: true, amount: true } },
   contact: { select: { id: true, firstName: true, lastName: true, phone: true, email: true } },
   assignee: { select: { id: true, firstName: true, lastName: true } },
 } satisfies Prisma.SupportTicketInclude;
@@ -87,6 +89,15 @@ interface CreateTicketTaskDto {
   title?: string;
   description?: string;
   dueDate?: string | null;
+}
+
+interface CreateExtensionDealDto {
+  sellerId: string;
+  contactId?: string;
+  amount?: number;
+  paymentType?: string;
+  name?: string;
+  notes?: string;
 }
 
 @Injectable()
@@ -218,6 +229,46 @@ export class SupportService {
     });
   }
 
+  async createExtensionDeal(id: string, data: CreateExtensionDealDto) {
+    const ticket = await this.findTicketForChangeControl(id);
+    if (ticket.extensionDealId) {
+      return this.findExtensionDealOrThrow(ticket.extensionDealId);
+    }
+
+    const contactId = data.contactId ?? ticket.contactId;
+    if (!contactId) {
+      throw new BadRequestException('Contact is required to create an Extension Deal.');
+    }
+
+    const deal = await this.prisma.deal.create({
+      data: {
+        code: await this.generateDealCode(),
+        name: this.buildExtensionDealName(ticket, data.name),
+        contactId,
+        projectId: ticket.projectId,
+        type: 'EXTENSION',
+        amount: data.amount,
+        paymentType: (data.paymentType as PaymentTypeEnum) ?? 'CLASSIC',
+        taxStatus: 'TAX',
+        sellerId: data.sellerId,
+        source: 'CLIENT',
+        sourceDetail: `Support ticket ${ticket.code}`,
+        notes: this.buildExtensionDealNotes(ticket, data.notes),
+        existingProductId: ticket.productId,
+      },
+    });
+
+    await this.prisma.supportTicket.update({
+      where: { id },
+      data: {
+        extensionDealId: deal.id,
+        status: ticket.status === 'NEW' ? 'TRIAGED' : ticket.status,
+      },
+    });
+
+    return deal;
+  }
+
   async updateStatus(id: string, status: string) {
     await this.findById(id);
     return this.prisma.supportTicket.update({
@@ -305,6 +356,32 @@ export class SupportService {
     return ticket;
   }
 
+  private async findTicketForChangeControl(id: string) {
+    const ticket = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    if (!ticket) throw new NotFoundException(`Support ticket ${id} not found`);
+    if (ticket.category !== 'CHANGE_REQUEST') {
+      throw new BadRequestException('Only CHANGE_REQUEST tickets can create Extension Deals.');
+    }
+    if (!ticket.productId) {
+      throw new BadRequestException('Product context is required to create an Extension Deal.');
+    }
+    if (['RESOLVED', 'CLOSED'].includes(ticket.status)) {
+      throw new BadRequestException('Resolved or closed support tickets cannot create deals.');
+    }
+    return ticket;
+  }
+
+  private async findExtensionDealOrThrow(dealId: string) {
+    const deal = await this.prisma.deal.findUnique({
+      where: { id: dealId },
+    });
+    if (!deal) throw new NotFoundException(`Extension Deal ${dealId} not found`);
+    return deal;
+  }
+
   private async findProductWorkspaceId(productId: string | null) {
     if (!productId) return undefined;
     const workspace = await this.prisma.workSpace.findUnique({
@@ -336,5 +413,32 @@ export class SupportService {
     ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>,
   ) {
     return `Support ticket: ${ticket.code}\n${ticket.description ?? ''}`.trim();
+  }
+
+  private async generateDealCode(): Promise<string> {
+    const year = new Date().getFullYear();
+    const last = await this.prisma.deal.findFirst({
+      where: { code: { startsWith: `D-${year}-` } },
+      orderBy: { code: 'desc' },
+    });
+    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
+    return `D-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private buildExtensionDealName(
+    ticket: Awaited<ReturnType<SupportService['findTicketForChangeControl']>>,
+    name?: string,
+  ) {
+    const trimmed = name?.trim();
+    return trimmed || `[${ticket.code}] ${ticket.title}`;
+  }
+
+  private buildExtensionDealNotes(
+    ticket: Awaited<ReturnType<SupportService['findTicketForChangeControl']>>,
+    notes?: string,
+  ) {
+    return [notes?.trim(), `Support ticket: ${ticket.code}`, ticket.description]
+      .filter(Boolean)
+      .join('\n\n');
   }
 }

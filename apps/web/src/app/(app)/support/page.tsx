@@ -10,6 +10,7 @@ import {
   FolderKanban,
   TableProperties,
   CheckSquare,
+  FilePlus2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -122,6 +123,20 @@ export default function SupportPage() {
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Execution task could not be created.'));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleCreateExtensionDeal = async (ticket: SupportTicket) => {
+    if (!me?.id) return;
+    setActionId(`deal:${ticket.id}`);
+    try {
+      await supportApi.createExtensionDeal(ticket.id, { sellerId: me.id });
+      await fetchTickets();
+      setError(null);
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Extension Deal could not be created.'));
     } finally {
       setActionId(null);
     }
@@ -260,6 +275,12 @@ export default function SupportPage() {
                   <CheckSquare size={12} />
                   Create task
                 </Button>
+                <SupportChangeControlAction
+                  ticket={ticket}
+                  busy={actionId === `deal:${ticket.id}`}
+                  disabled={!me?.id}
+                  onCreateDeal={handleCreateExtensionDeal}
+                />
               </div>
             );
           }}
@@ -278,6 +299,7 @@ export default function SupportPage() {
                 <TableHead>Assignee</TableHead>
                 <TableHead>Billable</TableHead>
                 <TableHead>Execution</TableHead>
+                <TableHead>Change Control</TableHead>
                 <TableHead>Created</TableHead>
               </TableRow>
             </TableHeader>
@@ -337,6 +359,14 @@ export default function SupportPage() {
                         Task
                       </Button>
                     </TableCell>
+                    <TableCell>
+                      <SupportChangeControlAction
+                        ticket={ticket}
+                        busy={actionId === `deal:${ticket.id}`}
+                        disabled={!me?.id}
+                        onCreateDeal={handleCreateExtensionDeal}
+                      />
+                    </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {new Date(ticket.createdAt).toLocaleDateString()}
                     </TableCell>
@@ -348,5 +378,44 @@ export default function SupportPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function SupportChangeControlAction({
+  ticket,
+  busy,
+  disabled,
+  onCreateDeal,
+}: {
+  ticket: SupportTicket;
+  busy: boolean;
+  disabled: boolean;
+  onCreateDeal: (ticket: SupportTicket) => Promise<void>;
+}) {
+  if (ticket.category !== 'CHANGE_REQUEST') return null;
+
+  if (ticket.extensionDeal) {
+    return (
+      <StatusBadge
+        label={`Deal ${ticket.extensionDeal.code}`}
+        variant={ticket.extensionDeal.status === 'WON' ? 'green' : 'purple'}
+      />
+    );
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={
+        disabled || busy || !ticket.productId || ['RESOLVED', 'CLOSED'].includes(ticket.status)
+      }
+      onClick={() => void onCreateDeal(ticket)}
+      className="h-7 gap-1 px-2 text-xs"
+      title={ticket.productId ? 'Create Extension Deal' : 'Product context is required'}
+    >
+      <FilePlus2 size={12} />
+      Extension deal
+    </Button>
   );
 }

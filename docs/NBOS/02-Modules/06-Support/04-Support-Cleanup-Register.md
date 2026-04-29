@@ -16,6 +16,7 @@
 | Связь `Ticket -> Project`                                                           | `OK`      | Уже обязательна в runtime                                                  |
 | Связь `Ticket -> Product`                                                           | `PARTIAL` | Поле есть и участвует в API/UI bridge, но product-context ещё неполный     |
 | Support -> execution task bridge                                                    | `PARTIAL` | Ticket can create linked Task without becoming a task itself               |
+| Change Request -> Extension Deal bridge                                             | `PARTIAL` | Change Request ticket can create/link an Extension Deal                    |
 | Базовые SLA deadlines                                                               | `PARTIAL` | Есть вычисление дедлайнов по priority, но процесс вокруг них ещё упрощён   |
 
 ---
@@ -44,7 +45,7 @@
 | Нет explicit waiting overlay model                 | `STALE CODE` | Нет `waiting for client / third party / escalated` как отдельного overlay-state                 |
 | API create/update ticket не работает с `productId` | `PARTIAL`    | Product context is accepted by API, deeper UI creation/filtering still needed                   |
 | Ticket detail and task bridge                      | `PARTIAL`    | Ticket can create linked execution tasks; richer detail/timeline still missing                  |
-| Change control bridge                              | `STALE CODE` | Нет runtime-механизма `Ticket -> Extension Deal -> auto-close after Extension Done`             |
+| Change control bridge                              | `PARTIAL`    | Ticket can create/link Extension Deal; auto-close after Extension Done is still missing         |
 | SLA pause / breach / escalation logic              | `STALE CODE` | Есть только дедлайны, но нет зрелого pause/escalation orchestration                             |
 | Support UI                                         | `STALE CODE` | Сейчас это базовая list/kanban page без product-context, change-control view и waiting overlays |
 | Support -> Technical Infrastructure link           | `MISSING`    | Нет связи ticket с Technical Asset / Environment / Deployment Record                            |

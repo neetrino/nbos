@@ -474,6 +474,7 @@ model Deal {
   marketingAccount  MarketingAccount?  @relation(fields: [marketingAccountId], references: [id])
   marketingActivity MarketingActivity? @relation(fields: [marketingActivityId], references: [id])
   orders            Order[]
+  supportTickets    SupportTicket[]
 
   @@map("deals")
 }
@@ -1060,6 +1061,7 @@ model SupportTicket {
   projectId           String             @map("project_id")
   productId           String?            @map("product_id")
   contactId           String?            @map("contact_id")
+  extensionDealId     String?            @unique @map("extension_deal_id")
   category            TicketCategoryEnum
   priority            TicketPriorityEnum @default(P3)
   status              TicketStatusEnum   @default(NEW)
@@ -1072,10 +1074,11 @@ model SupportTicket {
   createdAt           DateTime           @default(now()) @map("created_at")
   updatedAt           DateTime           @updatedAt @map("updated_at")
 
-  project  Project   @relation(fields: [projectId], references: [id])
-  product  Product?  @relation(fields: [productId], references: [id])
-  contact  Contact?  @relation(fields: [contactId], references: [id])
-  assignee Employee? @relation("TicketAssignee", fields: [assignedTo], references: [id])
+  project       Project   @relation(fields: [projectId], references: [id])
+  product       Product?  @relation(fields: [productId], references: [id])
+  extensionDeal Deal?     @relation(fields: [extensionDealId], references: [id])
+  contact       Contact?  @relation(fields: [contactId], references: [id])
+  assignee      Employee? @relation("TicketAssignee", fields: [assignedTo], references: [id])
 
   @@map("support_tickets")
 }
