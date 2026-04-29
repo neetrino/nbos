@@ -1,7 +1,18 @@
-import { Controller, Get, Post, Param, Query, Body, ForbiddenException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CreateMessengerChannelDto } from './dto/create-messenger-channel.dto';
+import { MarkMessengerDmReadDto } from './dto/mark-messenger-dm-read.dto';
 import { SendMessengerChannelMessageDto } from './dto/send-messenger-channel-message.dto';
 import { SendMessengerDmDto } from './dto/send-messenger-dm.dto';
 import { messengerUserDisplayName } from './messenger-user-display-name';
@@ -15,9 +26,9 @@ export class MessengerController {
 
   @Get('channels')
   @RequirePermission('MESSENGER', 'VIEW')
-  @ApiOperation({ summary: 'List all channels' })
-  getChannels() {
-    return this.messengerService.getChannels();
+  @ApiOperation({ summary: 'List all channels with unread counts for current user' })
+  getChannels(@CurrentUser() user: CurrentUserPayload) {
+    return this.messengerService.getChannels(user.id);
   }
 
   @Post('channels')
@@ -25,6 +36,14 @@ export class MessengerController {
   @ApiOperation({ summary: 'Create a channel' })
   createChannel(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateMessengerChannelDto) {
     return this.messengerService.createChannel(body.name, body.projectId, body.type, user.id);
+  }
+
+  @Post('channels/:id/read')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({ summary: 'Mark channel read up to latest message for current user' })
+  markChannelRead(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.messengerService.markChannelRead(id, user.id);
   }
 
   @Get('channels/:id/messages')
@@ -64,6 +83,17 @@ export class MessengerController {
   @ApiOperation({ summary: 'List DM conversations for the current user' })
   getConversations(@CurrentUser() user: CurrentUserPayload) {
     return this.messengerService.getDirectConversations(user.id);
+  }
+
+  @Post('dm/mark-read')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({ summary: 'Mark DM with recipient read up to latest for current user' })
+  markDmRead(@CurrentUser() user: CurrentUserPayload, @Body() body: MarkMessengerDmReadDto) {
+    if (body.recipientId === user.id) {
+      throw new ForbiddenException('Invalid recipient');
+    }
+    return this.messengerService.markDirectConversationRead(user.id, body.recipientId);
   }
 
   @Get('dm/:userId1/:userId2')

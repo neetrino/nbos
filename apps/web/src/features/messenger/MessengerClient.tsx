@@ -45,34 +45,66 @@ export function MessengerClient() {
   const activeRef = useRef(active);
   activeRef.current = active;
 
-  const onInboundChannelMessage = useCallback((channelId: string, msg: MessengerViewMessage) => {
-    setMessages((prev) => {
-      const a = activeRef.current;
-      if (a?.type !== 'channel' || a.id !== channelId) return prev;
-      if (prev.some((m) => m.id === msg.id)) return prev;
-      return [...prev, msg];
-    });
-  }, []);
-
-  const onInboundDmMessage = useCallback((counterpartId: string, msg: MessengerViewMessage) => {
-    setMessages((prev) => {
-      const a = activeRef.current;
-      if (a?.type !== 'dm' || a.userId !== counterpartId) return prev;
-      if (prev.some((m) => m.id === msg.id)) return prev;
-      return [...prev, msg];
-    });
-  }, []);
-
-  const refreshDmSidebar = useCallback(() => {
+  const refreshMessengerLists = useCallback(() => {
     void (async () => {
       try {
-        const convos = await messengerApi.listDmConversations();
+        const [ch, convos] = await Promise.all([
+          messengerApi.listChannels(),
+          messengerApi.listDmConversations(),
+        ]);
+        setChannels(ch);
         setConversations(convos);
       } catch {
         /* noop */
       }
     })();
   }, []);
+
+  const onInboundChannelMessage = useCallback(
+    (channelId: string, msg: MessengerViewMessage) => {
+      setMessages((prev) => {
+        const a = activeRef.current;
+        if (a?.type !== 'channel' || a.id !== channelId) return prev;
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
+      void (async () => {
+        const a = activeRef.current;
+        if (a?.type === 'channel' && a.id === channelId) {
+          try {
+            await messengerApi.markChannelRead(channelId);
+          } catch {
+            /* noop */
+          }
+        }
+        refreshMessengerLists();
+      })();
+    },
+    [refreshMessengerLists],
+  );
+
+  const onInboundDmMessage = useCallback(
+    (counterpartId: string, msg: MessengerViewMessage) => {
+      setMessages((prev) => {
+        const a = activeRef.current;
+        if (a?.type !== 'dm' || a.userId !== counterpartId) return prev;
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        return [...prev, msg];
+      });
+      void (async () => {
+        const a = activeRef.current;
+        if (a?.type === 'dm' && a.userId === counterpartId) {
+          try {
+            await messengerApi.markDmRead(counterpartId);
+          } catch {
+            /* noop */
+          }
+        }
+        refreshMessengerLists();
+      })();
+    },
+    [refreshMessengerLists],
+  );
 
   const showRemoteTypingHint = useCallback((hint: string) => {
     setRemoteTypingHint(hint);
@@ -107,7 +139,6 @@ export function MessengerClient() {
     active,
     onInboundChannelMessage,
     onInboundDmMessage,
-    onDmSidebarRefresh: refreshDmSidebar,
     onRemoteTypingHint: showRemoteTypingHint,
     onPresenceSnapshot,
     onPresenceDelta,
@@ -179,17 +210,25 @@ export function MessengerClient() {
 
   useEffect(() => {
     if (!canViewMessenger || !me || !active) return;
+    const activeSnapshot = active;
+    const meId = me.id;
     let cancelled = false;
     (async () => {
       setMessagesLoading(true);
       setListError(null);
       try {
-        if (active.type === 'channel') {
-          const res = await messengerApi.listChannelMessages(active.id);
-          if (!cancelled) setMessages(res.items.map(mapMessengerRowToView));
+        if (activeSnapshot.type === 'channel') {
+          const res = await messengerApi.listChannelMessages(activeSnapshot.id);
+          if (cancelled) return;
+          setMessages(res.items.map(mapMessengerRowToView));
+          await messengerApi.markChannelRead(activeSnapshot.id);
+          if (!cancelled) refreshMessengerLists();
         } else {
-          const res = await messengerApi.listDirectMessages(me.id, active.userId);
-          if (!cancelled) setMessages(res.items.map(mapMessengerRowToView));
+          const res = await messengerApi.listDirectMessages(meId, activeSnapshot.userId);
+          if (cancelled) return;
+          setMessages(res.items.map(mapMessengerRowToView));
+          await messengerApi.markDmRead(activeSnapshot.userId);
+          if (!cancelled) refreshMessengerLists();
         }
       } catch (e) {
         if (!cancelled) {
@@ -203,7 +242,7 @@ export function MessengerClient() {
     return () => {
       cancelled = true;
     };
-  }, [active, me, canViewMessenger]);
+  }, [active, me, canViewMessenger, refreshMessengerLists]);
 
   async function handleSend() {
     if (!canEditMessenger || !me || !active || !newMessage.trim() || sendBusy) return;
@@ -220,12 +259,14 @@ export function MessengerClient() {
         await messengerApi.sendChannelMessage(active.id, { content: text });
         const res = await messengerApi.listChannelMessages(active.id);
         setMessages(res.items.map(mapMessengerRowToView));
+        await messengerApi.markChannelRead(active.id);
+        refreshMessengerLists();
       } else {
         await messengerApi.sendDirectMessage({ recipientId: active.userId, content: text });
         const res = await messengerApi.listDirectMessages(me.id, active.userId);
         setMessages(res.items.map(mapMessengerRowToView));
-        const convos = await messengerApi.listDmConversations();
-        setConversations(convos);
+        await messengerApi.markDmRead(active.userId);
+        refreshMessengerLists();
       }
     } catch (e) {
       setListError(e instanceof Error ? e.message : 'Send failed');
@@ -268,12 +309,14 @@ export function MessengerClient() {
       name,
       initials: initialsFromDisplayName(resolved ?? c.recipientId),
       online: Boolean(onlineInMessengerById[c.recipientId]),
+      unreadCount: c.unreadCount,
     };
   });
 
   const channelSidebarItems = channels.map((c) => ({
     id: c.id,
     listLabel: c.name.startsWith('#') ? c.name : `#${c.name}`,
+    unreadCount: c.unreadCount,
   }));
 
   const channelRow =

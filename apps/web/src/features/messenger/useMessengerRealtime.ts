@@ -55,7 +55,6 @@ export function useMessengerRealtime(options: {
   active: MessengerActiveView | null;
   onInboundChannelMessage: (channelId: string, msg: MessengerViewMessage) => void;
   onInboundDmMessage: (counterpartId: string, msg: MessengerViewMessage) => void;
-  onDmSidebarRefresh: () => void;
   onRemoteTypingHint: (hint: string) => void;
   onPresenceSnapshot?: (employeeIds: readonly string[]) => void;
   onPresenceDelta?: (employeeId: string, state: 'online' | 'offline') => void;
@@ -67,7 +66,6 @@ export function useMessengerRealtime(options: {
   const meIdRef = useRef(options.meId);
   const onCh = useRef(options.onInboundChannelMessage);
   const onDm = useRef(options.onInboundDmMessage);
-  const onSidebar = useRef(options.onDmSidebarRefresh);
   const onTypingHint = useRef(options.onRemoteTypingHint);
   const onPresenceSnapshotRef = useRef(options.onPresenceSnapshot);
   const onPresenceDeltaRef = useRef(options.onPresenceDelta);
@@ -77,7 +75,6 @@ export function useMessengerRealtime(options: {
     meIdRef.current = options.meId;
     onCh.current = options.onInboundChannelMessage;
     onDm.current = options.onInboundDmMessage;
-    onSidebar.current = options.onDmSidebarRefresh;
     onTypingHint.current = options.onRemoteTypingHint;
     onPresenceSnapshotRef.current = options.onPresenceSnapshot;
     onPresenceDeltaRef.current = options.onPresenceDelta;
@@ -126,7 +123,6 @@ export function useMessengerRealtime(options: {
       (payload: { counterpartId: string; message: MessengerMessageRow }) => {
         const view = mapMessengerRowToView(payload.message);
         onDm.current(payload.counterpartId, view);
-        onSidebar.current();
       },
     );
 

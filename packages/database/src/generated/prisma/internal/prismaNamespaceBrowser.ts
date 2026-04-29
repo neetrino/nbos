@@ -101,8 +101,10 @@ export const ModelName = {
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
+  MessengerChannelReadState: 'MessengerChannelReadState',
   MessengerDirectThread: 'MessengerDirectThread',
   MessengerDirectMessage: 'MessengerDirectMessage',
+  MessengerDirectThreadReadState: 'MessengerDirectThreadReadState',
   AuditLog: 'AuditLog',
   SystemListOption: 'SystemListOption',
 } as const;
@@ -1104,6 +1106,16 @@ export const MessengerChannelMessageScalarFieldEnum = {
 export type MessengerChannelMessageScalarFieldEnum =
   (typeof MessengerChannelMessageScalarFieldEnum)[keyof typeof MessengerChannelMessageScalarFieldEnum];
 
+export const MessengerChannelReadStateScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  employeeId: 'employeeId',
+  lastReadAt: 'lastReadAt',
+} as const;
+
+export type MessengerChannelReadStateScalarFieldEnum =
+  (typeof MessengerChannelReadStateScalarFieldEnum)[keyof typeof MessengerChannelReadStateScalarFieldEnum];
+
 export const MessengerDirectThreadScalarFieldEnum = {
   id: 'id',
   participantAId: 'participantAId',
@@ -1126,6 +1138,16 @@ export const MessengerDirectMessageScalarFieldEnum = {
 
 export type MessengerDirectMessageScalarFieldEnum =
   (typeof MessengerDirectMessageScalarFieldEnum)[keyof typeof MessengerDirectMessageScalarFieldEnum];
+
+export const MessengerDirectThreadReadStateScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  employeeId: 'employeeId',
+  lastReadAt: 'lastReadAt',
+} as const;
+
+export type MessengerDirectThreadReadStateScalarFieldEnum =
+  (typeof MessengerDirectThreadReadStateScalarFieldEnum)[keyof typeof MessengerDirectThreadReadStateScalarFieldEnum];
 
 export const AuditLogScalarFieldEnum = {
   id: 'id',

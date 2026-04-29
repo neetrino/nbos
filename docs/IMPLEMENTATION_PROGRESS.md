@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                     |
-| ------------- | ----------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**   |
-| Current task  | Phase 5 — Messenger (unread / read state) |
-| Status        | Phase 5 in progress                       |
-| Last updated  | 2026-04-30                                |
+| Field         | Value                                                        |
+| ------------- | ------------------------------------------------------------ |
+| Current phase | **Phase 5 — Collaboration / knowledge**                      |
+| Current task  | Phase 5 — Messenger (WS read.updated / per-message receipts) |
+| Status        | Phase 5 in progress                                          |
+| Last updated  | 2026-04-30                                                   |
 
 ## Phase Snapshot
 
@@ -19,7 +19,7 @@
 | Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
 | Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation       |
-| Phase 5 — Collaboration / knowledge | In progress | ~94%     | Messenger DB + Socket.IO push + presence; Documents archive/restore shipped                |
+| Phase 5 — Collaboration / knowledge | In progress | ~95%     | Messenger unread cursors + sidebar badges; DB + Socket.IO + presence                       |
 | Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                       |
 
@@ -102,6 +102,7 @@ Future Finance depth:
 | 2026-04-30 | Messenger Socket.IO live              | Namespace `/messenger`, JWT on connect, channel subscribe + push on send; web `useMessengerRealtime`; `NEXT_PUBLIC_BACKEND_URL` in `.env.example`.                                                         |
 | 2026-04-30 | Messenger typing indicator            | WS typing channel/DM + server throttle; web hint above composer; shared `MESSENGER_TYPING_EMIT_MIN_MS`.                                                                                                    |
 | 2026-04-30 | Messenger WS presence                 | Ref-counted `/messenger` connections; `messenger.presence` + snapshot; DM sidebar online dots in web.                                                                                                      |
+| 2026-04-30 | Messenger read cursors + unread UI    | Prisma read-state rows; `unreadCount` on channel + DM lists; POST mark-read; web badges + mark on open/WS inbound.                                                                                         |
 
 ## Next Action
 

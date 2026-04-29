@@ -282,6 +282,11 @@ export type MessengerChannel = Prisma.MessengerChannelModel;
  */
 export type MessengerChannelMessage = Prisma.MessengerChannelMessageModel;
 /**
+ * Model MessengerChannelReadState
+ *
+ */
+export type MessengerChannelReadState = Prisma.MessengerChannelReadStateModel;
+/**
  * Model MessengerDirectThread
  *
  */
@@ -291,6 +296,11 @@ export type MessengerDirectThread = Prisma.MessengerDirectThreadModel;
  *
  */
 export type MessengerDirectMessage = Prisma.MessengerDirectMessageModel;
+/**
+ * Model MessengerDirectThreadReadState
+ *
+ */
+export type MessengerDirectThreadReadState = Prisma.MessengerDirectThreadReadStateModel;
 /**
  * Model AuditLog
  *

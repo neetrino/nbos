@@ -1,9 +1,11 @@
 import { Hash, Search } from 'lucide-react';
 import type { MessengerActiveView } from './messenger-active-view';
+import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from './messenger-sidebar.constants';
 
 export interface MessengerSidebarChannel {
   id: string;
   listLabel: string;
+  unreadCount?: number;
 }
 
 export interface MessengerSidebarDmPeer {
@@ -11,6 +13,20 @@ export interface MessengerSidebarDmPeer {
   name: string;
   initials: string;
   online: boolean;
+  unreadCount?: number;
+}
+
+function SidebarUnreadBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  const label =
+    count > MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX
+      ? `${MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX}+`
+      : String(count);
+  return (
+    <span className="ml-auto min-w-[1.25rem] shrink-0 rounded-full bg-[#E5A84B] px-1.5 py-0.5 text-center text-[10px] font-semibold text-white tabular-nums">
+      {label}
+    </span>
+  );
 }
 
 export function MessengerSidebar({
@@ -65,7 +81,8 @@ export function MessengerSidebar({
               }`}
             >
               <Hash size={15} className={isActive ? 'text-[#E5A84B]' : 'text-black/30'} />
-              {ch.listLabel}
+              <span className="min-w-0 flex-1 truncate">{ch.listLabel}</span>
+              <SidebarUnreadBadge count={ch.unreadCount ?? 0} />
             </button>
           );
         })}
@@ -86,7 +103,7 @@ export function MessengerSidebar({
                   : 'text-black/60 hover:bg-black/[0.03]'
               }`}
             >
-              <span className="relative flex h-5 w-5 items-center justify-center">
+              <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
                 <span className="text-[10px] font-medium">{user.initials}</span>
                 <span
                   className={`absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border border-white ${
@@ -94,7 +111,8 @@ export function MessengerSidebar({
                   }`}
                 />
               </span>
-              {user.name}
+              <span className="min-w-0 flex-1 truncate">{user.name}</span>
+              <SidebarUnreadBadge count={user.unreadCount ?? 0} />
             </button>
           );
         })}

@@ -179,6 +179,7 @@ export type MessengerDirectThreadWhereInput = {
   participantA?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
   participantB?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
   messages?: Prisma.MessengerDirectMessageListRelationFilter;
+  readStates?: Prisma.MessengerDirectThreadReadStateListRelationFilter;
 };
 
 export type MessengerDirectThreadOrderByWithRelationInput = {
@@ -189,6 +190,7 @@ export type MessengerDirectThreadOrderByWithRelationInput = {
   participantA?: Prisma.EmployeeOrderByWithRelationInput;
   participantB?: Prisma.EmployeeOrderByWithRelationInput;
   messages?: Prisma.MessengerDirectMessageOrderByRelationAggregateInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateOrderByRelationAggregateInput;
 };
 
 export type MessengerDirectThreadWhereUniqueInput = Prisma.AtLeast<
@@ -204,6 +206,7 @@ export type MessengerDirectThreadWhereUniqueInput = Prisma.AtLeast<
     participantA?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
     participantB?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
     messages?: Prisma.MessengerDirectMessageListRelationFilter;
+    readStates?: Prisma.MessengerDirectThreadReadStateListRelationFilter;
   },
   'id' | 'participantAId_participantBId'
 >;
@@ -238,6 +241,7 @@ export type MessengerDirectThreadCreateInput = {
   participantA: Prisma.EmployeeCreateNestedOneWithoutMessengerDmThreadsAsAInput;
   participantB: Prisma.EmployeeCreateNestedOneWithoutMessengerDmThreadsAsBInput;
   messages?: Prisma.MessengerDirectMessageCreateNestedManyWithoutThreadInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutThreadInput;
 };
 
 export type MessengerDirectThreadUncheckedCreateInput = {
@@ -246,6 +250,7 @@ export type MessengerDirectThreadUncheckedCreateInput = {
   participantBId: string;
   createdAt?: Date | string;
   messages?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutThreadInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutThreadInput;
 };
 
 export type MessengerDirectThreadUpdateInput = {
@@ -254,6 +259,7 @@ export type MessengerDirectThreadUpdateInput = {
   participantA?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerDmThreadsAsANestedInput;
   participantB?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerDmThreadsAsBNestedInput;
   messages?: Prisma.MessengerDirectMessageUpdateManyWithoutThreadNestedInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutThreadNestedInput;
 };
 
 export type MessengerDirectThreadUncheckedUpdateInput = {
@@ -262,6 +268,7 @@ export type MessengerDirectThreadUncheckedUpdateInput = {
   participantBId?: Prisma.StringFieldUpdateOperationsInput | string;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   messages?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutThreadNestedInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutThreadNestedInput;
 };
 
 export type MessengerDirectThreadCreateManyInput = {
@@ -570,11 +577,38 @@ export type MessengerDirectThreadUpdateOneRequiredWithoutMessagesNestedInput = {
   >;
 };
 
+export type MessengerDirectThreadCreateNestedOneWithoutReadStatesInput = {
+  create?: Prisma.XOR<
+    Prisma.MessengerDirectThreadCreateWithoutReadStatesInput,
+    Prisma.MessengerDirectThreadUncheckedCreateWithoutReadStatesInput
+  >;
+  connectOrCreate?: Prisma.MessengerDirectThreadCreateOrConnectWithoutReadStatesInput;
+  connect?: Prisma.MessengerDirectThreadWhereUniqueInput;
+};
+
+export type MessengerDirectThreadUpdateOneRequiredWithoutReadStatesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.MessengerDirectThreadCreateWithoutReadStatesInput,
+    Prisma.MessengerDirectThreadUncheckedCreateWithoutReadStatesInput
+  >;
+  connectOrCreate?: Prisma.MessengerDirectThreadCreateOrConnectWithoutReadStatesInput;
+  upsert?: Prisma.MessengerDirectThreadUpsertWithoutReadStatesInput;
+  connect?: Prisma.MessengerDirectThreadWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.MessengerDirectThreadUpdateToOneWithWhereWithoutReadStatesInput,
+      Prisma.MessengerDirectThreadUpdateWithoutReadStatesInput
+    >,
+    Prisma.MessengerDirectThreadUncheckedUpdateWithoutReadStatesInput
+  >;
+};
+
 export type MessengerDirectThreadCreateWithoutParticipantAInput = {
   id?: string;
   createdAt?: Date | string;
   participantB: Prisma.EmployeeCreateNestedOneWithoutMessengerDmThreadsAsBInput;
   messages?: Prisma.MessengerDirectMessageCreateNestedManyWithoutThreadInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutThreadInput;
 };
 
 export type MessengerDirectThreadUncheckedCreateWithoutParticipantAInput = {
@@ -582,6 +616,7 @@ export type MessengerDirectThreadUncheckedCreateWithoutParticipantAInput = {
   participantBId: string;
   createdAt?: Date | string;
   messages?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutThreadInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutThreadInput;
 };
 
 export type MessengerDirectThreadCreateOrConnectWithoutParticipantAInput = {
@@ -604,6 +639,7 @@ export type MessengerDirectThreadCreateWithoutParticipantBInput = {
   createdAt?: Date | string;
   participantA: Prisma.EmployeeCreateNestedOneWithoutMessengerDmThreadsAsAInput;
   messages?: Prisma.MessengerDirectMessageCreateNestedManyWithoutThreadInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutThreadInput;
 };
 
 export type MessengerDirectThreadUncheckedCreateWithoutParticipantBInput = {
@@ -611,6 +647,7 @@ export type MessengerDirectThreadUncheckedCreateWithoutParticipantBInput = {
   participantAId: string;
   createdAt?: Date | string;
   messages?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutThreadInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutThreadInput;
 };
 
 export type MessengerDirectThreadCreateOrConnectWithoutParticipantBInput = {
@@ -703,6 +740,7 @@ export type MessengerDirectThreadCreateWithoutMessagesInput = {
   createdAt?: Date | string;
   participantA: Prisma.EmployeeCreateNestedOneWithoutMessengerDmThreadsAsAInput;
   participantB: Prisma.EmployeeCreateNestedOneWithoutMessengerDmThreadsAsBInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutThreadInput;
 };
 
 export type MessengerDirectThreadUncheckedCreateWithoutMessagesInput = {
@@ -710,6 +748,7 @@ export type MessengerDirectThreadUncheckedCreateWithoutMessagesInput = {
   participantAId: string;
   participantBId: string;
   createdAt?: Date | string;
+  readStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutThreadInput;
 };
 
 export type MessengerDirectThreadCreateOrConnectWithoutMessagesInput = {
@@ -745,6 +784,7 @@ export type MessengerDirectThreadUpdateWithoutMessagesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   participantA?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerDmThreadsAsANestedInput;
   participantB?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerDmThreadsAsBNestedInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutThreadNestedInput;
 };
 
 export type MessengerDirectThreadUncheckedUpdateWithoutMessagesInput = {
@@ -752,6 +792,67 @@ export type MessengerDirectThreadUncheckedUpdateWithoutMessagesInput = {
   participantAId?: Prisma.StringFieldUpdateOperationsInput | string;
   participantBId?: Prisma.StringFieldUpdateOperationsInput | string;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  readStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutThreadNestedInput;
+};
+
+export type MessengerDirectThreadCreateWithoutReadStatesInput = {
+  id?: string;
+  createdAt?: Date | string;
+  participantA: Prisma.EmployeeCreateNestedOneWithoutMessengerDmThreadsAsAInput;
+  participantB: Prisma.EmployeeCreateNestedOneWithoutMessengerDmThreadsAsBInput;
+  messages?: Prisma.MessengerDirectMessageCreateNestedManyWithoutThreadInput;
+};
+
+export type MessengerDirectThreadUncheckedCreateWithoutReadStatesInput = {
+  id?: string;
+  participantAId: string;
+  participantBId: string;
+  createdAt?: Date | string;
+  messages?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutThreadInput;
+};
+
+export type MessengerDirectThreadCreateOrConnectWithoutReadStatesInput = {
+  where: Prisma.MessengerDirectThreadWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.MessengerDirectThreadCreateWithoutReadStatesInput,
+    Prisma.MessengerDirectThreadUncheckedCreateWithoutReadStatesInput
+  >;
+};
+
+export type MessengerDirectThreadUpsertWithoutReadStatesInput = {
+  update: Prisma.XOR<
+    Prisma.MessengerDirectThreadUpdateWithoutReadStatesInput,
+    Prisma.MessengerDirectThreadUncheckedUpdateWithoutReadStatesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.MessengerDirectThreadCreateWithoutReadStatesInput,
+    Prisma.MessengerDirectThreadUncheckedCreateWithoutReadStatesInput
+  >;
+  where?: Prisma.MessengerDirectThreadWhereInput;
+};
+
+export type MessengerDirectThreadUpdateToOneWithWhereWithoutReadStatesInput = {
+  where?: Prisma.MessengerDirectThreadWhereInput;
+  data: Prisma.XOR<
+    Prisma.MessengerDirectThreadUpdateWithoutReadStatesInput,
+    Prisma.MessengerDirectThreadUncheckedUpdateWithoutReadStatesInput
+  >;
+};
+
+export type MessengerDirectThreadUpdateWithoutReadStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  participantA?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerDmThreadsAsANestedInput;
+  participantB?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerDmThreadsAsBNestedInput;
+  messages?: Prisma.MessengerDirectMessageUpdateManyWithoutThreadNestedInput;
+};
+
+export type MessengerDirectThreadUncheckedUpdateWithoutReadStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  participantAId?: Prisma.StringFieldUpdateOperationsInput | string;
+  participantBId?: Prisma.StringFieldUpdateOperationsInput | string;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  messages?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutThreadNestedInput;
 };
 
 export type MessengerDirectThreadCreateManyParticipantAInput = {
@@ -771,6 +872,7 @@ export type MessengerDirectThreadUpdateWithoutParticipantAInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   participantB?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerDmThreadsAsBNestedInput;
   messages?: Prisma.MessengerDirectMessageUpdateManyWithoutThreadNestedInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutThreadNestedInput;
 };
 
 export type MessengerDirectThreadUncheckedUpdateWithoutParticipantAInput = {
@@ -778,6 +880,7 @@ export type MessengerDirectThreadUncheckedUpdateWithoutParticipantAInput = {
   participantBId?: Prisma.StringFieldUpdateOperationsInput | string;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   messages?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutThreadNestedInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutThreadNestedInput;
 };
 
 export type MessengerDirectThreadUncheckedUpdateManyWithoutParticipantAInput = {
@@ -791,6 +894,7 @@ export type MessengerDirectThreadUpdateWithoutParticipantBInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   participantA?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerDmThreadsAsANestedInput;
   messages?: Prisma.MessengerDirectMessageUpdateManyWithoutThreadNestedInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutThreadNestedInput;
 };
 
 export type MessengerDirectThreadUncheckedUpdateWithoutParticipantBInput = {
@@ -798,6 +902,7 @@ export type MessengerDirectThreadUncheckedUpdateWithoutParticipantBInput = {
   participantAId?: Prisma.StringFieldUpdateOperationsInput | string;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   messages?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutThreadNestedInput;
+  readStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutThreadNestedInput;
 };
 
 export type MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBInput = {
@@ -812,12 +917,14 @@ export type MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBInput = {
 
 export type MessengerDirectThreadCountOutputType = {
   messages: number;
+  readStates: number;
 };
 
 export type MessengerDirectThreadCountOutputTypeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   messages?: boolean | MessengerDirectThreadCountOutputTypeCountMessagesArgs;
+  readStates?: boolean | MessengerDirectThreadCountOutputTypeCountReadStatesArgs;
 };
 
 /**
@@ -841,6 +948,15 @@ export type MessengerDirectThreadCountOutputTypeCountMessagesArgs<
   where?: Prisma.MessengerDirectMessageWhereInput;
 };
 
+/**
+ * MessengerDirectThreadCountOutputType without action
+ */
+export type MessengerDirectThreadCountOutputTypeCountReadStatesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.MessengerDirectThreadReadStateWhereInput;
+};
+
 export type MessengerDirectThreadSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -852,6 +968,7 @@ export type MessengerDirectThreadSelect<
     participantA?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
     participantB?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
     messages?: boolean | Prisma.MessengerDirectThread$messagesArgs<ExtArgs>;
+    readStates?: boolean | Prisma.MessengerDirectThread$readStatesArgs<ExtArgs>;
     _count?: boolean | Prisma.MessengerDirectThreadCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['messengerDirectThread']
@@ -904,6 +1021,7 @@ export type MessengerDirectThreadInclude<
   participantA?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   participantB?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   messages?: boolean | Prisma.MessengerDirectThread$messagesArgs<ExtArgs>;
+  readStates?: boolean | Prisma.MessengerDirectThread$readStatesArgs<ExtArgs>;
   _count?: boolean | Prisma.MessengerDirectThreadCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type MessengerDirectThreadIncludeCreateManyAndReturn<
@@ -927,6 +1045,7 @@ export type $MessengerDirectThreadPayload<
     participantA: Prisma.$EmployeePayload<ExtArgs>;
     participantB: Prisma.$EmployeePayload<ExtArgs>;
     messages: Prisma.$MessengerDirectMessagePayload<ExtArgs>[];
+    readStates: Prisma.$MessengerDirectThreadReadStatePayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1514,6 +1633,17 @@ export interface Prisma__MessengerDirectThreadClient<
       >
     | Null
   >;
+  readStates<T extends Prisma.MessengerDirectThread$readStatesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.MessengerDirectThread$readStatesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$MessengerDirectThreadReadStatePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2029,6 +2159,36 @@ export type MessengerDirectThread$messagesArgs<
   distinct?:
     | Prisma.MessengerDirectMessageScalarFieldEnum
     | Prisma.MessengerDirectMessageScalarFieldEnum[];
+};
+
+/**
+ * MessengerDirectThread.readStates
+ */
+export type MessengerDirectThread$readStatesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the MessengerDirectThreadReadState
+   */
+  select?: Prisma.MessengerDirectThreadReadStateSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the MessengerDirectThreadReadState
+   */
+  omit?: Prisma.MessengerDirectThreadReadStateOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessengerDirectThreadReadStateInclude<ExtArgs> | null;
+  where?: Prisma.MessengerDirectThreadReadStateWhereInput;
+  orderBy?:
+    | Prisma.MessengerDirectThreadReadStateOrderByWithRelationInput
+    | Prisma.MessengerDirectThreadReadStateOrderByWithRelationInput[];
+  cursor?: Prisma.MessengerDirectThreadReadStateWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.MessengerDirectThreadReadStateScalarFieldEnum
+    | Prisma.MessengerDirectThreadReadStateScalarFieldEnum[];
 };
 
 /**

@@ -1796,6 +1796,8 @@ model Employee {
   messengerDirectMessagesSent  MessengerDirectMessage[]  @relation("MessengerDirectMessageSender")
   messengerDmThreadsAsA      MessengerDirectThread[]   @relation("MessengerDmThreadParticipantA")
   messengerDmThreadsAsB      MessengerDirectThread[]   @relation("MessengerDmThreadParticipantB")
+  messengerChannelReadStates MessengerChannelReadState[]
+  messengerDmThreadReadStates MessengerDirectThreadReadState[]
 
   @@map("employees")
 }
@@ -1851,7 +1853,8 @@ model MessengerChannel {
   type      MessengerChannelType
   createdAt DateTime             @default(now()) @map("created_at")
 
-  messages MessengerChannelMessage[]
+  messages   MessengerChannelMessage[]
+  readStates MessengerChannelReadState[]
 
   @@map("messenger_channels")
 }
@@ -1871,6 +1874,20 @@ model MessengerChannelMessage {
   @@map("messenger_channel_messages")
 }
 
+model MessengerChannelReadState {
+  id         String   @id @default(uuid())
+  channelId  String   @map("channel_id")
+  employeeId String   @map("employee_id")
+  lastReadAt DateTime @map("last_read_at")
+
+  channel  MessengerChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  employee Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, employeeId])
+  @@index([employeeId])
+  @@map("messenger_channel_read_states")
+}
+
 model MessengerDirectThread {
   id             String   @id @default(uuid())
   participantAId String   @map("participant_a_id")
@@ -1879,7 +1896,8 @@ model MessengerDirectThread {
   participantB   Employee @relation("MessengerDmThreadParticipantB", fields: [participantBId], references: [id])
   createdAt      DateTime @default(now()) @map("created_at")
 
-  messages MessengerDirectMessage[]
+  messages   MessengerDirectMessage[]
+  readStates MessengerDirectThreadReadState[]
 
   @@unique([participantAId, participantBId])
   @@map("messenger_direct_threads")
@@ -1898,6 +1916,20 @@ model MessengerDirectMessage {
 
   @@index([threadId, createdAt])
   @@map("messenger_direct_messages")
+}
+
+model MessengerDirectThreadReadState {
+  id         String   @id @default(uuid())
+  threadId   String   @map("thread_id")
+  employeeId String   @map("employee_id")
+  lastReadAt DateTime @map("last_read_at")
+
+  thread   MessengerDirectThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  employee Employee              @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, employeeId])
+  @@index([employeeId])
+  @@map("messenger_direct_thread_read_states")
 }
 
 // ─── AUDIT ────────────────────────────────────────────────

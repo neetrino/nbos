@@ -17,9 +17,28 @@ import {
 } from './messenger-channel-type.util';
 import { orderedParticipantIds } from './messenger-participants.util';
 import { MessengerGateway } from './messenger.gateway';
-import type { MessengerChannelDto, MessengerMessageDto } from './messenger.types';
+import { loadMessengerDmConversations } from './messenger-dm-conversations.query';
+import {
+  mapPrismaChannelMessageToDto,
+  mapPrismaDmMessageToDto,
+  snapshotMessengerSenderName,
+} from './messenger-prisma-message.mapper';
+import {
+  countChannelUnreadForEmployee,
+  markChannelReadForEmployee,
+  markDmThreadReadForEmployee,
+} from './messenger-read-state.ops';
+import type {
+  MessengerChannelDto,
+  MessengerDmConversationDto,
+  MessengerMessageDto,
+} from './messenger.types';
 
-export type { MessengerChannelDto, MessengerMessageDto } from './messenger.types';
+export type {
+  MessengerChannelDto,
+  MessengerDmConversationDto,
+  MessengerMessageDto,
+} from './messenger.types';
 
 interface PaginationParams {
   page?: number;
@@ -39,14 +58,18 @@ export class MessengerService {
     private readonly messengerGateway: MessengerGateway,
   ) {}
 
-  async getChannels(): Promise<MessengerChannelDto[]> {
+  async getChannels(employeeId: string): Promise<MessengerChannelDto[]> {
     const rows = await this.prisma.messengerChannel.findMany({ orderBy: { createdAt: 'asc' } });
-    return rows.map((r) => ({
+    const unreadCounts = await Promise.all(
+      rows.map((r) => countChannelUnreadForEmployee(this.prisma, r.id, employeeId)),
+    );
+    return rows.map((r, i) => ({
       id: r.id,
       name: r.name,
       projectId: r.projectId,
       type: channelTypeToApi(r.type),
       createdAt: r.createdAt,
+      unreadCount: unreadCounts[i] ?? 0,
     }));
   }
 
@@ -82,6 +105,7 @@ export class MessengerService {
       projectId: created.projectId,
       type: channelTypeToApi(created.type),
       createdAt: created.createdAt,
+      unreadCount: 0,
     };
   }
 
@@ -110,7 +134,7 @@ export class MessengerService {
       }),
     ]);
     return {
-      items: rows.map((m) => this.mapChannelMessage(m)),
+      items: rows.map((m) => mapPrismaChannelMessageToDto(m)),
       meta: {
         total,
         page,
@@ -130,7 +154,7 @@ export class MessengerService {
     if (!channel) {
       throw new NotFoundException('Channel not found');
     }
-    const snapshot = await this.snapshotSenderName(senderId);
+    const snapshot = await snapshotMessengerSenderName(this.prisma, senderId);
     const created = await this.prisma.messengerChannelMessage.create({
       data: {
         channelId,
@@ -150,7 +174,7 @@ export class MessengerService {
       userId: senderId,
       changes: channelMessageAudit,
     });
-    const dto = this.mapChannelMessage(created);
+    const dto = mapPrismaChannelMessageToDto(created);
     this.messengerGateway.emitChannelMessage(channelId, dto);
     return dto;
   }
@@ -184,7 +208,7 @@ export class MessengerService {
       }),
     ]);
     return {
-      items: rows.map((m) => this.mapDmMessage(m, thread.id)),
+      items: rows.map((m) => mapPrismaDmMessageToDto(m, thread.id)),
       meta: {
         total,
         page,
@@ -206,7 +230,7 @@ export class MessengerService {
       create: { participantAId: a, participantBId: b },
       update: {},
     });
-    const snapshot = await this.snapshotSenderName(senderId);
+    const snapshot = await snapshotMessengerSenderName(this.prisma, senderId);
     const created = await this.prisma.messengerDirectMessage.create({
       data: {
         threadId: thread.id,
@@ -226,90 +250,29 @@ export class MessengerService {
       userId: senderId,
       changes: dmAudit,
     });
-    const dto = this.mapDmMessage(created, thread.id);
+    const dto = mapPrismaDmMessageToDto(created, thread.id);
     this.messengerGateway.emitDmToParticipants(senderId, recipientId, thread.id, dto);
     return dto;
   }
 
-  async getDirectConversations(
-    userId: string,
-  ): Promise<{ recipientId: string; lastMessage: MessengerMessageDto }[]> {
-    const threads = await this.prisma.messengerDirectThread.findMany({
-      where: {
-        OR: [{ participantAId: userId }, { participantBId: userId }],
-      },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-      },
-    });
-    const result: { recipientId: string; lastMessage: MessengerMessageDto }[] = [];
-    for (const t of threads) {
-      const last = t.messages[0];
-      if (!last) continue;
-      const recipientId = t.participantAId === userId ? t.participantBId : t.participantAId;
-      result.push({
-        recipientId,
-        lastMessage: this.mapDmMessage(last, t.id),
-      });
+  async getDirectConversations(userId: string): Promise<MessengerDmConversationDto[]> {
+    return loadMessengerDmConversations(this.prisma, userId);
+  }
+
+  async markChannelRead(channelId: string, employeeId: string): Promise<void> {
+    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
+    if (!channel) {
+      throw new NotFoundException('Channel not found');
     }
-    result.sort((x, y) => y.lastMessage.createdAt.getTime() - x.lastMessage.createdAt.getTime());
-    return result;
+    await markChannelReadForEmployee(this.prisma, channelId, employeeId);
   }
 
-  private mapChannelMessage(m: {
-    id: string;
-    channelId: string;
-    senderId: string;
-    senderNameSnapshot: string;
-    content: string;
-    createdAt: Date;
-    editedAt: Date | null;
-  }): MessengerMessageDto {
-    return {
-      id: m.id,
-      channelId: m.channelId,
-      senderId: m.senderId,
-      senderName: m.senderNameSnapshot,
-      content: m.content,
-      createdAt: m.createdAt,
-      editedAt: m.editedAt,
-    };
-  }
-
-  private mapDmMessage(
-    m: {
-      id: string;
-      senderId: string;
-      senderNameSnapshot: string;
-      content: string;
-      createdAt: Date;
-      editedAt: Date | null;
-    },
-    threadId: string,
-  ): MessengerMessageDto {
-    return {
-      id: m.id,
-      channelId: threadId,
-      senderId: m.senderId,
-      senderName: m.senderNameSnapshot,
-      content: m.content,
-      createdAt: m.createdAt,
-      editedAt: m.editedAt,
-    };
-  }
-
-  private async snapshotSenderName(senderId: string): Promise<string> {
-    const emp = await this.prisma.employee.findUnique({
-      where: { id: senderId },
-      select: { firstName: true, lastName: true, email: true },
+  async markDirectConversationRead(actorId: string, recipientId: string): Promise<void> {
+    const [a, b] = orderedParticipantIds(actorId, recipientId);
+    const thread = await this.prisma.messengerDirectThread.findUnique({
+      where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
     });
-    if (!emp) {
-      throw new NotFoundException('Sender employee not found');
-    }
-    const full = `${emp.firstName} ${emp.lastName}`.trim();
-    return full.length > 0 ? full : emp.email;
+    if (!thread) return;
+    await markDmThreadReadForEmployee(this.prisma, thread.id, actorId);
   }
 }

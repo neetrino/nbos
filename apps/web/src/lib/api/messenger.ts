@@ -6,6 +6,7 @@ export interface MessengerChannelRow {
   projectId: string;
   type: 'project' | 'general' | 'announcement';
   createdAt: string;
+  unreadCount: number;
 }
 
 export interface MessengerMessageRow {
@@ -33,6 +34,7 @@ export interface MessengerPagedMessages {
 export interface MessengerDmConversationRow {
   recipientId: string;
   lastMessage: MessengerMessageRow;
+  unreadCount: number;
 }
 
 const LIST_PAGE_SIZE = 100;
@@ -70,6 +72,10 @@ export const messengerApi = {
     return resp.data;
   },
 
+  async markChannelRead(channelId: string): Promise<void> {
+    await api.post(`/api/messenger/channels/${channelId}/read`);
+  },
+
   async listDmConversations(): Promise<MessengerDmConversationRow[]> {
     const resp = await api.get<MessengerDmConversationRow[]>('/api/messenger/dm/conversations');
     return resp.data;
@@ -95,5 +101,9 @@ export const messengerApi = {
   }): Promise<MessengerMessageRow> {
     const resp = await api.post<MessengerMessageRow>('/api/messenger/dm', body);
     return resp.data;
+  },
+
+  async markDmRead(recipientId: string): Promise<void> {
+    await api.post('/api/messenger/dm/mark-read', { recipientId });
   },
 };

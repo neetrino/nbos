@@ -428,8 +428,10 @@ export const ModelName = {
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
+  MessengerChannelReadState: 'MessengerChannelReadState',
   MessengerDirectThread: 'MessengerDirectThread',
   MessengerDirectMessage: 'MessengerDirectMessage',
+  MessengerDirectThreadReadState: 'MessengerDirectThreadReadState',
   AuditLog: 'AuditLog',
   SystemListOption: 'SystemListOption',
 } as const;
@@ -505,8 +507,10 @@ export type TypeMap<
       | 'partner'
       | 'messengerChannel'
       | 'messengerChannelMessage'
+      | 'messengerChannelReadState'
       | 'messengerDirectThread'
       | 'messengerDirectMessage'
+      | 'messengerDirectThreadReadState'
       | 'auditLog'
       | 'systemListOption';
     txIsolationLevel: TransactionIsolationLevel;
@@ -4478,6 +4482,82 @@ export type TypeMap<
         };
       };
     };
+    MessengerChannelReadState: {
+      payload: Prisma.$MessengerChannelReadStatePayload<ExtArgs>;
+      fields: Prisma.MessengerChannelReadStateFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MessengerChannelReadStateFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MessengerChannelReadStateFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>;
+        };
+        findFirst: {
+          args: Prisma.MessengerChannelReadStateFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MessengerChannelReadStateFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>;
+        };
+        findMany: {
+          args: Prisma.MessengerChannelReadStateFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>[];
+        };
+        create: {
+          args: Prisma.MessengerChannelReadStateCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>;
+        };
+        createMany: {
+          args: Prisma.MessengerChannelReadStateCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MessengerChannelReadStateCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>[];
+        };
+        delete: {
+          args: Prisma.MessengerChannelReadStateDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>;
+        };
+        update: {
+          args: Prisma.MessengerChannelReadStateUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>;
+        };
+        deleteMany: {
+          args: Prisma.MessengerChannelReadStateDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MessengerChannelReadStateUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MessengerChannelReadStateUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>[];
+        };
+        upsert: {
+          args: Prisma.MessengerChannelReadStateUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelReadStatePayload>;
+        };
+        aggregate: {
+          args: Prisma.MessengerChannelReadStateAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMessengerChannelReadState>;
+        };
+        groupBy: {
+          args: Prisma.MessengerChannelReadStateGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MessengerChannelReadStateGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MessengerChannelReadStateCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MessengerChannelReadStateCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     MessengerDirectThread: {
       payload: Prisma.$MessengerDirectThreadPayload<ExtArgs>;
       fields: Prisma.MessengerDirectThreadFieldRefs;
@@ -4626,6 +4706,82 @@ export type TypeMap<
           args: Prisma.MessengerDirectMessageCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.MessengerDirectMessageCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    MessengerDirectThreadReadState: {
+      payload: Prisma.$MessengerDirectThreadReadStatePayload<ExtArgs>;
+      fields: Prisma.MessengerDirectThreadReadStateFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MessengerDirectThreadReadStateFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MessengerDirectThreadReadStateFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>;
+        };
+        findFirst: {
+          args: Prisma.MessengerDirectThreadReadStateFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MessengerDirectThreadReadStateFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>;
+        };
+        findMany: {
+          args: Prisma.MessengerDirectThreadReadStateFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>[];
+        };
+        create: {
+          args: Prisma.MessengerDirectThreadReadStateCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>;
+        };
+        createMany: {
+          args: Prisma.MessengerDirectThreadReadStateCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MessengerDirectThreadReadStateCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>[];
+        };
+        delete: {
+          args: Prisma.MessengerDirectThreadReadStateDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>;
+        };
+        update: {
+          args: Prisma.MessengerDirectThreadReadStateUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>;
+        };
+        deleteMany: {
+          args: Prisma.MessengerDirectThreadReadStateDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MessengerDirectThreadReadStateUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MessengerDirectThreadReadStateUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>[];
+        };
+        upsert: {
+          args: Prisma.MessengerDirectThreadReadStateUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectThreadReadStatePayload>;
+        };
+        aggregate: {
+          args: Prisma.MessengerDirectThreadReadStateAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMessengerDirectThreadReadState>;
+        };
+        groupBy: {
+          args: Prisma.MessengerDirectThreadReadStateGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MessengerDirectThreadReadStateGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MessengerDirectThreadReadStateCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MessengerDirectThreadReadStateCountAggregateOutputType>
             | number;
         };
       };
@@ -5800,6 +5956,16 @@ export const MessengerChannelMessageScalarFieldEnum = {
 export type MessengerChannelMessageScalarFieldEnum =
   (typeof MessengerChannelMessageScalarFieldEnum)[keyof typeof MessengerChannelMessageScalarFieldEnum];
 
+export const MessengerChannelReadStateScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  employeeId: 'employeeId',
+  lastReadAt: 'lastReadAt',
+} as const;
+
+export type MessengerChannelReadStateScalarFieldEnum =
+  (typeof MessengerChannelReadStateScalarFieldEnum)[keyof typeof MessengerChannelReadStateScalarFieldEnum];
+
 export const MessengerDirectThreadScalarFieldEnum = {
   id: 'id',
   participantAId: 'participantAId',
@@ -5822,6 +5988,16 @@ export const MessengerDirectMessageScalarFieldEnum = {
 
 export type MessengerDirectMessageScalarFieldEnum =
   (typeof MessengerDirectMessageScalarFieldEnum)[keyof typeof MessengerDirectMessageScalarFieldEnum];
+
+export const MessengerDirectThreadReadStateScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  employeeId: 'employeeId',
+  lastReadAt: 'lastReadAt',
+} as const;
+
+export type MessengerDirectThreadReadStateScalarFieldEnum =
+  (typeof MessengerDirectThreadReadStateScalarFieldEnum)[keyof typeof MessengerDirectThreadReadStateScalarFieldEnum];
 
 export const AuditLogScalarFieldEnum = {
   id: 'id',
@@ -7241,8 +7417,10 @@ export type GlobalOmitConfig = {
   partner?: Prisma.PartnerOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;
+  messengerChannelReadState?: Prisma.MessengerChannelReadStateOmit;
   messengerDirectThread?: Prisma.MessengerDirectThreadOmit;
   messengerDirectMessage?: Prisma.MessengerDirectMessageOmit;
+  messengerDirectThreadReadState?: Prisma.MessengerDirectThreadReadStateOmit;
   auditLog?: Prisma.AuditLogOmit;
   systemListOption?: Prisma.SystemListOptionOmit;
 };

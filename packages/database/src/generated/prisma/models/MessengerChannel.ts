@@ -185,6 +185,7 @@ export type MessengerChannelWhereInput = {
   type?: Prisma.EnumMessengerChannelTypeFilter<'MessengerChannel'> | $Enums.MessengerChannelType;
   createdAt?: Prisma.DateTimeFilter<'MessengerChannel'> | Date | string;
   messages?: Prisma.MessengerChannelMessageListRelationFilter;
+  readStates?: Prisma.MessengerChannelReadStateListRelationFilter;
 };
 
 export type MessengerChannelOrderByWithRelationInput = {
@@ -194,6 +195,7 @@ export type MessengerChannelOrderByWithRelationInput = {
   type?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   messages?: Prisma.MessengerChannelMessageOrderByRelationAggregateInput;
+  readStates?: Prisma.MessengerChannelReadStateOrderByRelationAggregateInput;
 };
 
 export type MessengerChannelWhereUniqueInput = Prisma.AtLeast<
@@ -207,6 +209,7 @@ export type MessengerChannelWhereUniqueInput = Prisma.AtLeast<
     type?: Prisma.EnumMessengerChannelTypeFilter<'MessengerChannel'> | $Enums.MessengerChannelType;
     createdAt?: Prisma.DateTimeFilter<'MessengerChannel'> | Date | string;
     messages?: Prisma.MessengerChannelMessageListRelationFilter;
+    readStates?: Prisma.MessengerChannelReadStateListRelationFilter;
   },
   'id'
 >;
@@ -246,6 +249,7 @@ export type MessengerChannelCreateInput = {
   type: $Enums.MessengerChannelType;
   createdAt?: Date | string;
   messages?: Prisma.MessengerChannelMessageCreateNestedManyWithoutChannelInput;
+  readStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutChannelInput;
 };
 
 export type MessengerChannelUncheckedCreateInput = {
@@ -255,6 +259,7 @@ export type MessengerChannelUncheckedCreateInput = {
   type: $Enums.MessengerChannelType;
   createdAt?: Date | string;
   messages?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutChannelInput;
+  readStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutChannelInput;
 };
 
 export type MessengerChannelUpdateInput = {
@@ -264,6 +269,7 @@ export type MessengerChannelUpdateInput = {
   type?: Prisma.EnumMessengerChannelTypeFieldUpdateOperationsInput | $Enums.MessengerChannelType;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   messages?: Prisma.MessengerChannelMessageUpdateManyWithoutChannelNestedInput;
+  readStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutChannelNestedInput;
 };
 
 export type MessengerChannelUncheckedUpdateInput = {
@@ -273,6 +279,7 @@ export type MessengerChannelUncheckedUpdateInput = {
   type?: Prisma.EnumMessengerChannelTypeFieldUpdateOperationsInput | $Enums.MessengerChannelType;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   messages?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutChannelNestedInput;
+  readStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutChannelNestedInput;
 };
 
 export type MessengerChannelCreateManyInput = {
@@ -358,12 +365,39 @@ export type MessengerChannelUpdateOneRequiredWithoutMessagesNestedInput = {
   >;
 };
 
+export type MessengerChannelCreateNestedOneWithoutReadStatesInput = {
+  create?: Prisma.XOR<
+    Prisma.MessengerChannelCreateWithoutReadStatesInput,
+    Prisma.MessengerChannelUncheckedCreateWithoutReadStatesInput
+  >;
+  connectOrCreate?: Prisma.MessengerChannelCreateOrConnectWithoutReadStatesInput;
+  connect?: Prisma.MessengerChannelWhereUniqueInput;
+};
+
+export type MessengerChannelUpdateOneRequiredWithoutReadStatesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.MessengerChannelCreateWithoutReadStatesInput,
+    Prisma.MessengerChannelUncheckedCreateWithoutReadStatesInput
+  >;
+  connectOrCreate?: Prisma.MessengerChannelCreateOrConnectWithoutReadStatesInput;
+  upsert?: Prisma.MessengerChannelUpsertWithoutReadStatesInput;
+  connect?: Prisma.MessengerChannelWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.MessengerChannelUpdateToOneWithWhereWithoutReadStatesInput,
+      Prisma.MessengerChannelUpdateWithoutReadStatesInput
+    >,
+    Prisma.MessengerChannelUncheckedUpdateWithoutReadStatesInput
+  >;
+};
+
 export type MessengerChannelCreateWithoutMessagesInput = {
   id?: string;
   name: string;
   projectId: string;
   type: $Enums.MessengerChannelType;
   createdAt?: Date | string;
+  readStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutChannelInput;
 };
 
 export type MessengerChannelUncheckedCreateWithoutMessagesInput = {
@@ -372,6 +406,7 @@ export type MessengerChannelUncheckedCreateWithoutMessagesInput = {
   projectId: string;
   type: $Enums.MessengerChannelType;
   createdAt?: Date | string;
+  readStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutChannelInput;
 };
 
 export type MessengerChannelCreateOrConnectWithoutMessagesInput = {
@@ -408,6 +443,7 @@ export type MessengerChannelUpdateWithoutMessagesInput = {
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.EnumMessengerChannelTypeFieldUpdateOperationsInput | $Enums.MessengerChannelType;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  readStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutChannelNestedInput;
 };
 
 export type MessengerChannelUncheckedUpdateWithoutMessagesInput = {
@@ -416,6 +452,71 @@ export type MessengerChannelUncheckedUpdateWithoutMessagesInput = {
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.EnumMessengerChannelTypeFieldUpdateOperationsInput | $Enums.MessengerChannelType;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  readStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutChannelNestedInput;
+};
+
+export type MessengerChannelCreateWithoutReadStatesInput = {
+  id?: string;
+  name: string;
+  projectId: string;
+  type: $Enums.MessengerChannelType;
+  createdAt?: Date | string;
+  messages?: Prisma.MessengerChannelMessageCreateNestedManyWithoutChannelInput;
+};
+
+export type MessengerChannelUncheckedCreateWithoutReadStatesInput = {
+  id?: string;
+  name: string;
+  projectId: string;
+  type: $Enums.MessengerChannelType;
+  createdAt?: Date | string;
+  messages?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutChannelInput;
+};
+
+export type MessengerChannelCreateOrConnectWithoutReadStatesInput = {
+  where: Prisma.MessengerChannelWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.MessengerChannelCreateWithoutReadStatesInput,
+    Prisma.MessengerChannelUncheckedCreateWithoutReadStatesInput
+  >;
+};
+
+export type MessengerChannelUpsertWithoutReadStatesInput = {
+  update: Prisma.XOR<
+    Prisma.MessengerChannelUpdateWithoutReadStatesInput,
+    Prisma.MessengerChannelUncheckedUpdateWithoutReadStatesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.MessengerChannelCreateWithoutReadStatesInput,
+    Prisma.MessengerChannelUncheckedCreateWithoutReadStatesInput
+  >;
+  where?: Prisma.MessengerChannelWhereInput;
+};
+
+export type MessengerChannelUpdateToOneWithWhereWithoutReadStatesInput = {
+  where?: Prisma.MessengerChannelWhereInput;
+  data: Prisma.XOR<
+    Prisma.MessengerChannelUpdateWithoutReadStatesInput,
+    Prisma.MessengerChannelUncheckedUpdateWithoutReadStatesInput
+  >;
+};
+
+export type MessengerChannelUpdateWithoutReadStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumMessengerChannelTypeFieldUpdateOperationsInput | $Enums.MessengerChannelType;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  messages?: Prisma.MessengerChannelMessageUpdateManyWithoutChannelNestedInput;
+};
+
+export type MessengerChannelUncheckedUpdateWithoutReadStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumMessengerChannelTypeFieldUpdateOperationsInput | $Enums.MessengerChannelType;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  messages?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutChannelNestedInput;
 };
 
 /**
@@ -424,12 +525,14 @@ export type MessengerChannelUncheckedUpdateWithoutMessagesInput = {
 
 export type MessengerChannelCountOutputType = {
   messages: number;
+  readStates: number;
 };
 
 export type MessengerChannelCountOutputTypeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   messages?: boolean | MessengerChannelCountOutputTypeCountMessagesArgs;
+  readStates?: boolean | MessengerChannelCountOutputTypeCountReadStatesArgs;
 };
 
 /**
@@ -453,6 +556,15 @@ export type MessengerChannelCountOutputTypeCountMessagesArgs<
   where?: Prisma.MessengerChannelMessageWhereInput;
 };
 
+/**
+ * MessengerChannelCountOutputType without action
+ */
+export type MessengerChannelCountOutputTypeCountReadStatesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.MessengerChannelReadStateWhereInput;
+};
+
 export type MessengerChannelSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -463,6 +575,7 @@ export type MessengerChannelSelect<
     type?: boolean;
     createdAt?: boolean;
     messages?: boolean | Prisma.MessengerChannel$messagesArgs<ExtArgs>;
+    readStates?: boolean | Prisma.MessengerChannel$readStatesArgs<ExtArgs>;
     _count?: boolean | Prisma.MessengerChannelCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['messengerChannel']
@@ -512,6 +625,7 @@ export type MessengerChannelInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   messages?: boolean | Prisma.MessengerChannel$messagesArgs<ExtArgs>;
+  readStates?: boolean | Prisma.MessengerChannel$readStatesArgs<ExtArgs>;
   _count?: boolean | Prisma.MessengerChannelCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type MessengerChannelIncludeCreateManyAndReturn<
@@ -527,6 +641,7 @@ export type $MessengerChannelPayload<
   name: 'MessengerChannel';
   objects: {
     messages: Prisma.$MessengerChannelMessagePayload<ExtArgs>[];
+    readStates: Prisma.$MessengerChannelReadStatePayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1087,6 +1202,17 @@ export interface Prisma__MessengerChannelClient<
       >
     | Null
   >;
+  readStates<T extends Prisma.MessengerChannel$readStatesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.MessengerChannel$readStatesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$MessengerChannelReadStatePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1583,6 +1709,36 @@ export type MessengerChannel$messagesArgs<
   distinct?:
     | Prisma.MessengerChannelMessageScalarFieldEnum
     | Prisma.MessengerChannelMessageScalarFieldEnum[];
+};
+
+/**
+ * MessengerChannel.readStates
+ */
+export type MessengerChannel$readStatesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the MessengerChannelReadState
+   */
+  select?: Prisma.MessengerChannelReadStateSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the MessengerChannelReadState
+   */
+  omit?: Prisma.MessengerChannelReadStateOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessengerChannelReadStateInclude<ExtArgs> | null;
+  where?: Prisma.MessengerChannelReadStateWhereInput;
+  orderBy?:
+    | Prisma.MessengerChannelReadStateOrderByWithRelationInput
+    | Prisma.MessengerChannelReadStateOrderByWithRelationInput[];
+  cursor?: Prisma.MessengerChannelReadStateWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.MessengerChannelReadStateScalarFieldEnum
+    | Prisma.MessengerChannelReadStateScalarFieldEnum[];
 };
 
 /**
