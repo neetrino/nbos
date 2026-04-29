@@ -24,6 +24,7 @@ import {
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
 import { PartnersPageHeader } from '@/features/partners/components/PartnersPageHeader';
 import { usePartnersCsvExport } from '@/features/partners/components/use-partners-csv-export';
+import { usePartnersScopeStatsCsvExport } from '@/features/partners/components/use-partners-scope-stats-csv-export';
 import { buildPartnerListApiParams } from '@/features/partners/utils/build-partner-list-api-params';
 import {
   partnersApi,
@@ -58,6 +59,8 @@ export default function PartnersPage() {
   );
 
   const { exportCsvSubmitting, handleExportCsv } = usePartnersCsvExport(partnerListExportParams);
+
+  const { handleExportScopeStatsCsv } = usePartnersScopeStatsCsvExport(stats);
 
   const fetchPartners = useCallback(async () => {
     setLoading(true);
@@ -123,6 +126,8 @@ export default function PartnersPage() {
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={loading || !stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
         onAddPartner={() => setCreateOpen(true)}
       />
 
