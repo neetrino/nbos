@@ -16,6 +16,10 @@ import {
   type MessengerChannelTypeApi,
 } from './messenger-channel-type.util';
 import { orderedParticipantIds } from './messenger-participants.util';
+import { MessengerGateway } from './messenger.gateway';
+import type { MessengerChannelDto, MessengerMessageDto } from './messenger.types';
+
+export type { MessengerChannelDto, MessengerMessageDto } from './messenger.types';
 
 interface PaginationParams {
   page?: number;
@@ -25,24 +29,6 @@ interface PaginationParams {
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 50;
 
-export interface MessengerChannelDto {
-  id: string;
-  name: string;
-  projectId: string;
-  type: MessengerChannelTypeApi;
-  createdAt: Date;
-}
-
-export interface MessengerMessageDto {
-  id: string;
-  channelId: string;
-  senderId: string;
-  senderName: string;
-  content: string;
-  createdAt: Date;
-  editedAt: Date | null;
-}
-
 @Injectable()
 export class MessengerService {
   private readonly logger = new Logger(MessengerService.name);
@@ -50,6 +36,7 @@ export class MessengerService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    private readonly messengerGateway: MessengerGateway,
   ) {}
 
   async getChannels(): Promise<MessengerChannelDto[]> {
@@ -163,7 +150,9 @@ export class MessengerService {
       userId: senderId,
       changes: channelMessageAudit,
     });
-    return this.mapChannelMessage(created);
+    const dto = this.mapChannelMessage(created);
+    this.messengerGateway.emitChannelMessage(channelId, dto);
+    return dto;
   }
 
   async getDirectMessages(userId1: string, userId2: string, pagination: PaginationParams = {}) {
@@ -237,7 +226,9 @@ export class MessengerService {
       userId: senderId,
       changes: dmAudit,
     });
-    return this.mapDmMessage(created, thread.id);
+    const dto = this.mapDmMessage(created, thread.id);
+    this.messengerGateway.emitDmToParticipants(senderId, recipientId, thread.id, dto);
+    return dto;
   }
 
   async getDirectConversations(

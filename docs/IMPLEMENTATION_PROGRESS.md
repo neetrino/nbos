@@ -7,7 +7,7 @@
 | Field         | Value                                   |
 | ------------- | --------------------------------------- |
 | Current phase | **Phase 5 — Collaboration / knowledge** |
-| Current task  | Phase 5 — Messenger (WebSocket next)    |
+| Current task  | Phase 5 — Messenger (presence / typing) |
 | Status        | Phase 5 in progress                     |
 | Last updated  | 2026-04-30                              |
 
@@ -19,7 +19,7 @@
 | Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
 | Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation       |
-| Phase 5 — Collaboration / knowledge | In progress | ~92%     | Messenger DB-backed; Documents archive/restore shipped                                     |
+| Phase 5 — Collaboration / knowledge | In progress | ~93%     | Messenger DB + Socket.IO push; Documents archive/restore shipped                           |
 | Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                       |
 
@@ -99,6 +99,7 @@ Future Finance depth:
 | 2026-04-29 | Messenger web wired to API            | `messengerApi`, `/messenger` loads channels + DM threads, send with `MESSENGER` EDIT; DM peer labels via employees list when allowed.                                                                      |
 | 2026-04-30 | Messenger Prisma persistence          | `MessengerChannel`, channel messages, `MessengerDirectThread` + messages; seed replaces in-memory demo; API service uses `PRISMA_TOKEN`.                                                                   |
 | 2026-04-30 | Messenger write audit                 | `AuditService` on channel create and channel/DM sends; actions `messenger.channel_*` / `messenger.dm_message_sent`; `changes` omit body text.                                                              |
+| 2026-04-30 | Messenger Socket.IO live              | Namespace `/messenger`, JWT on connect, channel subscribe + push on send; web `useMessengerRealtime`; `NEXT_PUBLIC_BACKEND_URL` in `.env.example`.                                                         |
 
 ## Next Action
 

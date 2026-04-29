@@ -237,6 +237,8 @@ export const SLA_DEADLINES = {
   P3: { response: 24, resolve: 72 },
 } as const;
 
+export * from './messenger-ws';
+
 export const BONUS_PERCENTAGES = {
   SALES: {
     COLD_CALL: 10,

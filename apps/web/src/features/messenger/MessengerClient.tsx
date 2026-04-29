@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { employeesApi } from '@/lib/api/employees';
 import {
@@ -16,6 +16,7 @@ import {
   mapMessengerRowToView,
   type MessengerViewMessage,
 } from './messenger-message-mapper';
+import { useMessengerRealtime } from './useMessengerRealtime';
 
 export function MessengerClient() {
   const { me, isLoading: permsLoading, can } = usePermission();
@@ -33,6 +34,47 @@ export function MessengerClient() {
   const [listError, setListError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [newMessage, setNewMessage] = useState('');
+
+  const activeRef = useRef(active);
+  activeRef.current = active;
+
+  const onInboundChannelMessage = useCallback((channelId: string, msg: MessengerViewMessage) => {
+    setMessages((prev) => {
+      const a = activeRef.current;
+      if (a?.type !== 'channel' || a.id !== channelId) return prev;
+      if (prev.some((m) => m.id === msg.id)) return prev;
+      return [...prev, msg];
+    });
+  }, []);
+
+  const onInboundDmMessage = useCallback((counterpartId: string, msg: MessengerViewMessage) => {
+    setMessages((prev) => {
+      const a = activeRef.current;
+      if (a?.type !== 'dm' || a.userId !== counterpartId) return prev;
+      if (prev.some((m) => m.id === msg.id)) return prev;
+      return [...prev, msg];
+    });
+  }, []);
+
+  const refreshDmSidebar = useCallback(() => {
+    void (async () => {
+      try {
+        const convos = await messengerApi.listDmConversations();
+        setConversations(convos);
+      } catch {
+        /* noop */
+      }
+    })();
+  }, []);
+
+  useMessengerRealtime({
+    canViewMessenger,
+    meId: me?.id,
+    active,
+    onInboundChannelMessage,
+    onInboundDmMessage,
+    onDmSidebarRefresh: refreshDmSidebar,
+  });
 
   useEffect(() => {
     if (permsLoading || !me) return;
