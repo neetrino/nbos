@@ -82,13 +82,68 @@ describe('ProductsService', () => {
     });
 
     it('returns product when found', async () => {
-      prisma.product.findUnique.mockResolvedValue({ id: 'p1', name: 'Test', status: 'CREATING' });
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        name: 'Test',
+        status: 'CREATING',
+        project: { _count: { credentials: 1, domains: 1 } },
+        order: { status: 'FULLY_PAID', invoices: [{ status: 'PAID' }] },
+        extensions: [{ status: 'DONE' }],
+        tasks: [{ status: 'DONE' }],
+        tickets: [{ status: 'RESOLVED' }],
+      });
       const result = await service.findById('p1');
       expect(result.name).toBe('Test');
       expect(result.deliveryLifecycle).toMatchObject({
         stage: 'STARTING',
         workStatus: 'ACTIVE',
       });
+      expect(result.doneReadiness).toMatchObject({
+        canCompleteWithRuntimeData: true,
+        blockers: [],
+        warnings: [],
+        missingRuntimeSignals: [{ code: 'CLIENT_ACCEPTANCE_RUNTIME_MISSING' }],
+      });
+    });
+
+    it('surfaces Done readiness blockers and missing documentation', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        name: 'Test',
+        status: 'TRANSFER',
+        project: { _count: { credentials: 0, domains: 0 } },
+        order: { status: 'PARTIALLY_PAID', invoices: [{ status: 'WAITING' }] },
+        extensions: [{ status: 'DEVELOPMENT' }],
+        tasks: [{ status: 'IN_PROGRESS' }],
+        tickets: [{ status: 'NEW' }],
+      });
+
+      const result = await service.findById('p1');
+
+      expect(result.doneReadiness).toMatchObject({
+        canCompleteWithRuntimeData: false,
+        summary: {
+          credentialCount: 0,
+          domainCount: 0,
+          openExtensionCount: 1,
+          openTaskCount: 1,
+          openTicketCount: 1,
+          unpaidInvoiceCount: 1,
+        },
+      });
+      expect(result.doneReadiness.blockers.map((item) => item.code)).toEqual(
+        expect.arrayContaining([
+          'OPEN_EXTENSIONS',
+          'OPEN_TASKS',
+          'OPEN_TICKETS',
+          'UNPAID_INVOICES',
+          'ORDER_NOT_CLOSED',
+        ]),
+      );
+      expect(result.doneReadiness.warnings.map((item) => item.code)).toEqual([
+        'NO_PROJECT_CREDENTIALS',
+        'NO_PROJECT_DOMAINS',
+      ]);
     });
   });
 

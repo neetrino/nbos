@@ -330,6 +330,19 @@ Delivery UI now surfaces overdue paused work from existing lifecycle data:
 
 No scheduler, auto-resume or automatic status mutation was introduced.
 
+### A24. Product detail exposes Done readiness
+
+Статус: `PHASE 4 RUNTIME + UX ALIGNMENT`
+
+Product detail now exposes a read-only Done readiness projection:
+
+- backend builds `doneReadiness` from existing delivery, finance and project documentation data;
+- runtime blockers include open extensions, tasks, support tickets, unpaid invoices and open linked order state;
+- credentials and domains are surfaced as documentation warnings when project records are missing;
+- client acceptance is shown as a missing runtime signal because no acceptance field/checklist exists yet.
+
+This deepens the Done gate UX without inventing fake acceptance state or silently treating missing credentials/domains as complete.
+
 ---
 
 ## B. Устарело только в документации или описаниях

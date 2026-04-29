@@ -25,6 +25,7 @@ import {
   productLegacyStatusForStage,
   requireDeliveryStage,
 } from '../delivery-lifecycle';
+import { buildProductDoneReadiness } from './product-done-readiness';
 
 interface CreateProductDto {
   projectId: string;
@@ -139,7 +140,14 @@ export class ProductsService {
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
-        project: { select: { id: true, code: true, name: true } },
+        project: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            _count: { select: { credentials: true, domains: true } },
+          },
+        },
         pm: { select: { id: true, firstName: true, lastName: true, email: true } },
         order: {
           include: {
@@ -167,7 +175,10 @@ export class ProductsService {
       },
     });
     if (!product) throw new NotFoundException(`Product ${id} not found`);
-    return attachProductDeliveryLifecycle(product);
+    return {
+      ...attachProductDeliveryLifecycle(product),
+      doneReadiness: buildProductDoneReadiness(product),
+    };
   }
 
   async create(data: CreateProductDto) {

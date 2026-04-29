@@ -7,7 +7,7 @@
 | Field         | Value                          |
 | ------------- | ------------------------------ |
 | Current phase | **Phase 4 — Delivery ops**     |
-| Current task  | Expired On Hold visibility     |
+| Current task  | Product Done readiness         |
 | Status        | Phase 4 Projects Hub lifecycle |
 | Last updated  | 2026-04-29                     |
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~84% | Delivery UI highlights expired On Hold states from existing lifecycle data                 |
+| Phase 4 — Delivery ops              | In progress |     ~85% | Product detail exposes Done readiness from runtime data without fake acceptance state      |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -98,10 +98,11 @@ Future Finance depth:
 | 2026-04-29 | Backend status deprecation         | Generic status endpoints now expose deprecation signal                   | api typecheck, lint                                                   |
 | 2026-04-29 | Lifecycle query filters            | Product/Extension lists accept canonical lifecycle query params          | api typecheck, targeted Vitest                                        |
 | 2026-04-29 | Expired On Hold visibility         | Delivery UI highlights overdue paused Product/Extension work             | web typecheck, lint                                                   |
+| 2026-04-29 | Product Done readiness             | Product detail shows Done blockers, warnings and missing runtime signals | api/web typecheck, targeted Vitest                                    |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: Done acceptance/credentials runtime depth.
+1. Continue Projects Hub lifecycle refactor: add a real acceptance runtime model or prepare Phase 4 closure checklist.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

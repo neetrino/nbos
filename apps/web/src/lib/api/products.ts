@@ -32,6 +32,28 @@ export interface FullProduct extends Product {
   tasks: ProductTaskRef[];
   tickets: ProductTicketRef[];
   order: ProductOrderRef | null;
+  doneReadiness?: ProductDoneReadiness;
+}
+
+export interface ProductDoneReadiness {
+  canCompleteWithRuntimeData: boolean;
+  blockers: ProductDoneReadinessItem[];
+  warnings: ProductDoneReadinessItem[];
+  missingRuntimeSignals: ProductDoneReadinessItem[];
+  summary: {
+    credentialCount: number;
+    domainCount: number;
+    openExtensionCount: number;
+    openTaskCount: number;
+    openTicketCount: number;
+    unpaidInvoiceCount: number;
+  };
+}
+
+export interface ProductDoneReadinessItem {
+  code: string;
+  label: string;
+  message: string;
 }
 
 export interface ProductExtensionRef {

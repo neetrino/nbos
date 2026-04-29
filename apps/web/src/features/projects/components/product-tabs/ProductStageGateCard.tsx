@@ -15,6 +15,7 @@ import {
   type DeliveryLifecycleActionPayload,
 } from '@/features/projects/components/DeliveryLifecycleActionDialog';
 import { ProductLifecycleActions } from './ProductLifecycleActions';
+import { ProductDoneReadinessPanel } from './ProductDoneReadinessPanel';
 import { ProductStageGateSummary } from './ProductStageGateSummary';
 
 const PRODUCT_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER'> = {
@@ -112,6 +113,7 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
     <section className="bg-card border-border rounded-xl border p-5">
       <h3 className="mb-4 text-sm font-semibold">Stage Gate</h3>
       <ProductStageGateSummary product={product} nextStatuses={nextStatuses} />
+      <ProductDoneReadinessPanel readiness={product.doneReadiness} />
       <ProductStageActions
         status={product.status}
         nextStatuses={nextStatuses}
