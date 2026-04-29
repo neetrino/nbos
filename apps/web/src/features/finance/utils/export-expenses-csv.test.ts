@@ -61,4 +61,23 @@ describe('buildExpensesCsvContent', () => {
     expect(lines[1]).toContain('run-1');
     expect(lines[1]).toContain('2026-05');
   });
+
+  it('appends grand total row summing money columns', () => {
+    const csv = buildExpensesCsvContent([
+      minimalExpense({ id: 'a', amount: '10.00', paidAmount: '4.00', remainingAmount: '6.00' }),
+      minimalExpense({ id: 'b', amount: '20.50', paidAmount: '0.50', remainingAmount: '20.00' }),
+    ]);
+    const lines = csv.split('\r\n');
+    expect(lines).toHaveLength(4);
+    expect(lines[3]).toContain('_grand_total');
+    expect(lines[3]).toContain('All expenses (2)');
+    expect(lines[3]).toContain('30.50');
+    expect(lines[3]).toContain('4.50');
+    expect(lines[3]).toContain('26.00');
+  });
+
+  it('header only when no rows', () => {
+    expect(buildExpensesCsvContent([])).toMatch(/^id,/);
+    expect(buildExpensesCsvContent([]).split('\r\n')).toHaveLength(1);
+  });
 });

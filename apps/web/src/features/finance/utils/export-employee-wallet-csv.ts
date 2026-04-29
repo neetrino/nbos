@@ -1,3 +1,4 @@
+import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { EmployeeWalletBonusRow, EmployeeWalletSalaryRow } from '@/lib/api/me';
 
 const CSV_UTF8_BOM = '\uFEFF';
@@ -45,7 +46,25 @@ export function buildWalletBonusesCsvContent(rows: EmployeeWalletBonusRow[]): st
         .join(','),
     )
     .join('\r\n');
-  return `${headerLine}\r\n${body}`;
+  const grand = grandTotalWalletBonusesCsvLine(rows);
+  return `${headerLine}\r\n${body}\r\n${grand}`;
+}
+
+function grandTotalWalletBonusesCsvLine(rows: EmployeeWalletBonusRow[]): string {
+  const amount = sumMoneyStringsMajorUnits(rows.map((r) => r.amount)).toFixed(2);
+  const cells = [
+    '_grand_total',
+    `All bonus rows (${rows.length})`,
+    '',
+    '',
+    amount,
+    '',
+    '',
+    '',
+    '',
+    '',
+  ];
+  return cells.map((c) => escapeCsvCell(String(c))).join(',');
 }
 
 const SALARY_HEADERS = [
@@ -86,7 +105,30 @@ export function buildWalletSalaryCsvContent(rows: EmployeeWalletSalaryRow[]): st
         .join(','),
     )
     .join('\r\n');
-  return `${headerLine}\r\n${body}`;
+  const grand = grandTotalWalletSalaryCsvLine(rows);
+  return `${headerLine}\r\n${body}\r\n${grand}`;
+}
+
+function grandTotalWalletSalaryCsvLine(rows: EmployeeWalletSalaryRow[]): string {
+  const base = sumMoneyStringsMajorUnits(rows.map((r) => r.baseSalary)).toFixed(2);
+  const bonuses = sumMoneyStringsMajorUnits(rows.map((r) => r.bonusesTotal)).toFixed(2);
+  const payable = sumMoneyStringsMajorUnits(rows.map((r) => r.totalPayable)).toFixed(2);
+  const paid = sumMoneyStringsMajorUnits(rows.map((r) => r.paidAmount)).toFixed(2);
+  const remaining = sumMoneyStringsMajorUnits(rows.map((r) => r.remainingAmount)).toFixed(2);
+  const cells = [
+    '_grand_total',
+    `All payroll rows (${rows.length})`,
+    '',
+    '',
+    base,
+    bonuses,
+    payable,
+    paid,
+    remaining,
+    '',
+    '',
+  ];
+  return cells.map((c) => escapeCsvCell(String(c))).join(',');
 }
 
 function triggerCsvDownload(csvBodyWithoutBom: string, filename: string): void {

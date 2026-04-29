@@ -37,6 +37,20 @@ describe('buildWalletBonusesCsvContent', () => {
     expect(csv).toContain('walletGroup');
     expect(csv).toContain('NEXT_PAYROLL');
     expect(csv).toContain('Proj');
+    const lines = csv.split('\r\n');
+    expect(lines).toHaveLength(3);
+    expect(lines[2]).toContain('_grand_total');
+    expect(lines[2]).toContain('100.00');
+  });
+
+  it('grand total sums bonus amounts', () => {
+    const csv = buildWalletBonusesCsvContent([
+      bonusRow,
+      { ...bonusRow, id: 'b2', amount: '25.50' },
+    ]);
+    const last = csv.split('\r\n').pop();
+    expect(last).toContain('125.50');
+    expect(last).toContain('All bonus rows (2)');
   });
 
   it('header only when empty', () => {
@@ -50,6 +64,32 @@ describe('buildWalletSalaryCsvContent', () => {
     expect(csv).toContain('payrollRunId');
     expect(csv).toContain('2026-04');
     expect(csv).toContain('exp-1');
+    const lines = csv.split('\r\n');
+    expect(lines).toHaveLength(3);
+    expect(lines[2]).toContain('_grand_total');
+    expect(lines[2]).toContain('1000.00');
+  });
+
+  it('grand total sums salary money columns', () => {
+    const csv = buildWalletSalaryCsvContent([
+      salaryRow,
+      {
+        ...salaryRow,
+        id: 's2',
+        baseSalary: '500',
+        bonusesTotal: '100',
+        totalPayable: '600',
+        paidAmount: '200',
+        remainingAmount: '400',
+      },
+    ]);
+    const last = csv.split('\r\n').pop();
+    expect(last).toContain('1500.00');
+    expect(last).toContain('100.00');
+    expect(last).toContain('1600.00');
+    expect(last).toContain('200.00');
+    expect(last).toContain('1400.00');
+    expect(last).toContain('All payroll rows (2)');
   });
 
   it('header only when empty', () => {

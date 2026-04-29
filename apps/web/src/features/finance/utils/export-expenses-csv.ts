@@ -1,4 +1,5 @@
 import type { Expense } from '@/lib/api/finance';
+import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import {
   resolveExpensePayrollMonthLabel,
   resolveExpensePayrollRunId,
@@ -61,10 +62,44 @@ function expenseToCsvCells(expense: Expense): string[] {
   return cells.map((c) => escapeCsvCell(String(c)));
 }
 
+function grandTotalExpensesCsvLine(expenses: Expense[]): string {
+  const amount = sumMoneyStringsMajorUnits(expenses.map((e) => e.amount)).toFixed(2);
+  const paid = sumMoneyStringsMajorUnits(expenses.map((e) => e.paidAmount ?? '')).toFixed(2);
+  const remaining = sumMoneyStringsMajorUnits(expenses.map((e) => e.remainingAmount ?? '')).toFixed(
+    2,
+  );
+  const cells = [
+    '_grand_total',
+    `All expenses (${expenses.length})`,
+    '',
+    '',
+    amount,
+    paid,
+    remaining,
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ];
+  return cells.map((c) => escapeCsvCell(String(c))).join(',');
+}
+
 export function buildExpensesCsvContent(expenses: Expense[]): string {
   const headerLine = CSV_HEADERS.join(',');
+  if (expenses.length === 0) {
+    return headerLine;
+  }
   const body = expenses.map((e) => expenseToCsvCells(e).join(',')).join('\r\n');
-  return body ? `${headerLine}\r\n${body}` : headerLine;
+  return `${headerLine}\r\n${body}\r\n${grandTotalExpensesCsvLine(expenses)}`;
 }
 
 export function triggerExpensesCsvDownload(csvBodyWithoutBom: string, filename: string): void {
