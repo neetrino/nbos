@@ -20,6 +20,8 @@ Operational recipes for calling NBOS APIs from schedulers and automation:
 docs/reference/platforms/
 ```
 
+- [Expense plan auto-due (external cron + optional in-process Nest)](platforms/expense-plan-auto-due-external-cron.md)
+
 ## Payment Integrations
 
 Payment references live in:
