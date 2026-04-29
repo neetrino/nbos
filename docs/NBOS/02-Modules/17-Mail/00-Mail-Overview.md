@@ -143,6 +143,11 @@ Mail
 
 Transactional **Email** канала Notification Engine (invites, отчёты, дайджесты) — это не NBOS Mail inbox. Граница описана в `../13-Notifications/01-Notifications-System.md` (секция про Mail) и в `../13-Notifications/04-Notification-Integrations.md` под **Email**. In-app строки из Mail о событиях ящика — таблица `in_app_notifications`, а не тот же pipeline, что доставка письма через SES/Postmark для правил Notifications.
 
+## Связь с Credentials и Drive
+
+- **Credentials** — OAuth/IMAP/SMTP секреты для подключённых ящиков: `../12-Credentials/05-Credentials-Integrations.md` (секция **Mail**).
+- **Drive** — бинарные вложения писем как `FileAsset` и связь с тредом: `../11-Drive/05-Drive-Module-Integrations.md` (секция **13. Mail**).
+
 ## Связанные документы
 
 - `01-Mail-Accounts-and-Sync.md`

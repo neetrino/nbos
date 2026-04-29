@@ -417,3 +417,11 @@ Recommended practical order:
 10. Finance restricted documents.
 
 This gives business value quickly while moving safely away from the old folder-only model.
+
+---
+
+## 10. Documentation: Mail module
+
+| Область            | Статус | Примечание                                                                                         |
+| ------------------ | ------ | -------------------------------------------------------------------------------------------------- |
+| Cross-link to Mail | `OK`   | **2026-04-30:** `05-Drive-Module-Integrations.md` — **§13 Mail** (`FileAsset` / email attachments) |

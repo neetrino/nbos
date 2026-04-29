@@ -111,6 +111,18 @@ Notification Engine отвечает за:
 - offboarding risk;
 - secret incident.
 
+## Mail
+
+Подключённые ящики **NBOS Mail** (`docs/NBOS/02-Modules/17-Mail/*`) используют Vault для секретов, а не «поля пароля» в таблицах Mail.
+
+Типичные объекты:
+
+- Gmail OAuth / refresh token (или secure reference);
+- корпоративный IMAP/SMTP — пароль, app password, или SASL-секрет по политике;
+- при необходимости — метаданные OAuth client без хранения client secret в Mail UI.
+
+Канон Mail: `../17-Mail/01-Mail-Accounts-and-Sync.md`, граница с Vault — `../17-Mail/04-Mail-Integrations.md` (секция **Credentials**). Реализация хранения и reveal/step-up остаётся в модуле **Credentials**; Mail держит только ссылку/тип подключения и UX переподключения.
+
 ## My Company
 
 Credentials должны учитывать:

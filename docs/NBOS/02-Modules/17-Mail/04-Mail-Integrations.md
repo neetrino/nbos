@@ -79,6 +79,8 @@ Finance statuses, payments и invoice lifecycle меняются только в
 
 Drive управляет хранением, доступом, cleanup, preview и download.
 
+Интеграция с библиотеками и контекстом файлов с точки зрения Drive описана в `../11-Drive/05-Drive-Module-Integrations.md` (секция **13. Mail**).
+
 ## Credentials
 
 Mail не хранит secrets.

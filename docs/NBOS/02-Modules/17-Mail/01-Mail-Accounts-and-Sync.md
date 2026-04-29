@@ -102,6 +102,8 @@ Admin/owner должен видеть проблемные аккаунты в s
 
 ## Подключение mailbox
 
+Секреты подключения (OAuth tokens, IMAP/SMTP passwords, app passwords) хранятся через модуль **Credentials**, а не как открытые поля в Mail. См. `../12-Credentials/05-Credentials-Integrations.md` (секция **Mail**) и `04-Mail-Integrations.md` (секция **Credentials**).
+
 Канонический процесс:
 
 ```text

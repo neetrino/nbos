@@ -22,8 +22,8 @@ Mail module является новым каноном. На момент соз
 | Documentation hub link         | `OK`      | Mail добавлен в центральный указатель документации                                                                                     |
 | Cross-links from Messenger     | `MISSING` | При следующем проходе Messenger добавить явное разделение Mail vs Messenger                                                            |
 | Cross-links from Notifications | `OK`      | **2026-04-30:** `13-Notifications/01-Notifications-System.md` + `04-Notification-Integrations.md` — Mail inbox vs Email канал / in-app |
-| Cross-links from Credentials   | `MISSING` | Уточнить storage OAuth/SMTP secrets для Mail                                                                                           |
-| Cross-links from Drive         | `MISSING` | Уточнить source `email_attachment` для File Asset                                                                                      |
+| Cross-links from Credentials   | `OK`      | **2026-04-30:** `12-Credentials/05-Credentials-Integrations.md` (**Mail**) + `17-Mail/01` + `00` overview                              |
+| Cross-links from Drive         | `OK`      | **2026-04-30:** `11-Drive/05-Drive-Module-Integrations.md` (**§13 Mail**) + `17-Mail/04`                                               |
 
 ## Runtime cleanup
 

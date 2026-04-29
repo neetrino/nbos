@@ -27,3 +27,11 @@
 | Offboarding support           | MISSING                             | Нет                                                                                                                    | Связать с My Company offboarding                                       |
 | Drive/Messenger incident flow | MISSING                             | Есть канон в docs                                                                                                      | Реализовать detection/manual incident flow позже                       |
 | Hard delete                   | PARTIAL                             | Архив + restore; `DELETE …/permanent` только для archived, audit `permanently_deleted`; UI — подтверждение по имени    | Retention TTL, scheduled purge, step-up по политике                    |
+
+---
+
+## Documentation: Mail module
+
+| Область            | Статус | Примечание                                                                                   |
+| ------------------ | ------ | -------------------------------------------------------------------------------------------- |
+| Cross-link to Mail | `OK`   | **2026-04-30:** `05-Credentials-Integrations.md` — секция **Mail** (OAuth/IMAP/SMTP secrets) |

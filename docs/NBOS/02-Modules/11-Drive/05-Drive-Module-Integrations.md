@@ -216,3 +216,22 @@ My Company uses Drive for:
 - policy documents.
 
 SOP process logic remains in My Company. Drive stores files and versions.
+
+---
+
+## 13. Mail
+
+**NBOS Mail** (`docs/NBOS/02-Modules/17-Mail/*`) stores attachment **binaries** as **Drive `FileAsset`** (R2 or configured object storage), not inside `EmailMessage`.
+
+Канонический поток:
+
+```text
+Mail provider attachment
+  -> download / virus scan policy (Mail)
+  -> FileAsset + FileVersion in Drive
+  -> EmailAttachment (or equivalent) links message to FileAsset
+```
+
+Источник контекста для библиотеки может быть `email_attachment` / mail thread context (см. `17-Mail/02-Email-Threads-and-Messages.md`). Права на скачивание и preview наследуют Drive + Mail RBAC, а не отдельный «mail-only blob store».
+
+См. также `../17-Mail/04-Mail-Integrations.md` (секция **Drive**).
