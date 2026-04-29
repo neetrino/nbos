@@ -23,15 +23,30 @@ export default function DocumentsHomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(search.trim()), 320);
+    return () => window.clearTimeout(t);
+  }, [search]);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      const q = debouncedSearch || undefined;
       const [sec, all, draftList] = await Promise.all([
         documentsApi.listSections(),
-        documentsApi.listDocuments({ includeArchived: false }),
-        documentsApi.listDocuments({ status: 'DRAFT', includeArchived: false }),
+        documentsApi.listDocuments({
+          includeArchived: false,
+          ...(q ? { search: q } : {}),
+        }),
+        documentsApi.listDocuments({
+          status: 'DRAFT',
+          includeArchived: false,
+          ...(q ? { search: q } : {}),
+        }),
       ]);
       setSections(sec);
       setRecent(all.slice(0, 12));
@@ -42,7 +57,7 @@ export default function DocumentsHomePage() {
     } finally {
       setLoading(false);
     }
-  }, [me?.id]);
+  }, [debouncedSearch, me?.id]);
 
   useEffect(() => {
     load();
@@ -54,7 +69,7 @@ export default function DocumentsHomePage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Documents"
-        description="Company knowledge: sections, drafts, and published pages. Full-text search and editor arrive in later slices."
+        description="Company knowledge: sections, drafts, and published pages. Search matches title, description, body text, section and tag names."
       >
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1" onClick={load} disabled={loading}>
@@ -73,9 +88,11 @@ export default function DocumentsHomePage() {
           Search
         </label>
         <Input
-          disabled
-          placeholder="Search across Documents (title, sections, tags, plain text) — coming soon"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search title, body, section, tags…"
           className="max-w-xl"
+          aria-label="Search documents"
         />
       </div>
 

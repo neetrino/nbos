@@ -149,6 +149,8 @@ Done when:
 - search applies permissions before returning titles/snippets;
 - sensitive access changes can be routed to global audit.
 
+**Partial (2026-04-29):** Multi-field `search` on `GET /api/documents` with optional `searchSnippet` in JSON; list includes tag names; web search on home + section pages; document detail shows owner/last-editor ids and richer activity lines. **Not yet:** `search_vector`, section ACL columns, `documents.view_activity` split, global audit fan-out.
+
 ## 4. Explicit Non-Goals For First Release
 
 Do not implement in Phase 5 first release:

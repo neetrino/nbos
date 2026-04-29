@@ -12,6 +12,32 @@ describe('DocumentsService', () => {
     service = new DocumentsService(prisma as never);
   });
 
+  it('listDocuments applies multi-field search as AND with OR group', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.document.findMany.mockResolvedValueOnce([]);
+
+    await service.listDocuments({ search: '  payroll  ' });
+
+    expect(prisma.document.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          AND: expect.arrayContaining([
+            expect.objectContaining({
+              OR: expect.arrayContaining([
+                expect.objectContaining({
+                  title: expect.objectContaining({ contains: 'payroll' }),
+                }),
+                expect.objectContaining({
+                  plainText: expect.objectContaining({ contains: 'payroll' }),
+                }),
+              ]),
+            }),
+          ]),
+        }),
+      }),
+    );
+  });
+
   it('seeds default sections when count is zero', async () => {
     prisma.documentSection.count.mockResolvedValueOnce(0);
     prisma.documentSection.findMany.mockResolvedValueOnce([

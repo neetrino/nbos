@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, FileText, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -22,17 +23,29 @@ export default function DocumentSectionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   const section = sections.find((s) => s.id === sectionId);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(search.trim()), 320);
+    return () => window.clearTimeout(t);
+  }, [search]);
 
   const load = useCallback(async () => {
     if (!sectionId) return;
     setLoading(true);
     setError(null);
     try {
+      const q = debouncedSearch || undefined;
       const [sec, docs] = await Promise.all([
         documentsApi.listSections(),
-        documentsApi.listDocuments({ sectionId, includeArchived: false }),
+        documentsApi.listDocuments({
+          sectionId,
+          includeArchived: false,
+          ...(q ? { search: q } : {}),
+        }),
       ]);
       setSections(sec);
       setRows(docs);
@@ -41,7 +54,7 @@ export default function DocumentSectionPage() {
     } finally {
       setLoading(false);
     }
-  }, [sectionId]);
+  }, [debouncedSearch, sectionId]);
 
   useEffect(() => {
     load();
@@ -73,6 +86,18 @@ export default function DocumentSectionPage() {
             ) : null}
           </div>
         </PageHeader>
+      </div>
+
+      <div className="grid max-w-xl gap-2">
+        <label className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+          Search in section
+        </label>
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Filter by title, body, tags…"
+          aria-label="Search documents in this section"
+        />
       </div>
 
       {loading ? <LoadingState variant="list" /> : null}

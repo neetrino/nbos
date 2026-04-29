@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
+import { formatDocumentActivityDetail } from '@/features/documents/document-activity-format';
 import { DocumentAttachmentsPanel } from '@/features/documents/document-attachments-panel';
 import { DocumentHtmlViewer } from '@/features/documents/DocumentHtmlViewer';
 import { NativeDocumentEditor } from '@/features/documents/NativeDocumentEditor';
@@ -125,6 +126,17 @@ export default function DocumentDetailPage() {
             {doc.publishedAt ? (
               <span>Published {formatDocumentRelativeTime(doc.publishedAt)}</span>
             ) : null}
+            {doc.ownerId ? (
+              <span title={doc.ownerId}>
+                Owner {doc.ownerId.length > 12 ? `${doc.ownerId.slice(0, 8)}…` : doc.ownerId}
+              </span>
+            ) : null}
+            {doc.updatedById ? (
+              <span title={doc.updatedById}>
+                Last edited by{' '}
+                {doc.updatedById.length > 12 ? `${doc.updatedById.slice(0, 8)}…` : doc.updatedById}
+              </span>
+            ) : null}
           </div>
 
           {error ? <ErrorState description={error} onRetry={load} /> : null}
@@ -200,17 +212,29 @@ export default function DocumentDetailPage() {
                 <p className="text-muted-foreground text-sm">No activity yet.</p>
               ) : (
                 <ul className="divide-border divide-y text-sm">
-                  {doc.activityEvents.map((ev) => (
-                    <li
-                      key={ev.id}
-                      className="flex flex-wrap items-baseline justify-between gap-2 py-2"
-                    >
-                      <span className="font-medium capitalize">{ev.action.replace(/_/g, ' ')}</span>
-                      <span className="text-muted-foreground">
-                        {formatDocumentRelativeTime(ev.createdAt)}
-                      </span>
-                    </li>
-                  ))}
+                  {doc.activityEvents.map((ev) => {
+                    const detail = formatDocumentActivityDetail(ev.action, ev.metadata);
+                    return (
+                      <li
+                        key={ev.id}
+                        className="flex flex-col gap-0.5 py-2 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-2"
+                      >
+                        <div className="min-w-0">
+                          <span className="font-medium capitalize">
+                            {ev.action.replace(/_/g, ' ')}
+                          </span>
+                          {detail ? (
+                            <span className="text-muted-foreground ml-0 block text-xs sm:ml-2 sm:inline">
+                              {detail}
+                            </span>
+                          ) : null}
+                        </div>
+                        <span className="text-muted-foreground shrink-0 text-xs sm:text-sm">
+                          {formatDocumentRelativeTime(ev.createdAt)}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </CardContent>

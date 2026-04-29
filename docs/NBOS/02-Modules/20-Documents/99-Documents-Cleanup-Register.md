@@ -123,7 +123,7 @@ Need editor with:
 
 ### B6. Search is missing
 
-Статус: `MISSING SEARCH`
+Статус: `PARTIAL` — `GET /api/documents?search=` matches title, description, plain text, section name and tag names (Prisma `OR`); optional `searchSnippet` for list cards. **Not yet:** `search_vector`, ranking, attachment metadata in index.
 
 Need PostgreSQL search over:
 
@@ -142,7 +142,7 @@ Need backend access checks for view/edit/archive/manage.
 
 Статус: `PARTIAL`
 
-`DocumentActivityEvent` exists; API records `created`, `updated`, `published`, `archived` on key actions. Deeper history and UI tab remain later slices.
+`DocumentActivityEvent` exists; API records key actions; document detail shows activity with short metadata hints (e.g. attachment file ids). **Not yet:** dedicated `view_activity` permission, pagination, global audit fan-out.
 
 ### B9. Google integration is intentionally deferred
 

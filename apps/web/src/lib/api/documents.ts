@@ -20,9 +20,16 @@ export interface DocumentListItem {
   title: string;
   slug: string;
   status: string;
+  description?: string | null;
+  plainText?: string | null;
   createdById: string | null;
+  ownerId?: string | null;
+  updatedById?: string | null;
   updatedAt: string;
   section: { id: string; name: string; slug: string; sortOrder: number };
+  tagLinks?: Array<{ tag: { id: string; name: string; slug: string } }>;
+  /** Present when list was requested with `search` (server-computed excerpt). */
+  searchSnippet?: string | null;
 }
 
 export interface DocumentActivityItem {
@@ -62,6 +69,8 @@ export interface DocumentDetail {
   publishedAt: string | null;
   archivedAt: string | null;
   createdById: string | null;
+  ownerId?: string | null;
+  updatedById?: string | null;
   section: { id: string; name: string; slug: string; sortOrder: number };
   tagLinks: Array<{ tag: DocumentTag }>;
   attachments: DocumentAttachmentItem[];

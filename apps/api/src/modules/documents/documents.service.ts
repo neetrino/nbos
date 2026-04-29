@@ -12,6 +12,8 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { DEFAULT_DOCUMENT_SECTIONS } from './documents-default-sections';
 import { DOCUMENT_LIST_INCLUDE, DOCUMENT_DETAIL_INCLUDE } from './documents-includes';
 import { DOCUMENT_LIST_LIMIT } from './documents.constants';
+import { appendDocumentListTextSearch } from './documents-search-where';
+import { pickDocumentSearchSnippet } from './documents-search-snippet';
 import { slugifyTitle } from './documents-slug';
 import type {
   AddDocumentAttachmentDto,
@@ -54,15 +56,21 @@ export class DocumentsService {
     if (query.sectionId) where.sectionId = query.sectionId;
     if (query.status) where.status = query.status as DocumentStatusEnum;
     else if (!query.includeArchived) where.status = { not: 'ARCHIVED' };
-    if (query.search?.trim()) {
-      where.title = { contains: query.search.trim(), mode: 'insensitive' };
+    const searchTerm = query.search?.trim();
+    if (searchTerm) {
+      appendDocumentListTextSearch(where, searchTerm);
     }
-    return this.prisma.document.findMany({
+    const rows = await this.prisma.document.findMany({
       where,
       include: DOCUMENT_LIST_INCLUDE,
       orderBy: { updatedAt: 'desc' },
       take: DOCUMENT_LIST_LIMIT,
     });
+    if (!searchTerm) return rows;
+    return rows.map((r) => ({
+      ...r,
+      searchSnippet: pickDocumentSearchSnippet(r.plainText, r.description, r.title, searchTerm),
+    }));
   }
 
   async getDocument(id: string) {
