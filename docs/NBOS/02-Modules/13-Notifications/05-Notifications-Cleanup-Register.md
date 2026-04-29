@@ -96,7 +96,7 @@ New docs replace this with:
 
 ## E. Cross-document cleanup still needed
 
-**Done (2026-04-30):** выровнены `06-Integrations/05-Automation-Scenarios.md` (INV-04 заголовок и сводка; NOT-01 — WhatsApp group + Notification Engine vs Meta Cloud «templates»; явная граница Email канала vs модуль Mail) и `06-Integrations/04-External-Services.md` (секция **Notifications, Mail и внешний WhatsApp**; приоритет MVP для WhatsApp).
+**Done (2026-04-30):** выровнены `06-Integrations/05-Automation-Scenarios.md` (INV-04 заголовок и сводка; NOT-01 — WhatsApp group + Notification Engine vs Meta Cloud «templates»; явная граница Email канала vs модуль Mail) и `06-Integrations/04-External-Services.md` (секция **Notifications, Mail и внешний WhatsApp**; приоритет MVP для WhatsApp). Архивный `docs/NBOS/archive/00-Technical-Architecture-Brief.md` §7 — строка WhatsApp приведена к WAHA/группам.
 
 Точечный обзор остальных business-logic страниц вне `06-Integrations` — по мере нахождения устаревших формулировок (WhatsApp Business API как основной путь, смешение с Mail inbox).
 

@@ -235,16 +235,18 @@ Employee ──N:M──► Credential (access)
 
 ## 7. Интеграции
 
-| Интеграция                      | Приоритет        | Назначение                                          |
-| ------------------------------- | ---------------- | --------------------------------------------------- |
-| WhatsApp Business API           | High (Phase 1)   | Уведомления клиентам об оплате, напоминания         |
-| Telegram Bot API                | High (Phase 1)   | Уведомления команде (задачи, дедлайны, SLA)         |
-| Government Invoice System       | High (Phase 1)   | Создание налоговых счетов (manual → auto в будущем) |
-| Instagram / Facebook (Meta API) | Medium (Phase 2) | Входящие лиды и сообщения клиентов                  |
-| Google Drive                    | Medium (Phase 3) | Синхронизация файлов проектов                       |
-| GitHub                          | Low (Phase 3)    | Привязка репозиториев к проектам                    |
-| Bank API                        | Low (Phase 3)    | Автоматическая проверка поступлений                 |
-| Google Calendar                 | Low (Phase 4)    | Синхронизация встреч                                |
+> **Примечание (2026-04):** канон WhatsApp в NBOS — `WhatsAppWebAdapter` → WAHA, проектные группы и Notification Engine; Meta Cloud API не MVP. Актуально: `docs/NBOS/06-Integrations/01-WhatsApp-Integration.md`.
+
+| Интеграция                      | Приоритет        | Назначение                                                                        |
+| ------------------------------- | ---------------- | --------------------------------------------------------------------------------- |
+| WhatsApp (Web adapter / WAHA)   | High (Phase 1)   | Группы и напоминания через Notification Engine, не Business API как основной путь |
+| Telegram Bot API                | High (Phase 1)   | Уведомления команде (задачи, дедлайны, SLA)                                       |
+| Government Invoice System       | High (Phase 1)   | Создание налоговых счетов (manual → auto в будущем)                               |
+| Instagram / Facebook (Meta API) | Medium (Phase 2) | Входящие лиды и сообщения клиентов                                                |
+| Google Drive                    | Medium (Phase 3) | Синхронизация файлов проектов                                                     |
+| GitHub                          | Low (Phase 3)    | Привязка репозиториев к проектам                                                  |
+| Bank API                        | Low (Phase 3)    | Автоматическая проверка поступлений                                               |
+| Google Calendar                 | Low (Phase 4)    | Синхронизация встреч                                                              |
 
 ---
 
