@@ -1,3 +1,4 @@
+import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { BonusProjectPoolRow } from '@/lib/api/bonus';
 
 const CSV_HEADERS = [
@@ -34,13 +35,32 @@ function rowToCsvCells(row: BonusProjectPoolRow): string[] {
   return cells.map((c) => escapeCsvCell(String(c)));
 }
 
+function grandTotalCsvLine(rows: BonusProjectPoolRow[]): string {
+  const entrySum = rows.reduce((acc, r) => acc + r.entryCount, 0);
+  const pipeline = sumMoneyStringsMajorUnits(rows.map((r) => r.sumPipelineAmount)).toFixed(2);
+  const paid = sumMoneyStringsMajorUnits(rows.map((r) => r.sumPaidAmount)).toFixed(2);
+  const clawback = sumMoneyStringsMajorUnits(rows.map((r) => r.sumClawbackAmount)).toFixed(2);
+  const total = sumMoneyStringsMajorUnits(rows.map((r) => r.sumTotalAmount)).toFixed(2);
+  const cells = [
+    '_grand_total',
+    '—',
+    `All projects (${rows.length})`,
+    String(entrySum),
+    pipeline,
+    paid,
+    clawback,
+    total,
+  ];
+  return cells.map((c) => escapeCsvCell(String(c))).join(',');
+}
+
 export function buildBonusProjectPoolsCsvContent(rows: BonusProjectPoolRow[]): string {
   const headerLine = CSV_HEADERS.join(',');
   if (rows.length === 0) {
     return headerLine;
   }
   const body = rows.map((r) => rowToCsvCells(r).join(',')).join('\r\n');
-  return `${headerLine}\r\n${body}`;
+  return `${headerLine}\r\n${body}\r\n${grandTotalCsvLine(rows)}`;
 }
 
 function triggerCsvDownload(csvBodyWithoutBom: string, filename: string): void {

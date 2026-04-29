@@ -27,4 +27,27 @@ describe('buildBonusProjectPoolsCsvContent', () => {
       'projectId,projectCode,projectName,entryCount,sumPipelineAmount,sumPaidAmount,sumClawbackAmount,sumTotalAmount',
     );
   });
+
+  it('appends grand total row aligned with cent roll-ups', () => {
+    const row2: BonusProjectPoolRow = {
+      projectId: 'p2',
+      projectCode: 'B',
+      projectName: 'Beta',
+      entryCount: 2,
+      sumTotalAmount: '200.00',
+      sumPipelineAmount: '100.00',
+      sumPaidAmount: '50.00',
+      sumClawbackAmount: '50.00',
+    };
+    const csv = buildBonusProjectPoolsCsvContent([sample, row2]);
+    const lines = csv.split('\r\n');
+    expect(lines).toHaveLength(4);
+    expect(lines[3]).toContain('_grand_total');
+    expect(lines[3]).toContain('All projects (2)');
+    expect(lines[3]).toMatch(/,5,700\.00,/);
+    expect(lines[3]).toContain('700.00');
+    expect(lines[3]).toContain('350.00');
+    expect(lines[3]).toContain('150.00');
+    expect(lines[3]).toContain('1200.00');
+  });
 });

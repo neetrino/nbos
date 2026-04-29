@@ -90,7 +90,7 @@ export default function BonusPoolsPage() {
             disabled={loading || Boolean(error) || rows.length === 0 || exportCsvSubmitting}
             onClick={() => handleExportCsv()}
             aria-label="Export bonus project pools as CSV"
-            title="UTF-8 CSV of current roll-up rows (GET /api/bonus/projects/pools)"
+            title="UTF-8 CSV of roll-up rows plus a final grand-total row (GET /api/bonus/projects/pools)"
           >
             {exportCsvSubmitting ? (
               <Loader2 size={16} className="animate-spin" aria-hidden />
