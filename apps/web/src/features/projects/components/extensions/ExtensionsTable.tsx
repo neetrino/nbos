@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
@@ -8,49 +11,97 @@ import {
   getExtensionStatus,
 } from '@/features/projects/constants/projects';
 import type { Extension } from '@/lib/api/extensions';
+import {
+  DeliveryLifecycleActionDialog,
+  type DeliveryLifecycleAction,
+  type DeliveryLifecycleActionPayload,
+} from '@/features/projects/components/DeliveryLifecycleActionDialog';
 import { ExtensionReadiness } from './ExtensionReadiness';
 import { getNextExtensionStatus, isActiveExtensionStatus } from './extension-status-flow';
 
 interface ExtensionsTableProps {
   extensions: Extension[];
   onStatusChange: (extension: Extension, nextStatus: string) => void;
+  onLifecycleAction: (
+    extension: Extension,
+    action: DeliveryLifecycleAction | 'resume',
+    payload?: DeliveryLifecycleActionPayload,
+  ) => void | Promise<void>;
 }
 
-export function ExtensionsTable({ extensions, onStatusChange }: ExtensionsTableProps) {
+export function ExtensionsTable({
+  extensions,
+  onStatusChange,
+  onLifecycleAction,
+}: ExtensionsTableProps) {
+  const [dialogAction, setDialogAction] = useState<DeliveryLifecycleAction | null>(null);
+  const [selectedExtension, setSelectedExtension] = useState<Extension | null>(null);
+
+  const openLifecycleDialog = (extension: Extension, action: DeliveryLifecycleAction) => {
+    setSelectedExtension(extension);
+    setDialogAction(action);
+  };
+
+  const handleDialogConfirm = async (payload: DeliveryLifecycleActionPayload) => {
+    if (!selectedExtension || !dialogAction) return;
+    await onLifecycleAction(selectedExtension, dialogAction, payload);
+    setSelectedExtension(null);
+    setDialogAction(null);
+  };
+
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50">
-          <tr>
-            <th className="px-4 py-2.5 text-left font-medium">Extension</th>
-            <th className="px-4 py-2.5 text-left font-medium">Product</th>
-            <th className="px-4 py-2.5 text-left font-medium">Size</th>
-            <th className="px-4 py-2.5 text-left font-medium">Status</th>
-            <th className="px-4 py-2.5 text-left font-medium">Assignee</th>
-            <th className="px-4 py-2.5 text-left font-medium">Tasks</th>
-            <th className="px-4 py-2.5 text-right font-medium">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {extensions.map((extension) => (
-            <ExtensionTableRow
-              key={extension.id}
-              extension={extension}
-              onStatusChange={onStatusChange}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className="border-border overflow-hidden rounded-xl border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50">
+            <tr>
+              <th className="px-4 py-2.5 text-left font-medium">Extension</th>
+              <th className="px-4 py-2.5 text-left font-medium">Product</th>
+              <th className="px-4 py-2.5 text-left font-medium">Size</th>
+              <th className="px-4 py-2.5 text-left font-medium">Status</th>
+              <th className="px-4 py-2.5 text-left font-medium">Assignee</th>
+              <th className="px-4 py-2.5 text-left font-medium">Tasks</th>
+              <th className="px-4 py-2.5 text-right font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {extensions.map((extension) => (
+              <ExtensionTableRow
+                key={extension.id}
+                extension={extension}
+                onStatusChange={onStatusChange}
+                onLifecycleAction={onLifecycleAction}
+                onOpenLifecycleDialog={openLifecycleDialog}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <DeliveryLifecycleActionDialog
+        action={dialogAction}
+        entityLabel={selectedExtension?.name ?? 'extension'}
+        isSubmitting={false}
+        onOpenChange={(open) => {
+          if (open) return;
+          setSelectedExtension(null);
+          setDialogAction(null);
+        }}
+        onConfirm={handleDialogConfirm}
+      />
+    </>
   );
 }
 
 function ExtensionTableRow({
   extension,
   onStatusChange,
+  onLifecycleAction,
+  onOpenLifecycleDialog,
 }: {
   extension: Extension;
   onStatusChange: (extension: Extension, nextStatus: string) => void;
+  onLifecycleAction: (extension: Extension, action: 'resume') => void | Promise<void>;
+  onOpenLifecycleDialog: (extension: Extension, action: DeliveryLifecycleAction) => void;
 }) {
   return (
     <tr className="border-border border-t">
@@ -62,7 +113,12 @@ function ExtensionTableRow({
       <ExtensionStatusCell extension={extension} />
       <ExtensionAssigneeCell extension={extension} />
       <td className="text-muted-foreground px-4 py-2.5 text-xs">{extension._count.tasks}</td>
-      <ExtensionActionCell extension={extension} onStatusChange={onStatusChange} />
+      <ExtensionActionCell
+        extension={extension}
+        onStatusChange={onStatusChange}
+        onLifecycleAction={onLifecycleAction}
+        onOpenLifecycleDialog={onOpenLifecycleDialog}
+      />
     </tr>
   );
 }
@@ -124,24 +180,60 @@ function ExtensionAssigneeCell({ extension }: { extension: Extension }) {
 function ExtensionActionCell({
   extension,
   onStatusChange,
+  onLifecycleAction,
+  onOpenLifecycleDialog,
 }: {
   extension: Extension;
   onStatusChange: (extension: Extension, nextStatus: string) => void;
+  onLifecycleAction: (extension: Extension, action: 'resume') => void | Promise<void>;
+  onOpenLifecycleDialog: (extension: Extension, action: DeliveryLifecycleAction) => void;
 }) {
   const nextStatus = getNextExtensionStatus(extension.status);
-  if (!nextStatus || !isActiveExtensionStatus(extension.status))
-    return <td className="px-4 py-2.5" />;
+  const lifecycle = extension.deliveryLifecycle;
+  const canMoveStage = lifecycle?.workStatus !== 'ON_HOLD';
+  if (lifecycle?.isTerminal) return <td className="px-4 py-2.5" />;
 
   return (
     <td className="px-4 py-2.5 text-right">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-7 text-xs"
-        onClick={() => onStatusChange(extension, nextStatus)}
-      >
-        -&gt; {EXTENSION_STATUSES.find((status) => status.value === nextStatus)?.label}
-      </Button>
+      <div className="flex flex-wrap justify-end gap-1.5">
+        {nextStatus && canMoveStage && isActiveExtensionStatus(extension.status) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => onStatusChange(extension, nextStatus)}
+          >
+            -&gt; {EXTENSION_STATUSES.find((status) => status.value === nextStatus)?.label}
+          </Button>
+        )}
+        {lifecycle?.workStatus === 'ON_HOLD' ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => void onLifecycleAction(extension, 'resume')}
+          >
+            Resume
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => onOpenLifecycleDialog(extension, 'pause')}
+          >
+            Pause
+          </Button>
+        )}
+        <Button
+          variant="destructive"
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => onOpenLifecycleDialog(extension, 'cancel')}
+        >
+          Cancel
+        </Button>
+      </div>
     </td>
   );
 }

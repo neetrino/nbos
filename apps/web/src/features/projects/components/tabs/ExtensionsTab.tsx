@@ -36,7 +36,11 @@ export function ExtensionsTab({ projectId, onCreateClick }: ExtensionsTabProps) 
       {state.extensions.length === 0 ? (
         <ExtensionsEmptyState onCreateClick={onCreateClick} />
       ) : (
-        <ExtensionsTable extensions={state.extensions} onStatusChange={state.handleStatusChange} />
+        <ExtensionsTable
+          extensions={state.extensions}
+          onStatusChange={state.handleStatusChange}
+          onLifecycleAction={state.handleLifecycleAction}
+        />
       )}
     </div>
   );

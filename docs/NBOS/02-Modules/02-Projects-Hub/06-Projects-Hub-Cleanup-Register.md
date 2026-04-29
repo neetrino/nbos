@@ -138,6 +138,18 @@ Runtime now exposes explicit terminal completion actions for both `Product` and 
 
 These actions set canonical `delivery_resolution = DONE`, clear active stage fields and keep legacy `status = DONE` only for compatibility. Product and extension UI terminal controls now use these actions instead of the legacy generic `status` endpoint.
 
+### A9. Delivery lifecycle action UI exists
+
+Статус: `PHASE 4 UI ALIGNMENT`
+
+Product and extension delivery UI now exposes canonical operational controls:
+
+- pause with required reason and expected resume date;
+- resume from `ON_HOLD`;
+- cancel with required reason.
+
+Stage movement remains separate from pause/resume/cancel/complete, matching the canon rule that `On Hold` is a work status and `Cancelled` is a terminal outcome, not a delivery stage.
+
 ---
 
 ## B. Устарело только в документации или описаниях

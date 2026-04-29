@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { isStageGateApiError, type ApiFieldError } from '@/lib/api-errors';
 import { extensionsApi, type Extension } from '@/lib/api/extensions';
+import type {
+  DeliveryLifecycleAction,
+  DeliveryLifecycleActionPayload,
+} from '@/features/projects/components/DeliveryLifecycleActionDialog';
 
 const EXTENSION_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER'> = {
   NEW: 'STARTING',
@@ -25,6 +29,7 @@ export function useExtensionsTabState(projectId: string) {
 
   const fetchExtensions = useFetchExtensions(projectId, statusFilter, setExtensions, setLoading);
   const handleStatusChange = useExtensionStatusChange(setExtensions, setBlocker);
+  const handleLifecycleAction = useExtensionLifecycleAction(setExtensions, setBlocker);
 
   useEffect(() => {
     fetchExtensions();
@@ -38,6 +43,7 @@ export function useExtensionsTabState(projectId: string) {
     blocker,
     clearBlocker: () => setBlocker(null),
     handleStatusChange,
+    handleLifecycleAction,
   };
 }
 
@@ -91,6 +97,43 @@ async function updateExtensionDeliveryStatus(
   if (stage) return extensionsApi.moveStage(extension.id, { stage });
   if (newStatus === 'DONE') return extensionsApi.complete(extension.id);
   return extensionsApi.updateStatus(extension.id, newStatus);
+}
+
+function useExtensionLifecycleAction(
+  setExtensions: (updater: (current: Extension[]) => Extension[]) => void,
+  setBlocker: (blocker: ExtensionBlocker | null) => void,
+) {
+  return useCallback(
+    async (
+      extension: Extension,
+      action: DeliveryLifecycleAction | 'resume',
+      payload?: DeliveryLifecycleActionPayload,
+    ) => {
+      try {
+        const updated = await updateExtensionLifecycle(extension, action, payload);
+        setExtensions((current) => replaceExtension(current, updated));
+        setBlocker(null);
+      } catch (error) {
+        setBlocker(toExtensionBlocker(error, extension));
+      }
+    },
+    [setBlocker, setExtensions],
+  );
+}
+
+async function updateExtensionLifecycle(
+  extension: Extension,
+  action: DeliveryLifecycleAction | 'resume',
+  payload?: DeliveryLifecycleActionPayload,
+) {
+  if (action === 'resume') return extensionsApi.resume(extension.id);
+  if (action === 'pause') {
+    return extensionsApi.pause(extension.id, {
+      reason: payload?.reason ?? '',
+      onHoldUntil: payload?.onHoldUntil ?? '',
+    });
+  }
+  return extensionsApi.cancel(extension.id, { reason: payload?.reason ?? '' });
 }
 
 function replaceExtension(extensions: Extension[], updated: Extension) {

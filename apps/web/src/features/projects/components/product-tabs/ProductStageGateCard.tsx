@@ -9,6 +9,12 @@ import { productsApi } from '@/lib/api/products';
 import { type ApiFieldError, isStageGateApiError } from '@/lib/api-errors';
 import { PRODUCT_STATUSES } from '@/features/projects/constants/projects';
 import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
+import {
+  DeliveryLifecycleActionDialog,
+  type DeliveryLifecycleAction,
+  type DeliveryLifecycleActionPayload,
+} from '@/features/projects/components/DeliveryLifecycleActionDialog';
+import { ProductLifecycleActions } from './ProductLifecycleActions';
 
 const PRODUCT_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER'> = {
   NEW: 'STARTING',
@@ -19,12 +25,12 @@ const PRODUCT_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' 
 };
 
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-  NEW: ['CREATING', 'LOST'],
-  CREATING: ['DEVELOPMENT', 'ON_HOLD', 'LOST'],
-  DEVELOPMENT: ['QA', 'ON_HOLD', 'LOST'],
-  QA: ['TRANSFER', 'DEVELOPMENT', 'ON_HOLD'],
+  NEW: ['CREATING'],
+  CREATING: ['DEVELOPMENT'],
+  DEVELOPMENT: ['QA'],
+  QA: ['TRANSFER', 'DEVELOPMENT'],
   TRANSFER: ['DONE', 'QA'],
-  ON_HOLD: ['CREATING', 'DEVELOPMENT'],
+  ON_HOLD: [],
   DONE: [],
   LOST: [],
 };
@@ -42,6 +48,8 @@ interface ProductStageGateCardProps {
 export function ProductStageGateCard({ product, onStatusChange }: ProductStageGateCardProps) {
   const [updating, setUpdating] = useState(false);
   const [blocker, setBlocker] = useState<StageGateBlocker | null>(null);
+  const [dialogAction, setDialogAction] = useState<DeliveryLifecycleAction | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const nextStatuses = ALLOWED_TRANSITIONS[product.status] ?? [];
 
   const handleStatusChange = async (newStatus: string) => {
@@ -64,6 +72,41 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
     }
   };
 
+  const handleResume = async () => {
+    setUpdating(true);
+    setActionError(null);
+    try {
+      await productsApi.resume(product.id);
+      onStatusChange();
+    } catch (error) {
+      setActionError(toActionError(error, 'Failed to resume product.'));
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleLifecycleAction = async (payload: DeliveryLifecycleActionPayload) => {
+    if (!dialogAction) return;
+    setUpdating(true);
+    setActionError(null);
+    try {
+      if (dialogAction === 'pause') {
+        await productsApi.pause(product.id, {
+          reason: payload.reason,
+          onHoldUntil: payload.onHoldUntil ?? '',
+        });
+      } else {
+        await productsApi.cancel(product.id, { reason: payload.reason });
+      }
+      setDialogAction(null);
+      onStatusChange();
+    } catch (error) {
+      setActionError(toActionError(error, 'Failed to update product delivery.'));
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <section className="bg-card border-border rounded-xl border p-5">
       <h3 className="mb-4 text-sm font-semibold">Stage Gate</h3>
@@ -73,7 +116,25 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
         updating={updating}
         onStatusChange={handleStatusChange}
       />
+      <ProductLifecycleActions
+        product={product}
+        disabled={updating}
+        onPause={() => setDialogAction('pause')}
+        onResume={handleResume}
+        onCancel={() => setDialogAction('cancel')}
+      />
       {blocker && <StageGateBlockerPanel blocker={blocker} projectId={product.project.id} />}
+      <DeliveryLifecycleActionDialog
+        action={dialogAction}
+        entityLabel={product.name}
+        isSubmitting={updating}
+        error={actionError}
+        onOpenChange={(open) => {
+          setDialogAction(open ? dialogAction : null);
+          setActionError(null);
+        }}
+        onConfirm={handleLifecycleAction}
+      />
     </section>
   );
 }
@@ -201,6 +262,10 @@ function toStageGateBlocker(error: unknown): StageGateBlocker {
     message: error instanceof Error ? error.message : 'Failed to update product status.',
     errors: [],
   };
+}
+
+function toActionError(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
 }
 
 function getNoTransitionMessage(status: string) {
