@@ -5,6 +5,7 @@ import {
   Plus,
   Pencil,
   Trash2,
+  RotateCcw,
   RefreshCcw,
   KeyRound,
   Eye,
@@ -60,6 +61,7 @@ import { PermissionGate } from '@/lib/permissions';
 import { toast } from 'sonner';
 
 type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
+type VaultListScope = 'active' | 'archived';
 
 interface CredentialListItem {
   id: string;
@@ -102,6 +104,7 @@ export default function CredentialsPage() {
   const [editCredentialId, setEditCredentialId] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [vaultListScope, setVaultListScope] = useState<VaultListScope>('active');
 
   const fetchCredentials = useCallback(async () => {
     setLoading(true);
@@ -113,6 +116,7 @@ export default function CredentialsPage() {
         accessLevel:
           filters.accessLevel && filters.accessLevel !== 'all' ? filters.accessLevel : undefined,
         tab: activeTab,
+        includeArchived: vaultListScope === 'archived',
       });
       setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
     } catch {
@@ -120,7 +124,7 @@ export default function CredentialsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters, activeTab]);
+  }, [search, filters, activeTab, vaultListScope]);
 
   useEffect(() => {
     fetchCredentials();
@@ -156,11 +160,29 @@ export default function CredentialsPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Credentials Vault" description={`${credentials.length} credentials`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant={vaultListScope === 'active' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setVaultListScope('active')}
+          >
+            Active
+          </Button>
+          <Button
+            type="button"
+            variant={vaultListScope === 'archived' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setVaultListScope('archived')}
+          >
+            Archived
+          </Button>
+        </div>
         <Button variant="outline" size="icon" onClick={fetchCredentials}>
           <RefreshCcw size={16} />
         </Button>
         <PermissionGate module="CREDENTIALS" action="ADD">
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button onClick={() => setCreateOpen(true)} disabled={vaultListScope === 'archived'}>
             <Plus size={16} />
             New Credential
           </Button>
@@ -194,6 +216,7 @@ export default function CredentialsPage() {
             <CredentialTable
               credentials={credentials}
               loading={loading}
+              listScope={vaultListScope}
               visibleLogins={visibleLogins}
               onToggleLogin={toggleLogin}
               onCopy={copyToClipboard}
@@ -207,6 +230,7 @@ export default function CredentialsPage() {
                 setEditOpen(true);
               }}
               onRequestDelete={(id, name) => setDeleteTarget({ id, name })}
+              onRestored={fetchCredentials}
             />
           </TabsContent>
         ))}
@@ -253,6 +277,7 @@ export default function CredentialsPage() {
 function CredentialTable({
   credentials,
   loading,
+  listScope,
   visibleLogins,
   onToggleLogin,
   onCopy,
@@ -260,9 +285,11 @@ function CredentialTable({
   onOpenVault,
   onOpenEdit,
   onRequestDelete,
+  onRestored,
 }: {
   credentials: CredentialListItem[];
   loading: boolean;
+  listScope: VaultListScope;
   visibleLogins: Set<string>;
   onToggleLogin: (id: string) => void;
   onCopy: (text: string) => void;
@@ -270,7 +297,9 @@ function CredentialTable({
   onOpenVault: (id: string) => void;
   onOpenEdit: (id: string) => void;
   onRequestDelete: (id: string, name: string) => void;
+  onRestored: () => void;
 }) {
+  const isArchivedList = listScope === 'archived';
   if (loading) {
     return (
       <div className="space-y-2">
@@ -384,7 +413,7 @@ function CredentialTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  {cred.url ? (
+                  {cred.url && !isArchivedList ? (
                     <Button
                       type="button"
                       variant="link"
@@ -404,58 +433,88 @@ function CredentialTable({
                       <ExternalLink size={10} />
                       Open
                     </Button>
+                  ) : cred.url && isArchivedList ? (
+                    <span className="text-muted-foreground text-xs break-all">{cred.url}</span>
                   ) : (
                     '—'
                   )}
                 </TableCell>
                 <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-0.5">
+                  {isArchivedList ? (
                     <PermissionGate module="CREDENTIALS" action="EDIT">
                       <Button
                         type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        title="Edit credential"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onOpenEdit(cred.id);
+                          void (async () => {
+                            try {
+                              await credentialsApi.restore(cred.id);
+                              toast.success('Credential restored');
+                              onRestored();
+                            } catch {
+                              toast.error('Could not restore');
+                            }
+                          })();
                         }}
                       >
-                        <Pencil size={12} />
+                        <RotateCcw size={12} />
+                        Restore
                       </Button>
                     </PermissionGate>
-                    <PermissionGate module="CREDENTIALS" action="DELETE">
+                  ) : (
+                    <div className="flex items-center justify-center gap-0.5">
+                      <PermissionGate module="CREDENTIALS" action="EDIT">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Edit credential"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenEdit(cred.id);
+                          }}
+                        >
+                          <Pencil size={12} />
+                        </Button>
+                      </PermissionGate>
+                      <PermissionGate module="CREDENTIALS" action="DELETE">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Archive credential"
+                          className="text-destructive hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRequestDelete(cred.id, cred.name);
+                          }}
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      </PermissionGate>
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  {!isArchivedList && (
+                    <PermissionGate module="CREDENTIALS" action="VIEW">
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon-sm"
-                        title="Delete credential"
-                        className="text-destructive hover:text-destructive"
+                        title="Open vault detail"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRequestDelete(cred.id, cred.name);
+                          onOpenVault(cred.id);
                         }}
                       >
-                        <Trash2 size={12} />
+                        <Shield size={12} />
                       </Button>
                     </PermissionGate>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <PermissionGate module="CREDENTIALS" action="VIEW">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      title="Open vault detail"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenVault(cred.id);
-                      }}
-                    >
-                      <Shield size={12} />
-                    </Button>
-                  </PermissionGate>
+                  )}
                 </TableCell>
               </TableRow>
             );

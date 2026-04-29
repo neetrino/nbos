@@ -51,6 +51,8 @@ interface CredentialQueryParams {
   tab?: CredentialTab;
   employeeId?: string;
   departmentIds?: string[];
+  /** When true, list only archived rows (same visibility rules). */
+  includeArchived?: boolean;
 }
 
 interface CreateCredentialDto {
@@ -113,9 +115,16 @@ export class CredentialsService {
       tab,
       employeeId,
       departmentIds = [],
+      includeArchived = false,
     } = params;
 
     const where: Prisma.CredentialWhereInput = {};
+
+    if (includeArchived) {
+      where.archivedAt = { not: null };
+    } else {
+      where.archivedAt = null;
+    }
 
     if (projectId) where.projectId = projectId;
     if (category) where.category = category as Prisma.CredentialWhereInput['category'];
@@ -152,6 +161,7 @@ export class CredentialsService {
           allowedEmployees: true,
           createdAt: true,
           updatedAt: true,
+          archivedAt: true,
           password: true,
           apiKey: true,
           envData: true,
@@ -258,6 +268,7 @@ export class CredentialsService {
     const credential = await this.prisma.credential.findFirst({
       where: {
         id,
+        archivedAt: null,
         OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
       },
       include: { project: { select: { id: true, name: true } } },
@@ -384,6 +395,7 @@ export class CredentialsService {
     const existing = await this.prisma.credential.findFirst({
       where: {
         id,
+        archivedAt: null,
         OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
       },
     });
@@ -429,21 +441,50 @@ export class CredentialsService {
     return this.toCredentialWithoutSecrets(credential);
   }
 
-  async delete(id: string, access: CredentialsAccessContext) {
+  async archive(id: string, access: CredentialsAccessContext) {
     const existing = await this.prisma.credential.findFirst({
       where: {
         id,
+        archivedAt: null,
         OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
 
-    await this.prisma.credential.delete({ where: { id } });
+    const archivedAt = new Date();
+    await this.prisma.credential.update({
+      where: { id },
+      data: { archivedAt },
+    });
 
     await this.auditService.log({
       entityType: 'credential',
       entityId: id,
-      action: 'credential.delete',
+      action: 'credential.archived',
+      userId: access.employeeId,
+      projectId: existing.projectId ?? undefined,
+    });
+  }
+
+  async restore(id: string, access: CredentialsAccessContext) {
+    const existing = await this.prisma.credential.findFirst({
+      where: {
+        id,
+        archivedAt: { not: null },
+        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+      },
+    });
+    if (!existing) throw new NotFoundException(`Credential ${id} not found`);
+
+    await this.prisma.credential.update({
+      where: { id },
+      data: { archivedAt: null },
+    });
+
+    await this.auditService.log({
+      entityType: 'credential',
+      entityId: id,
+      action: 'credential.restored',
       userId: access.employeeId,
       projectId: existing.projectId ?? undefined,
     });
@@ -471,6 +512,7 @@ export class CredentialsService {
     const row = await this.prisma.credential.findFirst({
       where: {
         id,
+        archivedAt: null,
         OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
       },
     });

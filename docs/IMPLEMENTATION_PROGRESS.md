@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                              |
-| ------------- | -------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**            |
-| Current task  | Phase 5 — Credentials vault (apiKey/envData forms) |
-| Status        | Phase 5 in progress                                |
-| Last updated  | 2026-04-29                                         |
+| Field         | Value                                        |
+| ------------- | -------------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge**      |
+| Current task  | Phase 5 — Credentials soft archive + restore |
+| Status        | Phase 5 in progress                          |
+| Last updated  | 2026-04-29                                   |
 
 ## Phase Snapshot
 
@@ -62,37 +62,38 @@ Future Finance depth:
 
 ## Recent Milestones
 
-| Date       | Milestone                             | Result                                                                                                                                                                            |
-| ---------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-29 | Phase 3 Finance full closure          | Client Services runtime/flows and all six Finance report aggregates done.                                                                                                         |
-| 2026-04-29 | Delivery lifecycle runtime            | Product/Extension canonical lifecycle, actions, board, filters and gates.                                                                                                         |
-| 2026-04-29 | Product Done readiness                | Done blocks real blockers and surfaces handoff/Drive/client gaps.                                                                                                                 |
-| 2026-04-29 | Tasks / Work Space foundation         | Work Space runtime, product UI, completion rules and blocker UX exist.                                                                                                            |
-| 2026-04-29 | Support runtime bridges               | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state.                                                                                                         |
-| 2026-04-29 | Phase 4 Delivery closure              | Review/Scrum/automation depth moved later; Phase 5 can start.                                                                                                                     |
-| 2026-04-29 | Drive file metadata foundation        | DB-backed File Assets, versions, links and metadata API foundation.                                                                                                               |
-| 2026-04-29 | Phase 5 Documents plan                | Documents defined as standalone module with Drive-backed attachments.                                                                                                             |
-| 2026-04-29 | Drive upload session + library        | `FileUploadSession`, presigned PUT, complete → FileAsset+link, `GET /drive/library`.                                                                                              |
-| 2026-04-29 | Documents data foundation             | Prisma Document, `/api/documents`, `DOCUMENTS` RBAC, default sections, `documentsApi`.                                                                                            |
-| 2026-04-29 | Documents UI shell                    | `/documents`, sections, tables, create dialog, detail + archive, sidebar `Documents`.                                                                                             |
-| 2026-04-29 | Documents native editor slice         | TipTap edit + read tabs, DOMPurify viewer, debounced save, `recordActivity: false` on API.                                                                                        |
-| 2026-04-29 | Documents Drive attachments slice     | `POST/DELETE …/attachments`, `GET …/drive/files/:id/preview-url`, TipTap `documentImage`, panel UI.                                                                               |
-| 2026-04-29 | Documents search + activity UX slice  | List `OR` search (title, description, plainText, section, tags), `searchSnippet`, home/section UI, owner/updated hints.                                                           |
-| 2026-04-29 | Documents list FTS                    | Migration `search_vector` (GIN); `listDocuments` ranked `$queryRaw` + same ILIKE/tag/section OR paths.                                                                            |
-| 2026-04-29 | Documents list-scope ACL              | Section `default_list_scope`, document `list_scope_override`, read/search enforcement, PATCH + `access_changed`.                                                                  |
-| 2026-04-29 | Documents view_activity + audit log   | `DOCUMENTS_VIEW_ACTIVITY` in seed; `activityRevealed` on detail; `AuditService` on `access_changed`.                                                                              |
-| 2026-04-29 | Section default list scope admin      | `perm-documents-manage-sections` / `MANAGE_SECTIONS`; `PATCH /api/documents/sections/:id`; section page visibility card; audit `document_section_list_scope_changed`.             |
-| 2026-04-29 | Document activity pagination          | `GET /api/documents/:id/activity` (cursor + limit); detail over-fetch + `activityNextCursor`; document detail “Load older activity”.                                              |
-| 2026-04-29 | Document-scoped Drive preview         | `GET …/drive/files/:id/preview-url?forDocumentId=` enforces Documents read + attachment or DOCUMENT `FileLink`; web passes `documentId` in viewer, editor, attachments.           |
-| 2026-04-29 | Document list search + attachments    | List `search` OR-path on linked `file_assets` names; `searchSnippet` fallback from attachment display/original names (not in `search_vector` yet).                                |
-| 2026-04-29 | Document attachment FTS column        | `documents.attachment_search_vector` + GIN; triggers on `document_attachments` and `file_assets` updates; list FTS rank blends attachment matches (weight constant).              |
-| 2026-04-29 | Document restore from archive         | `POST /api/documents/:id/restore` (DELETE perm); PUBLISHED if `published_at` set else DRAFT; web Restore on archived detail; activity `restored` + snippet hint.                  |
-| 2026-04-29 | Credentials row-level access          | `GET/PUT/DELETE /credentials/:id` use list-equivalent visibility (`findFirst` + OR); view audit only after row found; no secret leak by id alone.                                 |
-| 2026-04-29 | Credentials reveal/copy + redaction   | List/detail/create/update omit secret blobs; `secretsPresent`; `POST …/secrets/reveal` and `…/secrets/copy` + audit; web vault dialog; project credentials select strips secrets. |
-| 2026-04-29 | Credentials URL open audit            | `POST /api/credentials/:id/open-url` validates http(s), audit `credential.url_opened`, returns URL; web vault dialog, credentials list, project Credentials tab use it.           |
-| 2026-04-29 | Credentials web edit dialog           | `/credentials` table Edit (CREDENTIALS EDIT): load detail, save via `PUT /api/credentials/:id`; optional new password; phone + SECRET allow-list like create.                     |
-| 2026-04-29 | Credentials web delete confirm        | Actions column: delete opens dialog; `DELETE /api/credentials/:id` after confirm; `CREDENTIALS` DELETE gate.                                                                      |
-| 2026-04-29 | Credentials apiKey + envData in forms | New credential dialog and edit dialog: optional API key and environment textarea; edit only sends new values when non-empty (existing values not shown).                          |
+| Date       | Milestone                             | Result                                                                                                                                                                                                     |
+| ---------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-29 | Phase 3 Finance full closure          | Client Services runtime/flows and all six Finance report aggregates done.                                                                                                                                  |
+| 2026-04-29 | Delivery lifecycle runtime            | Product/Extension canonical lifecycle, actions, board, filters and gates.                                                                                                                                  |
+| 2026-04-29 | Product Done readiness                | Done blocks real blockers and surfaces handoff/Drive/client gaps.                                                                                                                                          |
+| 2026-04-29 | Tasks / Work Space foundation         | Work Space runtime, product UI, completion rules and blocker UX exist.                                                                                                                                     |
+| 2026-04-29 | Support runtime bridges               | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state.                                                                                                                                  |
+| 2026-04-29 | Phase 4 Delivery closure              | Review/Scrum/automation depth moved later; Phase 5 can start.                                                                                                                                              |
+| 2026-04-29 | Drive file metadata foundation        | DB-backed File Assets, versions, links and metadata API foundation.                                                                                                                                        |
+| 2026-04-29 | Phase 5 Documents plan                | Documents defined as standalone module with Drive-backed attachments.                                                                                                                                      |
+| 2026-04-29 | Drive upload session + library        | `FileUploadSession`, presigned PUT, complete → FileAsset+link, `GET /drive/library`.                                                                                                                       |
+| 2026-04-29 | Documents data foundation             | Prisma Document, `/api/documents`, `DOCUMENTS` RBAC, default sections, `documentsApi`.                                                                                                                     |
+| 2026-04-29 | Documents UI shell                    | `/documents`, sections, tables, create dialog, detail + archive, sidebar `Documents`.                                                                                                                      |
+| 2026-04-29 | Documents native editor slice         | TipTap edit + read tabs, DOMPurify viewer, debounced save, `recordActivity: false` on API.                                                                                                                 |
+| 2026-04-29 | Documents Drive attachments slice     | `POST/DELETE …/attachments`, `GET …/drive/files/:id/preview-url`, TipTap `documentImage`, panel UI.                                                                                                        |
+| 2026-04-29 | Documents search + activity UX slice  | List `OR` search (title, description, plainText, section, tags), `searchSnippet`, home/section UI, owner/updated hints.                                                                                    |
+| 2026-04-29 | Documents list FTS                    | Migration `search_vector` (GIN); `listDocuments` ranked `$queryRaw` + same ILIKE/tag/section OR paths.                                                                                                     |
+| 2026-04-29 | Documents list-scope ACL              | Section `default_list_scope`, document `list_scope_override`, read/search enforcement, PATCH + `access_changed`.                                                                                           |
+| 2026-04-29 | Documents view_activity + audit log   | `DOCUMENTS_VIEW_ACTIVITY` in seed; `activityRevealed` on detail; `AuditService` on `access_changed`.                                                                                                       |
+| 2026-04-29 | Section default list scope admin      | `perm-documents-manage-sections` / `MANAGE_SECTIONS`; `PATCH /api/documents/sections/:id`; section page visibility card; audit `document_section_list_scope_changed`.                                      |
+| 2026-04-29 | Document activity pagination          | `GET /api/documents/:id/activity` (cursor + limit); detail over-fetch + `activityNextCursor`; document detail “Load older activity”.                                                                       |
+| 2026-04-29 | Document-scoped Drive preview         | `GET …/drive/files/:id/preview-url?forDocumentId=` enforces Documents read + attachment or DOCUMENT `FileLink`; web passes `documentId` in viewer, editor, attachments.                                    |
+| 2026-04-29 | Document list search + attachments    | List `search` OR-path on linked `file_assets` names; `searchSnippet` fallback from attachment display/original names (not in `search_vector` yet).                                                         |
+| 2026-04-29 | Document attachment FTS column        | `documents.attachment_search_vector` + GIN; triggers on `document_attachments` and `file_assets` updates; list FTS rank blends attachment matches (weight constant).                                       |
+| 2026-04-29 | Document restore from archive         | `POST /api/documents/:id/restore` (DELETE perm); PUBLISHED if `published_at` set else DRAFT; web Restore on archived detail; activity `restored` + snippet hint.                                           |
+| 2026-04-29 | Credentials row-level access          | `GET/PUT/DELETE /credentials/:id` use list-equivalent visibility (`findFirst` + OR); view audit only after row found; no secret leak by id alone.                                                          |
+| 2026-04-29 | Credentials reveal/copy + redaction   | List/detail/create/update omit secret blobs; `secretsPresent`; `POST …/secrets/reveal` and `…/secrets/copy` + audit; web vault dialog; project credentials select strips secrets.                          |
+| 2026-04-29 | Credentials URL open audit            | `POST /api/credentials/:id/open-url` validates http(s), audit `credential.url_opened`, returns URL; web vault dialog, credentials list, project Credentials tab use it.                                    |
+| 2026-04-29 | Credentials web edit dialog           | `/credentials` table Edit (CREDENTIALS EDIT): load detail, save via `PUT /api/credentials/:id`; optional new password; phone + SECRET allow-list like create.                                              |
+| 2026-04-29 | Credentials web delete confirm        | Actions column: archive confirm dialog; `DELETE /api/credentials/:id` archives (soft); `CREDENTIALS` DELETE gate.                                                                                          |
+| 2026-04-29 | Credentials apiKey + envData in forms | New credential dialog and edit dialog: optional API key and environment textarea; edit only sends new values when non-empty (existing values not shown).                                                   |
+| 2026-04-29 | Credentials archive + restore         | Prisma `archived_at`; list `includeArchived`; DELETE sets archive + audit `credential.archived`; `POST …/restore` + `credential.restored`; web Active/Archived + Restore; project counts exclude archived. |
 
 ## Next Action
 

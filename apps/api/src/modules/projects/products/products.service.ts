@@ -150,9 +150,17 @@ export class ProductsService {
             id: true,
             code: true,
             name: true,
-            credentials: { select: { category: true } },
+            credentials: {
+              where: { archivedAt: null },
+              select: { category: true },
+            },
             domains: { select: { status: true } },
-            _count: { select: { credentials: true, domains: true } },
+            _count: {
+              select: {
+                credentials: { where: { archivedAt: null } },
+                domains: true,
+              },
+            },
           },
         },
         pm: { select: { id: true, firstName: true, lastName: true, email: true } },

@@ -288,8 +288,8 @@ export class ClientServicesService {
   private async ensureCredentialExists(credentialId: string | null | undefined) {
     const id = credentialId?.trim();
     if (!id) return;
-    const credential = await this.prisma.credential.findUnique({
-      where: { id },
+    const credential = await this.prisma.credential.findFirst({
+      where: { id, archivedAt: null },
       select: { id: true },
     });
     if (!credential) throw new BadRequestException('Provider account credential was not found');

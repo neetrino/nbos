@@ -30,6 +30,11 @@ export class CredentialsController {
   @ApiQuery({ name: 'accessLevel', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'tab', required: false, enum: ['all', 'personal', 'department', 'secret'] })
+  @ApiQuery({
+    name: 'includeArchived',
+    required: false,
+    description: 'List archived credentials only',
+  })
   async findAll(
     @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
@@ -39,7 +44,10 @@ export class CredentialsController {
     @Query('accessLevel') accessLevel?: string,
     @Query('search') search?: string,
     @Query('tab') tab?: string,
+    @Query('includeArchived') includeArchived?: string,
   ) {
+    const archivedFlag =
+      includeArchived === '1' || includeArchived === 'true' || includeArchived === 'yes';
     return this.credentialsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
@@ -50,6 +58,7 @@ export class CredentialsController {
       tab: (tab as 'all' | 'personal' | 'department' | 'secret') || undefined,
       employeeId: user.id,
       departmentIds: user.departmentIds,
+      includeArchived: archivedFlag,
     });
   }
 
@@ -169,9 +178,20 @@ export class CredentialsController {
   @Delete(':id')
   @RequirePermission('CREDENTIALS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete credential' })
+  @ApiOperation({ summary: 'Archive credential (soft delete)' })
   async remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    await this.credentialsService.delete(id, {
+    await this.credentialsService.archive(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
+  @Post(':id/restore')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Restore archived credential' })
+  async restore(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.credentialsService.restore(id, {
       employeeId: user.id,
       departmentIds: user.departmentIds ?? [],
     });

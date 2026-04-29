@@ -39,6 +39,7 @@ export type CredentialMinAggregateOutputType = {
   phone: string | null;
   notes: string | null;
   accessLevel: $Enums.CredentialAccessLevelEnum | null;
+  archivedAt: Date | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -59,6 +60,7 @@ export type CredentialMaxAggregateOutputType = {
   phone: string | null;
   notes: string | null;
   accessLevel: $Enums.CredentialAccessLevelEnum | null;
+  archivedAt: Date | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -80,6 +82,7 @@ export type CredentialCountAggregateOutputType = {
   notes: number;
   accessLevel: number;
   allowedEmployees: number;
+  archivedAt: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
@@ -101,6 +104,7 @@ export type CredentialMinAggregateInputType = {
   phone?: true;
   notes?: true;
   accessLevel?: true;
+  archivedAt?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -121,6 +125,7 @@ export type CredentialMaxAggregateInputType = {
   phone?: true;
   notes?: true;
   accessLevel?: true;
+  archivedAt?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -142,6 +147,7 @@ export type CredentialCountAggregateInputType = {
   notes?: true;
   accessLevel?: true;
   allowedEmployees?: true;
+  archivedAt?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -239,6 +245,7 @@ export type CredentialGroupByOutputType = {
   notes: string | null;
   accessLevel: $Enums.CredentialAccessLevelEnum;
   allowedEmployees: string[];
+  archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   _count: CredentialCountAggregateOutputType | null;
@@ -280,6 +287,7 @@ export type CredentialWhereInput = {
     | Prisma.EnumCredentialAccessLevelEnumFilter<'Credential'>
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.StringNullableListFilter<'Credential'>;
+  archivedAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
   project?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null;
@@ -308,6 +316,7 @@ export type CredentialOrderByWithRelationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   accessLevel?: Prisma.SortOrder;
   allowedEmployees?: Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   project?: Prisma.ProjectOrderByWithRelationInput;
@@ -341,6 +350,7 @@ export type CredentialWhereUniqueInput = Prisma.AtLeast<
       | Prisma.EnumCredentialAccessLevelEnumFilter<'Credential'>
       | $Enums.CredentialAccessLevelEnum;
     allowedEmployees?: Prisma.StringNullableListFilter<'Credential'>;
+    archivedAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
     createdAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
     project?: Prisma.XOR<
@@ -377,6 +387,7 @@ export type CredentialOrderByWithAggregationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   accessLevel?: Prisma.SortOrder;
   allowedEmployees?: Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.CredentialCountOrderByAggregateInput;
@@ -412,6 +423,7 @@ export type CredentialScalarWhereWithAggregatesInput = {
     | Prisma.EnumCredentialAccessLevelEnumWithAggregatesFilter<'Credential'>
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.StringNullableListFilter<'Credential'>;
+  archivedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Credential'> | Date | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Credential'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Credential'> | Date | string;
 };
@@ -430,6 +442,7 @@ export type CredentialCreateInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project?: Prisma.ProjectCreateNestedOneWithoutCredentialsInput;
@@ -455,6 +468,7 @@ export type CredentialUncheckedCreateInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
@@ -478,6 +492,7 @@ export type CredentialUpdateInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneWithoutCredentialsNestedInput;
@@ -507,6 +522,7 @@ export type CredentialUncheckedUpdateInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
@@ -529,6 +545,7 @@ export type CredentialCreateManyInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -551,6 +568,7 @@ export type CredentialUpdateManyMutationInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -576,6 +594,7 @@ export type CredentialUncheckedUpdateManyInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -607,6 +626,7 @@ export type CredentialCountOrderByAggregateInput = {
   notes?: Prisma.SortOrder;
   accessLevel?: Prisma.SortOrder;
   allowedEmployees?: Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -627,6 +647,7 @@ export type CredentialMaxOrderByAggregateInput = {
   phone?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   accessLevel?: Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -647,6 +668,7 @@ export type CredentialMinOrderByAggregateInput = {
   phone?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   accessLevel?: Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -973,6 +995,7 @@ export type CredentialCreateWithoutProjectInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   department?: Prisma.DepartmentCreateNestedOneWithoutCredentialsInput;
@@ -996,6 +1019,7 @@ export type CredentialUncheckedCreateWithoutProjectInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
@@ -1064,6 +1088,7 @@ export type CredentialScalarWhereInput = {
     | Prisma.EnumCredentialAccessLevelEnumFilter<'Credential'>
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.StringNullableListFilter<'Credential'>;
+  archivedAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
 };
@@ -1082,6 +1107,7 @@ export type CredentialCreateWithoutClientServiceRecordsInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project?: Prisma.ProjectCreateNestedOneWithoutCredentialsInput;
@@ -1106,6 +1132,7 @@ export type CredentialUncheckedCreateWithoutClientServiceRecordsInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1156,6 +1183,7 @@ export type CredentialUpdateWithoutClientServiceRecordsInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneWithoutCredentialsNestedInput;
@@ -1184,6 +1212,7 @@ export type CredentialUncheckedUpdateWithoutClientServiceRecordsInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1202,6 +1231,7 @@ export type CredentialCreateWithoutDepartmentInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project?: Prisma.ProjectCreateNestedOneWithoutCredentialsInput;
@@ -1225,6 +1255,7 @@ export type CredentialUncheckedCreateWithoutDepartmentInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
@@ -1285,6 +1316,7 @@ export type CredentialCreateWithoutOwnerInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project?: Prisma.ProjectCreateNestedOneWithoutCredentialsInput;
@@ -1308,6 +1340,7 @@ export type CredentialUncheckedCreateWithoutOwnerInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
@@ -1370,6 +1403,7 @@ export type CredentialCreateManyProjectInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1392,6 +1426,7 @@ export type CredentialUpdateWithoutProjectInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   department?: Prisma.DepartmentUpdateOneWithoutCredentialsNestedInput;
@@ -1419,6 +1454,7 @@ export type CredentialUncheckedUpdateWithoutProjectInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
@@ -1444,6 +1480,7 @@ export type CredentialUncheckedUpdateManyWithoutProjectInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1464,6 +1501,7 @@ export type CredentialCreateManyDepartmentInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1486,6 +1524,7 @@ export type CredentialUpdateWithoutDepartmentInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneWithoutCredentialsNestedInput;
@@ -1513,6 +1552,7 @@ export type CredentialUncheckedUpdateWithoutDepartmentInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
@@ -1538,6 +1578,7 @@ export type CredentialUncheckedUpdateManyWithoutDepartmentInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1558,6 +1599,7 @@ export type CredentialCreateManyOwnerInput = {
   notes?: string | null;
   accessLevel?: $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1580,6 +1622,7 @@ export type CredentialUpdateWithoutOwnerInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneWithoutCredentialsNestedInput;
@@ -1607,6 +1650,7 @@ export type CredentialUncheckedUpdateWithoutOwnerInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
@@ -1632,6 +1676,7 @@ export type CredentialUncheckedUpdateManyWithoutOwnerInput = {
     | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
     | $Enums.CredentialAccessLevelEnum;
   allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1691,6 +1736,7 @@ export type CredentialSelect<
     notes?: boolean;
     accessLevel?: boolean;
     allowedEmployees?: boolean;
+    archivedAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.Credential$projectArgs<ExtArgs>;
@@ -1722,6 +1768,7 @@ export type CredentialSelectCreateManyAndReturn<
     notes?: boolean;
     accessLevel?: boolean;
     allowedEmployees?: boolean;
+    archivedAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.Credential$projectArgs<ExtArgs>;
@@ -1751,6 +1798,7 @@ export type CredentialSelectUpdateManyAndReturn<
     notes?: boolean;
     accessLevel?: boolean;
     allowedEmployees?: boolean;
+    archivedAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.Credential$projectArgs<ExtArgs>;
@@ -1777,6 +1825,7 @@ export type CredentialSelectScalar = {
   notes?: boolean;
   accessLevel?: boolean;
   allowedEmployees?: boolean;
+  archivedAt?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -1800,6 +1849,7 @@ export type CredentialOmit<
   | 'notes'
   | 'accessLevel'
   | 'allowedEmployees'
+  | 'archivedAt'
   | 'createdAt'
   | 'updatedAt',
   ExtArgs['result']['credential']
@@ -1856,6 +1906,7 @@ export type $CredentialPayload<
       notes: string | null;
       accessLevel: $Enums.CredentialAccessLevelEnum;
       allowedEmployees: string[];
+      archivedAt: Date | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -2493,6 +2544,7 @@ export interface CredentialFieldRefs {
   readonly notes: Prisma.FieldRef<'Credential', 'String'>;
   readonly accessLevel: Prisma.FieldRef<'Credential', 'CredentialAccessLevelEnum'>;
   readonly allowedEmployees: Prisma.FieldRef<'Credential', 'String[]'>;
+  readonly archivedAt: Prisma.FieldRef<'Credential', 'DateTime'>;
   readonly createdAt: Prisma.FieldRef<'Credential', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Credential', 'DateTime'>;
 }

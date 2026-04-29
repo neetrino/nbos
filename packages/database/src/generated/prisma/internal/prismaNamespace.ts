@@ -5296,6 +5296,7 @@ export const CredentialScalarFieldEnum = {
   notes: 'notes',
   accessLevel: 'accessLevel',
   allowedEmployees: 'allowedEmployees',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;

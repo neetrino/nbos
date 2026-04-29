@@ -68,7 +68,21 @@ describe('CredentialsService', () => {
       expect(result.meta.total).toBe(1);
       expect(prisma.credential.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
+          where: expect.objectContaining({ archivedAt: null }),
           select: expect.objectContaining({ password: true, apiKey: true, envData: true }),
+        }),
+      );
+    });
+
+    it('should list archived credentials when includeArchived is true', async () => {
+      prisma.credential.findMany.mockResolvedValue([]);
+      prisma.credential.count.mockResolvedValue(0);
+
+      await service.findAll({ includeArchived: true });
+
+      expect(prisma.credential.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ archivedAt: { not: null } }),
         }),
       );
     });
@@ -362,16 +376,22 @@ describe('CredentialsService', () => {
     });
   });
 
-  describe('delete', () => {
-    it('should delete and log audit', async () => {
+  describe('archive', () => {
+    it('should set archivedAt and log credential.archived', async () => {
       prisma.credential.findFirst.mockResolvedValue({ id: '1', projectId: 'proj-1' });
+      prisma.credential.update.mockResolvedValue({ id: '1' });
 
-      await service.delete('1', accessUser1);
+      await service.archive('1', accessUser1);
 
-      expect(prisma.credential.delete).toHaveBeenCalledWith({ where: { id: '1' } });
+      expect(prisma.credential.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: expect.objectContaining({ archivedAt: expect.any(Date) }),
+        }),
+      );
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({
-          action: 'credential.delete',
+          action: 'credential.archived',
           entityId: '1',
         }),
       );
@@ -380,7 +400,39 @@ describe('CredentialsService', () => {
     it('should throw NotFoundException for missing credential', async () => {
       prisma.credential.findFirst.mockResolvedValue(null);
 
-      await expect(service.delete('missing', accessUser1)).rejects.toThrow(NotFoundException);
+      await expect(service.archive('missing', accessUser1)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('restore', () => {
+    it('should clear archivedAt and log credential.restored', async () => {
+      prisma.credential.findFirst.mockResolvedValue({
+        id: '1',
+        projectId: 'proj-1',
+        archivedAt: new Date(),
+      });
+      prisma.credential.update.mockResolvedValue({ id: '1' });
+
+      await service.restore('1', accessUser1);
+
+      expect(prisma.credential.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: { archivedAt: null },
+        }),
+      );
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'credential.restored',
+          entityId: '1',
+        }),
+      );
+    });
+
+    it('should throw NotFoundException when credential is not archived', async () => {
+      prisma.credential.findFirst.mockResolvedValue(null);
+
+      await expect(service.restore('missing', accessUser1)).rejects.toThrow(NotFoundException);
     });
   });
 });

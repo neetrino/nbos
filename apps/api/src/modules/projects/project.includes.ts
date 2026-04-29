@@ -42,6 +42,7 @@ export const projectDetailInclude = {
     orderBy: { createdAt: 'desc' },
   },
   credentials: {
+    where: { archivedAt: null },
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -84,7 +85,7 @@ export const projectDetailInclude = {
       extensions: true,
       orders: true,
       tickets: true,
-      credentials: true,
+      credentials: { where: { archivedAt: null } },
       expenses: true,
     },
   },

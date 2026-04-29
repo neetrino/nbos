@@ -35,11 +35,11 @@ export function DeleteCredentialDialog({
     setDeleting(true);
     try {
       await credentialsApi.delete(credentialId);
-      toast.success('Credential deleted');
+      toast.success('Credential archived');
       onOpenChange(false);
       onDeleted();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete');
+      toast.error(err instanceof Error ? err.message : 'Failed to archive');
     } finally {
       setDeleting(false);
     }
@@ -49,16 +49,16 @@ export function DeleteCredentialDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete credential</DialogTitle>
+          <DialogTitle>Archive credential</DialogTitle>
           <DialogDescription>
-            This permanently removes the credential record
+            The record is hidden from active lists and project handoff counts; secrets stay in the
+            database until a separate purge policy runs. You can restore it later from Archived.
             {credentialName ? (
               <>
                 {' '}
                 <span className="text-foreground font-medium">{credentialName}</span>
               </>
             ) : null}
-            . Secrets cannot be recovered from the vault after deletion.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
@@ -71,7 +71,7 @@ export function DeleteCredentialDialog({
             onClick={() => void handleDelete()}
             disabled={deleting || !credentialId}
           >
-            {deleting ? 'Deleting…' : 'Delete'}
+            {deleting ? 'Archiving…' : 'Archive'}
           </Button>
         </DialogFooter>
       </DialogContent>

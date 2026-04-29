@@ -1528,6 +1528,7 @@ model Credential {
   notes            String?
   accessLevel      CredentialAccessLevelEnum @default(PROJECT_TEAM) @map("access_level")
   allowedEmployees String[]                  @map("allowed_employees")
+  archivedAt       DateTime?                 @map("archived_at")
   createdAt        DateTime                  @default(now()) @map("created_at")
   updatedAt        DateTime                  @updatedAt @map("updated_at")
 
