@@ -1792,6 +1792,11 @@ model Employee {
   marketingAccountsOwned   MarketingAccount[]      @relation("MarketingAccountOwner")
   marketingActivitiesOwned MarketingActivity[]     @relation("MarketingActivityOwner")
 
+  messengerChannelMessagesSent MessengerChannelMessage[] @relation("MessengerChannelMessageSender")
+  messengerDirectMessagesSent  MessengerDirectMessage[]  @relation("MessengerDirectMessageSender")
+  messengerDmThreadsAsA      MessengerDirectThread[]   @relation("MessengerDmThreadParticipantA")
+  messengerDmThreadsAsB      MessengerDirectThread[]   @relation("MessengerDmThreadParticipantB")
+
   @@map("employees")
 }
 
@@ -1829,6 +1834,70 @@ model Partner {
   dealsAsSource Deal[]         @relation("DealSourcePartner")
 
   @@map("partners")
+}
+
+// ─── INTERNAL MESSENGER (MVP) ─────────────────────────────
+
+enum MessengerChannelType {
+  PROJECT
+  GENERAL
+  ANNOUNCEMENT
+}
+
+model MessengerChannel {
+  id        String               @id @default(uuid())
+  name      String
+  projectId String               @map("project_id")
+  type      MessengerChannelType
+  createdAt DateTime             @default(now()) @map("created_at")
+
+  messages MessengerChannelMessage[]
+
+  @@map("messenger_channels")
+}
+
+model MessengerChannelMessage {
+  id                 String    @id @default(uuid())
+  channelId          String    @map("channel_id")
+  channel            MessengerChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  senderId           String    @map("sender_id")
+  sender             Employee  @relation("MessengerChannelMessageSender", fields: [senderId], references: [id])
+  senderNameSnapshot String    @map("sender_name_snapshot")
+  content            String    @db.Text
+  editedAt           DateTime? @map("edited_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  @@index([channelId, createdAt])
+  @@map("messenger_channel_messages")
+}
+
+model MessengerDirectThread {
+  id             String   @id @default(uuid())
+  participantAId String   @map("participant_a_id")
+  participantBId String   @map("participant_b_id")
+  participantA   Employee @relation("MessengerDmThreadParticipantA", fields: [participantAId], references: [id])
+  participantB   Employee @relation("MessengerDmThreadParticipantB", fields: [participantBId], references: [id])
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  messages MessengerDirectMessage[]
+
+  @@unique([participantAId, participantBId])
+  @@map("messenger_direct_threads")
+}
+
+model MessengerDirectMessage {
+  id                 String                @id @default(uuid())
+  threadId           String                @map("thread_id")
+  thread             MessengerDirectThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderId           String                @map("sender_id")
+  sender             Employee              @relation("MessengerDirectMessageSender", fields: [senderId], references: [id])
+  senderNameSnapshot String                @map("sender_name_snapshot")
+  content            String                @db.Text
+  editedAt           DateTime?             @map("edited_at")
+  createdAt          DateTime              @default(now()) @map("created_at")
+
+  @@index([threadId, createdAt])
+  @@map("messenger_direct_messages")
 }
 
 // ─── AUDIT ────────────────────────────────────────────────

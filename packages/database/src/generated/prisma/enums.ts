@@ -726,3 +726,11 @@ export const PartnerStatusEnum = {
 } as const;
 
 export type PartnerStatusEnum = (typeof PartnerStatusEnum)[keyof typeof PartnerStatusEnum];
+
+export const MessengerChannelType = {
+  PROJECT: 'PROJECT',
+  GENERAL: 'GENERAL',
+  ANNOUNCEMENT: 'ANNOUNCEMENT',
+} as const;
+
+export type MessengerChannelType = (typeof MessengerChannelType)[keyof typeof MessengerChannelType];

@@ -29,7 +29,7 @@
 
 Проблемы:
 
-- backend использует in-memory `Map`, а не Prisma models;
+- ~~backend использует in-memory `Map`~~ **Done (2026-04-30):** internal channels + channel messages + DM threads/messages в PostgreSQL через Prisma;
 - нет `Conversation`, `Message`, `Participant`, `Delivery`, `ReadState` моделей;
 - нет WebSocket gateway;
 - нет очереди для внешних каналов;
@@ -71,7 +71,7 @@
 - добавить Prisma models для conversations/messages/participants/read states;
 - добавить `ConversationLink` для связи с Deal/Project/Product/Task/Ticket/Invoice/etc.;
 - добавить seed только для нового канона;
-- убрать in-memory source of truth.
+- ~~убрать in-memory source of truth~~ done for internal MVP HTTP paths (still no WebSocket).
 
 ### Phase 2 - Internal Messenger
 

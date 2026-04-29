@@ -2367,6 +2367,33 @@ export type EnumPartnerStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel>;
 };
 
+export type EnumMessengerChannelTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.MessengerChannelType | Prisma.EnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.MessengerChannelType[]
+    | Prisma.ListEnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MessengerChannelType[]
+    | Prisma.ListEnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumMessengerChannelTypeFilter<$PrismaModel> | $Enums.MessengerChannelType;
+};
+
+export type EnumMessengerChannelTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MessengerChannelType | Prisma.EnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.MessengerChannelType[]
+    | Prisma.ListEnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MessengerChannelType[]
+    | Prisma.ListEnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumMessengerChannelTypeWithAggregatesFilter<$PrismaModel>
+    | $Enums.MessengerChannelType;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumMessengerChannelTypeFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumMessengerChannelTypeFilter<$PrismaModel>;
+};
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>;
@@ -4697,4 +4724,31 @@ export type NestedEnumPartnerStatusEnumWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumMessengerChannelTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.MessengerChannelType | Prisma.EnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.MessengerChannelType[]
+    | Prisma.ListEnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MessengerChannelType[]
+    | Prisma.ListEnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumMessengerChannelTypeFilter<$PrismaModel> | $Enums.MessengerChannelType;
+};
+
+export type NestedEnumMessengerChannelTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MessengerChannelType | Prisma.EnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.MessengerChannelType[]
+    | Prisma.ListEnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MessengerChannelType[]
+    | Prisma.ListEnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumMessengerChannelTypeWithAggregatesFilter<$PrismaModel>
+    | $Enums.MessengerChannelType;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumMessengerChannelTypeFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumMessengerChannelTypeFilter<$PrismaModel>;
 };

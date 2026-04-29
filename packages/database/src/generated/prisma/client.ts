@@ -300,6 +300,26 @@ export type Employee = Prisma.EmployeeModel;
  */
 export type Partner = Prisma.PartnerModel;
 /**
+ * Model MessengerChannel
+ *
+ */
+export type MessengerChannel = Prisma.MessengerChannelModel;
+/**
+ * Model MessengerChannelMessage
+ *
+ */
+export type MessengerChannelMessage = Prisma.MessengerChannelMessageModel;
+/**
+ * Model MessengerDirectThread
+ *
+ */
+export type MessengerDirectThread = Prisma.MessengerDirectThreadModel;
+/**
+ * Model MessengerDirectMessage
+ *
+ */
+export type MessengerDirectMessage = Prisma.MessengerDirectMessageModel;
+/**
  * Model AuditLog
  *
  */

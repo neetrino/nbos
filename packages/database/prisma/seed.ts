@@ -1,6 +1,7 @@
 import { createPrismaClient } from '../src/client';
 import dotenv from 'dotenv';
 import path from 'path';
+import { seedMessenger } from './seed-messenger';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
@@ -19,6 +20,10 @@ async function main() {
   await prisma.order.deleteMany();
   await prisma.expense.deleteMany();
   await prisma.credential.deleteMany();
+  await prisma.messengerDirectMessage.deleteMany();
+  await prisma.messengerDirectThread.deleteMany();
+  await prisma.messengerChannelMessage.deleteMany();
+  await prisma.messengerChannel.deleteMany();
   await prisma.domain.deleteMany();
   await prisma.supportTicket.deleteMany();
   await prisma.task.deleteMany();
@@ -109,6 +114,9 @@ async function main() {
     },
   });
   console.log('  ✓ Employees (6)');
+
+  await seedMessenger(prisma, { ceo, seller, pm, pm2, dev, designer });
+  console.log('  ✓ Messenger (channels + sample messages + DM threads)');
 
   // ── Contacts ───────────────────────────────────────────────
   const contact1 = await prisma.contact.upsert({

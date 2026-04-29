@@ -1,28 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
-
-/**
- * MVP: in-memory store.
- * TODO: migrate to Prisma model when Messenger tables are added to schema.
- */
-
-interface Channel {
-  id: string;
-  name: string;
-  projectId: string;
-  type: 'project' | 'general' | 'announcement';
-  createdAt: Date;
-}
-
-interface Message {
-  id: string;
-  channelId: string;
-  senderId: string;
-  senderName: string;
-  content: string;
-  createdAt: Date;
-  editedAt: Date | null;
-}
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { PrismaClient } from '@nbos/database';
+import { PRISMA_TOKEN } from '../../database.module';
+import {
+  channelTypeFromApi,
+  channelTypeToApi,
+  type MessengerChannelTypeApi,
+} from './messenger-channel-type.util';
+import { orderedParticipantIds } from './messenger-participants.util';
 
 interface PaginationParams {
   page?: number;
@@ -32,44 +16,89 @@ interface PaginationParams {
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 50;
 
+export interface MessengerChannelDto {
+  id: string;
+  name: string;
+  projectId: string;
+  type: MessengerChannelTypeApi;
+  createdAt: Date;
+}
+
+export interface MessengerMessageDto {
+  id: string;
+  channelId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  createdAt: Date;
+  editedAt: Date | null;
+}
+
 @Injectable()
 export class MessengerService {
-  private readonly channels = new Map<string, Channel>();
-  private readonly messages = new Map<string, Message[]>();
-  private readonly directMessages = new Map<string, Message[]>();
   private readonly logger = new Logger(MessengerService.name);
 
-  constructor() {
-    this.seedData();
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+
+  async getChannels(): Promise<MessengerChannelDto[]> {
+    const rows = await this.prisma.messengerChannel.findMany({ orderBy: { createdAt: 'asc' } });
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      projectId: r.projectId,
+      type: channelTypeToApi(r.type),
+      createdAt: r.createdAt,
+    }));
   }
 
-  getChannels(): Channel[] {
-    return Array.from(this.channels.values());
-  }
-
-  createChannel(name: string, projectId: string, type: Channel['type']): Channel {
-    const channel: Channel = {
-      id: randomUUID(),
-      name,
-      projectId,
-      type,
-      createdAt: new Date(),
-    };
-    this.channels.set(channel.id, channel);
-    this.messages.set(channel.id, []);
+  async createChannel(
+    name: string,
+    projectId: string,
+    type: MessengerChannelTypeApi,
+  ): Promise<MessengerChannelDto> {
+    const created = await this.prisma.messengerChannel.create({
+      data: {
+        name,
+        projectId,
+        type: channelTypeFromApi(type),
+      },
+    });
     this.logger.log(`Channel created: ${name}`);
-    return channel;
+    return {
+      id: created.id,
+      name: created.name,
+      projectId: created.projectId,
+      type: channelTypeToApi(created.type),
+      createdAt: created.createdAt,
+    };
   }
 
-  getMessages(channelId: string, pagination: PaginationParams = {}) {
+  async getMessages(channelId: string, pagination: PaginationParams = {}) {
+    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
+    if (!channel) {
+      return {
+        items: [] as MessengerMessageDto[],
+        meta: {
+          total: 0,
+          page: DEFAULT_PAGE,
+          pageSize: DEFAULT_PAGE_SIZE,
+          totalPages: 1,
+        },
+      };
+    }
     const { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE } = pagination;
-    const all = this.messages.get(channelId) ?? [];
-    const total = all.length;
-    const start = (page - 1) * pageSize;
-    const items = all.slice(start, start + pageSize);
-
+    const skip = (page - 1) * pageSize;
+    const [total, rows] = await Promise.all([
+      this.prisma.messengerChannelMessage.count({ where: { channelId } }),
+      this.prisma.messengerChannelMessage.findMany({
+        where: { channelId },
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: pageSize,
+      }),
+    ]);
     return {
-      items,
+      items: rows.map((m) => this.mapChannelMessage(m)),
       meta: {
         total,
         page,
@@ -79,162 +108,170 @@ export class MessengerService {
     };
   }
 
-  sendMessage(channelId: string, senderId: string, senderName: string, content: string): Message {
-    const message: Message = {
-      id: randomUUID(),
-      channelId,
-      senderId,
-      senderName,
-      content,
-      createdAt: new Date(),
-      editedAt: null,
-    };
-    const existing = this.messages.get(channelId) ?? [];
-    existing.push(message);
-    this.messages.set(channelId, existing);
-    return message;
-  }
-
-  getDirectMessages(userId1: string, userId2: string, pagination: PaginationParams = {}) {
-    const key = this.dmKey(userId1, userId2);
-    const { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE } = pagination;
-    const all = this.directMessages.get(key) ?? [];
-    const total = all.length;
-    const start = (page - 1) * pageSize;
-    const items = all.slice(start, start + pageSize);
-
-    return {
-      items,
-      meta: {
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize) || 1,
-      },
-    };
-  }
-
-  sendDirectMessage(
+  async sendMessage(
+    channelId: string,
     senderId: string,
-    senderName: string,
+    _senderNameFromJwt: string,
+    content: string,
+  ): Promise<MessengerMessageDto> {
+    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
+    if (!channel) {
+      throw new NotFoundException('Channel not found');
+    }
+    const snapshot = await this.snapshotSenderName(senderId);
+    const created = await this.prisma.messengerChannelMessage.create({
+      data: {
+        channelId,
+        senderId,
+        senderNameSnapshot: snapshot,
+        content,
+      },
+    });
+    return this.mapChannelMessage(created);
+  }
+
+  async getDirectMessages(userId1: string, userId2: string, pagination: PaginationParams = {}) {
+    const [a, b] = orderedParticipantIds(userId1, userId2);
+    const thread = await this.prisma.messengerDirectThread.findUnique({
+      where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
+    });
+    if (!thread) {
+      return {
+        items: [] as MessengerMessageDto[],
+        meta: {
+          total: 0,
+          page: DEFAULT_PAGE,
+          pageSize: DEFAULT_PAGE_SIZE,
+          totalPages: 1,
+        },
+      };
+    }
+    const { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE } = pagination;
+    const skip = (page - 1) * pageSize;
+    const where = { threadId: thread.id };
+    const [total, rows] = await Promise.all([
+      this.prisma.messengerDirectMessage.count({ where }),
+      this.prisma.messengerDirectMessage.findMany({
+        where,
+        orderBy: { createdAt: 'asc' },
+        skip,
+        take: pageSize,
+      }),
+    ]);
+    return {
+      items: rows.map((m) => this.mapDmMessage(m, thread.id)),
+      meta: {
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize) || 1,
+      },
+    };
+  }
+
+  async sendDirectMessage(
+    senderId: string,
+    _senderNameFromJwt: string,
     recipientId: string,
     content: string,
-  ): Message {
-    const key = this.dmKey(senderId, recipientId);
-    const message: Message = {
-      id: randomUUID(),
-      channelId: key,
-      senderId,
-      senderName,
-      content,
-      createdAt: new Date(),
-      editedAt: null,
-    };
-    const existing = this.directMessages.get(key) ?? [];
-    existing.push(message);
-    this.directMessages.set(key, existing);
-    return message;
+  ): Promise<MessengerMessageDto> {
+    const [a, b] = orderedParticipantIds(senderId, recipientId);
+    const thread = await this.prisma.messengerDirectThread.upsert({
+      where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
+      create: { participantAId: a, participantBId: b },
+      update: {},
+    });
+    const snapshot = await this.snapshotSenderName(senderId);
+    const created = await this.prisma.messengerDirectMessage.create({
+      data: {
+        threadId: thread.id,
+        senderId,
+        senderNameSnapshot: snapshot,
+        content,
+      },
+    });
+    return this.mapDmMessage(created, thread.id);
   }
 
-  getDirectConversations(userId: string): { recipientId: string; lastMessage: Message }[] {
-    const conversations: { recipientId: string; lastMessage: Message }[] = [];
-
-    for (const [key, msgs] of this.directMessages.entries()) {
-      const [id1, id2] = key.split(':');
-      if (id1 !== userId && id2 !== userId) continue;
-      if (msgs.length === 0) continue;
-
-      const recipientId = id1 === userId ? id2 : id1;
-      conversations.push({ recipientId, lastMessage: msgs[msgs.length - 1] });
+  async getDirectConversations(
+    userId: string,
+  ): Promise<{ recipientId: string; lastMessage: MessengerMessageDto }[]> {
+    const threads = await this.prisma.messengerDirectThread.findMany({
+      where: {
+        OR: [{ participantAId: userId }, { participantBId: userId }],
+      },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    const result: { recipientId: string; lastMessage: MessengerMessageDto }[] = [];
+    for (const t of threads) {
+      const last = t.messages[0];
+      if (!last) continue;
+      const recipientId = t.participantAId === userId ? t.participantBId : t.participantAId;
+      result.push({
+        recipientId,
+        lastMessage: this.mapDmMessage(last, t.id),
+      });
     }
-
-    return conversations.sort(
-      (a, b) => b.lastMessage.createdAt.getTime() - a.lastMessage.createdAt.getTime(),
-    );
+    result.sort((x, y) => y.lastMessage.createdAt.getTime() - x.lastMessage.createdAt.getTime());
+    return result;
   }
 
-  private dmKey(userId1: string, userId2: string): string {
-    return [userId1, userId2].sort().join(':');
+  private mapChannelMessage(m: {
+    id: string;
+    channelId: string;
+    senderId: string;
+    senderNameSnapshot: string;
+    content: string;
+    createdAt: Date;
+    editedAt: Date | null;
+  }): MessengerMessageDto {
+    return {
+      id: m.id,
+      channelId: m.channelId,
+      senderId: m.senderId,
+      senderName: m.senderNameSnapshot,
+      content: m.content,
+      createdAt: m.createdAt,
+      editedAt: m.editedAt,
+    };
   }
 
-  private seedData(): void {
-    const generalId = randomUUID();
-    const projectId = randomUUID();
-    const announcementsId = randomUUID();
+  private mapDmMessage(
+    m: {
+      id: string;
+      senderId: string;
+      senderNameSnapshot: string;
+      content: string;
+      createdAt: Date;
+      editedAt: Date | null;
+    },
+    threadId: string,
+  ): MessengerMessageDto {
+    return {
+      id: m.id,
+      channelId: threadId,
+      senderId: m.senderId,
+      senderName: m.senderNameSnapshot,
+      content: m.content,
+      createdAt: m.createdAt,
+      editedAt: m.editedAt,
+    };
+  }
 
-    this.channels.set(generalId, {
-      id: generalId,
-      name: '#general',
-      projectId: 'system',
-      type: 'general',
-      createdAt: new Date('2026-01-01'),
+  private async snapshotSenderName(senderId: string): Promise<string> {
+    const emp = await this.prisma.employee.findUnique({
+      where: { id: senderId },
+      select: { firstName: true, lastName: true, email: true },
     });
-    this.channels.set(projectId, {
-      id: projectId,
-      name: '#project-nbos',
-      projectId: 'nbos',
-      type: 'project',
-      createdAt: new Date('2026-01-15'),
-    });
-    this.channels.set(announcementsId, {
-      id: announcementsId,
-      name: '#announcements',
-      projectId: 'system',
-      type: 'announcement',
-      createdAt: new Date('2026-01-01'),
-    });
-
-    this.messages.set(projectId, []);
-    this.messages.set(announcementsId, []);
-
-    const seed: Omit<Message, 'id'>[] = [
-      {
-        channelId: generalId,
-        senderId: 'user-1',
-        senderName: 'Alex Morgan',
-        content: 'Good morning everyone! Ready for the standup?',
-        createdAt: new Date('2026-03-10T09:00:00'),
-        editedAt: null,
-      },
-      {
-        channelId: generalId,
-        senderId: 'user-2',
-        senderName: 'Sarah Chen',
-        content: 'Morning! Let me grab my coffee first ☕',
-        createdAt: new Date('2026-03-10T09:02:00'),
-        editedAt: null,
-      },
-      {
-        channelId: generalId,
-        senderId: 'user-3',
-        senderName: 'Michael Kim',
-        content: 'I pushed the auth module changes. Can someone review?',
-        createdAt: new Date('2026-03-10T09:15:00'),
-        editedAt: null,
-      },
-      {
-        channelId: generalId,
-        senderId: 'user-4',
-        senderName: 'Elena Volkov',
-        content: "I'll take a look at the PR after lunch.",
-        createdAt: new Date('2026-03-10T09:20:00'),
-        editedAt: null,
-      },
-      {
-        channelId: generalId,
-        senderId: 'user-1',
-        senderName: 'Alex Morgan',
-        content: "Great teamwork! Don't forget the retro at 3pm.",
-        createdAt: new Date('2026-03-10T09:25:00'),
-        editedAt: null,
-      },
-    ];
-
-    this.messages.set(
-      generalId,
-      seed.map((m) => ({ ...m, id: randomUUID() })),
-    );
-
-    this.logger.log('Messenger seeded: 3 channels, 5 messages in #general');
+    if (!emp) {
+      throw new NotFoundException('Sender employee not found');
+    }
+    const full = `${emp.firstName} ${emp.lastName}`.trim();
+    return full.length > 0 ? full : emp.email;
   }
 }

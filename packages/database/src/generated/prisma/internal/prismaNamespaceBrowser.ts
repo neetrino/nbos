@@ -99,6 +99,10 @@ export const ModelName = {
   Invitation: 'Invitation',
   Employee: 'Employee',
   Partner: 'Partner',
+  MessengerChannel: 'MessengerChannel',
+  MessengerChannelMessage: 'MessengerChannelMessage',
+  MessengerDirectThread: 'MessengerDirectThread',
+  MessengerDirectMessage: 'MessengerDirectMessage',
   AuditLog: 'AuditLog',
   SystemListOption: 'SystemListOption',
 } as const;
@@ -1075,6 +1079,53 @@ export const PartnerScalarFieldEnum = {
 
 export type PartnerScalarFieldEnum =
   (typeof PartnerScalarFieldEnum)[keyof typeof PartnerScalarFieldEnum];
+
+export const MessengerChannelScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  projectId: 'projectId',
+  type: 'type',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerChannelScalarFieldEnum =
+  (typeof MessengerChannelScalarFieldEnum)[keyof typeof MessengerChannelScalarFieldEnum];
+
+export const MessengerChannelMessageScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  senderId: 'senderId',
+  senderNameSnapshot: 'senderNameSnapshot',
+  content: 'content',
+  editedAt: 'editedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerChannelMessageScalarFieldEnum =
+  (typeof MessengerChannelMessageScalarFieldEnum)[keyof typeof MessengerChannelMessageScalarFieldEnum];
+
+export const MessengerDirectThreadScalarFieldEnum = {
+  id: 'id',
+  participantAId: 'participantAId',
+  participantBId: 'participantBId',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerDirectThreadScalarFieldEnum =
+  (typeof MessengerDirectThreadScalarFieldEnum)[keyof typeof MessengerDirectThreadScalarFieldEnum];
+
+export const MessengerDirectMessageScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  senderId: 'senderId',
+  senderNameSnapshot: 'senderNameSnapshot',
+  content: 'content',
+  editedAt: 'editedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerDirectMessageScalarFieldEnum =
+  (typeof MessengerDirectMessageScalarFieldEnum)[keyof typeof MessengerDirectMessageScalarFieldEnum];
 
 export const AuditLogScalarFieldEnum = {
   id: 'id',
