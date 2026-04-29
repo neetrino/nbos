@@ -1,4 +1,4 @@
-import type { PrismaClient, TransactionClient } from '@nbos/database';
+import { MailDeliveryLogKind, type PrismaClient, type TransactionClient } from '@nbos/database';
 import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import {
   buildOutboundDraftRecipients,
@@ -9,11 +9,12 @@ export async function persistOutboundDraftMessage(
   prisma: InstanceType<typeof PrismaClient>,
   params: {
     threadId: string;
+    actorEmployeeId: string;
     account: { id: string; emailAddress: string; displayName: string | null };
     dto: CreateMailOutboundDraftDto;
   },
 ): Promise<{ messageId: string }> {
-  const { threadId, account, dto } = params;
+  const { threadId, account, dto, actorEmployeeId } = params;
   const toList = dedupeEmailsCaseInsensitive(dto.to);
   const ccList = dedupeEmailsCaseInsensitive(dto.cc ?? []);
   const now = new Date();
@@ -38,6 +39,14 @@ export async function persistOutboundDraftMessage(
         lastMessageAt: now,
         lastOutboundAt: now,
         hasUnread: false,
+      },
+    });
+    await tx.mailDeliveryLog.create({
+      data: {
+        emailMessageId: created.id,
+        mailAccountId: account.id,
+        actorEmployeeId,
+        kind: MailDeliveryLogKind.OUTBOUND_DRAFT_SAVED,
       },
     });
     return { messageId: created.id };

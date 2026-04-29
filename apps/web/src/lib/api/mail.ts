@@ -63,6 +63,14 @@ export interface PatchMailThreadPayload {
   needsBusinessLink: boolean;
 }
 
+export interface MailDeliveryLogRow {
+  id: string;
+  kind: string;
+  detail: string | null;
+  actorEmployeeId: string;
+  createdAt: string;
+}
+
 export const mailApi = {
   async listAccounts(): Promise<MailAccountRow[]> {
     const resp = await api.get<MailAccountRow[]>('/api/mail/accounts');
@@ -106,6 +114,16 @@ export const mailApi = {
 
   async getThread(threadId: string): Promise<MailThreadDetailDto> {
     const resp = await api.get<MailThreadDetailDto>(`/api/mail/threads/${threadId}`);
+    return resp.data;
+  },
+
+  async listMessageDeliveryLogs(
+    threadId: string,
+    messageId: string,
+  ): Promise<MailDeliveryLogRow[]> {
+    const resp = await api.get<MailDeliveryLogRow[]>(
+      `/api/mail/threads/${threadId}/messages/${messageId}/delivery-log`,
+    );
     return resp.data;
   },
 

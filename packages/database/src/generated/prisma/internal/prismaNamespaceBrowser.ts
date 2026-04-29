@@ -108,6 +108,7 @@ export const ModelName = {
   MailAccount: 'MailAccount',
   EmailThread: 'EmailThread',
   EmailMessage: 'EmailMessage',
+  MailDeliveryLog: 'MailDeliveryLog',
   EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
   AuditLog: 'AuditLog',
@@ -1208,6 +1209,19 @@ export const EmailMessageScalarFieldEnum = {
 
 export type EmailMessageScalarFieldEnum =
   (typeof EmailMessageScalarFieldEnum)[keyof typeof EmailMessageScalarFieldEnum];
+
+export const MailDeliveryLogScalarFieldEnum = {
+  id: 'id',
+  emailMessageId: 'emailMessageId',
+  mailAccountId: 'mailAccountId',
+  actorEmployeeId: 'actorEmployeeId',
+  kind: 'kind',
+  detail: 'detail',
+  createdAt: 'createdAt',
+} as const;
+
+export type MailDeliveryLogScalarFieldEnum =
+  (typeof MailDeliveryLogScalarFieldEnum)[keyof typeof MailDeliveryLogScalarFieldEnum];
 
 export const EmailRecipientScalarFieldEnum = {
   id: 'id',

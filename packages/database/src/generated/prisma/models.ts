@@ -67,6 +67,7 @@ export type * from './models/MessengerDirectThreadReadState';
 export type * from './models/MailAccount';
 export type * from './models/EmailThread';
 export type * from './models/EmailMessage';
+export type * from './models/MailDeliveryLog';
 export type * from './models/EmailRecipient';
 export type * from './models/InAppNotification';
 export type * from './models/AuditLog';

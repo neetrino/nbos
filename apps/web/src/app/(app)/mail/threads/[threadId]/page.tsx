@@ -220,6 +220,7 @@ export default function MailThreadDetailPage() {
             </div>
           </PageHeader>
           <MailThreadMessages
+            threadId={threadId}
             messages={detail.messages}
             canEdit={canEdit}
             queueingMessageId={queueingMessageId}

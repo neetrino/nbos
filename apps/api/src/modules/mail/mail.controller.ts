@@ -17,6 +17,7 @@ import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto
 import { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { MailAccountCommandService } from './mail-account-command.service';
 import { MailOutboundMutationService } from './mail-outbound-mutation.service';
+import { MailOutboundSendMutationService } from './mail-outbound-send-mutation.service';
 import { MailService } from './mail.service';
 import { MailThreadCommandService } from './mail-thread-command.service';
 
@@ -37,6 +38,7 @@ export class MailController {
   constructor(
     private readonly mailService: MailService,
     private readonly mailOutboundMutationService: MailOutboundMutationService,
+    private readonly mailOutboundSendMutationService: MailOutboundSendMutationService,
     private readonly mailThreadCommandService: MailThreadCommandService,
     private readonly mailAccountCommandService: MailAccountCommandService,
   ) {}
@@ -145,6 +147,25 @@ export class MailController {
     return this.mailService.getThreadDetail(user.id, req.permissionScope ?? 'OWN', threadId);
   }
 
+  @Get('threads/:threadId/messages/:messageId/delivery-log')
+  @RequirePermission('MAIL', 'VIEW')
+  @ApiOperation({
+    summary: 'Outbound delivery pipeline events for a message (newest first)',
+  })
+  async listMessageDeliveryLog(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    return this.mailService.listMessageDeliveryLogs(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+      messageId,
+    );
+  }
+
   @Post('threads/:threadId/messages/:messageId/cancel')
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')
@@ -157,7 +178,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailOutboundMutationService.cancelOutboundDraftOrQueued(
+    return this.mailOutboundSendMutationService.cancelOutboundDraftOrQueued(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
@@ -177,7 +198,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailOutboundMutationService.resetFailedOutboundToDraft(
+    return this.mailOutboundSendMutationService.resetFailedOutboundToDraft(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
@@ -197,7 +218,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailOutboundMutationService.finalizeQueuedOutboundStub(
+    return this.mailOutboundSendMutationService.finalizeQueuedOutboundStub(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
@@ -217,7 +238,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailOutboundMutationService.queueOutboundDraft(
+    return this.mailOutboundSendMutationService.queueOutboundDraft(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,

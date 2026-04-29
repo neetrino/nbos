@@ -787,6 +787,16 @@ export const EmailDeliveryStatus = {
 
 export type EmailDeliveryStatus = (typeof EmailDeliveryStatus)[keyof typeof EmailDeliveryStatus];
 
+export const MailDeliveryLogKind = {
+  OUTBOUND_DRAFT_SAVED: 'OUTBOUND_DRAFT_SAVED',
+  OUTBOUND_QUEUED: 'OUTBOUND_QUEUED',
+  OUTBOUND_SEND_STUB_FAILED: 'OUTBOUND_SEND_STUB_FAILED',
+  OUTBOUND_SEND_CANCELLED: 'OUTBOUND_SEND_CANCELLED',
+  OUTBOUND_FAILED_RESET_TO_DRAFT: 'OUTBOUND_FAILED_RESET_TO_DRAFT',
+} as const;
+
+export type MailDeliveryLogKind = (typeof MailDeliveryLogKind)[keyof typeof MailDeliveryLogKind];
+
 export const EmailRecipientKind = {
   FROM: 'FROM',
   TO: 'TO',

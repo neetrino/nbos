@@ -435,6 +435,7 @@ export const ModelName = {
   MailAccount: 'MailAccount',
   EmailThread: 'EmailThread',
   EmailMessage: 'EmailMessage',
+  MailDeliveryLog: 'MailDeliveryLog',
   EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
   AuditLog: 'AuditLog',
@@ -519,6 +520,7 @@ export type TypeMap<
       | 'mailAccount'
       | 'emailThread'
       | 'emailMessage'
+      | 'mailDeliveryLog'
       | 'emailRecipient'
       | 'inAppNotification'
       | 'auditLog'
@@ -5020,6 +5022,82 @@ export type TypeMap<
         };
       };
     };
+    MailDeliveryLog: {
+      payload: Prisma.$MailDeliveryLogPayload<ExtArgs>;
+      fields: Prisma.MailDeliveryLogFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MailDeliveryLogFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MailDeliveryLogFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>;
+        };
+        findFirst: {
+          args: Prisma.MailDeliveryLogFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MailDeliveryLogFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>;
+        };
+        findMany: {
+          args: Prisma.MailDeliveryLogFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>[];
+        };
+        create: {
+          args: Prisma.MailDeliveryLogCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>;
+        };
+        createMany: {
+          args: Prisma.MailDeliveryLogCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MailDeliveryLogCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>[];
+        };
+        delete: {
+          args: Prisma.MailDeliveryLogDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>;
+        };
+        update: {
+          args: Prisma.MailDeliveryLogUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>;
+        };
+        deleteMany: {
+          args: Prisma.MailDeliveryLogDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MailDeliveryLogUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MailDeliveryLogUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>[];
+        };
+        upsert: {
+          args: Prisma.MailDeliveryLogUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailDeliveryLogPayload>;
+        };
+        aggregate: {
+          args: Prisma.MailDeliveryLogAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMailDeliveryLog>;
+        };
+        groupBy: {
+          args: Prisma.MailDeliveryLogGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MailDeliveryLogGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MailDeliveryLogCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MailDeliveryLogCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     EmailRecipient: {
       payload: Prisma.$EmailRecipientPayload<ExtArgs>;
       fields: Prisma.EmailRecipientFieldRefs;
@@ -6440,6 +6518,19 @@ export const EmailMessageScalarFieldEnum = {
 export type EmailMessageScalarFieldEnum =
   (typeof EmailMessageScalarFieldEnum)[keyof typeof EmailMessageScalarFieldEnum];
 
+export const MailDeliveryLogScalarFieldEnum = {
+  id: 'id',
+  emailMessageId: 'emailMessageId',
+  mailAccountId: 'mailAccountId',
+  actorEmployeeId: 'actorEmployeeId',
+  kind: 'kind',
+  detail: 'detail',
+  createdAt: 'createdAt',
+} as const;
+
+export type MailDeliveryLogScalarFieldEnum =
+  (typeof MailDeliveryLogScalarFieldEnum)[keyof typeof MailDeliveryLogScalarFieldEnum];
+
 export const EmailRecipientScalarFieldEnum = {
   id: 'id',
   messageId: 'messageId',
@@ -7818,6 +7909,22 @@ export type ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInp
 >;
 
 /**
+ * Reference to a field of type 'MailDeliveryLogKind'
+ */
+export type EnumMailDeliveryLogKindFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MailDeliveryLogKind'
+>;
+
+/**
+ * Reference to a field of type 'MailDeliveryLogKind[]'
+ */
+export type ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MailDeliveryLogKind[]'
+>;
+
+/**
  * Reference to a field of type 'EmailRecipientKind'
  */
 export type EnumEmailRecipientKindFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -8006,6 +8113,7 @@ export type GlobalOmitConfig = {
   mailAccount?: Prisma.MailAccountOmit;
   emailThread?: Prisma.EmailThreadOmit;
   emailMessage?: Prisma.EmailMessageOmit;
+  mailDeliveryLog?: Prisma.MailDeliveryLogOmit;
   emailRecipient?: Prisma.EmailRecipientOmit;
   inAppNotification?: Prisma.InAppNotificationOmit;
   auditLog?: Prisma.AuditLogOmit;

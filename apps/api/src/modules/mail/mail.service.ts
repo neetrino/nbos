@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { listMailDeliveryLogsForMessage } from './mail-delivery-log-query.ops';
 import { listMailAccountHealthSummariesForViewer } from './mail-health-summary.ops';
 import {
   getMailThreadDetailDtoOrNull,
@@ -11,6 +12,7 @@ import type { ListMailThreadsOptions } from './mail-inbox-query.ops';
 import type {
   MailAccountHealthSummaryRow,
   MailAccountRow,
+  MailDeliveryLogRow,
   MailThreadDetailDto,
   MailThreadListRow,
 } from './mail.types';
@@ -58,5 +60,23 @@ export class MailService {
       throw new NotFoundException('Thread not found');
     }
     return dto;
+  }
+
+  async listMessageDeliveryLogs(
+    employeeId: string,
+    viewScope: string,
+    threadId: string,
+    messageId: string,
+  ): Promise<MailDeliveryLogRow[]> {
+    const rows = await listMailDeliveryLogsForMessage(this.prisma, {
+      employeeId,
+      viewScope,
+      threadId,
+      messageId,
+    });
+    if (rows === null) {
+      throw new NotFoundException('Message not found');
+    }
+    return rows;
   }
 }

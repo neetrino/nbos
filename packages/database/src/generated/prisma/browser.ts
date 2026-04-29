@@ -317,6 +317,11 @@ export type EmailThread = Prisma.EmailThreadModel;
  */
 export type EmailMessage = Prisma.EmailMessageModel;
 /**
+ * Model MailDeliveryLog
+ *
+ */
+export type MailDeliveryLog = Prisma.MailDeliveryLogModel;
+/**
  * Model EmailRecipient
  *
  */

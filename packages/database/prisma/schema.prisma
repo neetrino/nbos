@@ -1800,6 +1800,7 @@ model Employee {
   messengerDmThreadReadStates MessengerDirectThreadReadState[]
   mailAccountsOwned           MailAccount[]               @relation("MailAccountOwner")
   mailAccountsCreated         MailAccount[]               @relation("MailAccountCreatedBy")
+  mailDeliveryLogsActed       MailDeliveryLog[]           @relation("MailDeliveryLogActor")
   inAppNotificationsReceived  InAppNotification[]
 
   @@map("employees")
@@ -1966,8 +1967,9 @@ model MailAccount {
 
   owner     Employee? @relation("MailAccountOwner", fields: [ownerEmployeeId], references: [id], onDelete: SetNull)
   createdBy Employee? @relation("MailAccountCreatedBy", fields: [createdByEmployeeId], references: [id], onDelete: SetNull)
-  threads   EmailThread[]
-  messages  EmailMessage[]
+  threads        EmailThread[]
+  messages       EmailMessage[]
+  deliveryLogs   MailDeliveryLog[]
 
   @@index([ownerEmployeeId])
   @@map("mail_accounts")
@@ -2017,6 +2019,14 @@ enum EmailDeliveryStatus {
   CANCELLED
 }
 
+enum MailDeliveryLogKind {
+  OUTBOUND_DRAFT_SAVED
+  OUTBOUND_QUEUED
+  OUTBOUND_SEND_STUB_FAILED
+  OUTBOUND_SEND_CANCELLED
+  OUTBOUND_FAILED_RESET_TO_DRAFT
+}
+
 model EmailMessage {
   id                String                  @id @default(uuid())
   threadId          String                  @map("thread_id")
@@ -2034,12 +2044,31 @@ model EmailMessage {
   createdAt         DateTime                @default(now()) @map("created_at")
   updatedAt         DateTime                @updatedAt @map("updated_at")
 
-  thread      EmailThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  mailAccount MailAccount      @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
-  recipients  EmailRecipient[]
+  thread        EmailThread       @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  mailAccount   MailAccount       @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
+  recipients    EmailRecipient[]
+  deliveryLogs  MailDeliveryLog[]
 
   @@index([threadId, receivedAt])
   @@map("email_messages")
+}
+
+model MailDeliveryLog {
+  id              String              @id @default(uuid())
+  emailMessageId  String              @map("email_message_id")
+  mailAccountId   String              @map("mail_account_id")
+  actorEmployeeId String              @map("actor_employee_id")
+  kind            MailDeliveryLogKind
+  detail          String?             @db.Text
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  message     EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
+  mailAccount MailAccount  @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
+  actor       Employee     @relation("MailDeliveryLogActor", fields: [actorEmployeeId], references: [id], onDelete: Restrict)
+
+  @@index([emailMessageId, createdAt])
+  @@index([mailAccountId, createdAt])
+  @@map("mail_delivery_logs")
 }
 
 enum EmailRecipientKind {

@@ -46,6 +46,14 @@ export interface MailMessageRow {
   recipients: MailRecipientRow[];
 }
 
+export interface MailDeliveryLogRow {
+  id: string;
+  kind: string;
+  detail: string | null;
+  actorEmployeeId: string;
+  createdAt: string;
+}
+
 export interface MailThreadDetailDto {
   mailAccount: MailAccountRow;
   thread: MailThreadListRow;

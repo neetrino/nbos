@@ -4,8 +4,10 @@ import { Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { MailMessageRow } from '@/lib/api/mail';
+import { MailOutboundDeliveryLogSection } from './MailOutboundDeliveryLogSection';
 
 export interface MailThreadMessagesProps {
+  threadId: string;
   messages: MailMessageRow[];
   canEdit: boolean;
   queueingMessageId: string | null;
@@ -19,6 +21,7 @@ export interface MailThreadMessagesProps {
 }
 
 export function MailThreadMessages({
+  threadId,
   messages,
   canEdit,
   queueingMessageId,
@@ -107,6 +110,13 @@ export function MailThreadMessages({
               >
                 {retryingFailedMessageId === m.id ? 'Resetting…' : 'Reset to draft (retry)'}
               </Button>
+            ) : null}
+            {m.direction === 'OUTBOUND' ? (
+              <MailOutboundDeliveryLogSection
+                key={`${m.id}-${m.deliveryStatus ?? 'none'}`}
+                threadId={threadId}
+                messageId={m.id}
+              />
             ) : null}
           </CardContent>
         </Card>

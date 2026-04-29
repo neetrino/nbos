@@ -2554,6 +2554,29 @@ export type EnumEmailDeliveryStatusNullableWithAggregatesFilter<$PrismaModel = n
   _max?: Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>;
 };
 
+export type EnumMailDeliveryLogKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.MailDeliveryLogKind | Prisma.EnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  in?: $Enums.MailDeliveryLogKind[] | Prisma.ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MailDeliveryLogKind[]
+    | Prisma.ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumMailDeliveryLogKindFilter<$PrismaModel> | $Enums.MailDeliveryLogKind;
+};
+
+export type EnumMailDeliveryLogKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MailDeliveryLogKind | Prisma.EnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  in?: $Enums.MailDeliveryLogKind[] | Prisma.ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MailDeliveryLogKind[]
+    | Prisma.ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumMailDeliveryLogKindWithAggregatesFilter<$PrismaModel>
+    | $Enums.MailDeliveryLogKind;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumMailDeliveryLogKindFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumMailDeliveryLogKindFilter<$PrismaModel>;
+};
+
 export type EnumEmailRecipientKindFilter<$PrismaModel = never> = {
   equals?: $Enums.EmailRecipientKind | Prisma.EnumEmailRecipientKindFieldRefInput<$PrismaModel>;
   in?: $Enums.EmailRecipientKind[] | Prisma.ListEnumEmailRecipientKindFieldRefInput<$PrismaModel>;
@@ -5094,6 +5117,29 @@ export type NestedEnumEmailDeliveryStatusNullableWithAggregatesFilter<$PrismaMod
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>;
+};
+
+export type NestedEnumMailDeliveryLogKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.MailDeliveryLogKind | Prisma.EnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  in?: $Enums.MailDeliveryLogKind[] | Prisma.ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MailDeliveryLogKind[]
+    | Prisma.ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumMailDeliveryLogKindFilter<$PrismaModel> | $Enums.MailDeliveryLogKind;
+};
+
+export type NestedEnumMailDeliveryLogKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MailDeliveryLogKind | Prisma.EnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  in?: $Enums.MailDeliveryLogKind[] | Prisma.ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.MailDeliveryLogKind[]
+    | Prisma.ListEnumMailDeliveryLogKindFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumMailDeliveryLogKindWithAggregatesFilter<$PrismaModel>
+    | $Enums.MailDeliveryLogKind;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumMailDeliveryLogKindFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumMailDeliveryLogKindFilter<$PrismaModel>;
 };
 
 export type NestedEnumEmailRecipientKindFilter<$PrismaModel = never> = {

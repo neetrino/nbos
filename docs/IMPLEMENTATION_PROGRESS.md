@@ -9,7 +9,7 @@
 | Current phase | **Phase 5 — Collaboration / knowledge**                       |
 | Current task  | Phase 5 — Mail (sync/send/attachments) or Notifications slice |
 | Status        | Phase 5 in progress                                           |
-| Last updated  | 2026-04-29                                                    |
+| Last updated  | 2026-04-30                                                    |
 
 ## Phase Snapshot
 
@@ -64,13 +64,13 @@ Future Finance depth:
 
 Roll-up only. Per-feature detail: **`docs/NBOS/02-Modules/*`**, tests, and **git history**.
 
-| Through       | Area                 | Summary                                                                                                                                                                                                                                                             |
-| ------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-29    | Phase 3–4            | Finance full closure (Client Services + six report aggregates); Delivery / Work Space / Support bridges; product lifecycle + Done readiness.                                                                                                                        |
-| 2026-04-29    | Drive & Documents    | Upload session + library; Documents Prisma/API/RBAC/UI; TipTap; search/FTS/ACL; Drive attachments + scoped preview; activity pagination; archive/restore.                                                                                                           |
-| 2026-04-29    | Credentials          | Row-level access, reveal/copy, URL-open audit, web CRUD + archive + permanent purge.                                                                                                                                                                                |
-| 2026-04-29–30 | Messenger            | Prisma + Socket.IO; typing, presence, read/unread + list sync; DM and channel read receipts; audits.                                                                                                                                                                |
-| 2026-04-29    | Mail & Notifications | Mail MVP + **`q`**; **`GET /api/mail/accounts/health-summary`** + inbox counts; in-app notify: stub sync, **draft saved**, queue, finalize FAILED, cancel, reset→draft (actor + owner); **`MailOutboundMutationService`**; **`in_app_notifications`** + Topbar API. |
+| Through       | Area                 | Summary                                                                                                                                                                                                                                                                                                     |
+| ------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-29    | Phase 3–4            | Finance full closure (Client Services + six report aggregates); Delivery / Work Space / Support bridges; product lifecycle + Done readiness.                                                                                                                                                                |
+| 2026-04-29    | Drive & Documents    | Upload session + library; Documents Prisma/API/RBAC/UI; TipTap; search/FTS/ACL; Drive attachments + scoped preview; activity pagination; archive/restore.                                                                                                                                                   |
+| 2026-04-29    | Credentials          | Row-level access, reveal/copy, URL-open audit, web CRUD + archive + permanent purge.                                                                                                                                                                                                                        |
+| 2026-04-29–30 | Messenger            | Prisma + Socket.IO; typing, presence, read/unread + list sync; DM and channel read receipts; audits.                                                                                                                                                                                                        |
+| 2026-04-29    | Mail & Notifications | Mail MVP + **`q`**; **`GET …/accounts/health-summary`**; **`MailDeliveryLog`** + **`GET …/messages/:id/delivery-log`** + thread UI; outbound split **`MailOutboundSendMutationService`**; in-app notify (stub sync, draft, queue, finalize FAILED, cancel, reset); **`in_app_notifications`** + Topbar API. |
 
 ## Next Action
 

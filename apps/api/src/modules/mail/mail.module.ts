@@ -4,6 +4,7 @@ import { NotificationModule } from '../notifications/notification.module';
 import { MailAccountCommandService } from './mail-account-command.service';
 import { MailController } from './mail.controller';
 import { MailOutboundMutationService } from './mail-outbound-mutation.service';
+import { MailOutboundSendMutationService } from './mail-outbound-send-mutation.service';
 import { MailService } from './mail.service';
 import { MailThreadCommandService } from './mail-thread-command.service';
 
@@ -13,6 +14,7 @@ import { MailThreadCommandService } from './mail-thread-command.service';
   providers: [
     MailService,
     MailOutboundMutationService,
+    MailOutboundSendMutationService,
     MailThreadCommandService,
     MailAccountCommandService,
   ],
