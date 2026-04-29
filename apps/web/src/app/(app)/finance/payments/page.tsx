@@ -18,6 +18,7 @@ import {
 } from '@/features/finance/constants/finance';
 import { PaymentsPageHeader } from '@/features/finance/components/payments/PaymentsPageHeader';
 import { usePaymentsCsvExport } from '@/features/finance/components/payments/use-payments-csv-export';
+import { usePaymentsScopeStatsCsvExport } from '@/features/finance/components/payments/use-payments-scope-stats-csv-export';
 import { buildPaymentListApiParams } from '@/features/finance/utils/build-payment-list-api-params';
 import { paymentsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -43,6 +44,14 @@ export default function PaymentsPage() {
   );
 
   const { exportCsvSubmitting, handleExportCsv } = usePaymentsCsvExport(paymentListExportParams);
+
+  const periodParamsForStats = useMemo(() => getFinancePeriodParams(period), [period]);
+
+  const { handleExportScopeStatsCsv } = usePaymentsScopeStatsCsvExport(stats, {
+    period,
+    dateFrom: periodParamsForStats?.dateFrom,
+    dateTo: periodParamsForStats?.dateTo,
+  });
 
   useFinanceDocumentTitle(paymentsListPageTitle());
 
@@ -91,6 +100,8 @@ export default function PaymentsPage() {
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={loading || !stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
       />
 
       <div className="grid grid-cols-3 gap-4">
