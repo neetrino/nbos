@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import { getTaskStatus, getTaskPriority } from '@/features/tasks/constants/tasks';
+import { ProductTasksSummary } from './ProductTasksSummary';
 
 interface ProductTasksTabProps {
   productId: string;
@@ -44,8 +45,6 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
   };
 
   const activeTasks = tasks.filter((t) => t.status !== 'CANCELLED');
-  const doneTasks = tasks.filter((t) => t.status === 'DONE').length;
-  const totalActive = activeTasks.length;
 
   if (loading) {
     return <div className="text-muted-foreground py-12 text-center text-sm">Loading tasks...</div>;
@@ -61,18 +60,11 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
 
   return (
     <div className="space-y-4">
+      <ProductTasksSummary tasks={tasks} />
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium">
-            {doneTasks}/{totalActive} completed
-          </span>
-          <div className="bg-secondary h-2 w-32 rounded-full">
-            <div
-              className="h-2 rounded-full bg-green-500"
-              style={{ width: `${totalActive > 0 ? (doneTasks / totalActive) * 100 : 0}%` }}
-            />
-          </div>
-        </div>
+        <p className="text-muted-foreground text-xs">
+          Tasks are the internal execution layer for this Product.
+        </p>
         <div className="border-border flex rounded-lg border">
           <Button
             variant={view === 'kanban' ? 'secondary' : 'ghost'}

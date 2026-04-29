@@ -203,6 +203,18 @@ Delivery Board cards now expose operational context links:
 
 These links keep the board as a navigation and operational view over Product/Extension work, while `Tasks` remain the internal execution layer and `Support` remains the customer/SLA context.
 
+### A14. Product detail exposes task/support runtime summaries
+
+Статус: `PHASE 4 UX ALIGNMENT`
+
+Product detail tabs now surface runtime health summaries without introducing new schema:
+
+- Product `Tasks` tab shows completion, in-progress, high-priority and overdue task counts;
+- Product support `Tickets` tab shows open, waiting, urgent and resolved ticket counts;
+- summaries are computed from existing runtime task links and Product ticket relations.
+
+This keeps `Tasks` as the internal execution layer and `Support` as customer/SLA context while making delivery risk visible from the Product screen.
+
 ---
 
 ## B. Устарело только в документации или описаниях

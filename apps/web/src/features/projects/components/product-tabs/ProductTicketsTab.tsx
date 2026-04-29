@@ -3,6 +3,7 @@
 import { Ticket } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import type { ProductTicketRef } from '@/lib/api/products';
+import { ProductTicketsSummary } from './ProductTicketsSummary';
 
 interface ProductTicketsTabProps {
   tickets: ProductTicketRef[];
@@ -34,44 +35,50 @@ export function ProductTicketsTab({ tickets }: ProductTicketsTabProps) {
   }
 
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50">
-          <tr>
-            <th className="px-4 py-2.5 text-left font-medium">Ticket</th>
-            <th className="px-4 py-2.5 text-left font-medium">Category</th>
-            <th className="px-4 py-2.5 text-left font-medium">Priority</th>
-            <th className="px-4 py-2.5 text-left font-medium">Status</th>
-            <th className="px-4 py-2.5 text-left font-medium">Created</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map((ticket) => (
-            <tr key={ticket.id} className="border-border border-t">
-              <td className="px-4 py-2.5">
-                <p className="font-medium">{ticket.title}</p>
-                <p className="text-muted-foreground text-xs">{ticket.code}</p>
-              </td>
-              <td className="text-muted-foreground px-4 py-2.5 text-xs">{ticket.category}</td>
-              <td className="px-4 py-2.5">
-                <StatusBadge
-                  label={ticket.priority}
-                  variant={PRIORITY_VARIANTS[ticket.priority] ?? 'gray'}
-                />
-              </td>
-              <td className="px-4 py-2.5">
-                <StatusBadge
-                  label={ticket.status.replace('_', ' ')}
-                  variant={STATUS_VARIANTS[ticket.status] ?? 'gray'}
-                />
-              </td>
-              <td className="text-muted-foreground px-4 py-2.5 text-xs">
-                {new Date(ticket.createdAt).toLocaleDateString()}
-              </td>
+    <div className="space-y-4">
+      <ProductTicketsSummary tickets={tickets} />
+      <p className="text-muted-foreground text-xs">
+        Support tickets keep customer context, SLA and triage separate from internal tasks.
+      </p>
+      <div className="border-border overflow-hidden rounded-xl border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50">
+            <tr>
+              <th className="px-4 py-2.5 text-left font-medium">Ticket</th>
+              <th className="px-4 py-2.5 text-left font-medium">Category</th>
+              <th className="px-4 py-2.5 text-left font-medium">Priority</th>
+              <th className="px-4 py-2.5 text-left font-medium">Status</th>
+              <th className="px-4 py-2.5 text-left font-medium">Created</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {tickets.map((ticket) => (
+              <tr key={ticket.id} className="border-border border-t">
+                <td className="px-4 py-2.5">
+                  <p className="font-medium">{ticket.title}</p>
+                  <p className="text-muted-foreground text-xs">{ticket.code}</p>
+                </td>
+                <td className="text-muted-foreground px-4 py-2.5 text-xs">{ticket.category}</td>
+                <td className="px-4 py-2.5">
+                  <StatusBadge
+                    label={ticket.priority}
+                    variant={PRIORITY_VARIANTS[ticket.priority] ?? 'gray'}
+                  />
+                </td>
+                <td className="px-4 py-2.5">
+                  <StatusBadge
+                    label={ticket.status.replace('_', ' ')}
+                    variant={STATUS_VARIANTS[ticket.status] ?? 'gray'}
+                  />
+                </td>
+                <td className="text-muted-foreground px-4 py-2.5 text-xs">
+                  {new Date(ticket.createdAt).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

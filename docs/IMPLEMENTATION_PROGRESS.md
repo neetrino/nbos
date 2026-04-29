@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~60% | Tasks/support list foundations exist; canonical lifecycle fields/actions are being adopted |
+| Phase 4 — Delivery ops              | In progress |     ~62% | Tasks/support runtime summaries now reinforce Product delivery context                     |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -84,10 +84,11 @@ Future Finance depth:
 | 2026-04-29 | Delivery Board controls            | Board filters, quick stage/resume/done actions and closed depth          | web typecheck, lint                                                   |
 | 2026-04-29 | Delivery Board cancel flow         | Board-level cancel dialog with required reason and canonical endpoints   | web typecheck, lint                                                   |
 | 2026-04-29 | Delivery Board task/support depth  | Card context links into Product tasks, support tickets and extensions    | web typecheck, lint                                                   |
+| 2026-04-29 | Product task/support summaries     | Product tabs expose execution and support health from runtime data       | web typecheck, lint                                                   |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: Support/Tasks runtime depth and UX polish.
+1. Continue Projects Hub lifecycle refactor: cross-module docs cleanup or Product detail polish.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD
