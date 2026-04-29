@@ -9,6 +9,7 @@ import { InvoiceFilters } from '@/features/finance/components/invoices/InvoiceFi
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
 import { InvoicesPageHeader } from '@/features/finance/components/invoices/InvoicesPageHeader';
 import { InvoiceStatsCards } from '@/features/finance/components/invoices/InvoiceStatsCards';
+import { useInvoicesCsvExport } from '@/features/finance/components/invoices/use-invoices-csv-export';
 import { useInvoicesPageState } from '@/features/finance/components/invoices/useInvoicesPageState';
 import { invoicesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
@@ -22,6 +23,9 @@ function InvoicesPageInner() {
   const subscriptionIdFromUrl = searchParams.get(SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY);
 
   const state = useInvoicesPageState({ subscriptionIdFromUrl });
+  const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
+    state.invoiceListExportParams,
+  );
 
   useFinanceDocumentTitle(invoicesListPageTitle(Boolean(subscriptionIdFromUrl?.trim())));
 
@@ -38,6 +42,9 @@ function InvoicesPageInner() {
         onPeriodChange={state.setPeriod}
         onViewChange={state.setView}
         onRefresh={state.fetchInvoices}
+        onExportCsv={handleExportCsv}
+        exportDisabled={state.loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
       />
       <InvoiceStatsCards stats={state.stats} />
       {subscriptionIdFromUrl ? (

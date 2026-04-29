@@ -1,4 +1,4 @@
-import { LayoutGrid, List, RefreshCcw } from 'lucide-react';
+import { Download, LayoutGrid, List, Loader2, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
@@ -11,6 +11,9 @@ interface InvoicesPageHeaderProps {
   onPeriodChange: (period: FinancePeriod) => void;
   onViewChange: (view: InvoiceViewMode) => void;
   onRefresh: () => void;
+  onExportCsv: () => void | Promise<void>;
+  exportDisabled: boolean;
+  exportInProgress: boolean;
 }
 
 export function InvoicesPageHeader({
@@ -20,6 +23,9 @@ export function InvoicesPageHeader({
   onPeriodChange,
   onViewChange,
   onRefresh,
+  onExportCsv,
+  exportDisabled,
+  exportInProgress,
 }: InvoicesPageHeaderProps) {
   return (
     <PageHeader title="Invoices" description={`${invoiceCount} total`}>
@@ -35,8 +41,25 @@ export function InvoicesPageHeader({
           </Button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh}>
+      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh invoices">
         <RefreshCcw size={16} />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={exportDisabled}
+        onClick={() => {
+          void onExportCsv();
+        }}
+        aria-label="Export invoices as CSV"
+        title="Export all rows matching current filters (paginated fetch)"
+      >
+        {exportInProgress ? (
+          <Loader2 size={16} className="animate-spin" aria-hidden />
+        ) : (
+          <Download size={16} aria-hidden />
+        )}
       </Button>
       <InvoiceViewToggle view={view} onViewChange={onViewChange} />
     </PageHeader>

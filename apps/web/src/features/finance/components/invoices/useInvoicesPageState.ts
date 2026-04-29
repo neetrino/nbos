@@ -1,9 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { buildInvoiceListApiParams } from '@/features/finance/utils/build-invoice-list-api-params';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { invoicesApi, paymentsApi, type Invoice, type InvoiceStats } from '@/lib/api/finance';
-import type { FinanceDateRangeParams } from '@/lib/api/finance-common';
+import {
+  invoicesApi,
+  paymentsApi,
+  type Invoice,
+  type InvoiceListParams,
+  type InvoiceStats,
+} from '@/lib/api/finance';
 import type { InvoiceViewMode } from './invoice-page-types';
 
 interface RecordPaymentInput {
@@ -32,6 +38,17 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [period, setPeriod] = useState<FinancePeriod>('month');
+
+  const invoiceListExportParams: Omit<InvoiceListParams, 'page' | 'pageSize'> = useMemo(
+    () =>
+      buildInvoiceListApiParams({
+        search,
+        filters,
+        subscriptionIdFromUrl,
+        period,
+      }),
+    [search, filters, subscriptionIdFromUrl, period],
+  );
 
   const clearMutationError = useCallback(() => {
     setMutationError(null);
@@ -87,6 +104,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     handleStatusChange,
     handlePaymentRecorded,
     handleInvoiceCreated: fetchInvoices,
+    invoiceListExportParams,
   };
 }
 
@@ -115,10 +133,14 @@ function useFetchInvoices({
     setLoading(true);
     try {
       const periodParams = getFinancePeriodParams(period);
+      const listParams = buildInvoiceListApiParams({
+        search,
+        filters,
+        subscriptionIdFromUrl,
+        period,
+      });
       const [data, invoiceStats] = await Promise.all([
-        invoicesApi.getAll(
-          buildInvoiceQuery({ filters, search, subscriptionIdFromUrl }, periodParams),
-        ),
+        invoicesApi.getAll({ ...listParams, pageSize: 200 }),
         invoicesApi.getStats({
           ...periodParams,
           ...(subscriptionIdFromUrl ? { subscriptionId: subscriptionIdFromUrl } : {}),
@@ -149,25 +171,6 @@ function useFetchInvoices({
     setMutationError,
     setStats,
   ]);
-}
-
-function buildInvoiceQuery(
-  params: {
-    search: string;
-    filters: Record<string, string>;
-    subscriptionIdFromUrl: string | null;
-  },
-  periodParams?: FinanceDateRangeParams,
-) {
-  return {
-    pageSize: 200,
-    search: params.search || undefined,
-    status:
-      params.filters.status && params.filters.status !== 'all' ? params.filters.status : undefined,
-    type: params.filters.type && params.filters.type !== 'all' ? params.filters.type : undefined,
-    subscriptionId: params.subscriptionIdFromUrl || undefined,
-    ...periodParams,
-  };
 }
 
 function useInvoiceStatusChange(
