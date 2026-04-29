@@ -1,13 +1,19 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { listMailAccountHealthSummariesForViewer } from './mail-health-summary.ops';
 import {
   getMailThreadDetailDtoOrNull,
   listMailAccountsForViewer,
   listMailThreadsForViewer,
 } from './mail-inbox-query.ops';
 import type { ListMailThreadsOptions } from './mail-inbox-query.ops';
-import type { MailAccountRow, MailThreadDetailDto, MailThreadListRow } from './mail.types';
+import type {
+  MailAccountHealthSummaryRow,
+  MailAccountRow,
+  MailThreadDetailDto,
+  MailThreadListRow,
+} from './mail.types';
 
 export type { ListMailThreadsOptions } from './mail-inbox-query.ops';
 
@@ -17,6 +23,13 @@ export class MailService {
 
   async listAccounts(employeeId: string, viewScope: string): Promise<MailAccountRow[]> {
     return listMailAccountsForViewer(this.prisma, employeeId, viewScope);
+  }
+
+  async listAccountHealthSummaries(
+    employeeId: string,
+    viewScope: string,
+  ): Promise<MailAccountHealthSummaryRow[]> {
+    return listMailAccountHealthSummariesForViewer(this.prisma, employeeId, viewScope);
   }
 
   async listThreads(

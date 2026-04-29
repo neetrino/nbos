@@ -8,6 +8,13 @@ export interface MailAccountRow {
   lastErrorAt: string | null;
 }
 
+/** Thread aggregates per mailbox for health / overview UI (no live provider probe). */
+export interface MailAccountHealthSummaryRow extends MailAccountRow {
+  threadCount: number;
+  unreadThreadCount: number;
+  needsLinkThreadCount: number;
+}
+
 export interface MailThreadListRow {
   id: string;
   mailAccountId: string;

@@ -10,6 +10,12 @@ export interface MailAccountRow {
   lastErrorAt: string | null;
 }
 
+export interface MailAccountHealthSummaryRow extends MailAccountRow {
+  threadCount: number;
+  unreadThreadCount: number;
+  needsLinkThreadCount: number;
+}
+
 export interface MailThreadListRow {
   id: string;
   mailAccountId: string;
@@ -60,6 +66,11 @@ export interface PatchMailThreadPayload {
 export const mailApi = {
   async listAccounts(): Promise<MailAccountRow[]> {
     const resp = await api.get<MailAccountRow[]>('/api/mail/accounts');
+    return resp.data;
+  },
+
+  async listAccountHealthSummaries(): Promise<MailAccountHealthSummaryRow[]> {
+    const resp = await api.get<MailAccountHealthSummaryRow[]>('/api/mail/accounts/health-summary');
     return resp.data;
   },
 

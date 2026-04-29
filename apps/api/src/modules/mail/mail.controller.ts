@@ -48,6 +48,19 @@ export class MailController {
     return this.mailService.listAccounts(user.id, req.permissionScope ?? 'OWN');
   }
 
+  @Get('accounts/health-summary')
+  @RequirePermission('MAIL', 'VIEW')
+  @ApiOperation({
+    summary:
+      'Per-mailbox health summary (status, last sync/error, thread counts); no live provider check yet',
+  })
+  async listAccountHealthSummaries(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+  ) {
+    return this.mailService.listAccountHealthSummaries(user.id, req.permissionScope ?? 'OWN');
+  }
+
   @Post('accounts/:accountId/sync-stub')
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')

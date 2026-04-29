@@ -6,7 +6,7 @@ import { Mail, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
-import { mailApi, type MailAccountRow, type MailThreadListRow } from '@/lib/api/mail';
+import { mailApi, type MailAccountHealthSummaryRow, type MailThreadListRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,7 @@ export default function MailInboxPage() {
   const { can } = usePermission();
   const canView = can('VIEW', 'MAIL');
   const canEdit = can('EDIT', 'MAIL');
-  const [accounts, setAccounts] = useState<MailAccountRow[]>([]);
+  const [accountHealth, setAccountHealth] = useState<MailAccountHealthSummaryRow[]>([]);
   const [threads, setThreads] = useState<MailThreadListRow[]>([]);
   const [filterAccountId, setFilterAccountId] = useState<string | null>(null);
   /** Inbox segment: all, unread-only, or needs-business-link only (mutually exclusive). */
@@ -50,8 +50,8 @@ export default function MailInboxPage() {
     setLoading(true);
     setError(null);
     try {
-      const [acc, th] = await Promise.all([
-        mailApi.listAccounts(),
+      const [health, th] = await Promise.all([
+        mailApi.listAccountHealthSummaries(),
         mailApi.listThreads(
           filterAccountId ?? undefined,
           threadListSegment === 'unread',
@@ -59,7 +59,7 @@ export default function MailInboxPage() {
           threadSearchQuery || undefined,
         ),
       ]);
-      setAccounts(acc);
+      setAccountHealth(health);
       setThreads(th);
     } catch (e) {
       setError(getApiErrorMessage(e, 'Mail could not be loaded.'));
@@ -112,7 +112,7 @@ export default function MailInboxPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Mail"
-        description="Threads from mailboxes you own or that your role can list (ALL scope). Editors can run stub sync (timestamps only); real IMAP/Gmail sync is not wired yet."
+        description="Threads from mailboxes you own or that your role can list (ALL scope). Account health shows local thread counts and sync timestamps; live provider checks are not wired yet. Editors can run stub sync (timestamps only)."
       >
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -159,6 +159,9 @@ export default function MailInboxPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Mailboxes</CardTitle>
+              <p className="text-muted-foreground text-xs">
+                Health summary: threads / unread / needs link (same scope as inbox).
+              </p>
             </CardHeader>
             <CardContent className="flex flex-col gap-1">
               <button
@@ -171,10 +174,10 @@ export default function MailInboxPage() {
               >
                 All accessible
               </button>
-              {accounts.length === 0 ? (
+              {accountHealth.length === 0 ? (
                 <p className="text-muted-foreground text-sm">No mailboxes yet.</p>
               ) : (
-                accounts.map((a) => (
+                accountHealth.map((a) => (
                   <div
                     key={a.id}
                     className={cn(
@@ -195,6 +198,15 @@ export default function MailInboxPage() {
                         {a.status}
                         {a.lastSyncAt ? ` · synced ${new Date(a.lastSyncAt).toLocaleString()}` : ''}
                       </span>
+                      <span className="text-muted-foreground block text-xs">
+                        {a.threadCount} threads · {a.unreadThreadCount} unread ·{' '}
+                        {a.needsLinkThreadCount} need link
+                      </span>
+                      {a.lastErrorAt ? (
+                        <span className="text-destructive block text-xs">
+                          Last error {new Date(a.lastErrorAt).toLocaleString()}
+                        </span>
+                      ) : null}
                     </button>
                     {canEdit ? (
                       <Button
