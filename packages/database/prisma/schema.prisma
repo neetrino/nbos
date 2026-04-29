@@ -2008,6 +2008,14 @@ enum EmailMessageReadState {
   READ
 }
 
+enum EmailDeliveryStatus {
+  DRAFT
+  QUEUED
+  SENT
+  FAILED
+  CANCELLED
+}
+
 model EmailMessage {
   id                String                  @id @default(uuid())
   threadId          String                  @map("thread_id")
@@ -2021,6 +2029,7 @@ model EmailMessage {
   sentAt            DateTime?               @map("sent_at")
   receivedAt        DateTime?               @map("received_at")
   readState         EmailMessageReadState   @default(UNREAD) @map("read_state")
+  deliveryStatus    EmailDeliveryStatus?    @map("delivery_status")
   createdAt         DateTime                @default(now()) @map("created_at")
   updatedAt         DateTime                @updatedAt @map("updated_at")
 

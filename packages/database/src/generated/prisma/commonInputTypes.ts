@@ -2477,6 +2477,25 @@ export type EnumEmailMessageReadStateFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumEmailMessageReadStateFilter<$PrismaModel> | $Enums.EmailMessageReadState;
 };
 
+export type EnumEmailDeliveryStatusNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.EmailDeliveryStatus
+    | Prisma.EnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.EmailDeliveryStatus[]
+    | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.EmailDeliveryStatus[]
+    | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>
+    | $Enums.EmailDeliveryStatus
+    | null;
+};
+
 export type EnumEmailMessageDirectionWithAggregatesFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.EmailMessageDirection
@@ -2511,6 +2530,28 @@ export type EnumEmailMessageReadStateWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumEmailMessageReadStateFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumEmailMessageReadStateFilter<$PrismaModel>;
+};
+
+export type EnumEmailDeliveryStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.EmailDeliveryStatus
+    | Prisma.EnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.EmailDeliveryStatus[]
+    | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.EmailDeliveryStatus[]
+    | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumEmailDeliveryStatusNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.EmailDeliveryStatus
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>;
 };
 
 export type EnumEmailRecipientKindFilter<$PrismaModel = never> = {
@@ -4978,6 +5019,25 @@ export type NestedEnumEmailMessageReadStateFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumEmailMessageReadStateFilter<$PrismaModel> | $Enums.EmailMessageReadState;
 };
 
+export type NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.EmailDeliveryStatus
+    | Prisma.EnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.EmailDeliveryStatus[]
+    | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.EmailDeliveryStatus[]
+    | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>
+    | $Enums.EmailDeliveryStatus
+    | null;
+};
+
 export type NestedEnumEmailMessageDirectionWithAggregatesFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.EmailMessageDirection
@@ -5012,6 +5072,28 @@ export type NestedEnumEmailMessageReadStateWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumEmailMessageReadStateFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumEmailMessageReadStateFilter<$PrismaModel>;
+};
+
+export type NestedEnumEmailDeliveryStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.EmailDeliveryStatus
+    | Prisma.EnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.EmailDeliveryStatus[]
+    | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.EmailDeliveryStatus[]
+    | Prisma.ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumEmailDeliveryStatusNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.EmailDeliveryStatus
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumEmailDeliveryStatusNullableFilter<$PrismaModel>;
 };
 
 export type NestedEnumEmailRecipientKindFilter<$PrismaModel = never> = {

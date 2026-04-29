@@ -27,18 +27,18 @@ Mail module является новым каноном. На момент соз
 
 ## Runtime cleanup
 
-| Area                 | Status    | Action                                                                                                                                                                                           |
-| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Mail backend module  | `PARTIAL` | **2026-04-29:** Nest `MailModule` — list threads `unreadOnly`; mark-read + audit `mail.thread_marked_read`; без sync/send/queue/OAuth                                                            |
-| Mail database schema | `PARTIAL` | **2026-04-29:** Prisma `MailAccount`, `EmailThread`, `EmailMessage`, `EmailRecipient` + migration; seed demo mailbox/thread; нет `EmailAttachment`, sync/delivery logs, `MailProviderConnection` |
-| Gmail adapter        | `MISSING` | Спроектировать OAuth scopes и adapter contract                                                                                                                                                   |
-| IMAP/SMTP adapter    | `MISSING` | Спроектировать connection validation, sync cursor, send flow                                                                                                                                     |
-| Queue jobs           | `MISSING` | Добавить jobs для sync, send, attachment download                                                                                                                                                |
-| Mail UI              | `PARTIAL` | **2026-04-29:** `/mail` inbox (фильтр **Unread only**), thread detail, **Mark read** при `MAIL` EDIT; нет compose/reply/settings/health                                                          |
-| Permissions          | `PARTIAL` | Модуль `MAIL` в seed RBAC (VIEW/EDIT/ADD/DELETE по матрице); list scoped ALL vs OWN mailbox owner; нет per-account roles из канона                                                               |
-| Attachment pipeline  | `MISSING` | Интегрировать Mail attachments с Drive File Asset                                                                                                                                                |
-| Credentials boundary | `MISSING` | Интегрировать token/password storage с secure storage / Credentials                                                                                                                              |
-| Notifications events | `MISSING` | Добавить mail health and inbound message events                                                                                                                                                  |
+| Area                 | Status    | Action                                                                                                                                  |
+| -------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Mail backend module  | `PARTIAL` | **2026-04-29:** Nest `MailModule` — `POST …/drafts` (DRAFT), list `unreadOnly`, mark-read audits; без реального sync/send/queue/OAuth   |
+| Mail database schema | `PARTIAL` | **2026-04-29:** + `EmailDeliveryStatus` на `EmailMessage`; нет `EmailAttachment`, `MailDeliveryLog`, `MailProviderConnection`           |
+| Gmail adapter        | `MISSING` | Спроектировать OAuth scopes и adapter contract                                                                                          |
+| IMAP/SMTP adapter    | `MISSING` | Спроектировать connection validation, sync cursor, send flow                                                                            |
+| Queue jobs           | `MISSING` | Добавить jobs для sync, send, attachment download                                                                                       |
+| Mail UI              | `PARTIAL` | **2026-04-29:** `/mail` inbox, thread detail, **Reply as draft** + **Mark read** при `MAIL` EDIT; нет реальной отправки/settings/health |
+| Permissions          | `PARTIAL` | Модуль `MAIL` в seed RBAC (VIEW/EDIT/ADD/DELETE по матрице); list scoped ALL vs OWN mailbox owner; нет per-account roles из канона      |
+| Attachment pipeline  | `MISSING` | Интегрировать Mail attachments с Drive File Asset                                                                                       |
+| Credentials boundary | `MISSING` | Интегрировать token/password storage с secure storage / Credentials                                                                     |
+| Notifications events | `MISSING` | Добавить mail health and inbound message events                                                                                         |
 
 ## Business decisions needed before implementation
 

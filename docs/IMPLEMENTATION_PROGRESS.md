@@ -109,6 +109,7 @@ Future Finance depth:
 | 2026-04-29 | Mail data + read API + inbox UI MVP   | Prisma Mail entities + migration; `MAIL` RBAC; `GET /api/mail/accounts`, `GET /api/mail/threads`, `GET /api/mail/threads/:id`; web `/mail` + thread detail + sidebar; seed demo thread (CEO mailbox).                                                         |
 | 2026-04-29 | Mail mark thread read (NBOS state)    | `POST /api/mail/threads/:id/mark-read` (`MAIL` EDIT); updates all messages `READ` + `hasUnread`; web **Mark read** on thread when unread.                                                                                                                     |
 | 2026-04-29 | Mail unread filter + mark-read audit  | `GET /api/mail/threads?unreadOnly=true`; web **All threads** / **Unread only**; audit `mail.thread_marked_read` (no body text).                                                                                                                               |
+| 2026-04-29 | Mail outbound draft (no SMTP)         | `EmailDeliveryStatus` + `delivery_status`; `POST /api/mail/threads/:id/drafts`; audit `mail.outbound_draft_created`; web **Reply as draft**; seed outbound `SENT`.                                                                                            |
 
 ## Next Action
 

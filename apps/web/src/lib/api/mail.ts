@@ -36,7 +36,15 @@ export interface MailMessageRow {
   sentAt: string | null;
   receivedAt: string | null;
   readState: string;
+  deliveryStatus: string | null;
   recipients: MailRecipientRow[];
+}
+
+export interface CreateMailOutboundDraftPayload {
+  to: string[];
+  cc?: string[];
+  subject: string;
+  bodyText: string;
 }
 
 export interface MailThreadDetailDto {
@@ -72,6 +80,14 @@ export const mailApi = {
 
   async markThreadRead(threadId: string): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/mark-read`);
+    return resp.data;
+  },
+
+  async createOutboundDraft(
+    threadId: string,
+    body: CreateMailOutboundDraftPayload,
+  ): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/drafts`, body);
     return resp.data;
   },
 };

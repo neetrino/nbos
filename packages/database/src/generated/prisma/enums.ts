@@ -777,6 +777,16 @@ export const EmailMessageReadState = {
 export type EmailMessageReadState =
   (typeof EmailMessageReadState)[keyof typeof EmailMessageReadState];
 
+export const EmailDeliveryStatus = {
+  DRAFT: 'DRAFT',
+  QUEUED: 'QUEUED',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type EmailDeliveryStatus = (typeof EmailDeliveryStatus)[keyof typeof EmailDeliveryStatus];
+
 export const EmailRecipientKind = {
   FROM: 'FROM',
   TO: 'TO',

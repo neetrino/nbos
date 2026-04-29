@@ -1,12 +1,17 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import {
+  MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED,
   MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
+  MAIL_AUDIT_ENTITY_MESSAGE,
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
 import { mailAccountWhereForViewer } from './mail-account-scope';
+import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
+import { dedupeEmailsCaseInsensitive } from './mail-outbound-draft.helpers';
+import { persistOutboundDraftMessage } from './mail-outbound-draft.ops';
 import type {
   MailAccountRow,
   MailMessageRow,
@@ -23,6 +28,7 @@ interface MessageWithRecipients {
   sentAt: Date | null;
   receivedAt: Date | null;
   readState: string;
+  deliveryStatus: string | null;
   recipients: Array<{ kind: string; email: string; displayName: string | null }>;
 }
 
@@ -151,6 +157,55 @@ export class MailService {
     });
     return this.getThreadDetail(employeeId, accessScope, threadId);
   }
+
+  /**
+   * Persists an outbound message as DRAFT (no provider send / SMTP).
+   */
+  async createOutboundDraft(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+    dto: CreateMailOutboundDraftDto,
+  ): Promise<MailThreadDetailDto> {
+    const thread = await this.prisma.emailThread.findFirst({
+      where: { id: threadId },
+      include: { mailAccount: true },
+    });
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+    const accountOk = await this.prisma.mailAccount.findFirst({
+      where: { id: thread.mailAccountId, ...mailAccountWhereForViewer(employeeId, accessScope) },
+    });
+    if (!accountOk) {
+      throw new NotFoundException('Thread not found');
+    }
+    const account = thread.mailAccount;
+    const toList = dedupeEmailsCaseInsensitive(dto.to);
+    if (toList.length === 0) {
+      throw new BadRequestException('At least one valid To address is required');
+    }
+    const ccList = dedupeEmailsCaseInsensitive(dto.cc ?? []);
+    const { messageId } = await persistOutboundDraftMessage(this.prisma, {
+      threadId,
+      account,
+      dto,
+    });
+    const auditChanges: InputJsonValue = {
+      threadId,
+      toCount: toList.length,
+      ccCount: ccList.length,
+      subjectPrefix: dto.subject.slice(0, 120),
+    };
+    await this.auditService.log({
+      entityType: MAIL_AUDIT_ENTITY_MESSAGE,
+      entityId: messageId,
+      action: MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED,
+      userId: employeeId,
+      changes: auditChanges,
+    });
+    return this.getThreadDetail(employeeId, accessScope, threadId);
+  }
 }
 
 function toAccountRow(row: {
@@ -214,6 +269,7 @@ function toMessageRow(m: MessageWithRecipients): MailMessageRow {
     sentAt: m.sentAt?.toISOString() ?? null,
     receivedAt: m.receivedAt?.toISOString() ?? null,
     readState: m.readState,
+    deliveryStatus: m.deliveryStatus ?? null,
     recipients: m.recipients.map(toRecipientRow),
   };
 }

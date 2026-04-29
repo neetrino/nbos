@@ -34,6 +34,8 @@ export interface MailMessageRow {
   sentAt: string | null;
   receivedAt: string | null;
   readState: string;
+  /** Outbound pipeline state; null for inbound / legacy rows. */
+  deliveryStatus: string | null;
   recipients: MailRecipientRow[];
 }
 

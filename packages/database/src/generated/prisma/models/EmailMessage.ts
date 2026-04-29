@@ -36,6 +36,7 @@ export type EmailMessageMinAggregateOutputType = {
   sentAt: Date | null;
   receivedAt: Date | null;
   readState: $Enums.EmailMessageReadState | null;
+  deliveryStatus: $Enums.EmailDeliveryStatus | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -53,6 +54,7 @@ export type EmailMessageMaxAggregateOutputType = {
   sentAt: Date | null;
   receivedAt: Date | null;
   readState: $Enums.EmailMessageReadState | null;
+  deliveryStatus: $Enums.EmailDeliveryStatus | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -70,6 +72,7 @@ export type EmailMessageCountAggregateOutputType = {
   sentAt: number;
   receivedAt: number;
   readState: number;
+  deliveryStatus: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
@@ -88,6 +91,7 @@ export type EmailMessageMinAggregateInputType = {
   sentAt?: true;
   receivedAt?: true;
   readState?: true;
+  deliveryStatus?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -105,6 +109,7 @@ export type EmailMessageMaxAggregateInputType = {
   sentAt?: true;
   receivedAt?: true;
   readState?: true;
+  deliveryStatus?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -122,6 +127,7 @@ export type EmailMessageCountAggregateInputType = {
   sentAt?: true;
   receivedAt?: true;
   readState?: true;
+  deliveryStatus?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -217,6 +223,7 @@ export type EmailMessageGroupByOutputType = {
   sentAt: Date | null;
   receivedAt: Date | null;
   readState: $Enums.EmailMessageReadState;
+  deliveryStatus: $Enums.EmailDeliveryStatus | null;
   createdAt: Date;
   updatedAt: Date;
   _count: EmailMessageCountAggregateOutputType | null;
@@ -252,6 +259,10 @@ export type EmailMessageWhereInput = {
   sentAt?: Prisma.DateTimeNullableFilter<'EmailMessage'> | Date | string | null;
   receivedAt?: Prisma.DateTimeNullableFilter<'EmailMessage'> | Date | string | null;
   readState?: Prisma.EnumEmailMessageReadStateFilter<'EmailMessage'> | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.EnumEmailDeliveryStatusNullableFilter<'EmailMessage'>
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFilter<'EmailMessage'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'EmailMessage'> | Date | string;
   thread?: Prisma.XOR<Prisma.EmailThreadScalarRelationFilter, Prisma.EmailThreadWhereInput>;
@@ -272,6 +283,7 @@ export type EmailMessageOrderByWithRelationInput = {
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   receivedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   readState?: Prisma.SortOrder;
+  deliveryStatus?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   thread?: Prisma.EmailThreadOrderByWithRelationInput;
@@ -300,6 +312,10 @@ export type EmailMessageWhereUniqueInput = Prisma.AtLeast<
     readState?:
       | Prisma.EnumEmailMessageReadStateFilter<'EmailMessage'>
       | $Enums.EmailMessageReadState;
+    deliveryStatus?:
+      | Prisma.EnumEmailDeliveryStatusNullableFilter<'EmailMessage'>
+      | $Enums.EmailDeliveryStatus
+      | null;
     createdAt?: Prisma.DateTimeFilter<'EmailMessage'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'EmailMessage'> | Date | string;
     thread?: Prisma.XOR<Prisma.EmailThreadScalarRelationFilter, Prisma.EmailThreadWhereInput>;
@@ -322,6 +338,7 @@ export type EmailMessageOrderByWithAggregationInput = {
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   receivedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   readState?: Prisma.SortOrder;
+  deliveryStatus?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.EmailMessageCountOrderByAggregateInput;
@@ -353,6 +370,10 @@ export type EmailMessageScalarWhereWithAggregatesInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateWithAggregatesFilter<'EmailMessage'>
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.EnumEmailDeliveryStatusNullableWithAggregatesFilter<'EmailMessage'>
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'EmailMessage'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'EmailMessage'> | Date | string;
 };
@@ -368,6 +389,7 @@ export type EmailMessageCreateInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   thread: Prisma.EmailThreadCreateNestedOneWithoutMessagesInput;
@@ -388,6 +410,7 @@ export type EmailMessageUncheckedCreateInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   recipients?: Prisma.EmailRecipientUncheckedCreateNestedManyWithoutMessageInput;
@@ -408,6 +431,10 @@ export type EmailMessageUpdateInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   thread?: Prisma.EmailThreadUpdateOneRequiredWithoutMessagesNestedInput;
@@ -432,6 +459,10 @@ export type EmailMessageUncheckedUpdateInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   recipients?: Prisma.EmailRecipientUncheckedUpdateManyWithoutMessageNestedInput;
@@ -450,6 +481,7 @@ export type EmailMessageCreateManyInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -469,6 +501,10 @@ export type EmailMessageUpdateManyMutationInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -490,6 +526,10 @@ export type EmailMessageUncheckedUpdateManyInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -517,6 +557,7 @@ export type EmailMessageCountOrderByAggregateInput = {
   sentAt?: Prisma.SortOrder;
   receivedAt?: Prisma.SortOrder;
   readState?: Prisma.SortOrder;
+  deliveryStatus?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -534,6 +575,7 @@ export type EmailMessageMaxOrderByAggregateInput = {
   sentAt?: Prisma.SortOrder;
   receivedAt?: Prisma.SortOrder;
   readState?: Prisma.SortOrder;
+  deliveryStatus?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -551,6 +593,7 @@ export type EmailMessageMinOrderByAggregateInput = {
   sentAt?: Prisma.SortOrder;
   receivedAt?: Prisma.SortOrder;
   readState?: Prisma.SortOrder;
+  deliveryStatus?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -740,6 +783,10 @@ export type EnumEmailMessageReadStateFieldUpdateOperationsInput = {
   set?: $Enums.EmailMessageReadState;
 };
 
+export type NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput = {
+  set?: $Enums.EmailDeliveryStatus | null;
+};
+
 export type EmailMessageCreateNestedOneWithoutRecipientsInput = {
   create?: Prisma.XOR<
     Prisma.EmailMessageCreateWithoutRecipientsInput,
@@ -777,6 +824,7 @@ export type EmailMessageCreateWithoutMailAccountInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   thread: Prisma.EmailThreadCreateNestedOneWithoutMessagesInput;
@@ -795,6 +843,7 @@ export type EmailMessageUncheckedCreateWithoutMailAccountInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   recipients?: Prisma.EmailRecipientUncheckedCreateNestedManyWithoutMessageInput;
@@ -859,6 +908,10 @@ export type EmailMessageScalarWhereInput = {
   sentAt?: Prisma.DateTimeNullableFilter<'EmailMessage'> | Date | string | null;
   receivedAt?: Prisma.DateTimeNullableFilter<'EmailMessage'> | Date | string | null;
   readState?: Prisma.EnumEmailMessageReadStateFilter<'EmailMessage'> | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.EnumEmailDeliveryStatusNullableFilter<'EmailMessage'>
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFilter<'EmailMessage'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'EmailMessage'> | Date | string;
 };
@@ -874,6 +927,7 @@ export type EmailMessageCreateWithoutThreadInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   mailAccount: Prisma.MailAccountCreateNestedOneWithoutMessagesInput;
@@ -892,6 +946,7 @@ export type EmailMessageUncheckedCreateWithoutThreadInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   recipients?: Prisma.EmailRecipientUncheckedCreateNestedManyWithoutMessageInput;
@@ -949,6 +1004,7 @@ export type EmailMessageCreateWithoutRecipientsInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   thread: Prisma.EmailThreadCreateNestedOneWithoutMessagesInput;
@@ -968,6 +1024,7 @@ export type EmailMessageUncheckedCreateWithoutRecipientsInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1015,6 +1072,10 @@ export type EmailMessageUpdateWithoutRecipientsInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   thread?: Prisma.EmailThreadUpdateOneRequiredWithoutMessagesNestedInput;
@@ -1038,6 +1099,10 @@ export type EmailMessageUncheckedUpdateWithoutRecipientsInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1054,6 +1119,7 @@ export type EmailMessageCreateManyMailAccountInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1073,6 +1139,10 @@ export type EmailMessageUpdateWithoutMailAccountInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   thread?: Prisma.EmailThreadUpdateOneRequiredWithoutMessagesNestedInput;
@@ -1095,6 +1165,10 @@ export type EmailMessageUncheckedUpdateWithoutMailAccountInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   recipients?: Prisma.EmailRecipientUncheckedUpdateManyWithoutMessageNestedInput;
@@ -1116,6 +1190,10 @@ export type EmailMessageUncheckedUpdateManyWithoutMailAccountInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1132,6 +1210,7 @@ export type EmailMessageCreateManyThreadInput = {
   sentAt?: Date | string | null;
   receivedAt?: Date | string | null;
   readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1151,6 +1230,10 @@ export type EmailMessageUpdateWithoutThreadInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   mailAccount?: Prisma.MailAccountUpdateOneRequiredWithoutMessagesNestedInput;
@@ -1173,6 +1256,10 @@ export type EmailMessageUncheckedUpdateWithoutThreadInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   recipients?: Prisma.EmailRecipientUncheckedUpdateManyWithoutMessageNestedInput;
@@ -1194,6 +1281,10 @@ export type EmailMessageUncheckedUpdateManyWithoutThreadInput = {
   readState?:
     | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
     | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1249,6 +1340,7 @@ export type EmailMessageSelect<
     sentAt?: boolean;
     receivedAt?: boolean;
     readState?: boolean;
+    deliveryStatus?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     thread?: boolean | Prisma.EmailThreadDefaultArgs<ExtArgs>;
@@ -1275,6 +1367,7 @@ export type EmailMessageSelectCreateManyAndReturn<
     sentAt?: boolean;
     receivedAt?: boolean;
     readState?: boolean;
+    deliveryStatus?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     thread?: boolean | Prisma.EmailThreadDefaultArgs<ExtArgs>;
@@ -1299,6 +1392,7 @@ export type EmailMessageSelectUpdateManyAndReturn<
     sentAt?: boolean;
     receivedAt?: boolean;
     readState?: boolean;
+    deliveryStatus?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     thread?: boolean | Prisma.EmailThreadDefaultArgs<ExtArgs>;
@@ -1320,6 +1414,7 @@ export type EmailMessageSelectScalar = {
   sentAt?: boolean;
   receivedAt?: boolean;
   readState?: boolean;
+  deliveryStatus?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -1339,6 +1434,7 @@ export type EmailMessageOmit<
   | 'sentAt'
   | 'receivedAt'
   | 'readState'
+  | 'deliveryStatus'
   | 'createdAt'
   | 'updatedAt',
   ExtArgs['result']['emailMessage']
@@ -1387,6 +1483,7 @@ export type $EmailMessagePayload<
       sentAt: Date | null;
       receivedAt: Date | null;
       readState: $Enums.EmailMessageReadState;
+      deliveryStatus: $Enums.EmailDeliveryStatus | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -2009,6 +2106,7 @@ export interface EmailMessageFieldRefs {
   readonly sentAt: Prisma.FieldRef<'EmailMessage', 'DateTime'>;
   readonly receivedAt: Prisma.FieldRef<'EmailMessage', 'DateTime'>;
   readonly readState: Prisma.FieldRef<'EmailMessage', 'EmailMessageReadState'>;
+  readonly deliveryStatus: Prisma.FieldRef<'EmailMessage', 'EmailDeliveryStatus'>;
   readonly createdAt: Prisma.FieldRef<'EmailMessage', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'EmailMessage', 'DateTime'>;
 }

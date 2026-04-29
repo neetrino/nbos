@@ -1,7 +1,18 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { MailService } from './mail.service';
 
 type AuthedRequest = Request & { permissionScope?: string };
@@ -57,6 +68,24 @@ export class MailController {
     @Param('threadId') threadId: string,
   ) {
     return this.mailService.getThreadDetail(user.id, req.permissionScope ?? 'OWN', threadId);
+  }
+
+  @Post('threads/:threadId/drafts')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({ summary: 'Create outbound draft message in thread (no SMTP send)' })
+  async createOutboundDraft(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+    @Body() body: CreateMailOutboundDraftDto,
+  ) {
+    return this.mailService.createOutboundDraft(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+      body,
+    );
   }
 
   @Post('threads/:threadId/mark-read')

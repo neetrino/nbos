@@ -46,6 +46,7 @@ export async function seedMail(prisma: PrismaClient, emps: { ceo: SeedEmp }): Pr
       sentAt: new Date('2026-04-27T14:00:00.000Z'),
       receivedAt: new Date('2026-04-27T14:02:00.000Z'),
       readState: 'READ',
+      deliveryStatus: null,
     },
   });
 
@@ -78,6 +79,7 @@ export async function seedMail(prisma: PrismaClient, emps: { ceo: SeedEmp }): Pr
       sentAt: new Date('2026-04-27T15:30:00.000Z'),
       receivedAt: new Date('2026-04-27T15:30:00.000Z'),
       readState: 'UNREAD',
+      deliveryStatus: 'SENT',
     },
   });
 

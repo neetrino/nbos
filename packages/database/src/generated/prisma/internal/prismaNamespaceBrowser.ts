@@ -1200,6 +1200,7 @@ export const EmailMessageScalarFieldEnum = {
   sentAt: 'sentAt',
   receivedAt: 'receivedAt',
   readState: 'readState',
+  deliveryStatus: 'deliveryStatus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;

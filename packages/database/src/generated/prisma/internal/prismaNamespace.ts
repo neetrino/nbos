@@ -6354,6 +6354,7 @@ export const EmailMessageScalarFieldEnum = {
   sentAt: 'sentAt',
   receivedAt: 'receivedAt',
   readState: 'readState',
+  deliveryStatus: 'deliveryStatus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
@@ -7703,6 +7704,22 @@ export type EnumEmailMessageReadStateFieldRefInput<$PrismaModel> = FieldRefInput
 export type ListEnumEmailMessageReadStateFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'EmailMessageReadState[]'
+>;
+
+/**
+ * Reference to a field of type 'EmailDeliveryStatus'
+ */
+export type EnumEmailDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'EmailDeliveryStatus'
+>;
+
+/**
+ * Reference to a field of type 'EmailDeliveryStatus[]'
+ */
+export type ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'EmailDeliveryStatus[]'
 >;
 
 /**
