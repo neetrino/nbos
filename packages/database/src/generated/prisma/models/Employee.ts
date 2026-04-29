@@ -369,6 +369,7 @@ export type EmployeeWhereInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateListRelationFilter;
   mailAccountsOwned?: Prisma.MailAccountListRelationFilter;
   mailAccountsCreated?: Prisma.MailAccountListRelationFilter;
+  inAppNotificationsReceived?: Prisma.InAppNotificationListRelationFilter;
 };
 
 export type EmployeeOrderByWithRelationInput = {
@@ -422,6 +423,7 @@ export type EmployeeOrderByWithRelationInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateOrderByRelationAggregateInput;
   mailAccountsOwned?: Prisma.MailAccountOrderByRelationAggregateInput;
   mailAccountsCreated?: Prisma.MailAccountOrderByRelationAggregateInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationOrderByRelationAggregateInput;
 };
 
 export type EmployeeWhereUniqueInput = Prisma.AtLeast<
@@ -491,6 +493,7 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
     messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateListRelationFilter;
     mailAccountsOwned?: Prisma.MailAccountListRelationFilter;
     mailAccountsCreated?: Prisma.MailAccountListRelationFilter;
+    inAppNotificationsReceived?: Prisma.InAppNotificationListRelationFilter;
   },
   'id' | 'email'
 >;
@@ -614,6 +617,7 @@ export type EmployeeCreateInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateInput = {
@@ -666,6 +670,7 @@ export type EmployeeUncheckedCreateInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUpdateInput = {
@@ -727,6 +732,7 @@ export type EmployeeUpdateInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateInput = {
@@ -788,6 +794,7 @@ export type EmployeeUncheckedUpdateInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateManyInput = {
@@ -1851,6 +1858,32 @@ export type EmployeeUpdateOneWithoutMailAccountsCreatedNestedInput = {
   >;
 };
 
+export type EmployeeCreateNestedOneWithoutInAppNotificationsReceivedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInAppNotificationsReceivedInput,
+    Prisma.EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutInAppNotificationsReceivedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeUpdateOneRequiredWithoutInAppNotificationsReceivedNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInAppNotificationsReceivedInput,
+    Prisma.EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutInAppNotificationsReceivedInput;
+  upsert?: Prisma.EmployeeUpsertWithoutInAppNotificationsReceivedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutInAppNotificationsReceivedInput,
+      Prisma.EmployeeUpdateWithoutInAppNotificationsReceivedInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput
+  >;
+};
+
 export type EmployeeCreateWithoutProductsManagingInput = {
   id?: string;
   passwordHash?: string | null;
@@ -1900,6 +1933,7 @@ export type EmployeeCreateWithoutProductsManagingInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutProductsManagingInput = {
@@ -1951,6 +1985,7 @@ export type EmployeeUncheckedCreateWithoutProductsManagingInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutProductsManagingInput = {
@@ -2039,6 +2074,7 @@ export type EmployeeUpdateWithoutProductsManagingInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutProductsManagingInput = {
@@ -2099,6 +2135,7 @@ export type EmployeeUncheckedUpdateWithoutProductsManagingInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutExtensionsAssignedInput = {
@@ -2150,6 +2187,7 @@ export type EmployeeCreateWithoutExtensionsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutExtensionsAssignedInput = {
@@ -2201,6 +2239,7 @@ export type EmployeeUncheckedCreateWithoutExtensionsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutExtensionsAssignedInput = {
@@ -2289,6 +2328,7 @@ export type EmployeeUpdateWithoutExtensionsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutExtensionsAssignedInput = {
@@ -2349,6 +2389,7 @@ export type EmployeeUncheckedUpdateWithoutExtensionsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutMarketingAccountsOwnedInput = {
@@ -2400,6 +2441,7 @@ export type EmployeeCreateWithoutMarketingAccountsOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMarketingAccountsOwnedInput = {
@@ -2451,6 +2493,7 @@ export type EmployeeUncheckedCreateWithoutMarketingAccountsOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMarketingAccountsOwnedInput = {
@@ -2539,6 +2582,7 @@ export type EmployeeUpdateWithoutMarketingAccountsOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMarketingAccountsOwnedInput = {
@@ -2599,6 +2643,7 @@ export type EmployeeUncheckedUpdateWithoutMarketingAccountsOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutMarketingActivitiesOwnedInput = {
@@ -2650,6 +2695,7 @@ export type EmployeeCreateWithoutMarketingActivitiesOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMarketingActivitiesOwnedInput = {
@@ -2701,6 +2747,7 @@ export type EmployeeUncheckedCreateWithoutMarketingActivitiesOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMarketingActivitiesOwnedInput = {
@@ -2789,6 +2836,7 @@ export type EmployeeUpdateWithoutMarketingActivitiesOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMarketingActivitiesOwnedInput = {
@@ -2849,6 +2897,7 @@ export type EmployeeUncheckedUpdateWithoutMarketingActivitiesOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutLeadsAssignedInput = {
@@ -2900,6 +2949,7 @@ export type EmployeeCreateWithoutLeadsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
@@ -2951,6 +3001,7 @@ export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutLeadsAssignedInput = {
@@ -3039,6 +3090,7 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
@@ -3099,6 +3151,7 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutDealsSellingInput = {
@@ -3150,6 +3203,7 @@ export type EmployeeCreateWithoutDealsSellingInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
@@ -3201,6 +3255,7 @@ export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDealsSellingInput = {
@@ -3260,6 +3315,7 @@ export type EmployeeCreateWithoutDealsPMInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDealsPMInput = {
@@ -3311,6 +3367,7 @@ export type EmployeeUncheckedCreateWithoutDealsPMInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDealsPMInput = {
@@ -3399,6 +3456,7 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
@@ -3459,6 +3517,7 @@ export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUpsertWithoutDealsPMInput = {
@@ -3539,6 +3598,7 @@ export type EmployeeUpdateWithoutDealsPMInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
@@ -3599,6 +3659,7 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutPaymentsConfirmedInput = {
@@ -3650,6 +3711,7 @@ export type EmployeeCreateWithoutPaymentsConfirmedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
@@ -3701,6 +3763,7 @@ export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPaymentsConfirmedInput = {
@@ -3789,6 +3852,7 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
@@ -3849,6 +3913,7 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutBonusEntriesInput = {
@@ -3900,6 +3965,7 @@ export type EmployeeCreateWithoutBonusEntriesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
@@ -3951,6 +4017,7 @@ export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutBonusEntriesInput = {
@@ -4039,6 +4106,7 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
@@ -4099,6 +4167,7 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutPayrollRunsCreatedInput = {
@@ -4150,6 +4219,7 @@ export type EmployeeCreateWithoutPayrollRunsCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPayrollRunsCreatedInput = {
@@ -4201,6 +4271,7 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPayrollRunsCreatedInput = {
@@ -4260,6 +4331,7 @@ export type EmployeeCreateWithoutPayrollRunsApprovedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPayrollRunsApprovedInput = {
@@ -4311,6 +4383,7 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsApprovedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPayrollRunsApprovedInput = {
@@ -4399,6 +4472,7 @@ export type EmployeeUpdateWithoutPayrollRunsCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPayrollRunsCreatedInput = {
@@ -4459,6 +4533,7 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUpsertWithoutPayrollRunsApprovedInput = {
@@ -4539,6 +4614,7 @@ export type EmployeeUpdateWithoutPayrollRunsApprovedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPayrollRunsApprovedInput = {
@@ -4599,6 +4675,7 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsApprovedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutSalaryLinesInput = {
@@ -4650,6 +4727,7 @@ export type EmployeeCreateWithoutSalaryLinesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutSalaryLinesInput = {
@@ -4701,6 +4779,7 @@ export type EmployeeUncheckedCreateWithoutSalaryLinesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutSalaryLinesInput = {
@@ -4789,6 +4868,7 @@ export type EmployeeUpdateWithoutSalaryLinesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutSalaryLinesInput = {
@@ -4849,6 +4929,7 @@ export type EmployeeUncheckedUpdateWithoutSalaryLinesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutTasksCreatedInput = {
@@ -4900,6 +4981,7 @@ export type EmployeeCreateWithoutTasksCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
@@ -4951,6 +5033,7 @@ export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTasksCreatedInput = {
@@ -5010,6 +5093,7 @@ export type EmployeeCreateWithoutTasksAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
@@ -5061,6 +5145,7 @@ export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTasksAssignedInput = {
@@ -5149,6 +5234,7 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
@@ -5209,6 +5295,7 @@ export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUpsertWithoutTasksAssignedInput = {
@@ -5289,6 +5376,7 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
@@ -5349,6 +5437,7 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
@@ -5400,6 +5489,7 @@ export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
@@ -5451,6 +5541,7 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutRecurringTasksCreatedInput = {
@@ -5510,6 +5601,7 @@ export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
@@ -5561,6 +5653,7 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutRecurringTasksAssignedInput = {
@@ -5649,6 +5742,7 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
@@ -5709,6 +5803,7 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUpsertWithoutRecurringTasksAssignedInput = {
@@ -5789,6 +5884,7 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
@@ -5849,6 +5945,7 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutTicketsAssignedInput = {
@@ -5900,6 +5997,7 @@ export type EmployeeCreateWithoutTicketsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
@@ -5951,6 +6049,7 @@ export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTicketsAssignedInput = {
@@ -6039,6 +6138,7 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
@@ -6099,6 +6199,7 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutCredentialsOwnedInput = {
@@ -6150,6 +6251,7 @@ export type EmployeeCreateWithoutCredentialsOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
@@ -6201,6 +6303,7 @@ export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutCredentialsOwnedInput = {
@@ -6289,6 +6392,7 @@ export type EmployeeUpdateWithoutCredentialsOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
@@ -6349,6 +6453,7 @@ export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutDepartmentsInput = {
@@ -6400,6 +6505,7 @@ export type EmployeeCreateWithoutDepartmentsInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
@@ -6451,6 +6557,7 @@ export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDepartmentsInput = {
@@ -6539,6 +6646,7 @@ export type EmployeeUpdateWithoutDepartmentsInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
@@ -6599,6 +6707,7 @@ export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutRoleInput = {
@@ -6650,6 +6759,7 @@ export type EmployeeCreateWithoutRoleInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutRoleInput = {
@@ -6701,6 +6811,7 @@ export type EmployeeUncheckedCreateWithoutRoleInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutRoleInput = {
@@ -6825,6 +6936,7 @@ export type EmployeeCreateWithoutInvitationsSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
@@ -6876,6 +6988,7 @@ export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutInvitationsSentInput = {
@@ -6935,6 +7048,7 @@ export type EmployeeCreateWithoutInvitationReceivedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
@@ -6986,6 +7100,7 @@ export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutInvitationReceivedInput = {
@@ -7074,6 +7189,7 @@ export type EmployeeUpdateWithoutInvitationsSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
@@ -7134,6 +7250,7 @@ export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUpsertWithoutInvitationReceivedInput = {
@@ -7214,6 +7331,7 @@ export type EmployeeUpdateWithoutInvitationReceivedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
@@ -7274,6 +7392,7 @@ export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerChannelMessagesSentInput = {
@@ -7325,6 +7444,7 @@ export type EmployeeCreateWithoutMessengerChannelMessagesSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerChannelMessagesSentInput = {
@@ -7376,6 +7496,7 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelMessagesSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerChannelMessagesSentInput = {
@@ -7464,6 +7585,7 @@ export type EmployeeUpdateWithoutMessengerChannelMessagesSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerChannelMessagesSentInput = {
@@ -7524,6 +7646,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelMessagesSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerChannelReadStatesInput = {
@@ -7575,6 +7698,7 @@ export type EmployeeCreateWithoutMessengerChannelReadStatesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerChannelReadStatesInput = {
@@ -7626,6 +7750,7 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelReadStatesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerChannelReadStatesInput = {
@@ -7714,6 +7839,7 @@ export type EmployeeUpdateWithoutMessengerChannelReadStatesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerChannelReadStatesInput = {
@@ -7774,6 +7900,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelReadStatesInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerDmThreadsAsAInput = {
@@ -7825,6 +7952,7 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsAInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsAInput = {
@@ -7876,6 +8004,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsAInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDmThreadsAsAInput = {
@@ -7935,6 +8064,7 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsBInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsBInput = {
@@ -7986,6 +8116,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsBInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDmThreadsAsBInput = {
@@ -8074,6 +8205,7 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsAInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsAInput = {
@@ -8134,6 +8266,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsAInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUpsertWithoutMessengerDmThreadsAsBInput = {
@@ -8214,6 +8347,7 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsBInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsBInput = {
@@ -8274,6 +8408,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsBInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerDirectMessagesSentInput = {
@@ -8325,6 +8460,7 @@ export type EmployeeCreateWithoutMessengerDirectMessagesSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDirectMessagesSentInput = {
@@ -8376,6 +8512,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectMessagesSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDirectMessagesSentInput = {
@@ -8464,6 +8601,7 @@ export type EmployeeUpdateWithoutMessengerDirectMessagesSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDirectMessagesSentInput = {
@@ -8524,6 +8662,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectMessagesSentInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerDmThreadReadStatesInput = {
@@ -8575,6 +8714,7 @@ export type EmployeeCreateWithoutMessengerDmThreadReadStatesInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDmThreadReadStatesInput = {
@@ -8626,6 +8766,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadReadStatesInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDmThreadReadStatesInput = {
@@ -8714,6 +8855,7 @@ export type EmployeeUpdateWithoutMessengerDmThreadReadStatesInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDmThreadReadStatesInput = {
@@ -8774,6 +8916,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadReadStatesInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeCreateWithoutMailAccountsOwnedInput = {
@@ -8825,6 +8968,7 @@ export type EmployeeCreateWithoutMailAccountsOwnedInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMailAccountsOwnedInput = {
@@ -8876,6 +9020,7 @@ export type EmployeeUncheckedCreateWithoutMailAccountsOwnedInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMailAccountsOwnedInput = {
@@ -8935,6 +9080,7 @@ export type EmployeeCreateWithoutMailAccountsCreatedInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMailAccountsCreatedInput = {
@@ -8986,6 +9132,7 @@ export type EmployeeUncheckedCreateWithoutMailAccountsCreatedInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMailAccountsCreatedInput = {
@@ -9074,6 +9221,7 @@ export type EmployeeUpdateWithoutMailAccountsOwnedInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMailAccountsOwnedInput = {
@@ -9134,6 +9282,7 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsOwnedInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUpsertWithoutMailAccountsCreatedInput = {
@@ -9214,6 +9363,7 @@ export type EmployeeUpdateWithoutMailAccountsCreatedInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMailAccountsCreatedInput = {
@@ -9274,6 +9424,261 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsCreatedInput = {
   messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
+};
+
+export type EmployeeCreateWithoutInAppNotificationsReceivedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageCreateNestedManyWithoutSenderInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+};
+
+export type EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+};
+
+export type EmployeeCreateOrConnectWithoutInAppNotificationsReceivedInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInAppNotificationsReceivedInput,
+    Prisma.EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput
+  >;
+};
+
+export type EmployeeUpsertWithoutInAppNotificationsReceivedInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutInAppNotificationsReceivedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutInAppNotificationsReceivedInput,
+    Prisma.EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutInAppNotificationsReceivedInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutInAppNotificationsReceivedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput
+  >;
+};
+
+export type EmployeeUpdateWithoutInAppNotificationsReceivedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUpdateManyWithoutSenderNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
 };
 
 export type EmployeeCreateManyRoleInput = {
@@ -9356,6 +9761,7 @@ export type EmployeeUpdateWithoutRoleInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutRoleInput = {
@@ -9416,6 +9822,7 @@ export type EmployeeUncheckedUpdateWithoutRoleInput = {
   messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
   mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
   mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
 };
 
 export type EmployeeUncheckedUpdateManyWithoutRoleInput = {
@@ -9482,6 +9889,7 @@ export type EmployeeCountOutputType = {
   messengerDmThreadReadStates: number;
   mailAccountsOwned: number;
   mailAccountsCreated: number;
+  inAppNotificationsReceived: number;
 };
 
 export type EmployeeCountOutputTypeSelect<
@@ -9521,6 +9929,7 @@ export type EmployeeCountOutputTypeSelect<
     | EmployeeCountOutputTypeCountMessengerDmThreadReadStatesArgs;
   mailAccountsOwned?: boolean | EmployeeCountOutputTypeCountMailAccountsOwnedArgs;
   mailAccountsCreated?: boolean | EmployeeCountOutputTypeCountMailAccountsCreatedArgs;
+  inAppNotificationsReceived?: boolean | EmployeeCountOutputTypeCountInAppNotificationsReceivedArgs;
 };
 
 /**
@@ -9787,6 +10196,15 @@ export type EmployeeCountOutputTypeCountMailAccountsCreatedArgs<
   where?: Prisma.MailAccountWhereInput;
 };
 
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountInAppNotificationsReceivedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.InAppNotificationWhereInput;
+};
+
 export type EmployeeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -9847,6 +10265,7 @@ export type EmployeeSelect<
       | Prisma.Employee$messengerDmThreadReadStatesArgs<ExtArgs>;
     mailAccountsOwned?: boolean | Prisma.Employee$mailAccountsOwnedArgs<ExtArgs>;
     mailAccountsCreated?: boolean | Prisma.Employee$mailAccountsCreatedArgs<ExtArgs>;
+    inAppNotificationsReceived?: boolean | Prisma.Employee$inAppNotificationsReceivedArgs<ExtArgs>;
     _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['employee']
@@ -9993,6 +10412,7 @@ export type EmployeeInclude<
   messengerDmThreadReadStates?: boolean | Prisma.Employee$messengerDmThreadReadStatesArgs<ExtArgs>;
   mailAccountsOwned?: boolean | Prisma.Employee$mailAccountsOwnedArgs<ExtArgs>;
   mailAccountsCreated?: boolean | Prisma.Employee$mailAccountsCreatedArgs<ExtArgs>;
+  inAppNotificationsReceived?: boolean | Prisma.Employee$inAppNotificationsReceivedArgs<ExtArgs>;
   _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type EmployeeIncludeCreateManyAndReturn<
@@ -10041,6 +10461,7 @@ export type $EmployeePayload<
     messengerDmThreadReadStates: Prisma.$MessengerDirectThreadReadStatePayload<ExtArgs>[];
     mailAccountsOwned: Prisma.$MailAccountPayload<ExtArgs>[];
     mailAccountsCreated: Prisma.$MailAccountPayload<ExtArgs>[];
+    inAppNotificationsReceived: Prisma.$InAppNotificationPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -10911,6 +11332,19 @@ export interface Prisma__EmployeeClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$MailAccountPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  inAppNotificationsReceived<
+    T extends Prisma.Employee$inAppNotificationsReceivedArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.Employee$inAppNotificationsReceivedArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$InAppNotificationPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -12181,6 +12615,34 @@ export type Employee$mailAccountsCreatedArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.MailAccountScalarFieldEnum | Prisma.MailAccountScalarFieldEnum[];
+};
+
+/**
+ * Employee.inAppNotificationsReceived
+ */
+export type Employee$inAppNotificationsReceivedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the InAppNotification
+   */
+  select?: Prisma.InAppNotificationSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the InAppNotification
+   */
+  omit?: Prisma.InAppNotificationOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InAppNotificationInclude<ExtArgs> | null;
+  where?: Prisma.InAppNotificationWhereInput;
+  orderBy?:
+    | Prisma.InAppNotificationOrderByWithRelationInput
+    | Prisma.InAppNotificationOrderByWithRelationInput[];
+  cursor?: Prisma.InAppNotificationWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.InAppNotificationScalarFieldEnum | Prisma.InAppNotificationScalarFieldEnum[];
 };
 
 /**

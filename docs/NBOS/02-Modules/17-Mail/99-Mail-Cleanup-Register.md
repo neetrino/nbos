@@ -38,7 +38,7 @@ Mail module является новым каноном. На момент соз
 | Permissions          | `PARTIAL` | Модуль `MAIL` в seed RBAC (VIEW/EDIT/ADD/DELETE по матрице); list scoped ALL vs OWN mailbox owner; нет per-account roles из канона                                                                                                                                   |
 | Attachment pipeline  | `MISSING` | Интегрировать Mail attachments с Drive File Asset                                                                                                                                                                                                                    |
 | Credentials boundary | `MISSING` | Интегрировать token/password storage с secure storage / Credentials                                                                                                                                                                                                  |
-| Notifications events | `PARTIAL` | **2026-04-29:** после `sync-stub` — in-app уведомление актору (+ владельцу ящика, если не тот же человек); health/inbound/real sync events — ещё `MISSING`                                                                                                           |
+| Notifications events | `PARTIAL` | **2026-04-29:** после `sync-stub` — in-app актору (+ владелец ящика при отличии); **2026-04-29:** строки в `in_app_notifications` (Prisma), API ленты на БД; health/inbound/real sync events — ещё `MISSING`                                                         |
 
 ## Business decisions needed before implementation
 

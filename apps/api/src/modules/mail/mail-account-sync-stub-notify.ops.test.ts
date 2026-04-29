@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { publishMailAccountSyncStubNotifications } from './mail-account-sync-stub-notify.ops';
 
 describe('publishMailAccountSyncStubNotifications', () => {
-  it('creates one notification when actor is the owner', () => {
-    const create = vi.fn();
-    publishMailAccountSyncStubNotifications(
+  it('creates one notification when actor is the owner', async () => {
+    const create = vi.fn().mockResolvedValue(undefined);
+    await publishMailAccountSyncStubNotifications(
       { create },
       {
         actorEmployeeId: 'e1',
@@ -19,9 +19,9 @@ describe('publishMailAccountSyncStubNotifications', () => {
     );
   });
 
-  it('creates two notifications when owner differs from actor', () => {
-    const create = vi.fn();
-    publishMailAccountSyncStubNotifications(
+  it('creates two notifications when owner differs from actor', async () => {
+    const create = vi.fn().mockResolvedValue(undefined);
+    await publishMailAccountSyncStubNotifications(
       { create },
       {
         actorEmployeeId: 'e-admin',

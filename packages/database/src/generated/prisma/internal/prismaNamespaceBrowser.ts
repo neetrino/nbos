@@ -109,6 +109,7 @@ export const ModelName = {
   EmailThread: 'EmailThread',
   EmailMessage: 'EmailMessage',
   EmailRecipient: 'EmailRecipient',
+  InAppNotification: 'InAppNotification',
   AuditLog: 'AuditLog',
   SystemListOption: 'SystemListOption',
 } as const;
@@ -1219,6 +1220,23 @@ export const EmailRecipientScalarFieldEnum = {
 
 export type EmailRecipientScalarFieldEnum =
   (typeof EmailRecipientScalarFieldEnum)[keyof typeof EmailRecipientScalarFieldEnum];
+
+export const InAppNotificationScalarFieldEnum = {
+  id: 'id',
+  recipientEmployeeId: 'recipientEmployeeId',
+  type: 'type',
+  title: 'title',
+  body: 'body',
+  link: 'link',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  isRead: 'isRead',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type InAppNotificationScalarFieldEnum =
+  (typeof InAppNotificationScalarFieldEnum)[keyof typeof InAppNotificationScalarFieldEnum];
 
 export const AuditLogScalarFieldEnum = {
   id: 'id',

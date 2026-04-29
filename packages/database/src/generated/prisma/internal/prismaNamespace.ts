@@ -436,6 +436,7 @@ export const ModelName = {
   EmailThread: 'EmailThread',
   EmailMessage: 'EmailMessage',
   EmailRecipient: 'EmailRecipient',
+  InAppNotification: 'InAppNotification',
   AuditLog: 'AuditLog',
   SystemListOption: 'SystemListOption',
 } as const;
@@ -519,6 +520,7 @@ export type TypeMap<
       | 'emailThread'
       | 'emailMessage'
       | 'emailRecipient'
+      | 'inAppNotification'
       | 'auditLog'
       | 'systemListOption';
     txIsolationLevel: TransactionIsolationLevel;
@@ -5094,6 +5096,82 @@ export type TypeMap<
         };
       };
     };
+    InAppNotification: {
+      payload: Prisma.$InAppNotificationPayload<ExtArgs>;
+      fields: Prisma.InAppNotificationFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.InAppNotificationFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.InAppNotificationFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>;
+        };
+        findFirst: {
+          args: Prisma.InAppNotificationFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.InAppNotificationFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>;
+        };
+        findMany: {
+          args: Prisma.InAppNotificationFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>[];
+        };
+        create: {
+          args: Prisma.InAppNotificationCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>;
+        };
+        createMany: {
+          args: Prisma.InAppNotificationCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.InAppNotificationCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>[];
+        };
+        delete: {
+          args: Prisma.InAppNotificationDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>;
+        };
+        update: {
+          args: Prisma.InAppNotificationUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>;
+        };
+        deleteMany: {
+          args: Prisma.InAppNotificationDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.InAppNotificationUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.InAppNotificationUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>[];
+        };
+        upsert: {
+          args: Prisma.InAppNotificationUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InAppNotificationPayload>;
+        };
+        aggregate: {
+          args: Prisma.InAppNotificationAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInAppNotification>;
+        };
+        groupBy: {
+          args: Prisma.InAppNotificationGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.InAppNotificationGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.InAppNotificationCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.InAppNotificationCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     AuditLog: {
       payload: Prisma.$AuditLogPayload<ExtArgs>;
       fields: Prisma.AuditLogFieldRefs;
@@ -6373,6 +6451,23 @@ export const EmailRecipientScalarFieldEnum = {
 
 export type EmailRecipientScalarFieldEnum =
   (typeof EmailRecipientScalarFieldEnum)[keyof typeof EmailRecipientScalarFieldEnum];
+
+export const InAppNotificationScalarFieldEnum = {
+  id: 'id',
+  recipientEmployeeId: 'recipientEmployeeId',
+  type: 'type',
+  title: 'title',
+  body: 'body',
+  link: 'link',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  isRead: 'isRead',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type InAppNotificationScalarFieldEnum =
+  (typeof InAppNotificationScalarFieldEnum)[keyof typeof InAppNotificationScalarFieldEnum];
 
 export const AuditLogScalarFieldEnum = {
   id: 'id',
@@ -7912,6 +8007,7 @@ export type GlobalOmitConfig = {
   emailThread?: Prisma.EmailThreadOmit;
   emailMessage?: Prisma.EmailMessageOmit;
   emailRecipient?: Prisma.EmailRecipientOmit;
+  inAppNotification?: Prisma.InAppNotificationOmit;
   auditLog?: Prisma.AuditLogOmit;
   systemListOption?: Prisma.SystemListOptionOmit;
 };

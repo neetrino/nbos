@@ -15,13 +15,13 @@ type NotificationSink = {
     link?: string;
     entityType?: string;
     entityId?: string;
-  }) => void;
+  }) => Promise<unknown>;
 };
 
 /**
- * Notifies the actor and (if different) the mailbox owner about a stub sync (in-memory MVP).
+ * Notifies the actor and (if different) the mailbox owner about a stub sync.
  */
-export function publishMailAccountSyncStubNotifications(
+export async function publishMailAccountSyncStubNotifications(
   sink: NotificationSink,
   params: {
     actorEmployeeId: string;
@@ -29,7 +29,7 @@ export function publishMailAccountSyncStubNotifications(
     emailAddress: string;
     ownerEmployeeId: string | null;
   },
-): void {
+): Promise<void> {
   const body = `Stub sync for ${params.emailAddress}: timestamps updated; no provider fetch ran.`;
   const base = {
     type: MAIL_NOTIFICATION_TYPE_ACCOUNT_SYNC_STUB,
@@ -39,9 +39,9 @@ export function publishMailAccountSyncStubNotifications(
     entityType: MAIL_AUDIT_ENTITY_MAIL_ACCOUNT,
     entityId: params.accountId,
   };
-  sink.create({ ...base, recipientId: params.actorEmployeeId });
+  await sink.create({ ...base, recipientId: params.actorEmployeeId });
   const ownerId = params.ownerEmployeeId;
   if (ownerId && ownerId !== params.actorEmployeeId) {
-    sink.create({ ...base, recipientId: ownerId });
+    await sink.create({ ...base, recipientId: ownerId });
   }
 }

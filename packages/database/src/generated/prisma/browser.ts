@@ -322,6 +322,11 @@ export type EmailMessage = Prisma.EmailMessageModel;
  */
 export type EmailRecipient = Prisma.EmailRecipientModel;
 /**
+ * Model InAppNotification
+ *
+ */
+export type InAppNotification = Prisma.InAppNotificationModel;
+/**
  * Model AuditLog
  *
  */

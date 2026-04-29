@@ -48,7 +48,7 @@ export class MailAccountCommandService {
       userId: employeeId,
       changes: auditChanges,
     });
-    publishMailAccountSyncStubNotifications(this.notificationService, {
+    await publishMailAccountSyncStubNotifications(this.notificationService, {
       actorEmployeeId: employeeId,
       accountId,
       emailAddress: outcome.account.emailAddress,

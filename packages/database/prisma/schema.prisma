@@ -1800,6 +1800,7 @@ model Employee {
   messengerDmThreadReadStates MessengerDirectThreadReadState[]
   mailAccountsOwned           MailAccount[]               @relation("MailAccountOwner")
   mailAccountsCreated         MailAccount[]               @relation("MailAccountCreatedBy")
+  inAppNotificationsReceived  InAppNotification[]
 
   @@map("employees")
 }
@@ -2061,6 +2062,28 @@ model EmailRecipient {
 
   @@index([messageId])
   @@map("email_recipients")
+}
+
+// ─── IN-APP NOTIFICATIONS ───────────────────────────────────
+
+model InAppNotification {
+  id                  String    @id @default(uuid())
+  recipientEmployeeId String    @map("recipient_employee_id")
+  type                String
+  title               String
+  body                String    @db.Text
+  link                String?
+  entityType          String?   @map("entity_type")
+  entityId            String?   @map("entity_id")
+  isRead              Boolean   @default(false) @map("is_read")
+  readAt              DateTime? @map("read_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  recipient Employee @relation(fields: [recipientEmployeeId], references: [id], onDelete: Cascade)
+
+  @@index([recipientEmployeeId, createdAt])
+  @@index([recipientEmployeeId, isRead])
+  @@map("in_app_notifications")
 }
 
 // ─── AUDIT ────────────────────────────────────────────────
