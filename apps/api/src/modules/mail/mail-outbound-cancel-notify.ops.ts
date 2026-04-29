@@ -1,10 +1,9 @@
 import { MAIL_AUDIT_ENTITY_MESSAGE } from './mail-audit.constants';
 import {
-  MAIL_NOTIFICATION_TITLE_OUTBOUND_SEND_STUB_FAILED,
-  MAIL_NOTIFICATION_TYPE_OUTBOUND_SEND_STUB_FAILED,
+  MAIL_NOTIFICATION_TITLE_OUTBOUND_MESSAGE_CANCELLED,
+  MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_CANCELLED,
 } from './mail-notification.constants';
 import { mailThreadDetailAppPath } from './mail-thread-app-path';
-import { MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER } from './mail-outbound-stub.constants';
 
 type NotificationSink = {
   create: (params: {
@@ -19,9 +18,9 @@ type NotificationSink = {
 };
 
 /**
- * Notifies the actor and (if different) the mailbox owner after stub finalize sets outbound FAILED.
+ * Notifies the actor and (if different) the mailbox owner after an outbound draft/queued send is cancelled.
  */
-export async function publishMailOutboundSendStubFailedNotifications(
+export async function publishMailOutboundCancelledNotifications(
   sink: NotificationSink,
   params: {
     actorEmployeeId: string;
@@ -30,13 +29,14 @@ export async function publishMailOutboundSendStubFailedNotifications(
     subject: string;
     emailAddress: string;
     ownerEmployeeId: string | null;
+    previousDeliveryStatus: string;
   },
 ): Promise<void> {
   const subjectPreview = params.subject.trim() || '(No subject)';
-  const body = `Queued send for “${subjectPreview}” from ${params.emailAddress} was marked FAILED (${MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER}).`;
+  const body = `Outbound (${params.previousDeliveryStatus}) for “${subjectPreview}” from ${params.emailAddress} was cancelled.`;
   const base = {
-    type: MAIL_NOTIFICATION_TYPE_OUTBOUND_SEND_STUB_FAILED,
-    title: MAIL_NOTIFICATION_TITLE_OUTBOUND_SEND_STUB_FAILED,
+    type: MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_CANCELLED,
+    title: MAIL_NOTIFICATION_TITLE_OUTBOUND_MESSAGE_CANCELLED,
     body,
     link: mailThreadDetailAppPath(params.threadId),
     entityType: MAIL_AUDIT_ENTITY_MESSAGE,

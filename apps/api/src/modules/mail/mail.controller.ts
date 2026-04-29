@@ -16,6 +16,7 @@ import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../c
 import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { MailAccountCommandService } from './mail-account-command.service';
+import { MailOutboundMutationService } from './mail-outbound-mutation.service';
 import { MailService } from './mail.service';
 import { MailThreadCommandService } from './mail-thread-command.service';
 
@@ -35,6 +36,7 @@ function isQueryFlagTrue(value: string | undefined): boolean {
 export class MailController {
   constructor(
     private readonly mailService: MailService,
+    private readonly mailOutboundMutationService: MailOutboundMutationService,
     private readonly mailThreadCommandService: MailThreadCommandService,
     private readonly mailAccountCommandService: MailAccountCommandService,
   ) {}
@@ -142,7 +144,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailService.cancelOutboundDraftOrQueued(
+    return this.mailOutboundMutationService.cancelOutboundDraftOrQueued(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
@@ -162,7 +164,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailService.resetFailedOutboundToDraft(
+    return this.mailOutboundMutationService.resetFailedOutboundToDraft(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
@@ -182,7 +184,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailService.finalizeQueuedOutboundStub(
+    return this.mailOutboundMutationService.finalizeQueuedOutboundStub(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
@@ -202,7 +204,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Param('messageId') messageId: string,
   ) {
-    return this.mailService.queueOutboundDraft(
+    return this.mailOutboundMutationService.queueOutboundDraft(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
@@ -220,7 +222,7 @@ export class MailController {
     @Param('threadId') threadId: string,
     @Body() body: CreateMailOutboundDraftDto,
   ) {
-    return this.mailService.createOutboundDraft(
+    return this.mailOutboundMutationService.createOutboundDraft(
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,

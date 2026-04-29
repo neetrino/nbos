@@ -10,3 +10,15 @@ export const MAIL_NOTIFICATION_TYPE_OUTBOUND_SEND_STUB_FAILED =
 
 export const MAIL_NOTIFICATION_TITLE_OUTBOUND_SEND_STUB_FAILED =
   'Mail: outbound send failed (stub)' as const;
+
+export const MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_CANCELLED =
+  'mail.outbound_message_cancelled' as const;
+
+export const MAIL_NOTIFICATION_TITLE_OUTBOUND_MESSAGE_CANCELLED =
+  'Mail: outbound send cancelled' as const;
+
+export const MAIL_NOTIFICATION_TYPE_OUTBOUND_FAILED_RESET_TO_DRAFT =
+  'mail.outbound_failed_reset_to_draft' as const;
+
+export const MAIL_NOTIFICATION_TITLE_OUTBOUND_FAILED_RESET_TO_DRAFT =
+  'Mail: failed send reset to draft' as const;

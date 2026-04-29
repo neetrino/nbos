@@ -1,10 +1,9 @@
 import { MAIL_AUDIT_ENTITY_MESSAGE } from './mail-audit.constants';
 import {
-  MAIL_NOTIFICATION_TITLE_OUTBOUND_SEND_STUB_FAILED,
-  MAIL_NOTIFICATION_TYPE_OUTBOUND_SEND_STUB_FAILED,
+  MAIL_NOTIFICATION_TITLE_OUTBOUND_FAILED_RESET_TO_DRAFT,
+  MAIL_NOTIFICATION_TYPE_OUTBOUND_FAILED_RESET_TO_DRAFT,
 } from './mail-notification.constants';
 import { mailThreadDetailAppPath } from './mail-thread-app-path';
-import { MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER } from './mail-outbound-stub.constants';
 
 type NotificationSink = {
   create: (params: {
@@ -19,9 +18,9 @@ type NotificationSink = {
 };
 
 /**
- * Notifies the actor and (if different) the mailbox owner after stub finalize sets outbound FAILED.
+ * Notifies the actor and (if different) the mailbox owner after FAILED outbound is reset to DRAFT.
  */
-export async function publishMailOutboundSendStubFailedNotifications(
+export async function publishMailOutboundFailedResetToDraftNotifications(
   sink: NotificationSink,
   params: {
     actorEmployeeId: string;
@@ -33,10 +32,10 @@ export async function publishMailOutboundSendStubFailedNotifications(
   },
 ): Promise<void> {
   const subjectPreview = params.subject.trim() || '(No subject)';
-  const body = `Queued send for “${subjectPreview}” from ${params.emailAddress} was marked FAILED (${MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER}).`;
+  const body = `Failed send for “${subjectPreview}” from ${params.emailAddress} was reset to draft for retry.`;
   const base = {
-    type: MAIL_NOTIFICATION_TYPE_OUTBOUND_SEND_STUB_FAILED,
-    title: MAIL_NOTIFICATION_TITLE_OUTBOUND_SEND_STUB_FAILED,
+    type: MAIL_NOTIFICATION_TYPE_OUTBOUND_FAILED_RESET_TO_DRAFT,
+    title: MAIL_NOTIFICATION_TITLE_OUTBOUND_FAILED_RESET_TO_DRAFT,
     body,
     link: mailThreadDetailAppPath(params.threadId),
     entityType: MAIL_AUDIT_ENTITY_MESSAGE,

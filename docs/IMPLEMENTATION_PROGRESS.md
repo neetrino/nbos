@@ -64,13 +64,13 @@ Future Finance depth:
 
 Roll-up only. Per-feature detail: **`docs/NBOS/02-Modules/*`**, tests, and **git history**.
 
-| Through       | Area                 | Summary                                                                                                                                                          |
-| ------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-29    | Phase 3–4            | Finance full closure (Client Services + six report aggregates); Delivery / Work Space / Support bridges; product lifecycle + Done readiness.                     |
-| 2026-04-29    | Drive & Documents    | Upload session + library; Documents Prisma/API/RBAC/UI; TipTap; search/FTS/ACL; Drive attachments + scoped preview; activity pagination; archive/restore.        |
-| 2026-04-29    | Credentials          | Row-level access, reveal/copy, URL-open audit, web CRUD + archive + permanent purge.                                                                             |
-| 2026-04-29–30 | Messenger            | Prisma + Socket.IO; typing, presence, read/unread + list sync; DM and channel read receipts; audits.                                                             |
-| 2026-04-29    | Mail & Notifications | Mail MVP + inbox **`q`** search; stub sync + **stub finalize FAILED** in-app notify (actor + owner); **`in_app_notifications`** Prisma; Topbar feed → API (JWT). |
+| Through       | Area                 | Summary                                                                                                                                                                                                                       |
+| ------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-29    | Phase 3–4            | Finance full closure (Client Services + six report aggregates); Delivery / Work Space / Support bridges; product lifecycle + Done readiness.                                                                                  |
+| 2026-04-29    | Drive & Documents    | Upload session + library; Documents Prisma/API/RBAC/UI; TipTap; search/FTS/ACL; Drive attachments + scoped preview; activity pagination; archive/restore.                                                                     |
+| 2026-04-29    | Credentials          | Row-level access, reveal/copy, URL-open audit, web CRUD + archive + permanent purge.                                                                                                                                          |
+| 2026-04-29–30 | Messenger            | Prisma + Socket.IO; typing, presence, read/unread + list sync; DM and channel read receipts; audits.                                                                                                                          |
+| 2026-04-29    | Mail & Notifications | Mail MVP + **`q`**; in-app notify: stub sync, finalize FAILED, **cancel outbound**, **reset failed→draft** (actor + owner); outbound mutations in **`MailOutboundMutationService`**; **`in_app_notifications`** + Topbar API. |
 
 ## Next Action
 
