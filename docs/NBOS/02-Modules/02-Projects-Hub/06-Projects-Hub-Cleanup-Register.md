@@ -176,6 +176,20 @@ Delivery Board now supports operational filtering and light actions:
 
 These controls call the same canonical delivery endpoints as the detail views and refresh the Project shell after mutation.
 
+### A12. Delivery Board cancel flow exists
+
+Статус: `PHASE 4 UI ALIGNMENT`
+
+Delivery Board now exposes board-level cancel for active delivery cards:
+
+- `Cancel` opens a confirmation dialog;
+- cancellation requires a reason;
+- Product cards call canonical product cancel endpoint;
+- Extension cards call canonical extension cancel endpoint;
+- Project shell refreshes after successful cancellation.
+
+This keeps `Cancelled` as a terminal outcome and avoids routing cancellation through legacy status transitions.
+
 ---
 
 ## B. Устарело только в документации или описаниях

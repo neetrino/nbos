@@ -65,6 +65,10 @@ export function getItemId(item: DeliveryBoardItem) {
   return item.kind === 'PRODUCT' ? item.product.id : item.extension.id;
 }
 
+export function getItemLabel(item: DeliveryBoardItem) {
+  return item.kind === 'PRODUCT' ? item.product.name : item.extension.name;
+}
+
 export function filterBoardItems(
   items: DeliveryBoardItem[],
   kindFilter: DeliveryBoardKindFilter,

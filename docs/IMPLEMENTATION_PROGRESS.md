@@ -7,7 +7,7 @@
 | Field         | Value                                         |
 | ------------- | --------------------------------------------- |
 | Current phase | **Phase 4 — Delivery ops**                    |
-| Current task  | Delivery Board filters/actions                |
+| Current task  | Delivery Board cancel flow                    |
 | Status        | Phase 4 started after Phase 3 Finance closure |
 | Last updated  | 2026-04-29                                    |
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~50% | Tasks/support list foundations exist; canonical lifecycle fields/actions are being adopted |
+| Phase 4 — Delivery ops              | In progress |     ~55% | Tasks/support list foundations exist; canonical lifecycle fields/actions are being adopted |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -82,10 +82,11 @@ Future Finance depth:
 | 2026-04-29 | Delivery lifecycle action UI       | Product/Extension pause, resume and cancel controls in delivery UI       | web typecheck, lint                                                   |
 | 2026-04-29 | Delivery Board v1                  | Project shell board over active Product and Extension delivery cards     | web typecheck, lint                                                   |
 | 2026-04-29 | Delivery Board controls            | Board filters, quick stage/resume/done actions and closed depth          | web typecheck, lint                                                   |
+| 2026-04-29 | Delivery Board cancel flow         | Board-level cancel dialog with required reason and canonical endpoints   | web typecheck, lint                                                   |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: board-level cancel flow and support/task depth.
+1. Continue Projects Hub lifecycle refactor: support/task depth from Product and Extension cards.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

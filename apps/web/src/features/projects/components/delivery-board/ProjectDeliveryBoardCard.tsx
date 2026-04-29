@@ -1,4 +1,13 @@
-import { ArrowRight, Calendar, CheckCircle2, Package, Play, Puzzle, User } from 'lucide-react';
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle2,
+  Package,
+  Play,
+  Puzzle,
+  User,
+  XCircle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import type {
@@ -27,6 +36,7 @@ interface ProjectDeliveryBoardCardProps {
   onMoveNext: (item: DeliveryBoardItem) => void;
   onResume: (item: DeliveryBoardItem) => void;
   onComplete: (item: DeliveryBoardItem) => void;
+  onCancel: (item: DeliveryBoardItem) => void;
 }
 
 export function ProjectDeliveryBoardCard({
@@ -36,6 +46,7 @@ export function ProjectDeliveryBoardCard({
   onMoveNext,
   onResume,
   onComplete,
+  onCancel,
 }: ProjectDeliveryBoardCardProps) {
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
@@ -70,6 +81,7 @@ export function ProjectDeliveryBoardCard({
         onMoveNext={() => onMoveNext(item)}
         onResume={() => onResume(item)}
         onComplete={() => onComplete(item)}
+        onCancel={() => onCancel(item)}
       />
     </div>
   );
@@ -82,6 +94,7 @@ function DeliveryCardActions({
   onMoveNext,
   onResume,
   onComplete,
+  onCancel,
 }: {
   item: DeliveryBoardItem;
   disabled: boolean;
@@ -89,6 +102,7 @@ function DeliveryCardActions({
   onMoveNext: () => void;
   onResume: () => void;
   onComplete: () => void;
+  onCancel: () => void;
 }) {
   const lifecycle = getItemLifecycle(item);
   if (lifecycle?.isTerminal) {
@@ -124,6 +138,15 @@ function DeliveryCardActions({
         onClick={onComplete}
       >
         <CheckCircle2 size={12} /> Done
+      </Button>
+      <Button
+        variant="destructive"
+        size="sm"
+        className="h-7 text-xs"
+        disabled={disabled}
+        onClick={onCancel}
+      >
+        <XCircle size={12} /> Cancel
       </Button>
     </div>
   );
