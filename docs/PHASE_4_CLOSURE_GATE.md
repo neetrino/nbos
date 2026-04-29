@@ -39,7 +39,7 @@ These items are not safe to fake inside Projects Hub closure:
 Required before full Phase 4 closure:
 
 - `Work Space` exists as runtime planning context, not just a board label.
-- Product and Extension can open connected Work Spaces.
+- Product and Extension can ensure connected Work Spaces through API.
 - Backlog / future sprint / active sprint are separated from task workflow status.
 - Task completion rules are explicit and can return human-readable blockers.
 - Product execution tasks remain linked to Product stage gates without duplicating delivery lifecycle.
@@ -68,6 +68,6 @@ Mark full Phase 4 `Done` only when:
 
 ## 6. Recommended Next Slice
 
-Continue with **Tasks / Work Space runtime foundation**.
+Continue with **Work Space UI integration** or **task completion rules**.
 
-This is the largest remaining blocker for honest Phase 4 closure because Product and Extension delivery already depends on tasks, but the canon requires `Work Space` as the planning context behind Product/Extension execution.
+The runtime foundation now exists; the next closure blockers are exposing connected Work Spaces in Product/Extension UI and adding task completion rules with human-readable blockers.

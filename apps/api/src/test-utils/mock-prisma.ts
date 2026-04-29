@@ -33,6 +33,7 @@ export function createMockPrisma() {
     product: createModelMock(),
     extension: createModelMock(),
     subscription: createModelMock(),
+    workSpace: createModelMock(),
     task: createModelMock(),
     supportTicket: createModelMock(),
     expense: createModelMock(),

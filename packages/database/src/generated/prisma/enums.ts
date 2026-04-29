@@ -395,6 +395,24 @@ export const TaskPriorityEnum = {
 
 export type TaskPriorityEnum = (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum];
 
+export const WorkSpaceTypeEnum = {
+  PRODUCT_DELIVERY: 'PRODUCT_DELIVERY',
+  EXTENSION_DELIVERY: 'EXTENSION_DELIVERY',
+  STANDALONE_OPERATIONAL: 'STANDALONE_OPERATIONAL',
+} as const;
+
+export type WorkSpaceTypeEnum = (typeof WorkSpaceTypeEnum)[keyof typeof WorkSpaceTypeEnum];
+
+export const TaskPlanningStatusEnum = {
+  UNPLANNED: 'UNPLANNED',
+  BACKLOG: 'BACKLOG',
+  FUTURE_SPRINT: 'FUTURE_SPRINT',
+  ACTIVE_SPRINT: 'ACTIVE_SPRINT',
+} as const;
+
+export type TaskPlanningStatusEnum =
+  (typeof TaskPlanningStatusEnum)[keyof typeof TaskPlanningStatusEnum];
+
 export const TicketCategoryEnum = {
   INCIDENT: 'INCIDENT',
   SERVICE_REQUEST: 'SERVICE_REQUEST',

@@ -284,6 +284,10 @@ export type ExtensionWhereInput = {
   > | null;
   order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null;
   tasks?: Prisma.TaskListRelationFilter;
+  workSpace?: Prisma.XOR<
+    Prisma.WorkSpaceNullableScalarRelationFilter,
+    Prisma.WorkSpaceWhereInput
+  > | null;
 };
 
 export type ExtensionOrderByWithRelationInput = {
@@ -308,6 +312,7 @@ export type ExtensionOrderByWithRelationInput = {
   assignee?: Prisma.EmployeeOrderByWithRelationInput;
   order?: Prisma.OrderOrderByWithRelationInput;
   tasks?: Prisma.TaskOrderByRelationAggregateInput;
+  workSpace?: Prisma.WorkSpaceOrderByWithRelationInput;
 };
 
 export type ExtensionWhereUniqueInput = Prisma.AtLeast<
@@ -347,6 +352,10 @@ export type ExtensionWhereUniqueInput = Prisma.AtLeast<
     > | null;
     order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null;
     tasks?: Prisma.TaskListRelationFilter;
+    workSpace?: Prisma.XOR<
+      Prisma.WorkSpaceNullableScalarRelationFilter,
+      Prisma.WorkSpaceWhereInput
+    > | null;
   },
   'id'
 >;
@@ -428,6 +437,7 @@ export type ExtensionCreateInput = {
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateInput = {
@@ -449,6 +459,7 @@ export type ExtensionUncheckedCreateInput = {
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUpdateInput = {
@@ -478,6 +489,7 @@ export type ExtensionUpdateInput = {
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateInput = {
@@ -507,6 +519,7 @@ export type ExtensionUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionCreateManyInput = {
@@ -859,6 +872,34 @@ export type ExtensionUpdateOneWithoutOrderNestedInput = {
   >;
 };
 
+export type ExtensionCreateNestedOneWithoutWorkSpaceInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedCreateWithoutWorkSpaceInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutWorkSpaceInput;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+};
+
+export type ExtensionUpdateOneWithoutWorkSpaceNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedCreateWithoutWorkSpaceInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutWorkSpaceInput;
+  upsert?: Prisma.ExtensionUpsertWithoutWorkSpaceInput;
+  disconnect?: Prisma.ExtensionWhereInput | boolean;
+  delete?: Prisma.ExtensionWhereInput | boolean;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ExtensionUpdateToOneWithWhereWithoutWorkSpaceInput,
+      Prisma.ExtensionUpdateWithoutWorkSpaceInput
+    >,
+    Prisma.ExtensionUncheckedUpdateWithoutWorkSpaceInput
+  >;
+};
+
 export type ExtensionCreateNestedOneWithoutTasksInput = {
   create?: Prisma.XOR<
     Prisma.ExtensionCreateWithoutTasksInput,
@@ -991,6 +1032,7 @@ export type ExtensionCreateWithoutProjectInput = {
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutProjectInput = {
@@ -1011,6 +1053,7 @@ export type ExtensionUncheckedCreateWithoutProjectInput = {
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutProjectInput = {
@@ -1102,6 +1145,7 @@ export type ExtensionCreateWithoutProductInput = {
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutProductInput = {
@@ -1122,6 +1166,7 @@ export type ExtensionUncheckedCreateWithoutProductInput = {
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutProductInput = {
@@ -1183,6 +1228,7 @@ export type ExtensionCreateWithoutOrderInput = {
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutOrderInput = {
@@ -1203,6 +1249,7 @@ export type ExtensionUncheckedCreateWithoutOrderInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutOrderInput = {
@@ -1259,6 +1306,7 @@ export type ExtensionUpdateWithoutOrderInput = {
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutOrderInput = {
@@ -1287,6 +1335,135 @@ export type ExtensionUncheckedUpdateWithoutOrderInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
+};
+
+export type ExtensionCreateWithoutWorkSpaceInput = {
+  id?: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  description?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+};
+
+export type ExtensionUncheckedCreateWithoutWorkSpaceInput = {
+  id?: string;
+  projectId: string;
+  productId: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  assignedTo?: string | null;
+  description?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+};
+
+export type ExtensionCreateOrConnectWithoutWorkSpaceInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedCreateWithoutWorkSpaceInput
+  >;
+};
+
+export type ExtensionUpsertWithoutWorkSpaceInput = {
+  update: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedUpdateWithoutWorkSpaceInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedCreateWithoutWorkSpaceInput
+  >;
+  where?: Prisma.ExtensionWhereInput;
+};
+
+export type ExtensionUpdateToOneWithWhereWithoutWorkSpaceInput = {
+  where?: Prisma.ExtensionWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedUpdateWithoutWorkSpaceInput
+  >;
+};
+
+export type ExtensionUpdateWithoutWorkSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
+  assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+};
+
+export type ExtensionUncheckedUpdateWithoutWorkSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
 };
 
 export type ExtensionCreateWithoutTasksInput = {
@@ -1307,6 +1484,7 @@ export type ExtensionCreateWithoutTasksInput = {
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutTasksInput = {
@@ -1327,6 +1505,7 @@ export type ExtensionUncheckedCreateWithoutTasksInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutTasksInput = {
@@ -1383,6 +1562,7 @@ export type ExtensionUpdateWithoutTasksInput = {
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutTasksInput = {
@@ -1411,6 +1591,7 @@ export type ExtensionUncheckedUpdateWithoutTasksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionCreateWithoutAssigneeInput = {
@@ -1431,6 +1612,7 @@ export type ExtensionCreateWithoutAssigneeInput = {
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutAssigneeInput = {
@@ -1451,6 +1633,7 @@ export type ExtensionUncheckedCreateWithoutAssigneeInput = {
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutAssigneeInput = {
@@ -1538,6 +1721,7 @@ export type ExtensionUpdateWithoutProjectInput = {
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutProjectInput = {
@@ -1566,6 +1750,7 @@ export type ExtensionUncheckedUpdateWithoutProjectInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateManyWithoutProjectInput = {
@@ -1638,6 +1823,7 @@ export type ExtensionUpdateWithoutProductInput = {
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutProductInput = {
@@ -1666,6 +1852,7 @@ export type ExtensionUncheckedUpdateWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateManyWithoutProductInput = {
@@ -1738,6 +1925,7 @@ export type ExtensionUpdateWithoutAssigneeInput = {
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
@@ -1766,6 +1954,7 @@ export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateManyWithoutAssigneeInput = {
@@ -1854,6 +2043,7 @@ export type ExtensionSelect<
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
     order?: boolean | Prisma.Extension$orderArgs<ExtArgs>;
     tasks?: boolean | Prisma.Extension$tasksArgs<ExtArgs>;
+    workSpace?: boolean | Prisma.Extension$workSpaceArgs<ExtArgs>;
     _count?: boolean | Prisma.ExtensionCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['extension']
@@ -1961,6 +2151,7 @@ export type ExtensionInclude<
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
   order?: boolean | Prisma.Extension$orderArgs<ExtArgs>;
   tasks?: boolean | Prisma.Extension$tasksArgs<ExtArgs>;
+  workSpace?: boolean | Prisma.Extension$workSpaceArgs<ExtArgs>;
   _count?: boolean | Prisma.ExtensionCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type ExtensionIncludeCreateManyAndReturn<
@@ -1988,6 +2179,7 @@ export type $ExtensionPayload<
     assignee: Prisma.$EmployeePayload<ExtArgs> | null;
     order: Prisma.$OrderPayload<ExtArgs> | null;
     tasks: Prisma.$TaskPayload<ExtArgs>[];
+    workSpace: Prisma.$WorkSpacePayload<ExtArgs> | null;
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -2605,6 +2797,19 @@ export interface Prisma__ExtensionClient<
     | runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
     | Null
   >;
+  workSpace<T extends Prisma.Extension$workSpaceArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Extension$workSpaceArgs<ExtArgs>>,
+  ): Prisma.Prisma__WorkSpaceClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$WorkSpacePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3146,6 +3351,27 @@ export type Extension$tasksArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.TaskScalarFieldEnum | Prisma.TaskScalarFieldEnum[];
+};
+
+/**
+ * Extension.workSpace
+ */
+export type Extension$workSpaceArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the WorkSpace
+   */
+  select?: Prisma.WorkSpaceSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the WorkSpace
+   */
+  omit?: Prisma.WorkSpaceOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkSpaceInclude<ExtArgs> | null;
+  where?: Prisma.WorkSpaceWhereInput;
 };
 
 /**

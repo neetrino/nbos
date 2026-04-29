@@ -216,6 +216,7 @@ export type ProjectWhereInput = {
   extensions?: Prisma.ExtensionListRelationFilter;
   orders?: Prisma.OrderListRelationFilter;
   subscriptions?: Prisma.SubscriptionListRelationFilter;
+  workSpaces?: Prisma.WorkSpaceListRelationFilter;
   credentials?: Prisma.CredentialListRelationFilter;
   domains?: Prisma.DomainListRelationFilter;
   tickets?: Prisma.SupportTicketListRelationFilter;
@@ -243,6 +244,7 @@ export type ProjectOrderByWithRelationInput = {
   extensions?: Prisma.ExtensionOrderByRelationAggregateInput;
   orders?: Prisma.OrderOrderByRelationAggregateInput;
   subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput;
+  workSpaces?: Prisma.WorkSpaceOrderByRelationAggregateInput;
   credentials?: Prisma.CredentialOrderByRelationAggregateInput;
   domains?: Prisma.DomainOrderByRelationAggregateInput;
   tickets?: Prisma.SupportTicketOrderByRelationAggregateInput;
@@ -277,6 +279,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<
     extensions?: Prisma.ExtensionListRelationFilter;
     orders?: Prisma.OrderListRelationFilter;
     subscriptions?: Prisma.SubscriptionListRelationFilter;
+    workSpaces?: Prisma.WorkSpaceListRelationFilter;
     credentials?: Prisma.CredentialListRelationFilter;
     domains?: Prisma.DomainListRelationFilter;
     tickets?: Prisma.SupportTicketListRelationFilter;
@@ -338,6 +341,7 @@ export type ProjectCreateInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -363,6 +367,7 @@ export type ProjectUncheckedCreateInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -388,6 +393,7 @@ export type ProjectUpdateInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -413,6 +419,7 @@ export type ProjectUncheckedUpdateInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -902,6 +909,34 @@ export type ProjectUpdateOneRequiredWithoutBonusEntriesNestedInput = {
   >;
 };
 
+export type ProjectCreateNestedOneWithoutWorkSpacesInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutWorkSpacesInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+};
+
+export type ProjectUpdateOneWithoutWorkSpacesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutWorkSpacesInput;
+  upsert?: Prisma.ProjectUpsertWithoutWorkSpacesInput;
+  disconnect?: Prisma.ProjectWhereInput | boolean;
+  delete?: Prisma.ProjectWhereInput | boolean;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutWorkSpacesInput,
+      Prisma.ProjectUpdateWithoutWorkSpacesInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
+  >;
+};
+
 export type ProjectCreateNestedOneWithoutTicketsInput = {
   create?: Prisma.XOR<
     Prisma.ProjectCreateWithoutTicketsInput,
@@ -1049,6 +1084,7 @@ export type ProjectCreateWithoutContactInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -1073,6 +1109,7 @@ export type ProjectUncheckedCreateWithoutContactInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -1153,6 +1190,7 @@ export type ProjectCreateWithoutCompanyInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -1177,6 +1215,7 @@ export type ProjectUncheckedCreateWithoutCompanyInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -1243,6 +1282,7 @@ export type ProjectCreateWithoutKickoffChecklistItemsInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -1267,6 +1307,7 @@ export type ProjectUncheckedCreateWithoutKickoffChecklistItemsInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -1319,6 +1360,7 @@ export type ProjectUpdateWithoutKickoffChecklistItemsInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -1343,6 +1385,7 @@ export type ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -1366,6 +1409,7 @@ export type ProjectCreateWithoutProductsInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -1390,6 +1434,7 @@ export type ProjectUncheckedCreateWithoutProductsInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -1442,6 +1487,7 @@ export type ProjectUpdateWithoutProductsInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -1466,6 +1512,7 @@ export type ProjectUncheckedUpdateWithoutProductsInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -1490,6 +1537,7 @@ export type ProjectCreateWithoutExtensionsInput = {
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -1514,6 +1562,7 @@ export type ProjectUncheckedCreateWithoutExtensionsInput = {
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -1566,6 +1615,7 @@ export type ProjectUpdateWithoutExtensionsInput = {
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -1590,6 +1640,7 @@ export type ProjectUncheckedUpdateWithoutExtensionsInput = {
   products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -1614,6 +1665,7 @@ export type ProjectCreateWithoutOrdersInput = {
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -1638,6 +1690,7 @@ export type ProjectUncheckedCreateWithoutOrdersInput = {
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -1690,6 +1743,7 @@ export type ProjectUpdateWithoutOrdersInput = {
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -1714,6 +1768,7 @@ export type ProjectUncheckedUpdateWithoutOrdersInput = {
   products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -1738,6 +1793,7 @@ export type ProjectCreateWithoutSubscriptionsInput = {
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -1762,6 +1818,7 @@ export type ProjectUncheckedCreateWithoutSubscriptionsInput = {
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -1814,6 +1871,7 @@ export type ProjectUpdateWithoutSubscriptionsInput = {
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -1838,6 +1896,7 @@ export type ProjectUncheckedUpdateWithoutSubscriptionsInput = {
   products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -1863,6 +1922,7 @@ export type ProjectCreateWithoutExpensePlansInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -1887,6 +1947,7 @@ export type ProjectUncheckedCreateWithoutExpensePlansInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -1939,6 +2000,7 @@ export type ProjectUpdateWithoutExpensePlansInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -1963,6 +2025,7 @@ export type ProjectUncheckedUpdateWithoutExpensePlansInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -1987,6 +2050,7 @@ export type ProjectCreateWithoutExpensesInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -2011,6 +2075,7 @@ export type ProjectUncheckedCreateWithoutExpensesInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -2063,6 +2128,7 @@ export type ProjectUpdateWithoutExpensesInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -2087,6 +2153,7 @@ export type ProjectUncheckedUpdateWithoutExpensesInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -2111,6 +2178,7 @@ export type ProjectCreateWithoutBonusEntriesInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -2135,6 +2203,7 @@ export type ProjectUncheckedCreateWithoutBonusEntriesInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -2187,6 +2256,7 @@ export type ProjectUpdateWithoutBonusEntriesInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -2211,12 +2281,141 @@ export type ProjectUncheckedUpdateWithoutBonusEntriesInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectCreateWithoutWorkSpacesInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectUncheckedCreateWithoutWorkSpacesInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutWorkSpacesInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
+  >;
+};
+
+export type ProjectUpsertWithoutWorkSpacesInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutWorkSpacesInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
+  >;
+};
+
+export type ProjectUpdateWithoutWorkSpacesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutWorkSpacesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
   kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
 };
@@ -2235,6 +2434,7 @@ export type ProjectCreateWithoutTicketsInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
@@ -2259,6 +2459,7 @@ export type ProjectUncheckedCreateWithoutTicketsInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
@@ -2311,6 +2512,7 @@ export type ProjectUpdateWithoutTicketsInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
@@ -2335,6 +2537,7 @@ export type ProjectUncheckedUpdateWithoutTicketsInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
@@ -2359,6 +2562,7 @@ export type ProjectCreateWithoutCredentialsInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
@@ -2383,6 +2587,7 @@ export type ProjectUncheckedCreateWithoutCredentialsInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
@@ -2435,6 +2640,7 @@ export type ProjectUpdateWithoutCredentialsInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
@@ -2459,6 +2665,7 @@ export type ProjectUncheckedUpdateWithoutCredentialsInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
@@ -2483,6 +2690,7 @@ export type ProjectCreateWithoutDomainsInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
@@ -2507,6 +2715,7 @@ export type ProjectUncheckedCreateWithoutDomainsInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
@@ -2559,6 +2768,7 @@ export type ProjectUpdateWithoutDomainsInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
@@ -2583,6 +2793,7 @@ export type ProjectUncheckedUpdateWithoutDomainsInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
@@ -2607,6 +2818,7 @@ export type ProjectCreateWithoutClientServiceRecordsInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -2631,6 +2843,7 @@ export type ProjectUncheckedCreateWithoutClientServiceRecordsInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -2683,6 +2896,7 @@ export type ProjectUpdateWithoutClientServiceRecordsInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -2707,6 +2921,7 @@ export type ProjectUncheckedUpdateWithoutClientServiceRecordsInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -2731,6 +2946,7 @@ export type ProjectCreateWithoutAuditLogsInput = {
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
@@ -2755,6 +2971,7 @@ export type ProjectUncheckedCreateWithoutAuditLogsInput = {
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
@@ -2807,6 +3024,7 @@ export type ProjectUpdateWithoutAuditLogsInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -2831,6 +3049,7 @@ export type ProjectUncheckedUpdateWithoutAuditLogsInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -2865,6 +3084,7 @@ export type ProjectUpdateWithoutContactInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -2889,6 +3109,7 @@ export type ProjectUncheckedUpdateWithoutContactInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -2935,6 +3156,7 @@ export type ProjectUpdateWithoutCompanyInput = {
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
@@ -2959,6 +3181,7 @@ export type ProjectUncheckedUpdateWithoutCompanyInput = {
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
@@ -2990,6 +3213,7 @@ export type ProjectCountOutputType = {
   extensions: number;
   orders: number;
   subscriptions: number;
+  workSpaces: number;
   credentials: number;
   domains: number;
   tickets: number;
@@ -3008,6 +3232,7 @@ export type ProjectCountOutputTypeSelect<
   extensions?: boolean | ProjectCountOutputTypeCountExtensionsArgs;
   orders?: boolean | ProjectCountOutputTypeCountOrdersArgs;
   subscriptions?: boolean | ProjectCountOutputTypeCountSubscriptionsArgs;
+  workSpaces?: boolean | ProjectCountOutputTypeCountWorkSpacesArgs;
   credentials?: boolean | ProjectCountOutputTypeCountCredentialsArgs;
   domains?: boolean | ProjectCountOutputTypeCountDomainsArgs;
   tickets?: boolean | ProjectCountOutputTypeCountTicketsArgs;
@@ -3065,6 +3290,15 @@ export type ProjectCountOutputTypeCountSubscriptionsArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   where?: Prisma.SubscriptionWhereInput;
+};
+
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountWorkSpacesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.WorkSpaceWhereInput;
 };
 
 /**
@@ -3167,6 +3401,7 @@ export type ProjectSelect<
     extensions?: boolean | Prisma.Project$extensionsArgs<ExtArgs>;
     orders?: boolean | Prisma.Project$ordersArgs<ExtArgs>;
     subscriptions?: boolean | Prisma.Project$subscriptionsArgs<ExtArgs>;
+    workSpaces?: boolean | Prisma.Project$workSpacesArgs<ExtArgs>;
     credentials?: boolean | Prisma.Project$credentialsArgs<ExtArgs>;
     domains?: boolean | Prisma.Project$domainsArgs<ExtArgs>;
     tickets?: boolean | Prisma.Project$ticketsArgs<ExtArgs>;
@@ -3254,6 +3489,7 @@ export type ProjectInclude<
   extensions?: boolean | Prisma.Project$extensionsArgs<ExtArgs>;
   orders?: boolean | Prisma.Project$ordersArgs<ExtArgs>;
   subscriptions?: boolean | Prisma.Project$subscriptionsArgs<ExtArgs>;
+  workSpaces?: boolean | Prisma.Project$workSpacesArgs<ExtArgs>;
   credentials?: boolean | Prisma.Project$credentialsArgs<ExtArgs>;
   domains?: boolean | Prisma.Project$domainsArgs<ExtArgs>;
   tickets?: boolean | Prisma.Project$ticketsArgs<ExtArgs>;
@@ -3289,6 +3525,7 @@ export type $ProjectPayload<
     extensions: Prisma.$ExtensionPayload<ExtArgs>[];
     orders: Prisma.$OrderPayload<ExtArgs>[];
     subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[];
+    workSpaces: Prisma.$WorkSpacePayload<ExtArgs>[];
     credentials: Prisma.$CredentialPayload<ExtArgs>[];
     domains: Prisma.$DomainPayload<ExtArgs>[];
     tickets: Prisma.$SupportTicketPayload<ExtArgs>[];
@@ -3890,6 +4127,17 @@ export interface Prisma__ProjectClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$SubscriptionPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  workSpaces<T extends Prisma.Project$workSpacesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Project$workSpacesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$WorkSpacePayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -4582,6 +4830,32 @@ export type Project$subscriptionsArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.SubscriptionScalarFieldEnum | Prisma.SubscriptionScalarFieldEnum[];
+};
+
+/**
+ * Project.workSpaces
+ */
+export type Project$workSpacesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the WorkSpace
+   */
+  select?: Prisma.WorkSpaceSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the WorkSpace
+   */
+  omit?: Prisma.WorkSpaceOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkSpaceInclude<ExtArgs> | null;
+  where?: Prisma.WorkSpaceWhereInput;
+  orderBy?: Prisma.WorkSpaceOrderByWithRelationInput | Prisma.WorkSpaceOrderByWithRelationInput[];
+  cursor?: Prisma.WorkSpaceWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.WorkSpaceScalarFieldEnum | Prisma.WorkSpaceScalarFieldEnum[];
 };
 
 /**

@@ -15,6 +15,8 @@ interface CreateTaskDto {
   coAssignees?: string[];
   observers?: string[];
   priority?: string;
+  workspaceId?: string;
+  planningStatus?: string;
   startDate?: string;
   dueDate?: string;
   parentId?: string;
@@ -34,6 +36,9 @@ interface UpdateTaskDto {
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceId?: string | null;
+  planningStatus?: string;
+  workspaceSortOrder?: number;
 }
 
 interface TaskQueryParams {
@@ -43,6 +48,8 @@ interface TaskQueryParams {
   priority?: string;
   assigneeId?: string;
   creatorId?: string;
+  workspaceId?: string;
+  planningStatus?: string;
   parentId?: string;
   hasParent?: boolean;
   entityType?: string;
@@ -90,6 +97,10 @@ export class TasksService {
     if (priority) where.priority = priority as TaskPriorityEnum;
     if (assigneeId) where.assigneeId = assigneeId;
     if (creatorId) where.creatorId = creatorId;
+    if (params.workspaceId) where.workspaceId = params.workspaceId;
+    if (params.planningStatus) {
+      where.planningStatus = params.planningStatus as Prisma.TaskWhereInput['planningStatus'];
+    }
     if (parentId) where.parentId = parentId;
     if (hasParent === false) where.parentId = null;
     if (entityType && entityId) {
@@ -151,6 +162,10 @@ export class TasksService {
         coAssignees: data.coAssignees ?? [],
         observers: data.observers ?? [],
         priority: (data.priority as TaskPriorityEnum) ?? 'NORMAL',
+        workspaceId: data.workspaceId,
+        ...(data.planningStatus && {
+          planningStatus: data.planningStatus as Prisma.TaskCreateInput['planningStatus'],
+        }),
         startDate: data.startDate ? new Date(data.startDate) : undefined,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         parentId: data.parentId,
@@ -191,6 +206,13 @@ export class TasksService {
         ...(data.kanbanStageId !== undefined && { kanbanStageId: data.kanbanStageId }),
         ...(data.myPlanStageId !== undefined && { myPlanStageId: data.myPlanStageId }),
         ...(data.myPlanSortOrder !== undefined && { myPlanSortOrder: data.myPlanSortOrder }),
+        ...(data.workspaceId !== undefined && { workspaceId: data.workspaceId }),
+        ...(data.planningStatus !== undefined && {
+          planningStatus: data.planningStatus as Prisma.TaskUpdateInput['planningStatus'],
+        }),
+        ...(data.workspaceSortOrder !== undefined && {
+          workspaceSortOrder: data.workspaceSortOrder,
+        }),
       },
       include: TASK_INCLUDE,
     });

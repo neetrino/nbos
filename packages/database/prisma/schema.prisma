@@ -91,6 +91,7 @@ model Project {
   extensions            Extension[]
   orders                Order[]
   subscriptions         Subscription[]
+  workSpaces            WorkSpace[]
   credentials           Credential[]
   domains               Domain[]
   tickets               SupportTicket[]
@@ -208,6 +209,7 @@ model Product {
   order                Order?
   extensions           Extension[]
   tasks                Task[]
+  workSpace            WorkSpace?
   tickets              SupportTicket[]
   clientServiceRecords ClientServiceRecord[]
   dealsLinked          Deal[]                @relation("DealExistingProduct")
@@ -254,11 +256,12 @@ model Extension {
   createdAt          DateTime                @default(now()) @map("created_at")
   updatedAt          DateTime                @updatedAt @map("updated_at")
 
-  project  Project   @relation(fields: [projectId], references: [id])
-  product  Product   @relation(fields: [productId], references: [id])
-  assignee Employee? @relation("ExtensionAssignee", fields: [assignedTo], references: [id])
-  order    Order?
-  tasks    Task[]
+  project   Project    @relation(fields: [projectId], references: [id])
+  product   Product    @relation(fields: [productId], references: [id])
+  assignee  Employee?  @relation("ExtensionAssignee", fields: [assignedTo], references: [id])
+  order     Order?
+  tasks     Task[]
+  workSpace WorkSpace?
 
   @@index([deliveryStage])
   @@index([deliveryWorkStatus])
@@ -865,34 +868,73 @@ enum TaskPriorityEnum {
   LOW
 }
 
+enum WorkSpaceTypeEnum {
+  PRODUCT_DELIVERY
+  EXTENSION_DELIVERY
+  STANDALONE_OPERATIONAL
+}
+
+enum TaskPlanningStatusEnum {
+  UNPLANNED
+  BACKLOG
+  FUTURE_SPRINT
+  ACTIVE_SPRINT
+}
+
+model WorkSpace {
+  id           String            @id @default(uuid())
+  projectId    String?           @map("project_id")
+  productId    String?           @unique @map("product_id")
+  extensionId  String?           @unique @map("extension_id")
+  name         String
+  type         WorkSpaceTypeEnum
+  scrumEnabled Boolean           @default(false) @map("scrum_enabled")
+  description  String?
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  project   Project?   @relation(fields: [projectId], references: [id])
+  product   Product?   @relation(fields: [productId], references: [id])
+  extension Extension? @relation(fields: [extensionId], references: [id])
+  tasks     Task[]
+
+  @@index([projectId])
+  @@index([type])
+  @@map("work_spaces")
+}
+
 model Task {
-  id              String           @id @default(uuid())
-  code            String           @unique
-  title           String
-  description     String?
-  productId       String?          @map("product_id")
-  extensionId     String?          @map("extension_id")
-  creatorId       String           @map("creator_id")
-  assigneeId      String?          @map("assignee_id")
-  coAssignees     String[]         @map("co_assignees")
-  observers       String[]
-  status          TaskStatusEnum   @default(NEW)
-  priority        TaskPriorityEnum @default(NORMAL)
-  startDate       DateTime?        @map("start_date")
-  dueDate         DateTime?        @map("due_date")
-  completedAt     DateTime?        @map("completed_at")
-  parentId        String?          @map("parent_id")
-  kanbanStageId   String?          @map("kanban_stage_id")
-  myPlanStageId   String?          @map("my_plan_stage_id")
-  myPlanSortOrder Int              @default(0) @map("my_plan_sort_order")
-  chatId          String?          @unique @map("chat_id")
-  isRecurring     Boolean          @default(false) @map("is_recurring")
-  templateTaskId  String?          @map("template_task_id")
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
+  id                 String                 @id @default(uuid())
+  code               String                 @unique
+  title              String
+  description        String?
+  productId          String?                @map("product_id")
+  extensionId        String?                @map("extension_id")
+  workspaceId        String?                @map("workspace_id")
+  creatorId          String                 @map("creator_id")
+  assigneeId         String?                @map("assignee_id")
+  coAssignees        String[]               @map("co_assignees")
+  observers          String[]
+  status             TaskStatusEnum         @default(NEW)
+  planningStatus     TaskPlanningStatusEnum @default(UNPLANNED) @map("planning_status")
+  priority           TaskPriorityEnum       @default(NORMAL)
+  startDate          DateTime?              @map("start_date")
+  dueDate            DateTime?              @map("due_date")
+  completedAt        DateTime?              @map("completed_at")
+  parentId           String?                @map("parent_id")
+  kanbanStageId      String?                @map("kanban_stage_id")
+  myPlanStageId      String?                @map("my_plan_stage_id")
+  myPlanSortOrder    Int                    @default(0) @map("my_plan_sort_order")
+  workspaceSortOrder Int                    @default(0) @map("workspace_sort_order")
+  chatId             String?                @unique @map("chat_id")
+  isRecurring        Boolean                @default(false) @map("is_recurring")
+  templateTaskId     String?                @map("template_task_id")
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
 
   product    Product?        @relation(fields: [productId], references: [id])
   extension  Extension?      @relation(fields: [extensionId], references: [id])
+  workspace  WorkSpace?      @relation(fields: [workspaceId], references: [id])
   creator    Employee        @relation("TaskCreator", fields: [creatorId], references: [id])
   assignee   Employee?       @relation("TaskAssignee", fields: [assigneeId], references: [id])
   parent     Task?           @relation("TaskSubtasks", fields: [parentId], references: [id])
@@ -900,6 +942,8 @@ model Task {
   links      TaskLink[]
   checklists TaskChecklist[]
 
+  @@index([workspaceId])
+  @@index([planningStatus])
   @@map("tasks")
 }
 

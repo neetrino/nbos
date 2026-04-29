@@ -249,27 +249,25 @@
 - добавить completion validation contract;
 - добавить human-readable blocker response.
 
-### C4. Work Space как runtime-сущность ещё не существует
+### C4. Work Space runtime foundation exists
 
-Подтверждение в коде:
+Статус: `PHASE 4 RUNTIME FOUNDATION`
 
-- [apps/api/src/modules/tasks/task-boards.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/task-boards.service.ts:1)
-- [apps/api/src/modules/tasks/tasks.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/tasks.service.ts:31)
+Runtime now has the first Work Space foundation:
 
-Текущее состояние:
+- `WorkSpace` schema entity exists;
+- Product and Extension can have one connected Work Space;
+- task records can link to a Work Space through `workspace_id`;
+- task planning state is separate from workflow status through `planning_status`;
+- API exposes Work Space list/detail/create/update and ensure endpoints for Product/Extension;
+- web API types can call those endpoints.
 
-- есть `TaskBoardStage`
-- есть `kanbanStageId`
-- есть `myPlanStageId`
-- но нет отдельной сущности `Work Space`
-- нет `workspaceType / mode / contextEntity`
-- нет полноценной сущности `Sprint`, связанной с workspace runtime-моделью
+Remaining depth:
 
-Что потом нужно сделать:
-
-- добавить runtime entity `Work Space`;
-- связать задачи с workspace;
-- перенести scrum/kanban planning logic на этот слой.
+- connected Work Space UI on Product/Extension pages;
+- Sprint runtime model;
+- workspace-level Kanban/Scrum views;
+- migration from legacy board-only task views.
 
 ### C5. Product и Project task tabs всё ещё живут по старой UI-модели
 

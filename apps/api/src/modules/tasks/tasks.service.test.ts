@@ -23,9 +23,18 @@ describe('TasksService', () => {
         status: 'NEW',
         priority: 'HIGH',
         assigneeId: 'a1',
+        workspaceId: 'ws-1',
+        planningStatus: 'BACKLOG',
         search: 'test',
       });
-      expect(prisma.task.findMany).toHaveBeenCalled();
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            workspaceId: 'ws-1',
+            planningStatus: 'BACKLOG',
+          }),
+        }),
+      );
     });
   });
 
@@ -70,6 +79,25 @@ describe('TasksService', () => {
       const result = await service.create({ title: 'Test', creatorId: 'c1' });
       expect(result.code).toMatch(/^T-\d{4}-\d{4}$/);
     });
+
+    it('creates task inside a Work Space planning layer', async () => {
+      prisma.task.findFirst.mockResolvedValue(null);
+      await service.create({
+        title: 'Backlog task',
+        creatorId: 'c1',
+        workspaceId: 'ws-1',
+        planningStatus: 'BACKLOG',
+      });
+
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            workspaceId: 'ws-1',
+            planningStatus: 'BACKLOG',
+          }),
+        }),
+      );
+    });
   });
 
   describe('update', () => {
@@ -79,9 +107,21 @@ describe('TasksService', () => {
       const result = await service.update('1', {
         title: 'Updated',
         priority: 'HIGH',
+        workspaceId: 'ws-1',
+        planningStatus: 'ACTIVE_SPRINT',
+        workspaceSortOrder: 10,
         dueDate: '2026-12-31',
       });
       expect(result.title).toBe('Updated');
+      expect(prisma.task.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            workspaceId: 'ws-1',
+            planningStatus: 'ACTIVE_SPRINT',
+            workspaceSortOrder: 10,
+          }),
+        }),
+      );
     });
   });
 

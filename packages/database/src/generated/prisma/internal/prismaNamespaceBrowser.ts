@@ -68,6 +68,7 @@ export const ModelName = {
   BonusEntry: 'BonusEntry',
   PayrollRun: 'PayrollRun',
   SalaryLine: 'SalaryLine',
+  WorkSpace: 'WorkSpace',
   Task: 'Task',
   TaskLink: 'TaskLink',
   TaskChecklist: 'TaskChecklist',
@@ -523,6 +524,22 @@ export const SalaryLineScalarFieldEnum = {
 export type SalaryLineScalarFieldEnum =
   (typeof SalaryLineScalarFieldEnum)[keyof typeof SalaryLineScalarFieldEnum];
 
+export const WorkSpaceScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  extensionId: 'extensionId',
+  name: 'name',
+  type: 'type',
+  scrumEnabled: 'scrumEnabled',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type WorkSpaceScalarFieldEnum =
+  (typeof WorkSpaceScalarFieldEnum)[keyof typeof WorkSpaceScalarFieldEnum];
+
 export const TaskScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -530,11 +547,13 @@ export const TaskScalarFieldEnum = {
   description: 'description',
   productId: 'productId',
   extensionId: 'extensionId',
+  workspaceId: 'workspaceId',
   creatorId: 'creatorId',
   assigneeId: 'assigneeId',
   coAssignees: 'coAssignees',
   observers: 'observers',
   status: 'status',
+  planningStatus: 'planningStatus',
   priority: 'priority',
   startDate: 'startDate',
   dueDate: 'dueDate',
@@ -543,6 +562,7 @@ export const TaskScalarFieldEnum = {
   kanbanStageId: 'kanbanStageId',
   myPlanStageId: 'myPlanStageId',
   myPlanSortOrder: 'myPlanSortOrder',
+  workspaceSortOrder: 'workspaceSortOrder',
   chatId: 'chatId',
   isRecurring: 'isRecurring',
   templateTaskId: 'templateTaskId',

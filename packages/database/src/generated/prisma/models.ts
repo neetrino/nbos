@@ -27,6 +27,7 @@ export type * from './models/ExpensePayment';
 export type * from './models/BonusEntry';
 export type * from './models/PayrollRun';
 export type * from './models/SalaryLine';
+export type * from './models/WorkSpace';
 export type * from './models/Task';
 export type * from './models/TaskLink';
 export type * from './models/TaskChecklist';

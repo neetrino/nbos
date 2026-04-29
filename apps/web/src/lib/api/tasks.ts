@@ -35,9 +35,12 @@ export interface Task {
   dueDate: string | null;
   completedAt: string | null;
   parentId: string | null;
+  workspaceId: string | null;
+  planningStatus: string;
   kanbanStageId: string | null;
   myPlanStageId: string | null;
   myPlanSortOrder: number;
+  workspaceSortOrder: number;
   chatId: string | null;
   isRecurring: boolean;
   coAssignees: string[];
@@ -69,6 +72,31 @@ export interface TaskBoardStage {
   isDefault: boolean;
 }
 
+export interface WorkSpace {
+  id: string;
+  projectId: string | null;
+  productId: string | null;
+  extensionId: string | null;
+  name: string;
+  type: 'PRODUCT_DELIVERY' | 'EXTENSION_DELIVERY' | 'STANDALONE_OPERATIONAL';
+  scrumEnabled: boolean;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  project?: { id: string; code: string; name: string } | null;
+  product?: { id: string; name: string; status: string } | null;
+  extension?: { id: string; name: string; status: string } | null;
+  tasks?: Task[];
+  _count?: { tasks: number };
+}
+
+interface WorkSpaceQueryParams {
+  projectId?: string;
+  productId?: string;
+  extensionId?: string;
+  type?: WorkSpace['type'];
+}
+
 interface ListData<T> {
   items: T[];
   meta: { total: number; page: number; pageSize: number; totalPages: number };
@@ -81,6 +109,8 @@ interface TaskQueryParams {
   priority?: string;
   assigneeId?: string;
   creatorId?: string;
+  workspaceId?: string;
+  planningStatus?: string;
   entityType?: string;
   entityId?: string;
   parentId?: string;
@@ -117,6 +147,8 @@ export const tasksApi = {
     coAssignees?: string[];
     observers?: string[];
     priority?: string;
+    workspaceId?: string;
+    planningStatus?: string;
     startDate?: string;
     dueDate?: string;
     parentId?: string;
@@ -150,6 +182,42 @@ export const tasksApi = {
   },
   async getStats(): Promise<TaskStats> {
     const resp = await api.get<TaskStats>('/api/tasks/stats');
+    return resp.data;
+  },
+
+  // Work Spaces
+  async getWorkSpaces(params?: WorkSpaceQueryParams): Promise<WorkSpace[]> {
+    const resp = await api.get<WorkSpace[]>('/api/tasks/work-spaces', { params });
+    return resp.data;
+  },
+  async getWorkSpaceById(id: string): Promise<WorkSpace> {
+    const resp = await api.get<WorkSpace>(`/api/tasks/work-spaces/${id}`);
+    return resp.data;
+  },
+  async createWorkSpace(data: {
+    name: string;
+    type: WorkSpace['type'];
+    projectId?: string;
+    productId?: string;
+    extensionId?: string;
+    scrumEnabled?: boolean;
+    description?: string;
+  }): Promise<WorkSpace> {
+    const resp = await api.post<WorkSpace>('/api/tasks/work-spaces', data);
+    return resp.data;
+  },
+  async ensureProductWorkSpace(productId: string): Promise<WorkSpace> {
+    const resp = await api.post<WorkSpace>(`/api/tasks/work-spaces/product/${productId}/ensure`);
+    return resp.data;
+  },
+  async ensureExtensionWorkSpace(extensionId: string): Promise<WorkSpace> {
+    const resp = await api.post<WorkSpace>(
+      `/api/tasks/work-spaces/extension/${extensionId}/ensure`,
+    );
+    return resp.data;
+  },
+  async updateWorkSpace(id: string, data: Record<string, unknown>): Promise<WorkSpace> {
+    const resp = await api.patch<WorkSpace>(`/api/tasks/work-spaces/${id}`, data);
     return resp.data;
   },
 

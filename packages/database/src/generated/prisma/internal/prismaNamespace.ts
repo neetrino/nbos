@@ -395,6 +395,7 @@ export const ModelName = {
   BonusEntry: 'BonusEntry',
   PayrollRun: 'PayrollRun',
   SalaryLine: 'SalaryLine',
+  WorkSpace: 'WorkSpace',
   Task: 'Task',
   TaskLink: 'TaskLink',
   TaskChecklist: 'TaskChecklist',
@@ -455,6 +456,7 @@ export type TypeMap<
       | 'bonusEntry'
       | 'payrollRun'
       | 'salaryLine'
+      | 'workSpace'
       | 'task'
       | 'taskLink'
       | 'taskChecklist'
@@ -1965,6 +1967,80 @@ export type TypeMap<
         count: {
           args: Prisma.SalaryLineCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.SalaryLineCountAggregateOutputType> | number;
+        };
+      };
+    };
+    WorkSpace: {
+      payload: Prisma.$WorkSpacePayload<ExtArgs>;
+      fields: Prisma.WorkSpaceFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.WorkSpaceFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.WorkSpaceFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>;
+        };
+        findFirst: {
+          args: Prisma.WorkSpaceFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.WorkSpaceFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>;
+        };
+        findMany: {
+          args: Prisma.WorkSpaceFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>[];
+        };
+        create: {
+          args: Prisma.WorkSpaceCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>;
+        };
+        createMany: {
+          args: Prisma.WorkSpaceCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.WorkSpaceCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>[];
+        };
+        delete: {
+          args: Prisma.WorkSpaceDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>;
+        };
+        update: {
+          args: Prisma.WorkSpaceUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>;
+        };
+        deleteMany: {
+          args: Prisma.WorkSpaceDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.WorkSpaceUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.WorkSpaceUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>[];
+        };
+        upsert: {
+          args: Prisma.WorkSpaceUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkSpacePayload>;
+        };
+        aggregate: {
+          args: Prisma.WorkSpaceAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWorkSpace>;
+        };
+        groupBy: {
+          args: Prisma.WorkSpaceGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.WorkSpaceGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.WorkSpaceCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.WorkSpaceCountAggregateOutputType> | number;
         };
       };
     };
@@ -3922,6 +3998,22 @@ export const SalaryLineScalarFieldEnum = {
 export type SalaryLineScalarFieldEnum =
   (typeof SalaryLineScalarFieldEnum)[keyof typeof SalaryLineScalarFieldEnum];
 
+export const WorkSpaceScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  extensionId: 'extensionId',
+  name: 'name',
+  type: 'type',
+  scrumEnabled: 'scrumEnabled',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type WorkSpaceScalarFieldEnum =
+  (typeof WorkSpaceScalarFieldEnum)[keyof typeof WorkSpaceScalarFieldEnum];
+
 export const TaskScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -3929,11 +4021,13 @@ export const TaskScalarFieldEnum = {
   description: 'description',
   productId: 'productId',
   extensionId: 'extensionId',
+  workspaceId: 'workspaceId',
   creatorId: 'creatorId',
   assigneeId: 'assigneeId',
   coAssignees: 'coAssignees',
   observers: 'observers',
   status: 'status',
+  planningStatus: 'planningStatus',
   priority: 'priority',
   startDate: 'startDate',
   dueDate: 'dueDate',
@@ -3942,6 +4036,7 @@ export const TaskScalarFieldEnum = {
   kanbanStageId: 'kanbanStageId',
   myPlanStageId: 'myPlanStageId',
   myPlanSortOrder: 'myPlanSortOrder',
+  workspaceSortOrder: 'workspaceSortOrder',
   chatId: 'chatId',
   isRecurring: 'isRecurring',
   templateTaskId: 'templateTaskId',
@@ -4912,6 +5007,22 @@ export type ListEnumSalaryLineStatusEnumFieldRefInput<$PrismaModel> = FieldRefIn
 >;
 
 /**
+ * Reference to a field of type 'WorkSpaceTypeEnum'
+ */
+export type EnumWorkSpaceTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'WorkSpaceTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'WorkSpaceTypeEnum[]'
+ */
+export type ListEnumWorkSpaceTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'WorkSpaceTypeEnum[]'
+>;
+
+/**
  * Reference to a field of type 'TaskStatusEnum'
  */
 export type EnumTaskStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -4925,6 +5036,22 @@ export type EnumTaskStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type ListEnumTaskStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'TaskStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'TaskPlanningStatusEnum'
+ */
+export type EnumTaskPlanningStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TaskPlanningStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'TaskPlanningStatusEnum[]'
+ */
+export type ListEnumTaskPlanningStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TaskPlanningStatusEnum[]'
 >;
 
 /**
@@ -5316,6 +5443,7 @@ export type GlobalOmitConfig = {
   bonusEntry?: Prisma.BonusEntryOmit;
   payrollRun?: Prisma.PayrollRunOmit;
   salaryLine?: Prisma.SalaryLineOmit;
+  workSpace?: Prisma.WorkSpaceOmit;
   task?: Prisma.TaskOmit;
   taskLink?: Prisma.TaskLinkOmit;
   taskChecklist?: Prisma.TaskChecklistOmit;

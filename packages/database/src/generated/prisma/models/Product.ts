@@ -319,6 +319,10 @@ export type ProductWhereInput = {
   order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null;
   extensions?: Prisma.ExtensionListRelationFilter;
   tasks?: Prisma.TaskListRelationFilter;
+  workSpace?: Prisma.XOR<
+    Prisma.WorkSpaceNullableScalarRelationFilter,
+    Prisma.WorkSpaceWhereInput
+  > | null;
   tickets?: Prisma.SupportTicketListRelationFilter;
   clientServiceRecords?: Prisma.ClientServiceRecordListRelationFilter;
   dealsLinked?: Prisma.DealListRelationFilter;
@@ -351,6 +355,7 @@ export type ProductOrderByWithRelationInput = {
   order?: Prisma.OrderOrderByWithRelationInput;
   extensions?: Prisma.ExtensionOrderByRelationAggregateInput;
   tasks?: Prisma.TaskOrderByRelationAggregateInput;
+  workSpace?: Prisma.WorkSpaceOrderByWithRelationInput;
   tickets?: Prisma.SupportTicketOrderByRelationAggregateInput;
   clientServiceRecords?: Prisma.ClientServiceRecordOrderByRelationAggregateInput;
   dealsLinked?: Prisma.DealOrderByRelationAggregateInput;
@@ -395,6 +400,10 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null;
     extensions?: Prisma.ExtensionListRelationFilter;
     tasks?: Prisma.TaskListRelationFilter;
+    workSpace?: Prisma.XOR<
+      Prisma.WorkSpaceNullableScalarRelationFilter,
+      Prisma.WorkSpaceWhereInput
+    > | null;
     tickets?: Prisma.SupportTicketListRelationFilter;
     clientServiceRecords?: Prisma.ClientServiceRecordListRelationFilter;
     dealsLinked?: Prisma.DealListRelationFilter;
@@ -495,6 +504,7 @@ export type ProductCreateInput = {
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
@@ -525,6 +535,7 @@ export type ProductUncheckedCreateInput = {
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
@@ -565,6 +576,7 @@ export type ProductUpdateInput = {
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
@@ -605,6 +617,7 @@ export type ProductUncheckedUpdateInput = {
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
@@ -984,6 +997,34 @@ export type ProductUpdateOneWithoutOrderNestedInput = {
   >;
 };
 
+export type ProductCreateNestedOneWithoutWorkSpaceInput = {
+  create?: Prisma.XOR<
+    Prisma.ProductCreateWithoutWorkSpaceInput,
+    Prisma.ProductUncheckedCreateWithoutWorkSpaceInput
+  >;
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutWorkSpaceInput;
+  connect?: Prisma.ProductWhereUniqueInput;
+};
+
+export type ProductUpdateOneWithoutWorkSpaceNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProductCreateWithoutWorkSpaceInput,
+    Prisma.ProductUncheckedCreateWithoutWorkSpaceInput
+  >;
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutWorkSpaceInput;
+  upsert?: Prisma.ProductUpsertWithoutWorkSpaceInput;
+  disconnect?: Prisma.ProductWhereInput | boolean;
+  delete?: Prisma.ProductWhereInput | boolean;
+  connect?: Prisma.ProductWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProductUpdateToOneWithWhereWithoutWorkSpaceInput,
+      Prisma.ProductUpdateWithoutWorkSpaceInput
+    >,
+    Prisma.ProductUncheckedUpdateWithoutWorkSpaceInput
+  >;
+};
+
 export type ProductCreateNestedOneWithoutTasksInput = {
   create?: Prisma.XOR<
     Prisma.ProductCreateWithoutTasksInput,
@@ -1166,6 +1207,7 @@ export type ProductCreateWithoutProjectInput = {
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
@@ -1195,6 +1237,7 @@ export type ProductUncheckedCreateWithoutProjectInput = {
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
@@ -1300,6 +1343,7 @@ export type ProductCreateWithoutExtensionsInput = {
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
@@ -1329,6 +1373,7 @@ export type ProductUncheckedCreateWithoutExtensionsInput = {
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
@@ -1396,6 +1441,7 @@ export type ProductUpdateWithoutExtensionsInput = {
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
@@ -1435,6 +1481,7 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
@@ -1465,6 +1512,7 @@ export type ProductCreateWithoutDealsLinkedInput = {
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
 };
@@ -1494,6 +1542,7 @@ export type ProductUncheckedCreateWithoutDealsLinkedInput = {
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
 };
@@ -1561,6 +1610,7 @@ export type ProductUpdateWithoutDealsLinkedInput = {
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
 };
@@ -1600,6 +1650,7 @@ export type ProductUncheckedUpdateWithoutDealsLinkedInput = {
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
 };
@@ -1628,6 +1679,7 @@ export type ProductCreateWithoutOrderInput = {
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
@@ -1657,6 +1709,7 @@ export type ProductUncheckedCreateWithoutOrderInput = {
   updatedAt?: Date | string;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
@@ -1724,6 +1777,7 @@ export type ProductUpdateWithoutOrderInput = {
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
@@ -1763,6 +1817,175 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
+};
+
+export type ProductCreateWithoutWorkSpaceInput = {
+  id?: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  order?: Prisma.OrderCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
+};
+
+export type ProductUncheckedCreateWithoutWorkSpaceInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
+};
+
+export type ProductCreateOrConnectWithoutWorkSpaceInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutWorkSpaceInput,
+    Prisma.ProductUncheckedCreateWithoutWorkSpaceInput
+  >;
+};
+
+export type ProductUpsertWithoutWorkSpaceInput = {
+  update: Prisma.XOR<
+    Prisma.ProductUpdateWithoutWorkSpaceInput,
+    Prisma.ProductUncheckedUpdateWithoutWorkSpaceInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutWorkSpaceInput,
+    Prisma.ProductUncheckedCreateWithoutWorkSpaceInput
+  >;
+  where?: Prisma.ProductWhereInput;
+};
+
+export type ProductUpdateToOneWithWhereWithoutWorkSpaceInput = {
+  where?: Prisma.ProductWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateWithoutWorkSpaceInput,
+    Prisma.ProductUncheckedUpdateWithoutWorkSpaceInput
+  >;
+};
+
+export type ProductUpdateWithoutWorkSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
+};
+
+export type ProductUncheckedUpdateWithoutWorkSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
@@ -1792,6 +2015,7 @@ export type ProductCreateWithoutTasksInput = {
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
@@ -1821,6 +2045,7 @@ export type ProductUncheckedCreateWithoutTasksInput = {
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
@@ -1888,6 +2113,7 @@ export type ProductUpdateWithoutTasksInput = {
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
@@ -1927,6 +2153,7 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
@@ -1957,6 +2184,7 @@ export type ProductCreateWithoutTicketsInput = {
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
 };
@@ -1986,6 +2214,7 @@ export type ProductUncheckedCreateWithoutTicketsInput = {
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
 };
@@ -2053,6 +2282,7 @@ export type ProductUpdateWithoutTicketsInput = {
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
 };
@@ -2092,6 +2322,7 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
 };
@@ -2121,6 +2352,7 @@ export type ProductCreateWithoutClientServiceRecordsInput = {
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
 };
@@ -2150,6 +2382,7 @@ export type ProductUncheckedCreateWithoutClientServiceRecordsInput = {
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
 };
@@ -2217,6 +2450,7 @@ export type ProductUpdateWithoutClientServiceRecordsInput = {
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
 };
@@ -2256,6 +2490,7 @@ export type ProductUncheckedUpdateWithoutClientServiceRecordsInput = {
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
 };
@@ -2284,6 +2519,7 @@ export type ProductCreateWithoutPmInput = {
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
@@ -2313,6 +2549,7 @@ export type ProductUncheckedCreateWithoutPmInput = {
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
   dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
@@ -2413,6 +2650,7 @@ export type ProductUpdateWithoutProjectInput = {
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
@@ -2452,6 +2690,7 @@ export type ProductUncheckedUpdateWithoutProjectInput = {
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
@@ -2547,6 +2786,7 @@ export type ProductUpdateWithoutPmInput = {
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
@@ -2586,6 +2826,7 @@ export type ProductUncheckedUpdateWithoutPmInput = {
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
   dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
@@ -2733,6 +2974,7 @@ export type ProductSelect<
     order?: boolean | Prisma.Product$orderArgs<ExtArgs>;
     extensions?: boolean | Prisma.Product$extensionsArgs<ExtArgs>;
     tasks?: boolean | Prisma.Product$tasksArgs<ExtArgs>;
+    workSpace?: boolean | Prisma.Product$workSpaceArgs<ExtArgs>;
     tickets?: boolean | Prisma.Product$ticketsArgs<ExtArgs>;
     clientServiceRecords?: boolean | Prisma.Product$clientServiceRecordsArgs<ExtArgs>;
     dealsLinked?: boolean | Prisma.Product$dealsLinkedArgs<ExtArgs>;
@@ -2861,6 +3103,7 @@ export type ProductInclude<
   order?: boolean | Prisma.Product$orderArgs<ExtArgs>;
   extensions?: boolean | Prisma.Product$extensionsArgs<ExtArgs>;
   tasks?: boolean | Prisma.Product$tasksArgs<ExtArgs>;
+  workSpace?: boolean | Prisma.Product$workSpaceArgs<ExtArgs>;
   tickets?: boolean | Prisma.Product$ticketsArgs<ExtArgs>;
   clientServiceRecords?: boolean | Prisma.Product$clientServiceRecordsArgs<ExtArgs>;
   dealsLinked?: boolean | Prisma.Product$dealsLinkedArgs<ExtArgs>;
@@ -2889,6 +3132,7 @@ export type $ProductPayload<
     order: Prisma.$OrderPayload<ExtArgs> | null;
     extensions: Prisma.$ExtensionPayload<ExtArgs>[];
     tasks: Prisma.$TaskPayload<ExtArgs>[];
+    workSpace: Prisma.$WorkSpacePayload<ExtArgs> | null;
     tickets: Prisma.$SupportTicketPayload<ExtArgs>[];
     clientServiceRecords: Prisma.$ClientServiceRecordPayload<ExtArgs>[];
     dealsLinked: Prisma.$DealPayload<ExtArgs>[];
@@ -3488,6 +3732,19 @@ export interface Prisma__ProductClient<
     | runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
     | Null
   >;
+  workSpace<T extends Prisma.Product$workSpaceArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Product$workSpaceArgs<ExtArgs>>,
+  ): Prisma.Prisma__WorkSpaceClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$WorkSpacePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   tickets<T extends Prisma.Product$ticketsArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Product$ticketsArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -4082,6 +4339,27 @@ export type Product$tasksArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.TaskScalarFieldEnum | Prisma.TaskScalarFieldEnum[];
+};
+
+/**
+ * Product.workSpace
+ */
+export type Product$workSpaceArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the WorkSpace
+   */
+  select?: Prisma.WorkSpaceSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the WorkSpace
+   */
+  omit?: Prisma.WorkSpaceOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkSpaceInclude<ExtArgs> | null;
+  where?: Prisma.WorkSpaceWhereInput;
 };
 
 /**

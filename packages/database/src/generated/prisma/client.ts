@@ -145,6 +145,11 @@ export type PayrollRun = Prisma.PayrollRunModel;
  */
 export type SalaryLine = Prisma.SalaryLineModel;
 /**
+ * Model WorkSpace
+ *
+ */
+export type WorkSpace = Prisma.WorkSpaceModel;
+/**
  * Model Task
  *
  */
