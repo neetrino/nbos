@@ -123,6 +123,26 @@ export class MailController {
     );
   }
 
+  @Post('threads/:threadId/messages/:messageId/reset-failed-to-draft')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({
+    summary: 'Reset failed outbound message to DRAFT for local edit and re-queue (no provider)',
+  })
+  async resetFailedOutboundToDraft(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    return this.mailService.resetFailedOutboundToDraft(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+      messageId,
+    );
+  }
+
   @Post('threads/:threadId/messages/:messageId/finalize-send-stub')
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')

@@ -11,9 +11,11 @@ export interface MailThreadMessagesProps {
   queueingMessageId: string | null;
   finalizingMessageId: string | null;
   cancellingMessageId: string | null;
+  retryingFailedMessageId: string | null;
   onQueueDraft: (messageId: string) => void | Promise<void>;
   onFinalizeQueuedStub: (messageId: string) => void | Promise<void>;
   onCancelOutbound: (messageId: string) => void | Promise<void>;
+  onResetFailedToDraft: (messageId: string) => void | Promise<void>;
 }
 
 export function MailThreadMessages({
@@ -22,15 +24,20 @@ export function MailThreadMessages({
   queueingMessageId,
   finalizingMessageId,
   cancellingMessageId,
+  retryingFailedMessageId,
   onQueueDraft,
   onFinalizeQueuedStub,
   onCancelOutbound,
+  onResetFailedToDraft,
 }: MailThreadMessagesProps) {
   if (messages.length === 0) {
     return <EmptyThreadPlaceholder />;
   }
   const outboundBusy =
-    queueingMessageId !== null || finalizingMessageId !== null || cancellingMessageId !== null;
+    queueingMessageId !== null ||
+    finalizingMessageId !== null ||
+    cancellingMessageId !== null ||
+    retryingFailedMessageId !== null;
   return (
     <div className="flex flex-col gap-4">
       {messages.map((m) => (
@@ -89,6 +96,17 @@ export function MailThreadMessages({
                   {cancellingMessageId === m.id ? 'Cancelling…' : 'Cancel'}
                 </Button>
               </div>
+            ) : null}
+            {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'FAILED' ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={outboundBusy}
+                onClick={() => void onResetFailedToDraft(m.id)}
+              >
+                {retryingFailedMessageId === m.id ? 'Resetting…' : 'Reset to draft (retry)'}
+              </Button>
             ) : null}
           </CardContent>
         </Card>

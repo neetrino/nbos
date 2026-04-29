@@ -21,3 +21,7 @@ export const MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED = 'mail.outbound_send_s
 
 /** Outbound draft or queued send cancelled locally (no provider interaction). */
 export const MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_CANCELLED = 'mail.outbound_message_cancelled';
+
+/** Outbound FAILED reset to DRAFT for local retry (no provider). */
+export const MAIL_AUDIT_ACTION_OUTBOUND_FAILED_RESET_TO_DRAFT =
+  'mail.outbound_failed_reset_to_draft';

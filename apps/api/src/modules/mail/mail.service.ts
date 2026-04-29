@@ -4,6 +4,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import {
   MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED,
+  MAIL_AUDIT_ACTION_OUTBOUND_FAILED_RESET_TO_DRAFT,
   MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_CANCELLED,
   MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED,
   MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED,
@@ -24,6 +25,7 @@ import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draf
 import { dedupeEmailsCaseInsensitive } from './mail-outbound-draft.helpers';
 import { persistOutboundDraftMessage } from './mail-outbound-draft.ops';
 import { queueOutboundDraftMessage } from './mail-outbound-queue.ops';
+import { applyFailedOutboundResetToDraft } from './mail-outbound-retry-failed.ops';
 import type { MailAccountRow, MailThreadDetailDto, MailThreadListRow } from './mail.types';
 
 export type { ListMailThreadsOptions } from './mail-inbox-query.ops';
@@ -234,6 +236,46 @@ export class MailService {
       entityType: MAIL_AUDIT_ENTITY_MESSAGE,
       entityId: messageId,
       action: MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_CANCELLED,
+      userId: employeeId,
+      changes: auditChanges,
+    });
+    return this.getThreadDetail(employeeId, accessScope, threadId);
+  }
+
+  /**
+   * Resets a FAILED outbound message to DRAFT for local edit and re-queue (no provider).
+   */
+  async resetFailedOutboundToDraft(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+    messageId: string,
+  ): Promise<MailThreadDetailDto> {
+    const access = await fetchMailThreadMessageForEdit(this.prisma, {
+      threadId,
+      messageId,
+      employeeId,
+      accessScope,
+    });
+    if (access.status === 'no_mailbox') {
+      throw new NotFoundException('Thread not found');
+    }
+    if (access.status === 'no_message') {
+      throw new NotFoundException('Message not found');
+    }
+    const { message: msg } = access;
+    if (msg.direction !== 'OUTBOUND' || msg.deliveryStatus !== 'FAILED') {
+      throw new BadRequestException('Only failed outbound messages can be reset to draft');
+    }
+    const updated = await applyFailedOutboundResetToDraft(this.prisma, { threadId, messageId });
+    if (!updated) {
+      throw new BadRequestException('Only failed outbound messages can be reset to draft');
+    }
+    const auditChanges: InputJsonValue = { threadId };
+    await this.auditService.log({
+      entityType: MAIL_AUDIT_ENTITY_MESSAGE,
+      entityId: messageId,
+      action: MAIL_AUDIT_ACTION_OUTBOUND_FAILED_RESET_TO_DRAFT,
       userId: employeeId,
       changes: auditChanges,
     });

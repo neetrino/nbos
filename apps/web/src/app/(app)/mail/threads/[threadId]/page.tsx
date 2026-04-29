@@ -26,6 +26,7 @@ export default function MailThreadDetailPage() {
   const [queueingMessageId, setQueueingMessageId] = useState<string | null>(null);
   const [finalizingMessageId, setFinalizingMessageId] = useState<string | null>(null);
   const [cancellingMessageId, setCancellingMessageId] = useState<string | null>(null);
+  const [retryingFailedMessageId, setRetryingFailedMessageId] = useState<string | null>(null);
   const [patchingNeedsLink, setPatchingNeedsLink] = useState(false);
 
   const load = useCallback(async () => {
@@ -108,6 +109,23 @@ export default function MailThreadDetailPage() {
     [threadId],
   );
 
+  const resetFailedToDraft = useCallback(
+    async (messageId: string) => {
+      if (!threadId) return;
+      setRetryingFailedMessageId(messageId);
+      setError(null);
+      try {
+        const d = await mailApi.resetFailedOutboundToDraft(threadId, messageId);
+        setDetail(d);
+      } catch (e) {
+        setError(getApiErrorMessage(e, 'Could not reset message to draft.'));
+      } finally {
+        setRetryingFailedMessageId(null);
+      }
+    },
+    [threadId],
+  );
+
   const setNeedsBusinessLink = useCallback(
     async (needsBusinessLink: boolean) => {
       if (!threadId) return;
@@ -171,7 +189,7 @@ export default function MailThreadDetailPage() {
                   variant="outline"
                   size="sm"
                   className="gap-1"
-                  disabled={markingRead || patchingNeedsLink}
+                  disabled={markingRead || patchingNeedsLink || retryingFailedMessageId !== null}
                   onClick={() => void markRead()}
                 >
                   <Check size={14} /> Mark read
@@ -182,7 +200,7 @@ export default function MailThreadDetailPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={patchingNeedsLink || markingRead}
+                  disabled={patchingNeedsLink || markingRead || retryingFailedMessageId !== null}
                   onClick={() => void setNeedsBusinessLink(false)}
                 >
                   {patchingNeedsLink ? 'Updating…' : 'Clear needs link'}
@@ -193,7 +211,7 @@ export default function MailThreadDetailPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={patchingNeedsLink || markingRead}
+                  disabled={patchingNeedsLink || markingRead || retryingFailedMessageId !== null}
                   onClick={() => void setNeedsBusinessLink(true)}
                 >
                   {patchingNeedsLink ? 'Updating…' : 'Flag needs link'}
@@ -207,9 +225,11 @@ export default function MailThreadDetailPage() {
             queueingMessageId={queueingMessageId}
             finalizingMessageId={finalizingMessageId}
             cancellingMessageId={cancellingMessageId}
+            retryingFailedMessageId={retryingFailedMessageId}
             onQueueDraft={queueDraftForSend}
             onFinalizeQueuedStub={finalizeQueuedStub}
             onCancelOutbound={cancelOutbound}
+            onResetFailedToDraft={resetFailedToDraft}
           />
           {canEdit ? (
             <MailThreadReplyDraftCard

@@ -115,6 +115,7 @@ Future Finance depth:
 | 2026-04-29 | Mail outbound cancel (draft/queued)   | `POST …/messages/:messageId/cancel`; DRAFT\|QUEUED→CANCELLED; audit `mail.outbound_message_cancelled`; `fetchMailThreadMessageForEdit`; web **Cancel**; inbox list/detail queries moved to `mail-inbox-query.ops.ts` (service line budget).                   |
 | 2026-04-29 | Mail inbox “Needs link” list filter   | `GET /api/mail/threads?needsLinkOnly=true`; web inbox **Needs link** segment (with All / Unread); filters `needsBusinessLink`.                                                                                                                                |
 | 2026-04-29 | Mail thread needsBusinessLink PATCH   | `PATCH /api/mail/threads/:id` (`MAIL` EDIT); audit `mail.thread_needs_link_updated`; web **Clear needs link** / **Flag needs link**; `MailThreadCommandService` + `patchThreadNeedsBusinessLinkIfChanged`.                                                    |
+| 2026-04-29 | Mail FAILED outbound reset to DRAFT   | `POST …/messages/:messageId/reset-failed-to-draft`; FAILED→DRAFT; audit `mail.outbound_failed_reset_to_draft`; web **Reset to draft (retry)** after stub failure.                                                                                             |
 
 ## Next Action
 

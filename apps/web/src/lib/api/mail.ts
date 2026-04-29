@@ -133,4 +133,14 @@ export const mailApi = {
     );
     return resp.data;
   },
+
+  async resetFailedOutboundToDraft(
+    threadId: string,
+    messageId: string,
+  ): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(
+      `/api/mail/threads/${threadId}/messages/${messageId}/reset-failed-to-draft`,
+    );
+    return resp.data;
+  },
 };
