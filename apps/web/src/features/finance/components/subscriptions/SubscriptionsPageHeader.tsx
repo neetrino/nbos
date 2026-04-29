@@ -1,4 +1,4 @@
-import { Plus, RefreshCcw } from 'lucide-react';
+import { Download, Loader2, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import {
@@ -13,6 +13,9 @@ interface SubscriptionsPageHeaderProps {
   period: FinancePeriod;
   onPeriodChange: (period: FinancePeriod) => void;
   onRefresh: () => void;
+  onExportCsv: () => void | Promise<void>;
+  exportDisabled: boolean;
+  exportInProgress: boolean;
 }
 
 export function SubscriptionsPageHeader({
@@ -21,6 +24,9 @@ export function SubscriptionsPageHeader({
   period,
   onPeriodChange,
   onRefresh,
+  onExportCsv,
+  exportDisabled,
+  exportInProgress,
 }: SubscriptionsPageHeaderProps) {
   return (
     <PageHeader
@@ -39,8 +45,25 @@ export function SubscriptionsPageHeader({
           </Button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh}>
+      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh subscriptions">
         <RefreshCcw size={16} />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={exportDisabled}
+        onClick={() => {
+          void onExportCsv();
+        }}
+        aria-label="Export subscriptions as CSV"
+        title="Export all rows matching current filters (paginated fetch)"
+      >
+        {exportInProgress ? (
+          <Loader2 size={16} className="animate-spin" aria-hidden />
+        ) : (
+          <Download size={16} aria-hidden />
+        )}
       </Button>
       <Button>
         <Plus size={16} />

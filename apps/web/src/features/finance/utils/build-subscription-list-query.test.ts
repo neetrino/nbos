@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { buildSubscriptionListQuery } from './build-subscription-list-query';
+import {
+  buildSubscriptionListApiParams,
+  buildSubscriptionListQuery,
+} from './build-subscription-list-query';
+
+describe('buildSubscriptionListApiParams', () => {
+  it('does not include page size', () => {
+    const p = buildSubscriptionListApiParams({
+      search: '',
+      filters: {},
+      partnerIdFromUrl: null,
+    });
+    expect(p).not.toHaveProperty('pageSize');
+    expect(p).not.toHaveProperty('page');
+  });
+});
 
 describe('buildSubscriptionListQuery', () => {
   it('uses partner filter when set', () => {
@@ -27,5 +42,14 @@ describe('buildSubscriptionListQuery', () => {
       partnerIdFromUrl: 'p-url',
     });
     expect(q.partnerId).toBe('p-url');
+  });
+
+  it('includes page size 100', () => {
+    const q = buildSubscriptionListQuery({
+      search: '',
+      filters: {},
+      partnerIdFromUrl: null,
+    });
+    expect(q.pageSize).toBe(100);
   });
 });

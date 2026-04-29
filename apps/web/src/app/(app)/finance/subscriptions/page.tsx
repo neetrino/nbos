@@ -11,6 +11,7 @@ import { usePartnerFilterOptions } from '@/features/finance/hooks/usePartnerFilt
 import { SubscriptionsPageContent } from '@/features/finance/components/subscriptions/SubscriptionsPageContent';
 import { SubscriptionsPageHeader } from '@/features/finance/components/subscriptions/SubscriptionsPageHeader';
 import { SubscriptionStatsCards } from '@/features/finance/components/subscriptions/SubscriptionStatsCards';
+import { useSubscriptionsCsvExport } from '@/features/finance/components/subscriptions/use-subscriptions-csv-export';
 import { useSubscriptionsPageState } from '@/features/finance/components/subscriptions/useSubscriptionsPageState';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 
@@ -21,6 +22,9 @@ function SubscriptionsPageInner() {
   const partnerIdFromUrl = searchParams.get(PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY);
 
   const page = useSubscriptionsPageState({ partnerIdFromUrl });
+  const { exportCsvSubmitting, handleExportCsv } = useSubscriptionsCsvExport(
+    page.subscriptionListExportParams,
+  );
   const { partnerFilterOptions, partnerOptionsLoadError, clearPartnerOptionsLoadError } =
     usePartnerFilterOptions();
 
@@ -85,6 +89,9 @@ function SubscriptionsPageInner() {
         period={page.period}
         onPeriodChange={page.setPeriod}
         onRefresh={page.fetchSubscriptions}
+        onExportCsv={handleExportCsv}
+        exportDisabled={page.loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
       />
 
       <SubscriptionStatsCards subscriptions={page.subscriptions} stats={page.stats} />

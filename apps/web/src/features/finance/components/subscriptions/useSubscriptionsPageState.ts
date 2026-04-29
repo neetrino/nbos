@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { type FinancePeriod } from '@/features/finance/constants/finance';
-import { buildSubscriptionListQuery } from '@/features/finance/utils/build-subscription-list-query';
+import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import {
+  buildSubscriptionListApiParams,
+  buildSubscriptionListQuery,
+} from '@/features/finance/utils/build-subscription-list-query';
 import {
   buildSubscriptionPageQueries,
   fetchSubscriptionPageStats,
@@ -11,6 +14,7 @@ import {
 } from '@/features/finance/utils/subscription-list-optimistic-stats';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Subscription, type SubscriptionStats } from '@/lib/api/finance';
+import type { SubscriptionListParams } from '@/lib/api/subscriptions';
 
 interface UseSubscriptionsPageStateOptions {
   partnerIdFromUrl?: string | null;
@@ -29,6 +33,15 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
   const [holdingId, setHoldingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
+
+  const subscriptionListExportParams: Omit<SubscriptionListParams, 'page' | 'pageSize'> = useMemo(
+    () =>
+      buildSubscriptionListApiParams(
+        { search, filters, partnerIdFromUrl },
+        getFinancePeriodParams(period),
+      ),
+    [search, filters, partnerIdFromUrl, period],
+  );
 
   const filtersForBar = useMemo(() => {
     const pid = partnerIdFromUrl?.trim();
@@ -128,6 +141,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     handleCancel,
     handleHold,
     handlePartnerLinked,
+    subscriptionListExportParams,
   };
 }
 
