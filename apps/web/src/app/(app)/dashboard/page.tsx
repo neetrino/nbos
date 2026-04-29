@@ -16,7 +16,9 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { api } from '@/lib/api';
+import { dealsApi } from '@/lib/api/deals';
+import { employeesApi } from '@/lib/api/employees';
+import { invoicesApi } from '@/lib/api/finance';
 import { projectsApi } from '@/lib/api/projects';
 import { supportApi } from '@/lib/api/support';
 import { tasksApi } from '@/lib/api/tasks';
@@ -96,11 +98,11 @@ export default function DashboardPage() {
       const [projectsRes, dealsRes, invoicesRes, tasksRes, ticketsRes, employeesRes] =
         await Promise.allSettled([
           projectsApi.getStats().then((data) => ({ data })),
-          api.get('/api/crm/deals', { params: { pageSize: 200 } }),
-          api.get('/api/finance/invoices', { params: { pageSize: 200 } }),
+          dealsApi.getAll({ pageSize: 200 }).then((listData) => ({ data: listData })),
+          invoicesApi.getAll({ pageSize: 200 }).then((listData) => ({ data: listData })),
           tasksApi.getAll({ pageSize: 200 }).then((listData) => ({ data: listData })),
           supportApi.getAll({ pageSize: 200 }).then((listData) => ({ data: listData })),
-          api.get('/api/employees'),
+          employeesApi.getAll().then((listData) => ({ data: listData })),
         ]);
 
       const projectsStats = projectsRes.status === 'fulfilled' ? projectsRes.value.data : null;
@@ -110,11 +112,11 @@ export default function DashboardPage() {
       const ticketsData = ticketsRes.status === 'fulfilled' ? ticketsRes.value.data : null;
       const employeesData = employeesRes.status === 'fulfilled' ? employeesRes.value.data : null;
 
-      const deals = dealsData?.items ?? dealsData ?? [];
-      const invoices = invoicesData?.items ?? invoicesData ?? [];
+      const deals = dealsData?.items ?? [];
+      const invoices = invoicesData?.items ?? [];
       const tasks = tasksData?.items ?? [];
       const tickets = ticketsData?.items ?? [];
-      const employees = employeesData?.items ?? employeesData ?? [];
+      const employees = employeesData?.items ?? [];
 
       const pendingInvoices = invoices.filter(
         (inv: { status: string }) => inv.status === 'WAITING' || inv.status === 'CREATE_INVOICE',
