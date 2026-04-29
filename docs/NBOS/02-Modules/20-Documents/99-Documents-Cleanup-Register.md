@@ -83,7 +83,7 @@ Done:
 /documents/:id
 ```
 
-Still missing: polish, Drive attachments UI in Documents, search depth (later slices).
+Still missing: polish, Drive attachments UI in Documents, ACL-scoped search and attachment index depth (later slices).
 
 ### B2. Sidebar item is missing
 
@@ -99,7 +99,7 @@ Done:
 
 Still missing vs full canon:
 
-- TipTap image node → File Asset wiring is shipped; depth: `search_vector`, section-level ACL, stronger Drive permission matrix on preview.
+- TipTap image node → File Asset wiring is shipped; depth: section-level ACL, stronger Drive permission matrix on preview (`search_vector` list search shipped).
 
 ### B4. TipTap editor is missing
 
@@ -123,7 +123,7 @@ Need editor with:
 
 ### B6. Search is missing
 
-Статус: `PARTIAL` — `GET /api/documents?search=` matches title, description, plain text, section name and tag names (Prisma `OR`); optional `searchSnippet` for list cards. **Not yet:** `search_vector`, ranking, attachment metadata in index.
+Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `ts_rank_cd` with `websearch_to_tsquery`, plus ILIKE on the same fields as before (section name, tags); optional `searchSnippet` for list cards. **Not yet:** attachment metadata in index; stronger ACL-scoped search.
 
 Need PostgreSQL search over:
 

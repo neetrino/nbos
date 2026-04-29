@@ -12,30 +12,41 @@ describe('DocumentsService', () => {
     service = new DocumentsService(prisma as never);
   });
 
-  it('listDocuments applies multi-field search as AND with OR group', async () => {
+  it('listDocuments uses FTS query then loads rows by id in rank order', async () => {
     prisma.documentSection.count.mockResolvedValue(10);
-    prisma.document.findMany.mockResolvedValueOnce([]);
+    prisma.$queryRaw.mockResolvedValueOnce([
+      { id: 'doc-2', rank: 0.2 },
+      { id: 'doc-1', rank: 0.8 },
+    ]);
+    prisma.document.findMany.mockResolvedValueOnce([
+      {
+        id: 'doc-1',
+        title: 'A',
+        plainText: null,
+        description: null,
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
+        tagLinks: [],
+      },
+      {
+        id: 'doc-2',
+        title: 'B',
+        plainText: null,
+        description: null,
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
+        tagLinks: [],
+      },
+    ]);
 
-    await service.listDocuments({ search: '  payroll  ' });
+    const rows = await service.listDocuments({ search: '  payroll  ' });
 
+    expect(prisma.$queryRaw).toHaveBeenCalled();
     expect(prisma.document.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({
-          AND: expect.arrayContaining([
-            expect.objectContaining({
-              OR: expect.arrayContaining([
-                expect.objectContaining({
-                  title: expect.objectContaining({ contains: 'payroll' }),
-                }),
-                expect.objectContaining({
-                  plainText: expect.objectContaining({ contains: 'payroll' }),
-                }),
-              ]),
-            }),
-          ]),
-        }),
+        where: expect.objectContaining({ id: { in: ['doc-2', 'doc-1'] } }),
       }),
     );
+    expect(rows.map((r) => r.id)).toEqual(['doc-2', 'doc-1']);
+    expect(rows[0]).toHaveProperty('searchSnippet');
   });
 
   it('seeds default sections when count is zero', async () => {

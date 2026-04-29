@@ -12,7 +12,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { DEFAULT_DOCUMENT_SECTIONS } from './documents-default-sections';
 import { DOCUMENT_LIST_INCLUDE, DOCUMENT_DETAIL_INCLUDE } from './documents-includes';
 import { DOCUMENT_LIST_LIMIT } from './documents.constants';
-import { appendDocumentListTextSearch } from './documents-search-where';
+import { searchDocumentIdsForList } from './documents-list-fts';
 import { pickDocumentSearchSnippet } from './documents-search-snippet';
 import { slugifyTitle } from './documents-slug';
 import type {
@@ -57,17 +57,32 @@ export class DocumentsService {
     if (query.status) where.status = query.status as DocumentStatusEnum;
     else if (!query.includeArchived) where.status = { not: 'ARCHIVED' };
     const searchTerm = query.search?.trim();
-    if (searchTerm) {
-      appendDocumentListTextSearch(where, searchTerm);
+    if (!searchTerm) {
+      return this.prisma.document.findMany({
+        where,
+        include: DOCUMENT_LIST_INCLUDE,
+        orderBy: { updatedAt: 'desc' },
+        take: DOCUMENT_LIST_LIMIT,
+      });
     }
-    const rows = await this.prisma.document.findMany({
-      where,
-      include: DOCUMENT_LIST_INCLUDE,
-      orderBy: { updatedAt: 'desc' },
-      take: DOCUMENT_LIST_LIMIT,
+
+    const ranked = await searchDocumentIdsForList(this.prisma, {
+      term: searchTerm,
+      sectionId: query.sectionId,
+      status: query.status as DocumentStatusEnum | undefined,
+      includeArchived: query.includeArchived === true,
+      limit: DOCUMENT_LIST_LIMIT,
     });
-    if (!searchTerm) return rows;
-    return rows.map((r) => ({
+    if (ranked.length === 0) return [];
+
+    const order = new Map(ranked.map((r, i) => [r.id, i]));
+    const ids = ranked.map((r) => r.id);
+    const rows = await this.prisma.document.findMany({
+      where: { ...where, id: { in: ids } },
+      include: DOCUMENT_LIST_INCLUDE,
+    });
+    const sorted = [...rows].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+    return sorted.map((r) => ({
       ...r,
       searchSnippet: pickDocumentSearchSnippet(r.plainText, r.description, r.title, searchTerm),
     }));
