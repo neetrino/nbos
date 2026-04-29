@@ -71,6 +71,7 @@ Roll-up only. Per-feature detail: **`docs/NBOS/02-Modules/*`**, tests, and **git
 | 2026-04-29    | Credentials          | Row-level access, reveal/copy, URL-open audit, web CRUD + archive + permanent purge.                                                                                                                                                                                               |
 | 2026-04-29–30 | Messenger            | Prisma + Socket.IO; typing, presence, read/unread + list sync; DM and channel read receipts; audits.                                                                                                                                                                               |
 | 2026-04-29    | Mail & Notifications | Mail MVP + **`q`**; **`GET …/threads`** `{ items, meta }` paging; **`GET …/accounts/health-summary`**; **`MailDeliveryLog`** + delivery-log UI; **`MailOutboundSendMutationService`**; in-app: stub sync, outbound, **needs-link patch**; **`in_app_notifications`** + Topbar API. |
+| 2026-04-30    | Docs                 | Notifications ↔ Mail: inbox vs transactional **Email** канал + in-app (`01`, `04` Notifications; `00` Mail overview; cleanup registers).                                                                                                                                           |
 
 ## Next Action
 

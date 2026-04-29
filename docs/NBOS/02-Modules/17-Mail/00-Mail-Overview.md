@@ -139,6 +139,10 @@ Mail
 - calendar invite processing;
 - advanced spam/security filtering.
 
+## Связь с Notifications
+
+Transactional **Email** канала Notification Engine (invites, отчёты, дайджесты) — это не NBOS Mail inbox. Граница описана в `../13-Notifications/01-Notifications-System.md` (секция про Mail) и в `../13-Notifications/04-Notification-Integrations.md` под **Email**. In-app строки из Mail о событиях ящика — таблица `in_app_notifications`, а не тот же pipeline, что доставка письма через SES/Postmark для правил Notifications.
+
 ## Связанные документы
 
 - `01-Mail-Accounts-and-Sync.md`

@@ -101,3 +101,7 @@ After this pass, review and align:
 - `06-Integrations/05-Automation-Scenarios.md`;
 - `06-Integrations/04-External-Services.md`;
 - old business logic pages that still say "WhatsApp client template" instead of WhatsApp group message through Notification Engine.
+
+## F. Mail vs Notifications (documented)
+
+**Done (2026-04-30):** в `01-Notifications-System.md` добавлена секция «Граница с Mail (inbox)»; в `04-Notification-Integrations.md` под `## Email` — подраздел «Mail (NBOS inbox) — не этот канал». Цель: не смешивать transactional Email канала Notification Engine с продуктовым модулем Mail (`17-Mail`).

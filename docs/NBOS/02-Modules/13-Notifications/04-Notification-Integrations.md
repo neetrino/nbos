@@ -64,6 +64,12 @@ Email используется для:
 
 Для MVP предпочтителен простой transactional provider, например Postmark. Масштабный дешёвый вариант вроде SES можно рассмотреть позже.
 
+### Mail (NBOS inbox) — не этот канал
+
+Модуль **Mail** (`docs/NBOS/02-Modules/17-Mail/*`) отвечает за рабочий inbox: `MailAccount`, sync/send pipeline, `EmailThread` / `EmailMessage`, UI `/mail`. Письма клиенту из сделки через подключённый корпоративный ящик — это Mail + адаптеры провайдера, а не «Email adapter» Notification Engine по умолчанию.
+
+Канал **Email** в таблице выше — про **системные** исходящие NBOS (invitation, report, digest), обычно без привязки к пользовательскому mailbox state в Mail.
+
 ## Finance
 
 Finance генерирует события, Notifications доставляет reminders.

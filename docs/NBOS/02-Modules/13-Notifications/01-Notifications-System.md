@@ -66,6 +66,14 @@ Invoice reminder due
 
 Если клиент ответил, это уже `Messenger inbound message`, а не notification.
 
+## Граница с Mail (inbox)
+
+**NBOS Mail** (`docs/NBOS/02-Modules/17-Mail/*`) — отдельный продуктовый модуль: подключённые ящики, треды, вложения, read/unread в UI, исходящие через mailbox context. История писем и threading — в данных Mail.
+
+**Notifications, канал `Email`** — системная **transactional** доставка (invites, отчёты, дайджесты и т.д.) через общий email-провайдер платформы. Это не inbox NBOS: нет списка тредов Mail, нет связи с `MailAccount` / `EmailThread`, если отдельное правило явно не строит мост.
+
+**In-app** строки в Notification Center могут ссылаться на Mail (например «outbound queued») как на UX-события модуля Mail, но это **записи `in_app_notifications`**, а не канал `Email` Notification Engine.
+
 ## Типы уведомлений
 
 | Type               | Назначение                                 |
