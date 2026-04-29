@@ -55,9 +55,43 @@ export class CredentialsController {
 
   @Get(':id')
   @RequirePermission('CREDENTIALS', 'VIEW')
-  @ApiOperation({ summary: 'Get credential by ID with decrypted fields (audit logged)' })
+  @ApiOperation({
+    summary: 'Get credential metadata (secrets omitted; use secrets/reveal or secrets/copy)',
+  })
   async findOne(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
     return this.credentialsService.findById(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
+  @Post(':id/secrets/reveal')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reveal one encrypted secret field (audited as secret_revealed)' })
+  async revealSecret(
+    @Param('id') id: string,
+    @Body() body: { field: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.revealSecretField(id, body.field, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
+  @Post(':id/secrets/copy')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Return one decrypted secret for client clipboard (audited as secret_copied)',
+  })
+  async copySecret(
+    @Param('id') id: string,
+    @Body() body: { field: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.copySecretField(id, body.field, {
       employeeId: user.id,
       departmentIds: user.departmentIds ?? [],
     });

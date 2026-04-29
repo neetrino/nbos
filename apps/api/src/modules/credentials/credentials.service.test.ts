@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CredentialsService } from './credentials.service';
 import { AuditService } from '../audit/audit.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -54,11 +54,21 @@ describe('CredentialsService', () => {
 
       const result = await service.findAll({ page: 1, pageSize: 10 });
 
-      expect(result.items).toEqual(mockItems);
+      expect(result.items).toEqual([
+        expect.objectContaining({
+          id: '1',
+          name: 'Admin Panel',
+          secretsPresent: {
+            password: false,
+            apiKey: false,
+            envData: false,
+          },
+        }),
+      ]);
       expect(result.meta.total).toBe(1);
       expect(prisma.credential.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          select: expect.not.objectContaining({ password: true }),
+          select: expect.objectContaining({ password: true, apiKey: true, envData: true }),
         }),
       );
     });
@@ -106,7 +116,7 @@ describe('CredentialsService', () => {
   });
 
   describe('findById', () => {
-    it('should return decrypted credential and log audit', async () => {
+    it('should return credential without secret values and log view audit', async () => {
       const mockCred = {
         id: '1',
         name: 'Server',
@@ -120,7 +130,12 @@ describe('CredentialsService', () => {
 
       const result = await service.findById('1', accessUser1);
 
-      expect(result.password).toBe('secret');
+      expect(result).not.toHaveProperty('password');
+      expect(result.secretsPresent).toEqual({
+        password: true,
+        apiKey: false,
+        envData: false,
+      });
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'credential.view',
@@ -144,6 +159,70 @@ describe('CredentialsService', () => {
     });
   });
 
+  describe('revealSecretField', () => {
+    it('should decrypt field and log secret_revealed', async () => {
+      prisma.credential.findFirst.mockResolvedValue({
+        id: '1',
+        password: 'enc:tag:secret',
+        apiKey: null,
+        envData: null,
+        projectId: 'p1',
+      });
+
+      const result = await service.revealSecretField('1', 'password', accessUser1);
+
+      expect(result).toEqual({ field: 'password', value: 'secret' });
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'credential.secret_revealed',
+          changes: ['password'],
+        }),
+      );
+    });
+
+    it('should reject invalid field name', async () => {
+      await expect(service.revealSecretField('1', 'login', accessUser1)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should reject when field is empty', async () => {
+      prisma.credential.findFirst.mockResolvedValue({
+        id: '1',
+        password: null,
+        apiKey: null,
+        envData: null,
+        projectId: null,
+      });
+
+      await expect(service.revealSecretField('1', 'password', accessUser1)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
+  describe('copySecretField', () => {
+    it('should decrypt field and log secret_copied', async () => {
+      prisma.credential.findFirst.mockResolvedValue({
+        id: '1',
+        password: 'enc:tag:x',
+        apiKey: null,
+        envData: null,
+        projectId: null,
+      });
+
+      const result = await service.copySecretField('1', 'password', accessUser1);
+
+      expect(result).toEqual({ field: 'password', value: 'x' });
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'credential.secret_copied',
+          changes: ['password'],
+        }),
+      );
+    });
+  });
+
   describe('create', () => {
     it('should encrypt sensitive fields and log audit', async () => {
       const input = {
@@ -164,7 +243,13 @@ describe('CredentialsService', () => {
         project: null,
       });
 
-      await service.create(input, 'user-1');
+      const created = await service.create(input, 'user-1');
+      expect(created.secretsPresent).toEqual({
+        password: true,
+        apiKey: true,
+        envData: true,
+      });
+      expect(created).not.toHaveProperty('password');
 
       expect(crypto.encrypt).toHaveBeenCalledWith('mypass', TEST_KEY);
       expect(crypto.encrypt).toHaveBeenCalledWith('mykey', TEST_KEY);

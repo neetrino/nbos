@@ -48,6 +48,7 @@ import {
   ACCESS_LEVELS,
   getAccessLevel,
 } from '@/features/credentials/constants/credentials';
+import { CredentialDetailDialog } from '@/features/credentials/components/CredentialDetailDialog';
 import { credentialsApi } from '@/lib/api/credentials';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { PermissionGate } from '@/lib/permissions';
@@ -69,6 +70,11 @@ interface CredentialListItem {
   department: { id: string; name: string } | null;
   owner: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
+  secretsPresent?: {
+    password: boolean;
+    apiKey: boolean;
+    envData: boolean;
+  };
 }
 
 const TAB_CONFIG: { value: CredentialTab; label: string; icon: React.ReactNode }[] = [
@@ -86,6 +92,8 @@ export default function CredentialsPage() {
   const [visibleLogins, setVisibleLogins] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<CredentialTab>('all');
   const [createOpen, setCreateOpen] = useState(false);
+  const [detailCredentialId, setDetailCredentialId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const fetchCredentials = useCallback(async () => {
     setLoading(true);
@@ -182,6 +190,10 @@ export default function CredentialsPage() {
               onToggleLogin={toggleLogin}
               onCopy={copyToClipboard}
               onCreateOpen={() => setCreateOpen(true)}
+              onOpenVault={(id) => {
+                setDetailCredentialId(id);
+                setDetailOpen(true);
+              }}
             />
           </TabsContent>
         ))}
@@ -191,6 +203,15 @@ export default function CredentialsPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={fetchCredentials}
+      />
+
+      <CredentialDetailDialog
+        credentialId={detailCredentialId}
+        open={detailOpen}
+        onOpenChange={(open) => {
+          setDetailOpen(open);
+          if (!open) setDetailCredentialId(null);
+        }}
       />
     </div>
   );
@@ -203,6 +224,7 @@ function CredentialTable({
   onToggleLogin,
   onCopy,
   onCreateOpen,
+  onOpenVault,
 }: {
   credentials: CredentialListItem[];
   loading: boolean;
@@ -210,6 +232,7 @@ function CredentialTable({
   onToggleLogin: (id: string) => void;
   onCopy: (text: string) => void;
   onCreateOpen: () => void;
+  onOpenVault: (id: string) => void;
 }) {
   if (loading) {
     return (
@@ -251,6 +274,7 @@ function CredentialTable({
             <TableHead>Owner</TableHead>
             <TableHead>Project</TableHead>
             <TableHead>URL</TableHead>
+            <TableHead className="w-24 text-right">Vault</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -336,6 +360,22 @@ function CredentialTable({
                   ) : (
                     '—'
                   )}
+                </TableCell>
+                <TableCell className="text-right">
+                  <PermissionGate module="CREDENTIALS" action="VIEW">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      title="Open vault detail"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenVault(cred.id);
+                      }}
+                    >
+                      <Shield size={12} />
+                    </Button>
+                  </PermissionGate>
                 </TableCell>
               </TableRow>
             );

@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -7,6 +7,18 @@ import { encrypt, decrypt } from '../../common/utils/crypto';
 
 const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData'] as const;
 type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
+
+export const CREDENTIAL_SECRET_FIELD_NAMES = SENSITIVE_FIELDS;
+
+export interface CredentialSecretsPresent {
+  password: boolean;
+  apiKey: boolean;
+  envData: boolean;
+}
+
+function isSensitiveField(value: string): value is SensitiveField {
+  return (SENSITIVE_FIELDS as readonly string[]).includes(value);
+}
 
 type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
 
@@ -109,7 +121,7 @@ export class CredentialsService {
       this.applyVisibilityFilter(where, employeeId, departmentIds);
     }
 
-    const [items, total] = await Promise.all([
+    const [rows, total] = await Promise.all([
       this.prisma.credential.findMany({
         where,
         select: {
@@ -127,6 +139,9 @@ export class CredentialsService {
           allowedEmployees: true,
           createdAt: true,
           updatedAt: true,
+          password: true,
+          apiKey: true,
+          envData: true,
           project: { select: { id: true, name: true } },
           department: { select: { id: true, name: true } },
           owner: { select: { id: true, firstName: true, lastName: true } },
@@ -137,6 +152,8 @@ export class CredentialsService {
       }),
       this.prisma.credential.count({ where }),
     ]);
+
+    const items = rows.map((row) => this.toCredentialWithoutSecrets(row));
 
     return {
       items,
@@ -242,7 +259,55 @@ export class CredentialsService {
       projectId: credential.projectId ?? undefined,
     });
 
-    return this.decryptSensitive(credential);
+    return this.toCredentialWithoutSecrets(credential);
+  }
+
+  /**
+   * Returns one decrypted secret; audit `credential.secret_revealed` (no plaintext in audit payload).
+   */
+  async revealSecretField(id: string, field: string, access: CredentialsAccessContext) {
+    const secretField = this.parseSecretField(field);
+    const row = await this.getAccessibleCredentialRow(id, access);
+    const raw = row[secretField];
+    if (!raw || typeof raw !== 'string') {
+      throw new BadRequestException(`Credential has no ${secretField} value`);
+    }
+    const value = this.decryptFieldIfEncrypted(raw);
+
+    await this.auditService.log({
+      entityType: 'credential',
+      entityId: id,
+      action: 'credential.secret_revealed',
+      userId: access.employeeId,
+      projectId: row.projectId ?? undefined,
+      changes: [secretField],
+    });
+
+    return { field: secretField, value };
+  }
+
+  /**
+   * Returns one decrypted secret; audit `credential.secret_copied` (client should call when user copies).
+   */
+  async copySecretField(id: string, field: string, access: CredentialsAccessContext) {
+    const secretField = this.parseSecretField(field);
+    const row = await this.getAccessibleCredentialRow(id, access);
+    const raw = row[secretField];
+    if (!raw || typeof raw !== 'string') {
+      throw new BadRequestException(`Credential has no ${secretField} value`);
+    }
+    const value = this.decryptFieldIfEncrypted(raw);
+
+    await this.auditService.log({
+      entityType: 'credential',
+      entityId: id,
+      action: 'credential.secret_copied',
+      userId: access.employeeId,
+      projectId: row.projectId ?? undefined,
+      changes: [secretField],
+    });
+
+    return { field: secretField, value };
   }
 
   async create(data: CreateCredentialDto, userId: string) {
@@ -278,7 +343,7 @@ export class CredentialsService {
       projectId: credential.projectId ?? undefined,
     });
 
-    return this.decryptSensitive(credential);
+    return this.toCredentialWithoutSecrets(credential);
   }
 
   async update(id: string, data: UpdateCredentialDto, access: CredentialsAccessContext) {
@@ -327,7 +392,7 @@ export class CredentialsService {
       changes: changedFields,
     });
 
-    return this.decryptSensitive(credential);
+    return this.toCredentialWithoutSecrets(credential);
   }
 
   async delete(id: string, access: CredentialsAccessContext) {
@@ -359,15 +424,43 @@ export class CredentialsService {
     return result;
   }
 
-  private decryptSensitive<T extends Record<string, unknown>>(credential: T): T {
-    const result = { ...credential };
-    for (const field of SENSITIVE_FIELDS) {
-      const value = (result as Record<string, unknown>)[field];
-      if (typeof value === 'string' && value.includes(':')) {
-        (result as Record<string, unknown>)[field] = decrypt(value, this.encryptionKey);
-      }
+  private parseSecretField(field: string): SensitiveField {
+    if (!isSensitiveField(field)) {
+      throw new BadRequestException(
+        `Invalid secret field; allowed: ${SENSITIVE_FIELDS.join(', ')}`,
+      );
     }
-    return result;
+    return field;
+  }
+
+  private async getAccessibleCredentialRow(id: string, access: CredentialsAccessContext) {
+    const row = await this.prisma.credential.findFirst({
+      where: {
+        id,
+        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+      },
+    });
+    if (!row) throw new NotFoundException(`Credential ${id} not found`);
+    return row;
+  }
+
+  private decryptFieldIfEncrypted(stored: string): string {
+    if (typeof stored === 'string' && stored.includes(':')) {
+      return decrypt(stored, this.encryptionKey);
+    }
+    return stored;
+  }
+
+  private toCredentialWithoutSecrets(credential: Record<string, unknown>) {
+    const { password, apiKey, envData, ...rest } = credential;
+    return {
+      ...rest,
+      secretsPresent: {
+        password: typeof password === 'string' && password.length > 0,
+        apiKey: typeof apiKey === 'string' && apiKey.length > 0,
+        envData: typeof envData === 'string' && envData.length > 0,
+      } satisfies CredentialSecretsPresent,
+    };
   }
 
   private detectChangedFields(

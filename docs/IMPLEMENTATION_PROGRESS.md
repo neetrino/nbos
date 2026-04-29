@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                                       |
-| ------------- | ----------------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**                     |
-| Current task  | Phase 5 — Credentials row-level access on get/update/delete |
-| Status        | Phase 5 in progress                                         |
-| Last updated  | 2026-04-29                                                  |
+| Field         | Value                                                  |
+| ------------- | ------------------------------------------------------ |
+| Current phase | **Phase 5 — Collaboration / knowledge**                |
+| Current task  | Phase 5 — Credentials reveal/copy audit + vault dialog |
+| Status        | Phase 5 in progress                                    |
+| Last updated  | 2026-04-29                                             |
 
 ## Phase Snapshot
 
@@ -63,7 +63,7 @@ Future Finance depth:
 ## Recent Milestones
 
 | Date       | Milestone                            | Result                                                                                                                                                                  |
-| ---------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ---------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | 2026-04-29 | Phase 3 Finance full closure         | Client Services runtime/flows and all six Finance report aggregates done.                                                                                               |
 | 2026-04-29 | Delivery lifecycle runtime           | Product/Extension canonical lifecycle, actions, board, filters and gates.                                                                                               |
 | 2026-04-29 | Product Done readiness               | Done blocks real blockers and surfaces handoff/Drive/client gaps.                                                                                                       |
@@ -88,6 +88,7 @@ Future Finance depth:
 | 2026-04-29 | Document attachment FTS column       | `documents.attachment_search_vector` + GIN; triggers on `document_attachments` and `file_assets` updates; list FTS rank blends attachment matches (weight constant).    |
 | 2026-04-29 | Document restore from archive        | `POST /api/documents/:id/restore` (DELETE perm); PUBLISHED if `published_at` set else DRAFT; web Restore on archived detail; activity `restored` + snippet hint.        |
 | 2026-04-29 | Credentials row-level access         | `GET/PUT/DELETE /credentials/:id` use list-equivalent visibility (`findFirst` + OR); view audit only after row found; no secret leak by id alone.                       |
+| 2026-04-29 | Credentials reveal/copy + redaction  | List/detail/create/update omit secret blobs; `secretsPresent`; `POST …/secrets/reveal                                                                                   | copy`+ audit; web vault dialog; project`credentials` select strips secrets. |
 
 ## Next Action
 

@@ -41,7 +41,25 @@ export const projectDetailInclude = {
     },
     orderBy: { createdAt: 'desc' },
   },
-  credentials: { orderBy: { createdAt: 'desc' } },
+  credentials: {
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      category: true,
+      provider: true,
+      url: true,
+      login: true,
+      phone: true,
+      accessLevel: true,
+      allowedEmployees: true,
+      ownerId: true,
+      departmentId: true,
+      projectId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
   subscriptions: {
     include: {
       invoices: {
