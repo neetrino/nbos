@@ -334,14 +334,28 @@ No scheduler, auto-resume or automatic status mutation was introduced.
 
 Статус: `PHASE 4 RUNTIME + UX ALIGNMENT`
 
-Product detail now exposes a read-only Done readiness projection:
+Product detail exposes a read-only Done readiness projection:
 
 - backend builds `doneReadiness` from existing delivery, finance and project documentation data;
-- runtime blockers include open extensions, tasks, support tickets, unpaid invoices and open linked order state;
+- runtime blockers include missing client acceptance, open extensions, tasks, support tickets, unpaid invoices and open linked order state;
 - credentials and domains are surfaced as documentation warnings when project records are missing;
-- client acceptance is shown as a missing runtime signal because no acceptance field/checklist exists yet.
+- missing runtime signals remain empty once the dedicated client acceptance field exists.
 
-This deepens the Done gate UX without inventing fake acceptance state or silently treating missing credentials/domains as complete.
+This keeps the Done readiness panel aligned with actual runtime data and avoids silently treating missing credentials/domains as complete.
+
+### A25. Product Done requires explicit client acceptance
+
+Статус: `PHASE 4 RUNTIME ALIGNMENT`
+
+Product runtime now has explicit client acceptance fields:
+
+- `client_accepted_at`;
+- `client_accepted_by`;
+- `client_acceptance_note`.
+
+The backend exposes `PATCH /api/projects/products/:id/acceptance` to record acceptance. Product Done validation now blocks `Transfer -> Done` until `client_accepted_at` exists, and Product Stage Gate UI provides a dedicated `Record acceptance` action.
+
+This implements the acceptance part of the Done canon as real runtime state instead of a placeholder warning.
 
 ---
 

@@ -61,6 +61,11 @@ interface MoveStageDto {
   stage: string;
 }
 
+interface ConfirmAcceptanceDto {
+  acceptedBy?: string;
+  note?: string;
+}
+
 interface ProductQueryParams {
   page?: number;
   pageSize?: number;
@@ -330,6 +335,23 @@ export class ProductsService {
       where: { id },
       data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
       include: { project: { select: { id: true, code: true, name: true } } },
+    });
+    return attachProductDeliveryLifecycle(updatedProduct);
+  }
+
+  async confirmAcceptance(id: string, data: ConfirmAcceptanceDto) {
+    const product = await this.findById(id);
+    this.ensureNotTerminal(product.deliveryLifecycle.resolution);
+    const updatedProduct = await this.prisma.product.update({
+      where: { id },
+      data: {
+        clientAcceptedAt: new Date(),
+        clientAcceptedBy: data.acceptedBy?.trim() || null,
+        clientAcceptanceNote: data.note?.trim() || null,
+      },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+      },
     });
     return attachProductDeliveryLifecycle(updatedProduct);
   }

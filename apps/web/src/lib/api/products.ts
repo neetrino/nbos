@@ -20,6 +20,9 @@ export interface Product {
   deadline: string | null;
   description: string | null;
   checklistTemplateId: string | null;
+  clientAcceptedAt: string | null;
+  clientAcceptedBy: string | null;
+  clientAcceptanceNote: string | null;
   createdAt: string;
   updatedAt: string;
   project: { id: string; name: string; code: string };
@@ -41,6 +44,7 @@ export interface ProductDoneReadiness {
   warnings: ProductDoneReadinessItem[];
   missingRuntimeSignals: ProductDoneReadinessItem[];
   summary: {
+    clientAccepted: boolean;
     credentialCount: number;
     domainCount: number;
     openExtensionCount: number;
@@ -139,6 +143,11 @@ export interface MoveDeliveryStageData {
   stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER';
 }
 
+export interface ConfirmAcceptanceData {
+  acceptedBy?: string;
+  note?: string;
+}
+
 export const productsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData> {
     const resp = await api.get<ListData>('/api/projects/products', { params });
@@ -187,6 +196,11 @@ export const productsApi = {
 
   async complete(id: string): Promise<Product> {
     const resp = await api.patch<Product>(`/api/projects/products/${id}/complete`);
+    return resp.data;
+  },
+
+  async confirmAcceptance(id: string, data: ConfirmAcceptanceData): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/acceptance`, data);
     return resp.data;
   },
 

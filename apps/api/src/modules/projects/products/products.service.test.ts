@@ -86,6 +86,7 @@ describe('ProductsService', () => {
         id: 'p1',
         name: 'Test',
         status: 'CREATING',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         project: { _count: { credentials: 1, domains: 1 } },
         order: { status: 'FULLY_PAID', invoices: [{ status: 'PAID' }] },
         extensions: [{ status: 'DONE' }],
@@ -102,7 +103,8 @@ describe('ProductsService', () => {
         canCompleteWithRuntimeData: true,
         blockers: [],
         warnings: [],
-        missingRuntimeSignals: [{ code: 'CLIENT_ACCEPTANCE_RUNTIME_MISSING' }],
+        missingRuntimeSignals: [],
+        summary: { clientAccepted: true },
       });
     });
 
@@ -124,6 +126,7 @@ describe('ProductsService', () => {
         canCompleteWithRuntimeData: false,
         summary: {
           credentialCount: 0,
+          clientAccepted: false,
           domainCount: 0,
           openExtensionCount: 1,
           openTaskCount: 1,
@@ -136,6 +139,7 @@ describe('ProductsService', () => {
           'OPEN_EXTENSIONS',
           'OPEN_TASKS',
           'OPEN_TICKETS',
+          'CLIENT_ACCEPTANCE_MISSING',
           'UNPAID_INVOICES',
           'ORDER_NOT_CLOSED',
         ]),
@@ -309,6 +313,7 @@ describe('ProductsService', () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [{ status: 'DEVELOPMENT' }],
         tasks: [{ status: 'IN_PROGRESS' }],
         tickets: [{ status: 'NEW' }],
@@ -332,6 +337,7 @@ describe('ProductsService', () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
         tickets: [{ status: 'RESOLVED' }],
@@ -356,6 +362,7 @@ describe('ProductsService', () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
         tickets: [{ status: 'RESOLVED' }],
@@ -380,6 +387,7 @@ describe('ProductsService', () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [{ status: 'DONE' }, { status: 'LOST' }],
         tasks: [{ status: 'DONE' }, { status: 'DEFERRED' }],
         tickets: [{ status: 'RESOLVED' }, { status: 'CLOSED' }],
@@ -496,6 +504,11 @@ describe('ProductsService', () => {
         status: 'TRANSFER',
         deliveryStage: 'TRANSFER',
         deliveryWorkStatus: 'ACTIVE',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        extensions: [],
+        tasks: [],
+        tickets: [],
+        order: { status: 'FULLY_PAID', invoices: [] },
       });
       prisma.product.update.mockResolvedValue({
         id: 'p1',
@@ -518,6 +531,60 @@ describe('ProductsService', () => {
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('DONE');
+    });
+
+    it('blocks completion until client acceptance is recorded', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+        extensions: [],
+        tasks: [],
+        tickets: [],
+        order: { status: 'FULLY_PAID', invoices: [] },
+      });
+
+      const error = await service.complete('p1').catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: 'STAGE_GATE_VALIDATION',
+        errors: [{ field: 'clientAcceptance', message: expect.any(String) }],
+      });
+      expect(prisma.product.update).not.toHaveBeenCalled();
+    });
+
+    it('records client acceptance for active product delivery', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        clientAcceptedBy: 'Client PM',
+        clientAcceptanceNote: 'Approved after handoff call',
+      });
+
+      const result = await service.confirmAcceptance('p1', {
+        acceptedBy: ' Client PM ',
+        note: ' Approved after handoff call ',
+      });
+
+      expect(prisma.product.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            clientAcceptedAt: expect.any(Date),
+            clientAcceptedBy: 'Client PM',
+            clientAcceptanceNote: 'Approved after handoff call',
+          }),
+        }),
+      );
+      expect(result.clientAcceptedBy).toBe('Client PM');
     });
 
     it('blocks completion while product is paused', async () => {

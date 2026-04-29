@@ -4,6 +4,7 @@ export interface ProductDoneReadiness {
   warnings: ProductDoneReadinessItem[];
   missingRuntimeSignals: ProductDoneReadinessItem[];
   summary: {
+    clientAccepted: boolean;
     credentialCount: number;
     domainCount: number;
     openExtensionCount: number;
@@ -20,6 +21,7 @@ interface ProductDoneReadinessItem {
 }
 
 interface ProductForDoneReadiness {
+  clientAcceptedAt?: Date | string | null;
   project?: { _count?: { credentials?: number; domains?: number } } | null;
   order?: { status?: string | null; invoices?: Array<{ status: string }> } | null;
   extensions?: Array<{ status: string }>;
@@ -35,18 +37,12 @@ const CLOSED_ORDER_STATUSES = ['FULLY_PAID', 'CLOSED'];
 export function buildProductDoneReadiness(product: ProductForDoneReadiness): ProductDoneReadiness {
   const summary = buildDoneReadinessSummary(product);
   const blockers = [
+    ...buildClientAcceptanceBlockers(summary),
     ...buildOpenWorkBlockers(summary),
     ...buildFinanceBlockers(product.order, summary.unpaidInvoiceCount),
   ];
   const warnings = buildDocumentationWarnings(summary);
-  const missingRuntimeSignals = [
-    {
-      code: 'CLIENT_ACCEPTANCE_RUNTIME_MISSING',
-      label: 'Client acceptance',
-      message:
-        'Client acceptance is required by canon, but no runtime acceptance field exists yet.',
-    },
-  ];
+  const missingRuntimeSignals: ProductDoneReadinessItem[] = [];
 
   return {
     canCompleteWithRuntimeData: blockers.length === 0,
@@ -59,6 +55,7 @@ export function buildProductDoneReadiness(product: ProductForDoneReadiness): Pro
 
 function buildDoneReadinessSummary(product: ProductForDoneReadiness) {
   return {
+    clientAccepted: Boolean(product.clientAcceptedAt),
     credentialCount: product.project?._count?.credentials ?? 0,
     domainCount: product.project?._count?.domains ?? 0,
     openExtensionCount: countOpen(product.extensions ?? [], CLOSED_EXTENSION_STATUSES),
@@ -68,6 +65,17 @@ function buildDoneReadinessSummary(product: ProductForDoneReadiness) {
       (invoice) => invoice.status !== 'PAID',
     ).length,
   };
+}
+
+function buildClientAcceptanceBlockers(summary: ProductDoneReadiness['summary']) {
+  if (summary.clientAccepted) return [];
+  return [
+    {
+      code: 'CLIENT_ACCEPTANCE_MISSING',
+      label: 'Client acceptance',
+      message: 'Client acceptance must be recorded before Product Done.',
+    },
+  ];
 }
 
 function buildOpenWorkBlockers(summary: ProductDoneReadiness['summary']) {

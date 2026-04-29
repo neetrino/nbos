@@ -27,6 +27,7 @@ interface ProductForStageGate {
   status?: string | null;
   description?: string | null;
   deadline?: Date | string | null;
+  clientAcceptedAt?: Date | string | null;
   order?: { id: string; status?: string; invoices?: Array<{ status: string }> } | null;
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
@@ -127,6 +128,7 @@ function validateProductDoneGate(product: ProductForStageGate) {
       'Product Done',
     ),
     ...buildOpenItemError('tickets', product.tickets ?? [], ['RESOLVED', 'CLOSED'], 'Product Done'),
+    ...buildClientAcceptanceError(product),
     ...buildOpenOrderError(product.order),
     ...buildUnpaidInvoiceError(product.order?.invoices ?? []),
   ];
@@ -139,6 +141,17 @@ function validateProductDoneGate(product: ProductForStageGate) {
     message: 'Cannot complete product while delivery items are still open.',
     errors,
   });
+}
+
+function buildClientAcceptanceError(product: ProductForStageGate) {
+  if (product.clientAcceptedAt) return [];
+
+  return [
+    {
+      field: 'clientAcceptance',
+      message: 'Client acceptance must be recorded before Product Done.',
+    },
+  ];
 }
 
 function buildOpenOrderError(order: ProductForStageGate['order']) {

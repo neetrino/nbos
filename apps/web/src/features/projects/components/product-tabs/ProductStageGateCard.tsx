@@ -15,6 +15,7 @@ import {
   type DeliveryLifecycleActionPayload,
 } from '@/features/projects/components/DeliveryLifecycleActionDialog';
 import { ProductLifecycleActions } from './ProductLifecycleActions';
+import { ProductAcceptanceAction } from './ProductAcceptanceAction';
 import { ProductDoneReadinessPanel } from './ProductDoneReadinessPanel';
 import { ProductStageGateSummary } from './ProductStageGateSummary';
 
@@ -52,6 +53,7 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
   const [blocker, setBlocker] = useState<StageGateBlocker | null>(null);
   const [dialogAction, setDialogAction] = useState<DeliveryLifecycleAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [acceptanceError, setAcceptanceError] = useState<string | null>(null);
   const nextStatuses = ALLOWED_TRANSITIONS[product.status] ?? [];
 
   const handleStatusChange = async (newStatus: string) => {
@@ -87,6 +89,19 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
     }
   };
 
+  const handleConfirmAcceptance = async () => {
+    setUpdating(true);
+    setAcceptanceError(null);
+    try {
+      await productsApi.confirmAcceptance(product.id, {});
+      onStatusChange();
+    } catch (error) {
+      setAcceptanceError(toActionError(error, 'Failed to record client acceptance.'));
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const handleLifecycleAction = async (payload: DeliveryLifecycleActionPayload) => {
     if (!dialogAction) return;
     setUpdating(true);
@@ -114,6 +129,12 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
       <h3 className="mb-4 text-sm font-semibold">Stage Gate</h3>
       <ProductStageGateSummary product={product} nextStatuses={nextStatuses} />
       <ProductDoneReadinessPanel readiness={product.doneReadiness} />
+      <ProductAcceptanceAction
+        product={product}
+        disabled={updating}
+        error={acceptanceError}
+        onConfirm={handleConfirmAcceptance}
+      />
       <ProductStageActions
         status={product.status}
         nextStatuses={nextStatuses}

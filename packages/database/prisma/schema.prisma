@@ -181,24 +181,27 @@ enum DeliveryResolutionEnum {
 }
 
 model Product {
-  id                  String                  @id @default(uuid())
-  projectId           String                  @map("project_id")
-  name                String
-  productCategory     ProductCategoryEnum     @map("product_category")
-  productType         ProductTypeEnum         @map("product_type")
-  status              ProductStatusEnum       @default(NEW)
-  deliveryStage       DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
-  deliveryWorkStatus  DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")
-  deliveryResolution  DeliveryResolutionEnum? @map("delivery_resolution")
-  onHoldReason        String?                 @map("on_hold_reason")
-  onHoldUntil         DateTime?               @map("on_hold_until")
-  cancellationReason  String?                 @map("cancellation_reason")
-  pmId                String?                 @map("pm_id")
-  deadline            DateTime?
-  description         String?
-  checklistTemplateId String?                 @map("checklist_template_id")
-  createdAt           DateTime                @default(now()) @map("created_at")
-  updatedAt           DateTime                @updatedAt @map("updated_at")
+  id                   String                  @id @default(uuid())
+  projectId            String                  @map("project_id")
+  name                 String
+  productCategory      ProductCategoryEnum     @map("product_category")
+  productType          ProductTypeEnum         @map("product_type")
+  status               ProductStatusEnum       @default(NEW)
+  deliveryStage        DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
+  deliveryWorkStatus   DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")
+  deliveryResolution   DeliveryResolutionEnum? @map("delivery_resolution")
+  onHoldReason         String?                 @map("on_hold_reason")
+  onHoldUntil          DateTime?               @map("on_hold_until")
+  cancellationReason   String?                 @map("cancellation_reason")
+  clientAcceptedAt     DateTime?               @map("client_accepted_at")
+  clientAcceptedBy     String?                 @map("client_accepted_by")
+  clientAcceptanceNote String?                 @map("client_acceptance_note")
+  pmId                 String?                 @map("pm_id")
+  deadline             DateTime?
+  description          String?
+  checklistTemplateId  String?                 @map("checklist_template_id")
+  createdAt            DateTime                @default(now()) @map("created_at")
+  updatedAt            DateTime                @updatedAt @map("updated_at")
 
   project              Project               @relation(fields: [projectId], references: [id])
   pm                   Employee?             @relation("ProductPM", fields: [pmId], references: [id])
@@ -213,6 +216,7 @@ model Product {
   @@index([deliveryWorkStatus])
   @@index([deliveryResolution])
   @@index([onHoldUntil])
+  @@index([clientAcceptedAt])
   @@map("products")
 }
 

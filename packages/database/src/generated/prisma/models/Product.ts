@@ -36,6 +36,9 @@ export type ProductMinAggregateOutputType = {
   onHoldReason: string | null;
   onHoldUntil: Date | null;
   cancellationReason: string | null;
+  clientAcceptedAt: Date | null;
+  clientAcceptedBy: string | null;
+  clientAcceptanceNote: string | null;
   pmId: string | null;
   deadline: Date | null;
   description: string | null;
@@ -57,6 +60,9 @@ export type ProductMaxAggregateOutputType = {
   onHoldReason: string | null;
   onHoldUntil: Date | null;
   cancellationReason: string | null;
+  clientAcceptedAt: Date | null;
+  clientAcceptedBy: string | null;
+  clientAcceptanceNote: string | null;
   pmId: string | null;
   deadline: Date | null;
   description: string | null;
@@ -78,6 +84,9 @@ export type ProductCountAggregateOutputType = {
   onHoldReason: number;
   onHoldUntil: number;
   cancellationReason: number;
+  clientAcceptedAt: number;
+  clientAcceptedBy: number;
+  clientAcceptanceNote: number;
   pmId: number;
   deadline: number;
   description: number;
@@ -100,6 +109,9 @@ export type ProductMinAggregateInputType = {
   onHoldReason?: true;
   onHoldUntil?: true;
   cancellationReason?: true;
+  clientAcceptedAt?: true;
+  clientAcceptedBy?: true;
+  clientAcceptanceNote?: true;
   pmId?: true;
   deadline?: true;
   description?: true;
@@ -121,6 +133,9 @@ export type ProductMaxAggregateInputType = {
   onHoldReason?: true;
   onHoldUntil?: true;
   cancellationReason?: true;
+  clientAcceptedAt?: true;
+  clientAcceptedBy?: true;
+  clientAcceptanceNote?: true;
   pmId?: true;
   deadline?: true;
   description?: true;
@@ -142,6 +157,9 @@ export type ProductCountAggregateInputType = {
   onHoldReason?: true;
   onHoldUntil?: true;
   cancellationReason?: true;
+  clientAcceptedAt?: true;
+  clientAcceptedBy?: true;
+  clientAcceptanceNote?: true;
   pmId?: true;
   deadline?: true;
   description?: true;
@@ -237,6 +255,9 @@ export type ProductGroupByOutputType = {
   onHoldReason: string | null;
   onHoldUntil: Date | null;
   cancellationReason: string | null;
+  clientAcceptedAt: Date | null;
+  clientAcceptedBy: string | null;
+  clientAcceptanceNote: string | null;
   pmId: string | null;
   deadline: Date | null;
   description: string | null;
@@ -284,6 +305,9 @@ export type ProductWhereInput = {
   onHoldReason?: Prisma.StringNullableFilter<'Product'> | string | null;
   onHoldUntil?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   cancellationReason?: Prisma.StringNullableFilter<'Product'> | string | null;
+  clientAcceptedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+  clientAcceptedBy?: Prisma.StringNullableFilter<'Product'> | string | null;
+  clientAcceptanceNote?: Prisma.StringNullableFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -313,6 +337,9 @@ export type ProductOrderByWithRelationInput = {
   onHoldReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   onHoldUntil?: Prisma.SortOrderInput | Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+  clientAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  clientAcceptedBy?: Prisma.SortOrderInput | Prisma.SortOrder;
+  clientAcceptanceNote?: Prisma.SortOrderInput | Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -354,6 +381,9 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     onHoldReason?: Prisma.StringNullableFilter<'Product'> | string | null;
     onHoldUntil?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
     cancellationReason?: Prisma.StringNullableFilter<'Product'> | string | null;
+    clientAcceptedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+    clientAcceptedBy?: Prisma.StringNullableFilter<'Product'> | string | null;
+    clientAcceptanceNote?: Prisma.StringNullableFilter<'Product'> | string | null;
     pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
     deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -385,6 +415,9 @@ export type ProductOrderByWithAggregationInput = {
   onHoldReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   onHoldUntil?: Prisma.SortOrderInput | Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+  clientAcceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  clientAcceptedBy?: Prisma.SortOrderInput | Prisma.SortOrder;
+  clientAcceptanceNote?: Prisma.SortOrderInput | Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -426,6 +459,9 @@ export type ProductScalarWhereWithAggregatesInput = {
   onHoldReason?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   onHoldUntil?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
   cancellationReason?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  clientAcceptedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
+  clientAcceptedBy?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  clientAcceptanceNote?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
@@ -446,6 +482,9 @@ export type ProductCreateInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -474,6 +513,9 @@ export type ProductUncheckedCreateInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -510,6 +552,9 @@ export type ProductUpdateInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -548,6 +593,9 @@ export type ProductUncheckedUpdateInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -575,6 +623,9 @@ export type ProductCreateManyInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -605,6 +656,9 @@ export type ProductUpdateManyMutationInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -635,6 +689,9 @@ export type ProductUncheckedUpdateManyInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -666,6 +723,9 @@ export type ProductCountOrderByAggregateInput = {
   onHoldReason?: Prisma.SortOrder;
   onHoldUntil?: Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrder;
+  clientAcceptedAt?: Prisma.SortOrder;
+  clientAcceptedBy?: Prisma.SortOrder;
+  clientAcceptanceNote?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
@@ -687,6 +747,9 @@ export type ProductMaxOrderByAggregateInput = {
   onHoldReason?: Prisma.SortOrder;
   onHoldUntil?: Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrder;
+  clientAcceptedAt?: Prisma.SortOrder;
+  clientAcceptedBy?: Prisma.SortOrder;
+  clientAcceptanceNote?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
@@ -708,6 +771,9 @@ export type ProductMinOrderByAggregateInput = {
   onHoldReason?: Prisma.SortOrder;
   onHoldUntil?: Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrder;
+  clientAcceptedAt?: Prisma.SortOrder;
+  clientAcceptedBy?: Prisma.SortOrder;
+  clientAcceptanceNote?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
@@ -1088,6 +1154,9 @@ export type ProductCreateWithoutProjectInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1114,6 +1183,9 @@ export type ProductUncheckedCreateWithoutProjectInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1193,6 +1265,9 @@ export type ProductScalarWhereInput = {
   onHoldReason?: Prisma.StringNullableFilter<'Product'> | string | null;
   onHoldUntil?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   cancellationReason?: Prisma.StringNullableFilter<'Product'> | string | null;
+  clientAcceptedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+  clientAcceptedBy?: Prisma.StringNullableFilter<'Product'> | string | null;
+  clientAcceptanceNote?: Prisma.StringNullableFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -1213,6 +1288,9 @@ export type ProductCreateWithoutExtensionsInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1240,6 +1318,9 @@ export type ProductUncheckedCreateWithoutExtensionsInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1303,6 +1384,9 @@ export type ProductUpdateWithoutExtensionsInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1340,6 +1424,9 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1365,6 +1452,9 @@ export type ProductCreateWithoutDealsLinkedInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1392,6 +1482,9 @@ export type ProductUncheckedCreateWithoutDealsLinkedInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1455,6 +1548,9 @@ export type ProductUpdateWithoutDealsLinkedInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1492,6 +1588,9 @@ export type ProductUncheckedUpdateWithoutDealsLinkedInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1517,6 +1616,9 @@ export type ProductCreateWithoutOrderInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1544,6 +1646,9 @@ export type ProductUncheckedCreateWithoutOrderInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1607,6 +1712,9 @@ export type ProductUpdateWithoutOrderInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1644,6 +1752,9 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1669,6 +1780,9 @@ export type ProductCreateWithoutTasksInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1696,6 +1810,9 @@ export type ProductUncheckedCreateWithoutTasksInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1759,6 +1876,9 @@ export type ProductUpdateWithoutTasksInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1796,6 +1916,9 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1821,6 +1944,9 @@ export type ProductCreateWithoutTicketsInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1848,6 +1974,9 @@ export type ProductUncheckedCreateWithoutTicketsInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1911,6 +2040,9 @@ export type ProductUpdateWithoutTicketsInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1948,6 +2080,9 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1973,6 +2108,9 @@ export type ProductCreateWithoutClientServiceRecordsInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2000,6 +2138,9 @@ export type ProductUncheckedCreateWithoutClientServiceRecordsInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -2063,6 +2204,9 @@ export type ProductUpdateWithoutClientServiceRecordsInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2100,6 +2244,9 @@ export type ProductUncheckedUpdateWithoutClientServiceRecordsInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2125,6 +2272,9 @@ export type ProductCreateWithoutPmInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2152,6 +2302,9 @@ export type ProductUncheckedCreateWithoutPmInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2215,6 +2368,9 @@ export type ProductCreateManyProjectInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -2245,6 +2401,9 @@ export type ProductUpdateWithoutProjectInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2281,6 +2440,9 @@ export type ProductUncheckedUpdateWithoutProjectInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2317,6 +2479,9 @@ export type ProductUncheckedUpdateManyWithoutProjectInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2338,6 +2503,9 @@ export type ProductCreateManyPmInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2367,6 +2535,9 @@ export type ProductUpdateWithoutPmInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2404,6 +2575,9 @@ export type ProductUncheckedUpdateWithoutPmInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2440,6 +2614,9 @@ export type ProductUncheckedUpdateManyWithoutPmInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2542,6 +2719,9 @@ export type ProductSelect<
     onHoldReason?: boolean;
     onHoldUntil?: boolean;
     cancellationReason?: boolean;
+    clientAcceptedAt?: boolean;
+    clientAcceptedBy?: boolean;
+    clientAcceptanceNote?: boolean;
     pmId?: boolean;
     deadline?: boolean;
     description?: boolean;
@@ -2577,6 +2757,9 @@ export type ProductSelectCreateManyAndReturn<
     onHoldReason?: boolean;
     onHoldUntil?: boolean;
     cancellationReason?: boolean;
+    clientAcceptedAt?: boolean;
+    clientAcceptedBy?: boolean;
+    clientAcceptanceNote?: boolean;
     pmId?: boolean;
     deadline?: boolean;
     description?: boolean;
@@ -2605,6 +2788,9 @@ export type ProductSelectUpdateManyAndReturn<
     onHoldReason?: boolean;
     onHoldUntil?: boolean;
     cancellationReason?: boolean;
+    clientAcceptedAt?: boolean;
+    clientAcceptedBy?: boolean;
+    clientAcceptanceNote?: boolean;
     pmId?: boolean;
     deadline?: boolean;
     description?: boolean;
@@ -2630,6 +2816,9 @@ export type ProductSelectScalar = {
   onHoldReason?: boolean;
   onHoldUntil?: boolean;
   cancellationReason?: boolean;
+  clientAcceptedAt?: boolean;
+  clientAcceptedBy?: boolean;
+  clientAcceptanceNote?: boolean;
   pmId?: boolean;
   deadline?: boolean;
   description?: boolean;
@@ -2653,6 +2842,9 @@ export type ProductOmit<
   | 'onHoldReason'
   | 'onHoldUntil'
   | 'cancellationReason'
+  | 'clientAcceptedAt'
+  | 'clientAcceptedBy'
+  | 'clientAcceptanceNote'
   | 'pmId'
   | 'deadline'
   | 'description'
@@ -2715,6 +2907,9 @@ export type $ProductPayload<
       onHoldReason: string | null;
       onHoldUntil: Date | null;
       cancellationReason: string | null;
+      clientAcceptedAt: Date | null;
+      clientAcceptedBy: string | null;
+      clientAcceptanceNote: string | null;
       pmId: string | null;
       deadline: Date | null;
       description: string | null;
@@ -3364,6 +3559,9 @@ export interface ProductFieldRefs {
   readonly onHoldReason: Prisma.FieldRef<'Product', 'String'>;
   readonly onHoldUntil: Prisma.FieldRef<'Product', 'DateTime'>;
   readonly cancellationReason: Prisma.FieldRef<'Product', 'String'>;
+  readonly clientAcceptedAt: Prisma.FieldRef<'Product', 'DateTime'>;
+  readonly clientAcceptedBy: Prisma.FieldRef<'Product', 'String'>;
+  readonly clientAcceptanceNote: Prisma.FieldRef<'Product', 'String'>;
   readonly pmId: Prisma.FieldRef<'Product', 'String'>;
   readonly deadline: Prisma.FieldRef<'Product', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Product', 'String'>;

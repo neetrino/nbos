@@ -156,6 +156,15 @@ export class ProductsController {
     return this.productsService.complete(id);
   }
 
+  @Patch(':id/acceptance')
+  @ApiOperation({ summary: 'Record client acceptance for product delivery' })
+  async confirmAcceptance(
+    @Param('id') id: string,
+    @Body() body: { acceptedBy?: string; note?: string },
+  ) {
+    return this.productsService.confirmAcceptance(id, body);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete product' })
