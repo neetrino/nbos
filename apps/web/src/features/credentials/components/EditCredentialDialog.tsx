@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -20,7 +21,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CREDENTIAL_CATEGORIES, ACCESS_LEVELS } from '@/features/credentials/constants/credentials';
-import { credentialsApi, type CredentialDetail } from '@/lib/api/credentials';
+import {
+  credentialsApi,
+  type CredentialDetail,
+  type CredentialSecretsPresent,
+} from '@/lib/api/credentials';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { toast } from 'sonner';
 
@@ -46,6 +51,9 @@ export function EditCredentialDialog({
   const [login, setLogin] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [envData, setEnvData] = useState('');
+  const [secretsPresent, setSecretsPresent] = useState<CredentialSecretsPresent | null>(null);
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
   const [notes, setNotes] = useState('');
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -59,6 +67,9 @@ export function EditCredentialDialog({
     setLogin(d.login ?? '');
     setPhone(d.phone ?? '');
     setPassword('');
+    setApiKey('');
+    setEnvData('');
+    setSecretsPresent(d.secretsPresent);
     setAccessLevel(d.accessLevel);
     setNotes(d.notes ?? '');
     setAllowedEmployees([...d.allowedEmployees]);
@@ -115,6 +126,12 @@ export function EditCredentialDialog({
       };
       if (password.trim()) {
         body.password = password.trim();
+      }
+      if (apiKey.trim()) {
+        body.apiKey = apiKey.trim();
+      }
+      if (envData.trim()) {
+        body.envData = envData.trim();
       }
       await credentialsApi.update(credentialId, body);
       toast.success('Credential updated');
@@ -232,6 +249,38 @@ export function EditCredentialDialog({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Leave blank to keep current"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="edit-cred-apikey">New API key</Label>
+              <Input
+                id="edit-cred-apikey"
+                type="password"
+                autoComplete="off"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder={
+                  secretsPresent?.apiKey
+                    ? 'Leave blank to keep current stored key'
+                    : 'Optional — stored encrypted'
+                }
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="edit-cred-env">New environment data</Label>
+              <Textarea
+                id="edit-cred-env"
+                autoComplete="off"
+                value={envData}
+                onChange={(e) => setEnvData(e.target.value)}
+                placeholder={
+                  secretsPresent?.envData
+                    ? 'Leave blank to keep current stored value'
+                    : 'Optional KEY=value lines — stored encrypted'
+                }
+                className="font-mono text-xs"
               />
             </div>
 

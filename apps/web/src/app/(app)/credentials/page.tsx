@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -480,6 +481,8 @@ function CreateCredentialDialog({
   const [url, setUrl] = useState('');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [envData, setEnvData] = useState('');
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -507,6 +510,8 @@ function CreateCredentialDialog({
         url: url.trim() || undefined,
         login: login.trim() || undefined,
         password: password.trim() || undefined,
+        apiKey: apiKey.trim() || undefined,
+        envData: envData.trim() || undefined,
         accessLevel,
         notes: notes.trim() || undefined,
         allowedEmployees: accessLevel === 'SECRET' ? allowedEmployees : undefined,
@@ -529,6 +534,8 @@ function CreateCredentialDialog({
     setUrl('');
     setLogin('');
     setPassword('');
+    setApiKey('');
+    setEnvData('');
     setAccessLevel('PROJECT_TEAM');
     setNotes('');
     setAllowedEmployees([]);
@@ -630,6 +637,30 @@ function CreateCredentialDialog({
                 placeholder="••••••••"
               />
             </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="cred-apikey">API key</Label>
+            <Input
+              id="cred-apikey"
+              type="password"
+              autoComplete="off"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Optional — stored encrypted"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="cred-env">Environment data</Label>
+            <Textarea
+              id="cred-env"
+              autoComplete="off"
+              value={envData}
+              onChange={(e) => setEnvData(e.target.value)}
+              placeholder="Optional KEY=value lines — stored encrypted"
+              className="font-mono text-xs"
+            />
           </div>
 
           <div className="grid gap-2">
