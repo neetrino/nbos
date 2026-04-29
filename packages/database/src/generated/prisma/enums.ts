@@ -442,6 +442,16 @@ export const TicketStatusEnum = {
 
 export type TicketStatusEnum = (typeof TicketStatusEnum)[keyof typeof TicketStatusEnum];
 
+export const SupportCoverageEnum = {
+  COVERED_BY_MAINTENANCE: 'COVERED_BY_MAINTENANCE',
+  FREE_GOODWILL: 'FREE_GOODWILL',
+  BILLABLE_SMALL_WORK: 'BILLABLE_SMALL_WORK',
+  EXTENSION_REQUIRED: 'EXTENSION_REQUIRED',
+  NOT_COVERED_REJECTED: 'NOT_COVERED_REJECTED',
+} as const;
+
+export type SupportCoverageEnum = (typeof SupportCoverageEnum)[keyof typeof SupportCoverageEnum];
+
 export const CredentialCategoryEnum = {
   ADMIN: 'ADMIN',
   DOMAIN: 'DOMAIN',

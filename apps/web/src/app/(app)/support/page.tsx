@@ -35,7 +35,9 @@ import {
   TICKET_PRIORITIES,
   TICKET_STATUSES,
   getTicketCategory,
+  getTicketCoverage,
   getTicketPriority,
+  getTicketSlaState,
   getTicketStatus,
 } from '@/features/support/constants/support';
 import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
@@ -241,6 +243,8 @@ export default function SupportPage() {
           renderCard={(ticket: SupportTicket) => {
             const cat = getTicketCategory(ticket.category);
             const pri = getTicketPriority(ticket.priority);
+            const coverage = getTicketCoverage(ticket.coverageDecision);
+            const sla = getTicketSlaState(ticket.slaState.state);
             return (
               <div className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm">
                 <div className="flex items-center justify-between">
@@ -254,6 +258,10 @@ export default function SupportPage() {
                   {cat && <StatusBadge label={cat.label} variant={cat.variant} />}
                   {ticket.billable && <StatusBadge label="Billable" variant="amber" />}
                   {ticket.product && <StatusBadge label="Product" variant="blue" />}
+                </div>
+                <div className="flex items-center gap-2">
+                  {coverage && <StatusBadge label={coverage.label} variant={coverage.variant} />}
+                  {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
                 </div>
                 {ticket.project && (
                   <div className="text-muted-foreground flex items-center gap-1 text-xs">
@@ -294,6 +302,8 @@ export default function SupportPage() {
                 <TableHead>Category</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>SLA</TableHead>
+                <TableHead>Coverage</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead>Product</TableHead>
                 <TableHead>Assignee</TableHead>
@@ -308,6 +318,8 @@ export default function SupportPage() {
                 const cat = getTicketCategory(ticket.category);
                 const pri = getTicketPriority(ticket.priority);
                 const st = getTicketStatus(ticket.status);
+                const coverage = getTicketCoverage(ticket.coverageDecision);
+                const sla = getTicketSlaState(ticket.slaState.state);
                 return (
                   <TableRow key={ticket.id}>
                     <TableCell>
@@ -324,6 +336,16 @@ export default function SupportPage() {
                     </TableCell>
                     <TableCell>
                       {st && <StatusBadge label={st.label} variant={st.variant} />}
+                    </TableCell>
+                    <TableCell>
+                      {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
+                    </TableCell>
+                    <TableCell>
+                      {coverage ? (
+                        <StatusBadge label={coverage.label} variant={coverage.variant} />
+                      ) : (
+                        <StatusBadge label="Not decided" variant="gray" />
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {ticket.project?.name ?? '—'}

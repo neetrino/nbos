@@ -24,10 +24,15 @@ describe('SupportService', () => {
         status: 'NEW',
         priority: 'P1',
         category: 'INCIDENT',
+        coverageDecision: 'COVERED_BY_MAINTENANCE',
         assignedTo: 'a1',
         search: 'bug',
       });
-      expect(prisma.supportTicket.findMany).toHaveBeenCalled();
+      expect(prisma.supportTicket.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ coverageDecision: 'COVERED_BY_MAINTENANCE' }),
+        }),
+      );
     });
   });
 
@@ -45,6 +50,7 @@ describe('SupportService', () => {
         code: 'TKT-2026-0001',
         slaResponseDeadline: new Date(),
         slaResolveDeadline: new Date(),
+        status: 'NEW',
       });
       const result = await service.create({
         title: 'Bug',
@@ -53,6 +59,7 @@ describe('SupportService', () => {
         priority: 'P1',
       });
       expect(result.code).toMatch(/^TKT-\d{4}-\d{4}$/);
+      expect(result.slaState.state).toBe('ON_TRACK');
     });
 
     it('uses P3 as default priority', async () => {
@@ -71,11 +78,15 @@ describe('SupportService', () => {
         projectId: 'p1',
         productId: 'prod-1',
         category: 'INCIDENT',
+        coverageDecision: 'COVERED_BY_MAINTENANCE',
       });
 
       expect(prisma.supportTicket.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ productId: 'prod-1' }),
+          data: expect.objectContaining({
+            productId: 'prod-1',
+            coverageDecision: 'COVERED_BY_MAINTENANCE',
+          }),
         }),
       );
     });
@@ -104,6 +115,24 @@ describe('SupportService', () => {
       prisma.supportTicket.update.mockResolvedValue({ id: '1', status: 'RESOLVED' });
       const result = await service.updateStatus('1', 'RESOLVED');
       expect(result.status).toBe('RESOLVED');
+      expect(result.slaState.state).toBe('CLOSED');
+    });
+  });
+
+  describe('SLA projection', () => {
+    it('marks ticket as breached when resolve deadline passed', async () => {
+      prisma.supportTicket.findMany.mockResolvedValue([
+        {
+          id: 'ticket-1',
+          status: 'IN_PROGRESS',
+          slaResponseDeadline: new Date('2020-01-01T00:00:00Z'),
+          slaResolveDeadline: new Date('2020-01-02T00:00:00Z'),
+        },
+      ]);
+
+      const result = await service.findAll({});
+
+      expect(result.items[0].slaState.state).toBe('BREACHED');
     });
   });
 
@@ -259,6 +288,7 @@ describe('SupportService', () => {
       expect(stats).toHaveProperty('byStatus');
       expect(stats).toHaveProperty('byPriority');
       expect(stats).toHaveProperty('byCategory');
+      expect(stats).toHaveProperty('byCoverage');
     });
   });
 });

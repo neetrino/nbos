@@ -29,6 +29,7 @@ export class SupportController {
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'priority', required: false })
   @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'coverageDecision', required: false })
   @ApiQuery({ name: 'assignedTo', required: false })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
@@ -39,6 +40,7 @@ export class SupportController {
     @Query('status') status?: string,
     @Query('priority') priority?: string,
     @Query('category') category?: string,
+    @Query('coverageDecision') coverageDecision?: string,
     @Query('assignedTo') assignedTo?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
@@ -52,6 +54,7 @@ export class SupportController {
       status,
       priority,
       category,
+      coverageDecision,
       assignedTo,
       search,
       sortBy,
@@ -81,6 +84,7 @@ export class SupportController {
       category: string;
       description?: string;
       productId?: string;
+      coverageDecision?: string | null;
       contactId?: string;
       priority?: string;
       billable?: boolean;
@@ -102,6 +106,7 @@ export class SupportController {
       productId?: string | null;
       contactId?: string;
       category?: string;
+      coverageDecision?: string | null;
       priority?: string;
       billable?: boolean;
       assignedTo?: string;

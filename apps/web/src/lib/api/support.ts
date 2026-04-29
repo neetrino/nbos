@@ -13,6 +13,7 @@ export interface SupportTicket {
   category: string;
   priority: string;
   status: string;
+  coverageDecision: string | null;
   billable: boolean;
   assignedTo: string | null;
   createdAt: string;
@@ -28,6 +29,11 @@ export interface SupportTicket {
   } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   assignee: { id: string; firstName: string; lastName: string } | null;
+  slaState: {
+    state: 'ON_TRACK' | 'AT_RISK' | 'BREACHED' | 'CLOSED';
+    responseDeadline: string | null;
+    resolveDeadline: string | null;
+  };
   executionTasks?: Task[];
 }
 
@@ -42,6 +48,7 @@ interface TicketQueryParams {
   status?: string;
   priority?: string;
   category?: string;
+  coverageDecision?: string;
   projectId?: string;
   productId?: string;
   search?: string;
@@ -52,6 +59,7 @@ export interface SupportStats {
   byStatus: Array<{ status: string; _count: number }>;
   byPriority: Array<{ priority: string; _count: number }>;
   byCategory: Array<{ category: string; _count: number }>;
+  byCoverage: Array<{ coverageDecision: string | null; _count: number }>;
 }
 
 export const supportApi = {
@@ -70,6 +78,7 @@ export const supportApi = {
     priority?: string;
     description?: string;
     productId?: string;
+    coverageDecision?: string | null;
     contactId?: string;
     billable?: boolean;
   }): Promise<SupportTicket> {

@@ -5,7 +5,7 @@ const CSV_UTF8_BOM = '\uFEFF';
 const HEADER = ['section', 'col1', 'col2', 'col3', 'col4', 'col5'] as const;
 
 const STATS_SCOPE_NOTE =
-  'GET /api/support/stats returns workspace-wide ticket counts grouped by status, priority, and category. The Support list search and toolbar filters apply only to the paginated list fetch, not to these aggregates.';
+  'GET /api/support/stats returns workspace-wide ticket counts grouped by status, priority, category, and coverage. The Support list search and toolbar filters apply only to the paginated list fetch, not to these aggregates.';
 
 export interface SupportScopeStatsCsvMeta {
   exportedAtIso: string;
@@ -54,6 +54,14 @@ function appendByCategory(rows: string[], stats: SupportStats): void {
   }
 }
 
+function appendByCoverage(rows: string[], stats: SupportStats): void {
+  for (const row of stats.byCoverage) {
+    rows.push(
+      csvLine(['by_coverage', row.coverageDecision ?? 'UNDECIDED', String(row._count), '', '', '']),
+    );
+  }
+}
+
 export function buildSupportScopeStatsCsvContent(
   stats: SupportStats,
   meta: SupportScopeStatsCsvMeta,
@@ -65,6 +73,7 @@ export function buildSupportScopeStatsCsvContent(
   appendByStatus(rows, stats);
   appendByPriority(rows, stats);
   appendByCategory(rows, stats);
+  appendByCoverage(rows, stats);
   return rows.join('\r\n');
 }
 

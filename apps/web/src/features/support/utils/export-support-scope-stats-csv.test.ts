@@ -16,6 +16,7 @@ const SAMPLE: SupportStats = {
   ],
   byPriority: [{ priority: 'P1', _count: 2 }],
   byCategory: [{ category: 'BUG', _count: 4 }],
+  byCoverage: [{ coverageDecision: 'COVERED_BY_MAINTENANCE', _count: 2 }],
 };
 
 describe('buildSupportScopeStatsCsvContent', () => {
@@ -28,5 +29,6 @@ describe('buildSupportScopeStatsCsvContent', () => {
     expect(lines).toContain('by_status,OPEN,3,,,');
     expect(lines).toContain('by_priority,P1,2,,,');
     expect(lines).toContain('by_category,BUG,4,,,');
+    expect(lines).toContain('by_coverage,COVERED_BY_MAINTENANCE,2,,,');
   });
 });

@@ -34,6 +34,7 @@ export type SupportTicketMinAggregateOutputType = {
   category: $Enums.TicketCategoryEnum | null;
   priority: $Enums.TicketPriorityEnum | null;
   status: $Enums.TicketStatusEnum | null;
+  coverageDecision: $Enums.SupportCoverageEnum | null;
   title: string | null;
   description: string | null;
   billable: boolean | null;
@@ -54,6 +55,7 @@ export type SupportTicketMaxAggregateOutputType = {
   category: $Enums.TicketCategoryEnum | null;
   priority: $Enums.TicketPriorityEnum | null;
   status: $Enums.TicketStatusEnum | null;
+  coverageDecision: $Enums.SupportCoverageEnum | null;
   title: string | null;
   description: string | null;
   billable: boolean | null;
@@ -74,6 +76,7 @@ export type SupportTicketCountAggregateOutputType = {
   category: number;
   priority: number;
   status: number;
+  coverageDecision: number;
   title: number;
   description: number;
   billable: number;
@@ -95,6 +98,7 @@ export type SupportTicketMinAggregateInputType = {
   category?: true;
   priority?: true;
   status?: true;
+  coverageDecision?: true;
   title?: true;
   description?: true;
   billable?: true;
@@ -115,6 +119,7 @@ export type SupportTicketMaxAggregateInputType = {
   category?: true;
   priority?: true;
   status?: true;
+  coverageDecision?: true;
   title?: true;
   description?: true;
   billable?: true;
@@ -135,6 +140,7 @@ export type SupportTicketCountAggregateInputType = {
   category?: true;
   priority?: true;
   status?: true;
+  coverageDecision?: true;
   title?: true;
   description?: true;
   billable?: true;
@@ -233,6 +239,7 @@ export type SupportTicketGroupByOutputType = {
   category: $Enums.TicketCategoryEnum;
   priority: $Enums.TicketPriorityEnum;
   status: $Enums.TicketStatusEnum;
+  coverageDecision: $Enums.SupportCoverageEnum | null;
   title: string;
   description: string | null;
   billable: boolean;
@@ -271,6 +278,10 @@ export type SupportTicketWhereInput = {
   category?: Prisma.EnumTicketCategoryEnumFilter<'SupportTicket'> | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFilter<'SupportTicket'> | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFilter<'SupportTicket'> | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.EnumSupportCoverageEnumNullableFilter<'SupportTicket'>
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFilter<'SupportTicket'> | string;
   description?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
   billable?: Prisma.BoolFilter<'SupportTicket'> | boolean;
@@ -299,6 +310,7 @@ export type SupportTicketOrderByWithRelationInput = {
   category?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  coverageDecision?: Prisma.SortOrderInput | Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   billable?: Prisma.SortOrder;
@@ -328,6 +340,10 @@ export type SupportTicketWhereUniqueInput = Prisma.AtLeast<
     category?: Prisma.EnumTicketCategoryEnumFilter<'SupportTicket'> | $Enums.TicketCategoryEnum;
     priority?: Prisma.EnumTicketPriorityEnumFilter<'SupportTicket'> | $Enums.TicketPriorityEnum;
     status?: Prisma.EnumTicketStatusEnumFilter<'SupportTicket'> | $Enums.TicketStatusEnum;
+    coverageDecision?:
+      | Prisma.EnumSupportCoverageEnumNullableFilter<'SupportTicket'>
+      | $Enums.SupportCoverageEnum
+      | null;
     title?: Prisma.StringFilter<'SupportTicket'> | string;
     description?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
     billable?: Prisma.BoolFilter<'SupportTicket'> | boolean;
@@ -367,6 +383,7 @@ export type SupportTicketOrderByWithAggregationInput = {
   category?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  coverageDecision?: Prisma.SortOrderInput | Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   billable?: Prisma.SortOrder;
@@ -403,6 +420,10 @@ export type SupportTicketScalarWhereWithAggregatesInput = {
   status?:
     | Prisma.EnumTicketStatusEnumWithAggregatesFilter<'SupportTicket'>
     | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.EnumSupportCoverageEnumNullableWithAggregatesFilter<'SupportTicket'>
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringWithAggregatesFilter<'SupportTicket'> | string;
   description?: Prisma.StringNullableWithAggregatesFilter<'SupportTicket'> | string | null;
   billable?: Prisma.BoolWithAggregatesFilter<'SupportTicket'> | boolean;
@@ -427,6 +448,7 @@ export type SupportTicketCreateInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -451,6 +473,7 @@ export type SupportTicketUncheckedCreateInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -467,6 +490,10 @@ export type SupportTicketUpdateInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -491,6 +518,10 @@ export type SupportTicketUncheckedUpdateInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -511,6 +542,7 @@ export type SupportTicketCreateManyInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -527,6 +559,10 @@ export type SupportTicketUpdateManyMutationInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -546,6 +582,10 @@ export type SupportTicketUncheckedUpdateManyInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -576,6 +616,7 @@ export type SupportTicketCountOrderByAggregateInput = {
   category?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  coverageDecision?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   billable?: Prisma.SortOrder;
@@ -596,6 +637,7 @@ export type SupportTicketMaxOrderByAggregateInput = {
   category?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  coverageDecision?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   billable?: Prisma.SortOrder;
@@ -616,6 +658,7 @@ export type SupportTicketMinOrderByAggregateInput = {
   category?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  coverageDecision?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   billable?: Prisma.SortOrder;
@@ -982,6 +1025,10 @@ export type EnumTicketStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.TicketStatusEnum;
 };
 
+export type NullableEnumSupportCoverageEnumFieldUpdateOperationsInput = {
+  set?: $Enums.SupportCoverageEnum | null;
+};
+
 export type SupportTicketCreateNestedManyWithoutAssigneeInput = {
   create?:
     | Prisma.XOR<
@@ -1074,6 +1121,7 @@ export type SupportTicketCreateWithoutContactInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1096,6 +1144,7 @@ export type SupportTicketUncheckedCreateWithoutContactInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1160,6 +1209,10 @@ export type SupportTicketScalarWhereInput = {
   category?: Prisma.EnumTicketCategoryEnumFilter<'SupportTicket'> | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFilter<'SupportTicket'> | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFilter<'SupportTicket'> | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.EnumSupportCoverageEnumNullableFilter<'SupportTicket'>
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFilter<'SupportTicket'> | string;
   description?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
   billable?: Prisma.BoolFilter<'SupportTicket'> | boolean;
@@ -1176,6 +1229,7 @@ export type SupportTicketCreateWithoutProjectInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1198,6 +1252,7 @@ export type SupportTicketUncheckedCreateWithoutProjectInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1255,6 +1310,7 @@ export type SupportTicketCreateWithoutProductInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1277,6 +1333,7 @@ export type SupportTicketUncheckedCreateWithoutProductInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1334,6 +1391,7 @@ export type SupportTicketCreateWithoutExtensionDealInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1356,6 +1414,7 @@ export type SupportTicketUncheckedCreateWithoutExtensionDealInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1415,6 +1474,7 @@ export type SupportTicketCreateWithoutAssigneeInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1438,6 +1498,7 @@ export type SupportTicketUncheckedCreateWithoutAssigneeInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1497,6 +1558,7 @@ export type SupportTicketCreateManyContactInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1513,6 +1575,10 @@ export type SupportTicketUpdateWithoutContactInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1535,6 +1601,10 @@ export type SupportTicketUncheckedUpdateWithoutContactInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1554,6 +1624,10 @@ export type SupportTicketUncheckedUpdateManyWithoutContactInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1573,6 +1647,7 @@ export type SupportTicketCreateManyProjectInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1589,6 +1664,10 @@ export type SupportTicketUpdateWithoutProjectInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1611,6 +1690,10 @@ export type SupportTicketUncheckedUpdateWithoutProjectInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1630,6 +1713,10 @@ export type SupportTicketUncheckedUpdateManyWithoutProjectInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1649,6 +1736,7 @@ export type SupportTicketCreateManyProductInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1665,6 +1753,10 @@ export type SupportTicketUpdateWithoutProductInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1687,6 +1779,10 @@ export type SupportTicketUncheckedUpdateWithoutProductInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1706,6 +1802,10 @@ export type SupportTicketUncheckedUpdateManyWithoutProductInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1725,6 +1825,7 @@ export type SupportTicketCreateManyExtensionDealInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1741,6 +1842,10 @@ export type SupportTicketUpdateWithoutExtensionDealInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1763,6 +1868,10 @@ export type SupportTicketUncheckedUpdateWithoutExtensionDealInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1782,6 +1891,10 @@ export type SupportTicketUncheckedUpdateManyWithoutExtensionDealInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1802,6 +1915,7 @@ export type SupportTicketCreateManyAssigneeInput = {
   category: $Enums.TicketCategoryEnum;
   priority?: $Enums.TicketPriorityEnum;
   status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
   billable?: boolean;
@@ -1817,6 +1931,10 @@ export type SupportTicketUpdateWithoutAssigneeInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1840,6 +1958,10 @@ export type SupportTicketUncheckedUpdateWithoutAssigneeInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1859,6 +1981,10 @@ export type SupportTicketUncheckedUpdateManyWithoutAssigneeInput = {
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
   status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
@@ -1881,6 +2007,7 @@ export type SupportTicketSelect<
     category?: boolean;
     priority?: boolean;
     status?: boolean;
+    coverageDecision?: boolean;
     title?: boolean;
     description?: boolean;
     billable?: boolean;
@@ -1911,6 +2038,7 @@ export type SupportTicketSelectCreateManyAndReturn<
     category?: boolean;
     priority?: boolean;
     status?: boolean;
+    coverageDecision?: boolean;
     title?: boolean;
     description?: boolean;
     billable?: boolean;
@@ -1941,6 +2069,7 @@ export type SupportTicketSelectUpdateManyAndReturn<
     category?: boolean;
     priority?: boolean;
     status?: boolean;
+    coverageDecision?: boolean;
     title?: boolean;
     description?: boolean;
     billable?: boolean;
@@ -1968,6 +2097,7 @@ export type SupportTicketSelectScalar = {
   category?: boolean;
   priority?: boolean;
   status?: boolean;
+  coverageDecision?: boolean;
   title?: boolean;
   description?: boolean;
   billable?: boolean;
@@ -1990,6 +2120,7 @@ export type SupportTicketOmit<
   | 'category'
   | 'priority'
   | 'status'
+  | 'coverageDecision'
   | 'title'
   | 'description'
   | 'billable'
@@ -2050,6 +2181,7 @@ export type $SupportTicketPayload<
       category: $Enums.TicketCategoryEnum;
       priority: $Enums.TicketPriorityEnum;
       status: $Enums.TicketStatusEnum;
+      coverageDecision: $Enums.SupportCoverageEnum | null;
       title: string;
       description: string | null;
       billable: boolean;
@@ -2703,6 +2835,7 @@ export interface SupportTicketFieldRefs {
   readonly category: Prisma.FieldRef<'SupportTicket', 'TicketCategoryEnum'>;
   readonly priority: Prisma.FieldRef<'SupportTicket', 'TicketPriorityEnum'>;
   readonly status: Prisma.FieldRef<'SupportTicket', 'TicketStatusEnum'>;
+  readonly coverageDecision: Prisma.FieldRef<'SupportTicket', 'SupportCoverageEnum'>;
   readonly title: Prisma.FieldRef<'SupportTicket', 'String'>;
   readonly description: Prisma.FieldRef<'SupportTicket', 'String'>;
   readonly billable: Prisma.FieldRef<'SupportTicket', 'Boolean'>;

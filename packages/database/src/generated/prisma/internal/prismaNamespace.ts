@@ -4129,6 +4129,7 @@ export const SupportTicketScalarFieldEnum = {
   category: 'category',
   priority: 'priority',
   status: 'status',
+  coverageDecision: 'coverageDecision',
   title: 'title',
   description: 'description',
   billable: 'billable',
@@ -5118,6 +5119,22 @@ export type EnumTicketStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type ListEnumTicketStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'TicketStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'SupportCoverageEnum'
+ */
+export type EnumSupportCoverageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'SupportCoverageEnum'
+>;
+
+/**
+ * Reference to a field of type 'SupportCoverageEnum[]'
+ */
+export type ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'SupportCoverageEnum[]'
 >;
 
 /**

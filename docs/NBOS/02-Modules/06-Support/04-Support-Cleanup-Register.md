@@ -8,16 +8,17 @@
 
 Эти части уже близки к новому канону и не требуют архитектурного разворота.
 
-| Область                                                                             | Статус    | Комментарий                                                                |
-| ----------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------- |
-| `SupportTicket` как отдельная сущность                                              | `OK`      | В БД и API ticket уже отдельный объект, не смешан с задачей                |
-| Категории `INCIDENT / SERVICE_REQUEST / CHANGE_REQUEST / PROBLEM`                   | `OK`      | Хорошо совпадают с каноном                                                 |
-| Базовый lifecycle `NEW -> TRIAGED -> ASSIGNED -> IN_PROGRESS -> RESOLVED -> CLOSED` | `OK`      | Основа правильная, нужна только логическая доочистка вокруг reopen/waiting |
-| Связь `Ticket -> Project`                                                           | `OK`      | Уже обязательна в runtime                                                  |
-| Связь `Ticket -> Product`                                                           | `PARTIAL` | Поле есть и участвует в API/UI bridge, но product-context ещё неполный     |
-| Support -> execution task bridge                                                    | `PARTIAL` | Ticket can create linked Task without becoming a task itself               |
-| Change Request -> Extension Deal bridge                                             | `PARTIAL` | Change Request ticket can create/link an Extension Deal                    |
-| Базовые SLA deadlines                                                               | `PARTIAL` | Есть вычисление дедлайнов по priority, но процесс вокруг них ещё упрощён   |
+| Область                                                                             | Статус    | Комментарий                                                                 |
+| ----------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------- |
+| `SupportTicket` как отдельная сущность                                              | `OK`      | В БД и API ticket уже отдельный объект, не смешан с задачей                 |
+| Категории `INCIDENT / SERVICE_REQUEST / CHANGE_REQUEST / PROBLEM`                   | `OK`      | Хорошо совпадают с каноном                                                  |
+| Базовый lifecycle `NEW -> TRIAGED -> ASSIGNED -> IN_PROGRESS -> RESOLVED -> CLOSED` | `OK`      | Основа правильная, нужна только логическая доочистка вокруг reopen/waiting  |
+| Связь `Ticket -> Project`                                                           | `OK`      | Уже обязательна в runtime                                                   |
+| Связь `Ticket -> Product`                                                           | `PARTIAL` | Поле есть и участвует в API/UI bridge, но product-context ещё неполный      |
+| Support -> execution task bridge                                                    | `PARTIAL` | Ticket can create linked Task without becoming a task itself                |
+| Change Request -> Extension Deal bridge                                             | `PARTIAL` | Change Request ticket can create/link an Extension Deal                     |
+| Coverage decision                                                                   | `PARTIAL` | Runtime field exists; Finance/Maintenance automation is not implemented     |
+| Базовые SLA deadlines                                                               | `PARTIAL` | Deadlines and read-only SLA state exist; pause/escalation orchestration нет |
 
 ---
 
@@ -49,7 +50,7 @@
 | SLA pause / breach / escalation logic              | `STALE CODE` | Есть только дедлайны, но нет зрелого pause/escalation orchestration                             |
 | Support UI                                         | `STALE CODE` | Сейчас это базовая list/kanban page без product-context, change-control view и waiting overlays |
 | Support -> Technical Infrastructure link           | `MISSING`    | Нет связи ticket с Technical Asset / Environment / Deployment Record                            |
-| Coverage decision                                  | `MISSING`    | Нет поля/процесса maintenance-covered / free / billable / extension required                    |
+| Coverage decision                                  | `PARTIAL`    | Runtime field exists; maintenance/finance bridge remains manual                                 |
 | External Messenger message link                    | `MISSING`    | Нет связи ticket с external WhatsApp/CRM conversation/message                                   |
 | Resolution close requirements                      | `PARTIAL`    | Нет обязательных resolution summary, client confirmation / auto-close reason                    |
 

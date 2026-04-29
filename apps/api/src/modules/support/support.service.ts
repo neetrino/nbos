@@ -4,11 +4,13 @@ import {
   type Prisma,
   type TaskPriorityEnum,
   type PaymentTypeEnum,
+  type SupportCoverageEnum,
   type TicketStatusEnum,
   type TicketPriorityEnum,
   type TicketCategoryEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { buildSupportSlaProjection } from './support-sla';
 
 const SLA_DEADLINES: Record<string, { responseHours: number; resolveHours: number }> = {
   P1: { responseHours: 4, resolveHours: 24 },
@@ -52,6 +54,7 @@ interface CreateTicketDto {
   category: string;
   description?: string;
   productId?: string;
+  coverageDecision?: string | null;
   contactId?: string;
   priority?: string;
   billable?: boolean;
@@ -65,6 +68,7 @@ interface UpdateTicketDto {
   productId?: string | null;
   contactId?: string;
   category?: string;
+  coverageDecision?: string | null;
   priority?: string;
   billable?: boolean;
   assignedTo?: string;
@@ -75,6 +79,7 @@ interface TicketQueryParams {
   pageSize?: number;
   projectId?: string;
   productId?: string;
+  coverageDecision?: string;
   status?: string;
   priority?: string;
   category?: string;
@@ -109,16 +114,27 @@ export class SupportService {
       page = 1,
       pageSize = 20,
       projectId,
+      productId,
       status,
       priority,
       category,
+      coverageDecision,
       assignedTo,
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = params;
 
-    const where = this.buildWhere({ projectId, status, priority, category, assignedTo, search });
+    const where = this.buildWhere({
+      projectId,
+      productId,
+      status,
+      priority,
+      category,
+      coverageDecision,
+      assignedTo,
+      search,
+    });
 
     const [items, total] = await Promise.all([
       this.prisma.supportTicket.findMany({
@@ -132,7 +148,7 @@ export class SupportService {
     ]);
 
     return {
-      items,
+      items: items.map((ticket) => this.attachSla(ticket)),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -144,7 +160,7 @@ export class SupportService {
     });
     if (!ticket) throw new NotFoundException(`Support ticket ${id} not found`);
     const executionTasks = await this.findExecutionTasks(id);
-    return { ...ticket, executionTasks };
+    return { ...this.attachSla(ticket), executionTasks };
   }
 
   async create(data: CreateTicketDto) {
@@ -152,13 +168,14 @@ export class SupportService {
     const priority = (data.priority as TicketPriorityEnum) ?? 'P3';
     const sla = this.calculateSlaDeadlines(priority);
 
-    return this.prisma.supportTicket.create({
+    const ticket = await this.prisma.supportTicket.create({
       data: {
         code,
         title: data.title,
         projectId: data.projectId,
         productId: data.productId,
         category: data.category as TicketCategoryEnum,
+        coverageDecision: data.coverageDecision as SupportCoverageEnum | undefined,
         description: data.description,
         contactId: data.contactId,
         priority,
@@ -169,6 +186,7 @@ export class SupportService {
       },
       include: SUPPORT_TICKET_INCLUDE,
     });
+    return this.attachSla(ticket);
   }
 
   async update(id: string, data: UpdateTicketDto) {
@@ -185,6 +203,11 @@ export class SupportService {
         contact: data.contactId ? { connect: { id: data.contactId } } : { disconnect: true },
       }),
       ...(data.category && { category: data.category as TicketCategoryEnum }),
+      ...(data.coverageDecision !== undefined && {
+        coverageDecision: data.coverageDecision
+          ? (data.coverageDecision as SupportCoverageEnum)
+          : null,
+      }),
       ...(data.billable !== undefined && { billable: data.billable }),
       ...(data.assignedTo !== undefined && {
         assignee: data.assignedTo ? { connect: { id: data.assignedTo } } : { disconnect: true },
@@ -198,11 +221,12 @@ export class SupportService {
       updateData.slaResolveDeadline = sla.resolveDeadline;
     }
 
-    return this.prisma.supportTicket.update({
+    const ticket = await this.prisma.supportTicket.update({
       where: { id },
       data: updateData,
       include: SUPPORT_TICKET_INCLUDE,
     });
+    return this.attachSla(ticket);
   }
 
   async createExecutionTask(id: string, data: CreateTicketTaskDto) {
@@ -271,10 +295,12 @@ export class SupportService {
 
   async updateStatus(id: string, status: string) {
     await this.findById(id);
-    return this.prisma.supportTicket.update({
+    const ticket = await this.prisma.supportTicket.update({
       where: { id },
       data: { status: status as TicketStatusEnum },
+      include: SUPPORT_TICKET_INCLUDE,
     });
+    return this.attachSla(ticket);
   }
 
   async delete(id: string) {
@@ -283,12 +309,13 @@ export class SupportService {
   }
 
   async getStats() {
-    const [byStatus, byPriority, byCategory] = await Promise.all([
+    const [byStatus, byPriority, byCategory, byCoverage] = await Promise.all([
       this.prisma.supportTicket.groupBy({ by: ['status'], _count: true }),
       this.prisma.supportTicket.groupBy({ by: ['priority'], _count: true }),
       this.prisma.supportTicket.groupBy({ by: ['category'], _count: true }),
+      this.prisma.supportTicket.groupBy({ by: ['coverageDecision'], _count: true }),
     ]);
-    return { byStatus, byPriority, byCategory };
+    return { byStatus, byPriority, byCategory, byCoverage };
   }
 
   private calculateSlaDeadlines(priority: string) {
@@ -309,6 +336,9 @@ export class SupportService {
     if (filters.status) where.status = filters.status as TicketStatusEnum;
     if (filters.priority) where.priority = filters.priority as TicketPriorityEnum;
     if (filters.category) where.category = filters.category as TicketCategoryEnum;
+    if (filters.coverageDecision) {
+      where.coverageDecision = filters.coverageDecision as SupportCoverageEnum;
+    }
     if (filters.assignedTo) where.assignedTo = filters.assignedTo;
     if (filters.search) {
       where.OR = [
@@ -317,6 +347,12 @@ export class SupportService {
       ];
     }
     return where;
+  }
+
+  private attachSla<
+    T extends { status: string; slaResponseDeadline: Date | null; slaResolveDeadline: Date | null },
+  >(ticket: T) {
+    return { ...ticket, slaState: buildSupportSlaProjection(ticket) };
   }
 
   private async generateCode(): Promise<string> {

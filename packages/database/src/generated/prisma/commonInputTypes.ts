@@ -1516,6 +1516,25 @@ export type EnumTicketStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumTicketStatusEnumFilter<$PrismaModel> | $Enums.TicketStatusEnum;
 };
 
+export type EnumSupportCoverageEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SupportCoverageEnum
+    | Prisma.EnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SupportCoverageEnum[]
+    | Prisma.ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SupportCoverageEnum[]
+    | Prisma.ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>
+    | $Enums.SupportCoverageEnum
+    | null;
+};
+
 export type EnumTicketCategoryEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.TicketCategoryEnum | Prisma.EnumTicketCategoryEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.TicketCategoryEnum[] | Prisma.ListEnumTicketCategoryEnumFieldRefInput<$PrismaModel>;
@@ -1554,6 +1573,28 @@ export type EnumTicketStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumTicketStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumTicketStatusEnumFilter<$PrismaModel>;
+};
+
+export type EnumSupportCoverageEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SupportCoverageEnum
+    | Prisma.EnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SupportCoverageEnum[]
+    | Prisma.ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SupportCoverageEnum[]
+    | Prisma.ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSupportCoverageEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.SupportCoverageEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
 };
 
 export type EnumCredentialCategoryEnumFilter<$PrismaModel = never> = {
@@ -3355,6 +3396,25 @@ export type NestedEnumTicketStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumTicketStatusEnumFilter<$PrismaModel> | $Enums.TicketStatusEnum;
 };
 
+export type NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SupportCoverageEnum
+    | Prisma.EnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SupportCoverageEnum[]
+    | Prisma.ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SupportCoverageEnum[]
+    | Prisma.ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>
+    | $Enums.SupportCoverageEnum
+    | null;
+};
+
 export type NestedEnumTicketCategoryEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.TicketCategoryEnum | Prisma.EnumTicketCategoryEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.TicketCategoryEnum[] | Prisma.ListEnumTicketCategoryEnumFieldRefInput<$PrismaModel>;
@@ -3393,6 +3453,28 @@ export type NestedEnumTicketStatusEnumWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumTicketStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumTicketStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumSupportCoverageEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SupportCoverageEnum
+    | Prisma.EnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SupportCoverageEnum[]
+    | Prisma.ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SupportCoverageEnum[]
+    | Prisma.ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSupportCoverageEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.SupportCoverageEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
 };
 
 export type NestedEnumCredentialCategoryEnumFilter<$PrismaModel = never> = {
