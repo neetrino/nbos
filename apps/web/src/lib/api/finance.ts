@@ -74,6 +74,13 @@ export interface Payment {
   confirmer?: { id: string; firstName: string; lastName: string } | null;
 }
 
+export interface PaymentListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  invoiceId?: string;
+}
+
 export interface Order {
   id: string;
   code: string;
@@ -358,7 +365,7 @@ export const invoicesApi = {
 };
 
 export const paymentsApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Payment>> {
+  async getAll(params?: PaymentListParams): Promise<ListData<Payment>> {
     const resp = await api.get<ListData<Payment>>('/api/finance/payments', { params });
     return resp.data;
   },

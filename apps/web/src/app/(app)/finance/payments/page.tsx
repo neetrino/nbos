@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { RefreshCcw, CreditCard, DollarSign, FileText, FolderKanban, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { CreditCard, DollarSign, FileText, FolderKanban, Calendar } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -11,23 +10,23 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
+import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import {
-  PageHeader,
-  FilterBar,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  StatusBadge,
-} from '@/components/shared';
-import {
-  FINANCE_PERIOD_OPTIONS,
   getFinancePeriodParams,
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
+import { PaymentsPageHeader } from '@/features/finance/components/payments/PaymentsPageHeader';
+import { usePaymentsCsvExport } from '@/features/finance/components/payments/use-payments-csv-export';
+import { buildPaymentListApiParams } from '@/features/finance/utils/build-payment-list-api-params';
 import { paymentsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { paymentsApi, type Payment, type PaymentStats } from '@/lib/api/finance';
+import {
+  paymentsApi,
+  type Payment,
+  type PaymentListParams,
+  type PaymentStats,
+} from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 export default function PaymentsPage() {
@@ -38,17 +37,24 @@ export default function PaymentsPage() {
   const [search, setSearch] = useState('');
   const [period, setPeriod] = useState<FinancePeriod>('month');
 
+  const paymentListExportParams: Omit<PaymentListParams, 'page' | 'pageSize'> = useMemo(
+    () => buildPaymentListApiParams({ search, period }),
+    [search, period],
+  );
+
+  const { exportCsvSubmitting, handleExportCsv } = usePaymentsCsvExport(paymentListExportParams);
+
   useFinanceDocumentTitle(paymentsListPageTitle());
 
   const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
       const periodParams = getFinancePeriodParams(period);
+      const listParams = buildPaymentListApiParams({ search, period });
       const [data, paymentStats] = await Promise.all([
         paymentsApi.getAll({
+          ...listParams,
           pageSize: 100,
-          search: search || undefined,
-          ...periodParams,
         }),
         paymentsApi.getStats(periodParams),
       ]);
@@ -77,23 +83,15 @@ export default function PaymentsPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Payments" description={`${payments.length} payments`}>
-        <div className="border-border flex rounded-lg border p-1">
-          {FINANCE_PERIOD_OPTIONS.map((option) => (
-            <Button
-              key={option.value}
-              variant={period === option.value ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setPeriod(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
-        <Button variant="outline" size="icon" onClick={fetchPayments}>
-          <RefreshCcw size={16} />
-        </Button>
-      </PageHeader>
+      <PaymentsPageHeader
+        visiblePaymentCount={payments.length}
+        period={period}
+        onPeriodChange={setPeriod}
+        onRefresh={fetchPayments}
+        onExportCsv={handleExportCsv}
+        exportDisabled={loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
+      />
 
       <div className="grid grid-cols-3 gap-4">
         <div className="border-border bg-card rounded-xl border p-4">
