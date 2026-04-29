@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { PayrollRunsService } from '../../payroll-runs/payroll-runs.service';
 import { getFinanceReconciliationSummary } from './finance-reconciliation-summary';
 
 interface FinanceSummaryParams {
@@ -10,17 +11,27 @@ interface FinanceSummaryParams {
 
 @Injectable()
 export class FinanceSummaryService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly payrollRunsService: PayrollRunsService,
+  ) {}
 
   async getDashboardSummary(params: FinanceSummaryParams = {}) {
-    const [invoiceStats, subscriptionStats, recentPayments, upcomingInvoices, reconciliation] =
-      await Promise.all([
-        this.getInvoiceStats(params),
-        this.getSubscriptionStats(params),
-        this.getRecentPayments(params),
-        this.getUpcomingInvoices(params),
-        getFinanceReconciliationSummary(this.prisma),
-      ]);
+    const [
+      invoiceStats,
+      subscriptionStats,
+      recentPayments,
+      upcomingInvoices,
+      reconciliation,
+      payrollRuns,
+    ] = await Promise.all([
+      this.getInvoiceStats(params),
+      this.getSubscriptionStats(params),
+      this.getRecentPayments(params),
+      this.getUpcomingInvoices(params),
+      getFinanceReconciliationSummary(this.prisma),
+      this.payrollRunsService.getStats({}),
+    ]);
 
     return {
       kpis: {
@@ -36,6 +47,8 @@ export class FinanceSummaryService {
       reconciliation,
       recentPayments,
       upcomingInvoices,
+      /** Workspace-wide payroll run aggregates (not filtered by invoice `dateFrom`/`dateTo`). */
+      payrollRuns,
     };
   }
 

@@ -90,7 +90,15 @@ function appendUpcomingInvoices(rows: string[], data: FinanceDashboardData): voi
   }
 }
 
-/** Multi-section snapshot: KPIs, invoice mix, reconciliation, recent payments, upcoming invoices. */
+function appendPayrollRuns(rows: string[], data: FinanceDashboardData): void {
+  const p = data.payrollRuns;
+  rows.push(csvLine(['payroll_runs', 'runCount', String(p.runCount), '', '', '']));
+  rows.push(csvLine(['payroll_runs', 'totalPayable', p.totalPayable.toFixed(2), '', '', '']));
+  rows.push(csvLine(['payroll_runs', 'totalPaid', p.totalPaid.toFixed(2), '', '', '']));
+  rows.push(csvLine(['payroll_runs', 'totalRemaining', p.totalRemaining.toFixed(2), '', '', '']));
+}
+
+/** Multi-section snapshot: KPIs, invoice mix, reconciliation, recent payments, upcoming invoices, payroll runs. */
 export function buildFinanceDashboardCsvContent(
   data: FinanceDashboardData,
   options: { period: FinancePeriod },
@@ -103,6 +111,7 @@ export function buildFinanceDashboardCsvContent(
   appendReconciliation(rows, data);
   appendRecentPayments(rows, data);
   appendUpcomingInvoices(rows, data);
+  appendPayrollRuns(rows, data);
   return rows.join('\r\n');
 }
 

@@ -1,13 +1,15 @@
 import Link from 'next/link';
-import { AlertTriangle, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Landmark } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   orderReconciliationDrilldownHref,
   orderReconciliationGapForFinanceWarningCode,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
+import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import type {
   FinanceDashboardData,
+  FinanceDashboardPayrollRunsSummary,
   FinanceKpi,
   InvoiceStatusItem,
   RecentPaymentItem,
@@ -27,6 +29,8 @@ export function DashboardLoadingSkeleton() {
           <Skeleton key={index} className="h-36 rounded-2xl" />
         ))}
       </div>
+
+      <Skeleton className="h-28 w-full rounded-2xl" />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Skeleton className="h-80 rounded-2xl" />
@@ -73,6 +77,42 @@ export function RecentPayments({ items }: { items: RecentPaymentItem[] }) {
         ) : (
           items.map((item) => <RecentPaymentRow key={item.id} item={item} />)
         )}
+      </div>
+    </div>
+  );
+}
+
+export function PayrollRunsSnapshot({ payroll }: { payroll: FinanceDashboardPayrollRunsSummary }) {
+  const href = payrollRunsListHref();
+
+  return (
+    <div className="border-border bg-card rounded-2xl border p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
+            <Landmark size={20} aria-hidden />
+          </div>
+          <div>
+            <h2 className="text-foreground text-lg font-semibold">Payroll runs</h2>
+            <p className="text-muted-foreground mt-1 max-w-xl text-sm">
+              Workspace totals from <span className="font-medium">GET /payroll-runs/stats</span>{' '}
+              (all runs). Not filtered by the invoice period selector above.
+            </p>
+          </div>
+        </div>
+        <Link
+          href={href}
+          className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-sm font-medium"
+        >
+          Open payroll
+          <ArrowUpRight size={14} aria-hidden />
+        </Link>
+      </div>
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-4">
+        <Metric label="Runs in scope" value={String(payroll.runCount)} />
+        <Metric label="Total payable" value={formatAmount(payroll.totalPayable)} />
+        <Metric label="Total paid" value={formatAmount(payroll.totalPaid)} />
+        <Metric label="Remaining" value={formatAmount(payroll.totalRemaining)} />
       </div>
     </div>
   );
@@ -144,6 +184,10 @@ export function FinanceNotes() {
         </p>
         <p className="text-muted-foreground">
           MRR is calculated from active subscriptions only, matching the subscriptions page.
+        </p>
+        <p className="text-muted-foreground">
+          Payroll run totals are workspace-wide and come from the same stats payload as the payroll
+          list scope card — independent of invoice period filters.
         </p>
       </div>
     </div>

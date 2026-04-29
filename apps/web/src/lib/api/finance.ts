@@ -303,6 +303,27 @@ export interface PaymentStats {
   thisMonthCollected: number | null;
 }
 
+/** Workspace-wide payroll aggregates from `GET /payroll-runs/stats` (same shape as list stats). */
+export interface FinanceDashboardPayrollRuns {
+  runCount: number;
+  totals: {
+    totalBaseSalary: string;
+    totalBonuses: string;
+    totalAdjustments: string;
+    totalDeductions: string;
+    totalPayable: string;
+    totalPaid: string;
+    totalRemaining: string;
+  };
+  byStatus: Array<{
+    status: string;
+    runCount: number;
+    totalPayable: string;
+    totalPaid: string;
+    totalRemaining: string;
+  }>;
+}
+
 export interface FinanceDashboardSummary {
   kpis: {
     totalRevenue: number | null;
@@ -349,6 +370,7 @@ export interface FinanceDashboardSummary {
     company: { id: string; name: string } | null;
     projectId: string;
   }>;
+  payrollRuns: FinanceDashboardPayrollRuns;
 }
 
 export const invoicesApi = {

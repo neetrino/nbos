@@ -1,6 +1,14 @@
 import type { ComponentType } from 'react';
 import type { FinanceDashboardSummary } from '@/lib/api/finance';
 
+/** Payroll headline figures for Finance Overview (parsed from API decimal strings). */
+export interface FinanceDashboardPayrollRunsSummary {
+  runCount: number;
+  totalPayable: number;
+  totalPaid: number;
+  totalRemaining: number;
+}
+
 export interface FinanceDashboardData {
   totalRevenue: number;
   outstandingAmount: number;
@@ -10,6 +18,7 @@ export interface FinanceDashboardData {
   invoiceStatusItems: InvoiceStatusItem[];
   recentPayments: RecentPaymentItem[];
   upcomingInvoices: UpcomingInvoiceItem[];
+  payrollRuns: FinanceDashboardPayrollRunsSummary;
 }
 
 export interface FinanceKpi {
@@ -59,6 +68,7 @@ const INVOICE_STATUS_META: Record<string, { label: string; color: string }> = {
 };
 
 export function buildFinanceDashboardData(summary: FinanceDashboardSummary): FinanceDashboardData {
+  const pr = summary.payrollRuns;
   return {
     totalRevenue: toAmount(summary.kpis.totalRevenue),
     outstandingAmount: toAmount(summary.kpis.outstandingAmount),
@@ -68,6 +78,12 @@ export function buildFinanceDashboardData(summary: FinanceDashboardSummary): Fin
     invoiceStatusItems: buildInvoiceStatusItems(summary),
     recentPayments: buildRecentPayments(summary),
     upcomingInvoices: buildUpcomingInvoices(summary),
+    payrollRuns: {
+      runCount: pr.runCount,
+      totalPayable: toAmount(pr.totals.totalPayable),
+      totalPaid: toAmount(pr.totals.totalPaid),
+      totalRemaining: toAmount(pr.totals.totalRemaining),
+    },
   };
 }
 

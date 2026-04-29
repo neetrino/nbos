@@ -15,6 +15,7 @@ import {
   FinanceNotes,
   InvoiceDistribution,
   KpiCards,
+  PayrollRunsSnapshot,
   RecentPayments,
   ReconciliationSnapshot,
   UpcomingInvoices,
@@ -92,6 +93,8 @@ export default function FinanceDashboardPage() {
       />
       <KpiCards kpis={buildKpis(data)} />
 
+      <PayrollRunsSnapshot payroll={data.payrollRuns} />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <InvoiceDistribution items={data.invoiceStatusItems} />
         <RecentPayments items={data.recentPayments} />
@@ -123,7 +126,8 @@ function DashboardHeader({
       <div>
         <h1 className="text-foreground text-2xl font-semibold">Finance Overview</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Revenue, invoices, order coverage, and payment analytics from live finance data.
+          Revenue, invoices, order coverage, payment analytics, and workspace payroll run totals
+          from live finance data.
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -153,7 +157,7 @@ function DashboardHeader({
           size="icon"
           onClick={onExportCsv}
           aria-label="Export finance dashboard snapshot as CSV"
-          title="KPIs, invoice mix, reconciliation, recent payments, and upcoming invoices for this period"
+          title="KPIs, invoice mix, reconciliation, recent payments, upcoming invoices, and payroll run totals for this period"
         >
           <Download size={16} />
         </Button>

@@ -1,14 +1,38 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FinanceSummaryService } from './summary.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
+
+function emptyPayrollRunStats() {
+  return {
+    runCount: 0,
+    totals: {
+      totalBaseSalary: '0.00',
+      totalBonuses: '0.00',
+      totalAdjustments: '0.00',
+      totalDeductions: '0.00',
+      totalPayable: '0.00',
+      totalPaid: '0.00',
+      totalRemaining: '0.00',
+    },
+    byStatus: [] as Array<{
+      status: string;
+      runCount: number;
+      totalPayable: string;
+      totalPaid: string;
+      totalRemaining: string;
+    }>,
+  };
+}
 
 describe('FinanceSummaryService', () => {
   let service: FinanceSummaryService;
   let prisma: MockPrisma;
+  let payrollMock: { getStats: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new FinanceSummaryService(prisma as never);
+    payrollMock = { getStats: vi.fn().mockResolvedValue(emptyPayrollRunStats()) };
+    service = new FinanceSummaryService(prisma as never, payrollMock as never);
   });
 
   it('returns finance dashboard summary from aggregate sources', async () => {
@@ -96,6 +120,8 @@ describe('FinanceSummaryService', () => {
       code: 'INV-2',
       company: { id: 'comp-2', name: 'Globex' },
     });
+    expect(result.payrollRuns).toEqual(emptyPayrollRunStats());
+    expect(payrollMock.getStats).toHaveBeenCalledWith({});
   });
 
   it('applies date filters to period-aware dashboard reads', async () => {
@@ -136,5 +162,6 @@ describe('FinanceSummaryService', () => {
         }),
       }),
     );
+    expect(payrollMock.getStats).toHaveBeenCalledWith({});
   });
 });
