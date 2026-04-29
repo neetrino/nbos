@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { LoadingState } from '@/components/shared';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
@@ -10,9 +10,11 @@ import { InvoicesPageContent } from '@/features/finance/components/invoices/Invo
 import { InvoicesPageHeader } from '@/features/finance/components/invoices/InvoicesPageHeader';
 import { InvoiceStatsCards } from '@/features/finance/components/invoices/InvoiceStatsCards';
 import { useInvoicesCsvExport } from '@/features/finance/components/invoices/use-invoices-csv-export';
+import { useInvoicesScopeStatsCsvExport } from '@/features/finance/components/invoices/use-invoices-scope-stats-csv-export';
 import { useInvoicesPageState } from '@/features/finance/components/invoices/useInvoicesPageState';
 import { invoicesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
+import { getFinancePeriodParams } from '@/features/finance/constants/finance';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { Button } from '@/components/ui/button';
 
@@ -26,6 +28,15 @@ function InvoicesPageInner() {
   const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
     state.invoiceListExportParams,
   );
+
+  const periodParams = useMemo(() => getFinancePeriodParams(state.period), [state.period]);
+
+  const { handleExportScopeStatsCsv } = useInvoicesScopeStatsCsvExport(state.stats, {
+    period: state.period,
+    dateFrom: periodParams?.dateFrom,
+    dateTo: periodParams?.dateTo,
+    subscriptionId: subscriptionIdFromUrl?.trim() || undefined,
+  });
 
   useFinanceDocumentTitle(invoicesListPageTitle(Boolean(subscriptionIdFromUrl?.trim())));
 
@@ -45,6 +56,8 @@ function InvoicesPageInner() {
         onExportCsv={handleExportCsv}
         exportDisabled={state.loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={state.loading || !state.stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
       />
       <InvoiceStatsCards stats={state.stats} />
       {subscriptionIdFromUrl ? (

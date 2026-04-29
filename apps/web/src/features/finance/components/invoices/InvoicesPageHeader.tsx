@@ -1,4 +1,4 @@
-import { Download, LayoutGrid, List, Loader2, RefreshCcw } from 'lucide-react';
+import { Download, LayoutGrid, List, Loader2, RefreshCcw, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
@@ -14,6 +14,8 @@ interface InvoicesPageHeaderProps {
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
   exportInProgress: boolean;
+  statsExportDisabled: boolean;
+  onExportScopeStatsCsv: () => void;
 }
 
 export function InvoicesPageHeader({
@@ -26,6 +28,8 @@ export function InvoicesPageHeader({
   onExportCsv,
   exportDisabled,
   exportInProgress,
+  statsExportDisabled,
+  onExportScopeStatsCsv,
 }: InvoicesPageHeaderProps) {
   return (
     <PageHeader title="Invoices" description={`${invoiceCount} total`}>
@@ -43,6 +47,17 @@ export function InvoicesPageHeader({
       </div>
       <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh invoices">
         <RefreshCcw size={16} />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={statsExportDisabled}
+        onClick={() => onExportScopeStatsCsv()}
+        aria-label="Export invoice scope statistics as CSV"
+        title="UTF-8 CSV snapshot from GET /finance/invoices/stats (period + optional subscription; list search/stage filters are not applied—see scope_note row)"
+      >
+        <TableProperties size={16} aria-hidden />
       </Button>
       <Button
         type="button"
