@@ -38,8 +38,7 @@ import {
 import { PermissionGate } from '@/lib/permissions';
 import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDialog';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
-import type { Employee, RoleItem } from '@/lib/api/employees';
-import { api } from '@/lib/api';
+import { employeesApi, rolesApi, type Employee, type RoleItem } from '@/lib/api/employees';
 
 type ViewMode = 'list' | 'grid';
 
@@ -58,17 +57,15 @@ export default function TeamPage() {
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/employees', {
-        params: {
-          pageSize: 100,
-          search: search || undefined,
-          roleId: filters.role && filters.role !== 'all' ? filters.role : undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-          departmentId:
-            filters.department && filters.department !== 'all' ? filters.department : undefined,
-        },
+      const { items } = await employeesApi.getAll({
+        pageSize: 100,
+        search: search || undefined,
+        roleId: filters.role && filters.role !== 'all' ? filters.role : undefined,
+        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        departmentId:
+          filters.department && filters.department !== 'all' ? filters.department : undefined,
       });
-      setEmployees(resp.data.items ?? resp.data ?? []);
+      setEmployees(items);
       setError(null);
     } catch {
       setError('Employees could not be loaded. Check your connection and try again.');
@@ -82,9 +79,9 @@ export default function TeamPage() {
   }, [fetchEmployees]);
 
   useEffect(() => {
-    api
-      .get('/api/roles')
-      .then((r) => setRoles(r.data ?? []))
+    rolesApi
+      .getAll()
+      .then((r) => setRoles(r ?? []))
       .catch(() => {});
   }, []);
 
