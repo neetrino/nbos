@@ -31,3 +31,12 @@ export function sumPayrollRunsRemainingMajorUnits(
   }
   return cents / 100;
 }
+
+/** Sum independent NBOS decimal money strings (e.g. column roll-ups) in cent space. */
+export function sumMoneyStringsMajorUnits(values: ReadonlyArray<string>): number {
+  let cents = 0;
+  for (const v of values) {
+    cents += parseMoneyToCents(v);
+  }
+  return cents / 100;
+}

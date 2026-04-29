@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   payrollRunRemainingMajorUnits,
   payrollRunRemainingString2dp,
+  sumMoneyStringsMajorUnits,
   sumPayrollRunsRemainingMajorUnits,
 } from './payroll-run-remaining-from-strings';
 
@@ -26,5 +27,10 @@ describe('payrollRunRemainingFromStrings', () => {
         { totalPayable: '10.00', totalPaid: '25.00' },
       ]),
     ).toBe(45);
+  });
+
+  it('sums money strings for column roll-ups', () => {
+    expect(sumMoneyStringsMajorUnits(['10.00', '0.50'])).toBe(10.5);
+    expect(sumMoneyStringsMajorUnits([])).toBe(0);
   });
 });

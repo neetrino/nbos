@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import {
   Table,
@@ -10,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { SalaryLineRow } from '@/lib/api/payroll-runs';
 
 function parseAmount(value: string): number {
@@ -23,6 +25,15 @@ function employeeName(emp: SalaryLineRow['employee']): string {
 
 export function PayrollRunSalaryLinesTable(props: { lines: SalaryLineRow[] }) {
   const { lines } = props;
+
+  const lineTotals = useMemo(() => {
+    return {
+      base: sumMoneyStringsMajorUnits(lines.map((l) => l.baseSalary)),
+      bonuses: sumMoneyStringsMajorUnits(lines.map((l) => l.bonusesTotal)),
+      payable: sumMoneyStringsMajorUnits(lines.map((l) => l.totalPayable)),
+      remaining: sumMoneyStringsMajorUnits(lines.map((l) => l.remainingAmount)),
+    };
+  }, [lines]);
 
   return (
     <div className="border-border overflow-x-auto rounded-xl border">
@@ -76,6 +87,28 @@ export function PayrollRunSalaryLinesTable(props: { lines: SalaryLineRow[] }) {
             ))
           )}
         </TableBody>
+        {lines.length > 0 ? (
+          <tfoot>
+            <TableRow className="bg-muted/30 font-medium">
+              <TableCell className="text-muted-foreground text-xs">
+                Line totals ({lines.length})
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {formatAmount(lineTotals.base)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {formatAmount(lineTotals.bonuses)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {formatAmount(lineTotals.payable)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {formatAmount(lineTotals.remaining)}
+              </TableCell>
+              <TableCell />
+            </TableRow>
+          </tfoot>
+        ) : null}
       </Table>
     </div>
   );
