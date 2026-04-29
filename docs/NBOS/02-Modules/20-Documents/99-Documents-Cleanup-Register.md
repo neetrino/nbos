@@ -99,11 +99,11 @@ Done:
 
 Still missing vs full canon:
 
-- Drive-backed `DocumentAttachment` usage, TipTap image nodes → File Asset, `search_vector`, section-level ACL.
+- TipTap image node → File Asset wiring is shipped; depth: `search_vector`, section-level ACL, stronger Drive permission matrix on preview.
 
 ### B4. TipTap editor is missing
 
-Статус: `PARTIAL` — core editor, viewer, autosave and publish shipped; TipTap images and Drive-backed attachments remain Slice 5.
+Статус: `PARTIAL` — editor, `documentImage` (fileAssetId, no base64), Drive upload + attachments API shipped; polish (paste, callouts) later.
 
 Need editor with:
 
@@ -119,9 +119,7 @@ Need editor with:
 
 ### B5. Drive/R2 attachment flow is missing
 
-Статус: `PARTIAL FOUNDATION`
-
-Drive now has DB-backed File Asset, Version and Link metadata foundation. Documents still need their own attachment flow on top of that foundation, not direct raw R2 usage.
+Статус: `PARTIAL` — upload session with `entityType: DOCUMENT` + `DocumentAttachment` rows + preview URL shipped; deeper Drive↔Documents permission UX remains.
 
 ### B6. Search is missing
 

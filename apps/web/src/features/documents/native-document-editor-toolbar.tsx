@@ -1,12 +1,16 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
+import { useRef } from 'react';
 import type { Editor } from '@tiptap/core';
-import { Bold, Heading2, Italic, List, ListOrdered, Redo2, Undo2 } from 'lucide-react';
+import { Bold, Heading2, ImagePlus, Italic, List, ListOrdered, Redo2, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export interface NativeDocumentEditorToolbarProps {
   editor: Editor | null;
+  canUseDrive: boolean;
+  imageUploadBusy: boolean;
+  onPickImageFile: (file: File) => void;
 }
 
 function ToolbarButton({
@@ -38,10 +42,38 @@ function ToolbarButton({
   );
 }
 
-export function NativeDocumentEditorToolbar({ editor }: NativeDocumentEditorToolbarProps) {
+export function NativeDocumentEditorToolbar({
+  editor,
+  canUseDrive,
+  imageUploadBusy,
+  onPickImageFile,
+}: NativeDocumentEditorToolbarProps) {
+  const imageInputRef = useRef<HTMLInputElement>(null);
   if (!editor) return null;
+
+  const onImageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (file) onPickImageFile(file);
+  };
+
   return (
     <div className="border-border bg-muted/40 flex flex-wrap items-center gap-0.5 border-b px-1 py-1">
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        aria-hidden
+        onChange={onImageInputChange}
+      />
+      <ToolbarButton
+        label="Insert image"
+        disabled={!canUseDrive || imageUploadBusy}
+        onClick={() => imageInputRef.current?.click()}
+      >
+        <ImagePlus size={16} />
+      </ToolbarButton>
       <ToolbarButton
         label="Bold"
         active={editor.isActive('bold')}

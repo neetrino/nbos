@@ -34,6 +34,7 @@ describe('DocumentsService', () => {
       title: 'Hello',
       section: { id: 'sec', name: 'Technical', slug: 'technical', sortOrder: 80 },
       tagLinks: [],
+      attachments: [],
       activityEvents: [],
     });
 
@@ -44,6 +45,42 @@ describe('DocumentsService', () => {
     expect(prisma.documentActivityEvent.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ action: 'created', actorId: 'employee-1' }),
+      }),
+    );
+  });
+
+  it('adds document attachment when file is linked to the document', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.document.findUnique
+      .mockResolvedValueOnce({ id: 'doc-1', status: 'DRAFT' })
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        title: 'T',
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
+        tagLinks: [],
+        attachments: [],
+        activityEvents: [],
+      });
+    prisma.fileLink.findFirst.mockResolvedValueOnce({ id: 'link-1' });
+    prisma.fileAsset.findUnique.mockResolvedValueOnce({ id: 'fa-1', mimeType: 'image/png' });
+    prisma.documentAttachment.findFirst.mockResolvedValueOnce(null);
+    prisma.documentAttachment.create.mockResolvedValue({ id: 'att-1' });
+    prisma.document.update.mockResolvedValue({});
+    prisma.documentActivityEvent.create.mockResolvedValue({});
+
+    await service.addDocumentAttachment(
+      'doc-1',
+      { fileAssetId: 'fa-1', purpose: 'INLINE_IMAGE' },
+      'user-1',
+    );
+
+    expect(prisma.documentAttachment.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          documentId: 'doc-1',
+          fileAssetId: 'fa-1',
+          purpose: 'INLINE_IMAGE',
+        }),
       }),
     );
   });
@@ -59,6 +96,7 @@ describe('DocumentsService', () => {
       title: 'T',
       section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
       tagLinks: [],
+      attachments: [],
       activityEvents: [],
     });
 
@@ -83,6 +121,7 @@ describe('DocumentsService', () => {
       title: 'T',
       section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
       tagLinks: [],
+      attachments: [],
       activityEvents: [],
     });
 

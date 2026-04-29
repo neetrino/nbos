@@ -127,6 +127,13 @@ export const driveApi = {
     return resp.data;
   },
 
+  async getFileAssetPreviewUrl(id: string): Promise<{ url: string; mimeType: string | null }> {
+    const resp = await api.get<{ url: string; mimeType: string | null }>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/preview-url',
+    );
+    return resp.data;
+  },
+
   async createFileAsset(data: {
     displayName: string;
     originalName?: string;

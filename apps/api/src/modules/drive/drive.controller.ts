@@ -56,6 +56,15 @@ export class DriveController {
     });
   }
 
+  @Get('files/:id/preview-url')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Short-lived presigned URL to view/download file bytes (R2 or external)',
+  })
+  async getFileAssetPreviewUrl(@Param('id') id: string) {
+    return this.driveService.getAssetViewUrl(id);
+  }
+
   @Get('files/:id')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'Get DB-backed Drive file asset detail' })
@@ -69,7 +78,7 @@ export class DriveController {
   @ApiQuery({
     name: 'contextType',
     required: true,
-    description: 'PROJECT | PRODUCT | TASK | SUPPORT | COMPANY',
+    description: 'PROJECT | PRODUCT | TASK | SUPPORT | COMPANY | DOCUMENT',
   })
   @ApiQuery({ name: 'contextId', required: true })
   async listDriveLibrary(

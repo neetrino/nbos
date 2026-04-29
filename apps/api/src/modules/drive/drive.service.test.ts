@@ -109,6 +109,41 @@ describe('DriveService', () => {
       expect(result2.downloadUrl).toBe('https://presigned-url.example.com');
     });
 
+    it('returns presigned view url for R2 file asset', async () => {
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({
+        id: 'f1',
+        deletedAt: null,
+        status: 'ACTIVE',
+        storageProvider: 'R2',
+        externalUrl: null,
+        storageKey: 'Drive/k',
+        mimeType: 'image/png',
+        versions: [{ storageKey: 'Drive/k-v1', isCurrent: true }],
+      });
+
+      const result = await service.getAssetViewUrl('f1');
+
+      expect(result.url).toBe('https://presigned-url.example.com');
+      expect(result.mimeType).toBe('image/png');
+    });
+
+    it('returns external url for EXTERNAL_URL file asset', async () => {
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({
+        id: 'f1',
+        deletedAt: null,
+        status: 'ACTIVE',
+        storageProvider: 'EXTERNAL_URL',
+        externalUrl: 'https://cdn.example.com/x.png',
+        mimeType: 'image/png',
+        versions: [],
+        storageKey: null,
+      });
+
+      const result = await service.getAssetViewUrl('f1');
+
+      expect(result.url).toBe('https://cdn.example.com/x.png');
+    });
+
     it('creates DB-backed File Asset metadata with version and link', async () => {
       const result = await service.createFileAsset({
         displayName: 'Approved offer.pdf',

@@ -51,6 +51,18 @@ describe('DriveUploadSessionService', () => {
     );
   });
 
+  it('lists library for DOCUMENT context', async () => {
+    await service.listDriveLibrary('DOCUMENT', 'doc-uuid');
+
+    expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          links: { some: { entityType: 'DOCUMENT', entityId: 'doc-uuid', unlinkedAt: null } },
+        }),
+      }),
+    );
+  });
+
   it('creates upload session with key under Drive/uploads/', async () => {
     prisma.fileUploadSession.create.mockResolvedValue({
       id: 'sess-1',

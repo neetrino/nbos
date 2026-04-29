@@ -1,8 +1,24 @@
-import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { DocumentsService } from './documents.service';
-import type { CreateDocumentDto, CreateDocumentTagDto, UpdateDocumentDto } from './documents.types';
+import type {
+  AddDocumentAttachmentDto,
+  CreateDocumentDto,
+  CreateDocumentTagDto,
+  UpdateDocumentDto,
+} from './documents.types';
 
 @ApiTags('Documents')
 @ApiBearerAuth()
@@ -75,6 +91,33 @@ export class DocumentsController {
     @Body() body: UpdateDocumentDto,
   ) {
     return this.documentsService.updateDocument(id, body, user.id);
+  }
+
+  @Post(':id/attachments')
+  @RequirePermission('DOCUMENTS', 'EDIT')
+  @ApiOperation({
+    summary: 'Register a Drive File Asset as a document attachment',
+    description:
+      'Requires an active FileLink with entityType DOCUMENT and entityId equal to this document (e.g. after upload session).',
+  })
+  async addDocumentAttachment(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: AddDocumentAttachmentDto,
+  ) {
+    return this.documentsService.addDocumentAttachment(id, body, user.id);
+  }
+
+  @Delete(':id/attachments/:attachmentId')
+  @RequirePermission('DOCUMENTS', 'EDIT')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remove a DocumentAttachment row (does not delete the File Asset)' })
+  async removeDocumentAttachment(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Param('attachmentId') attachmentId: string,
+  ) {
+    await this.documentsService.removeDocumentAttachment(id, attachmentId, user.id);
   }
 
   @Post(':id/archive')

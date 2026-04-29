@@ -8,6 +8,7 @@ import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
 import StarterKit from '@tiptap/starter-kit';
 import type { Extensions } from '@tiptap/react';
+import { DocumentImageNode } from '@/features/documents/document-image-node';
 
 export function buildNativeDocumentEditorExtensions(): Extensions {
   return [
@@ -22,5 +23,6 @@ export function buildNativeDocumentEditorExtensions(): Extensions {
     TableRow,
     TableHeader,
     TableCell,
+    DocumentImageNode,
   ];
 }

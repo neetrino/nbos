@@ -147,6 +147,36 @@ export class DriveService {
     return file;
   }
 
+  /**
+   * Returns a time-limited URL suitable for `<img src>` or download redirects.
+   */
+  async getAssetViewUrl(assetId: string): Promise<{ url: string; mimeType: string | null }> {
+    const file = await this.prisma.fileAsset.findFirst({
+      where: { id: assetId, deletedAt: null, status: 'ACTIVE' },
+      include: {
+        versions: { where: { isCurrent: true }, take: 1, orderBy: { versionNumber: 'desc' } },
+      },
+    });
+    if (!file) throw new NotFoundException(`File asset ${assetId} not found`);
+    if (file.storageProvider === 'EXTERNAL_URL' && file.externalUrl) {
+      return { url: file.externalUrl, mimeType: file.mimeType };
+    }
+    const versionKey = file.versions[0]?.storageKey ?? null;
+    const key = versionKey ?? file.storageKey;
+    if (!key) {
+      throw new BadRequestException('File asset has no storage key for preview.');
+    }
+    const command = new GetObjectCommand({
+      Bucket: this.r2.bucket,
+      Key: key,
+      ResponseContentType: file.mimeType ?? undefined,
+    });
+    const url = await getSignedUrl(this.r2.ensureS3(), command, {
+      expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,
+    });
+    return { url, mimeType: file.mimeType };
+  }
+
   async createFileAsset(data: CreateFileAssetDto) {
     const fileType = pickFileType(data.fileType, data.displayName, data.mimeType, data.externalUrl);
     const provider = data.externalUrl ? 'EXTERNAL_URL' : 'R2';

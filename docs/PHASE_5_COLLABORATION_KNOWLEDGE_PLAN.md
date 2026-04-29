@@ -129,6 +129,8 @@ Done when:
 - no binary DOCX/XLSX/PDF in PostgreSQL;
 - Documents only shows files linked to Documents.
 
+**Implemented (2026-04-29):** `POST/DELETE /api/documents/:id/attachments` (requires existing `FileLink` `DOCUMENT`+doc id from upload session), `GET /api/drive/files/:id/preview-url`, `DOCUMENT` in Drive library context, web `documentImage` TipTap node + image toolbar (needs `DRIVE` ADD), attachments panel, HTML viewer resolves `img[data-nbos-file]`.
+
 ### Slice 6. Documents Access, Activity And Search Depth
 
 Goal: make Documents safe enough for real team use.

@@ -28,3 +28,9 @@ export interface CreateDocumentTagDto {
   name: string;
   color?: string;
 }
+
+export interface AddDocumentAttachmentDto {
+  fileAssetId: string;
+  purpose?: string;
+  sortOrder?: number;
+}

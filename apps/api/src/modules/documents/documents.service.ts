@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Injectable, Inject, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import {
   PrismaClient,
+  type DocumentAttachmentPurposeEnum,
   type DocumentStatusEnum,
   type DocumentTypeEnum,
   type InputJsonValue,
@@ -13,6 +14,7 @@ import { DOCUMENT_LIST_INCLUDE, DOCUMENT_DETAIL_INCLUDE } from './documents-incl
 import { DOCUMENT_LIST_LIMIT } from './documents.constants';
 import { slugifyTitle } from './documents-slug';
 import type {
+  AddDocumentAttachmentDto,
   CreateDocumentDto,
   CreateDocumentTagDto,
   ListDocumentsQuery,
@@ -182,6 +184,83 @@ export class DocumentsService {
     });
     await this.recordActivity(id, actorId, 'archived', {});
     return this.getDocument(id);
+  }
+
+  async addDocumentAttachment(documentId: string, dto: AddDocumentAttachmentDto, actorId: string) {
+    await this.ensureDefaultSections();
+    const fileAssetId = dto.fileAssetId?.trim();
+    if (!fileAssetId) throw new BadRequestException('fileAssetId is required.');
+    await this.assertDocumentModifiable(documentId);
+    await this.assertFileLinkedToDocument(fileAssetId, documentId);
+    const purpose = (dto.purpose ?? 'ATTACHMENT') as DocumentAttachmentPurposeEnum;
+    await this.assertPurposeMatchesMime(purpose, fileAssetId);
+    const duplicate = await this.prisma.documentAttachment.findFirst({
+      where: { documentId, fileAssetId },
+    });
+    if (duplicate) throw new BadRequestException('This file is already attached.');
+    await this.prisma.documentAttachment.create({
+      data: {
+        documentId,
+        fileAssetId,
+        purpose,
+        sortOrder: dto.sortOrder ?? 0,
+        createdById: actorId,
+      },
+    });
+    await this.prisma.document.update({
+      where: { id: documentId },
+      data: { updatedById: actorId },
+    });
+    await this.recordActivity(documentId, actorId, 'attachment_added', { fileAssetId });
+    return this.getDocument(documentId);
+  }
+
+  async removeDocumentAttachment(documentId: string, attachmentId: string, actorId: string) {
+    await this.ensureDefaultSections();
+    await this.assertDocumentModifiable(documentId);
+    const row = await this.prisma.documentAttachment.findFirst({
+      where: { id: attachmentId, documentId },
+    });
+    if (!row) throw new NotFoundException(`Attachment ${attachmentId} not found`);
+    await this.prisma.documentAttachment.delete({ where: { id: attachmentId } });
+    await this.prisma.document.update({
+      where: { id: documentId },
+      data: { updatedById: actorId },
+    });
+    await this.recordActivity(documentId, actorId, 'attachment_removed', {
+      fileAssetId: row.fileAssetId,
+    });
+  }
+
+  private async assertPurposeMatchesMime(
+    purpose: DocumentAttachmentPurposeEnum,
+    fileAssetId: string,
+  ) {
+    if (purpose !== 'INLINE_IMAGE') return;
+    const asset = await this.prisma.fileAsset.findUnique({ where: { id: fileAssetId } });
+    const mime = asset?.mimeType ?? '';
+    if (!mime.startsWith('image/')) {
+      throw new BadRequestException('INLINE_IMAGE requires an image/* MIME type.');
+    }
+  }
+
+  private async assertDocumentModifiable(documentId: string) {
+    const doc = await this.prisma.document.findUnique({ where: { id: documentId } });
+    if (!doc) throw new NotFoundException(`Document ${documentId} not found`);
+    if (doc.status === 'ARCHIVED') {
+      throw new BadRequestException('Cannot change attachments on an archived document.');
+    }
+  }
+
+  private async assertFileLinkedToDocument(fileAssetId: string, documentId: string) {
+    const link = await this.prisma.fileLink.findFirst({
+      where: { fileAssetId, entityType: 'DOCUMENT', entityId: documentId, unlinkedAt: null },
+    });
+    if (!link) {
+      throw new BadRequestException(
+        'File must be uploaded to this document first (Drive link DOCUMENT + document id).',
+      );
+    }
   }
 
   private async ensureDefaultSections() {

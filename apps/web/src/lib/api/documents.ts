@@ -33,6 +33,20 @@ export interface DocumentActivityItem {
   metadata: unknown;
 }
 
+export interface DocumentAttachmentItem {
+  id: string;
+  purpose: string;
+  sortOrder: number;
+  fileAsset: {
+    id: string;
+    displayName: string;
+    originalName: string | null;
+    mimeType: string | null;
+    fileType: string;
+    sizeBytes: string | number | null;
+  };
+}
+
 export interface DocumentDetail {
   id: string;
   title: string;
@@ -50,6 +64,7 @@ export interface DocumentDetail {
   createdById: string | null;
   section: { id: string; name: string; slug: string; sortOrder: number };
   tagLinks: Array<{ tag: DocumentTag }>;
+  attachments: DocumentAttachmentItem[];
   activityEvents: DocumentActivityItem[];
 }
 
@@ -112,5 +127,25 @@ export const documentsApi = {
       {},
     );
     return resp.data;
+  },
+
+  async addDocumentAttachment(
+    documentId: string,
+    data: { fileAssetId: string; purpose?: string; sortOrder?: number },
+  ): Promise<DocumentDetail> {
+    const resp = await api.post<DocumentDetail>(
+      '/api/documents/' + encodeURIComponent(documentId) + '/attachments',
+      data,
+    );
+    return resp.data;
+  },
+
+  async removeDocumentAttachment(documentId: string, attachmentId: string): Promise<void> {
+    await api.delete(
+      '/api/documents/' +
+        encodeURIComponent(documentId) +
+        '/attachments/' +
+        encodeURIComponent(attachmentId),
+    );
   },
 };

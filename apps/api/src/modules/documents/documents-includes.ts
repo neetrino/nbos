@@ -8,5 +8,20 @@ export const DOCUMENT_LIST_INCLUDE: Prisma.DocumentInclude = {
 export const DOCUMENT_DETAIL_INCLUDE: Prisma.DocumentInclude = {
   section: { select: { id: true, name: true, slug: true, sortOrder: true } },
   tagLinks: { include: { tag: true } },
+  attachments: {
+    orderBy: { sortOrder: 'asc' },
+    include: {
+      fileAsset: {
+        select: {
+          id: true,
+          displayName: true,
+          originalName: true,
+          mimeType: true,
+          fileType: true,
+          sizeBytes: true,
+        },
+      },
+    },
+  },
   activityEvents: { orderBy: { createdAt: 'desc' }, take: DOCUMENT_ACTIVITY_LIMIT },
 };

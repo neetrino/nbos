@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
+import { DocumentAttachmentsPanel } from '@/features/documents/document-attachments-panel';
 import { DocumentHtmlViewer } from '@/features/documents/DocumentHtmlViewer';
 import { NativeDocumentEditor } from '@/features/documents/NativeDocumentEditor';
 import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
@@ -17,12 +18,17 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 
 const DOCUMENTS_EDIT_KEY = 'DOCUMENTS_EDIT';
+const DRIVE_ADD_KEY = 'DRIVE_ADD';
 
 type ContentTab = 'view' | 'edit';
 
-function hasDocumentsEditPermission(permissions: Record<string, string | undefined>): boolean {
-  const scope = permissions[DOCUMENTS_EDIT_KEY];
+function hasActivePermission(permissions: Record<string, string | undefined>, key: string) {
+  const scope = permissions[key];
   return !!scope && scope !== 'NONE';
+}
+
+function hasDocumentsEditPermission(permissions: Record<string, string | undefined>): boolean {
+  return hasActivePermission(permissions, DOCUMENTS_EDIT_KEY);
 }
 
 export default function DocumentDetailPage() {
@@ -71,6 +77,7 @@ export default function DocumentDetailPage() {
 
   const canDelete = can('DELETE', 'DOCUMENTS');
   const canEdit = can('EDIT', 'DOCUMENTS');
+  const canUseDrive = hasActivePermission(permissions, DRIVE_ADD_KEY);
   const isNative = doc?.type === 'NATIVE';
   const showEditorTabs = isNative && canEdit && doc && doc.status !== 'ARCHIVED';
 
@@ -151,6 +158,7 @@ export default function DocumentDetailPage() {
                       documentId={doc.id}
                       documentStatus={doc.status}
                       initialContentJson={doc.contentJson}
+                      canUseDrive={canUseDrive}
                       onDocumentUpdated={setDoc}
                     />
                   </TabsContent>
@@ -160,6 +168,28 @@ export default function DocumentDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {isNative ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Files</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DocumentAttachmentsPanel
+                  documentId={doc.id}
+                  attachments={doc.attachments ?? []}
+                  canEdit={canEdit && doc.status !== 'ARCHIVED'}
+                  canUseDrive={canUseDrive}
+                  onChanged={load}
+                />
+                {!canUseDrive ? (
+                  <p className="text-muted-foreground mt-2 text-xs">
+                    Drive upload (ADD) permission is required to attach files or insert images.
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card>
             <CardHeader>

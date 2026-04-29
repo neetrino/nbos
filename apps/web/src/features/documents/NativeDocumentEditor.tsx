@@ -6,6 +6,8 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import { Loader2, Rocket, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DOCUMENT_AUTOSAVE_DEBOUNCE_MS } from '@/features/documents/document-autosave.constants';
+import { uploadFileAssetForDocument } from '@/features/documents/document-image-upload';
+import { DOCUMENT_INLINE_IMAGE_MAX_BYTES } from '@/features/documents/document-upload.constants';
 import { getEmptyNativeDocumentJson } from '@/features/documents/native-document-empty-json';
 import { buildNativeDocumentEditorExtensions } from '@/features/documents/native-document-editor-extensions';
 import { NativeDocumentEditorToolbar } from '@/features/documents/native-document-editor-toolbar';
@@ -22,6 +24,8 @@ export interface NativeDocumentEditorProps {
   documentId: string;
   documentStatus: string;
   initialContentJson: unknown;
+  /** Drive ADD permission — required for image upload to R2. */
+  canUseDrive: boolean;
   onDocumentUpdated: (doc: DocumentDetail) => void;
 }
 
@@ -40,10 +44,12 @@ export function NativeDocumentEditor({
   documentId,
   documentStatus,
   initialContentJson,
+  canUseDrive,
   onDocumentUpdated,
 }: NativeDocumentEditorProps) {
   const [saveStatus, setSaveStatus] = useState<NativeEditorSaveStatus>('idle');
   const [publishing, setPublishing] = useState(false);
+  const [imageUploadBusy, setImageUploadBusy] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedLabelRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -160,6 +166,45 @@ export function NativeDocumentEditor({
     void runSave(true);
   };
 
+  const handlePickImageFile = useCallback(
+    async (file: File) => {
+      const ed = editorRef.current;
+      if (!ed || !canUseDrive) return;
+      if (file.size > DOCUMENT_INLINE_IMAGE_MAX_BYTES) {
+        setLastError(
+          `Image must be at most ${Math.round(DOCUMENT_INLINE_IMAGE_MAX_BYTES / (1024 * 1024))} MB.`,
+        );
+        return;
+      }
+      setImageUploadBusy(true);
+      setLastError(null);
+      try {
+        const { fileAssetId } = await uploadFileAssetForDocument(
+          documentId,
+          file,
+          DOCUMENT_INLINE_IMAGE_MAX_BYTES,
+        );
+        const updated = await documentsApi.addDocumentAttachment(documentId, {
+          fileAssetId,
+          purpose: 'INLINE_IMAGE',
+        });
+        ed.chain()
+          .focus()
+          .insertContent({
+            type: 'documentImage',
+            attrs: { fileAssetId, alt: file.name },
+          })
+          .run();
+        onDocumentUpdated(updated);
+      } catch (e) {
+        setLastError(getApiErrorMessage(e, 'Could not insert image.'));
+      } finally {
+        setImageUploadBusy(false);
+      }
+    },
+    [canUseDrive, documentId, onDocumentUpdated],
+  );
+
   const saveLabel =
     saveStatus === 'saving'
       ? 'Saving…'
@@ -171,7 +216,12 @@ export function NativeDocumentEditor({
 
   return (
     <div className="border-border bg-card overflow-hidden rounded-lg border">
-      <NativeDocumentEditorToolbar editor={editor} />
+      <NativeDocumentEditorToolbar
+        editor={editor}
+        canUseDrive={canUseDrive}
+        imageUploadBusy={imageUploadBusy}
+        onPickImageFile={(f) => void handlePickImageFile(f)}
+      />
       <EditorContent editor={editor} />
       <div className="border-border bg-muted/20 flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2">
         <div className="text-muted-foreground flex min-h-5 items-center gap-2 text-xs">
@@ -185,7 +235,7 @@ export function NativeDocumentEditor({
               size="sm"
               className="gap-1"
               onClick={() => void handlePublish()}
-              disabled={publishing || saveStatus === 'saving'}
+              disabled={publishing || saveStatus === 'saving' || imageUploadBusy}
             >
               {publishing ? <Loader2 size={14} className="animate-spin" /> : <Rocket size={14} />}
               Publish
@@ -197,6 +247,7 @@ export function NativeDocumentEditor({
             variant="secondary"
             className="gap-1"
             onClick={handleManualSave}
+            disabled={imageUploadBusy}
           >
             <Save size={14} />
             Save

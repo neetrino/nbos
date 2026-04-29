@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                     |
-| ------------- | ----------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**   |
-| Current task  | Documents attachments via Drive (Slice 5) |
-| Status        | Phase 5 in progress                       |
-| Last updated  | 2026-04-29                                |
+| Field         | Value                                                 |
+| ------------- | ----------------------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge**               |
+| Current task  | Documents access, search and activity depth (Slice 6) |
+| Status        | Phase 5 in progress                                   |
+| Last updated  | 2026-04-29                                            |
 
 ## Phase Snapshot
 
@@ -19,7 +19,7 @@
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                              |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates    |
 | Phase 4 — Delivery ops              | Done        |     100% | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation          |
-| Phase 5 — Collaboration / knowledge | In progress |     ~45% | Native TipTap editor, HTML viewer, publish, silent autosave API; Drive attachments slice next |
+| Phase 5 — Collaboration / knowledge | In progress |     ~58% | Drive-backed attachments, `documentImage` TipTap node, preview URLs, DOCUMENT library context |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later             |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                          |
 
@@ -62,25 +62,26 @@ Future Finance depth:
 
 ## Recent Milestones
 
-| Date       | Milestone                      | Result                                                                                     |
-| ---------- | ------------------------------ | ------------------------------------------------------------------------------------------ |
-| 2026-04-29 | Phase 3 Finance full closure   | Client Services runtime/flows and all six Finance report aggregates done.                  |
-| 2026-04-29 | Delivery lifecycle runtime     | Product/Extension canonical lifecycle, actions, board, filters and gates.                  |
-| 2026-04-29 | Product Done readiness         | Done blocks real blockers and surfaces handoff/Drive/client gaps.                          |
-| 2026-04-29 | Tasks / Work Space foundation  | Work Space runtime, product UI, completion rules and blocker UX exist.                     |
-| 2026-04-29 | Support runtime bridges        | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state.                  |
-| 2026-04-29 | Phase 4 Delivery closure       | Review/Scrum/automation depth moved later; Phase 5 can start.                              |
-| 2026-04-29 | Drive file metadata foundation | DB-backed File Assets, versions, links and metadata API foundation.                        |
-| 2026-04-29 | Phase 5 Documents plan         | Documents defined as standalone module with Drive-backed attachments.                      |
-| 2026-04-29 | Drive upload session + library | `FileUploadSession`, presigned PUT, complete → FileAsset+link, `GET /drive/library`.       |
-| 2026-04-29 | Documents data foundation      | Prisma Document\*, `/api/documents`, `DOCUMENTS` RBAC, default sections, `documentsApi`.   |
-| 2026-04-29 | Documents UI shell             | `/documents`, sections, tables, create dialog, detail + archive, sidebar `Documents`.      |
-| 2026-04-29 | Documents native editor slice  | TipTap edit + read tabs, DOMPurify viewer, debounced save, `recordActivity: false` on API. |
+| Date       | Milestone                         | Result                                                                                              |
+| ---------- | --------------------------------- | --------------------------------------------------------------------------------------------------- |
+| 2026-04-29 | Phase 3 Finance full closure      | Client Services runtime/flows and all six Finance report aggregates done.                           |
+| 2026-04-29 | Delivery lifecycle runtime        | Product/Extension canonical lifecycle, actions, board, filters and gates.                           |
+| 2026-04-29 | Product Done readiness            | Done blocks real blockers and surfaces handoff/Drive/client gaps.                                   |
+| 2026-04-29 | Tasks / Work Space foundation     | Work Space runtime, product UI, completion rules and blocker UX exist.                              |
+| 2026-04-29 | Support runtime bridges           | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state.                           |
+| 2026-04-29 | Phase 4 Delivery closure          | Review/Scrum/automation depth moved later; Phase 5 can start.                                       |
+| 2026-04-29 | Drive file metadata foundation    | DB-backed File Assets, versions, links and metadata API foundation.                                 |
+| 2026-04-29 | Phase 5 Documents plan            | Documents defined as standalone module with Drive-backed attachments.                               |
+| 2026-04-29 | Drive upload session + library    | `FileUploadSession`, presigned PUT, complete → FileAsset+link, `GET /drive/library`.                |
+| 2026-04-29 | Documents data foundation         | Prisma Document\*, `/api/documents`, `DOCUMENTS` RBAC, default sections, `documentsApi`.            |
+| 2026-04-29 | Documents UI shell                | `/documents`, sections, tables, create dialog, detail + archive, sidebar `Documents`.               |
+| 2026-04-29 | Documents native editor slice     | TipTap edit + read tabs, DOMPurify viewer, debounced save, `recordActivity: false` on API.          |
+| 2026-04-29 | Documents Drive attachments slice | `POST/DELETE …/attachments`, `GET …/drive/files/:id/preview-url`, TipTap `documentImage`, panel UI. |
 
 ## Next Action
 
 1. Continue Phase 5 per `docs/PHASE_5_COLLABORATION_KNOWLEDGE_PLAN.md`.
-2. Next normal slice: **Slice 5 — Attachments through Drive** (DocumentAttachment, no base64 in JSON).
+2. Next normal slice: **Slice 6 — Documents access, activity and search depth** (section ACL, search_vector, activity polish).
 3. Keep Google v2, AI, complex approval workflow and credentials secrets out of the first Documents release.
 
 ## Slice DoD

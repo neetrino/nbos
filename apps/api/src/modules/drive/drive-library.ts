@@ -6,6 +6,7 @@ const LIBRARY_CONTEXT_TO_ENTITY_TYPE: Record<string, string> = {
   TASK: 'TASK',
   SUPPORT: 'SUPPORT_TICKET',
   COMPANY: 'COMPANY',
+  DOCUMENT: 'DOCUMENT',
 };
 
 /**
