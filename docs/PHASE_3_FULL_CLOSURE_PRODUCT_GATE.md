@@ -1,0 +1,102 @@
+# Phase 3 — полное закрытие: продуктовый шлюз (gate)
+
+> **Назначение:** один документ, который снимает повторяющиеся вопросы («что значит 72%», «что мешает закрыть Phase 3», «где это в NBOS») и задаёт **явные решения** до начала реализации оставшегося объёма.  
+> **Статус:** черновик для подтверждения владельцем продукта / командой. После заполнения блока «Подтверждение» ниже можно планировать срезы кода и обновлять [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md).
+
+---
+
+## 1. Два разных смысла «Phase 3 закрыта»
+
+| Формулировка            | Смысл                                                                                                                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Done (pragmatic)**    | Согласованный срез работ выполнен; в трекере зафиксированы **deferred** темы. См. текущее состояние в [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) (Phase 3 pragmatic closure).                             |
+| **Done (full roadmap)** | Выполнены пункты **Scope** и **Exit criteria** Phase 3 из [docs/NBOS/00-Implementation-Roadmap.md](../NBOS/00-Implementation-Roadmap.md) **в объёме, который вы считаете обязательным для v1**, без «тихих» дыр в каноне. |
+
+**Важно:** полное закрытие по канону **не требует** сначала закрыть Phase 4–7. Зависимости — только там, где вы сами выносите функциональность в другую фазу (например, отчёты как часть Control layer).
+
+---
+
+## 2. Где уже описаны связи и функции (NBOS Finance)
+
+Канон **не пустой** — материал разнесён по модулям:
+
+| Тема                                                                       | Документ                                                                                                                                                                                       |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Обзор Finance, таблица подмодулей                                          | [docs/NBOS/02-Modules/04-Finance/01-Finance-Overview.md](../NBOS/02-Modules/04-Finance/01-Finance-Overview.md)                                                                                 |
+| Client Services, `Client Service Record`, связи с Invoice / Expense / Task | [docs/NBOS/02-Modules/04-Finance/07-Domains-Hosting-Licenses.md](../NBOS/02-Modules/04-Finance/07-Domains-Hosting-Licenses.md)                                                                 |
+| Расходы, `source_type`, client service                                     | [docs/NBOS/02-Modules/04-Finance/04-Expenses.md](../NBOS/02-Modules/04-Finance/04-Expenses.md)                                                                                                 |
+| Project Bonus Pool, payroll, wallet                                        | [docs/NBOS/02-Modules/04-Finance/05-Bonus-and-Payroll.md](../NBOS/02-Modules/04-Finance/05-Bonus-and-Payroll.md), [08-Employee-Wallet.md](../NBOS/02-Modules/04-Finance/08-Employee-Wallet.md) |
+| P&L, отчёты, client services в P&L                                         | [docs/NBOS/02-Modules/04-Finance/06-PnL-Reports.md](../NBOS/02-Modules/04-Finance/06-PnL-Reports.md)                                                                                           |
+| Ядро учёта, периоды                                                        | [docs/NBOS/02-Modules/04-Finance/09-Finance-Core-Architecture.md](../NBOS/02-Modules/04-Finance/09-Finance-Core-Architecture.md)                                                               |
+| Пробелы реализации относительно канона                                     | [docs/NBOS/02-Modules/04-Finance/10-Finance-Cleanup-Register.md](../NBOS/02-Modules/04-Finance/10-Finance-Cleanup-Register.md)                                                                 |
+| Сквозная модель сущностей                                                  | [docs/NBOS/01-Platform-Overview/03-Core-Entities-and-Data-Model.md](../NBOS/01-Platform-Overview/03-Core-Entities-and-Data-Model.md)                                                           |
+
+Этот файл **не дублирует** канон — только фиксирует **что именно вы включаете в v1** перед кодом.
+
+---
+
+## 3. Оставшийся объём для «full» Phase 3 (типовой)
+
+Ниже три столпа, которые чаще всего отделяют pragmatic closure от full closure. Их можно включать **выборочно** — тогда «full» для вас = «всё из списка ниже, что отмечено „в scope“».
+
+### 3.1. Client Services как runtime-модуль
+
+- **Канон:** [07-Domains-Hosting-Licenses.md](../NBOS/02-Modules/04-Finance/07-Domains-Hosting-Licenses.md), [10-Finance-Cleanup-Register.md](../NBOS/02-Modules/04-Finance/10-Finance-Cleanup-Register.md) (C5: сущность ещё не в рантайме).
+- **Решения до кода:** минимальный набор типов сервисов в v1; обязательные связи (invoice / expense / task); права и аудит; нужен ли отдельный раздел в навигации.
+
+### 3.2. Finance report definitions (v1 каталог)
+
+- **Канон:** [06-PnL-Reports.md](../NBOS/02-Modules/04-Finance/06-PnL-Reports.md) и ссылки из [09-Finance-Core-Architecture.md](../NBOS/02-Modules/04-Finance/09-Finance-Core-Architecture.md).
+- **Решения до кода:** какие отчёты входят в v1 (имена / аудитория); источники данных (только операционные таблицы NBOS); частота и экспорт; граница с Phase 6 (Control / Reports catalog), если отчёт переносится туда.
+
+### 3.3. «NBOS pool» vs уже описанный **Project Bonus Pool**
+
+- **Канон по бонусному пулу проекта:** [05-Bonus-and-Payroll.md](../NBOS/02-Modules/04-Finance/05-Bonus-and-Payroll.md) — **Project Bonus Pool** как плановая логика по проекту/order; в коде уже есть read-only агрегаты (см. прогресс-трекер).
+- **Если под «NBOS pool» имеется отдельная сущность в Prisma** (не дубль project pool): нужно **отдельное решение**: название, поля, связь с `BonusEntry` / проектом / периодом, кто создаёт/закрывает. Без этого реализация = риск переделки.
+
+---
+
+## 4. Чеклист решений (заполнить до реализации)
+
+Отметьте **In scope for v1** / **Out of scope** / **Later**.
+
+| #   | Вопрос                                                                                                  | Решение команды |
+| --- | ------------------------------------------------------------------------------------------------------- | --------------- |
+| A   | Client Services: входит в v1 полноценный `Client Service Record` + UI?                                  |                 |
+| B   | Если да — какие 1–3 пользовательских сценария обязаны работать end-to-end?                              |                 |
+| C   | Report definitions: фиксированный список отчётов v1 (перечислить)?                                      |                 |
+| D   | Отчёты v1: только read-only из существующих API или нужны новые агрегирующие endpoint’ы?                |                 |
+| E   | NBOS pool: это **отдельная** сущность от Project Bonus Pool? (да/нет)                                   |                 |
+| F   | Если да на E — одна строка назначения сущности + обязательные поля (или ссылка на приложение со схемой) |                 |
+| G   | Закрытие Phase 3 «full» допускает оставить часть строк C–D на Phase 6? (да/нет)                         |                 |
+
+---
+
+## 5. После подтверждения — что делает реализация
+
+1. Перенести принятые строки из §4 в короткий **implementation slice** (или несколько срезов) в духе [AI-START-HERE.md](./AI-START-HERE.md): один связный коммит на срез, `tsc`, ESLint, Vitest по затронутым модулям.
+2. Обновить [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md): убрать/сузить **Deferred** для включённых тем; при завершении — статус Phase 3 **Done (full)** или новый процент.
+3. Обновить [10-Finance-Cleanup-Register.md](../NBOS/02-Modules/04-Finance/10-Finance-Cleanup-Register.md) по факту закрытых пунктов.
+
+**Правила репозитория:** схема БД и публичные API — только после явного согласования (см. workspace rules).
+
+---
+
+## 6. Подтверждение (заполняет владелец продукта / команда)
+
+- **Дата:** ******\_\_\_******
+- **Мы подтверждаем in-scope для закрытия Phase 3 (full) в этом цикле:**
+  - [ ] Client Services (уточнить сценарии: ************\_************)
+  - [ ] Report definitions v1 (список: ************\_************)
+  - [ ] Отдельная сущность NBOS pool (приложение со схемой: да / нет / ссылка: ****\_\_****)
+- **Подпись / роль:** ******\_\_\_******
+
+До заполнения этого блока документ служит **справкой и чеклистом**; реализацию «закрыть Phase 3 полностью» без него не стоит трактовать как зафиксированный контракт объёма.
+
+---
+
+## 7. Версия
+
+| Версия | Дата       | Изменение                         |
+| ------ | ---------- | --------------------------------- |
+| 1.0    | 2026-04-28 | Первичная фиксация gate-документа |
