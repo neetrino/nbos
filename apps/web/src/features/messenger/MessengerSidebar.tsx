@@ -1,0 +1,104 @@
+import { Hash, Search } from 'lucide-react';
+import type { MessengerActiveView } from './messenger-active-view';
+
+export interface MessengerSidebarChannel {
+  id: string;
+  listLabel: string;
+}
+
+export interface MessengerSidebarDmPeer {
+  id: string;
+  name: string;
+  initials: string;
+  online: boolean;
+}
+
+export function MessengerSidebar({
+  channels,
+  dmPeers,
+  active,
+  onSelect,
+  search,
+  onSearchChange,
+}: {
+  channels: MessengerSidebarChannel[];
+  dmPeers: MessengerSidebarDmPeer[];
+  active: MessengerActiveView | null;
+  onSelect: (v: MessengerActiveView) => void;
+  search: string;
+  onSearchChange: (v: string) => void;
+}) {
+  const q = search.toLowerCase();
+  const filteredChannels = channels.filter((c) => c.listLabel.toLowerCase().includes(q));
+  const filteredDm = dmPeers.filter((u) => u.name.toLowerCase().includes(q));
+
+  return (
+    <aside className="flex w-72 shrink-0 flex-col border-r border-black/[0.06] bg-white">
+      <div className="p-3">
+        <div className="relative">
+          <Search size={15} className="absolute top-1/2 left-2.5 -translate-y-1/2 text-black/30" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search..."
+            className="w-full rounded-lg border border-black/[0.08] bg-[#F5F5F0] py-1.5 pr-3 pl-8 text-sm text-black placeholder:text-black/35 focus:ring-2 focus:ring-[#E5A84B]/30 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-2">
+        <p className="px-2 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-black/40 uppercase">
+          Channels
+        </p>
+        {filteredChannels.map((ch) => {
+          const isActive = active?.type === 'channel' && active.id === ch.id;
+          return (
+            <button
+              key={ch.id}
+              type="button"
+              onClick={() => onSelect({ type: 'channel', id: ch.id })}
+              className={`mb-0.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors ${
+                isActive
+                  ? 'bg-[#E5A84B]/10 font-medium text-black'
+                  : 'text-black/60 hover:bg-black/[0.03]'
+              }`}
+            >
+              <Hash size={15} className={isActive ? 'text-[#E5A84B]' : 'text-black/30'} />
+              {ch.listLabel}
+            </button>
+          );
+        })}
+
+        <p className="px-2 pt-4 pb-1 text-[11px] font-semibold tracking-wider text-black/40 uppercase">
+          Direct Messages
+        </p>
+        {filteredDm.map((user) => {
+          const isActive = active?.type === 'dm' && active.userId === user.id;
+          return (
+            <button
+              key={user.id}
+              type="button"
+              onClick={() => onSelect({ type: 'dm', userId: user.id })}
+              className={`mb-0.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors ${
+                isActive
+                  ? 'bg-[#E5A84B]/10 font-medium text-black'
+                  : 'text-black/60 hover:bg-black/[0.03]'
+              }`}
+            >
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <span className="text-[10px] font-medium">{user.initials}</span>
+                <span
+                  className={`absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border border-white ${
+                    user.online ? 'bg-emerald-400' : 'bg-black/20'
+                  }`}
+                />
+              </span>
+              {user.name}
+            </button>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}

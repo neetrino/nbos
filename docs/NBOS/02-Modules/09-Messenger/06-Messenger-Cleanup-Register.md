@@ -24,7 +24,7 @@
 - `apps/api/src/modules/messenger/messenger.service.ts`
 - `apps/api/src/modules/messenger/messenger.controller.ts`
 - `apps/web/src/app/(app)/messenger/page.tsx`
-- `apps/web/src/app/(app)/messenger/_data.ts`
+- `apps/web/src/features/messenger/*` (client wired to `/api/messenger/*`)
 - `packages/database/prisma/schema.prisma`
 
 Проблемы:
@@ -34,7 +34,7 @@
 - нет WebSocket gateway;
 - нет очереди для внешних каналов;
 - нет External Channel Adapter;
-- web page использует mock data;
+- web page: channels/DM/history/send call API (names for DM peers via `employees` list when `COMPANY` VIEW allows);
 - нет разделения Internal/External;
 - нет CRM Inbox;
 - нет Product Chat / Task Chat / WhatsApp Group модели;

@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                                 |
-| ------------- | ----------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**               |
-| Current task  | Phase 5 — Credentials permanent purge (archived only) |
-| Status        | Phase 5 in progress                                   |
-| Last updated  | 2026-04-29                                            |
+| Field         | Value                                   |
+| ------------- | --------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge** |
+| Current task  | Phase 5 — Messenger web + API alignment |
+| Status        | Phase 5 in progress                     |
+| Last updated  | 2026-04-29                              |
 
 ## Phase Snapshot
 
@@ -19,7 +19,7 @@
 | Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
 | Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation       |
-| Phase 5 — Collaboration / knowledge | In progress | ~88%     | Documents: archive/restore API+UI (`POST …/restore`, activity `restored`)                  |
+| Phase 5 — Collaboration / knowledge | In progress | ~90%     | Messenger UI calls API; Documents archive/restore shipped                                  |
 | Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                       |
 
@@ -95,6 +95,8 @@ Future Finance depth:
 | 2026-04-29 | Credentials apiKey + envData in forms | New credential dialog and edit dialog: optional API key and environment textarea; edit only sends new values when non-empty (existing values not shown).                                                   |
 | 2026-04-29 | Credentials archive + restore         | Prisma `archived_at`; list `includeArchived`; DELETE sets archive + audit `credential.archived`; `POST …/restore` + `credential.restored`; web Active/Archived + Restore; project counts exclude archived. |
 | 2026-04-29 | Credentials permanent purge           | `DELETE …/permanent` for archived rows + `credential.permanently_deleted`; web Erase + name-confirm dialog.                                                                                                |
+| 2026-04-29 | Messenger API RBAC + sender binding   | `RequirePermission` on MVP routes; JWT sender for channel/DM; `GET dm/conversations` without path userId.                                                                                                  |
+| 2026-04-29 | Messenger web wired to API            | `messengerApi`, `/messenger` loads channels + DM threads, send with `MESSENGER` EDIT; DM peer labels via employees list when allowed.                                                                      |
 
 ## Next Action
 
