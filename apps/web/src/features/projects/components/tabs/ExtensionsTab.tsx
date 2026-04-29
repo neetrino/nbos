@@ -33,11 +33,18 @@ export function ExtensionsTab({ projectId, onCreateClick }: ExtensionsTabProps) 
         <ExtensionBlockerPanel blocker={state.blocker} onDismiss={state.clearBlocker} />
       )}
 
-      {state.extensions.length === 0 ? (
-        <ExtensionsEmptyState onCreateClick={onCreateClick} />
+      {state.visibleExtensions.length === 0 ? (
+        <ExtensionsEmptyState
+          onCreateClick={onCreateClick}
+          message={
+            state.extensions.length > 0
+              ? 'No extensions match this delivery filter.'
+              : 'No extensions in this project yet.'
+          }
+        />
       ) : (
         <ExtensionsTable
-          extensions={state.extensions}
+          extensions={state.visibleExtensions}
           onStatusChange={state.handleStatusChange}
           onLifecycleAction={state.handleLifecycleAction}
         />

@@ -1,8 +1,11 @@
 import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { EXTENSION_STATUSES } from '@/features/projects/constants/projects';
 import type { Extension } from '@/lib/api/extensions';
+import {
+  EXTENSION_LIFECYCLE_FILTERS,
+  getExtensionLifecycleFilterValue,
+} from './extension-status-flow';
 
 interface ExtensionsTabHeaderProps {
   extensions: Extension[];
@@ -17,7 +20,9 @@ export function ExtensionsTabHeader({
   onStatusFilterChange,
   onCreateClick,
 }: ExtensionsTabHeaderProps) {
-  const doneCount = extensions.filter((extension) => extension.status === 'DONE').length;
+  const doneCount = extensions.filter(
+    (extension) => getExtensionLifecycleFilterValue(extension) === 'DONE',
+  ).length;
 
   return (
     <div className="flex items-center justify-between">
@@ -54,17 +59,17 @@ function ExtensionStatusFilters({
       <StatusFilterButton active={statusFilter === null} onClick={() => onStatusFilterChange(null)}>
         All
       </StatusFilterButton>
-      {EXTENSION_STATUSES.filter((status) => countByStatus(extensions, status.value) > 0).map(
-        (status) => (
-          <StatusFilterButton
-            key={status.value}
-            active={statusFilter === status.value}
-            onClick={() => onStatusFilterChange(status.value)}
-          >
-            {status.label} ({countByStatus(extensions, status.value)})
-          </StatusFilterButton>
-        ),
-      )}
+      {EXTENSION_LIFECYCLE_FILTERS.filter(
+        (status) => countByLifecycle(extensions, status.value) > 0,
+      ).map((status) => (
+        <StatusFilterButton
+          key={status.value}
+          active={statusFilter === status.value}
+          onClick={() => onStatusFilterChange(status.value)}
+        >
+          {status.label} ({countByLifecycle(extensions, status.value)})
+        </StatusFilterButton>
+      ))}
     </div>
   );
 }
@@ -90,6 +95,7 @@ function StatusFilterButton({
   );
 }
 
-function countByStatus(extensions: Extension[], status: string): number {
-  return extensions.filter((extension) => extension.status === status).length;
+function countByLifecycle(extensions: Extension[], value: string): number {
+  return extensions.filter((extension) => getExtensionLifecycleFilterValue(extension) === value)
+    .length;
 }

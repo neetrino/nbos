@@ -5,9 +5,10 @@ import type {
   DeliveryLifecycleAction,
   DeliveryLifecycleActionPayload,
 } from '@/features/projects/components/DeliveryLifecycleActionDialog';
+import { getExtensionLifecycleFilterValue } from './extension-status-flow';
 
 const EXTENSION_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER'> = {
-  NEW: 'STARTING',
+  STARTING: 'STARTING',
   DEVELOPMENT: 'DEVELOPMENT',
   QA: 'QA',
   TRANSFER: 'TRANSFER',
@@ -26,8 +27,11 @@ export function useExtensionsTabState(projectId: string) {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [blocker, setBlocker] = useState<ExtensionBlocker | null>(null);
+  const visibleExtensions = statusFilter
+    ? extensions.filter((extension) => getExtensionLifecycleFilterValue(extension) === statusFilter)
+    : extensions;
 
-  const fetchExtensions = useFetchExtensions(projectId, statusFilter, setExtensions, setLoading);
+  const fetchExtensions = useFetchExtensions(projectId, setExtensions, setLoading);
   const handleStatusChange = useExtensionStatusChange(setExtensions, setBlocker);
   const handleLifecycleAction = useExtensionLifecycleAction(setExtensions, setBlocker);
 
@@ -37,6 +41,7 @@ export function useExtensionsTabState(projectId: string) {
 
   return {
     extensions,
+    visibleExtensions,
     loading,
     statusFilter,
     setStatusFilter,
@@ -49,7 +54,6 @@ export function useExtensionsTabState(projectId: string) {
 
 function useFetchExtensions(
   projectId: string,
-  statusFilter: string | null,
   setExtensions: (extensions: Extension[]) => void,
   setLoading: (loading: boolean) => void,
 ) {
@@ -59,7 +63,6 @@ function useFetchExtensions(
       const data = await extensionsApi.getAll({
         projectId,
         pageSize: 50,
-        ...(statusFilter ? { status: statusFilter } : {}),
       });
       setExtensions(data.items);
     } catch {
@@ -67,7 +70,7 @@ function useFetchExtensions(
     } finally {
       setLoading(false);
     }
-  }, [projectId, setExtensions, setLoading, statusFilter]);
+  }, [projectId, setExtensions, setLoading]);
 }
 
 function useExtensionStatusChange(
@@ -96,7 +99,7 @@ async function updateExtensionDeliveryStatus(
 ) {
   if (stage) return extensionsApi.moveStage(extension.id, { stage });
   if (newStatus === 'DONE') return extensionsApi.complete(extension.id);
-  return extensionsApi.updateStatus(extension.id, newStatus);
+  throw new Error(`Unsupported extension lifecycle target: ${newStatus}`);
 }
 
 function useExtensionLifecycleAction(

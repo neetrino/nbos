@@ -63,7 +63,7 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
       } else if (newStatus === 'DONE') {
         await productsApi.complete(product.id);
       } else {
-        await productsApi.updateStatus(product.id, newStatus);
+        throw new Error(`Unsupported product lifecycle target: ${newStatus}`);
       }
       onStatusChange();
     } catch (error) {

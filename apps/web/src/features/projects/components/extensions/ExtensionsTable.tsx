@@ -7,6 +7,7 @@ import { StatusBadge } from '@/components/shared';
 import {
   EXTENSION_STATUSES,
   formatDeliveryLifecycleLabel,
+  getDeliveryLifecycleVariant,
   getExtensionSize,
   getExtensionStatus,
 } from '@/features/projects/constants/projects';
@@ -17,7 +18,7 @@ import {
   type DeliveryLifecycleActionPayload,
 } from '@/features/projects/components/DeliveryLifecycleActionDialog';
 import { ExtensionReadiness } from './ExtensionReadiness';
-import { getNextExtensionStatus, isActiveExtensionStatus } from './extension-status-flow';
+import { getNextExtensionTarget } from './extension-status-flow';
 
 interface ExtensionsTableProps {
   extensions: Extension[];
@@ -151,11 +152,12 @@ function ExtensionStatusCell({ extension }: { extension: Extension }) {
   const label = extension.deliveryLifecycle
     ? formatDeliveryLifecycleLabel(extension.deliveryLifecycle)
     : extensionStatus?.label;
+  const variant = extension.deliveryLifecycle
+    ? getDeliveryLifecycleVariant(extension.deliveryLifecycle)
+    : extensionStatus?.variant;
   return (
     <td className="px-4 py-2.5">
-      {extensionStatus && (
-        <StatusBadge label={label ?? extensionStatus.label} variant={extensionStatus.variant} />
-      )}
+      {label && <StatusBadge label={label} variant={variant ?? 'gray'} />}
     </td>
   );
 }
@@ -188,15 +190,14 @@ function ExtensionActionCell({
   onLifecycleAction: (extension: Extension, action: 'resume') => void | Promise<void>;
   onOpenLifecycleDialog: (extension: Extension, action: DeliveryLifecycleAction) => void;
 }) {
-  const nextStatus = getNextExtensionStatus(extension.status);
+  const nextStatus = getNextExtensionTarget(extension.deliveryLifecycle);
   const lifecycle = extension.deliveryLifecycle;
-  const canMoveStage = lifecycle?.workStatus !== 'ON_HOLD';
   if (lifecycle?.isTerminal) return <td className="px-4 py-2.5" />;
 
   return (
     <td className="px-4 py-2.5 text-right">
       <div className="flex flex-wrap justify-end gap-1.5">
-        {nextStatus && canMoveStage && isActiveExtensionStatus(extension.status) && (
+        {nextStatus && (
           <Button
             variant="ghost"
             size="sm"

@@ -281,6 +281,19 @@ Project detail runtime now exposes `deliveryLifecycle` on embedded Product and E
 
 Legacy `status` is still returned as a compatibility mirror for older API clients and remaining runtime code.
 
+### A20. Product/Extension UI no longer calls generic status endpoints
+
+Статус: `PHASE 4 COMPATIBILITY ALIGNMENT`
+
+Delivery lifecycle controls in the Projects UI now avoid generic status mutation paths:
+
+- Product stage gate uses `moveStage` and `complete`; unsupported legacy targets fail locally instead of calling generic `status`;
+- Extension stage movement uses `moveStage`, `complete`, `pause`, `resume` and `cancel`;
+- Extension list filters and done counters use canonical lifecycle buckets;
+- Extension table badges use canonical lifecycle variants before legacy status variants.
+
+Generic `PATCH /status` endpoints remain available only as backend compatibility paths while the old enum/column retirement is staged.
+
 ---
 
 ## B. Устарело только в документации или описаниях
@@ -377,7 +390,7 @@ Phase 4 already added read-only canonical projection, compatible schema fields, 
 Current deprecation rule:
 
 - `deliveryLifecycle.stage`, `deliveryLifecycle.workStatus` and `deliveryLifecycle.resolution` are the Product delivery source of truth for UI and new API behavior;
-- legacy `status` remains a compatibility mirror and sync target until all generic status endpoints are retired;
+- legacy `status` remains a compatibility mirror and sync target until backend generic status endpoints are retired;
 - do not remove `ProductStatusEnum` or the `products.status` column until old clients and tests stop depending on it.
 
 ### C2. Runtime extension statuses тоже старые
@@ -413,7 +426,7 @@ Current deprecation rule:
 Current deprecation rule:
 
 - `deliveryLifecycle.stage`, `deliveryLifecycle.workStatus` and `deliveryLifecycle.resolution` are the Extension delivery source of truth for UI and new API behavior;
-- legacy `status` remains a compatibility mirror and sync target until all generic status endpoints are retired;
+- legacy `status` remains a compatibility mirror and sync target until backend generic status endpoints are retired;
 - do not remove `ExtensionStatusEnum` or the `extensions.status` column until old clients and tests stop depending on it.
 
 ### C3. Frontend transitions и board helpers частично живут по старой схеме
@@ -428,12 +441,12 @@ Current deprecation rule:
 - Project Delivery Board uses canonical lifecycle for grouping, filtering, quick actions and badges;
 - Product tab filters and badges prefer canonical lifecycle buckets;
 - PM Intake primary Product label prefers canonical lifecycle;
-- some detail-level compatibility paths still accept old status values and map them to canonical actions.
+- Product and Extension lifecycle controls call canonical endpoints for stage movement and terminal actions.
 
 Что потом нужно сделать:
 
-- retire remaining generic status endpoints from UI flows;
 - keep old status labels only as fallback for records that do not yet expose `deliveryLifecycle`;
+- deprecate backend generic status endpoints after API consumers stop using them;
 - implement visual expired-hold state later.
 
 ### C4. Product / Extension stage-gate validation пока уже нового канона не покрывает полностью
