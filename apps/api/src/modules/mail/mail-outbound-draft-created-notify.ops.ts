@@ -4,24 +4,13 @@ import {
   MAIL_NOTIFICATION_TYPE_OUTBOUND_DRAFT_CREATED_IN_APP,
 } from './mail-notification.constants';
 import { mailThreadDetailAppPath } from './mail-thread-app-path';
-
-type NotificationSink = {
-  create: (params: {
-    type: string;
-    recipientId: string;
-    title: string;
-    body: string;
-    link?: string;
-    entityType?: string;
-    entityId?: string;
-  }) => Promise<unknown>;
-};
+import type { MailInAppNotificationSink } from './mail-in-app-notification-sink.types';
 
 /**
  * Notifies the actor and (if different) the mailbox owner after an outbound draft is saved (no SMTP).
  */
 export async function publishMailOutboundDraftCreatedNotifications(
-  sink: NotificationSink,
+  sink: MailInAppNotificationSink,
   params: {
     actorEmployeeId: string;
     threadId: string;

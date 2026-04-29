@@ -3,26 +3,15 @@ import {
   MAIL_NOTIFICATION_TITLE_ACCOUNT_SYNC_STUB,
   MAIL_NOTIFICATION_TYPE_ACCOUNT_SYNC_STUB,
 } from './mail-notification.constants';
+import type { MailInAppNotificationSink } from './mail-in-app-notification-sink.types';
 
 const INBOX_LINK = '/mail';
-
-type NotificationSink = {
-  create: (params: {
-    type: string;
-    recipientId: string;
-    title: string;
-    body: string;
-    link?: string;
-    entityType?: string;
-    entityId?: string;
-  }) => Promise<unknown>;
-};
 
 /**
  * Notifies the actor and (if different) the mailbox owner about a stub sync.
  */
 export async function publishMailAccountSyncStubNotifications(
-  sink: NotificationSink,
+  sink: MailInAppNotificationSink,
   params: {
     actorEmployeeId: string;
     accountId: string;

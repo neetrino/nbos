@@ -5,24 +5,13 @@ import {
 } from './mail-notification.constants';
 import { mailThreadDetailAppPath } from './mail-thread-app-path';
 import { MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER } from './mail-outbound-stub.constants';
-
-type NotificationSink = {
-  create: (params: {
-    type: string;
-    recipientId: string;
-    title: string;
-    body: string;
-    link?: string;
-    entityType?: string;
-    entityId?: string;
-  }) => Promise<unknown>;
-};
+import type { MailInAppNotificationSink } from './mail-in-app-notification-sink.types';
 
 /**
  * Notifies the actor and (if different) the mailbox owner after stub finalize sets outbound FAILED.
  */
 export async function publishMailOutboundSendStubFailedNotifications(
-  sink: NotificationSink,
+  sink: MailInAppNotificationSink,
   params: {
     actorEmployeeId: string;
     threadId: string;
