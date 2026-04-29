@@ -16,11 +16,16 @@ import { PRISMA_TOKEN } from '../../database.module';
 import {
   MESSENGER_SOCKET_NAMESPACE,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL,
+  MESSENGER_WS_CLIENT_TYPING_CHANNEL,
+  MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
+  MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
+  MESSENGER_WS_SERVER_DM_TYPING,
   messengerSocketChannelRoom,
   messengerSocketUserRoom,
 } from '@nbos/shared';
+import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
 
 interface JwtSubPayload {
@@ -37,6 +42,7 @@ export class MessengerGateway implements OnGatewayConnection {
 
   private readonly logger = new Logger(MessengerGateway.name);
   private readonly jwtSecret: string;
+  private readonly typingThrottle = new MessengerTypingThrottle();
 
   constructor(
     private readonly configService: ConfigService,
@@ -61,6 +67,46 @@ export class MessengerGateway implements OnGatewayConnection {
     const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
     if (!channel) return { ok: false };
     await client.join(messengerSocketChannelRoom(channelId));
+    return { ok: true };
+  }
+
+  @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_CHANNEL)
+  async handleTypingChannel(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: unknown,
+  ): Promise<{ ok: boolean }> {
+    const employeeId = client.data.employeeId as string | undefined;
+    if (!employeeId) return { ok: false };
+    const channelId = extractChannelId(body);
+    if (!channelId) return { ok: false };
+    const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
+    if (!channel) return { ok: false };
+    if (!this.typingThrottle.allow(client.id)) return { ok: true };
+    const label = await this.typingDisplayLabel(employeeId);
+    client.to(messengerSocketChannelRoom(channelId)).emit(MESSENGER_WS_SERVER_CHANNEL_TYPING, {
+      channelId,
+      employeeId,
+      label,
+    });
+    return { ok: true };
+  }
+
+  @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_DM)
+  async handleTypingDm(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: unknown,
+  ): Promise<{ ok: boolean }> {
+    const employeeId = client.data.employeeId as string | undefined;
+    if (!employeeId) return { ok: false };
+    const recipientId = extractRecipientId(body);
+    if (!recipientId || recipientId === employeeId) return { ok: false };
+    if (!this.typingThrottle.allow(client.id)) return { ok: true };
+    const label = await this.typingDisplayLabel(employeeId);
+    client.to(messengerSocketUserRoom(recipientId)).emit(MESSENGER_WS_SERVER_DM_TYPING, {
+      counterpartId: employeeId,
+      employeeId,
+      label,
+    });
     return { ok: true };
   }
 
@@ -109,6 +155,15 @@ export class MessengerGateway implements OnGatewayConnection {
       client.disconnect(true);
     }
   }
+
+  private async typingDisplayLabel(employeeId: string): Promise<string> {
+    const emp = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: { firstName: true },
+    });
+    const n = emp?.firstName?.trim();
+    return n && n.length > 0 ? n : 'Someone';
+  }
 }
 
 function readSocketToken(client: Socket): string | null {
@@ -124,6 +179,14 @@ function readSocketToken(client: Socket): string | null {
 function extractChannelId(body: unknown): string | null {
   if (!body || typeof body !== 'object') return null;
   const raw = (body as { channelId?: unknown }).channelId;
+  if (typeof raw !== 'string') return null;
+  const id = raw.trim();
+  return id.length > 0 ? id : null;
+}
+
+function extractRecipientId(body: unknown): string | null {
+  if (!body || typeof body !== 'object') return null;
+  const raw = (body as { recipientId?: unknown }).recipientId;
   if (typeof raw !== 'string') return null;
   const id = raw.trim();
   return id.length > 0 ? id : null;

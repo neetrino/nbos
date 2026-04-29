@@ -56,6 +56,8 @@ export function MessengerThread({
   onSend,
   canSend,
   sendDisabled,
+  remoteTypingHint,
+  onComposerTypingIntent,
 }: {
   active: MessengerActiveView;
   /** Undefined if the channel id is missing from the current list (stale selection). */
@@ -69,6 +71,8 @@ export function MessengerThread({
   onSend: () => void;
   canSend: boolean;
   sendDisabled: boolean;
+  remoteTypingHint: string | null;
+  onComposerTypingIntent?: () => void;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -148,11 +152,18 @@ export function MessengerThread({
       </div>
 
       <div className="border-t border-black/[0.06] px-5 py-3">
+        {remoteTypingHint ? (
+          <p className="mb-2 text-xs text-black/45 italic">{remoteTypingHint}</p>
+        ) : null}
         <div className="flex items-center gap-2">
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => onNewMessageChange(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              onNewMessageChange(v);
+              if (v.trim().length > 0) onComposerTypingIntent?.();
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();

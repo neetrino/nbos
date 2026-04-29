@@ -1,13 +1,17 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { io, type Socket } from 'socket.io-client';
 import {
   MESSENGER_SOCKET_NAMESPACE,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL,
+  MESSENGER_WS_CLIENT_TYPING_CHANNEL,
+  MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
+  MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
+  MESSENGER_WS_SERVER_DM_TYPING,
 } from '@nbos/shared';
 import type { MessengerMessageRow } from '@/lib/api/messenger';
 import { mapMessengerRowToView, type MessengerViewMessage } from './messenger-message-mapper';
@@ -20,6 +24,11 @@ function messengerSocketOrigin(): string {
   return o && o.length > 0 ? o : MESSENGER_SOCKET_DEV_ORIGIN;
 }
 
+export interface MessengerRealtimeControls {
+  emitChannelTyping: (channelId: string) => void;
+  emitDmTyping: (recipientId: string) => void;
+}
+
 export function useMessengerRealtime(options: {
   canViewMessenger: boolean;
   meId: string | undefined;
@@ -27,21 +36,34 @@ export function useMessengerRealtime(options: {
   onInboundChannelMessage: (channelId: string, msg: MessengerViewMessage) => void;
   onInboundDmMessage: (counterpartId: string, msg: MessengerViewMessage) => void;
   onDmSidebarRefresh: () => void;
-}): void {
+  onRemoteTypingHint: (hint: string) => void;
+}): MessengerRealtimeControls {
   const { data: session } = useSession();
   const accessToken = session?.accessToken ?? null;
   const socketRef = useRef<Socket | null>(null);
   const activeRef = useRef(options.active);
+  const meIdRef = useRef(options.meId);
   const onCh = useRef(options.onInboundChannelMessage);
   const onDm = useRef(options.onInboundDmMessage);
   const onSidebar = useRef(options.onDmSidebarRefresh);
+  const onTypingHint = useRef(options.onRemoteTypingHint);
 
   useLayoutEffect(() => {
     activeRef.current = options.active;
+    meIdRef.current = options.meId;
     onCh.current = options.onInboundChannelMessage;
     onDm.current = options.onInboundDmMessage;
     onSidebar.current = options.onDmSidebarRefresh;
+    onTypingHint.current = options.onRemoteTypingHint;
   });
+
+  const emitChannelTyping = useCallback((channelId: string) => {
+    socketRef.current?.emit(MESSENGER_WS_CLIENT_TYPING_CHANNEL, { channelId });
+  }, []);
+
+  const emitDmTyping = useCallback((recipientId: string) => {
+    socketRef.current?.emit(MESSENGER_WS_CLIENT_TYPING_DM, { recipientId });
+  }, []);
 
   useEffect(() => {
     if (!options.canViewMessenger || !accessToken || !options.meId) {
@@ -82,6 +104,30 @@ export function useMessengerRealtime(options: {
       },
     );
 
+    socket.on(
+      MESSENGER_WS_SERVER_CHANNEL_TYPING,
+      (payload: { channelId: string; employeeId: string; label: string }) => {
+        const me = meIdRef.current;
+        if (!me || payload.employeeId === me) return;
+        const a = activeRef.current;
+        if (a?.type === 'channel' && a.id === payload.channelId) {
+          onTypingHint.current(`${payload.label} is typing…`);
+        }
+      },
+    );
+
+    socket.on(
+      MESSENGER_WS_SERVER_DM_TYPING,
+      (payload: { counterpartId: string; employeeId: string; label: string }) => {
+        const me = meIdRef.current;
+        if (!me || payload.employeeId === me) return;
+        const a = activeRef.current;
+        if (a?.type === 'dm' && a.userId === payload.counterpartId) {
+          onTypingHint.current(`${payload.label} is typing…`);
+        }
+      },
+    );
+
     return () => {
       socket.removeAllListeners();
       socket.close();
@@ -96,4 +142,12 @@ export function useMessengerRealtime(options: {
       socket.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL, { channelId: options.active.id });
     }
   }, [options.active]);
+
+  return useMemo(
+    () => ({
+      emitChannelTyping,
+      emitDmTyping,
+    }),
+    [emitChannelTyping, emitDmTyping],
+  );
 }

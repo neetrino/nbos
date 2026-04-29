@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { MESSENGER_TYPING_EMIT_MIN_MS } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { employeesApi } from '@/lib/api/employees';
 import {
@@ -16,6 +17,7 @@ import {
   mapMessengerRowToView,
   type MessengerViewMessage,
 } from './messenger-message-mapper';
+import { MESSENGER_REMOTE_TYPING_HINT_MS } from './messenger-typing-ui.constants';
 import { useMessengerRealtime } from './useMessengerRealtime';
 
 export function MessengerClient() {
@@ -34,6 +36,10 @@ export function MessengerClient() {
   const [listError, setListError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [newMessage, setNewMessage] = useState('');
+  const [remoteTypingHint, setRemoteTypingHint] = useState<string | null>(null);
+
+  const typingClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastLocalTypingEmitRef = useRef(0);
 
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -67,14 +73,42 @@ export function MessengerClient() {
     })();
   }, []);
 
-  useMessengerRealtime({
+  const showRemoteTypingHint = useCallback((hint: string) => {
+    setRemoteTypingHint(hint);
+    if (typingClearTimerRef.current) clearTimeout(typingClearTimerRef.current);
+    typingClearTimerRef.current = setTimeout(() => {
+      setRemoteTypingHint(null);
+      typingClearTimerRef.current = null;
+    }, MESSENGER_REMOTE_TYPING_HINT_MS);
+  }, []);
+
+  const { emitChannelTyping, emitDmTyping } = useMessengerRealtime({
     canViewMessenger,
     meId: me?.id,
     active,
     onInboundChannelMessage,
     onInboundDmMessage,
     onDmSidebarRefresh: refreshDmSidebar,
+    onRemoteTypingHint: showRemoteTypingHint,
   });
+
+  const fireLocalTypingIntent = useCallback(() => {
+    const a = activeRef.current;
+    if (!a) return;
+    const now = Date.now();
+    if (now - lastLocalTypingEmitRef.current < MESSENGER_TYPING_EMIT_MIN_MS) return;
+    lastLocalTypingEmitRef.current = now;
+    if (a.type === 'channel') emitChannelTyping(a.id);
+    else emitDmTyping(a.userId);
+  }, [emitChannelTyping, emitDmTyping]);
+
+  useEffect(() => {
+    setRemoteTypingHint(null);
+    if (typingClearTimerRef.current) {
+      clearTimeout(typingClearTimerRef.current);
+      typingClearTimerRef.current = null;
+    }
+  }, [active]);
 
   useEffect(() => {
     if (permsLoading || !me) return;
@@ -155,6 +189,11 @@ export function MessengerClient() {
     const text = newMessage.trim();
     setSendBusy(true);
     setNewMessage('');
+    setRemoteTypingHint(null);
+    if (typingClearTimerRef.current) {
+      clearTimeout(typingClearTimerRef.current);
+      typingClearTimerRef.current = null;
+    }
     try {
       if (active.type === 'channel') {
         await messengerApi.sendChannelMessage(active.id, { content: text });
@@ -255,6 +294,8 @@ export function MessengerClient() {
             }}
             canSend={canEditMessenger}
             sendDisabled={!newMessage.trim() || sendBusy}
+            remoteTypingHint={remoteTypingHint}
+            onComposerTypingIntent={canEditMessenger ? fireLocalTypingIntent : undefined}
           />
         )}
       </div>

@@ -7,7 +7,7 @@
 | Field         | Value                                   |
 | ------------- | --------------------------------------- |
 | Current phase | **Phase 5 — Collaboration / knowledge** |
-| Current task  | Phase 5 — Messenger (presence / typing) |
+| Current task  | Phase 5 — Messenger (presence / unread) |
 | Status        | Phase 5 in progress                     |
 | Last updated  | 2026-04-30                              |
 
@@ -100,6 +100,7 @@ Future Finance depth:
 | 2026-04-30 | Messenger Prisma persistence          | `MessengerChannel`, channel messages, `MessengerDirectThread` + messages; seed replaces in-memory demo; API service uses `PRISMA_TOKEN`.                                                                   |
 | 2026-04-30 | Messenger write audit                 | `AuditService` on channel create and channel/DM sends; actions `messenger.channel_*` / `messenger.dm_message_sent`; `changes` omit body text.                                                              |
 | 2026-04-30 | Messenger Socket.IO live              | Namespace `/messenger`, JWT on connect, channel subscribe + push on send; web `useMessengerRealtime`; `NEXT_PUBLIC_BACKEND_URL` in `.env.example`.                                                         |
+| 2026-04-30 | Messenger typing indicator            | WS typing channel/DM + server throttle; web hint above composer; shared `MESSENGER_TYPING_EMIT_MIN_MS`.                                                                                                    |
 
 ## Next Action
 

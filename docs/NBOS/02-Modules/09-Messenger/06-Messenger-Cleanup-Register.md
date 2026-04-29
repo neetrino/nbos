@@ -31,7 +31,7 @@
 
 - ~~backend использует in-memory `Map`~~ **Done (2026-04-30):** internal channels + channel messages + DM threads/messages в PostgreSQL через Prisma;
 - нет `Conversation`, `Message`, `Participant`, `Delivery`, `ReadState` моделей;
-- ~~нет WebSocket gateway~~ **Partial (2026-04-30):** Socket.IO namespace `/messenger`, JWT auth, channel room subscribe, server push on channel/DM send; no typing/presence/unread yet.
+- ~~нет WebSocket gateway~~ **Partial (2026-04-30):** Socket.IO `/messenger`, JWT, channel subscribe, push on send; **typing** (channel + DM) via `messenger.*typing*`; no presence/unread yet.
 - нет очереди для внешних каналов;
 - нет External Channel Adapter;
 - web page: channels/DM/history/send call API (names for DM peers via `employees` list when `COMPANY` VIEW allows);
@@ -73,7 +73,7 @@
 - добавить Prisma models для conversations/messages/participants/read states;
 - добавить `ConversationLink` для связи с Deal/Project/Product/Task/Ticket/Invoice/etc.;
 - добавить seed только для нового канона;
-- ~~убрать in-memory source of truth~~ done for internal MVP HTTP paths (still no WebSocket).
+- ~~убрать in-memory source of truth~~ done for internal MVP HTTP paths (Prisma + Socket.IO MVP).
 
 ### Phase 2 - Internal Messenger
 
