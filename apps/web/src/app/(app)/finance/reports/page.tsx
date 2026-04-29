@@ -13,6 +13,7 @@ import {
   CashFlowSnapshot,
   CompanyPnlSnapshot,
   ExpensePlanVsActualSnapshot,
+  MrrSubscriptionRevenueSnapshot,
 } from '@/features/finance/components/reports/FinanceReportSnapshots';
 import { financeReportsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -23,6 +24,7 @@ import {
   type ExpensePlanVsActualReport,
   type FinanceReportDefinition,
   type FinanceReportDefinitionsResponse,
+  type MrrSubscriptionRevenueReport,
 } from '@/lib/api/finance-reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -35,23 +37,32 @@ export default function FinanceReportsPage() {
   const [expensePlanVsActual, setExpensePlanVsActual] = useState<ExpensePlanVsActualReport | null>(
     null,
   );
+  const [mrrSubscriptionRevenue, setMrrSubscriptionRevenue] =
+    useState<MrrSubscriptionRevenueReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDefinitions = useCallback(async () => {
     setLoading(true);
     try {
-      const [definitions, companyPnlReport, cashFlowReport, expensePlanVsActualReport] =
-        await Promise.all([
-          financeReportsApi.getDefinitions(),
-          financeReportsApi.getCompanyPnl(),
-          financeReportsApi.getCashFlow(),
-          financeReportsApi.getExpensePlanVsActual(),
-        ]);
+      const [
+        definitions,
+        companyPnlReport,
+        cashFlowReport,
+        expensePlanVsActualReport,
+        mrrSubscriptionRevenueReport,
+      ] = await Promise.all([
+        financeReportsApi.getDefinitions(),
+        financeReportsApi.getCompanyPnl(),
+        financeReportsApi.getCashFlow(),
+        financeReportsApi.getExpensePlanVsActual(),
+        financeReportsApi.getMrrSubscriptionRevenue(),
+      ]);
       setData(definitions);
       setCompanyPnl(companyPnlReport);
       setCashFlow(cashFlowReport);
       setExpensePlanVsActual(expensePlanVsActualReport);
+      setMrrSubscriptionRevenue(mrrSubscriptionRevenueReport);
       setError(null);
     } catch (caught) {
       setData(null);
@@ -105,6 +116,9 @@ export default function FinanceReportsPage() {
         {companyPnl ? <CompanyPnlSnapshot report={companyPnl} /> : null}
         {cashFlow ? <CashFlowSnapshot report={cashFlow} /> : null}
         {expensePlanVsActual ? <ExpensePlanVsActualSnapshot report={expensePlanVsActual} /> : null}
+        {mrrSubscriptionRevenue ? (
+          <MrrSubscriptionRevenueSnapshot report={mrrSubscriptionRevenue} />
+        ) : null}
         {data.items.map((definition) => (
           <ReportDefinitionCard key={definition.id} definition={definition} />
         ))}

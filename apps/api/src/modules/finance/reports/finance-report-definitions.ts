@@ -69,12 +69,13 @@ export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
     title: 'MRR / Subscription Revenue',
     audience: ['CEO', 'Finance Director'],
     description: 'Active recurring revenue, subscription coverage and paid subscription movement.',
-    v1Status: 'partial_sources',
+    v1Status: 'definition_ready',
     sourceEndpoints: ['/api/finance/subscriptions/stats', '/api/finance/invoices/stats'],
     drillDownHrefs: ['/finance/subscriptions', '/finance/invoices'],
     phase3Scope:
       'Expose the definition and current active-MRR snapshot from live subscription data.',
     phase6Deferred: 'Advanced cohort, expansion, contraction and churn analytics.',
+    aggregateEndpoint: '/api/finance/reports/mrr-subscription-revenue',
   },
   {
     id: 'expense-plan-vs-actual',

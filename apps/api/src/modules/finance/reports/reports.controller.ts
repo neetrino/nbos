@@ -4,6 +4,7 @@ import { CashFlowService } from './cash-flow.service';
 import { CompanyPnlService } from './company-pnl.service';
 import { ExpensePlanVsActualService } from './expense-plan-vs-actual.service';
 import { FinanceReportsService } from './reports.service';
+import { MrrSubscriptionRevenueService } from './mrr-subscription-revenue.service';
 
 @ApiTags('Finance / Reports')
 @ApiBearerAuth()
@@ -14,6 +15,7 @@ export class FinanceReportsController {
     private readonly companyPnlService: CompanyPnlService,
     private readonly cashFlowService: CashFlowService,
     private readonly expensePlanVsActualService: ExpensePlanVsActualService,
+    private readonly mrrSubscriptionRevenueService: MrrSubscriptionRevenueService,
   ) {}
 
   @Get('definitions')
@@ -64,5 +66,18 @@ export class FinanceReportsController {
   })
   getExpensePlanVsActual(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
     return this.expensePlanVsActualService.getReport({ dateFrom, dateTo });
+  }
+
+  @Get('mrr-subscription-revenue')
+  @ApiOperation({
+    summary: 'Get MRR / Subscription Revenue v1 aggregate',
+    description:
+      'Phase 3 aggregate for active MRR, subscription revenue paid via payments, and new/churned subscription movement.',
+  })
+  getMrrSubscriptionRevenue(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    return this.mrrSubscriptionRevenueService.getReport({ dateFrom, dateTo });
   }
 }

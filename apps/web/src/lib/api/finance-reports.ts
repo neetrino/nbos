@@ -129,6 +129,40 @@ export interface ExpensePlanVsActualReport {
   notes: string[];
 }
 
+export interface MrrSubscriptionRevenueReport {
+  reportId: 'mrr-subscription-revenue';
+  title: 'MRR / Subscription Revenue';
+  currency: 'AMD';
+  period: {
+    dateFrom: string | null;
+    dateTo: string | null;
+    snapshotDate: string;
+    basis: 'cash';
+  };
+  active: {
+    activeMrr: string;
+    activeSubscriptionCount: number;
+    byType: Array<{
+      type: string;
+      activeSubscriptionCount: number;
+      activeMrr: string;
+    }>;
+  };
+  movement: {
+    newMrr: string;
+    newSubscriptionCount: number;
+    churnedMrr: string;
+    churnedSubscriptionCount: number;
+  };
+  paidRevenue: {
+    paidSubscriptionRevenue: string;
+    paymentCount: number;
+    invoicedSubscriptionAmount: string;
+    invoiceCount: number;
+  };
+  notes: string[];
+}
+
 export const financeReportsApi = {
   async getDefinitions(): Promise<FinanceReportDefinitionsResponse> {
     const resp = await api.get<FinanceReportDefinitionsResponse>(
@@ -150,6 +184,13 @@ export const financeReportsApi = {
   async getExpensePlanVsActual(): Promise<ExpensePlanVsActualReport> {
     const resp = await api.get<ExpensePlanVsActualReport>(
       '/api/finance/reports/expense-plan-vs-actual',
+    );
+    return resp.data;
+  },
+
+  async getMrrSubscriptionRevenue(): Promise<MrrSubscriptionRevenueReport> {
+    const resp = await api.get<MrrSubscriptionRevenueReport>(
+      '/api/finance/reports/mrr-subscription-revenue',
     );
     return resp.data;
   },

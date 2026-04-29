@@ -4,6 +4,7 @@ import type {
   CashFlowReport,
   CompanyPnlReport,
   ExpensePlanVsActualReport,
+  MrrSubscriptionRevenueReport,
 } from '@/lib/api/finance-reports';
 
 export function CompanyPnlSnapshot({ report }: { report: CompanyPnlReport }) {
@@ -130,6 +131,63 @@ export function ExpensePlanVsActualSnapshot({ report }: { report: ExpensePlanVsA
         <p className="text-muted-foreground mt-4 text-sm">
           Largest category in scope: <span className="font-medium">{topCategory.category}</span>{' '}
           planned {formatCompanyPnlAmount(topCategory.plannedAmount)}.
+        </p>
+      ) : null}
+    </ReportSnapshot>
+  );
+}
+
+export function MrrSubscriptionRevenueSnapshot({
+  report,
+}: {
+  report: MrrSubscriptionRevenueReport;
+}) {
+  const topType = report.active.byType.reduce<(typeof report.active.byType)[number] | null>(
+    (current, row) =>
+      !current || Number(row.activeMrr) > Number(current.activeMrr) ? row : current,
+    null,
+  );
+  return (
+    <ReportSnapshot
+      title="MRR / Subscription Revenue v1 snapshot"
+      subtitle="Active MRR and paid subscription revenue from live subscription data."
+    >
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <SnapshotMetric
+          label="Active MRR"
+          value={formatCompanyPnlAmount(report.active.activeMrr)}
+        />
+        <SnapshotMetric
+          label="Paid subscription revenue"
+          value={formatCompanyPnlAmount(report.paidRevenue.paidSubscriptionRevenue)}
+        />
+        <SnapshotMetric label="New MRR" value={formatCompanyPnlAmount(report.movement.newMrr)} />
+        <SnapshotMetric
+          label="Churned MRR"
+          value={formatCompanyPnlAmount(report.movement.churnedMrr)}
+        />
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <SnapshotMetric
+          label="Active subscriptions"
+          value={String(report.active.activeSubscriptionCount)}
+          compact
+        />
+        <SnapshotMetric
+          label="Subscription payments"
+          value={String(report.paidRevenue.paymentCount)}
+          compact
+        />
+        <SnapshotMetric
+          label="Subscription invoices"
+          value={String(report.paidRevenue.invoiceCount)}
+          compact
+        />
+      </div>
+      {topType ? (
+        <p className="text-muted-foreground mt-4 text-sm">
+          Top active type: <span className="font-medium">{topType.type}</span> at{' '}
+          {formatCompanyPnlAmount(topType.activeMrr)} MRR.
         </p>
       ) : null}
     </ReportSnapshot>
