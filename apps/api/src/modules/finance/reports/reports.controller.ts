@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CashFlowService } from './cash-flow.service';
 import { CompanyPnlService } from './company-pnl.service';
+import { ExpensePlanVsActualService } from './expense-plan-vs-actual.service';
 import { FinanceReportsService } from './reports.service';
 
 @ApiTags('Finance / Reports')
@@ -12,6 +13,7 @@ export class FinanceReportsController {
     private readonly financeReportsService: FinanceReportsService,
     private readonly companyPnlService: CompanyPnlService,
     private readonly cashFlowService: CashFlowService,
+    private readonly expensePlanVsActualService: ExpensePlanVsActualService,
   ) {}
 
   @Get('definitions')
@@ -52,5 +54,15 @@ export class FinanceReportsController {
     @Query('asOf') asOf?: string,
   ) {
     return this.cashFlowService.getReport({ dateFrom, dateTo, asOf });
+  }
+
+  @Get('expense-plan-vs-actual')
+  @ApiOperation({
+    summary: 'Get Expense Plan vs Actual v1 aggregate',
+    description:
+      'Phase 3 aggregate comparing current expense plans, generated plan-linked expense cards and actual payments by category.',
+  })
+  getExpensePlanVsActual(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.expensePlanVsActualService.getReport({ dateFrom, dateTo });
   }
 }

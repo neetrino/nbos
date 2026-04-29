@@ -81,11 +81,12 @@ export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
     title: 'Expense Plan vs Actual',
     audience: ['CEO', 'Finance Director'],
     description: 'Planned expenses compared with generated cards and actual payments.',
-    v1Status: 'needs_aggregate_endpoint',
+    v1Status: 'definition_ready',
     sourceEndpoints: ['/api/expense-plans', '/api/expenses/stats'],
     drillDownHrefs: ['/finance/expenses/plans', '/finance/expenses'],
     phase3Scope: 'Plan/card/payment roll-up by category, project and period.',
     phase6Deferred: 'Scheduled variance reports and BI-style historical charts.',
+    aggregateEndpoint: '/api/finance/reports/expense-plan-vs-actual',
   },
   {
     id: 'payroll-report',

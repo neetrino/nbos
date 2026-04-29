@@ -98,6 +98,37 @@ export interface CashFlowReport {
   notes: string[];
 }
 
+export interface ExpensePlanVsActualReport {
+  reportId: 'expense-plan-vs-actual';
+  title: 'Expense Plan vs Actual';
+  currency: 'AMD';
+  period: {
+    dateFrom: string | null;
+    dateTo: string | null;
+    basis: 'cash';
+  };
+  totals: {
+    plannedAmount: string;
+    generatedCardAmount: string;
+    paidAmount: string;
+    variancePlannedVsPaid: string;
+    planCount: number;
+    cardCount: number;
+    paymentCount: number;
+  };
+  byCategory: Array<{
+    category: string;
+    plannedAmount: string;
+    generatedCardAmount: string;
+    paidAmount: string;
+    variancePlannedVsPaid: string;
+    planCount: number;
+    cardCount: number;
+    paymentCount: number;
+  }>;
+  notes: string[];
+}
+
 export const financeReportsApi = {
   async getDefinitions(): Promise<FinanceReportDefinitionsResponse> {
     const resp = await api.get<FinanceReportDefinitionsResponse>(
@@ -113,6 +144,13 @@ export const financeReportsApi = {
 
   async getCashFlow(): Promise<CashFlowReport> {
     const resp = await api.get<CashFlowReport>('/api/finance/reports/cash-flow');
+    return resp.data;
+  },
+
+  async getExpensePlanVsActual(): Promise<ExpensePlanVsActualReport> {
+    const resp = await api.get<ExpensePlanVsActualReport>(
+      '/api/finance/reports/expense-plan-vs-actual',
+    );
     return resp.data;
   },
 };

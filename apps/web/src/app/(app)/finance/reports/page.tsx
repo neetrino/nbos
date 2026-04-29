@@ -12,6 +12,7 @@ import {
 import {
   CashFlowSnapshot,
   CompanyPnlSnapshot,
+  ExpensePlanVsActualSnapshot,
 } from '@/features/finance/components/reports/FinanceReportSnapshots';
 import { financeReportsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -19,6 +20,7 @@ import {
   financeReportsApi,
   type CashFlowReport,
   type CompanyPnlReport,
+  type ExpensePlanVsActualReport,
   type FinanceReportDefinition,
   type FinanceReportDefinitionsResponse,
 } from '@/lib/api/finance-reports';
@@ -30,20 +32,26 @@ export default function FinanceReportsPage() {
   const [data, setData] = useState<FinanceReportDefinitionsResponse | null>(null);
   const [companyPnl, setCompanyPnl] = useState<CompanyPnlReport | null>(null);
   const [cashFlow, setCashFlow] = useState<CashFlowReport | null>(null);
+  const [expensePlanVsActual, setExpensePlanVsActual] = useState<ExpensePlanVsActualReport | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDefinitions = useCallback(async () => {
     setLoading(true);
     try {
-      const [definitions, companyPnlReport, cashFlowReport] = await Promise.all([
-        financeReportsApi.getDefinitions(),
-        financeReportsApi.getCompanyPnl(),
-        financeReportsApi.getCashFlow(),
-      ]);
+      const [definitions, companyPnlReport, cashFlowReport, expensePlanVsActualReport] =
+        await Promise.all([
+          financeReportsApi.getDefinitions(),
+          financeReportsApi.getCompanyPnl(),
+          financeReportsApi.getCashFlow(),
+          financeReportsApi.getExpensePlanVsActual(),
+        ]);
       setData(definitions);
       setCompanyPnl(companyPnlReport);
       setCashFlow(cashFlowReport);
+      setExpensePlanVsActual(expensePlanVsActualReport);
       setError(null);
     } catch (caught) {
       setData(null);
@@ -96,6 +104,7 @@ export default function FinanceReportsPage() {
       <section className="grid gap-4 xl:grid-cols-2">
         {companyPnl ? <CompanyPnlSnapshot report={companyPnl} /> : null}
         {cashFlow ? <CashFlowSnapshot report={cashFlow} /> : null}
+        {expensePlanVsActual ? <ExpensePlanVsActualSnapshot report={expensePlanVsActual} /> : null}
         {data.items.map((definition) => (
           <ReportDefinitionCard key={definition.id} definition={definition} />
         ))}

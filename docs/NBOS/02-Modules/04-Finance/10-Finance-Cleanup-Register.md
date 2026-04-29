@@ -309,9 +309,11 @@ Runtime now exposes the Phase 3 report catalog boundary and first aggregates:
 - `GET /api/finance/reports/definitions/:id`;
 - `GET /api/finance/reports/company-pnl`;
 - `GET /api/finance/reports/cash-flow`;
+- `GET /api/finance/reports/expense-plan-vs-actual`;
 - Finance `/finance/reports` UI;
 - Company P&L cash-basis snapshot on `/finance/reports`;
 - Cash Flow real movement + 30/60/90 forecast snapshot on `/finance/reports`;
+- Expense Plan vs Actual plan/card/payment category snapshot on `/finance/reports`;
 - six approved definitions: Company P&L, Project P&L, Cash Flow, MRR / Subscription Revenue, Expense Plan vs Actual, Payroll Report.
 
 Remaining runtime refactor:

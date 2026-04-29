@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
 import { formatCompanyPnlAmount, formatCompanyPnlMargin } from '../../utils/company-pnl-format';
-import type { CashFlowReport, CompanyPnlReport } from '@/lib/api/finance-reports';
+import type {
+  CashFlowReport,
+  CompanyPnlReport,
+  ExpensePlanVsActualReport,
+} from '@/lib/api/finance-reports';
 
 export function CompanyPnlSnapshot({ report }: { report: CompanyPnlReport }) {
   return (
@@ -86,6 +90,47 @@ export function CashFlowSnapshot({ report }: { report: CashFlowReport }) {
             compact
           />
         </div>
+      ) : null}
+    </ReportSnapshot>
+  );
+}
+
+export function ExpensePlanVsActualSnapshot({ report }: { report: ExpensePlanVsActualReport }) {
+  const topCategory = report.byCategory.reduce<(typeof report.byCategory)[number] | null>(
+    (current, row) =>
+      !current || Number(row.plannedAmount) > Number(current.plannedAmount) ? row : current,
+    null,
+  );
+  return (
+    <ReportSnapshot
+      title="Expense Plan vs Actual v1 snapshot"
+      subtitle="Plan/card/payment roll-up by category from live Expense Plan data."
+    >
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <SnapshotMetric
+          label="Planned"
+          value={formatCompanyPnlAmount(report.totals.plannedAmount)}
+        />
+        <SnapshotMetric
+          label="Generated cards"
+          value={formatCompanyPnlAmount(report.totals.generatedCardAmount)}
+        />
+        <SnapshotMetric label="Paid" value={formatCompanyPnlAmount(report.totals.paidAmount)} />
+        <SnapshotMetric
+          label="Variance"
+          value={formatCompanyPnlAmount(report.totals.variancePlannedVsPaid)}
+        />
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <SnapshotMetric label="Plans" value={String(report.totals.planCount)} compact />
+        <SnapshotMetric label="Cards" value={String(report.totals.cardCount)} compact />
+        <SnapshotMetric label="Payments" value={String(report.totals.paymentCount)} compact />
+      </div>
+      {topCategory ? (
+        <p className="text-muted-foreground mt-4 text-sm">
+          Largest category in scope: <span className="font-medium">{topCategory.category}</span>{' '}
+          planned {formatCompanyPnlAmount(topCategory.plannedAmount)}.
+        </p>
       ) : null}
     </ReportSnapshot>
   );
