@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, Clock, DollarSign, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Clock, DollarSign, Download, RefreshCw } from 'lucide-react';
 import { ErrorState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,8 +26,10 @@ import {
 } from '@/features/finance/components/dashboard/finance-dashboard-data';
 import { financeDashboardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { downloadFinanceDashboardCsv } from '@/features/finance/utils/export-finance-dashboard-csv';
 import { financeSummaryApi } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { toast } from 'sonner';
 
 export default function FinanceDashboardPage() {
   const [data, setData] = useState<FinanceDashboardData | null>(null);
@@ -79,7 +81,15 @@ export default function FinanceDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardHeader period={period} setPeriod={setPeriod} onRefresh={fetchDashboard} />
+      <DashboardHeader
+        period={period}
+        setPeriod={setPeriod}
+        onRefresh={fetchDashboard}
+        onExportCsv={() => {
+          downloadFinanceDashboardCsv(data, period);
+          toast.success('Finance dashboard snapshot exported');
+        }}
+      />
       <KpiCards kpis={buildKpis(data)} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -101,10 +111,12 @@ function DashboardHeader({
   period,
   setPeriod,
   onRefresh,
+  onExportCsv,
 }: {
   period: FinancePeriod;
   setPeriod: (period: FinancePeriod) => void;
   onRefresh: () => void;
+  onExportCsv: () => void;
 }) {
   return (
     <div className="flex items-start justify-between gap-4">
@@ -127,8 +139,23 @@ function DashboardHeader({
             </Button>
           ))}
         </div>
-        <Button variant="outline" size="icon" onClick={onRefresh}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onRefresh}
+          aria-label="Refresh finance overview"
+        >
           <RefreshCw size={16} />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={onExportCsv}
+          aria-label="Export finance dashboard snapshot as CSV"
+          title="KPIs, invoice mix, reconciliation, recent payments, and upcoming invoices for this period"
+        >
+          <Download size={16} />
         </Button>
       </div>
     </div>
