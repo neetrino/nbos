@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Eye, Copy, Loader2 } from 'lucide-react';
+import { Eye, Copy, Loader2, ExternalLink } from 'lucide-react';
 import {
   credentialsApi,
   type CredentialDetail,
@@ -82,6 +82,16 @@ export function CredentialDetailDialog({
     }
   };
 
+  const handleOpenUrl = async () => {
+    if (!credentialId) return;
+    try {
+      const { url } = await credentialsApi.recordUrlOpened(credentialId);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch {
+      toast.error('Could not open URL');
+    }
+  };
+
   const presentFields = (['password', 'apiKey', 'envData'] as const).filter(
     (f) => detail?.secretsPresent[f],
   );
@@ -106,7 +116,25 @@ export function CredentialDetailDialog({
               <span className="text-muted-foreground">Login</span>
               <span className="col-span-2 font-mono text-xs">{detail.login ?? '—'}</span>
               <span className="text-muted-foreground">URL</span>
-              <span className="col-span-2 break-all">{detail.url ?? '—'}</span>
+              <span className="col-span-2 flex flex-wrap items-center gap-2 break-all">
+                {detail.url ? (
+                  <>
+                    <span className="min-w-0 flex-1">{detail.url}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 shrink-0 gap-1"
+                      onClick={() => void handleOpenUrl()}
+                    >
+                      <ExternalLink size={12} />
+                      Open
+                    </Button>
+                  </>
+                ) : (
+                  '—'
+                )}
+              </span>
             </div>
             {presentFields.length === 0 ? (
               <p className="text-muted-foreground text-xs">No encrypted secrets on this record.</p>

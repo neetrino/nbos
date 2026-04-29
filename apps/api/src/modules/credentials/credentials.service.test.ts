@@ -223,6 +223,47 @@ describe('CredentialsService', () => {
     });
   });
 
+  describe('recordUrlOpened', () => {
+    it('should return url and log url_opened for safe https URL', async () => {
+      prisma.credential.findFirst.mockResolvedValue({
+        id: '1',
+        url: 'https://example.com/path',
+        projectId: 'p1',
+      });
+
+      const result = await service.recordUrlOpened('1', accessUser1);
+
+      expect(result).toEqual({ url: 'https://example.com/path' });
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'credential.url_opened',
+          entityId: '1',
+        }),
+      );
+    });
+
+    it('should reject javascript: URLs', async () => {
+      prisma.credential.findFirst.mockResolvedValue({
+        id: '1',
+        url: 'javascript:alert(1)',
+        projectId: null,
+      });
+
+      await expect(service.recordUrlOpened('1', accessUser1)).rejects.toThrow(BadRequestException);
+      expect(auditService.log).not.toHaveBeenCalled();
+    });
+
+    it('should reject empty URL', async () => {
+      prisma.credential.findFirst.mockResolvedValue({
+        id: '1',
+        url: '   ',
+        projectId: null,
+      });
+
+      await expect(service.recordUrlOpened('1', accessUser1)).rejects.toThrow(BadRequestException);
+    });
+  });
+
   describe('create', () => {
     it('should encrypt sensitive fields and log audit', async () => {
       const input = {

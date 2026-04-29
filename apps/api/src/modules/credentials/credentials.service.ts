@@ -20,6 +20,19 @@ function isSensitiveField(value: string): value is SensitiveField {
   return (SENSITIVE_FIELDS as readonly string[]).includes(value);
 }
 
+const ALLOWED_CREDENTIAL_URL_PROTOCOLS = new Set(['http:', 'https:']);
+
+function isSafeCredentialOpenUrl(raw: string): boolean {
+  const trimmed = raw.trim();
+  if (!trimmed) return false;
+  try {
+    const parsed = new URL(trimmed);
+    return ALLOWED_CREDENTIAL_URL_PROTOCOLS.has(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
 type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
 
 /** Caller identity for row-level credential access (mirrors list visibility rules). */
@@ -308,6 +321,27 @@ export class CredentialsService {
     });
 
     return { field: secretField, value };
+  }
+
+  /**
+   * Validates row access and http(s) URL, logs `credential.url_opened`, returns URL for client navigation.
+   */
+  async recordUrlOpened(id: string, access: CredentialsAccessContext) {
+    const row = await this.getAccessibleCredentialRow(id, access);
+    const url = typeof row.url === 'string' ? row.url.trim() : '';
+    if (!url || !isSafeCredentialOpenUrl(url)) {
+      throw new BadRequestException('Credential has no safe http(s) URL to open');
+    }
+
+    await this.auditService.log({
+      entityType: 'credential',
+      entityId: id,
+      action: 'credential.url_opened',
+      userId: access.employeeId,
+      projectId: row.projectId ?? undefined,
+    });
+
+    return { url };
   }
 
   async create(data: CreateCredentialDto, userId: string) {

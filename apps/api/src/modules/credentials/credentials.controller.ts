@@ -97,6 +97,19 @@ export class CredentialsController {
     });
   }
 
+  @Post(':id/open-url')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Record audited open of stored http(s) URL; returns URL for client navigation',
+  })
+  async openUrl(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.recordUrlOpened(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
   @Post()
   @RequirePermission('CREDENTIALS', 'ADD')
   @ApiOperation({ summary: 'Create credential' })

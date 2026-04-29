@@ -76,4 +76,9 @@ export const credentialsApi = {
     );
     return resp.data;
   },
+  /** Audits `credential.url_opened`; returns safe http(s) URL for navigation. */
+  async recordUrlOpened(id: string): Promise<{ url: string }> {
+    const resp = await api.post<{ url: string }>(`/api/credentials/${id}/open-url`, {});
+    return resp.data;
+  },
 };

@@ -347,16 +347,25 @@ function CredentialTable({
                 </TableCell>
                 <TableCell>
                   {cred.url ? (
-                    <a
-                      href={cred.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent flex items-center gap-1 text-xs hover:underline"
-                      onClick={(e) => e.stopPropagation()}
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="text-accent h-auto gap-1 p-0 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void (async () => {
+                          try {
+                            const { url } = await credentialsApi.recordUrlOpened(cred.id);
+                            window.open(url, '_blank', 'noopener,noreferrer');
+                          } catch {
+                            toast.error('Could not open URL');
+                          }
+                        })();
+                      }}
                     >
                       <ExternalLink size={10} />
                       Open
-                    </a>
+                    </Button>
                   ) : (
                     '—'
                   )}
