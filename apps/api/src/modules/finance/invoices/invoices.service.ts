@@ -24,6 +24,7 @@ interface CreateInvoiceDto {
   subscriptionId?: string;
   projectId: string;
   companyId?: string;
+  clientServiceRecordId?: string;
   amount: number;
   type: string;
   dueDate?: string;
@@ -126,6 +127,7 @@ export class InvoicesService {
         subscriptionId: data.subscriptionId,
         projectId: data.projectId,
         companyId: data.companyId,
+        clientServiceRecordId: data.clientServiceRecordId,
         amount: data.amount,
         taxStatus,
         type: data.type as InvoiceTypeEnum,

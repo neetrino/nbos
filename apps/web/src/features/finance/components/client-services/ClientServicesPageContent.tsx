@@ -1,7 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, RefreshCw, ServerCog, Trash2 } from 'lucide-react';
+import {
+  CheckSquare,
+  FileText,
+  ListChecks,
+  Plus,
+  Receipt,
+  RefreshCw,
+  ServerCog,
+  Trash2,
+} from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -28,6 +38,7 @@ import {
   type ClientServiceStats,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { usePermission } from '@/lib/permissions';
 
 function formatShortDate(value: string | null): string {
   if (!value) return '-';
@@ -49,6 +60,8 @@ export function ClientServicesPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [serviceToEdit, setServiceToEdit] = useState<ClientServiceRecord | null>(null);
+  const [actionId, setActionId] = useState<string | null>(null);
+  const { me } = usePermission();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -107,6 +120,37 @@ export function ClientServicesPageContent() {
     }
   };
 
+  const runServiceAction = async (
+    service: ClientServiceRecord,
+    kind: 'invoice' | 'plan' | 'expense' | 'task',
+  ) => {
+    setActionId(`${kind}:${service.id}`);
+    try {
+      if (kind === 'invoice') {
+        await clientServicesApi.createInvoice(service.id);
+        toast.success('Linked invoice card created.');
+      }
+      if (kind === 'plan') {
+        await clientServicesApi.createExpensePlan(service.id);
+        toast.success('Linked expense plan created.');
+      }
+      if (kind === 'expense') {
+        await clientServicesApi.createExpense(service.id);
+        toast.success('Linked expense card created.');
+      }
+      if (kind === 'task') {
+        if (!me?.id) throw new Error('Current employee is not loaded.');
+        await clientServicesApi.createTask(service.id, { creatorId: me.id });
+        toast.success('Linked task created.');
+      }
+      await fetchData();
+    } catch (caught) {
+      toast.error(getApiErrorMessage(caught, 'Client service action failed.'));
+    } finally {
+      setActionId(null);
+    }
+  };
+
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader
@@ -159,7 +203,7 @@ export function ClientServicesPageContent() {
                 <TableHead>Amounts</TableHead>
                 <TableHead>Renewal</TableHead>
                 <TableHead>Links</TableHead>
-                <TableHead className="w-[130px] text-right">Actions</TableHead>
+                <TableHead className="w-[260px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -202,9 +246,49 @@ export function ClientServicesPageContent() {
                     {service._count.expenses} exp
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => void handleDelete(service)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      {service.billingModel === 'CLIENT_PAID' ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={actionId === `invoice:${service.id}`}
+                          title="Create linked invoice"
+                          onClick={() => void runServiceAction(service, 'invoice')}
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={actionId === `plan:${service.id}`}
+                        title="Create linked expense plan"
+                        onClick={() => void runServiceAction(service, 'plan')}
+                      >
+                        <ListChecks className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={actionId === `expense:${service.id}`}
+                        title="Create linked expense card"
+                        onClick={() => void runServiceAction(service, 'expense')}
+                      >
+                        <Receipt className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={actionId === `task:${service.id}` || !me?.id}
+                        title="Create linked task"
+                        onClick={() => void runServiceAction(service, 'task')}
+                      >
+                        <CheckSquare className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => void handleDelete(service)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

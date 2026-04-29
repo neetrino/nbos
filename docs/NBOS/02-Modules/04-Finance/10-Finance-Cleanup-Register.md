@@ -266,16 +266,16 @@ Runtime now has first-class `ClientServiceRecord` foundation:
 - Prisma `client_service_records`;
 - optional links from `Invoice`, `ExpensePlan`, and `Expense`;
 - `GET/POST/PUT/DELETE /api/client-services` + stats;
-- Finance `/finance/client-services` list/create/edit/delete UI.
+- Finance `/finance/client-services` list/create/edit/delete UI;
+- service actions for linked Invoice Card, Expense Plan, Expense Card and Task (`TaskLink`).
 
 `Domain` still exists as the older inventory entity and has not yet been migrated/wrapped into the general service model.
 
 Remaining runtime refactor:
 
 - migrate / wrap domain logic into the general service model;
-- implement client-paid flow: service -> Invoice Card -> Payment -> Task -> Expense;
-- implement company-paid flow: service -> Expense Plan / Expense Card -> renewal tracking;
-- connect to `Task`, `Credential`, and Drive File Assets for receipts/proofs/provider documents.
+- deepen client-paid automation after actual payment: task/expense can be created from actions today, but not yet automatically triggered by payment coverage;
+- connect to `Credential` and Drive File Assets for receipts/proofs/provider documents.
 
 Finance runtime also needs Drive alignment:
 

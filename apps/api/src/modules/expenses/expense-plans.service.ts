@@ -31,6 +31,7 @@ export interface CreateExpensePlanBody {
   nextDueDate?: string | null;
   provider?: string | null;
   projectId?: string | null;
+  clientServiceRecordId?: string | null;
   autoGenerate?: boolean;
   notes?: string | null;
 }
@@ -133,6 +134,7 @@ export class ExpensePlansService {
         nextDueDate: body.nextDueDate ? new Date(body.nextDueDate) : null,
         provider: body.provider?.trim() || null,
         projectId,
+        clientServiceRecordId: body.clientServiceRecordId?.trim() || null,
         autoGenerate: Boolean(body.autoGenerate),
         notes: body.notes?.trim() || null,
       },
@@ -175,6 +177,11 @@ export class ExpensePlansService {
     if (body.projectId !== undefined) {
       const pid = await this.resolveProjectIdOrThrow(body.projectId);
       data.project = pid ? { connect: { id: pid } } : { disconnect: true };
+    }
+    if (body.clientServiceRecordId !== undefined) {
+      data.clientServiceRecord = body.clientServiceRecordId?.trim()
+        ? { connect: { id: body.clientServiceRecordId.trim() } }
+        : { disconnect: true };
     }
     if (body.autoGenerate !== undefined) {
       data.autoGenerate = Boolean(body.autoGenerate);
@@ -224,6 +231,7 @@ export class ExpensePlansService {
       projectId: plan.projectId ?? undefined,
       notes: plan.provider ? `From plan. Provider: ${plan.provider}` : 'From expense plan',
       expensePlanId: planId,
+      clientServiceRecordId: plan.clientServiceRecordId ?? undefined,
     });
 
     const nextDue = planNextDueAfterOccurrence(occurrence, plan.frequency);

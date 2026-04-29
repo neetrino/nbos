@@ -1,5 +1,8 @@
 import { api } from '../api';
+import type { ExpensePlan } from './expense-plans';
+import type { Expense, Invoice } from './finance';
 import type { ListData } from './finance-common';
+import type { Task } from './tasks';
 
 export interface ClientServiceRecord {
   id: string;
@@ -100,5 +103,46 @@ export const clientServicesApi = {
 
   async delete(id: string): Promise<void> {
     await api.delete(`/api/client-services/${id}`);
+  },
+
+  async createInvoice(
+    id: string,
+    data?: { amount?: number; dueDate?: string | null; type?: string },
+  ): Promise<Invoice> {
+    const resp = await api.post<Invoice>(
+      `/api/client-services/${id}/actions/create-invoice`,
+      data ?? {},
+    );
+    return resp.data;
+  },
+
+  async createExpensePlan(
+    id: string,
+    data?: { amount?: number; nextDueDate?: string | null; autoGenerate?: boolean },
+  ): Promise<ExpensePlan> {
+    const resp = await api.post<ExpensePlan>(
+      `/api/client-services/${id}/actions/create-expense-plan`,
+      data ?? {},
+    );
+    return resp.data;
+  },
+
+  async createExpense(
+    id: string,
+    data?: { amount?: number; dueDate?: string | null },
+  ): Promise<Expense> {
+    const resp = await api.post<Expense>(
+      `/api/client-services/${id}/actions/create-expense`,
+      data ?? {},
+    );
+    return resp.data;
+  },
+
+  async createTask(
+    id: string,
+    data: { creatorId: string; title?: string; description?: string; dueDate?: string | null },
+  ): Promise<Task> {
+    const resp = await api.post<Task>(`/api/client-services/${id}/actions/create-task`, data);
+    return resp.data;
   },
 };

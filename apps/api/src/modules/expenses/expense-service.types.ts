@@ -9,6 +9,8 @@ export interface CreateExpenseDto {
   projectId?: string;
   /** When set, links the expense to an existing `ExpensePlan` (validated server-side). */
   expensePlanId?: string;
+  /** When set, links the expense to a `ClientServiceRecord` source. */
+  clientServiceRecordId?: string;
   isPassThrough?: boolean;
   taxStatus?: string;
   backlogReason?: string | null;
@@ -24,6 +26,7 @@ export interface UpdateExpenseDto {
   dueDate?: string;
   status?: string;
   projectId?: string;
+  clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: string;
   backlogReason?: string | null;

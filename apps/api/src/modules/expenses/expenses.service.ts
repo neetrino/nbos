@@ -208,6 +208,9 @@ export class ExpensesService {
         status: resolveExpenseStatus(data.status) as ExpenseStatusEnum,
         projectId: data.projectId,
         ...(data.expensePlanId ? { expensePlanId: data.expensePlanId } : {}),
+        ...(data.clientServiceRecordId
+          ? { clientServiceRecordId: data.clientServiceRecordId }
+          : {}),
         isPassThrough: data.isPassThrough ?? false,
         taxStatus: resolveExpenseTaxStatus(
           data.taxStatus,
@@ -257,6 +260,9 @@ export class ExpensesService {
         }),
         ...(statusPatch !== undefined && { status: statusPatch as ExpenseStatusEnum }),
         ...(data.projectId !== undefined && { projectId: data.projectId || null }),
+        ...(data.clientServiceRecordId !== undefined && {
+          clientServiceRecordId: data.clientServiceRecordId || null,
+        }),
         ...(data.isPassThrough !== undefined && { isPassThrough: data.isPassThrough }),
         ...(taxStatusPatch !== undefined && {
           taxStatus: taxStatusPatch as Prisma.ExpenseUpdateInput['taxStatus'],

@@ -11,7 +11,14 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ClientServiceFlowsService } from './client-service-flows.service';
 import { ClientServicesService } from './client-services.service';
+import type {
+  CreateClientServiceExpenseBody,
+  CreateClientServiceExpensePlanBody,
+  CreateClientServiceInvoiceBody,
+  CreateClientServiceTaskBody,
+} from './client-service-flows.types';
 import type {
   ClientServiceRecordBody,
   UpdateClientServiceRecordBody,
@@ -21,7 +28,10 @@ import type {
 @ApiBearerAuth()
 @Controller('client-services')
 export class ClientServicesController {
-  constructor(private readonly clientServicesService: ClientServicesService) {}
+  constructor(
+    private readonly clientServicesService: ClientServicesService,
+    private readonly clientServiceFlowsService: ClientServiceFlowsService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List client service records (paged)' })
@@ -83,6 +93,33 @@ export class ClientServicesController {
   @ApiOperation({ summary: 'Get client service record by id' })
   async findOne(@Param('id') id: string) {
     return this.clientServicesService.findById(id);
+  }
+
+  @Post(':id/actions/create-invoice')
+  @ApiOperation({ summary: 'Create an invoice card linked to a client-paid service' })
+  async createInvoice(@Param('id') id: string, @Body() body: CreateClientServiceInvoiceBody = {}) {
+    return this.clientServiceFlowsService.createInvoice(id, body);
+  }
+
+  @Post(':id/actions/create-expense-plan')
+  @ApiOperation({ summary: 'Create an expense plan linked to this client service' })
+  async createExpensePlan(
+    @Param('id') id: string,
+    @Body() body: CreateClientServiceExpensePlanBody = {},
+  ) {
+    return this.clientServiceFlowsService.createExpensePlan(id, body);
+  }
+
+  @Post(':id/actions/create-expense')
+  @ApiOperation({ summary: 'Create an expense card linked to this client service' })
+  async createExpense(@Param('id') id: string, @Body() body: CreateClientServiceExpenseBody = {}) {
+    return this.clientServiceFlowsService.createExpense(id, body);
+  }
+
+  @Post(':id/actions/create-task')
+  @ApiOperation({ summary: 'Create a task linked to this client service' })
+  async createTask(@Param('id') id: string, @Body() body: CreateClientServiceTaskBody) {
+    return this.clientServiceFlowsService.createTask(id, body);
   }
 
   @Post()
