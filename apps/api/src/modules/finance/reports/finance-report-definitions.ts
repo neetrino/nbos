@@ -16,6 +16,7 @@ export interface FinanceReportDefinition {
   drillDownHrefs: string[];
   phase3Scope: string;
   phase6Deferred: string;
+  aggregateEndpoint?: string;
 }
 
 export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
@@ -24,7 +25,7 @@ export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
     title: 'Company P&L',
     audience: ['CEO', 'Finance Director'],
     description: 'Company revenue, direct costs, operating costs and net margin for a period.',
-    v1Status: 'needs_aggregate_endpoint',
+    v1Status: 'definition_ready',
     sourceEndpoints: [
       '/api/finance/payments/stats',
       '/api/expenses/stats',
@@ -33,6 +34,7 @@ export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
     drillDownHrefs: ['/finance/payments', '/finance/expenses', '/finance/payroll'],
     phase3Scope: 'Finance owns formulas and a read-only aggregate endpoint.',
     phase6Deferred: 'Global report catalog, scheduled delivery, BI presentation and accrual depth.',
+    aggregateEndpoint: '/api/finance/reports/company-pnl',
   },
   {
     id: 'project-pnl',

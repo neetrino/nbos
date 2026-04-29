@@ -1,12 +1,16 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CompanyPnlService } from './company-pnl.service';
 import { FinanceReportsService } from './reports.service';
 
 @ApiTags('Finance / Reports')
 @ApiBearerAuth()
 @Controller('finance/reports')
 export class FinanceReportsController {
-  constructor(private readonly financeReportsService: FinanceReportsService) {}
+  constructor(
+    private readonly financeReportsService: FinanceReportsService,
+    private readonly companyPnlService: CompanyPnlService,
+  ) {}
 
   @Get('definitions')
   @ApiOperation({
@@ -22,5 +26,15 @@ export class FinanceReportsController {
   @ApiOperation({ summary: 'Get a single Finance report definition' })
   getDefinition(@Param('id') id: string) {
     return this.financeReportsService.getDefinition(id);
+  }
+
+  @Get('company-pnl')
+  @ApiOperation({
+    summary: 'Get Company P&L v1 aggregate',
+    description:
+      'Cash-basis Phase 3 aggregate from incoming payments and actual expense payments. Payroll is exposed as a control subtotal to avoid double-counting materialized salary expenses.',
+  })
+  getCompanyPnl(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.companyPnlService.getReport({ dateFrom, dateTo });
   }
 }

@@ -299,20 +299,22 @@ New canon requires:
 
 Runtime does not yet implement this layer.
 
-### C6a. Finance report definitions v1 shell exists
+### C6a. Finance report definitions v1 shell + Company P&L aggregate
 
 Статус: `PARTIAL RUNTIME ALIGNMENT`
 
-Runtime now exposes the Phase 3 report catalog boundary:
+Runtime now exposes the Phase 3 report catalog boundary and first aggregate:
 
 - `GET /api/finance/reports/definitions`;
 - `GET /api/finance/reports/definitions/:id`;
+- `GET /api/finance/reports/company-pnl`;
 - Finance `/finance/reports` UI;
+- Company P&L cash-basis snapshot on `/finance/reports`;
 - six approved definitions: Company P&L, Project P&L, Cash Flow, MRR / Subscription Revenue, Expense Plan vs Actual, Payroll Report.
 
 Remaining runtime refactor:
 
-- implement aggregate endpoints behind the definitions;
+- implement the remaining aggregate endpoints behind the definitions;
 - keep global report scheduling, BI catalog and advanced analytics in Phase 6;
 - connect aggregates to Operational Journal once period close exists.
 
