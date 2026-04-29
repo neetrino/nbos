@@ -254,6 +254,18 @@ Product stage-gate runtime now enforces task closure for execution/QA movement:
 
 This implements the canon rule that execution/QA work must be closed before the next handoff stage while keeping deeper deployment and acceptance checklists for later runtime slices.
 
+### A18. Product Done gate blocks unpaid linked invoices
+
+Статус: `PHASE 4 RUNTIME ALIGNMENT`
+
+Product Done gate now checks existing finance source data conservatively:
+
+- when the linked Product order has invoices, all of those invoices must be `PAID`;
+- unpaid linked invoices block `Transfer -> Done` with the structured stage-gate error shape;
+- missing invoice data is not treated as fake zero or fake paid state.
+
+This implements the canon rule that the financial side must be closed before Product Done without inventing subscription-specific payment sufficiency rules in Phase 4.
+
 ---
 
 ## B. Устарело только в документации или описаниях
