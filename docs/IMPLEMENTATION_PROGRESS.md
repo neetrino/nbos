@@ -13,15 +13,15 @@
 
 ## Phase Snapshot
 
-| Phase                               | Status      | Progress | Notes                                                                                                |
-| ----------------------------------- | ----------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                              |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                     |
-| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates           |
-| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                 |
-| Phase 5 — Collaboration / knowledge | In progress | ~97%     | Messenger + Mail read-only MVP (Prisma + REST + `/mail` UI); Documents/Drive/Credentials foundations |
-| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                    |
-| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                 |
+| Phase                               | Status      | Progress | Notes                                                                                                             |
+| ----------------------------------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                           |
+| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                  |
+| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates                        |
+| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                              |
+| Phase 5 — Collaboration / knowledge | In progress | ~97%     | Messenger live; Mail MVP (inbox + outbound draft/queue/cancel/stub-fail); Documents/Drive/Credentials foundations |
+| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                                 |
+| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                              |
 
 ## Phase 3 Full Closure Gate
 
@@ -111,6 +111,8 @@ Future Finance depth:
 | 2026-04-29 | Mail unread filter + mark-read audit  | `GET /api/mail/threads?unreadOnly=true`; web **All threads** / **Unread only**; audit `mail.thread_marked_read` (no body text).                                                                                                                               |
 | 2026-04-29 | Mail outbound draft (no SMTP)         | `EmailDeliveryStatus` + `delivery_status`; `POST /api/mail/threads/:id/drafts`; audit `mail.outbound_draft_created`; web **Reply as draft**; seed outbound `SENT`.                                                                                            |
 | 2026-04-29 | Mail draft → queued (stub)            | `POST /api/mail/threads/:id/messages/:messageId/queue` (`MAIL` EDIT); DRAFT→QUEUED; audit `mail.outbound_message_queued`; web **Queue for send**; `mail-dto-map` extract.                                                                                     |
+| 2026-04-29 | Mail queued stub finalize → FAILED    | `POST …/messages/:messageId/finalize-send-stub`; QUEUED→FAILED (`NO_MAIL_PROVIDER`); audit `mail.outbound_send_stub_failed`; shared `getMailThreadWithMailboxAccess`; web **Finalize send (stub → failed)**.                                                  |
+| 2026-04-29 | Mail outbound cancel (draft/queued)   | `POST …/messages/:messageId/cancel`; DRAFT\|QUEUED→CANCELLED; audit `mail.outbound_message_cancelled`; `fetchMailThreadMessageForEdit`; web **Cancel**; inbox list/detail queries moved to `mail-inbox-query.ops.ts` (service line budget).                   |
 
 ## Next Action
 

@@ -1,30 +1,34 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient, type InputJsonValue, type Prisma } from '@nbos/database';
+import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import {
   MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED,
+  MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_CANCELLED,
   MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED,
   MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED,
   MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
   MAIL_AUDIT_ENTITY_MESSAGE,
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
-import { mailAccountWhereForViewer } from './mail-account-scope';
+import { cancelOutboundDraftOrQueued } from './mail-outbound-cancel.ops';
 import { failQueuedOutboundStubNoProvider } from './mail-outbound-finalize-stub.ops';
 import { MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER } from './mail-outbound-stub.constants';
+import {
+  getMailThreadDetailDtoOrNull,
+  listMailAccountsForViewer,
+  listMailThreadsForViewer,
+} from './mail-inbox-query.ops';
+import type { ListMailThreadsOptions } from './mail-inbox-query.ops';
+import { fetchMailThreadMessageForEdit } from './mail-thread-message-access.ops';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
 import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { dedupeEmailsCaseInsensitive } from './mail-outbound-draft.helpers';
-import { toAccountRow, toMessageRow, toThreadListRow } from './mail-dto-map';
 import { persistOutboundDraftMessage } from './mail-outbound-draft.ops';
 import { queueOutboundDraftMessage } from './mail-outbound-queue.ops';
 import type { MailAccountRow, MailThreadDetailDto, MailThreadListRow } from './mail.types';
 
-export interface ListMailThreadsOptions {
-  mailAccountId?: string;
-  unreadOnly?: boolean;
-}
+export type { ListMailThreadsOptions } from './mail-inbox-query.ops';
 
 @Injectable()
 export class MailService {
@@ -34,12 +38,7 @@ export class MailService {
   ) {}
 
   async listAccounts(employeeId: string, viewScope: string): Promise<MailAccountRow[]> {
-    const rows = await this.prisma.mailAccount.findMany({
-      where: mailAccountWhereForViewer(employeeId, viewScope),
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
-    return rows.map(toAccountRow);
+    return listMailAccountsForViewer(this.prisma, employeeId, viewScope);
   }
 
   async listThreads(
@@ -47,29 +46,11 @@ export class MailService {
     viewScope: string,
     options: ListMailThreadsOptions = {},
   ): Promise<MailThreadListRow[]> {
-    const { mailAccountId, unreadOnly } = options;
-    const accountWhere = mailAccountWhereForViewer(employeeId, viewScope);
-    const accounts = await this.prisma.mailAccount.findMany({
-      where: accountWhere,
-      select: { id: true },
-    });
-    const ids = accounts.map((a) => a.id);
-    if (ids.length === 0) {
-      return [];
-    }
-    if (mailAccountId && !ids.includes(mailAccountId)) {
+    const result = await listMailThreadsForViewer(this.prisma, employeeId, viewScope, options);
+    if (!result.ok) {
       throw new NotFoundException('Mail account not found');
     }
-    const where: Prisma.EmailThreadWhereInput = {
-      ...(mailAccountId ? { mailAccountId } : { mailAccountId: { in: ids } }),
-      ...(unreadOnly ? { hasUnread: true } : {}),
-    };
-    const threads = await this.prisma.emailThread.findMany({
-      where,
-      orderBy: { lastMessageAt: 'desc' },
-      take: 100,
-    });
-    return threads.map(toThreadListRow);
+    return result.rows;
   }
 
   async getThreadDetail(
@@ -77,24 +58,15 @@ export class MailService {
     viewScope: string,
     threadId: string,
   ): Promise<MailThreadDetailDto> {
-    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
-      threadId,
+    const dto = await getMailThreadDetailDtoOrNull(this.prisma, {
       employeeId,
-      accessScope: viewScope,
+      viewScope,
+      threadId,
     });
-    if (!thread) {
+    if (!dto) {
       throw new NotFoundException('Thread not found');
     }
-    const messages = await this.prisma.emailMessage.findMany({
-      where: { threadId },
-      orderBy: { createdAt: 'asc' },
-      include: { recipients: { orderBy: { createdAt: 'asc' } } },
-    });
-    return {
-      mailAccount: toAccountRow(thread.mailAccount),
-      thread: toThreadListRow(thread),
-      messages: messages.map(toMessageRow),
-    };
+    return dto;
   }
 
   /**
@@ -190,20 +162,19 @@ export class MailService {
     threadId: string,
     messageId: string,
   ): Promise<MailThreadDetailDto> {
-    const mailboxAccess = await getMailThreadWithMailboxAccess(this.prisma, {
+    const access = await fetchMailThreadMessageForEdit(this.prisma, {
       threadId,
+      messageId,
       employeeId,
       accessScope,
     });
-    if (!mailboxAccess) {
+    if (access.status === 'no_mailbox') {
       throw new NotFoundException('Thread not found');
     }
-    const msg = await this.prisma.emailMessage.findFirst({
-      where: { id: messageId, threadId },
-    });
-    if (!msg) {
+    if (access.status === 'no_message') {
       throw new NotFoundException('Message not found');
     }
+    const { message: msg } = access;
     if (msg.direction !== 'OUTBOUND' || msg.deliveryStatus !== 'DRAFT') {
       throw new BadRequestException('Only outbound drafts can be queued for send');
     }
@@ -231,20 +202,19 @@ export class MailService {
     threadId: string,
     messageId: string,
   ): Promise<MailThreadDetailDto> {
-    const mailboxAccess = await getMailThreadWithMailboxAccess(this.prisma, {
+    const access = await fetchMailThreadMessageForEdit(this.prisma, {
       threadId,
+      messageId,
       employeeId,
       accessScope,
     });
-    if (!mailboxAccess) {
+    if (access.status === 'no_mailbox') {
       throw new NotFoundException('Thread not found');
     }
-    const msg = await this.prisma.emailMessage.findFirst({
-      where: { id: messageId, threadId },
-    });
-    if (!msg) {
+    if (access.status === 'no_message') {
       throw new NotFoundException('Message not found');
     }
+    const { message: msg } = access;
     if (msg.direction !== 'OUTBOUND' || msg.deliveryStatus !== 'QUEUED') {
       throw new BadRequestException('Only queued outbound messages can be finalized (stub)');
     }
@@ -260,6 +230,52 @@ export class MailService {
       entityType: MAIL_AUDIT_ENTITY_MESSAGE,
       entityId: messageId,
       action: MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED,
+      userId: employeeId,
+      changes: auditChanges,
+    });
+    return this.getThreadDetail(employeeId, accessScope, threadId);
+  }
+
+  /**
+   * Cancels an outbound message still in DRAFT or QUEUED (no provider interaction).
+   */
+  async cancelOutboundDraftOrQueued(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+    messageId: string,
+  ): Promise<MailThreadDetailDto> {
+    const access = await fetchMailThreadMessageForEdit(this.prisma, {
+      threadId,
+      messageId,
+      employeeId,
+      accessScope,
+    });
+    if (access.status === 'no_mailbox') {
+      throw new NotFoundException('Thread not found');
+    }
+    if (access.status === 'no_message') {
+      throw new NotFoundException('Message not found');
+    }
+    const { message: msg } = access;
+    if (msg.direction !== 'OUTBOUND') {
+      throw new BadRequestException('Only outbound messages can be cancelled');
+    }
+    if (msg.deliveryStatus !== 'DRAFT' && msg.deliveryStatus !== 'QUEUED') {
+      throw new BadRequestException('Only draft or queued outbound messages can be cancelled');
+    }
+    const updated = await cancelOutboundDraftOrQueued(this.prisma, { threadId, messageId });
+    if (!updated) {
+      throw new BadRequestException('Only draft or queued outbound messages can be cancelled');
+    }
+    const auditChanges: InputJsonValue = {
+      threadId,
+      previousDeliveryStatus: msg.deliveryStatus,
+    };
+    await this.auditService.log({
+      entityType: MAIL_AUDIT_ENTITY_MESSAGE,
+      entityId: messageId,
+      action: MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_CANCELLED,
       userId: employeeId,
       changes: auditChanges,
     });

@@ -107,4 +107,14 @@ export const mailApi = {
     );
     return resp.data;
   },
+
+  async cancelOutboundDraftOrQueued(
+    threadId: string,
+    messageId: string,
+  ): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(
+      `/api/mail/threads/${threadId}/messages/${messageId}/cancel`,
+    );
+    return resp.data;
+  },
 };

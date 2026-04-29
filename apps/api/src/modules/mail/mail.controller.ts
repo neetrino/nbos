@@ -70,6 +70,26 @@ export class MailController {
     return this.mailService.getThreadDetail(user.id, req.permissionScope ?? 'OWN', threadId);
   }
 
+  @Post('threads/:threadId/messages/:messageId/cancel')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({
+    summary: 'Cancel outbound draft or queued message (DRAFT|QUEUED → CANCELLED; no provider)',
+  })
+  async cancelOutboundDraftOrQueued(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    return this.mailService.cancelOutboundDraftOrQueued(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+      messageId,
+    );
+  }
+
   @Post('threads/:threadId/messages/:messageId/finalize-send-stub')
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')

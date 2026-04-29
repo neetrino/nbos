@@ -10,8 +10,10 @@ export interface MailThreadMessagesProps {
   canEdit: boolean;
   queueingMessageId: string | null;
   finalizingMessageId: string | null;
+  cancellingMessageId: string | null;
   onQueueDraft: (messageId: string) => void | Promise<void>;
   onFinalizeQueuedStub: (messageId: string) => void | Promise<void>;
+  onCancelOutbound: (messageId: string) => void | Promise<void>;
 }
 
 export function MailThreadMessages({
@@ -19,12 +21,16 @@ export function MailThreadMessages({
   canEdit,
   queueingMessageId,
   finalizingMessageId,
+  cancellingMessageId,
   onQueueDraft,
   onFinalizeQueuedStub,
+  onCancelOutbound,
 }: MailThreadMessagesProps) {
   if (messages.length === 0) {
     return <EmptyThreadPlaceholder />;
   }
+  const outboundBusy =
+    queueingMessageId !== null || finalizingMessageId !== null || cancellingMessageId !== null;
   return (
     <div className="flex flex-col gap-4">
       {messages.map((m) => (
@@ -41,26 +47,48 @@ export function MailThreadMessages({
             </p>
             <pre className="font-sans text-sm whitespace-pre-wrap">{m.bodyText ?? '—'}</pre>
             {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'DRAFT' ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                disabled={queueingMessageId === m.id || finalizingMessageId !== null}
-                onClick={() => void onQueueDraft(m.id)}
-              >
-                {queueingMessageId === m.id ? 'Queuing…' : 'Queue for send'}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled={outboundBusy}
+                  onClick={() => void onQueueDraft(m.id)}
+                >
+                  {queueingMessageId === m.id ? 'Queuing…' : 'Queue for send'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={outboundBusy}
+                  onClick={() => void onCancelOutbound(m.id)}
+                >
+                  {cancellingMessageId === m.id ? 'Cancelling…' : 'Cancel'}
+                </Button>
+              </div>
             ) : null}
             {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'QUEUED' ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                disabled={finalizingMessageId === m.id || queueingMessageId !== null}
-                onClick={() => void onFinalizeQueuedStub(m.id)}
-              >
-                {finalizingMessageId === m.id ? 'Finalizing…' : 'Finalize send (stub → failed)'}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled={outboundBusy}
+                  onClick={() => void onFinalizeQueuedStub(m.id)}
+                >
+                  {finalizingMessageId === m.id ? 'Finalizing…' : 'Finalize send (stub → failed)'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={outboundBusy}
+                  onClick={() => void onCancelOutbound(m.id)}
+                >
+                  {cancellingMessageId === m.id ? 'Cancelling…' : 'Cancel'}
+                </Button>
+              </div>
             ) : null}
           </CardContent>
         </Card>

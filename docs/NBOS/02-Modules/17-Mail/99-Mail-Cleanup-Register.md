@@ -27,18 +27,18 @@ Mail module является новым каноном. На момент соз
 
 ## Runtime cleanup
 
-| Area                 | Status    | Action                                                                                                                                 |
-| -------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Mail backend module  | `PARTIAL` | **2026-04-29:** `POST …/drafts`, `POST …/messages/:id/queue` (DRAFT→QUEUED, без worker), `unreadOnly`, mark-read audits; без SMTP/sync |
-| Mail database schema | `PARTIAL` | **2026-04-29:** + `EmailDeliveryStatus` на `EmailMessage`; нет `EmailAttachment`, `MailDeliveryLog`, `MailProviderConnection`          |
-| Gmail adapter        | `MISSING` | Спроектировать OAuth scopes и adapter contract                                                                                         |
-| IMAP/SMTP adapter    | `MISSING` | Спроектировать connection validation, sync cursor, send flow                                                                           |
-| Queue jobs           | `MISSING` | Добавить jobs для sync, send, attachment download                                                                                      |
-| Mail UI              | `PARTIAL` | **2026-04-29:** inbox, thread (**Queue for send** на DRAFT), **Reply as draft**, **Mark read**; нет реальной отправки/settings/health  |
-| Permissions          | `PARTIAL` | Модуль `MAIL` в seed RBAC (VIEW/EDIT/ADD/DELETE по матрице); list scoped ALL vs OWN mailbox owner; нет per-account roles из канона     |
-| Attachment pipeline  | `MISSING` | Интегрировать Mail attachments с Drive File Asset                                                                                      |
-| Credentials boundary | `MISSING` | Интегрировать token/password storage с secure storage / Credentials                                                                    |
-| Notifications events | `MISSING` | Добавить mail health and inbound message events                                                                                        |
+| Area                 | Status    | Action                                                                                                                                                                                 |
+| -------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mail backend module  | `PARTIAL` | **2026-04-29:** `POST …/drafts`, queue, `finalize-send-stub` (QUEUED→FAILED stub), `cancel` (DRAFT\|QUEUED→CANCELLED), `unreadOnly`, mark-read + outbound audits; без SMTP/sync/worker |
+| Mail database schema | `PARTIAL` | **2026-04-29:** + `EmailDeliveryStatus` на `EmailMessage`; нет `EmailAttachment`, `MailDeliveryLog`, `MailProviderConnection`                                                          |
+| Gmail adapter        | `MISSING` | Спроектировать OAuth scopes и adapter contract                                                                                                                                         |
+| IMAP/SMTP adapter    | `MISSING` | Спроектировать connection validation, sync cursor, send flow                                                                                                                           |
+| Queue jobs           | `MISSING` | Добавить jobs для sync, send, attachment download                                                                                                                                      |
+| Mail UI              | `PARTIAL` | **2026-04-29:** inbox, thread (**Queue** / **Cancel** на DRAFT, **Finalize stub** / **Cancel** на QUEUED), **Reply as draft**, **Mark read**; нет реальной отправки/settings/health    |
+| Permissions          | `PARTIAL` | Модуль `MAIL` в seed RBAC (VIEW/EDIT/ADD/DELETE по матрице); list scoped ALL vs OWN mailbox owner; нет per-account roles из канона                                                     |
+| Attachment pipeline  | `MISSING` | Интегрировать Mail attachments с Drive File Asset                                                                                                                                      |
+| Credentials boundary | `MISSING` | Интегрировать token/password storage с secure storage / Credentials                                                                                                                    |
+| Notifications events | `MISSING` | Добавить mail health and inbound message events                                                                                                                                        |
 
 ## Business decisions needed before implementation
 

@@ -25,6 +25,7 @@ export default function MailThreadDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [queueingMessageId, setQueueingMessageId] = useState<string | null>(null);
   const [finalizingMessageId, setFinalizingMessageId] = useState<string | null>(null);
+  const [cancellingMessageId, setCancellingMessageId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!threadId) return;
@@ -89,6 +90,23 @@ export default function MailThreadDetailPage() {
     [threadId],
   );
 
+  const cancelOutbound = useCallback(
+    async (messageId: string) => {
+      if (!threadId) return;
+      setCancellingMessageId(messageId);
+      setError(null);
+      try {
+        const d = await mailApi.cancelOutboundDraftOrQueued(threadId, messageId);
+        setDetail(d);
+      } catch (e) {
+        setError(getApiErrorMessage(e, 'Could not cancel message.'));
+      } finally {
+        setCancellingMessageId(null);
+      }
+    },
+    [threadId],
+  );
+
   useEffect(() => {
     if (!canView || !threadId) {
       setLoading(false);
@@ -144,8 +162,10 @@ export default function MailThreadDetailPage() {
             canEdit={canEdit}
             queueingMessageId={queueingMessageId}
             finalizingMessageId={finalizingMessageId}
+            cancellingMessageId={cancellingMessageId}
             onQueueDraft={queueDraftForSend}
             onFinalizeQueuedStub={finalizeQueuedStub}
+            onCancelOutbound={cancelOutbound}
           />
           {canEdit ? (
             <MailThreadReplyDraftCard
