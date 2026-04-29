@@ -8,6 +8,7 @@ import {
 } from './DeliveryLifecycleActionDialog';
 import { ProjectDeliveryBoardCard } from './delivery-board/ProjectDeliveryBoardCard';
 import { runBoardAction, type BoardAction } from './delivery-board/project-delivery-board-actions';
+import type { ProductBoardTab } from './delivery-board/ProjectDeliveryBoardContextLinks';
 import { ProjectDeliveryBoardHeader } from './delivery-board/ProjectDeliveryBoardHeader';
 import {
   ACTIVE_DELIVERY_STAGES,
@@ -28,12 +29,14 @@ import {
 interface ProjectDeliveryBoardProps {
   project: FullProject;
   onOpenProduct: (productId: string) => void;
+  onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
   onRefresh: () => void | Promise<void>;
 }
 
 export function ProjectDeliveryBoard({
   project,
   onOpenProduct,
+  onOpenProductTab,
   onRefresh,
 }: ProjectDeliveryBoardProps) {
   const [kindFilter, setKindFilter] = useState<DeliveryBoardKindFilter>('ALL');
@@ -93,6 +96,7 @@ export function ProjectDeliveryBoard({
             items={activeItems.filter((item) => getItemLifecycle(item)?.stage === stage)}
             busyItemId={busyItemId}
             onOpenProduct={onOpenProduct}
+            onOpenProductTab={onOpenProductTab}
             onBoardAction={handleBoardAction}
             onCancel={setCancelItem}
           />
@@ -102,6 +106,7 @@ export function ProjectDeliveryBoard({
         items={closedItems}
         busyItemId={busyItemId}
         onOpenProduct={onOpenProduct}
+        onOpenProductTab={onOpenProductTab}
         onBoardAction={handleBoardAction}
         onCancel={setCancelItem}
       />
@@ -126,6 +131,7 @@ function DeliveryStageColumn({
   items,
   busyItemId,
   onOpenProduct,
+  onOpenProductTab,
   onBoardAction,
   onCancel,
 }: {
@@ -133,6 +139,7 @@ function DeliveryStageColumn({
   items: DeliveryBoardItem[];
   busyItemId: string | null;
   onOpenProduct: (productId: string) => void;
+  onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
   onBoardAction: (item: DeliveryBoardItem, action: BoardAction) => void;
   onCancel: (item: DeliveryBoardItem) => void;
 }) {
@@ -152,6 +159,7 @@ function DeliveryStageColumn({
               item={item}
               isActionBusy={busyItemId === getItemId(item)}
               onOpenProduct={onOpenProduct}
+              onOpenProductTab={onOpenProductTab}
               onMoveNext={() => onBoardAction(item, 'MOVE_NEXT')}
               onResume={() => onBoardAction(item, 'RESUME')}
               onComplete={() => onBoardAction(item, 'COMPLETE')}
@@ -168,12 +176,14 @@ function ClosedDeliveryView({
   items,
   busyItemId,
   onOpenProduct,
+  onOpenProductTab,
   onBoardAction,
   onCancel,
 }: {
   items: DeliveryBoardItem[];
   busyItemId: string | null;
   onOpenProduct: (productId: string) => void;
+  onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
   onBoardAction: (item: DeliveryBoardItem, action: BoardAction) => void;
   onCancel: (item: DeliveryBoardItem) => void;
 }) {
@@ -194,6 +204,7 @@ function ClosedDeliveryView({
         items={doneItems}
         busyItemId={busyItemId}
         onOpenProduct={onOpenProduct}
+        onOpenProductTab={onOpenProductTab}
         onBoardAction={onBoardAction}
         onCancel={onCancel}
       />
@@ -202,6 +213,7 @@ function ClosedDeliveryView({
         items={cancelledItems}
         busyItemId={busyItemId}
         onOpenProduct={onOpenProduct}
+        onOpenProductTab={onOpenProductTab}
         onBoardAction={onBoardAction}
         onCancel={onCancel}
       />
@@ -214,6 +226,7 @@ function ClosedGroup({
   items,
   busyItemId,
   onOpenProduct,
+  onOpenProductTab,
   onBoardAction,
   onCancel,
 }: {
@@ -221,6 +234,7 @@ function ClosedGroup({
   items: DeliveryBoardItem[];
   busyItemId: string | null;
   onOpenProduct: (productId: string) => void;
+  onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
   onBoardAction: (item: DeliveryBoardItem, action: BoardAction) => void;
   onCancel: (item: DeliveryBoardItem) => void;
 }) {
@@ -236,6 +250,7 @@ function ClosedGroup({
             item={item}
             isActionBusy={busyItemId === getItemId(item)}
             onOpenProduct={onOpenProduct}
+            onOpenProductTab={onOpenProductTab}
             onMoveNext={() => onBoardAction(item, 'MOVE_NEXT')}
             onResume={() => onBoardAction(item, 'RESUME')}
             onComplete={() => onBoardAction(item, 'COMPLETE')}

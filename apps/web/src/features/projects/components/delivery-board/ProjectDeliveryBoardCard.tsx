@@ -28,11 +28,16 @@ import {
   NEXT_DELIVERY_STAGE,
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
+import {
+  ProjectDeliveryBoardContextLinks,
+  type ProductBoardTab,
+} from './ProjectDeliveryBoardContextLinks';
 
 interface ProjectDeliveryBoardCardProps {
   item: DeliveryBoardItem;
   isActionBusy: boolean;
   onOpenProduct: (productId: string) => void;
+  onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
   onMoveNext: (item: DeliveryBoardItem) => void;
   onResume: (item: DeliveryBoardItem) => void;
   onComplete: (item: DeliveryBoardItem) => void;
@@ -43,6 +48,7 @@ export function ProjectDeliveryBoardCard({
   item,
   isActionBusy,
   onOpenProduct,
+  onOpenProductTab,
   onMoveNext,
   onResume,
   onComplete,
@@ -74,6 +80,7 @@ export function ProjectDeliveryBoardCard({
         </div>
         <DeliveryCardMeta item={item} />
       </button>
+      <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
       <DeliveryCardActions
         item={item}
         disabled={isActionBusy}

@@ -190,6 +190,19 @@ Delivery Board now exposes board-level cancel for active delivery cards:
 
 This keeps `Cancelled` as a terminal outcome and avoids routing cancellation through legacy status transitions.
 
+### A13. Delivery Board exposes task/support depth
+
+Статус: `PHASE 4 UI ALIGNMENT`
+
+Delivery Board cards now expose operational context links:
+
+- Product cards link to Product `Tasks`;
+- Product cards link to Product support `Tickets`;
+- Product cards link to Product `Extensions`;
+- Extension cards link to parent Product task and extension contexts.
+
+These links keep the board as a navigation and operational view over Product/Extension work, while `Tasks` remain the internal execution layer and `Support` remains the customer/SLA context.
+
 ---
 
 ## B. Устарело только в документации или описаниях

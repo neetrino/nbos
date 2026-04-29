@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
   RefreshCcw,
@@ -38,14 +38,17 @@ const TAB_ITEMS = [
   { value: 'finance', label: 'Finance', icon: DollarSign },
 ] as const;
 
+type ProductTab = (typeof TAB_ITEMS)[number]['value'];
+
 export default function ProductDetailPage() {
   const params = useParams<{ id: string; productId: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [siblingProducts, setSiblingProducts] = useState<Product[]>([]);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState<ProductTab>(getInitialTab(searchParams.get('tab')));
   const [projectData, setProjectData] = useState<{
     credentials: unknown[];
     orders: unknown[];
@@ -213,7 +216,11 @@ export default function ProductDetailPage() {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(getInitialTab(value))}
+        className="flex-1"
+      >
         <TabsList>
           {TAB_ITEMS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5">
@@ -263,4 +270,8 @@ export default function ProductDetailPage() {
       </Tabs>
     </div>
   );
+}
+
+function getInitialTab(value: string | null): ProductTab {
+  return TAB_ITEMS.some((tab) => tab.value === value) ? (value as ProductTab) : 'overview';
 }
