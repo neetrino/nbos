@@ -228,6 +228,19 @@ Product detail now surfaces the canonical delivery lifecycle directly:
 
 This keeps Product detail aligned with Delivery Board and reduces dependence on old `status` labels while legacy enums are still present for compatibility.
 
+### A16. Stage-gate UX explains next moves and blockers
+
+Статус: `PHASE 4 UX ALIGNMENT`
+
+Stage-gate UI now gives operators clearer context without changing runtime rules:
+
+- Product Stage Gate shows current delivery state and next allowed move;
+- Product Stage Gate explains the current gate focus before a transition;
+- Extension readiness labels show business-friendly blocker names instead of raw field names;
+- blocker panels still use backend validation as the source of truth.
+
+This keeps gates enforceable in backend services while making the UI explain why movement is allowed or blocked.
+
 ---
 
 ## B. Устарело только в документации или описаниях

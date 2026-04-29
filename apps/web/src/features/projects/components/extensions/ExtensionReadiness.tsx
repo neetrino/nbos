@@ -23,10 +23,12 @@ export function ExtensionReadiness({ extension }: ExtensionReadinessProps) {
   }
 
   return (
-    <p className="mt-1 flex items-center gap-1 text-xs text-amber-600">
-      <AlertTriangle size={12} />
-      Missing: {missing.map((item) => item.field).join(', ')}
-    </p>
+    <div className="mt-1 flex items-start gap-1 text-xs text-amber-600">
+      <AlertTriangle size={12} className="mt-0.5 shrink-0" />
+      <span>
+        Gate to Development: {missing.map((item) => formatIssueField(item.field)).join(', ')}
+      </span>
+    </div>
   );
 }
 
@@ -74,9 +76,19 @@ function ExtensionReadinessIssues({ issues }: { issues: ExtensionReadinessIssue[
     <ul className="mt-3 space-y-1">
       {issues.map((issue) => (
         <li key={issue.field} className="text-xs text-amber-700 dark:text-amber-300">
-          <span className="font-medium">{issue.field}:</span> {issue.message}
+          <span className="font-medium">{formatIssueField(issue.field)}:</span> {issue.message}
         </li>
       ))}
     </ul>
   );
+}
+
+function formatIssueField(field: string) {
+  const labels: Record<string, string> = {
+    description: 'description',
+    assignedTo: 'assignee',
+    order: 'linked order',
+    tasks: 'open tasks',
+  };
+  return labels[field] ?? field;
 }
