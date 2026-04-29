@@ -22,6 +22,7 @@ function formatThreadTitle(subjectNormalized: string): string {
 export default function MailInboxPage() {
   const { can } = usePermission();
   const canView = can('VIEW', 'MAIL');
+  const canEdit = can('EDIT', 'MAIL');
   const [accounts, setAccounts] = useState<MailAccountRow[]>([]);
   const [threads, setThreads] = useState<MailThreadListRow[]>([]);
   const [filterAccountId, setFilterAccountId] = useState<string | null>(null);
@@ -31,6 +32,7 @@ export default function MailInboxPage() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -52,6 +54,22 @@ export default function MailInboxPage() {
       setLoading(false);
     }
   }, [filterAccountId, threadListSegment]);
+
+  const runSyncStub = useCallback(
+    async (accountId: string) => {
+      setSyncingAccountId(accountId);
+      setError(null);
+      try {
+        await mailApi.recordMailAccountSyncStub(accountId);
+        await load();
+      } catch (e) {
+        setError(getApiErrorMessage(e, 'Stub sync could not be recorded.'));
+      } finally {
+        setSyncingAccountId(null);
+      }
+    },
+    [load],
+  );
 
   useEffect(() => {
     if (!canView) {
@@ -81,7 +99,7 @@ export default function MailInboxPage() {
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
         title="Mail"
-        description="Threads from mailboxes you own or that your role can list (ALL scope). Sync and compose are not wired yet."
+        description="Threads from mailboxes you own or that your role can list (ALL scope). Editors can run stub sync (timestamps only); real IMAP/Gmail sync is not wired yet."
       >
         <div className="flex flex-wrap items-center gap-2">
           <Button
@@ -144,18 +162,47 @@ export default function MailInboxPage() {
                 <p className="text-muted-foreground text-sm">No mailboxes yet.</p>
               ) : (
                 accounts.map((a) => (
-                  <button
+                  <div
                     key={a.id}
-                    type="button"
-                    onClick={() => setFilterAccountId(a.id)}
                     className={cn(
-                      'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
-                      filterAccountId === a.id ? 'bg-muted font-medium' : 'hover:bg-muted/60',
+                      'flex items-start gap-0.5 rounded-md px-1 py-0.5',
+                      filterAccountId === a.id ? 'bg-muted' : '',
                     )}
                   >
-                    <span className="block truncate">{a.emailAddress}</span>
-                    <span className="text-muted-foreground block truncate text-xs">{a.status}</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setFilterAccountId(a.id)}
+                      className={cn(
+                        'min-w-0 flex-1 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
+                        filterAccountId === a.id ? 'font-medium' : 'hover:bg-muted/60',
+                      )}
+                    >
+                      <span className="block truncate">{a.emailAddress}</span>
+                      <span className="text-muted-foreground block truncate text-xs">
+                        {a.status}
+                        {a.lastSyncAt ? ` · synced ${new Date(a.lastSyncAt).toLocaleString()}` : ''}
+                      </span>
+                    </button>
+                    {canEdit ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground size-8 shrink-0"
+                        disabled={loading || syncingAccountId === a.id}
+                        title="Stub sync: updates last sync time only (no IMAP yet)"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          void runSyncStub(a.id);
+                        }}
+                      >
+                        <RefreshCcw
+                          size={14}
+                          className={syncingAccountId === a.id ? 'animate-spin' : ''}
+                        />
+                      </Button>
+                    ) : null}
+                  </div>
                 ))
               )}
             </CardContent>

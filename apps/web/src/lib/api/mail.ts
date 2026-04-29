@@ -63,6 +63,11 @@ export const mailApi = {
     return resp.data;
   },
 
+  async recordMailAccountSyncStub(accountId: string): Promise<MailAccountRow> {
+    const resp = await api.post<MailAccountRow>(`/api/mail/accounts/${accountId}/sync-stub`);
+    return resp.data;
+  },
+
   async listThreads(
     mailAccountId?: string,
     unreadOnly?: boolean,

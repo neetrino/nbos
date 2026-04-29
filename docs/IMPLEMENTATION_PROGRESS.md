@@ -116,6 +116,7 @@ Future Finance depth:
 | 2026-04-29 | Mail inbox “Needs link” list filter   | `GET /api/mail/threads?needsLinkOnly=true`; web inbox **Needs link** segment (with All / Unread); filters `needsBusinessLink`.                                                                                                                                |
 | 2026-04-29 | Mail thread needsBusinessLink PATCH   | `PATCH /api/mail/threads/:id` (`MAIL` EDIT); audit `mail.thread_needs_link_updated`; web **Clear needs link** / **Flag needs link**; `MailThreadCommandService` + `patchThreadNeedsBusinessLinkIfChanged`.                                                    |
 | 2026-04-29 | Mail FAILED outbound reset to DRAFT   | `POST …/messages/:messageId/reset-failed-to-draft`; FAILED→DRAFT; audit `mail.outbound_failed_reset_to_draft`; web **Reset to draft (retry)** after stub failure.                                                                                             |
+| 2026-04-29 | Mail account sync stub (timestamps)   | `POST /api/mail/accounts/:id/sync-stub` (`MAIL` EDIT); `lastSyncAt` + clear `lastErrorAt`; audit `mail.mail_account_sync_stub` (`NO_MAIL_PROVIDER_SYNC`); web per-mailbox **stub sync** icon; `MailAccountCommandService`.                                    |
 
 ## Next Action
 

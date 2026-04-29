@@ -4,6 +4,9 @@ export const MAIL_AUDIT_ENTITY_THREAD = 'mail_thread';
 /** Audit `entity_type` for a single mail message row. */
 export const MAIL_AUDIT_ENTITY_MESSAGE = 'mail_message';
 
+/** Audit `entity_type` for a connected mailbox row. */
+export const MAIL_AUDIT_ENTITY_MAIL_ACCOUNT = 'mail_account';
+
 /** User marked NBOS thread read (no provider sync). */
 export const MAIL_AUDIT_ACTION_THREAD_MARKED_READ = 'mail.thread_marked_read';
 
@@ -25,3 +28,6 @@ export const MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_CANCELLED = 'mail.outbound_messa
 /** Outbound FAILED reset to DRAFT for local retry (no provider). */
 export const MAIL_AUDIT_ACTION_OUTBOUND_FAILED_RESET_TO_DRAFT =
   'mail.outbound_failed_reset_to_draft';
+
+/** Manual sync stub: timestamps only (no provider fetch). */
+export const MAIL_AUDIT_ACTION_MAIL_ACCOUNT_SYNC_STUB = 'mail.mail_account_sync_stub';

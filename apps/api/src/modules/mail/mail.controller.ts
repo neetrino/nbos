@@ -15,6 +15,7 @@ import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
+import { MailAccountCommandService } from './mail-account-command.service';
 import { MailService } from './mail.service';
 import { MailThreadCommandService } from './mail-thread-command.service';
 
@@ -35,6 +36,7 @@ export class MailController {
   constructor(
     private readonly mailService: MailService,
     private readonly mailThreadCommandService: MailThreadCommandService,
+    private readonly mailAccountCommandService: MailAccountCommandService,
   ) {}
 
   @Get('accounts')
@@ -42,6 +44,24 @@ export class MailController {
   @ApiOperation({ summary: 'List mail accounts visible to the current employee' })
   async listAccounts(@CurrentUser() user: CurrentUserPayload, @Req() req: AuthedRequest) {
     return this.mailService.listAccounts(user.id, req.permissionScope ?? 'OWN');
+  }
+
+  @Post('accounts/:accountId/sync-stub')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({
+    summary: 'Stub sync mailbox (updates lastSyncAt only; no provider fetch in this MVP)',
+  })
+  async recordMailAccountSyncStub(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('accountId') accountId: string,
+  ) {
+    return this.mailAccountCommandService.recordMailAccountSyncStub(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      accountId,
+    );
   }
 
   @Get('threads')
