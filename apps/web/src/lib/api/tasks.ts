@@ -90,6 +90,12 @@ interface TaskQueryParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+/** Workspace aggregates from `GET /api/tasks/stats` (Prisma `groupBy`). */
+export interface TaskStats {
+  byStatus: Array<{ status: string; _count: number }>;
+  byPriority: Array<{ priority: string; _count: number }>;
+}
+
 export const tasksApi = {
   async getAll(params?: TaskQueryParams): Promise<ListData<Task>> {
     const resp = await api.get<ListData<Task>>('/api/tasks', { params });
@@ -142,8 +148,8 @@ export const tasksApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/tasks/${id}`);
   },
-  async getStats() {
-    const resp = await api.get('/api/tasks/stats');
+  async getStats(): Promise<TaskStats> {
+    const resp = await api.get<TaskStats>('/api/tasks/stats');
     return resp.data;
   },
 

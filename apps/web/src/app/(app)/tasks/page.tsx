@@ -13,6 +13,7 @@ import {
   Play,
   CheckCircle2,
   RotateCcw,
+  TableProperties,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,8 @@ import {
   type KanbanColumn,
 } from '@/components/shared';
 import { TASK_STATUSES, TASK_PRIORITIES, getTaskPriority } from '@/features/tasks/constants/tasks';
-import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
+import { tasksApi, type Task, type TaskBoardStage, type TaskStats } from '@/lib/api/tasks';
+import { useTasksScopeStatsCsvExport } from '@/features/tasks/use-tasks-scope-stats-csv-export';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 
@@ -218,6 +220,7 @@ function TaskMiniCard({
 /* ─── Main page ─── */
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [stats, setStats] = useState<TaskStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -233,6 +236,8 @@ export default function TasksPage() {
 
   const CURRENT_USER_ID = 'current-user';
 
+  const { handleExportScopeStatsCsv } = useTasksScopeStatsCsvExport(stats);
+
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
@@ -245,8 +250,14 @@ export default function TasksPage() {
       });
       setTasks(resp.items);
       setError(null);
+      try {
+        setStats(await tasksApi.getStats());
+      } catch {
+        setStats(null);
+      }
     } catch {
       setError('Tasks could not be loaded. Check your connection and try again.');
+      setStats(null);
     } finally {
       setLoading(false);
     }
@@ -567,8 +578,19 @@ export default function TasksPage() {
     <div className="flex h-full flex-col gap-5">
       <div className="shrink-0">
         <PageHeader title="Tasks" description={`${tasks.length} tasks`}>
-          <Button variant="outline" size="icon" onClick={fetchTasks}>
+          <Button variant="outline" size="icon" onClick={fetchTasks} aria-label="Refresh tasks">
             <RefreshCcw size={16} />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || !stats}
+            onClick={() => handleExportScopeStatsCsv()}
+            aria-label="Export task scope statistics as CSV"
+            title="UTF-8 CSV snapshot from GET /api/tasks/stats (workspace-wide; list filters not applied—see scope_note row)"
+          >
+            <TableProperties size={16} aria-hidden />
           </Button>
           <div className="border-border bg-muted/50 flex rounded-lg border p-0.5">
             <button
