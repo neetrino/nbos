@@ -1,5 +1,6 @@
 import { join, sql, type PrismaClient } from '@nbos/database';
 import type { DocumentStatusEnum } from '@nbos/database';
+import { DOCUMENT_ATTACHMENT_SEARCH_RANK_WEIGHT } from './documents.constants';
 import type { DocumentsRbacViewScope } from './documents-access-read';
 
 /** Escape `%`, `_`, `\` for PostgreSQL `ILIKE ... ESCAPE '\\'`. */
@@ -60,8 +61,9 @@ function ftsListAccessSql(p: {
 }
 
 /**
- * Ranked document ids: full-text on `search_vector` plus the same OR paths as list ILIKE
- * (title, description, plain text, section name, tag names), with RBAC × list-scope access.
+ * Ranked document ids: FTS on `search_vector` and `attachment_search_vector`, plus the same
+ * OR paths as list ILIKE (title, description, plain text, section name, tag names, attachment
+ * file names), with RBAC × list-scope access.
  */
 export async function searchDocumentIdsForList(
   prisma: InstanceType<typeof PrismaClient>,
@@ -92,10 +94,16 @@ export async function searchDocumentIdsForList(
     SELECT
       d.id,
       (
-        CASE
+        (CASE
           WHEN d.search_vector @@ sq.tsq THEN ts_rank_cd(d.search_vector, sq.tsq)
           ELSE 0::real
-        END
+        END)
+        +
+        (CASE
+          WHEN d.attachment_search_vector @@ sq.tsq THEN
+            ts_rank_cd(d.attachment_search_vector, sq.tsq) * ${DOCUMENT_ATTACHMENT_SEARCH_RANK_WEIGHT}::real
+          ELSE 0::real
+        END)
       )::float8 AS rank
     FROM documents d
     INNER JOIN document_sections ds ON ds.id = d.section_id
@@ -105,6 +113,7 @@ export async function searchDocumentIdsForList(
     ${accessSql}
     AND (
       d.search_vector @@ sq.tsq
+      OR d.attachment_search_vector @@ sq.tsq
       OR d.title ILIKE ${pattern} ESCAPE '\\'
       OR COALESCE(d.description, '') ILIKE ${pattern} ESCAPE '\\'
       OR COALESCE(d.plain_text, '') ILIKE ${pattern} ESCAPE '\\'

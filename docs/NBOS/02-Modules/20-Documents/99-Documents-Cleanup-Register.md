@@ -123,7 +123,7 @@ Need editor with:
 
 ### B6. Search is missing
 
-Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `ts_rank_cd` with `websearch_to_tsquery`, plus ILIKE on title/description/plain text/section/tags and **linked attachment file names** (`document_attachments` → active `file_assets`); optional `searchSnippet` for list cards (snippet can highlight attachment names). List/detail respect `default_list_scope` / `list_scope_override` intersected with RBAC `DOCUMENTS_VIEW`. Activity tab gated by `DOCUMENTS_VIEW_ACTIVITY` (fallback to `DOCUMENTS_VIEW` on older JWTs).
+Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `attachment_search_vector` + `ts_rank_cd` / `websearch_to_tsquery`, plus ILIKE on title/description/plain text/section/tags and linked attachment file names; `attachment_search_vector` maintained by DB triggers. Optional `searchSnippet` for list cards. List/detail respect `default_list_scope` / `list_scope_override` intersected with RBAC `DOCUMENTS_VIEW`. Activity tab gated by `DOCUMENTS_VIEW_ACTIVITY` (fallback to `DOCUMENTS_VIEW` on older JWTs).
 
 Need PostgreSQL search over:
 

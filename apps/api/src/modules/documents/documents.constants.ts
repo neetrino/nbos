@@ -1,6 +1,9 @@
 /** Max documents returned in one list query. */
 export const DOCUMENT_LIST_LIMIT = 100;
 
+/** Weight for `attachment_search_vector` rank vs body `search_vector` in list FTS. */
+export const DOCUMENT_ATTACHMENT_SEARCH_RANK_WEIGHT = 0.35;
+
 /** Activity events per page (detail first page and activity endpoint default). */
 export const DOCUMENT_ACTIVITY_PAGE_SIZE = 30;
 
