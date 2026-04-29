@@ -23,8 +23,8 @@ export class MessengerController {
   @Post('channels')
   @RequirePermission('MESSENGER', 'ADD')
   @ApiOperation({ summary: 'Create a channel' })
-  createChannel(@Body() body: CreateMessengerChannelDto) {
-    return this.messengerService.createChannel(body.name, body.projectId, body.type);
+  createChannel(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateMessengerChannelDto) {
+    return this.messengerService.createChannel(body.name, body.projectId, body.type, user.id);
   }
 
   @Get('channels/:id/messages')

@@ -1,6 +1,15 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import type { InputJsonValue } from '@nbos/database';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
+import {
+  MESSENGER_AUDIT_ACTION_CHANNEL_CREATED,
+  MESSENGER_AUDIT_ACTION_CHANNEL_MESSAGE_SENT,
+  MESSENGER_AUDIT_ACTION_DM_MESSAGE_SENT,
+  MESSENGER_AUDIT_ENTITY_CHANNEL,
+  MESSENGER_AUDIT_ENTITY_DM_THREAD,
+} from './messenger-audit.constants';
 import {
   channelTypeFromApi,
   channelTypeToApi,
@@ -38,7 +47,10 @@ export interface MessengerMessageDto {
 export class MessengerService {
   private readonly logger = new Logger(MessengerService.name);
 
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async getChannels(): Promise<MessengerChannelDto[]> {
     const rows = await this.prisma.messengerChannel.findMany({ orderBy: { createdAt: 'asc' } });
@@ -55,6 +67,7 @@ export class MessengerService {
     name: string,
     projectId: string,
     type: MessengerChannelTypeApi,
+    actorEmployeeId: string,
   ): Promise<MessengerChannelDto> {
     const created = await this.prisma.messengerChannel.create({
       data: {
@@ -64,6 +77,18 @@ export class MessengerService {
       },
     });
     this.logger.log(`Channel created: ${name}`);
+    const changes: InputJsonValue = {
+      name: created.name,
+      logicalProjectKey: created.projectId,
+      type: channelTypeToApi(created.type),
+    };
+    await this.auditService.log({
+      entityType: MESSENGER_AUDIT_ENTITY_CHANNEL,
+      entityId: created.id,
+      action: MESSENGER_AUDIT_ACTION_CHANNEL_CREATED,
+      userId: actorEmployeeId,
+      changes,
+    });
     return {
       id: created.id,
       name: created.name,
@@ -127,6 +152,17 @@ export class MessengerService {
         content,
       },
     });
+    const channelMessageAudit: InputJsonValue = {
+      messageId: created.id,
+      channelName: channel.name,
+    };
+    await this.auditService.log({
+      entityType: MESSENGER_AUDIT_ENTITY_CHANNEL,
+      entityId: channelId,
+      action: MESSENGER_AUDIT_ACTION_CHANNEL_MESSAGE_SENT,
+      userId: senderId,
+      changes: channelMessageAudit,
+    });
     return this.mapChannelMessage(created);
   }
 
@@ -189,6 +225,17 @@ export class MessengerService {
         senderNameSnapshot: snapshot,
         content,
       },
+    });
+    const dmAudit: InputJsonValue = {
+      messageId: created.id,
+      recipientId,
+    };
+    await this.auditService.log({
+      entityType: MESSENGER_AUDIT_ENTITY_DM_THREAD,
+      entityId: thread.id,
+      action: MESSENGER_AUDIT_ACTION_DM_MESSAGE_SENT,
+      userId: senderId,
+      changes: dmAudit,
     });
     return this.mapDmMessage(created, thread.id);
   }

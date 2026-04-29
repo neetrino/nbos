@@ -7,7 +7,7 @@
 | Field         | Value                                   |
 | ------------- | --------------------------------------- |
 | Current phase | **Phase 5 — Collaboration / knowledge** |
-| Current task  | Phase 5 — Messenger (WS / audit next)   |
+| Current task  | Phase 5 — Messenger (WebSocket next)    |
 | Status        | Phase 5 in progress                     |
 | Last updated  | 2026-04-30                              |
 
@@ -98,6 +98,7 @@ Future Finance depth:
 | 2026-04-29 | Messenger API RBAC + sender binding   | `RequirePermission` on MVP routes; JWT sender for channel/DM; `GET dm/conversations` without path userId.                                                                                                  |
 | 2026-04-29 | Messenger web wired to API            | `messengerApi`, `/messenger` loads channels + DM threads, send with `MESSENGER` EDIT; DM peer labels via employees list when allowed.                                                                      |
 | 2026-04-30 | Messenger Prisma persistence          | `MessengerChannel`, channel messages, `MessengerDirectThread` + messages; seed replaces in-memory demo; API service uses `PRISMA_TOKEN`.                                                                   |
+| 2026-04-30 | Messenger write audit                 | `AuditService` on channel create and channel/DM sends; actions `messenger.channel_*` / `messenger.dm_message_sent`; `changes` omit body text.                                                              |
 
 ## Next Action
 

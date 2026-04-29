@@ -43,6 +43,8 @@
 
 **Partial (2026-04-29):** MVP HTTP routes use `RequirePermission` (`MESSENGER` VIEW / ADD / EDIT); channel and DM send use the authenticated employee id and display name (no client-supplied `senderId`).
 
+**Partial (2026-04-30):** `AuditService` on channel create, channel message send, and DM message send (`messenger.channel_created`, `messenger.channel_message_sent`, `messenger.dm_message_sent`); no message body in `changes`.
+
 ## C. Старый Messenger doc заменён
 
 Старый `01-Messenger-Overview.md` описывал:
