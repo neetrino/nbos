@@ -163,6 +163,19 @@ Project shell now renders a first Delivery Board view over existing runtime enti
 
 The board is a computed view over `Product` and `Extension`; no separate board storage or duplicate delivery entity was introduced.
 
+### A11. Delivery Board filters and quick actions exist
+
+Статус: `PHASE 4 UI ALIGNMENT`
+
+Delivery Board now supports operational filtering and light actions:
+
+- status filters: `Active`, `On Hold`, `Closed`, `All`;
+- kind filters: `Products`, `Extensions`, `All`;
+- quick actions: move to next stage, resume from hold, mark done;
+- `Closed` view is split by `Done` and `Cancelled` outcomes.
+
+These controls call the same canonical delivery endpoints as the detail views and refresh the Project shell after mutation.
+
 ---
 
 ## B. Устарело только в документации или описаниях

@@ -79,6 +79,7 @@ export default function ProjectDetailPage() {
       <ProjectDeliveryBoard
         project={project}
         onOpenProduct={(productId) => router.push(`/projects/${params.id}/products/${productId}`)}
+        onRefresh={fetchProject}
       />
 
       <ProjectProductsSection
