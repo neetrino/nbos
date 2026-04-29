@@ -10,6 +10,7 @@ import {
   type Prisma,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
 import { ensureDefaultDocumentSections } from './documents-default-sections';
 import {
   assertDocumentModifiable,
@@ -19,16 +20,26 @@ import {
 } from './documents-assertions';
 import {
   buildDocumentsReadableWhere,
+  documentActivityEventsAllowed,
   employeeCanReadDocumentRow,
   resolveDocumentsReadContext,
+  type DocumentsDetailAccess,
   type DocumentsReadAccess,
 } from './documents-access-read';
 import {
   isDocumentsListScopeOnlyPatch,
   shouldSkipDocumentsUpdateActivityAfterPatch,
 } from './documents-update-policy';
-import { DOCUMENT_LIST_INCLUDE, DOCUMENT_DETAIL_INCLUDE } from './documents-includes';
-import { DOCUMENT_LIST_LIMIT } from './documents.constants';
+import {
+  DOCUMENT_LIST_INCLUDE,
+  DOCUMENT_DETAIL_INCLUDE,
+  DOCUMENT_DETAIL_WITHOUT_ACTIVITY,
+} from './documents-includes';
+import {
+  DOCUMENT_AUDIT_ACTION_ACCESS_CHANGED,
+  DOCUMENT_AUDIT_ENTITY_TYPE,
+  DOCUMENT_LIST_LIMIT,
+} from './documents.constants';
 import { searchDocumentIdsForList } from './documents-list-fts';
 import { pickDocumentSearchSnippet } from './documents-search-snippet';
 import { slugifyTitle } from './documents-slug';
@@ -44,7 +55,10 @@ import type {
 export class DocumentsService {
   private readonly logger = new Logger(DocumentsService.name);
 
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async listSections() {
     await this.ensureDefaultSections();
@@ -114,13 +128,14 @@ export class DocumentsService {
     }));
   }
 
-  async getDocument(id: string, access: DocumentsReadAccess) {
+  async getDocument(id: string, access: DocumentsDetailAccess) {
     await this.ensureDefaultSections();
     const read = await resolveDocumentsReadContext(this.prisma, access);
     if (read.denied) throw new NotFoundException(`Document ${id} not found`);
+    const includeActivity = documentActivityEventsAllowed(access);
     const doc = await this.prisma.document.findUnique({
       where: { id },
-      include: DOCUMENT_DETAIL_INCLUDE,
+      include: includeActivity ? DOCUMENT_DETAIL_INCLUDE : DOCUMENT_DETAIL_WITHOUT_ACTIVITY,
     });
     if (!doc) throw new NotFoundException(`Document ${id} not found`);
     if (
@@ -138,10 +153,14 @@ export class DocumentsService {
     ) {
       throw new NotFoundException(`Document ${id} not found`);
     }
-    return doc;
+    return {
+      ...doc,
+      activityEvents: includeActivity ? (doc.activityEvents ?? []) : [],
+      activityRevealed: includeActivity,
+    };
   }
 
-  async createDocument(dto: CreateDocumentDto, actorId: string, access: DocumentsReadAccess) {
+  async createDocument(dto: CreateDocumentDto, actorId: string, access: DocumentsDetailAccess) {
     await this.ensureDefaultSections();
     const title = dto.title?.trim();
     if (!title) throw new BadRequestException('Title is required.');
@@ -173,7 +192,7 @@ export class DocumentsService {
     id: string,
     dto: UpdateDocumentDto,
     actorId: string,
-    access: DocumentsReadAccess,
+    access: DocumentsDetailAccess,
   ) {
     await this.ensureDefaultSections();
     const read = await resolveDocumentsReadContext(this.prisma, access);
@@ -263,6 +282,17 @@ export class DocumentsService {
         listScopeOverride: dto.listScopeOverride ?? null,
         previousListScopeOverride: existing.listScopeOverride,
       });
+      await this.auditService.log({
+        entityType: DOCUMENT_AUDIT_ENTITY_TYPE,
+        entityId: id,
+        action: DOCUMENT_AUDIT_ACTION_ACCESS_CHANGED,
+        userId: actorId,
+        changes: {
+          listScopeOverride: dto.listScopeOverride ?? null,
+          previousListScopeOverride: existing.listScopeOverride,
+          sectionDefaultListScope: existing.section.defaultListScope,
+        },
+      });
     }
 
     const shouldSkipUpdateActivity = shouldSkipDocumentsUpdateActivityAfterPatch(existing, dto);
@@ -276,7 +306,7 @@ export class DocumentsService {
     return this.getDocument(id, access);
   }
 
-  async archiveDocument(id: string, actorId: string, access: DocumentsReadAccess) {
+  async archiveDocument(id: string, actorId: string, access: DocumentsDetailAccess) {
     await this.ensureDefaultSections();
     await assertDocumentReadableByAccess(this.prisma, id, access);
     const existing = await this.prisma.document.findUnique({ where: { id } });
@@ -297,7 +327,7 @@ export class DocumentsService {
     documentId: string,
     dto: AddDocumentAttachmentDto,
     actorId: string,
-    access: DocumentsReadAccess,
+    access: DocumentsDetailAccess,
   ) {
     await this.ensureDefaultSections();
     await assertDocumentReadableByAccess(this.prisma, documentId, access);
@@ -332,7 +362,7 @@ export class DocumentsService {
     documentId: string,
     attachmentId: string,
     actorId: string,
-    access: DocumentsReadAccess,
+    access: DocumentsDetailAccess,
   ) {
     await this.ensureDefaultSections();
     await assertDocumentReadableByAccess(this.prisma, documentId, access);

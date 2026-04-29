@@ -8,6 +8,11 @@ const readAllAccess = {
   documentsViewScope: 'ALL' as const,
 };
 
+const detailAccessAll = {
+  ...readAllAccess,
+  documentsViewActivityScope: 'ALL' as const,
+};
+
 const detailDoc = {
   id: 'doc-1',
   title: 'Hello',
@@ -29,12 +34,13 @@ const detailDoc = {
 describe('DocumentsService', () => {
   let service: DocumentsService;
   let prisma: MockPrisma;
+  const audit = { log: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
     prisma.employeeDepartment.findMany.mockResolvedValue([]);
-    service = new DocumentsService(prisma as never);
+    service = new DocumentsService(prisma as never, audit as never);
   });
 
   it('listDocuments uses FTS query then loads rows by id in rank order', async () => {
@@ -96,7 +102,7 @@ describe('DocumentsService', () => {
     const doc = await service.createDocument(
       { title: 'Hello', sectionId: 'sec' },
       'employee-1',
-      readAllAccess,
+      detailAccessAll,
     );
 
     expect(doc.id).toBe('doc-1');
@@ -135,7 +141,12 @@ describe('DocumentsService', () => {
       'doc-1',
       { fileAssetId: 'fa-1', purpose: 'INLINE_IMAGE' },
       'user-1',
-      { employeeId: 'user-1', departmentIds: [], documentsViewScope: 'ALL' },
+      {
+        employeeId: 'user-1',
+        departmentIds: [],
+        documentsViewScope: 'ALL',
+        documentsViewActivityScope: 'ALL',
+      },
     );
 
     expect(prisma.documentAttachment.create).toHaveBeenCalledWith(
@@ -174,7 +185,12 @@ describe('DocumentsService', () => {
       'doc-1',
       { contentJson: { type: 'doc', content: [] }, recordActivity: false },
       'user-1',
-      { employeeId: 'user-1', departmentIds: [], documentsViewScope: 'ALL' },
+      {
+        employeeId: 'user-1',
+        departmentIds: [],
+        documentsViewScope: 'ALL',
+        documentsViewActivityScope: 'ALL',
+      },
     );
 
     expect(prisma.document.update).toHaveBeenCalled();
@@ -207,12 +223,56 @@ describe('DocumentsService', () => {
       'doc-1',
       { status: 'PUBLISHED', contentJson: { type: 'doc', content: [] }, recordActivity: false },
       'user-1',
-      { employeeId: 'user-1', departmentIds: [], documentsViewScope: 'ALL' },
+      {
+        employeeId: 'user-1',
+        departmentIds: [],
+        documentsViewScope: 'ALL',
+        documentsViewActivityScope: 'ALL',
+      },
     );
 
     expect(prisma.documentActivityEvent.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ action: 'published', actorId: 'user-1' }),
+      }),
+    );
+  });
+
+  it('writes global audit when list scope override changes', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.document.findUnique
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        status: 'DRAFT',
+        listScopeOverride: null,
+        ownerId: 'user-1',
+        createdById: 'user-1',
+        section: { defaultListScope: 'ALL' },
+      })
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        title: 'T',
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1, defaultListScope: 'ALL' },
+        tagLinks: [],
+        attachments: [],
+        activityEvents: [],
+      });
+    prisma.document.update.mockResolvedValueOnce({});
+    prisma.documentActivityEvent.create.mockResolvedValue({});
+
+    await service.updateDocument('doc-1', { listScopeOverride: 'OWN' }, 'user-1', {
+      employeeId: 'user-1',
+      departmentIds: [],
+      documentsViewScope: 'ALL',
+      documentsViewActivityScope: 'ALL',
+    });
+
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityType: 'DOCUMENT',
+        entityId: 'doc-1',
+        action: 'document_access_changed',
+        userId: 'user-1',
       }),
     );
   });

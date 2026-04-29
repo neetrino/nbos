@@ -123,7 +123,7 @@ Need editor with:
 
 ### B6. Search is missing
 
-Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `ts_rank_cd` with `websearch_to_tsquery`, plus ILIKE on the same fields as before (section name, tags); optional `searchSnippet` for list cards. List/detail respect `default_list_scope` / `list_scope_override` intersected with RBAC `DOCUMENTS_VIEW`. **Not yet:** attachment metadata in index; dedicated `documents.view_activity` permission split.
+Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `ts_rank_cd` with `websearch_to_tsquery`, plus ILIKE on the same fields as before (section name, tags); optional `searchSnippet` for list cards. List/detail respect `default_list_scope` / `list_scope_override` intersected with RBAC `DOCUMENTS_VIEW`. Activity tab gated by `DOCUMENTS_VIEW_ACTIVITY` (fallback to `DOCUMENTS_VIEW` on older JWTs). **Not yet:** attachment metadata in index; activity pagination.
 
 Need PostgreSQL search over:
 
@@ -142,7 +142,7 @@ Need backend access checks for view/edit/archive/manage.
 
 Статус: `PARTIAL`
 
-`DocumentActivityEvent` exists; API records key actions; document detail shows activity with short metadata hints (e.g. attachment file ids). **Not yet:** dedicated `view_activity` permission, pagination, global audit fan-out.
+`DocumentActivityEvent` exists; API records key actions; document detail shows activity with short metadata hints (e.g. attachment file ids). `DOCUMENTS_VIEW_ACTIVITY` controls visibility; `access_changed` also writes `audit_logs`. **Not yet:** pagination.
 
 ### B9. Google integration is intentionally deferred
 

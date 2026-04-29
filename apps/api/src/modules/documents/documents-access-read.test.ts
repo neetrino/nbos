@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { employeeCanReadDocumentRow } from './documents-access-read';
+import { documentActivityEventsAllowed, employeeCanReadDocumentRow } from './documents-access-read';
 
 describe('employeeCanReadDocumentRow', () => {
   const sectionAll = { defaultListScope: 'ALL' as const };
@@ -50,6 +50,30 @@ describe('employeeCanReadDocumentRow', () => {
         'me',
         [],
       ),
+    ).toBe(true);
+  });
+});
+
+describe('documentActivityEventsAllowed', () => {
+  const base = { employeeId: 'e1', departmentIds: [] as string[] };
+
+  it('uses VIEW_ACTIVITY when set', () => {
+    expect(
+      documentActivityEventsAllowed({
+        ...base,
+        documentsViewScope: 'ALL',
+        documentsViewActivityScope: 'NONE',
+      }),
+    ).toBe(false);
+  });
+
+  it('falls back to VIEW when VIEW_ACTIVITY missing on JWT', () => {
+    expect(
+      documentActivityEventsAllowed({
+        ...base,
+        documentsViewScope: 'ALL',
+        documentsViewActivityScope: undefined,
+      }),
     ).toBe(true);
   });
 });

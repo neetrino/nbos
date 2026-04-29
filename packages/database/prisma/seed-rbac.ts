@@ -363,6 +363,11 @@ async function main() {
       permissionRecords.push({ id, module, action });
     }
   }
+  permissionRecords.push({
+    id: 'perm-documents-view-activity',
+    module: 'DOCUMENTS',
+    action: 'VIEW_ACTIVITY',
+  });
 
   await prisma.permission.createMany({
     data: permissionRecords,
@@ -385,6 +390,18 @@ async function main() {
         rolePermissionData.push({ roleId, permissionId: permId, scope });
       });
     }
+  }
+
+  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+    const docsScopes = moduleMap.DOCUMENTS;
+    if (!docsScopes) continue;
+    const viewScope = docsScopes[0];
+    if (viewScope === 'NONE') continue;
+    rolePermissionData.push({
+      roleId,
+      permissionId: 'perm-documents-view-activity',
+      scope: viewScope,
+    });
   }
 
   await prisma.rolePermission.deleteMany({});

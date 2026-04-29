@@ -75,6 +75,8 @@ export interface DocumentDetail {
   tagLinks: Array<{ tag: DocumentTag }>;
   attachments: DocumentAttachmentItem[];
   activityEvents: DocumentActivityItem[];
+  /** False when RBAC hides the activity feed (`DOCUMENTS_VIEW_ACTIVITY` NONE with no VIEW fallback). */
+  activityRevealed?: boolean;
 }
 
 export const documentsApi = {
@@ -119,6 +121,7 @@ export const documentsApi = {
       title?: string;
       description?: string | null;
       sectionId?: string;
+      listScopeOverride?: string | null;
       contentJson?: unknown;
       contentHtml?: string | null;
       plainText?: string | null;

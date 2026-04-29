@@ -208,7 +208,11 @@ export default function DocumentDetailPage() {
               <CardTitle className="text-base">Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              {doc.activityEvents.length === 0 ? (
+              {doc.activityRevealed === false ? (
+                <p className="text-muted-foreground text-sm">
+                  Activity history is hidden for your role.
+                </p>
+              ) : doc.activityEvents.length === 0 ? (
                 <p className="text-muted-foreground text-sm">No activity yet.</p>
               ) : (
                 <ul className="divide-border divide-y text-sm">

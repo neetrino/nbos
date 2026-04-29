@@ -11,10 +11,24 @@ export interface DocumentsReadAccess {
   documentsViewScope: string | undefined;
 }
 
+/** Detail routes also carry `DOCUMENTS_VIEW_ACTIVITY` for the activity feed. */
+export interface DocumentsDetailAccess extends DocumentsReadAccess {
+  documentsViewActivityScope: string | undefined;
+}
+
 export function normalizeDocumentsViewScope(raw: string | undefined): DocumentsRbacViewScope {
   const s = raw?.trim().toUpperCase();
   if (s === 'ALL' || s === 'OWN' || s === 'DEPARTMENT' || s === 'NONE') return s;
   return 'NONE';
+}
+
+/** When `DOCUMENTS_VIEW_ACTIVITY` is absent on the JWT, fall back to `DOCUMENTS_VIEW` (backward compatible). */
+export function documentActivityEventsAllowed(access: DocumentsDetailAccess): boolean {
+  const explicit = access.documentsViewActivityScope;
+  if (explicit !== undefined && String(explicit).trim() !== '') {
+    return normalizeDocumentsViewScope(explicit) !== 'NONE';
+  }
+  return normalizeDocumentsViewScope(access.documentsViewScope) !== 'NONE';
 }
 
 export async function loadColleagueEmployeeIds(
