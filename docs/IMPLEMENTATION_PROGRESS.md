@@ -62,53 +62,13 @@ Future Finance depth:
 
 ## Recent Milestones
 
-| Date       | Milestone                          | Result                                                                   | Verification                                                          |
-| ---------- | ---------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| 2026-04-29 | Client Services runtime foundation | `client_service_records`, CRUD/stats API, `/finance/client-services`     | db generate/format, api/web/database typecheck, lint, targeted Vitest |
-| 2026-04-29 | Client Services flow actions       | Linked invoice, expense plan, expense and task actions                   | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Finance report definitions shell   | Six Phase 3 report definitions exposed in API and UI                     | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Company P&L v1 aggregate           | `GET /api/finance/reports/company-pnl` and live UI snapshot              | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Cash Flow v1 aggregate             | `GET /api/finance/reports/cash-flow` and live UI snapshot                | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Expense Plan vs Actual v1          | `GET /api/finance/reports/expense-plan-vs-actual` and live UI snapshot   | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | MRR / Subscription Revenue v1      | `GET /api/finance/reports/mrr-subscription-revenue` and live UI snapshot | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Payroll Report v1                  | `GET /api/finance/reports/payroll` and live UI snapshot                  | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Project P&L v1                     | `GET /api/finance/reports/project-pnl` and live UI snapshot              | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Phase 3 Finance full closure       | Gate scope completed; Phase 4 can start                                  | Final docs closure                                                    |
-| 2026-04-29 | Delivery lifecycle projection      | Product/Extension API exposes canonical lifecycle over legacy statuses   | api/web typecheck, targeted Vitest                                    |
-| 2026-04-29 | Delivery lifecycle schema fields   | Added `stage`, `workStatus`, `resolution` and pause fields for delivery  | database/api typecheck, targeted Vitest                               |
-| 2026-04-29 | Delivery lifecycle actions         | Product/Extension pause, resume and cancel endpoints                     | api/web typecheck, targeted Vitest                                    |
-| 2026-04-29 | Delivery lifecycle stage actions   | Product/Extension canonical stage endpoint and UI stage controls         | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Delivery lifecycle complete action | Product/Extension canonical completion endpoint and UI terminal controls | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Delivery lifecycle action UI       | Product/Extension pause, resume and cancel controls in delivery UI       | web typecheck, lint                                                   |
-| 2026-04-29 | Delivery Board v1                  | Project shell board over active Product and Extension delivery cards     | web typecheck, lint                                                   |
-| 2026-04-29 | Delivery Board controls            | Board filters, quick stage/resume/done actions and closed depth          | web typecheck, lint                                                   |
-| 2026-04-29 | Delivery Board cancel flow         | Board-level cancel dialog with required reason and canonical endpoints   | web typecheck, lint                                                   |
-| 2026-04-29 | Delivery Board task/support depth  | Card context links into Product tasks, support tickets and extensions    | web typecheck, lint                                                   |
-| 2026-04-29 | Product task/support summaries     | Product tabs expose execution and support health from runtime data       | web typecheck, lint                                                   |
-| 2026-04-29 | Delivery lifecycle docs cleanup    | CRM/handoff and UI docs now separate handoff from Projects Hub lifecycle | docs review                                                           |
-| 2026-04-29 | Extension product ownership        | Extension create/update requires same-project primary Product link       | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Extension product schema hardening | `extensions.product_id` migration guarded against legacy null rows       | db generate/format, api/web/database typecheck, lint, targeted Vitest |
-| 2026-04-29 | Product detail delivery polish     | Product detail header/overview shows canonical delivery lifecycle        | web typecheck, lint                                                   |
-| 2026-04-29 | Stage-gate UX depth                | Product/Extension gates show clearer next moves and blocker labels       | web typecheck, lint                                                   |
-| 2026-04-29 | Stage-gate runtime depth           | Product QA/Transfer gates block while Product tasks are still open       | api typecheck, lint, targeted Vitest                                  |
-| 2026-04-29 | Product Done finance gate          | Product Done blocks when linked order invoices are not paid              | api typecheck, lint, targeted Vitest                                  |
-| 2026-04-29 | Product Done order gate            | Product Done blocks while linked order is not fully paid or closed       | api typecheck, lint, targeted Vitest                                  |
-| 2026-04-29 | Legacy status compatibility        | Project shell/UI prefers canonical lifecycle; old status remains mirror  | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Generic status UI retirement       | Product/Extension lifecycle controls use canonical endpoints only        | web typecheck, lint                                                   |
-| 2026-04-29 | Backend status deprecation         | Generic status endpoints now expose deprecation signal                   | api typecheck, lint                                                   |
-| 2026-04-29 | Lifecycle query filters            | Product/Extension lists accept canonical lifecycle query params          | api typecheck, targeted Vitest                                        |
-| 2026-04-29 | Expired On Hold visibility         | Delivery UI highlights overdue paused Product/Extension work             | web typecheck, lint                                                   |
-| 2026-04-29 | Product Done readiness             | Product detail shows Done blockers, warnings and missing runtime signals | api/web typecheck, targeted Vitest                                    |
-| 2026-04-29 | Product acceptance runtime         | Product Done blocks until explicit client acceptance is recorded         | database/api/web typecheck, lint, targeted Vitest                     |
-| 2026-04-29 | Product handoff readiness          | Done readiness checks handoff credentials and domain health              | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Product Drive readiness            | Done readiness surfaces CRM handoff files and Drive FileLink gap         | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Phase 4 closure checklist          | Projects Hub delivery closure gate created; Tasks/Support blockers clear | docs review                                                           |
-| 2026-04-29 | Work Space runtime foundation      | Runtime Work Space entity, planning status and connected ensure API      | database/api/web typecheck, lint, targeted Vitest                     |
-| 2026-04-29 | Work Space UI integration          | Product task tab now ensures and displays connected Work Space context   | web typecheck, lint                                                   |
-| 2026-04-29 | Task completion rules              | Task complete can enforce explicit rules and return blocker reasons      | database/api/web typecheck, lint, targeted Vitest                     |
-| 2026-04-29 | Support-to-Task bridge             | Support tickets can create linked execution tasks without becoming tasks | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Support change-control bridge      | Change Request tickets can create linked Extension Deals                 | database/api/web typecheck, lint, targeted Vitest                     |
-| 2026-04-29 | Support SLA / coverage depth       | Coverage decision and read-only SLA state are visible at runtime         | database/api/web typecheck, lint, targeted Vitest                     |
+| Date       | Milestone                     | Result                                                                    |
+| ---------- | ----------------------------- | ------------------------------------------------------------------------- |
+| 2026-04-29 | Phase 3 Finance full closure  | Client Services runtime/flows and all six Finance report aggregates done. |
+| 2026-04-29 | Delivery lifecycle runtime    | Product/Extension canonical lifecycle, actions, board, filters and gates. |
+| 2026-04-29 | Product Done readiness        | Done blocks real blockers and surfaces handoff/Drive/client gaps.         |
+| 2026-04-29 | Tasks / Work Space foundation | Work Space runtime, product UI integration and completion blockers exist. |
+| 2026-04-29 | Support runtime bridges       | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state. |
 
 ## Next Action
 
