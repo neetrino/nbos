@@ -72,6 +72,7 @@ export const mailApi = {
     mailAccountId?: string,
     unreadOnly?: boolean,
     needsLinkOnly?: boolean,
+    searchQuery?: string,
   ): Promise<MailThreadListRow[]> {
     const params: Record<string, string> = {};
     if (mailAccountId) {
@@ -82,6 +83,9 @@ export const mailApi = {
     }
     if (needsLinkOnly) {
       params.needsLinkOnly = 'true';
+    }
+    if (searchQuery !== undefined && searchQuery.trim() !== '') {
+      params.q = searchQuery.trim();
     }
     const resp = await api.get<MailThreadListRow[]>('/api/mail/threads', {
       params: Object.keys(params).length > 0 ? params : undefined,

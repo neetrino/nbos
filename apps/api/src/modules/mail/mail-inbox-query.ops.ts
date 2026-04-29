@@ -3,12 +3,15 @@ import { mailAccountWhereForViewer } from './mail-account-scope';
 import { toAccountRow, toMessageRow, toThreadListRow } from './mail-dto-map';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
 import type { MailAccountRow, MailThreadDetailDto, MailThreadListRow } from './mail.types';
+import { normalizeMailThreadSearchQuery } from './mail-thread-search';
 
 export interface ListMailThreadsOptions {
   mailAccountId?: string;
   unreadOnly?: boolean;
   /** When true, only threads flagged for business context linking. */
   needsLinkOnly?: boolean;
+  /** Case-insensitive substring match on `subjectNormalized` (from query `q`). */
+  search?: string;
 }
 
 export type ListMailThreadsQueryResult =
@@ -35,6 +38,7 @@ export async function listMailThreadsForViewer(
   options: ListMailThreadsOptions = {},
 ): Promise<ListMailThreadsQueryResult> {
   const { mailAccountId, unreadOnly, needsLinkOnly } = options;
+  const searchTerm = normalizeMailThreadSearchQuery(options.search);
   const accountWhere = mailAccountWhereForViewer(employeeId, viewScope);
   const accounts = await prisma.mailAccount.findMany({
     where: accountWhere,
@@ -51,6 +55,14 @@ export async function listMailThreadsForViewer(
     ...(mailAccountId ? { mailAccountId } : { mailAccountId: { in: ids } }),
     ...(unreadOnly ? { hasUnread: true } : {}),
     ...(needsLinkOnly ? { needsBusinessLink: true } : {}),
+    ...(searchTerm
+      ? {
+          subjectNormalized: {
+            contains: searchTerm,
+            mode: 'insensitive',
+          },
+        }
+      : {}),
   };
   const threads = await prisma.emailThread.findMany({
     where,

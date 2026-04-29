@@ -10,6 +10,9 @@ import { mailApi, type MailAccountRow, type MailThreadListRow } from '@/lib/api/
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+
+const MAIL_INBOX_SEARCH_DEBOUNCE_MS = 350;
 
 function formatThreadTitle(subjectNormalized: string): string {
   const t = subjectNormalized.trim();
@@ -33,6 +36,15 @@ export default function MailInboxPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
+  const [threadSearchDraft, setThreadSearchDraft] = useState('');
+  const [threadSearchQuery, setThreadSearchQuery] = useState('');
+
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      setThreadSearchQuery(threadSearchDraft.trim());
+    }, MAIL_INBOX_SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(t);
+  }, [threadSearchDraft]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,6 +56,7 @@ export default function MailInboxPage() {
           filterAccountId ?? undefined,
           threadListSegment === 'unread',
           threadListSegment === 'needs_link',
+          threadSearchQuery || undefined,
         ),
       ]);
       setAccounts(acc);
@@ -53,7 +66,7 @@ export default function MailInboxPage() {
     } finally {
       setLoading(false);
     }
-  }, [filterAccountId, threadListSegment]);
+  }, [filterAccountId, threadListSegment, threadSearchQuery]);
 
   const runSyncStub = useCallback(
     async (accountId: string) => {
@@ -209,15 +222,27 @@ export default function MailInboxPage() {
           </Card>
 
           <Card>
-            <CardHeader className="pb-2">
+            <CardHeader className="space-y-3 pb-2">
               <CardTitle className="text-base">Threads</CardTitle>
+              <Input
+                type="search"
+                placeholder="Search by subject…"
+                value={threadSearchDraft}
+                onChange={(e) => setThreadSearchDraft(e.target.value)}
+                className="max-w-md"
+                aria-label="Search threads by subject"
+              />
             </CardHeader>
             <CardContent>
               {threads.length === 0 ? (
                 <EmptyState
                   icon={Mail}
                   title="No threads"
-                  description="Connect a mailbox or wait for sync once the Mail pipeline is enabled."
+                  description={
+                    threadSearchQuery
+                      ? 'No threads match this search. Try another term or clear the filter.'
+                      : 'Connect a mailbox or wait for sync once the Mail pipeline is enabled.'
+                  }
                 />
               ) : (
                 <ul className="divide-y rounded-md border">
