@@ -62,6 +62,42 @@ export interface CompanyPnlReport {
   notes: string[];
 }
 
+export interface CashFlowReport {
+  reportId: 'cash-flow';
+  title: 'Cash Flow';
+  currency: 'AMD';
+  period: {
+    dateFrom: string | null;
+    dateTo: string | null;
+    basis: 'cash';
+    asOf: string;
+  };
+  actuals: {
+    realIncoming: string;
+    realOutgoing: string;
+    netMovement: string;
+    paymentCount: number;
+    expensePaymentCount: number;
+  };
+  forecast: {
+    expectedIncomingOpenInvoices: string;
+    expectedOutgoingExpenseCards: string;
+    expectedOutgoingExpensePlans: string;
+    expectedOutgoingPayroll: string;
+    buckets: Array<{
+      horizonDays: 30 | 60 | 90;
+      expectedIncoming: string;
+      expectedOutgoing: string;
+      netExpected: string;
+    }>;
+  };
+  backlogDebt: {
+    amount: string;
+    expenseCount: number;
+  };
+  notes: string[];
+}
+
 export const financeReportsApi = {
   async getDefinitions(): Promise<FinanceReportDefinitionsResponse> {
     const resp = await api.get<FinanceReportDefinitionsResponse>(
@@ -72,6 +108,11 @@ export const financeReportsApi = {
 
   async getCompanyPnl(): Promise<CompanyPnlReport> {
     const resp = await api.get<CompanyPnlReport>('/api/finance/reports/company-pnl');
+    return resp.data;
+  },
+
+  async getCashFlow(): Promise<CashFlowReport> {
+    const resp = await api.get<CashFlowReport>('/api/finance/reports/cash-flow');
     return resp.data;
   },
 };

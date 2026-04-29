@@ -57,11 +57,12 @@ export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
     title: 'Cash Flow',
     audience: ['CEO', 'Finance Director'],
     description: 'Real incoming and outgoing cash plus expected invoice and expense movement.',
-    v1Status: 'needs_aggregate_endpoint',
+    v1Status: 'definition_ready',
     sourceEndpoints: ['/api/finance/payments/stats', '/api/expenses/stats', '/api/expense-plans'],
     drillDownHrefs: ['/finance/payments', '/finance/expenses', '/finance/expenses/plans'],
     phase3Scope: 'Read-only cash view from payments, expense payments, invoices and plans.',
     phase6Deferred: 'Bank integrations, scheduled cash forecasts and global dashboard packaging.',
+    aggregateEndpoint: '/api/finance/reports/cash-flow',
   },
   {
     id: 'mrr-subscription-revenue',

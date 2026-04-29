@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CashFlowService } from './cash-flow.service';
 import { CompanyPnlService } from './company-pnl.service';
 import { FinanceReportsService } from './reports.service';
 
@@ -10,6 +11,7 @@ export class FinanceReportsController {
   constructor(
     private readonly financeReportsService: FinanceReportsService,
     private readonly companyPnlService: CompanyPnlService,
+    private readonly cashFlowService: CashFlowService,
   ) {}
 
   @Get('definitions')
@@ -36,5 +38,19 @@ export class FinanceReportsController {
   })
   getCompanyPnl(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
     return this.companyPnlService.getReport({ dateFrom, dateTo });
+  }
+
+  @Get('cash-flow')
+  @ApiOperation({
+    summary: 'Get Cash Flow v1 aggregate',
+    description:
+      'Cash-driven Phase 3 aggregate with real movements, 30/60/90 day forecast and backlog debt separated from the current forecast.',
+  })
+  getCashFlow(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('asOf') asOf?: string,
+  ) {
+    return this.cashFlowService.getReport({ dateFrom, dateTo, asOf });
   }
 }
