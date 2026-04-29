@@ -73,6 +73,10 @@ export const ModelName = {
   TaskLink: 'TaskLink',
   TaskChecklist: 'TaskChecklist',
   TaskChecklistItem: 'TaskChecklistItem',
+  FileAsset: 'FileAsset',
+  FileVersion: 'FileVersion',
+  FileLink: 'FileLink',
+  FileAuditEvent: 'FileAuditEvent',
   TaskBoardStage: 'TaskBoardStage',
   RecurringTaskTemplate: 'RecurringTaskTemplate',
   SupportTicket: 'SupportTicket',
@@ -604,6 +608,79 @@ export const TaskChecklistItemScalarFieldEnum = {
 
 export type TaskChecklistItemScalarFieldEnum =
   (typeof TaskChecklistItemScalarFieldEnum)[keyof typeof TaskChecklistItemScalarFieldEnum];
+
+export const FileAssetScalarFieldEnum = {
+  id: 'id',
+  displayName: 'displayName',
+  originalName: 'originalName',
+  fileType: 'fileType',
+  purpose: 'purpose',
+  sourceModule: 'sourceModule',
+  ownerId: 'ownerId',
+  createdById: 'createdById',
+  status: 'status',
+  visibility: 'visibility',
+  confidentiality: 'confidentiality',
+  storageProvider: 'storageProvider',
+  storageKey: 'storageKey',
+  externalUrl: 'externalUrl',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  checksum: 'checksum',
+  currentVersionId: 'currentVersionId',
+  retentionPolicy: 'retentionPolicy',
+  deletedAt: 'deletedAt',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type FileAssetScalarFieldEnum =
+  (typeof FileAssetScalarFieldEnum)[keyof typeof FileAssetScalarFieldEnum];
+
+export const FileVersionScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  versionNumber: 'versionNumber',
+  storageKey: 'storageKey',
+  uploadedById: 'uploadedById',
+  uploadedAt: 'uploadedAt',
+  changeNote: 'changeNote',
+  sizeBytes: 'sizeBytes',
+  checksum: 'checksum',
+  isCurrent: 'isCurrent',
+} as const;
+
+export type FileVersionScalarFieldEnum =
+  (typeof FileVersionScalarFieldEnum)[keyof typeof FileVersionScalarFieldEnum];
+
+export const FileLinkScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  linkType: 'linkType',
+  purposeOverride: 'purposeOverride',
+  isPrimary: 'isPrimary',
+  linkedById: 'linkedById',
+  linkedAt: 'linkedAt',
+  unlinkedAt: 'unlinkedAt',
+} as const;
+
+export type FileLinkScalarFieldEnum =
+  (typeof FileLinkScalarFieldEnum)[keyof typeof FileLinkScalarFieldEnum];
+
+export const FileAuditEventScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  actorId: 'actorId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+} as const;
+
+export type FileAuditEventScalarFieldEnum =
+  (typeof FileAuditEventScalarFieldEnum)[keyof typeof FileAuditEventScalarFieldEnum];
 
 export const TaskBoardStageScalarFieldEnum = {
   id: 'id',

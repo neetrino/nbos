@@ -7,8 +7,8 @@
 | Field         | Value                                   |
 | ------------- | --------------------------------------- |
 | Current phase | **Phase 5 — Collaboration / knowledge** |
-| Current task  | Documents / Drive foundation planning   |
-| Status        | Phase 4 closed; Phase 5 ready to start  |
+| Current task  | Drive file metadata foundation          |
+| Status        | Phase 5 in progress                     |
 | Last updated  | 2026-04-29                              |
 
 ## Phase Snapshot
@@ -19,7 +19,7 @@
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
 | Phase 4 — Delivery ops              | Done        |     100% | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation       |
-| Phase 5 — Collaboration / knowledge | Ready       |       0% | Documents/Drive, credentials, messenger, notifications                                     |
+| Phase 5 — Collaboration / knowledge | In progress |      ~5% | Drive file metadata foundation started; Documents foundation next                          |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
 
@@ -62,18 +62,19 @@ Future Finance depth:
 
 ## Recent Milestones
 
-| Date       | Milestone                     | Result                                                                    |
-| ---------- | ----------------------------- | ------------------------------------------------------------------------- |
-| 2026-04-29 | Phase 3 Finance full closure  | Client Services runtime/flows and all six Finance report aggregates done. |
-| 2026-04-29 | Delivery lifecycle runtime    | Product/Extension canonical lifecycle, actions, board, filters and gates. |
-| 2026-04-29 | Product Done readiness        | Done blocks real blockers and surfaces handoff/Drive/client gaps.         |
-| 2026-04-29 | Tasks / Work Space foundation | Work Space runtime, product UI, completion rules and blocker UX exist.    |
-| 2026-04-29 | Support runtime bridges       | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state. |
-| 2026-04-29 | Phase 4 Delivery closure      | Review/Scrum/automation depth moved later; Phase 5 can start.             |
+| Date       | Milestone                      | Result                                                                    |
+| ---------- | ------------------------------ | ------------------------------------------------------------------------- |
+| 2026-04-29 | Phase 3 Finance full closure   | Client Services runtime/flows and all six Finance report aggregates done. |
+| 2026-04-29 | Delivery lifecycle runtime     | Product/Extension canonical lifecycle, actions, board, filters and gates. |
+| 2026-04-29 | Product Done readiness         | Done blocks real blockers and surfaces handoff/Drive/client gaps.         |
+| 2026-04-29 | Tasks / Work Space foundation  | Work Space runtime, product UI, completion rules and blocker UX exist.    |
+| 2026-04-29 | Support runtime bridges        | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state. |
+| 2026-04-29 | Phase 4 Delivery closure       | Review/Scrum/automation depth moved later; Phase 5 can start.             |
+| 2026-04-29 | Drive file metadata foundation | DB-backed File Assets, versions, links and metadata API foundation.       |
 
 ## Next Action
 
-1. Start Phase 5 with Documents/Drive foundation: DB-backed file metadata, logical links and module-safe upload/link flows.
+1. Continue Phase 5 with Drive upload-session/library UI or Documents DB model + route.
 2. Keep credentials secrets, messenger automation and notifications out until file/link boundaries are stable.
 
 ## Slice DoD

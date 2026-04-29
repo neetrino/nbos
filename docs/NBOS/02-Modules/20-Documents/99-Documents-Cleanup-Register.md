@@ -122,9 +122,9 @@ Need editor with:
 
 ### B5. Drive/R2 attachment flow is missing
 
-Статус: `MISSING INTEGRATION`
+Статус: `PARTIAL FOUNDATION`
 
-Need upload flow through Drive File Asset, not direct raw R2 usage from Documents.
+Drive now has DB-backed File Asset, Version and Link metadata foundation. Documents still need their own attachment flow on top of that foundation, not direct raw R2 usage.
 
 ### B6. Search is missing
 

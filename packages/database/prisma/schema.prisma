@@ -987,6 +987,179 @@ model TaskChecklistItem {
   @@map("task_checklist_items")
 }
 
+// ─── DRIVE FILE ASSETS ─────────────────────────────────────
+
+enum FileAssetTypeEnum {
+  DOCUMENT
+  IMAGE
+  VIDEO
+  AUDIO
+  ARCHIVE
+  CODE
+  SPREADSHEET
+  LINK
+  OTHER
+}
+
+enum FilePurposeEnum {
+  OFFER_DRAFT
+  OFFER_SENT
+  OFFER_APPROVED
+  MESSENGER_PROOF
+  CONTRACT
+  HANDOFF_DOCUMENT
+  DESIGN_ASSET
+  DELIVERY_FILE
+  INVOICE_REQUEST_PROOF
+  PAYMENT_PROOF
+  EXPENSE_PROOF
+  PARTNER_AGREEMENT
+  SUPPORT_EVIDENCE
+  TASK_ATTACHMENT
+  WORKSPACE_ARTIFACT
+  SOP_DOCUMENT
+  TRAINING_MATERIAL
+  MEETING_RECORDING
+  CALL_RECORDING
+  OTHER
+}
+
+enum FileAssetStatusEnum {
+  DRAFT
+  ACTIVE
+  APPROVED
+  ARCHIVED
+  DELETED
+}
+
+enum FileVisibilityEnum {
+  INTERNAL
+  PROJECT_TEAM
+  RESTRICTED
+  CLIENT_VISIBLE
+  PARTNER_VISIBLE
+  PERSONAL
+}
+
+enum FileConfidentialityEnum {
+  PUBLIC_INTERNAL
+  CONFIDENTIAL
+  FINANCE_SENSITIVE
+  LEGAL_SENSITIVE
+  SECRET_ADJACENT
+}
+
+enum FileStorageProviderEnum {
+  R2
+  EXTERNAL_URL
+  GOOGLE_DRIVE
+}
+
+enum FileLinkTypeEnum {
+  ATTACHMENT
+  APPROVED_DOCUMENT
+  PROOF
+  SOURCE_MATERIAL
+  FINAL_DELIVERY
+  HANDOFF
+  SUPPORT_EVIDENCE
+  TASK_ATTACHMENT
+  WORKSPACE_ARTIFACT
+  OTHER
+}
+
+model FileAsset {
+  id               String                  @id @default(uuid())
+  displayName      String                  @map("display_name")
+  originalName     String?                 @map("original_name")
+  fileType         FileAssetTypeEnum       @map("file_type")
+  purpose          FilePurposeEnum?
+  sourceModule     String?                 @map("source_module")
+  ownerId          String?                 @map("owner_id")
+  createdById      String?                 @map("created_by_id")
+  status           FileAssetStatusEnum     @default(ACTIVE)
+  visibility       FileVisibilityEnum      @default(INTERNAL)
+  confidentiality  FileConfidentialityEnum @default(CONFIDENTIAL)
+  storageProvider  FileStorageProviderEnum @default(R2) @map("storage_provider")
+  storageKey       String?                 @map("storage_key")
+  externalUrl      String?                 @map("external_url")
+  mimeType         String?                 @map("mime_type")
+  sizeBytes        BigInt?                 @map("size_bytes")
+  checksum         String?
+  currentVersionId String?                 @map("current_version_id")
+  retentionPolicy  String?                 @map("retention_policy")
+  deletedAt        DateTime?               @map("deleted_at")
+  archivedAt       DateTime?               @map("archived_at")
+  createdAt        DateTime                @default(now()) @map("created_at")
+  updatedAt        DateTime                @updatedAt @map("updated_at")
+
+  versions    FileVersion[]
+  links       FileLink[]
+  auditEvents FileAuditEvent[]
+
+  @@index([status])
+  @@index([purpose])
+  @@index([sourceModule])
+  @@index([storageKey])
+  @@index([createdAt])
+  @@map("file_assets")
+}
+
+model FileVersion {
+  id            String   @id @default(uuid())
+  fileAssetId   String   @map("file_asset_id")
+  versionNumber Int      @map("version_number")
+  storageKey    String?  @map("storage_key")
+  uploadedById  String?  @map("uploaded_by_id")
+  uploadedAt    DateTime @default(now()) @map("uploaded_at")
+  changeNote    String?  @map("change_note")
+  sizeBytes     BigInt?  @map("size_bytes")
+  checksum      String?
+  isCurrent     Boolean  @default(true) @map("is_current")
+
+  fileAsset FileAsset @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([fileAssetId, versionNumber])
+  @@index([isCurrent])
+  @@map("file_versions")
+}
+
+model FileLink {
+  id              String           @id @default(uuid())
+  fileAssetId     String           @map("file_asset_id")
+  entityType      String           @map("entity_type")
+  entityId        String           @map("entity_id")
+  linkType        FileLinkTypeEnum @default(ATTACHMENT) @map("link_type")
+  purposeOverride FilePurposeEnum? @map("purpose_override")
+  isPrimary       Boolean          @default(false) @map("is_primary")
+  linkedById      String?          @map("linked_by_id")
+  linkedAt        DateTime         @default(now()) @map("linked_at")
+  unlinkedAt      DateTime?        @map("unlinked_at")
+
+  fileAsset FileAsset @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId])
+  @@index([fileAssetId])
+  @@index([unlinkedAt])
+  @@map("file_links")
+}
+
+model FileAuditEvent {
+  id          String   @id @default(uuid())
+  fileAssetId String   @map("file_asset_id")
+  actorId     String?  @map("actor_id")
+  action      String
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  fileAsset FileAsset @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+
+  @@index([fileAssetId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("file_audit_events")
+}
+
 model TaskBoardStage {
   id        String   @id @default(uuid())
   ownerId   String?  @map("owner_id")

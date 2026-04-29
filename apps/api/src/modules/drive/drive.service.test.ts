@@ -22,6 +22,7 @@ vi.mock('@aws-sdk/s3-request-presigner', () => ({
 }));
 
 import { DriveService } from './drive.service';
+import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
 function createMockConfig(withR2 = true) {
   const configMap: Record<string, string> = withR2
@@ -47,11 +48,13 @@ function createMockConfig(withR2 = true) {
 describe('DriveService', () => {
   describe('with R2 configured', () => {
     let service: DriveService;
+    let prisma: MockPrisma;
 
     beforeEach(() => {
       vi.clearAllMocks();
       const config = createMockConfig(true);
-      service = new DriveService(config as never);
+      prisma = createMockPrisma();
+      service = new DriveService(config as never, prisma as never);
     });
 
     it('should list files from R2 (under Drive/ prefix)', async () => {
@@ -108,17 +111,86 @@ describe('DriveService', () => {
       const result2 = await service.getDownloadUrl('p1', 'projects/p1/file.txt');
       expect(result2.downloadUrl).toBe('https://presigned-url.example.com');
     });
+
+    it('creates DB-backed File Asset metadata with version and link', async () => {
+      const result = await service.createFileAsset({
+        displayName: 'Approved offer.pdf',
+        storageKey: 'Drive/projects/p1/offer.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 123,
+        purpose: 'OFFER_APPROVED',
+        createdById: 'employee-1',
+        link: {
+          entityType: 'DEAL',
+          entityId: 'deal-1',
+          linkType: 'APPROVED_DOCUMENT',
+          linkedById: 'employee-1',
+        },
+      });
+
+      expect(result.displayName).toBe('Approved offer.pdf');
+      expect(prisma.fileAsset.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            fileType: 'DOCUMENT',
+            purpose: 'OFFER_APPROVED',
+            versions: {
+              create: expect.objectContaining({
+                versionNumber: 1,
+                storageKey: 'Drive/projects/p1/offer.pdf',
+              }),
+            },
+            links: {
+              create: expect.objectContaining({
+                entityType: 'DEAL',
+                entityId: 'deal-1',
+                linkType: 'APPROVED_DOCUMENT',
+              }),
+            },
+          }),
+        }),
+      );
+    });
+
+    it('creates external link file assets without R2 version', async () => {
+      await service.createFileAsset({
+        displayName: 'Figma mockup',
+        externalUrl: 'https://figma.example/file',
+      });
+
+      expect(prisma.fileAsset.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            fileType: 'LINK',
+            storageProvider: 'EXTERNAL_URL',
+            versions: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('lists File Assets by entity link', async () => {
+      await service.listFileAssets({ entityType: 'PRODUCT', entityId: 'product-1' });
+
+      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            links: { some: { entityType: 'PRODUCT', entityId: 'product-1', unlinkedAt: null } },
+          }),
+        }),
+      );
+    });
   });
 
   describe('without R2 configured', () => {
     it('should not crash at construction time', () => {
       const config = createMockConfig(false);
-      expect(() => new DriveService(config as never)).not.toThrow();
+      expect(() => new DriveService(config as never, createMockPrisma() as never)).not.toThrow();
     });
 
     it('should throw NotFoundException when listing files', async () => {
       const config = createMockConfig(false);
-      const service = new DriveService(config as never);
+      const service = new DriveService(config as never, createMockPrisma() as never);
       await expect(service.listFiles('p1')).rejects.toThrow(NotFoundException);
     });
   });

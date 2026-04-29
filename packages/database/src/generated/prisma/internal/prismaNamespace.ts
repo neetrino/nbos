@@ -400,6 +400,10 @@ export const ModelName = {
   TaskLink: 'TaskLink',
   TaskChecklist: 'TaskChecklist',
   TaskChecklistItem: 'TaskChecklistItem',
+  FileAsset: 'FileAsset',
+  FileVersion: 'FileVersion',
+  FileLink: 'FileLink',
+  FileAuditEvent: 'FileAuditEvent',
   TaskBoardStage: 'TaskBoardStage',
   RecurringTaskTemplate: 'RecurringTaskTemplate',
   SupportTicket: 'SupportTicket',
@@ -461,6 +465,10 @@ export type TypeMap<
       | 'taskLink'
       | 'taskChecklist'
       | 'taskChecklistItem'
+      | 'fileAsset'
+      | 'fileVersion'
+      | 'fileLink'
+      | 'fileAuditEvent'
       | 'taskBoardStage'
       | 'recurringTaskTemplate'
       | 'supportTicket'
@@ -2344,6 +2352,304 @@ export type TypeMap<
         };
       };
     };
+    FileAsset: {
+      payload: Prisma.$FileAssetPayload<ExtArgs>;
+      fields: Prisma.FileAssetFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.FileAssetFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.FileAssetFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>;
+        };
+        findFirst: {
+          args: Prisma.FileAssetFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.FileAssetFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>;
+        };
+        findMany: {
+          args: Prisma.FileAssetFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>[];
+        };
+        create: {
+          args: Prisma.FileAssetCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>;
+        };
+        createMany: {
+          args: Prisma.FileAssetCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.FileAssetCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>[];
+        };
+        delete: {
+          args: Prisma.FileAssetDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>;
+        };
+        update: {
+          args: Prisma.FileAssetUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>;
+        };
+        deleteMany: {
+          args: Prisma.FileAssetDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.FileAssetUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.FileAssetUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>[];
+        };
+        upsert: {
+          args: Prisma.FileAssetUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAssetPayload>;
+        };
+        aggregate: {
+          args: Prisma.FileAssetAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileAsset>;
+        };
+        groupBy: {
+          args: Prisma.FileAssetGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FileAssetGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.FileAssetCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FileAssetCountAggregateOutputType> | number;
+        };
+      };
+    };
+    FileVersion: {
+      payload: Prisma.$FileVersionPayload<ExtArgs>;
+      fields: Prisma.FileVersionFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.FileVersionFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.FileVersionFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>;
+        };
+        findFirst: {
+          args: Prisma.FileVersionFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.FileVersionFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>;
+        };
+        findMany: {
+          args: Prisma.FileVersionFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>[];
+        };
+        create: {
+          args: Prisma.FileVersionCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>;
+        };
+        createMany: {
+          args: Prisma.FileVersionCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.FileVersionCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>[];
+        };
+        delete: {
+          args: Prisma.FileVersionDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>;
+        };
+        update: {
+          args: Prisma.FileVersionUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>;
+        };
+        deleteMany: {
+          args: Prisma.FileVersionDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.FileVersionUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.FileVersionUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>[];
+        };
+        upsert: {
+          args: Prisma.FileVersionUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>;
+        };
+        aggregate: {
+          args: Prisma.FileVersionAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileVersion>;
+        };
+        groupBy: {
+          args: Prisma.FileVersionGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FileVersionGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.FileVersionCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FileVersionCountAggregateOutputType> | number;
+        };
+      };
+    };
+    FileLink: {
+      payload: Prisma.$FileLinkPayload<ExtArgs>;
+      fields: Prisma.FileLinkFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.FileLinkFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.FileLinkFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>;
+        };
+        findFirst: {
+          args: Prisma.FileLinkFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.FileLinkFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>;
+        };
+        findMany: {
+          args: Prisma.FileLinkFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>[];
+        };
+        create: {
+          args: Prisma.FileLinkCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>;
+        };
+        createMany: {
+          args: Prisma.FileLinkCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.FileLinkCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>[];
+        };
+        delete: {
+          args: Prisma.FileLinkDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>;
+        };
+        update: {
+          args: Prisma.FileLinkUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>;
+        };
+        deleteMany: {
+          args: Prisma.FileLinkDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.FileLinkUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.FileLinkUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>[];
+        };
+        upsert: {
+          args: Prisma.FileLinkUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileLinkPayload>;
+        };
+        aggregate: {
+          args: Prisma.FileLinkAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileLink>;
+        };
+        groupBy: {
+          args: Prisma.FileLinkGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FileLinkGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.FileLinkCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FileLinkCountAggregateOutputType> | number;
+        };
+      };
+    };
+    FileAuditEvent: {
+      payload: Prisma.$FileAuditEventPayload<ExtArgs>;
+      fields: Prisma.FileAuditEventFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.FileAuditEventFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.FileAuditEventFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>;
+        };
+        findFirst: {
+          args: Prisma.FileAuditEventFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.FileAuditEventFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>;
+        };
+        findMany: {
+          args: Prisma.FileAuditEventFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>[];
+        };
+        create: {
+          args: Prisma.FileAuditEventCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>;
+        };
+        createMany: {
+          args: Prisma.FileAuditEventCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.FileAuditEventCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>[];
+        };
+        delete: {
+          args: Prisma.FileAuditEventDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>;
+        };
+        update: {
+          args: Prisma.FileAuditEventUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>;
+        };
+        deleteMany: {
+          args: Prisma.FileAuditEventDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.FileAuditEventUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.FileAuditEventUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>[];
+        };
+        upsert: {
+          args: Prisma.FileAuditEventUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileAuditEventPayload>;
+        };
+        aggregate: {
+          args: Prisma.FileAuditEventAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileAuditEvent>;
+        };
+        groupBy: {
+          args: Prisma.FileAuditEventGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FileAuditEventGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.FileAuditEventCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.FileAuditEventCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     TaskBoardStage: {
       payload: Prisma.$TaskBoardStagePayload<ExtArgs>;
       fields: Prisma.TaskBoardStageFieldRefs;
@@ -4079,6 +4385,79 @@ export const TaskChecklistItemScalarFieldEnum = {
 export type TaskChecklistItemScalarFieldEnum =
   (typeof TaskChecklistItemScalarFieldEnum)[keyof typeof TaskChecklistItemScalarFieldEnum];
 
+export const FileAssetScalarFieldEnum = {
+  id: 'id',
+  displayName: 'displayName',
+  originalName: 'originalName',
+  fileType: 'fileType',
+  purpose: 'purpose',
+  sourceModule: 'sourceModule',
+  ownerId: 'ownerId',
+  createdById: 'createdById',
+  status: 'status',
+  visibility: 'visibility',
+  confidentiality: 'confidentiality',
+  storageProvider: 'storageProvider',
+  storageKey: 'storageKey',
+  externalUrl: 'externalUrl',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  checksum: 'checksum',
+  currentVersionId: 'currentVersionId',
+  retentionPolicy: 'retentionPolicy',
+  deletedAt: 'deletedAt',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type FileAssetScalarFieldEnum =
+  (typeof FileAssetScalarFieldEnum)[keyof typeof FileAssetScalarFieldEnum];
+
+export const FileVersionScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  versionNumber: 'versionNumber',
+  storageKey: 'storageKey',
+  uploadedById: 'uploadedById',
+  uploadedAt: 'uploadedAt',
+  changeNote: 'changeNote',
+  sizeBytes: 'sizeBytes',
+  checksum: 'checksum',
+  isCurrent: 'isCurrent',
+} as const;
+
+export type FileVersionScalarFieldEnum =
+  (typeof FileVersionScalarFieldEnum)[keyof typeof FileVersionScalarFieldEnum];
+
+export const FileLinkScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  linkType: 'linkType',
+  purposeOverride: 'purposeOverride',
+  isPrimary: 'isPrimary',
+  linkedById: 'linkedById',
+  linkedAt: 'linkedAt',
+  unlinkedAt: 'unlinkedAt',
+} as const;
+
+export type FileLinkScalarFieldEnum =
+  (typeof FileLinkScalarFieldEnum)[keyof typeof FileLinkScalarFieldEnum];
+
+export const FileAuditEventScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  actorId: 'actorId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+} as const;
+
+export type FileAuditEventScalarFieldEnum =
+  (typeof FileAuditEventScalarFieldEnum)[keyof typeof FileAuditEventScalarFieldEnum];
+
 export const TaskBoardStageScalarFieldEnum = {
   id: 'id',
   ownerId: 'ownerId',
@@ -5074,6 +5453,128 @@ export type ListEnumTaskPriorityEnumFieldRefInput<$PrismaModel> = FieldRefInputT
 >;
 
 /**
+ * Reference to a field of type 'FileAssetTypeEnum'
+ */
+export type EnumFileAssetTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileAssetTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'FileAssetTypeEnum[]'
+ */
+export type ListEnumFileAssetTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileAssetTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'FilePurposeEnum'
+ */
+export type EnumFilePurposeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FilePurposeEnum'
+>;
+
+/**
+ * Reference to a field of type 'FilePurposeEnum[]'
+ */
+export type ListEnumFilePurposeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FilePurposeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'FileAssetStatusEnum'
+ */
+export type EnumFileAssetStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileAssetStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'FileAssetStatusEnum[]'
+ */
+export type ListEnumFileAssetStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileAssetStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'FileVisibilityEnum'
+ */
+export type EnumFileVisibilityEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileVisibilityEnum'
+>;
+
+/**
+ * Reference to a field of type 'FileVisibilityEnum[]'
+ */
+export type ListEnumFileVisibilityEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileVisibilityEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'FileConfidentialityEnum'
+ */
+export type EnumFileConfidentialityEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileConfidentialityEnum'
+>;
+
+/**
+ * Reference to a field of type 'FileConfidentialityEnum[]'
+ */
+export type ListEnumFileConfidentialityEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileConfidentialityEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'FileStorageProviderEnum'
+ */
+export type EnumFileStorageProviderEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileStorageProviderEnum'
+>;
+
+/**
+ * Reference to a field of type 'FileStorageProviderEnum[]'
+ */
+export type ListEnumFileStorageProviderEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileStorageProviderEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>;
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>;
+
+/**
+ * Reference to a field of type 'FileLinkTypeEnum'
+ */
+export type EnumFileLinkTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileLinkTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'FileLinkTypeEnum[]'
+ */
+export type ListEnumFileLinkTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileLinkTypeEnum[]'
+>;
+
+/**
  * Reference to a field of type 'TicketCategoryEnum'
  */
 export type EnumTicketCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -5467,6 +5968,10 @@ export type GlobalOmitConfig = {
   taskLink?: Prisma.TaskLinkOmit;
   taskChecklist?: Prisma.TaskChecklistOmit;
   taskChecklistItem?: Prisma.TaskChecklistItemOmit;
+  fileAsset?: Prisma.FileAssetOmit;
+  fileVersion?: Prisma.FileVersionOmit;
+  fileLink?: Prisma.FileLinkOmit;
+  fileAuditEvent?: Prisma.FileAuditEventOmit;
   taskBoardStage?: Prisma.TaskBoardStageOmit;
   recurringTaskTemplate?: Prisma.RecurringTaskTemplateOmit;
   supportTicket?: Prisma.SupportTicketOmit;

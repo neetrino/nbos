@@ -413,6 +413,101 @@ export const TaskPlanningStatusEnum = {
 export type TaskPlanningStatusEnum =
   (typeof TaskPlanningStatusEnum)[keyof typeof TaskPlanningStatusEnum];
 
+export const FileAssetTypeEnum = {
+  DOCUMENT: 'DOCUMENT',
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  ARCHIVE: 'ARCHIVE',
+  CODE: 'CODE',
+  SPREADSHEET: 'SPREADSHEET',
+  LINK: 'LINK',
+  OTHER: 'OTHER',
+} as const;
+
+export type FileAssetTypeEnum = (typeof FileAssetTypeEnum)[keyof typeof FileAssetTypeEnum];
+
+export const FilePurposeEnum = {
+  OFFER_DRAFT: 'OFFER_DRAFT',
+  OFFER_SENT: 'OFFER_SENT',
+  OFFER_APPROVED: 'OFFER_APPROVED',
+  MESSENGER_PROOF: 'MESSENGER_PROOF',
+  CONTRACT: 'CONTRACT',
+  HANDOFF_DOCUMENT: 'HANDOFF_DOCUMENT',
+  DESIGN_ASSET: 'DESIGN_ASSET',
+  DELIVERY_FILE: 'DELIVERY_FILE',
+  INVOICE_REQUEST_PROOF: 'INVOICE_REQUEST_PROOF',
+  PAYMENT_PROOF: 'PAYMENT_PROOF',
+  EXPENSE_PROOF: 'EXPENSE_PROOF',
+  PARTNER_AGREEMENT: 'PARTNER_AGREEMENT',
+  SUPPORT_EVIDENCE: 'SUPPORT_EVIDENCE',
+  TASK_ATTACHMENT: 'TASK_ATTACHMENT',
+  WORKSPACE_ARTIFACT: 'WORKSPACE_ARTIFACT',
+  SOP_DOCUMENT: 'SOP_DOCUMENT',
+  TRAINING_MATERIAL: 'TRAINING_MATERIAL',
+  MEETING_RECORDING: 'MEETING_RECORDING',
+  CALL_RECORDING: 'CALL_RECORDING',
+  OTHER: 'OTHER',
+} as const;
+
+export type FilePurposeEnum = (typeof FilePurposeEnum)[keyof typeof FilePurposeEnum];
+
+export const FileAssetStatusEnum = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  APPROVED: 'APPROVED',
+  ARCHIVED: 'ARCHIVED',
+  DELETED: 'DELETED',
+} as const;
+
+export type FileAssetStatusEnum = (typeof FileAssetStatusEnum)[keyof typeof FileAssetStatusEnum];
+
+export const FileVisibilityEnum = {
+  INTERNAL: 'INTERNAL',
+  PROJECT_TEAM: 'PROJECT_TEAM',
+  RESTRICTED: 'RESTRICTED',
+  CLIENT_VISIBLE: 'CLIENT_VISIBLE',
+  PARTNER_VISIBLE: 'PARTNER_VISIBLE',
+  PERSONAL: 'PERSONAL',
+} as const;
+
+export type FileVisibilityEnum = (typeof FileVisibilityEnum)[keyof typeof FileVisibilityEnum];
+
+export const FileConfidentialityEnum = {
+  PUBLIC_INTERNAL: 'PUBLIC_INTERNAL',
+  CONFIDENTIAL: 'CONFIDENTIAL',
+  FINANCE_SENSITIVE: 'FINANCE_SENSITIVE',
+  LEGAL_SENSITIVE: 'LEGAL_SENSITIVE',
+  SECRET_ADJACENT: 'SECRET_ADJACENT',
+} as const;
+
+export type FileConfidentialityEnum =
+  (typeof FileConfidentialityEnum)[keyof typeof FileConfidentialityEnum];
+
+export const FileStorageProviderEnum = {
+  R2: 'R2',
+  EXTERNAL_URL: 'EXTERNAL_URL',
+  GOOGLE_DRIVE: 'GOOGLE_DRIVE',
+} as const;
+
+export type FileStorageProviderEnum =
+  (typeof FileStorageProviderEnum)[keyof typeof FileStorageProviderEnum];
+
+export const FileLinkTypeEnum = {
+  ATTACHMENT: 'ATTACHMENT',
+  APPROVED_DOCUMENT: 'APPROVED_DOCUMENT',
+  PROOF: 'PROOF',
+  SOURCE_MATERIAL: 'SOURCE_MATERIAL',
+  FINAL_DELIVERY: 'FINAL_DELIVERY',
+  HANDOFF: 'HANDOFF',
+  SUPPORT_EVIDENCE: 'SUPPORT_EVIDENCE',
+  TASK_ATTACHMENT: 'TASK_ATTACHMENT',
+  WORKSPACE_ARTIFACT: 'WORKSPACE_ARTIFACT',
+  OTHER: 'OTHER',
+} as const;
+
+export type FileLinkTypeEnum = (typeof FileLinkTypeEnum)[keyof typeof FileLinkTypeEnum];
+
 export const TicketCategoryEnum = {
   INCIDENT: 'INCIDENT',
   SERVICE_REQUEST: 'SERVICE_REQUEST',

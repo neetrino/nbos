@@ -142,6 +142,26 @@ export type TaskChecklist = Prisma.TaskChecklistModel;
  */
 export type TaskChecklistItem = Prisma.TaskChecklistItemModel;
 /**
+ * Model FileAsset
+ *
+ */
+export type FileAsset = Prisma.FileAssetModel;
+/**
+ * Model FileVersion
+ *
+ */
+export type FileVersion = Prisma.FileVersionModel;
+/**
+ * Model FileLink
+ *
+ */
+export type FileLink = Prisma.FileLinkModel;
+/**
+ * Model FileAuditEvent
+ *
+ */
+export type FileAuditEvent = Prisma.FileAuditEventModel;
+/**
  * Model TaskBoardStage
  *
  */

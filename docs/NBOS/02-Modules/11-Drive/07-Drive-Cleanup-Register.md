@@ -9,10 +9,10 @@
 - API работает с `Drive/projects/{projectId}/`;
 - UI показывает список проектов слева;
 - можно list/upload/download/delete files;
-- нет database-backed `File Asset`;
-- нет entity links;
-- нет версий;
-- нет purpose;
+- database-backed `File Asset` foundation exists;
+- entity links foundation exists;
+- version metadata foundation exists;
+- purpose metadata foundation exists;
 - нет logical libraries;
 - нет cleanup/export/backup;
 - permissions только module-level через `DRIVE VIEW/ADD/DELETE`.
@@ -50,11 +50,11 @@
 
 | Gap                         | Status    | Needed                                                          |
 | --------------------------- | --------- | --------------------------------------------------------------- |
-| `FileAsset` model           | `MISSING` | Central file metadata, status, visibility, purpose              |
-| `FileVersion` model         | `MISSING` | Version history with storage key and checksum                   |
-| `FileLink` model            | `MISSING` | Links to Deal/Product/Invoice/Task/Work Space/etc.              |
+| `FileAsset` model           | `DONE`    | Central file metadata, status, visibility, purpose              |
+| `FileVersion` model         | `DONE`    | Version metadata with storage key and checksum                  |
+| `FileLink` model            | `DONE`    | Links to Deal/Product/Invoice/Task/Work Space/etc.              |
 | `FilePermission` model      | `MISSING` | Explicit grants and restrictions                                |
-| `FileAuditEvent` model      | `MISSING` | File-specific audit, or strict convention on existing AuditLog  |
+| `FileAuditEvent` model      | `PARTIAL` | File-specific creation/archive audit events exist               |
 | `ExportJob` model           | `MISSING` | ZIP/backup/export lifecycle                                     |
 | `CleanupCandidate` model    | `MISSING` | Cleanup review queue                                            |
 | File relations on core data | `MISSING` | Employee uploaded files, Project/Product/Deal/Task linked files |
@@ -66,10 +66,10 @@
 | Upload session       | `MISSING` | Create metadata before/after R2 upload safely         |
 | Entity-aware upload  | `MISSING` | `entity_type`, `entity_id`, `purpose`, `visibility`   |
 | File list by library | `MISSING` | Query files by logical library, not only project path |
-| File detail          | `MISSING` | Metadata, versions, links, audit, permissions         |
+| File detail          | `PARTIAL` | Metadata, versions and links exist; permissions later |
 | Version upload       | `MISSING` | Add version to existing File Asset                    |
-| Link/unlink API      | `MISSING` | Connect file to additional entities without copying   |
-| Safe delete API      | `MISSING` | Unlink/archive/soft-delete/hard-delete separation     |
+| Link/unlink API      | `DONE`    | Connect file to additional entities without copying   |
+| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later  |
 | Export API           | `MISSING` | Create export job, generate ZIP + manifest            |
 | Cleanup API          | `MISSING` | Find candidates, approve archive/delete               |
 | Permission resolver  | `MISSING` | Entity-aware access check                             |
