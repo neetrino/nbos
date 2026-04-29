@@ -27,6 +27,7 @@ import { PayrollRunsListTable } from '@/features/finance/components/payroll/Payr
 import { PayrollRunsListToolbar } from '@/features/finance/components/payroll/PayrollRunsListToolbar';
 import { PayrollRunsScopeStatsCard } from '@/features/finance/components/payroll/PayrollRunsScopeStatsCard';
 import { usePayrollRunsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-csv-export';
+import { usePayrollRunsScopeStatsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-scope-stats-csv-export';
 import { sumPayrollRunsRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 
 function defaultPayrollMonth(): string {
@@ -153,6 +154,7 @@ export function PayrollRunsListPageContent() {
   );
 
   const { exportCsvSubmitting, handleExportCsv } = usePayrollRunsCsvExport(csvExportScope);
+  const { handleExportScopeStatsCsv } = usePayrollRunsScopeStatsCsvExport(stats, csvExportScope);
 
   const handleStatusChange = useCallback(
     (value: string) => {
@@ -203,7 +205,7 @@ export function PayrollRunsListPageContent() {
     <div className="flex h-full flex-col gap-5">
       <PageHeader
         title="Payroll"
-        description="Monthly payroll runs (NBOS Draft → Closed workflow). Status and month bounds use the same filters as list, stats, and CSV export."
+        description="Monthly payroll runs (NBOS Draft → Closed workflow). Status and month bounds use the same filters as list, stats, and CSV exports (per-run list and scope statistics snapshot)."
       >
         <PayrollRunsListToolbar
           statusFilter={statusFilter}
@@ -214,6 +216,8 @@ export function PayrollRunsListPageContent() {
           onMonthToChange={handleMonthToChange}
           onRefresh={load}
           loading={loading}
+          statsExportDisabled={loading || !stats}
+          onExportScopeStatsCsv={handleExportScopeStatsCsv}
           exportCsvSubmitting={exportCsvSubmitting}
           onExportCsv={handleExportCsv}
           onNewRun={openDialog}

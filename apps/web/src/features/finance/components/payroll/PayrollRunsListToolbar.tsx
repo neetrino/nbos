@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, Loader2, Plus, RefreshCcw } from 'lucide-react';
+import { Download, Loader2, Plus, RefreshCcw, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import type { PayrollRunStatus } from '@/lib/api/payroll-runs';
@@ -19,6 +19,8 @@ export function PayrollRunsListToolbar(props: {
   onMonthToChange: (value: string) => void;
   onRefresh: () => void;
   loading: boolean;
+  statsExportDisabled: boolean;
+  onExportScopeStatsCsv: () => void;
   exportCsvSubmitting: boolean;
   onExportCsv: () => void;
   onNewRun: () => void;
@@ -32,6 +34,8 @@ export function PayrollRunsListToolbar(props: {
     onMonthToChange,
     onRefresh,
     loading,
+    statsExportDisabled,
+    onExportScopeStatsCsv,
     exportCsvSubmitting,
     onExportCsv,
     onNewRun,
@@ -76,6 +80,19 @@ export function PayrollRunsListToolbar(props: {
       </div>
       <Button variant="outline" size="icon" onClick={() => void onRefresh()} aria-label="Refresh">
         <RefreshCcw size={16} />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={loading || statsExportDisabled}
+        onClick={() => {
+          onExportScopeStatsCsv();
+        }}
+        aria-label="Export payroll scope statistics as CSV"
+        title="UTF-8 CSV of scope totals and by-status aggregates for current filters (from GET /payroll-runs/stats; not paged)"
+      >
+        <TableProperties size={16} aria-hidden />
       </Button>
       <Button
         type="button"
