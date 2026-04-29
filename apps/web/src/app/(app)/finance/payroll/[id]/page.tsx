@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import { payrollRunDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
 import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
@@ -168,11 +169,16 @@ export default function PayrollRunDetailPage() {
         </p>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <Summary label="Total base" value={formatAmount(parseAmount(run.totalBaseSalary))} />
         <Summary label="Bonuses" value={formatAmount(parseAmount(run.totalBonuses))} />
-        <Summary label="Payable" value={formatAmount(parseAmount(run.totalPayable))} accent />
+        <Summary label="Payable" value={formatAmount(parseAmount(run.totalPayable))} />
         <Summary label="Paid" value={formatAmount(parseAmount(run.totalPaid))} />
+        <Summary
+          label="Remaining"
+          value={formatAmount(payrollRunRemainingMajorUnits(run.totalPayable, run.totalPaid))}
+          accent
+        />
       </div>
 
       {run.auditTrail.length > 0 ? (
