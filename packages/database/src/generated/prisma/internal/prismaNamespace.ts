@@ -404,6 +404,7 @@ export const ModelName = {
   FileVersion: 'FileVersion',
   FileLink: 'FileLink',
   FileAuditEvent: 'FileAuditEvent',
+  FileUploadSession: 'FileUploadSession',
   TaskBoardStage: 'TaskBoardStage',
   RecurringTaskTemplate: 'RecurringTaskTemplate',
   SupportTicket: 'SupportTicket',
@@ -469,6 +470,7 @@ export type TypeMap<
       | 'fileVersion'
       | 'fileLink'
       | 'fileAuditEvent'
+      | 'fileUploadSession'
       | 'taskBoardStage'
       | 'recurringTaskTemplate'
       | 'supportTicket'
@@ -2650,6 +2652,82 @@ export type TypeMap<
         };
       };
     };
+    FileUploadSession: {
+      payload: Prisma.$FileUploadSessionPayload<ExtArgs>;
+      fields: Prisma.FileUploadSessionFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.FileUploadSessionFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.FileUploadSessionFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>;
+        };
+        findFirst: {
+          args: Prisma.FileUploadSessionFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.FileUploadSessionFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>;
+        };
+        findMany: {
+          args: Prisma.FileUploadSessionFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>[];
+        };
+        create: {
+          args: Prisma.FileUploadSessionCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>;
+        };
+        createMany: {
+          args: Prisma.FileUploadSessionCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.FileUploadSessionCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>[];
+        };
+        delete: {
+          args: Prisma.FileUploadSessionDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>;
+        };
+        update: {
+          args: Prisma.FileUploadSessionUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>;
+        };
+        deleteMany: {
+          args: Prisma.FileUploadSessionDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.FileUploadSessionUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.FileUploadSessionUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>[];
+        };
+        upsert: {
+          args: Prisma.FileUploadSessionUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>;
+        };
+        aggregate: {
+          args: Prisma.FileUploadSessionAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileUploadSession>;
+        };
+        groupBy: {
+          args: Prisma.FileUploadSessionGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FileUploadSessionGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.FileUploadSessionCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.FileUploadSessionCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     TaskBoardStage: {
       payload: Prisma.$TaskBoardStagePayload<ExtArgs>;
       fields: Prisma.TaskBoardStageFieldRefs;
@@ -4458,6 +4536,31 @@ export const FileAuditEventScalarFieldEnum = {
 export type FileAuditEventScalarFieldEnum =
   (typeof FileAuditEventScalarFieldEnum)[keyof typeof FileAuditEventScalarFieldEnum];
 
+export const FileUploadSessionScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  storageKey: 'storageKey',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  displayName: 'displayName',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  purpose: 'purpose',
+  sourceModule: 'sourceModule',
+  visibility: 'visibility',
+  confidentiality: 'confidentiality',
+  linkType: 'linkType',
+  createdById: 'createdById',
+  fileAssetId: 'fileAssetId',
+  expiresAt: 'expiresAt',
+  failedReason: 'failedReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type FileUploadSessionScalarFieldEnum =
+  (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum];
+
 export const TaskBoardStageScalarFieldEnum = {
   id: 'id',
   ownerId: 'ownerId',
@@ -5575,6 +5678,22 @@ export type ListEnumFileLinkTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputT
 >;
 
 /**
+ * Reference to a field of type 'FileUploadSessionStatusEnum'
+ */
+export type EnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileUploadSessionStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'FileUploadSessionStatusEnum[]'
+ */
+export type ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FileUploadSessionStatusEnum[]'
+>;
+
+/**
  * Reference to a field of type 'TicketCategoryEnum'
  */
 export type EnumTicketCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -5972,6 +6091,7 @@ export type GlobalOmitConfig = {
   fileVersion?: Prisma.FileVersionOmit;
   fileLink?: Prisma.FileLinkOmit;
   fileAuditEvent?: Prisma.FileAuditEventOmit;
+  fileUploadSession?: Prisma.FileUploadSessionOmit;
   taskBoardStage?: Prisma.TaskBoardStageOmit;
   recurringTaskTemplate?: Prisma.RecurringTaskTemplateOmit;
   supportTicket?: Prisma.SupportTicketOmit;

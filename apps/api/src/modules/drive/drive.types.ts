@@ -48,3 +48,36 @@ export interface FileAssetQueryParams {
   sourceModule?: string;
   search?: string;
 }
+
+export interface CreateUploadSessionDto {
+  fileName: string;
+  contentType: string;
+  entityType: string;
+  entityId: string;
+  displayName?: string;
+  purpose?: string;
+  sourceModule?: string;
+  visibility?: string;
+  confidentiality?: string;
+  linkType?: string;
+}
+
+export interface CompleteUploadSessionDto {
+  sizeBytes?: number;
+  checksum?: string;
+}
+
+/** Snapshot of `FileUploadSession` fields needed to materialize a File Asset after R2 upload. */
+export interface FileUploadSessionCompleteRow {
+  displayName: string;
+  originalName: string | null;
+  mimeType: string | null;
+  storageKey: string;
+  entityType: string;
+  entityId: string;
+  purpose: string | null;
+  sourceModule: string | null;
+  visibility: string;
+  confidentiality: string;
+  linkType: string;
+}

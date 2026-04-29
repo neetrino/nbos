@@ -14,6 +14,7 @@ vi.mock('@aws-sdk/client-s3', () => {
     DeleteObjectCommand: vi.fn(),
     PutObjectCommand: vi.fn(),
     GetObjectCommand: vi.fn(),
+    HeadObjectCommand: vi.fn(),
   };
 });
 
@@ -24,24 +25,21 @@ vi.mock('@aws-sdk/s3-request-presigner', () => ({
 import { DriveService } from './drive.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
-function createMockConfig(withR2 = true) {
-  const configMap: Record<string, string> = withR2
-    ? {
-        R2_ACCOUNT_ID: 'test-account',
-        R2_BUCKET_NAME: 'test-bucket',
-        R2_ACCESS_KEY_ID: 'test-key-id',
-        R2_SECRET_ACCESS_KEY: 'test-secret',
-        R2_PUBLIC_URL: 'https://cdn.example.com',
-      }
-    : {};
-
+function makeR2Mock() {
   return {
-    get: vi.fn((key: string) => configMap[key] ?? undefined),
-    getOrThrow: vi.fn((key: string) => {
-      const val = configMap[key];
-      if (!val) throw new Error(`Missing ${key}`);
-      return val;
-    }),
+    ensureS3: () => ({ send: mockSend }) as never,
+    bucket: 'test-bucket',
+    publicUrl: 'https://cdn.example.com',
+  };
+}
+
+function makeUnavailableR2() {
+  return {
+    ensureS3: () => {
+      throw new NotFoundException('Drive (R2) is not configured');
+    },
+    bucket: '',
+    publicUrl: '',
   };
 }
 
@@ -52,9 +50,8 @@ describe('DriveService', () => {
 
     beforeEach(() => {
       vi.clearAllMocks();
-      const config = createMockConfig(true);
       prisma = createMockPrisma();
-      service = new DriveService(config as never, prisma as never);
+      service = new DriveService(prisma as never, makeR2Mock() as never);
     });
 
     it('should list files from R2 (under Drive/ prefix)', async () => {
@@ -183,14 +180,8 @@ describe('DriveService', () => {
   });
 
   describe('without R2 configured', () => {
-    it('should not crash at construction time', () => {
-      const config = createMockConfig(false);
-      expect(() => new DriveService(config as never, createMockPrisma() as never)).not.toThrow();
-    });
-
     it('should throw NotFoundException when listing files', async () => {
-      const config = createMockConfig(false);
-      const service = new DriveService(config as never, createMockPrisma() as never);
+      const service = new DriveService(createMockPrisma() as never, makeUnavailableR2() as never);
       await expect(service.listFiles('p1')).rejects.toThrow(NotFoundException);
     });
   });

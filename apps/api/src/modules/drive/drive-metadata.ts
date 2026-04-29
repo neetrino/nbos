@@ -8,7 +8,9 @@ import {
 } from '@nbos/database';
 import type { CreateFileAssetDto, CreateFileLinkDto } from './drive.types';
 
-export function buildInitialVersion(data: CreateFileAssetDto) {
+export function buildInitialVersion(
+  data: Pick<CreateFileAssetDto, 'storageKey' | 'createdById' | 'sizeBytes' | 'checksum'>,
+) {
   return {
     versionNumber: 1,
     storageKey: data.storageKey,

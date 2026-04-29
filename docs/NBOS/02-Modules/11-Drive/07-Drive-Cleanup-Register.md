@@ -61,18 +61,18 @@
 
 ### 3.2. Backend API
 
-| Gap                  | Status    | Needed                                                |
-| -------------------- | --------- | ----------------------------------------------------- |
-| Upload session       | `MISSING` | Create metadata before/after R2 upload safely         |
-| Entity-aware upload  | `MISSING` | `entity_type`, `entity_id`, `purpose`, `visibility`   |
-| File list by library | `MISSING` | Query files by logical library, not only project path |
-| File detail          | `PARTIAL` | Metadata, versions and links exist; permissions later |
-| Version upload       | `MISSING` | Add version to existing File Asset                    |
-| Link/unlink API      | `DONE`    | Connect file to additional entities without copying   |
-| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later  |
-| Export API           | `MISSING` | Create export job, generate ZIP + manifest            |
-| Cleanup API          | `MISSING` | Find candidates, approve archive/delete               |
-| Permission resolver  | `MISSING` | Entity-aware access check                             |
+| Gap                  | Status    | Needed                                                                    |
+| -------------------- | --------- | ------------------------------------------------------------------------- |
+| Upload session       | `DONE`    | `POST /drive/upload-sessions`, presign, complete, fail, `HeadObject` gate |
+| Entity-aware upload  | `PARTIAL` | Session carries `entityType`/`entityId`; card UX still missing            |
+| File list by library | `PARTIAL` | `GET /drive/library?contextType=&contextId=` maps to linked File Assets   |
+| File detail          | `PARTIAL` | Metadata, versions and links exist; permissions later                     |
+| Version upload       | `MISSING` | Add version to existing File Asset                                        |
+| Link/unlink API      | `DONE`    | Connect file to additional entities without copying                       |
+| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                      |
+| Export API           | `MISSING` | Create export job, generate ZIP + manifest                                |
+| Cleanup API          | `MISSING` | Find candidates, approve archive/delete                                   |
+| Permission resolver  | `MISSING` | Entity-aware access check                                                 |
 
 ### 3.3. Frontend UI
 

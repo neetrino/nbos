@@ -1670,6 +1670,39 @@ export type EnumFileLinkTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumFileLinkTypeEnumFilter<$PrismaModel>;
 };
 
+export type EnumFileUploadSessionStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.FileUploadSessionStatusEnum
+    | Prisma.EnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.FileUploadSessionStatusEnum[]
+    | Prisma.ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.FileUploadSessionStatusEnum[]
+    | Prisma.ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>
+    | $Enums.FileUploadSessionStatusEnum;
+};
+
+export type EnumFileUploadSessionStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.FileUploadSessionStatusEnum
+    | Prisma.EnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.FileUploadSessionStatusEnum[]
+    | Prisma.ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.FileUploadSessionStatusEnum[]
+    | Prisma.ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumFileUploadSessionStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.FileUploadSessionStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
+};
+
 export type IntNullableFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null;
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null;
@@ -3765,6 +3798,39 @@ export type NestedEnumFileLinkTypeEnumWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumFileLinkTypeEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumFileLinkTypeEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.FileUploadSessionStatusEnum
+    | Prisma.EnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.FileUploadSessionStatusEnum[]
+    | Prisma.ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.FileUploadSessionStatusEnum[]
+    | Prisma.ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>
+    | $Enums.FileUploadSessionStatusEnum;
+};
+
+export type NestedEnumFileUploadSessionStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.FileUploadSessionStatusEnum
+    | Prisma.EnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.FileUploadSessionStatusEnum[]
+    | Prisma.ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.FileUploadSessionStatusEnum[]
+    | Prisma.ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumFileUploadSessionStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.FileUploadSessionStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {

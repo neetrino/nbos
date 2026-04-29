@@ -50,6 +50,8 @@ Done when:
 - R2 key is storage detail, not business truth;
 - old project-folder endpoints remain compatible.
 
+**Implemented (2026-04-29):** `FileUploadSession` + `POST /drive/upload-sessions` (DB row then presign), `PUT` to R2, `POST .../complete` (`HeadObject` + transactional `FileAsset` + link), `POST .../fail`, `GET /drive/library?contextType=&contextId=`; `DriveR2Client` extracted for R2 access.
+
 ### Slice 2. Documents Data Foundation
 
 Goal: create the standalone Documents runtime boundary.

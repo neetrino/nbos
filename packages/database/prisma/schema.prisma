@@ -1160,6 +1160,40 @@ model FileAuditEvent {
   @@map("file_audit_events")
 }
 
+enum FileUploadSessionStatusEnum {
+  PENDING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+model FileUploadSession {
+  id              String                      @id @default(uuid())
+  status          FileUploadSessionStatusEnum @default(PENDING)
+  storageKey      String                      @map("storage_key")
+  entityType      String                      @map("entity_type")
+  entityId        String                      @map("entity_id")
+  displayName     String                      @map("display_name")
+  originalName    String?                     @map("original_name")
+  mimeType        String?                     @map("mime_type")
+  purpose         FilePurposeEnum?
+  sourceModule    String?                     @map("source_module")
+  visibility      FileVisibilityEnum          @default(INTERNAL)
+  confidentiality FileConfidentialityEnum     @default(CONFIDENTIAL)
+  linkType        FileLinkTypeEnum            @default(ATTACHMENT) @map("link_type")
+  createdById     String?                     @map("created_by_id")
+  fileAssetId     String?                     @map("file_asset_id")
+  expiresAt       DateTime                    @map("expires_at")
+  failedReason    String?                     @map("failed_reason")
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
+
+  @@index([status, expiresAt])
+  @@index([createdById])
+  @@index([entityType, entityId])
+  @@map("file_upload_sessions")
+}
+
 model TaskBoardStage {
   id        String   @id @default(uuid())
   ownerId   String?  @map("owner_id")

@@ -1,7 +1,5 @@
 import { Injectable, NotFoundException, Logger, Inject, BadRequestException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
-  S3Client,
   ListObjectsV2Command,
   DeleteObjectCommand,
   PutObjectCommand,
@@ -40,59 +38,30 @@ import {
   resolveProjectStorageKey,
   R2_DRIVE_PREFIX,
 } from './drive-storage';
+import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
+import { DriveR2Client } from './drive-r2.client';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
-const FILE_ASSET_INCLUDE = {
-  versions: { orderBy: { versionNumber: 'desc' as const } },
-  links: { where: { unlinkedAt: null }, orderBy: { linkedAt: 'desc' as const } },
-} satisfies Prisma.FileAssetInclude;
 
 @Injectable()
 export class DriveService {
-  private readonly s3: S3Client | null;
-  private readonly bucket: string;
-  private readonly publicUrl: string;
   private readonly logger = new Logger(DriveService.name);
 
   constructor(
-    private readonly config: ConfigService,
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-  ) {
-    const accountId = this.config.get<string>('R2_ACCOUNT_ID');
-    this.bucket = this.config.get<string>('R2_BUCKET_NAME') ?? '';
-    this.publicUrl = this.config.get<string>('R2_PUBLIC_URL') ?? '';
-
-    if (!accountId) {
-      this.logger.warn('R2 not configured — Drive module will return empty results');
-      this.s3 = null;
-      return;
-    }
-
-    this.s3 = new S3Client({
-      region: 'auto',
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: this.config.get<string>('R2_ACCESS_KEY_ID') ?? '',
-        secretAccessKey: this.config.get<string>('R2_SECRET_ACCESS_KEY') ?? '',
-      },
-    });
-  }
-
-  private ensureS3(): S3Client {
-    if (!this.s3) throw new NotFoundException('Drive (R2) is not configured');
-    return this.s3;
-  }
+    private readonly r2: DriveR2Client,
+  ) {}
 
   async listFiles(projectId: string, prefix?: string): Promise<FileEntry[]> {
     const fullPrefix = buildProjectPrefix(projectId, prefix);
 
     const command = new ListObjectsV2Command({
-      Bucket: this.bucket,
+      Bucket: this.r2.bucket,
       Prefix: fullPrefix,
       Delimiter: '/',
     });
 
-    const response = await this.ensureS3().send(command);
+    const response = await this.r2.ensureS3().send(command);
     const files: FileEntry[] = [];
 
     for (const folder of response.CommonPrefixes ?? []) {
@@ -116,19 +85,19 @@ export class DriveService {
     const key = `${R2_DRIVE_PREFIX}projects/${projectId}/${fileName}`;
 
     const command = new PutObjectCommand({
-      Bucket: this.bucket,
+      Bucket: this.r2.bucket,
       Key: key,
       ContentType: contentType,
     });
 
-    const uploadUrl = await getSignedUrl(this.ensureS3(), command, {
+    const uploadUrl = await getSignedUrl(this.r2.ensureS3(), command, {
       expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,
     });
 
     return {
       uploadUrl,
       key,
-      publicUrl: this.publicUrl ? `${this.publicUrl}/${key}` : '',
+      publicUrl: this.r2.publicUrl ? `${this.r2.publicUrl}/${key}` : '',
     };
   }
 
@@ -136,11 +105,11 @@ export class DriveService {
     const key = resolveProjectStorageKey(projectId, filePath);
 
     const command = new GetObjectCommand({
-      Bucket: this.bucket,
+      Bucket: this.r2.bucket,
       Key: key,
     });
 
-    const downloadUrl = await getSignedUrl(this.ensureS3(), command, {
+    const downloadUrl = await getSignedUrl(this.r2.ensureS3(), command, {
       expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,
     });
 
@@ -151,11 +120,11 @@ export class DriveService {
     const key = resolveProjectStorageKey(projectId, filePath);
 
     const command = new DeleteObjectCommand({
-      Bucket: this.bucket,
+      Bucket: this.r2.bucket,
       Key: key,
     });
 
-    await this.ensureS3().send(command);
+    await this.r2.ensureS3().send(command);
     this.logger.log(`Deleted file: ${key}`);
   }
 
@@ -248,11 +217,11 @@ export class DriveService {
     const prefix = `${R2_DRIVE_PREFIX}projects/${projectId}/`;
 
     const command = new ListObjectsV2Command({
-      Bucket: this.bucket,
+      Bucket: this.r2.bucket,
       Prefix: prefix,
     });
 
-    const response = await this.ensureS3().send(command);
+    const response = await this.r2.ensureS3().send(command);
     const root: FolderNode = { name: projectId, path: prefix, children: [], files: [] };
 
     for (const obj of response.Contents ?? []) {

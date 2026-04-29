@@ -508,6 +508,16 @@ export const FileLinkTypeEnum = {
 
 export type FileLinkTypeEnum = (typeof FileLinkTypeEnum)[keyof typeof FileLinkTypeEnum];
 
+export const FileUploadSessionStatusEnum = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED',
+} as const;
+
+export type FileUploadSessionStatusEnum =
+  (typeof FileUploadSessionStatusEnum)[keyof typeof FileUploadSessionStatusEnum];
+
 export const TicketCategoryEnum = {
   INCIDENT: 'INCIDENT',
   SERVICE_REQUEST: 'SERVICE_REQUEST',

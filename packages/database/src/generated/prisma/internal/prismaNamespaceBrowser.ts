@@ -77,6 +77,7 @@ export const ModelName = {
   FileVersion: 'FileVersion',
   FileLink: 'FileLink',
   FileAuditEvent: 'FileAuditEvent',
+  FileUploadSession: 'FileUploadSession',
   TaskBoardStage: 'TaskBoardStage',
   RecurringTaskTemplate: 'RecurringTaskTemplate',
   SupportTicket: 'SupportTicket',
@@ -681,6 +682,31 @@ export const FileAuditEventScalarFieldEnum = {
 
 export type FileAuditEventScalarFieldEnum =
   (typeof FileAuditEventScalarFieldEnum)[keyof typeof FileAuditEventScalarFieldEnum];
+
+export const FileUploadSessionScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  storageKey: 'storageKey',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  displayName: 'displayName',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  purpose: 'purpose',
+  sourceModule: 'sourceModule',
+  visibility: 'visibility',
+  confidentiality: 'confidentiality',
+  linkType: 'linkType',
+  createdById: 'createdById',
+  fileAssetId: 'fileAssetId',
+  expiresAt: 'expiresAt',
+  failedReason: 'failedReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type FileUploadSessionScalarFieldEnum =
+  (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum];
 
 export const TaskBoardStageScalarFieldEnum = {
   id: 'id',

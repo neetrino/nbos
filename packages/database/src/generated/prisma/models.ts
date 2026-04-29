@@ -36,6 +36,7 @@ export type * from './models/FileAsset';
 export type * from './models/FileVersion';
 export type * from './models/FileLink';
 export type * from './models/FileAuditEvent';
+export type * from './models/FileUploadSession';
 export type * from './models/TaskBoardStage';
 export type * from './models/RecurringTaskTemplate';
 export type * from './models/SupportTicket';

@@ -10,15 +10,24 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { RequirePermission } from '../../common/decorators';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { DriveService } from './drive.service';
-import type { CreateFileAssetDto, CreateFileLinkDto } from './drive.types';
+import { DriveUploadSessionService } from './drive-upload-session.service';
+import type {
+  CompleteUploadSessionDto,
+  CreateFileAssetDto,
+  CreateFileLinkDto,
+  CreateUploadSessionDto,
+} from './drive.types';
 
 @ApiTags('Drive')
 @ApiBearerAuth()
 @Controller('drive')
 export class DriveController {
-  constructor(private readonly driveService: DriveService) {}
+  constructor(
+    private readonly driveService: DriveService,
+    private readonly driveUploadSessions: DriveUploadSessionService,
+  ) {}
 
   @Get('files')
   @RequirePermission('DRIVE', 'VIEW')
@@ -52,6 +61,54 @@ export class DriveController {
   @ApiOperation({ summary: 'Get DB-backed Drive file asset detail' })
   async getFileAsset(@Param('id') id: string) {
     return this.driveService.getFileAsset(id);
+  }
+
+  @Get('library')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List File Assets for a logical library context' })
+  @ApiQuery({
+    name: 'contextType',
+    required: true,
+    description: 'PROJECT | PRODUCT | TASK | SUPPORT | COMPANY',
+  })
+  @ApiQuery({ name: 'contextId', required: true })
+  async listDriveLibrary(
+    @Query('contextType') contextType: string,
+    @Query('contextId') contextId: string,
+  ) {
+    return this.driveUploadSessions.listDriveLibrary(contextType, contextId);
+  }
+
+  @Post('upload-sessions')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Create upload session and presigned PUT URL for R2' })
+  async createUploadSession(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: CreateUploadSessionDto,
+  ) {
+    return this.driveUploadSessions.createUploadSession(body, user.id);
+  }
+
+  @Post('upload-sessions/:sessionId/complete')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Complete upload session after R2 PUT — creates FileAsset + link' })
+  async completeUploadSession(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('sessionId') sessionId: string,
+    @Body() body: CompleteUploadSessionDto,
+  ) {
+    return this.driveUploadSessions.completeUploadSession(sessionId, user.id, body);
+  }
+
+  @Post('upload-sessions/:sessionId/fail')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Mark a pending upload session as failed (client abort)' })
+  async failUploadSession(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('sessionId') sessionId: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.driveUploadSessions.failUploadSession(sessionId, user.id, body.reason);
   }
 
   @Post('files')

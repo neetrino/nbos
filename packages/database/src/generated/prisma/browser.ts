@@ -162,6 +162,11 @@ export type FileLink = Prisma.FileLinkModel;
  */
 export type FileAuditEvent = Prisma.FileAuditEventModel;
 /**
+ * Model FileUploadSession
+ *
+ */
+export type FileUploadSession = Prisma.FileUploadSessionModel;
+/**
  * Model TaskBoardStage
  *
  */

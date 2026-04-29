@@ -76,6 +76,52 @@ export const driveApi = {
     return resp.data;
   },
 
+  async listDriveLibrary(contextType: string, contextId: string): Promise<FileAsset[]> {
+    const resp = await api.get<FileAsset[]>('/api/drive/library', {
+      params: { contextType, contextId },
+    });
+    return resp.data;
+  },
+
+  async createUploadSession(data: {
+    fileName: string;
+    contentType: string;
+    entityType: string;
+    entityId: string;
+    displayName?: string;
+    purpose?: string;
+    sourceModule?: string;
+    visibility?: string;
+    confidentiality?: string;
+    linkType?: string;
+  }): Promise<{
+    sessionId: string;
+    uploadUrl: string;
+    storageKey: string;
+    expiresAt: string;
+    publicUrl: string;
+  }> {
+    const resp = await api.post('/api/drive/upload-sessions', data);
+    return resp.data;
+  },
+
+  async completeUploadSession(
+    sessionId: string,
+    data?: { sizeBytes?: number; checksum?: string },
+  ): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/upload-sessions/' + encodeURIComponent(sessionId) + '/complete',
+      data ?? {},
+    );
+    return resp.data;
+  },
+
+  async failUploadSession(sessionId: string, reason?: string): Promise<void> {
+    await api.post('/api/drive/upload-sessions/' + encodeURIComponent(sessionId) + '/fail', {
+      reason,
+    });
+  },
+
   async getFileAsset(id: string): Promise<FileAsset> {
     const resp = await api.get<FileAsset>('/api/drive/files/' + encodeURIComponent(id));
     return resp.data;
