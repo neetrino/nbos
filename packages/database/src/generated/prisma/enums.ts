@@ -734,3 +734,55 @@ export const MessengerChannelType = {
 } as const;
 
 export type MessengerChannelType = (typeof MessengerChannelType)[keyof typeof MessengerChannelType];
+
+export const MailProviderType = {
+  GMAIL: 'GMAIL',
+  CORPORATE_IMAP_SMTP: 'CORPORATE_IMAP_SMTP',
+} as const;
+
+export type MailProviderType = (typeof MailProviderType)[keyof typeof MailProviderType];
+
+export const MailAccountStatus = {
+  ACTIVE: 'ACTIVE',
+  NEEDS_RECONNECT: 'NEEDS_RECONNECT',
+  PAUSED: 'PAUSED',
+  DISABLED: 'DISABLED',
+  SYNCING: 'SYNCING',
+  DEGRADED: 'DEGRADED',
+} as const;
+
+export type MailAccountStatus = (typeof MailAccountStatus)[keyof typeof MailAccountStatus];
+
+export const EmailThreadStatus = {
+  OPEN: 'OPEN',
+  ARCHIVED: 'ARCHIVED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export type EmailThreadStatus = (typeof EmailThreadStatus)[keyof typeof EmailThreadStatus];
+
+export const EmailMessageDirection = {
+  INBOUND: 'INBOUND',
+  OUTBOUND: 'OUTBOUND',
+} as const;
+
+export type EmailMessageDirection =
+  (typeof EmailMessageDirection)[keyof typeof EmailMessageDirection];
+
+export const EmailMessageReadState = {
+  UNREAD: 'UNREAD',
+  READ: 'READ',
+} as const;
+
+export type EmailMessageReadState =
+  (typeof EmailMessageReadState)[keyof typeof EmailMessageReadState];
+
+export const EmailRecipientKind = {
+  FROM: 'FROM',
+  TO: 'TO',
+  CC: 'CC',
+  BCC: 'BCC',
+  REPLY_TO: 'REPLY_TO',
+} as const;
+
+export type EmailRecipientKind = (typeof EmailRecipientKind)[keyof typeof EmailRecipientKind];

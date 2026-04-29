@@ -27,18 +27,18 @@ Mail module является новым каноном. На момент соз
 
 ## Runtime cleanup
 
-| Area                 | Status    | Action                                                                                               |
-| -------------------- | --------- | ---------------------------------------------------------------------------------------------------- |
-| Mail backend module  | `MISSING` | Создать NestJS module после gap-analysis и утверждения implementation plan                           |
-| Mail database schema | `MISSING` | Добавить MailAccount, EmailThread, EmailMessage, EmailRecipient, EmailAttachment, sync/delivery logs |
-| Gmail adapter        | `MISSING` | Спроектировать OAuth scopes и adapter contract                                                       |
-| IMAP/SMTP adapter    | `MISSING` | Спроектировать connection validation, sync cursor, send flow                                         |
-| Queue jobs           | `MISSING` | Добавить jobs для sync, send, attachment download                                                    |
-| Mail UI              | `MISSING` | Создать inbox, thread detail, compose/reply, settings/health screens                                 |
-| Permissions          | `MISSING` | Добавить MailAccount roles и send/read/link checks                                                   |
-| Attachment pipeline  | `MISSING` | Интегрировать Mail attachments с Drive File Asset                                                    |
-| Credentials boundary | `MISSING` | Интегрировать token/password storage с secure storage / Credentials                                  |
-| Notifications events | `MISSING` | Добавить mail health and inbound message events                                                      |
+| Area                 | Status    | Action                                                                                                                                                                                           |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Mail backend module  | `PARTIAL` | **2026-04-29:** Nest `MailModule` — `GET /api/mail/accounts`, `GET /api/mail/threads`, `GET /api/mail/threads/:id` (RBAC `MAIL` VIEW); без sync/send/queue/OAuth                                 |
+| Mail database schema | `PARTIAL` | **2026-04-29:** Prisma `MailAccount`, `EmailThread`, `EmailMessage`, `EmailRecipient` + migration; seed demo mailbox/thread; нет `EmailAttachment`, sync/delivery logs, `MailProviderConnection` |
+| Gmail adapter        | `MISSING` | Спроектировать OAuth scopes и adapter contract                                                                                                                                                   |
+| IMAP/SMTP adapter    | `MISSING` | Спроектировать connection validation, sync cursor, send flow                                                                                                                                     |
+| Queue jobs           | `MISSING` | Добавить jobs для sync, send, attachment download                                                                                                                                                |
+| Mail UI              | `PARTIAL` | **2026-04-29:** `/mail` inbox + thread detail (read-only), sidebar `Mail`; нет compose/reply/settings/health                                                                                     |
+| Permissions          | `PARTIAL` | Модуль `MAIL` в seed RBAC (VIEW/EDIT/ADD/DELETE по матрице); list scoped ALL vs OWN mailbox owner; нет per-account roles из канона                                                               |
+| Attachment pipeline  | `MISSING` | Интегрировать Mail attachments с Drive File Asset                                                                                                                                                |
+| Credentials boundary | `MISSING` | Интегрировать token/password storage с secure storage / Credentials                                                                                                                              |
+| Notifications events | `MISSING` | Добавить mail health and inbound message events                                                                                                                                                  |
 
 ## Business decisions needed before implementation
 

@@ -19,6 +19,7 @@ import {
   Calendar,
   HardDrive,
   FileText,
+  Mail,
   KeyRound,
   Settings,
   ChevronLeft,
@@ -268,6 +269,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/documents',
     icon: <FileText size={20} />,
     permission: { module: 'DOCUMENTS', action: 'VIEW' },
+  },
+  {
+    label: 'Mail',
+    href: '/mail',
+    icon: <Mail size={20} />,
+    permission: { module: 'MAIL', action: 'VIEW' },
   },
   {
     label: 'Credentials',

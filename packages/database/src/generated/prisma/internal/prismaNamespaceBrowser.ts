@@ -105,6 +105,10 @@ export const ModelName = {
   MessengerDirectThread: 'MessengerDirectThread',
   MessengerDirectMessage: 'MessengerDirectMessage',
   MessengerDirectThreadReadState: 'MessengerDirectThreadReadState',
+  MailAccount: 'MailAccount',
+  EmailThread: 'EmailThread',
+  EmailMessage: 'EmailMessage',
+  EmailRecipient: 'EmailRecipient',
   AuditLog: 'AuditLog',
   SystemListOption: 'SystemListOption',
 } as const;
@@ -1148,6 +1152,72 @@ export const MessengerDirectThreadReadStateScalarFieldEnum = {
 
 export type MessengerDirectThreadReadStateScalarFieldEnum =
   (typeof MessengerDirectThreadReadStateScalarFieldEnum)[keyof typeof MessengerDirectThreadReadStateScalarFieldEnum];
+
+export const MailAccountScalarFieldEnum = {
+  id: 'id',
+  ownerEmployeeId: 'ownerEmployeeId',
+  emailAddress: 'emailAddress',
+  displayName: 'displayName',
+  providerType: 'providerType',
+  status: 'status',
+  lastSyncAt: 'lastSyncAt',
+  lastErrorAt: 'lastErrorAt',
+  createdByEmployeeId: 'createdByEmployeeId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MailAccountScalarFieldEnum =
+  (typeof MailAccountScalarFieldEnum)[keyof typeof MailAccountScalarFieldEnum];
+
+export const EmailThreadScalarFieldEnum = {
+  id: 'id',
+  mailAccountId: 'mailAccountId',
+  subjectNormalized: 'subjectNormalized',
+  lastMessageAt: 'lastMessageAt',
+  lastInboundAt: 'lastInboundAt',
+  lastOutboundAt: 'lastOutboundAt',
+  status: 'status',
+  hasUnread: 'hasUnread',
+  needsBusinessLink: 'needsBusinessLink',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type EmailThreadScalarFieldEnum =
+  (typeof EmailThreadScalarFieldEnum)[keyof typeof EmailThreadScalarFieldEnum];
+
+export const EmailMessageScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  mailAccountId: 'mailAccountId',
+  providerMessageId: 'providerMessageId',
+  messageIdHeader: 'messageIdHeader',
+  direction: 'direction',
+  subject: 'subject',
+  bodyText: 'bodyText',
+  bodyHtmlSanitized: 'bodyHtmlSanitized',
+  sentAt: 'sentAt',
+  receivedAt: 'receivedAt',
+  readState: 'readState',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type EmailMessageScalarFieldEnum =
+  (typeof EmailMessageScalarFieldEnum)[keyof typeof EmailMessageScalarFieldEnum];
+
+export const EmailRecipientScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  kind: 'kind',
+  email: 'email',
+  displayName: 'displayName',
+  createdAt: 'createdAt',
+} as const;
+
+export type EmailRecipientScalarFieldEnum =
+  (typeof EmailRecipientScalarFieldEnum)[keyof typeof EmailRecipientScalarFieldEnum];
 
 export const AuditLogScalarFieldEnum = {
   id: 'id',

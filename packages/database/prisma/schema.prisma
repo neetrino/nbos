@@ -1798,6 +1798,8 @@ model Employee {
   messengerDmThreadsAsB      MessengerDirectThread[]   @relation("MessengerDmThreadParticipantB")
   messengerChannelReadStates MessengerChannelReadState[]
   messengerDmThreadReadStates MessengerDirectThreadReadState[]
+  mailAccountsOwned           MailAccount[]               @relation("MailAccountOwner")
+  mailAccountsCreated         MailAccount[]               @relation("MailAccountCreatedBy")
 
   @@map("employees")
 }
@@ -1930,6 +1932,126 @@ model MessengerDirectThreadReadState {
   @@unique([threadId, employeeId])
   @@index([employeeId])
   @@map("messenger_direct_thread_read_states")
+}
+
+// ─── MAIL (MVP data foundation) ─────────────────────────────
+
+enum MailProviderType {
+  GMAIL
+  CORPORATE_IMAP_SMTP
+}
+
+enum MailAccountStatus {
+  ACTIVE
+  NEEDS_RECONNECT
+  PAUSED
+  DISABLED
+  SYNCING
+  DEGRADED
+}
+
+model MailAccount {
+  id                  String             @id @default(uuid())
+  ownerEmployeeId     String?            @map("owner_employee_id")
+  emailAddress        String             @map("email_address")
+  displayName         String?            @map("display_name")
+  providerType        MailProviderType   @map("provider_type")
+  status              MailAccountStatus  @default(PAUSED)
+  lastSyncAt          DateTime?          @map("last_sync_at")
+  lastErrorAt         DateTime?          @map("last_error_at")
+  createdByEmployeeId String?            @map("created_by_employee_id")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
+
+  owner     Employee? @relation("MailAccountOwner", fields: [ownerEmployeeId], references: [id], onDelete: SetNull)
+  createdBy Employee? @relation("MailAccountCreatedBy", fields: [createdByEmployeeId], references: [id], onDelete: SetNull)
+  threads   EmailThread[]
+  messages  EmailMessage[]
+
+  @@index([ownerEmployeeId])
+  @@map("mail_accounts")
+}
+
+enum EmailThreadStatus {
+  OPEN
+  ARCHIVED
+  CLOSED
+}
+
+model EmailThread {
+  id                String            @id @default(uuid())
+  mailAccountId     String            @map("mail_account_id")
+  subjectNormalized String            @map("subject_normalized")
+  lastMessageAt     DateTime          @map("last_message_at")
+  lastInboundAt     DateTime?         @map("last_inbound_at")
+  lastOutboundAt    DateTime?         @map("last_outbound_at")
+  status            EmailThreadStatus @default(OPEN)
+  hasUnread         Boolean           @default(true) @map("has_unread")
+  needsBusinessLink Boolean           @default(false) @map("needs_business_link")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  mailAccount MailAccount    @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
+  messages    EmailMessage[]
+
+  @@index([mailAccountId, lastMessageAt])
+  @@map("email_threads")
+}
+
+enum EmailMessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum EmailMessageReadState {
+  UNREAD
+  READ
+}
+
+model EmailMessage {
+  id                String                  @id @default(uuid())
+  threadId          String                  @map("thread_id")
+  mailAccountId     String                  @map("mail_account_id")
+  providerMessageId String?                 @map("provider_message_id")
+  messageIdHeader   String?                 @map("message_id_header")
+  direction         EmailMessageDirection
+  subject           String
+  bodyText          String?                 @map("body_text") @db.Text
+  bodyHtmlSanitized String?                 @map("body_html_sanitized") @db.Text
+  sentAt            DateTime?               @map("sent_at")
+  receivedAt        DateTime?               @map("received_at")
+  readState         EmailMessageReadState   @default(UNREAD) @map("read_state")
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+
+  thread      EmailThread      @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  mailAccount MailAccount      @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
+  recipients  EmailRecipient[]
+
+  @@index([threadId, receivedAt])
+  @@map("email_messages")
+}
+
+enum EmailRecipientKind {
+  FROM
+  TO
+  CC
+  BCC
+  REPLY_TO
+}
+
+model EmailRecipient {
+  id          String              @id @default(uuid())
+  messageId   String              @map("message_id")
+  kind        EmailRecipientKind
+  email       String
+  displayName String?             @map("display_name")
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  message EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("email_recipients")
 }
 
 // ─── AUDIT ────────────────────────────────────────────────

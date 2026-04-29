@@ -2,6 +2,7 @@ import { createPrismaClient } from '../src/client';
 import dotenv from 'dotenv';
 import path from 'path';
 import { seedMessenger } from './seed-messenger';
+import { seedMail } from './seed-mail';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
@@ -20,6 +21,10 @@ async function main() {
   await prisma.order.deleteMany();
   await prisma.expense.deleteMany();
   await prisma.credential.deleteMany();
+  await prisma.emailRecipient.deleteMany();
+  await prisma.emailMessage.deleteMany();
+  await prisma.emailThread.deleteMany();
+  await prisma.mailAccount.deleteMany();
   await prisma.messengerDirectMessage.deleteMany();
   await prisma.messengerDirectThread.deleteMany();
   await prisma.messengerChannelMessage.deleteMany();
@@ -117,6 +122,9 @@ async function main() {
 
   await seedMessenger(prisma, { ceo, seller, pm, pm2, dev, designer });
   console.log('  ✓ Messenger (channels + sample messages + DM threads)');
+
+  await seedMail(prisma, { ceo });
+  console.log('  ✓ Mail (demo mailbox + sample thread)');
 
   // ── Contacts ───────────────────────────────────────────────
   const contact1 = await prisma.contact.upsert({

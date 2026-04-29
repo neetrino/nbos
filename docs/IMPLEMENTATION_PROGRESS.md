@@ -4,24 +4,24 @@
 
 ## Current Focus
 
-| Field         | Value                                                            |
-| ------------- | ---------------------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**                          |
-| Current task  | Phase 5 — Messenger (Mail slice) or Documents polish per roadmap |
-| Status        | Phase 5 in progress                                              |
-| Last updated  | 2026-04-29                                                       |
+| Field         | Value                                                         |
+| ------------- | ------------------------------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge**                       |
+| Current task  | Phase 5 — Mail (sync/send/attachments) or Notifications slice |
+| Status        | Phase 5 in progress                                           |
+| Last updated  | 2026-04-29                                                    |
 
 ## Phase Snapshot
 
-| Phase                               | Status      | Progress | Notes                                                                                       |
-| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                     |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                            |
-| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates  |
-| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation        |
-| Phase 5 — Collaboration / knowledge | In progress | ~96%     | Messenger unread + channel anchor read receipt MVP + DM receipts; DB + Socket.IO + presence |
-| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later           |
-| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                        |
+| Phase                               | Status      | Progress | Notes                                                                                                |
+| ----------------------------------- | ----------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                              |
+| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                     |
+| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates           |
+| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                 |
+| Phase 5 — Collaboration / knowledge | In progress | ~97%     | Messenger + Mail read-only MVP (Prisma + REST + `/mail` UI); Documents/Drive/Credentials foundations |
+| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                    |
+| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                 |
 
 ## Phase 3 Full Closure Gate
 
@@ -63,7 +63,7 @@ Future Finance depth:
 ## Recent Milestones
 
 | Date       | Milestone                             | Result                                                                                                                                                                                                                                                        |
-| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ---------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------ |
 | 2026-04-29 | Phase 3 Finance full closure          | Client Services runtime/flows and all six Finance report aggregates done.                                                                                                                                                                                     |
 | 2026-04-29 | Delivery lifecycle runtime            | Product/Extension canonical lifecycle, actions, board, filters and gates.                                                                                                                                                                                     |
 | 2026-04-29 | Product Done readiness                | Done blocks real blockers and surfaces handoff/Drive/client gaps.                                                                                                                                                                                             |
@@ -106,6 +106,7 @@ Future Finance depth:
 | 2026-04-30 | Messenger WS read lists sync          | `messenger.read.updated` (`scope: lists`) to user room after mark-read; web refetch channel + DM lists.                                                                                                                                                       |
 | 2026-04-30 | Messenger DM read receipts            | `peerLastReadAt` on DM GET; WS `messenger.dm.peer_read`; web receipt label + util tests.                                                                                                                                                                      |
 | 2026-04-29 | Messenger channel read receipt MVP    | `GET …/channels/:id/messages` returns `lastOwnMessageId` + `lastOwnMessageSeenByOthers` (another member’s read cursor covers viewer’s latest own message); WS `messenger.channel.peer_read`; web banner + refetch on peer read; unit tests for receipt query. |
+| 2026-04-29 | Mail data + read API + inbox UI MVP   | Prisma `MailAccount` / `EmailThread` / `EmailMessage` / `EmailRecipient` + migration; `MAIL` RBAC; `GET /api/mail/accounts                                                                                                                                    | threads | threads/:id`; web `/mail` + thread detail + sidebar; seed demo thread (CEO mailbox). |
 
 ## Next Action
 
