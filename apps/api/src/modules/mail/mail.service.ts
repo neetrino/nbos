@@ -4,6 +4,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import {
   MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED,
+  MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED,
   MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
   MAIL_AUDIT_ENTITY_MESSAGE,
   MAIL_AUDIT_ENTITY_THREAD,
@@ -11,26 +12,10 @@ import {
 import { mailAccountWhereForViewer } from './mail-account-scope';
 import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { dedupeEmailsCaseInsensitive } from './mail-outbound-draft.helpers';
+import { toAccountRow, toMessageRow, toThreadListRow } from './mail-dto-map';
 import { persistOutboundDraftMessage } from './mail-outbound-draft.ops';
-import type {
-  MailAccountRow,
-  MailMessageRow,
-  MailRecipientRow,
-  MailThreadDetailDto,
-  MailThreadListRow,
-} from './mail.types';
-
-interface MessageWithRecipients {
-  id: string;
-  direction: string;
-  subject: string;
-  bodyText: string | null;
-  sentAt: Date | null;
-  receivedAt: Date | null;
-  readState: string;
-  deliveryStatus: string | null;
-  recipients: Array<{ kind: string; email: string; displayName: string | null }>;
-}
+import { queueOutboundDraftMessage } from './mail-outbound-queue.ops';
+import type { MailAccountRow, MailThreadDetailDto, MailThreadListRow } from './mail.types';
 
 export interface ListMailThreadsOptions {
   mailAccountId?: string;
@@ -206,70 +191,50 @@ export class MailService {
     });
     return this.getThreadDetail(employeeId, accessScope, threadId);
   }
-}
 
-function toAccountRow(row: {
-  id: string;
-  emailAddress: string;
-  displayName: string | null;
-  providerType: string;
-  status: string;
-  lastSyncAt: Date | null;
-  lastErrorAt: Date | null;
-}): MailAccountRow {
-  return {
-    id: row.id,
-    emailAddress: row.emailAddress,
-    displayName: row.displayName,
-    providerType: row.providerType,
-    status: row.status,
-    lastSyncAt: row.lastSyncAt?.toISOString() ?? null,
-    lastErrorAt: row.lastErrorAt?.toISOString() ?? null,
-  };
-}
-
-function toThreadListRow(row: {
-  id: string;
-  mailAccountId: string;
-  subjectNormalized: string;
-  lastMessageAt: Date;
-  lastInboundAt: Date | null;
-  lastOutboundAt: Date | null;
-  hasUnread: boolean;
-  needsBusinessLink: boolean;
-  status: string;
-}): MailThreadListRow {
-  return {
-    id: row.id,
-    mailAccountId: row.mailAccountId,
-    subjectNormalized: row.subjectNormalized,
-    lastMessageAt: row.lastMessageAt.toISOString(),
-    lastInboundAt: row.lastInboundAt?.toISOString() ?? null,
-    lastOutboundAt: row.lastOutboundAt?.toISOString() ?? null,
-    hasUnread: row.hasUnread,
-    needsBusinessLink: row.needsBusinessLink,
-    status: row.status,
-  };
-}
-
-function toRecipientRow(r: {
-  kind: string;
-  email: string;
-  displayName: string | null;
-}): MailRecipientRow {
-  return { kind: r.kind, email: r.email, displayName: r.displayName };
-}
-
-function toMessageRow(m: MessageWithRecipients): MailMessageRow {
-  return {
-    id: m.id,
-    direction: m.direction,
-    subject: m.subject,
-    bodyText: m.bodyText,
-    sentAt: m.sentAt?.toISOString() ?? null,
-    receivedAt: m.receivedAt?.toISOString() ?? null,
-    readState: m.readState,
-    deliveryStatus: m.deliveryStatus ?? null,
-    recipients: m.recipients.map(toRecipientRow),
-  };
+  /**
+   * Moves an outbound message from DRAFT to QUEUED (stub; no mail worker or SMTP).
+   */
+  async queueOutboundDraft(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+    messageId: string,
+  ): Promise<MailThreadDetailDto> {
+    const thread = await this.prisma.emailThread.findFirst({
+      where: { id: threadId },
+      include: { mailAccount: true },
+    });
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+    const accountOk = await this.prisma.mailAccount.findFirst({
+      where: { id: thread.mailAccountId, ...mailAccountWhereForViewer(employeeId, accessScope) },
+    });
+    if (!accountOk) {
+      throw new NotFoundException('Thread not found');
+    }
+    const msg = await this.prisma.emailMessage.findFirst({
+      where: { id: messageId, threadId },
+    });
+    if (!msg) {
+      throw new NotFoundException('Message not found');
+    }
+    if (msg.direction !== 'OUTBOUND' || msg.deliveryStatus !== 'DRAFT') {
+      throw new BadRequestException('Only outbound drafts can be queued for send');
+    }
+    const updated = await queueOutboundDraftMessage(this.prisma, { threadId, messageId });
+    if (!updated) {
+      throw new BadRequestException('Only outbound drafts can be queued for send');
+    }
+    const auditChanges: InputJsonValue = { threadId };
+    await this.auditService.log({
+      entityType: MAIL_AUDIT_ENTITY_MESSAGE,
+      entityId: messageId,
+      action: MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED,
+      userId: employeeId,
+      changes: auditChanges,
+    });
+    return this.getThreadDetail(employeeId, accessScope, threadId);
+  }
 }

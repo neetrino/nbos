@@ -70,6 +70,26 @@ export class MailController {
     return this.mailService.getThreadDetail(user.id, req.permissionScope ?? 'OWN', threadId);
   }
 
+  @Post('threads/:threadId/messages/:messageId/queue')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({
+    summary: 'Queue outbound draft for send (DRAFT → QUEUED; no SMTP or worker yet)',
+  })
+  async queueOutboundDraft(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    return this.mailService.queueOutboundDraft(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+      messageId,
+    );
+  }
+
   @Post('threads/:threadId/drafts')
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')

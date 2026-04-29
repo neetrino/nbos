@@ -90,4 +90,11 @@ export const mailApi = {
     const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/drafts`, body);
     return resp.data;
   },
+
+  async queueOutboundDraft(threadId: string, messageId: string): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(
+      `/api/mail/threads/${threadId}/messages/${messageId}/queue`,
+    );
+    return resp.data;
+  },
 };

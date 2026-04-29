@@ -1,16 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Check, Mail } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
-import { mailApi, type MailMessageRow, type MailThreadDetailDto } from '@/lib/api/mail';
+import { MailThreadMessages } from '@/features/mail/MailThreadMessages';
+import { MailThreadReplyDraftCard } from '@/features/mail/MailThreadReplyDraftCard';
+import { mailApi, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 
@@ -24,13 +23,7 @@ export default function MailThreadDetailPage() {
   const [loading, setLoading] = useState(true);
   const [markingRead, setMarkingRead] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [draftTo, setDraftTo] = useState('');
-  const [draftCc, setDraftCc] = useState('');
-  const [draftSubject, setDraftSubject] = useState('');
-  const [draftBody, setDraftBody] = useState('');
-  const [draftSaving, setDraftSaving] = useState(false);
-  const [draftError, setDraftError] = useState<string | null>(null);
-  const draftDefaultsKey = useRef<string>('');
+  const [queueingMessageId, setQueueingMessageId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!threadId) return;
@@ -61,52 +54,22 @@ export default function MailThreadDetailPage() {
     }
   }, [threadId, detail?.thread.hasUnread]);
 
-  useEffect(() => {
-    if (!detail || !threadId) {
-      return;
-    }
-    const key = `${threadId}:${detail.thread.id}`;
-    if (draftDefaultsKey.current === key) {
-      return;
-    }
-    draftDefaultsKey.current = key;
-    setDraftTo(defaultReplyToFromMessages(detail.messages));
-    setDraftCc('');
-    setDraftSubject(defaultReplySubjectFromMessages(detail.messages));
-    setDraftBody('');
-    setDraftError(null);
-  }, [detail, threadId]);
-
-  const saveDraft = useCallback(async () => {
-    if (!threadId || !detail) return;
-    const to = splitEmailList(draftTo);
-    if (to.length === 0) {
-      setDraftError('Enter at least one To address.');
-      return;
-    }
-    if (!draftSubject.trim()) {
-      setDraftError('Subject is required.');
-      return;
-    }
-    setDraftSaving(true);
-    setDraftError(null);
-    setError(null);
-    try {
-      const cc = splitEmailList(draftCc);
-      const d = await mailApi.createOutboundDraft(threadId, {
-        to,
-        ...(cc.length > 0 ? { cc } : {}),
-        subject: draftSubject.trim(),
-        bodyText: draftBody,
-      });
-      setDetail(d);
-      setDraftBody('');
-    } catch (e) {
-      setDraftError(getApiErrorMessage(e, 'Draft could not be saved.'));
-    } finally {
-      setDraftSaving(false);
-    }
-  }, [threadId, detail, draftTo, draftCc, draftSubject, draftBody]);
+  const queueDraftForSend = useCallback(
+    async (messageId: string) => {
+      if (!threadId) return;
+      setQueueingMessageId(messageId);
+      setError(null);
+      try {
+        const d = await mailApi.queueOutboundDraft(threadId, messageId);
+        setDetail(d);
+      } catch (e) {
+        setError(getApiErrorMessage(e, 'Could not queue message.'));
+      } finally {
+        setQueueingMessageId(null);
+      }
+    },
+    [threadId],
+  );
 
   useEffect(() => {
     if (!canView || !threadId) {
@@ -158,140 +121,21 @@ export default function MailThreadDetailPage() {
               </Button>
             ) : null}
           </PageHeader>
-          {detail.messages.length === 0 ? (
-            <EmptyThreadPlaceholder />
-          ) : (
-            <div className="flex flex-col gap-4">
-              {detail.messages.map((m) => (
-                <Card key={m.id}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-muted-foreground text-sm font-medium">
-                      {m.direction === 'INBOUND' ? 'Inbound' : 'Outbound'} · {m.readState}
-                      {m.deliveryStatus ? ` · ${m.deliveryStatus}` : ''}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <p className="text-muted-foreground text-xs">
-                      {m.recipients
-                        .map((r) => `${r.kind}: ${r.displayName ?? r.email}`)
-                        .join(' · ')}
-                    </p>
-                    <pre className="font-sans text-sm whitespace-pre-wrap">{m.bodyText ?? '—'}</pre>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <MailThreadMessages
+            messages={detail.messages}
+            canEdit={canEdit}
+            queueingMessageId={queueingMessageId}
+            onQueueDraft={queueDraftForSend}
+          />
           {canEdit ? (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Reply as draft</CardTitle>
-                <p className="text-muted-foreground text-xs">
-                  Saved locally as DRAFT. No SMTP or provider send in this MVP.
-                </p>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {draftError ? <p className="text-destructive text-sm">{draftError}</p> : null}
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <div className="flex flex-col gap-1 sm:col-span-2">
-                    <label
-                      htmlFor="mail-draft-to"
-                      className="text-muted-foreground text-xs font-medium"
-                    >
-                      To (comma-separated)
-                    </label>
-                    <Input
-                      id="mail-draft-to"
-                      value={draftTo}
-                      onChange={(e) => setDraftTo(e.target.value)}
-                      autoComplete="off"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1 sm:col-span-2">
-                    <label
-                      htmlFor="mail-draft-cc"
-                      className="text-muted-foreground text-xs font-medium"
-                    >
-                      Cc (optional)
-                    </label>
-                    <Input
-                      id="mail-draft-cc"
-                      value={draftCc}
-                      onChange={(e) => setDraftCc(e.target.value)}
-                      autoComplete="off"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1 sm:col-span-2">
-                    <label
-                      htmlFor="mail-draft-subject"
-                      className="text-muted-foreground text-xs font-medium"
-                    >
-                      Subject
-                    </label>
-                    <Input
-                      id="mail-draft-subject"
-                      value={draftSubject}
-                      onChange={(e) => setDraftSubject(e.target.value)}
-                      autoComplete="off"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1 sm:col-span-2">
-                    <label
-                      htmlFor="mail-draft-body"
-                      className="text-muted-foreground text-xs font-medium"
-                    >
-                      Body
-                    </label>
-                    <Textarea
-                      id="mail-draft-body"
-                      value={draftBody}
-                      onChange={(e) => setDraftBody(e.target.value)}
-                      rows={5}
-                      className="min-h-24 resize-y"
-                    />
-                  </div>
-                </div>
-                <Button type="button" disabled={draftSaving} onClick={() => void saveDraft()}>
-                  {draftSaving ? 'Saving…' : 'Save draft'}
-                </Button>
-              </CardContent>
-            </Card>
+            <MailThreadReplyDraftCard
+              threadId={threadId}
+              messages={detail.messages}
+              onThreadUpdated={setDetail}
+            />
           ) : null}
         </>
       ) : null}
-    </div>
-  );
-}
-
-function splitEmailList(raw: string): string[] {
-  return raw
-    .split(/[,;]+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
-function defaultReplyToFromMessages(messages: MailMessageRow[]): string {
-  for (let i = messages.length - 1; i >= 0; i -= 1) {
-    const m = messages[i];
-    if (!m || m.direction !== 'INBOUND') continue;
-    const from = m.recipients.find((r) => r.kind === 'FROM');
-    if (from?.email) return from.email;
-  }
-  return '';
-}
-
-function defaultReplySubjectFromMessages(messages: MailMessageRow[]): string {
-  const sub =
-    messages.find((m) => m.direction === 'INBOUND')?.subject ?? messages[0]?.subject ?? '';
-  if (/^re:\s*/i.test(sub)) return sub;
-  return sub ? `Re: ${sub}` : 'Re:';
-}
-
-function EmptyThreadPlaceholder() {
-  return (
-    <div className="text-muted-foreground flex flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-center">
-      <Mail className="h-8 w-8" />
-      <p className="text-sm">No messages in this thread.</p>
     </div>
   );
 }

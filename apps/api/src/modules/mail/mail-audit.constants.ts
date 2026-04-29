@@ -9,3 +9,6 @@ export const MAIL_AUDIT_ACTION_THREAD_MARKED_READ = 'mail.thread_marked_read';
 
 /** Outbound draft persisted locally (no SMTP send). */
 export const MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED = 'mail.outbound_draft_created';
+
+/** Outbound draft moved to queued (no worker/SMTP in this MVP). */
+export const MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED = 'mail.outbound_message_queued';
