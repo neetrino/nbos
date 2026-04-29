@@ -276,4 +276,36 @@ describe('DocumentsService', () => {
       }),
     );
   });
+
+  it('updates section default list scope and writes audit', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.documentSection.findFirst.mockResolvedValueOnce({
+      id: 'sec-1',
+      slug: 'technical',
+      defaultListScope: 'ALL',
+      archivedAt: null,
+    });
+    prisma.documentSection.update.mockResolvedValueOnce({
+      id: 'sec-1',
+      slug: 'technical',
+      defaultListScope: 'OWN',
+    });
+
+    const row = await service.updateDocumentSection(
+      'sec-1',
+      { defaultListScope: 'OWN' },
+      'admin-1',
+    );
+
+    expect(row.defaultListScope).toBe('OWN');
+    expect(prisma.documentSection.update).toHaveBeenCalled();
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityType: 'DOCUMENT_SECTION',
+        entityId: 'sec-1',
+        action: 'document_section_list_scope_changed',
+        userId: 'admin-1',
+      }),
+    );
+  });
 });

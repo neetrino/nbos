@@ -5,13 +5,28 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, FileText, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { CreateDocumentDialog } from '@/features/documents/CreateDocumentDialog';
 import { DocumentsTable } from '@/features/documents/DocumentsTable';
+
+const SECTION_LIST_SCOPE_OPTIONS = [
+  { value: 'ALL', label: 'Everyone (within RBAC view scope)' },
+  { value: 'OWN', label: 'Owner / author only' },
+  { value: 'DEPARTMENT', label: 'Author’s department colleagues' },
+] as const;
 
 export default function DocumentSectionPage() {
   const params = useParams();
@@ -25,8 +40,20 @@ export default function DocumentSectionPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [listScope, setListScope] = useState<string>('ALL');
+  const [sectionSaving, setSectionSaving] = useState(false);
+  const [sectionSettingsError, setSectionSettingsError] = useState<string | null>(null);
 
   const section = sections.find((s) => s.id === sectionId);
+  const canManageSections = can('MANAGE_SECTIONS', 'DOCUMENTS');
+  const effectiveSectionScope = section?.defaultListScope ?? 'ALL';
+  const sectionScopeDirty = section ? listScope !== effectiveSectionScope : false;
+
+  useEffect(() => {
+    if (section?.defaultListScope) {
+      setListScope(section.defaultListScope);
+    }
+  }, [section?.defaultListScope]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setDebouncedSearch(search.trim()), 320);
@@ -62,6 +89,22 @@ export default function DocumentSectionPage() {
 
   const canAdd = can('ADD', 'DOCUMENTS');
 
+  const saveSectionListScope = async () => {
+    if (!sectionId || !section) return;
+    setSectionSaving(true);
+    setSectionSettingsError(null);
+    try {
+      const updated = await documentsApi.updateDocumentSection(sectionId, {
+        defaultListScope: listScope,
+      });
+      setSections((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
+    } catch (e) {
+      setSectionSettingsError(getApiErrorMessage(e, 'Could not update section.'));
+    } finally {
+      setSectionSaving(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <div>
@@ -87,6 +130,48 @@ export default function DocumentSectionPage() {
           </div>
         </PageHeader>
       </div>
+
+      {!loading && !error && section && canManageSections ? (
+        <Card className="max-w-xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Section visibility</CardTitle>
+            <p className="text-muted-foreground text-sm">
+              Default who can see documents in this section. RBAC{' '}
+              <span className="font-mono text-xs">DOCUMENTS_VIEW</span> still applies on top.
+            </p>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="grid flex-1 gap-2">
+                <Label htmlFor="section-list-scope">Default list scope</Label>
+                <Select value={listScope} onValueChange={(v) => setListScope(v ?? 'ALL')}>
+                  <SelectTrigger id="section-list-scope" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SECTION_LIST_SCOPE_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={!sectionScopeDirty || sectionSaving}
+                onClick={() => void saveSectionListScope()}
+              >
+                {sectionSaving ? 'Saving…' : 'Save'}
+              </Button>
+            </div>
+            {sectionSettingsError ? (
+              <p className="text-destructive text-sm">{sectionSettingsError}</p>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
 
       <div className="grid max-w-xl gap-2">
         <label className="text-muted-foreground text-xs font-medium tracking-wide uppercase">

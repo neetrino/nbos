@@ -6,6 +6,8 @@ export interface DocumentSection {
   slug: string;
   description: string | null;
   sortOrder: number;
+  /** Who can see documents in this section by default (RBAC VIEW still applies). */
+  defaultListScope?: string;
 }
 
 export interface DocumentTag {
@@ -82,6 +84,17 @@ export interface DocumentDetail {
 export const documentsApi = {
   async listSections(): Promise<DocumentSection[]> {
     const resp = await api.get<DocumentSection[]>('/api/documents/sections');
+    return resp.data;
+  },
+
+  async updateDocumentSection(
+    sectionId: string,
+    data: { defaultListScope: string },
+  ): Promise<DocumentSection> {
+    const resp = await api.patch<DocumentSection>(
+      '/api/documents/sections/' + encodeURIComponent(sectionId),
+      data,
+    );
     return resp.data;
   },
 

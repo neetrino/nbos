@@ -83,7 +83,7 @@ Done:
 /documents/:id
 ```
 
-Still missing: polish, Drive attachments UI in Documents, ACL-scoped search and attachment index depth (later slices).
+Still missing: polish, ACL-scoped attachment index depth (later slices). Section default list scope is editable via API + web when role has `MANAGE_SECTIONS`.
 
 ### B2. Sidebar item is missing
 
@@ -99,7 +99,7 @@ Done:
 
 Still missing vs full canon:
 
-- TipTap image node → File Asset wiring is shipped; depth: section-level ACL, stronger Drive permission matrix on preview (`search_vector` list search shipped).
+- TipTap image node → File Asset wiring is shipped; depth: list-scope enforcement + section `default_list_scope` admin (`MANAGE_SECTIONS`); stronger Drive permission matrix on preview (`search_vector` list search shipped).
 
 ### B4. TipTap editor is missing
 
@@ -134,9 +134,11 @@ Need PostgreSQL search over:
 
 ### B7. Section-level access is missing
 
-Статус: `MISSING RBAC`
+Статус: `PARTIAL`
 
-Need backend access checks for view/edit/archive/manage.
+Shipped: effective list scope from section default + document override intersected with `DOCUMENTS_VIEW`; `MANAGE_SECTIONS` + `PATCH …/sections/:id` for `defaultListScope`; audit on scope change.
+
+Still open: richer section RBAC matrix beyond list defaults if canon expands.
 
 ### B8. Activity log is missing
 

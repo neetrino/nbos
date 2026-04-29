@@ -368,6 +368,11 @@ async function main() {
     module: 'DOCUMENTS',
     action: 'VIEW_ACTIVITY',
   });
+  permissionRecords.push({
+    id: 'perm-documents-manage-sections',
+    module: 'DOCUMENTS',
+    action: 'MANAGE_SECTIONS',
+  });
 
   await prisma.permission.createMany({
     data: permissionRecords,
@@ -401,6 +406,18 @@ async function main() {
       roleId,
       permissionId: 'perm-documents-view-activity',
       scope: viewScope,
+    });
+  }
+
+  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+    const docsScopes = moduleMap.DOCUMENTS;
+    if (!docsScopes) continue;
+    const editScope = docsScopes[1];
+    if (editScope === 'NONE') continue;
+    rolePermissionData.push({
+      roleId,
+      permissionId: 'perm-documents-manage-sections',
+      scope: editScope,
     });
   }
 

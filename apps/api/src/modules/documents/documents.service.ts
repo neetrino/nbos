@@ -37,8 +37,10 @@ import {
 } from './documents-includes';
 import {
   DOCUMENT_AUDIT_ACTION_ACCESS_CHANGED,
+  DOCUMENT_AUDIT_ACTION_SECTION_LIST_SCOPE_CHANGED,
   DOCUMENT_AUDIT_ENTITY_TYPE,
   DOCUMENT_LIST_LIMIT,
+  DOCUMENT_SECTION_AUDIT_ENTITY_TYPE,
 } from './documents.constants';
 import { searchDocumentIdsForList } from './documents-list-fts';
 import { pickDocumentSearchSnippet } from './documents-search-snippet';
@@ -49,6 +51,7 @@ import type {
   CreateDocumentTagDto,
   ListDocumentsQuery,
   UpdateDocumentDto,
+  UpdateDocumentSectionDto,
 } from './documents.types';
 
 @Injectable()
@@ -356,6 +359,37 @@ export class DocumentsService {
     });
     await this.recordActivity(documentId, actorId, 'attachment_added', { fileAssetId });
     return this.getDocument(documentId, access);
+  }
+
+  async updateDocumentSection(sectionId: string, dto: UpdateDocumentSectionDto, actorId: string) {
+    await this.ensureDefaultSections();
+    const raw = dto.defaultListScope?.trim().toUpperCase();
+    if (!raw || (raw !== 'ALL' && raw !== 'OWN' && raw !== 'DEPARTMENT')) {
+      throw new BadRequestException('defaultListScope must be ALL, OWN, or DEPARTMENT.');
+    }
+    const nextScope = raw as DocumentListScopeEnum;
+    const existing = await this.prisma.documentSection.findFirst({
+      where: { id: sectionId, archivedAt: null },
+    });
+    if (!existing) throw new NotFoundException(`Section ${sectionId} not found`);
+    if (existing.defaultListScope === nextScope) return existing;
+
+    const updated = await this.prisma.documentSection.update({
+      where: { id: sectionId },
+      data: { defaultListScope: nextScope, updatedById: actorId },
+    });
+    await this.auditService.log({
+      entityType: DOCUMENT_SECTION_AUDIT_ENTITY_TYPE,
+      entityId: sectionId,
+      action: DOCUMENT_AUDIT_ACTION_SECTION_LIST_SCOPE_CHANGED,
+      userId: actorId,
+      changes: {
+        from: existing.defaultListScope,
+        to: nextScope,
+        sectionSlug: existing.slug,
+      },
+    });
+    return updated;
   }
 
   async removeDocumentAttachment(

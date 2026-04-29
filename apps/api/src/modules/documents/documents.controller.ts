@@ -19,6 +19,7 @@ import type {
   CreateDocumentDto,
   CreateDocumentTagDto,
   UpdateDocumentDto,
+  UpdateDocumentSectionDto,
 } from './documents.types';
 
 @ApiTags('Documents')
@@ -32,6 +33,17 @@ export class DocumentsController {
   @ApiOperation({ summary: 'List document sections (ensures default sections exist)' })
   async listSections() {
     return this.documentsService.listSections();
+  }
+
+  @Patch('sections/:sectionId')
+  @RequirePermission('DOCUMENTS', 'MANAGE_SECTIONS')
+  @ApiOperation({ summary: 'Update document section (e.g. default list visibility scope)' })
+  async updateDocumentSection(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('sectionId') sectionId: string,
+    @Body() body: UpdateDocumentSectionDto,
+  ) {
+    return this.documentsService.updateDocumentSection(sectionId, body, user.id);
   }
 
   @Get('tags')

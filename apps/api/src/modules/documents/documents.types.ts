@@ -31,6 +31,11 @@ export interface CreateDocumentTagDto {
   color?: string;
 }
 
+export interface UpdateDocumentSectionDto {
+  /** Section default for document list visibility (`ALL` \| `OWN` \| `DEPARTMENT`). */
+  defaultListScope: string;
+}
+
 export interface AddDocumentAttachmentDto {
   fileAssetId: string;
   purpose?: string;
