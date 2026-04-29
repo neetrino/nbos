@@ -217,7 +217,7 @@ export type ExtensionGroupByArgs<
 export type ExtensionGroupByOutputType = {
   id: string;
   projectId: string;
-  productId: string | null;
+  productId: string;
   name: string;
   size: $Enums.ExtensionSizeEnum;
   status: $Enums.ExtensionStatusEnum;
@@ -254,7 +254,7 @@ export type ExtensionWhereInput = {
   NOT?: Prisma.ExtensionWhereInput | Prisma.ExtensionWhereInput[];
   id?: Prisma.StringFilter<'Extension'> | string;
   projectId?: Prisma.StringFilter<'Extension'> | string;
-  productId?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  productId?: Prisma.StringFilter<'Extension'> | string;
   name?: Prisma.StringFilter<'Extension'> | string;
   size?: Prisma.EnumExtensionSizeEnumFilter<'Extension'> | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFilter<'Extension'> | $Enums.ExtensionStatusEnum;
@@ -277,7 +277,7 @@ export type ExtensionWhereInput = {
   createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
-  product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null;
+  product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
   assignee?: Prisma.XOR<
     Prisma.EmployeeNullableScalarRelationFilter,
     Prisma.EmployeeWhereInput
@@ -289,7 +289,7 @@ export type ExtensionWhereInput = {
 export type ExtensionOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
-  productId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  productId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   size?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
@@ -317,7 +317,7 @@ export type ExtensionWhereUniqueInput = Prisma.AtLeast<
     OR?: Prisma.ExtensionWhereInput[];
     NOT?: Prisma.ExtensionWhereInput | Prisma.ExtensionWhereInput[];
     projectId?: Prisma.StringFilter<'Extension'> | string;
-    productId?: Prisma.StringNullableFilter<'Extension'> | string | null;
+    productId?: Prisma.StringFilter<'Extension'> | string;
     name?: Prisma.StringFilter<'Extension'> | string;
     size?: Prisma.EnumExtensionSizeEnumFilter<'Extension'> | $Enums.ExtensionSizeEnum;
     status?: Prisma.EnumExtensionStatusEnumFilter<'Extension'> | $Enums.ExtensionStatusEnum;
@@ -340,10 +340,7 @@ export type ExtensionWhereUniqueInput = Prisma.AtLeast<
     createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
-    product?: Prisma.XOR<
-      Prisma.ProductNullableScalarRelationFilter,
-      Prisma.ProductWhereInput
-    > | null;
+    product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
     assignee?: Prisma.XOR<
       Prisma.EmployeeNullableScalarRelationFilter,
       Prisma.EmployeeWhereInput
@@ -357,7 +354,7 @@ export type ExtensionWhereUniqueInput = Prisma.AtLeast<
 export type ExtensionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
-  productId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  productId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   size?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
@@ -386,7 +383,7 @@ export type ExtensionScalarWhereWithAggregatesInput = {
     | Prisma.ExtensionScalarWhereWithAggregatesInput[];
   id?: Prisma.StringWithAggregatesFilter<'Extension'> | string;
   projectId?: Prisma.StringWithAggregatesFilter<'Extension'> | string;
-  productId?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
+  productId?: Prisma.StringWithAggregatesFilter<'Extension'> | string;
   name?: Prisma.StringWithAggregatesFilter<'Extension'> | string;
   size?: Prisma.EnumExtensionSizeEnumWithAggregatesFilter<'Extension'> | $Enums.ExtensionSizeEnum;
   status?:
@@ -427,7 +424,7 @@ export type ExtensionCreateInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
@@ -436,7 +433,7 @@ export type ExtensionCreateInput = {
 export type ExtensionUncheckedCreateInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
@@ -477,7 +474,7 @@ export type ExtensionUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
@@ -486,7 +483,7 @@ export type ExtensionUpdateInput = {
 export type ExtensionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
@@ -515,7 +512,7 @@ export type ExtensionUncheckedUpdateInput = {
 export type ExtensionCreateManyInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
@@ -558,7 +555,7 @@ export type ExtensionUpdateManyMutationInput = {
 export type ExtensionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
@@ -990,7 +987,7 @@ export type ExtensionCreateWithoutProjectInput = {
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
@@ -998,7 +995,7 @@ export type ExtensionCreateWithoutProjectInput = {
 
 export type ExtensionUncheckedCreateWithoutProjectInput = {
   id?: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
@@ -1063,7 +1060,7 @@ export type ExtensionScalarWhereInput = {
   NOT?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
   id?: Prisma.StringFilter<'Extension'> | string;
   projectId?: Prisma.StringFilter<'Extension'> | string;
-  productId?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  productId?: Prisma.StringFilter<'Extension'> | string;
   name?: Prisma.StringFilter<'Extension'> | string;
   size?: Prisma.EnumExtensionSizeEnumFilter<'Extension'> | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFilter<'Extension'> | $Enums.ExtensionStatusEnum;
@@ -1183,7 +1180,7 @@ export type ExtensionCreateWithoutOrderInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
 };
@@ -1191,7 +1188,7 @@ export type ExtensionCreateWithoutOrderInput = {
 export type ExtensionUncheckedCreateWithoutOrderInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
@@ -1259,7 +1256,7 @@ export type ExtensionUpdateWithoutOrderInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
 };
@@ -1267,7 +1264,7 @@ export type ExtensionUpdateWithoutOrderInput = {
 export type ExtensionUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
@@ -1307,7 +1304,7 @@ export type ExtensionCreateWithoutTasksInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
 };
@@ -1315,7 +1312,7 @@ export type ExtensionCreateWithoutTasksInput = {
 export type ExtensionUncheckedCreateWithoutTasksInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
@@ -1383,7 +1380,7 @@ export type ExtensionUpdateWithoutTasksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
 };
@@ -1391,7 +1388,7 @@ export type ExtensionUpdateWithoutTasksInput = {
 export type ExtensionUncheckedUpdateWithoutTasksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
@@ -1431,7 +1428,7 @@ export type ExtensionCreateWithoutAssigneeInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
 };
@@ -1439,7 +1436,7 @@ export type ExtensionCreateWithoutAssigneeInput = {
 export type ExtensionUncheckedCreateWithoutAssigneeInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
@@ -1499,7 +1496,7 @@ export type ExtensionUpdateManyWithWhereWithoutAssigneeInput = {
 
 export type ExtensionCreateManyProjectInput = {
   id?: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
@@ -1537,7 +1534,7 @@ export type ExtensionUpdateWithoutProjectInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
@@ -1545,7 +1542,7 @@ export type ExtensionUpdateWithoutProjectInput = {
 
 export type ExtensionUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
@@ -1573,7 +1570,7 @@ export type ExtensionUncheckedUpdateWithoutProjectInput = {
 
 export type ExtensionUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
@@ -1700,7 +1697,7 @@ export type ExtensionUncheckedUpdateManyWithoutProductInput = {
 export type ExtensionCreateManyAssigneeInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
@@ -1738,7 +1735,7 @@ export type ExtensionUpdateWithoutAssigneeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
 };
@@ -1746,7 +1743,7 @@ export type ExtensionUpdateWithoutAssigneeInput = {
 export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
@@ -1774,7 +1771,7 @@ export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
 export type ExtensionUncheckedUpdateManyWithoutAssigneeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
@@ -1853,7 +1850,7 @@ export type ExtensionSelect<
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-    product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+    product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
     order?: boolean | Prisma.Extension$orderArgs<ExtArgs>;
     tasks?: boolean | Prisma.Extension$tasksArgs<ExtArgs>;
@@ -1883,7 +1880,7 @@ export type ExtensionSelectCreateManyAndReturn<
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-    product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+    product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
   },
   ExtArgs['result']['extension']
@@ -1910,7 +1907,7 @@ export type ExtensionSelectUpdateManyAndReturn<
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-    product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+    product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
   },
   ExtArgs['result']['extension']
@@ -1960,7 +1957,7 @@ export type ExtensionInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-  product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
   order?: boolean | Prisma.Extension$orderArgs<ExtArgs>;
   tasks?: boolean | Prisma.Extension$tasksArgs<ExtArgs>;
@@ -1970,14 +1967,14 @@ export type ExtensionIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-  product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
 };
 export type ExtensionIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-  product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
 };
 
@@ -1987,7 +1984,7 @@ export type $ExtensionPayload<
   name: 'Extension';
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>;
-    product: Prisma.$ProductPayload<ExtArgs> | null;
+    product: Prisma.$ProductPayload<ExtArgs>;
     assignee: Prisma.$EmployeePayload<ExtArgs> | null;
     order: Prisma.$OrderPayload<ExtArgs> | null;
     tasks: Prisma.$TaskPayload<ExtArgs>[];
@@ -1996,7 +1993,7 @@ export type $ExtensionPayload<
     {
       id: string;
       projectId: string;
-      productId: string | null;
+      productId: string;
       name: string;
       size: $Enums.ExtensionSizeEnum;
       status: $Enums.ExtensionStatusEnum;
@@ -2562,16 +2559,17 @@ export interface Prisma__ExtensionClient<
     ExtArgs,
     GlobalOmitOptions
   >;
-  product<T extends Prisma.Extension$productArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Extension$productArgs<ExtArgs>>,
+  product<T extends Prisma.ProductDefaultArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.ProductDefaultArgs<ExtArgs>>,
   ): Prisma.Prisma__ProductClient<
-    runtime.Types.Result.GetResult<
-      Prisma.$ProductPayload<ExtArgs>,
-      T,
-      'findUniqueOrThrow',
-      GlobalOmitOptions
-    > | null,
-    null,
+    | runtime.Types.Result.GetResult<
+        Prisma.$ProductPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >
+    | Null,
+    Null,
     ExtArgs,
     GlobalOmitOptions
   >;
@@ -3080,27 +3078,6 @@ export type ExtensionDeleteManyArgs<
    * Limit how many Extensions to delete.
    */
   limit?: number;
-};
-
-/**
- * Extension.product
- */
-export type Extension$productArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Product
-   */
-  select?: Prisma.ProductSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Product
-   */
-  omit?: Prisma.ProductOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ProductInclude<ExtArgs> | null;
-  where?: Prisma.ProductWhereInput;
 };
 
 /**

@@ -172,7 +172,9 @@ describe('ExtensionsService', () => {
         productId: 'prod-1',
       });
 
-      await expect(service.update('e1', { productId: null })).rejects.toThrow(BadRequestException);
+      const payload = { productId: null } as unknown as Parameters<typeof service.update>[1];
+
+      await expect(service.update('e1', payload)).rejects.toThrow(BadRequestException);
       expect(prisma.extension.update).not.toHaveBeenCalled();
     });
 

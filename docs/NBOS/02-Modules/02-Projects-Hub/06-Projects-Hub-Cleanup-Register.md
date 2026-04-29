@@ -68,7 +68,7 @@
 
 ### A4. Canonical delivery lifecycle projection exists in runtime
 
-Статус: `PHASE 4 RUNTIME ALIGNMENT`
+Статус: `PHASE 4 RUNTIME + SCHEMA ALIGNMENT`
 
 Runtime now exposes a canonical `deliveryLifecycle` projection for `Product` and `Extension` responses:
 
@@ -265,8 +265,9 @@ Extension ownership is now aligned at API/UI boundary:
 - API validates that the linked Product belongs to the same Project;
 - Create Extension UI requires Product selection before submit;
 - active docs describe Extension as belonging to both Project and one primary Product.
+- Prisma schema now treats `extensions.product_id` as required.
 
-Remaining schema hardening (`extensions.product_id NOT NULL`) should be a separate migration slice after checking existing data for legacy null Product links.
+The migration includes an explicit guard: deploy stops if legacy rows with `product_id IS NULL` exist. The live Neon data check could not complete from this environment because the database was unreachable (`P1001`), so the guard keeps the data contract honest during deployment.
 
 ---
 

@@ -30,7 +30,7 @@ interface CreateExtensionDto {
 
 interface UpdateExtensionDto {
   name?: string;
-  productId?: string | null;
+  productId?: string;
   size?: string;
   assignedTo?: string | null;
   description?: string | null;

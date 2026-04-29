@@ -55,9 +55,9 @@ export interface ProjectExtensionSummary {
   name: string;
   status: string;
   size: string;
-  productId: string | null;
+  productId: string;
   assignee: EmployeeRef | null;
-  product: { id: string; name: string; productType: string; status: string } | null;
+  product: { id: string; name: string; productType: string; status: string };
   deliveryLifecycle?: DeliveryLifecycleProjection;
   _count: { tasks: number };
 }

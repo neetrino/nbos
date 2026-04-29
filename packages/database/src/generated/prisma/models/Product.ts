@@ -716,6 +716,11 @@ export type ProductMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder;
 };
 
+export type ProductScalarRelationFilter = {
+  is?: Prisma.ProductWhereInput;
+  isNot?: Prisma.ProductWhereInput;
+};
+
 export type ProductNullableScalarRelationFilter = {
   is?: Prisma.ProductWhereInput | null;
   isNot?: Prisma.ProductWhereInput | null;
@@ -840,15 +845,13 @@ export type ProductCreateNestedOneWithoutExtensionsInput = {
   connect?: Prisma.ProductWhereUniqueInput;
 };
 
-export type ProductUpdateOneWithoutExtensionsNestedInput = {
+export type ProductUpdateOneRequiredWithoutExtensionsNestedInput = {
   create?: Prisma.XOR<
     Prisma.ProductCreateWithoutExtensionsInput,
     Prisma.ProductUncheckedCreateWithoutExtensionsInput
   >;
   connectOrCreate?: Prisma.ProductCreateOrConnectWithoutExtensionsInput;
   upsert?: Prisma.ProductUpsertWithoutExtensionsInput;
-  disconnect?: Prisma.ProductWhereInput | boolean;
-  delete?: Prisma.ProductWhereInput | boolean;
   connect?: Prisma.ProductWhereUniqueInput;
   update?: Prisma.XOR<
     Prisma.XOR<

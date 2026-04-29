@@ -11,7 +11,7 @@ export interface ExtensionEmployee {
 export interface Extension {
   id: string;
   projectId: string;
-  productId: string | null;
+  productId: string;
   name: string;
   size: string;
   status: string;
@@ -21,7 +21,7 @@ export interface Extension {
   createdAt: string;
   updatedAt: string;
   project: { id: string; name: string; code: string };
-  product: { id: string; name: string } | null;
+  product: { id: string; name: string };
   assignee: ExtensionEmployee | null;
   order?: { id: string; code: string; status: string } | null;
   readiness?: ExtensionReadinessSummary;

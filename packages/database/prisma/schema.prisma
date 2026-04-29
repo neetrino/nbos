@@ -235,7 +235,7 @@ enum ExtensionStatusEnum {
 model Extension {
   id                 String                  @id @default(uuid())
   projectId          String                  @map("project_id")
-  productId          String?                 @map("product_id")
+  productId          String                  @map("product_id")
   name               String
   size               ExtensionSizeEnum       @default(SMALL)
   status             ExtensionStatusEnum     @default(NEW)
@@ -251,7 +251,7 @@ model Extension {
   updatedAt          DateTime                @updatedAt @map("updated_at")
 
   project  Project   @relation(fields: [projectId], references: [id])
-  product  Product?  @relation(fields: [productId], references: [id])
+  product  Product   @relation(fields: [productId], references: [id])
   assignee Employee? @relation("ExtensionAssignee", fields: [assignedTo], references: [id])
   order    Order?
   tasks    Task[]
