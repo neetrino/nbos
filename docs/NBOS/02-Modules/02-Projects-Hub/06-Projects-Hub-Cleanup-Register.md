@@ -268,6 +268,19 @@ Product Done gate now checks existing finance source data conservatively:
 
 This implements the canon rule that the financial side must be closed before Product Done without inventing subscription-specific payment sufficiency rules in Phase 4.
 
+### A19. Project shell prefers canonical delivery lifecycle
+
+Статус: `PHASE 4 COMPATIBILITY ALIGNMENT`
+
+Project detail runtime now exposes `deliveryLifecycle` on embedded Product and Extension rows, not only on Product/Extension detail endpoints:
+
+- Project Delivery Board reads canonical stage, work status and terminal outcome from `deliveryLifecycle`;
+- Product tab filters and badges use canonical lifecycle buckets before legacy `status`;
+- PM Intake primary Product label uses canonical lifecycle when available;
+- Extension readiness checks the canonical `STARTING` stage before falling back to legacy `NEW`.
+
+Legacy `status` is still returned as a compatibility mirror for older API clients and remaining runtime code.
+
 ---
 
 ## B. Устарело только в документации или описаниях
@@ -359,7 +372,13 @@ The migration includes an explicit guard: deploy stops if legacy rows with `prod
 - заменить `LOST` на `CANCELLED`;
 - обновить backend transitions, DTO, tests и frontend badges.
 
-Phase 4 already added read-only canonical projection, compatible schema fields and dedicated pause/resume/cancel actions. Remaining work is to replace generic status transitions with stage-specific actions and then retire old enum usage safely.
+Phase 4 already added read-only canonical projection, compatible schema fields, dedicated pause/resume/cancel/complete actions and Project shell lifecycle projection.
+
+Current deprecation rule:
+
+- `deliveryLifecycle.stage`, `deliveryLifecycle.workStatus` and `deliveryLifecycle.resolution` are the Product delivery source of truth for UI and new API behavior;
+- legacy `status` remains a compatibility mirror and sync target until all generic status endpoints are retired;
+- do not remove `ProductStatusEnum` or the `products.status` column until old clients and tests stop depending on it.
 
 ### C2. Runtime extension statuses тоже старые
 
@@ -386,34 +405,36 @@ Phase 4 already added read-only canonical projection, compatible schema fields a
 
 Что потом нужно сделать:
 
-- синхронизировать extension lifecycle с product lifecycle;
-- добавить pause workflow;
-- заменить `NEW` на `STARTING`;
-- заменить `LOST` на `CANCELLED`;
-- обновить frontend list/board counters и backend validation.
+- remove remaining direct generic status transitions;
+- replace `NEW` with canonical `STARTING` at public boundaries;
+- replace `LOST` with canonical `CANCELLED` at public boundaries;
+- remove old enum/column only after compatibility users are gone.
 
-### C3. Frontend transitions и board helpers всё ещё живут по старой схеме
+Current deprecation rule:
+
+- `deliveryLifecycle.stage`, `deliveryLifecycle.workStatus` and `deliveryLifecycle.resolution` are the Extension delivery source of truth for UI and new API behavior;
+- legacy `status` remains a compatibility mirror and sync target until all generic status endpoints are retired;
+- do not remove `ExtensionStatusEnum` or the `extensions.status` column until old clients and tests stop depending on it.
+
+### C3. Frontend transitions и board helpers частично живут по старой схеме
 
 Подтверждение в коде:
 
 - [apps/web/src/features/projects/components/product-tabs/ProductOverviewTab.tsx](/Users/user/{} Development/1. Production/nbos/apps/web/src/features/projects/components/product-tabs/ProductOverviewTab.tsx:20)
 - [apps/web/src/features/projects/components/tabs/ExtensionsTab.tsx](/Users/user/{} Development/1. Production/nbos/apps/web/src/features/projects/components/tabs/ExtensionsTab.tsx:54)
 
-Проблема:
+Текущее состояние:
 
-- UI сейчас опирается на старые allowed transitions и старые active statuses;
-- `On Hold` пока рассматривается как stage-переход, а не как overlay status;
-- `Closed` как separate terminal view ещё не реализован по новому канону.
+- Project Delivery Board uses canonical lifecycle for grouping, filtering, quick actions and badges;
+- Product tab filters and badges prefer canonical lifecycle buckets;
+- PM Intake primary Product label prefers canonical lifecycle;
+- some detail-level compatibility paths still accept old status values and map them to canonical actions.
 
 Что потом нужно сделать:
 
-- перестроить board logic под:
-  - active stages;
-  - pause-status;
-  - terminal close area;
-- добавить drag-to-close поведение;
-- добавить `Done / Cancelled` terminal workflow;
-- реализовать visual expired-hold state.
+- retire remaining generic status endpoints from UI flows;
+- keep old status labels only as fallback for records that do not yet expose `deliveryLifecycle`;
+- implement visual expired-hold state later.
 
 ### C4. Product / Extension stage-gate validation пока уже нового канона не покрывает полностью
 
