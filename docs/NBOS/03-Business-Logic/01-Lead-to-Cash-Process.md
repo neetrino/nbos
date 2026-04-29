@@ -210,8 +210,10 @@ Deal.status → Deal Won
                                                                      ↓
                                                            ORDER + PROJECT
                                                                      ↓
-                              Handoff → PM → Starting / Development → … → Finance (остатки оплат) → Maintenance (предложение)
+                              Handoff → Projects Hub delivery lifecycle → Finance (остатки оплат) → Maintenance (предложение)
 ```
+
+После `ORDER + PROJECT` CRM-процесс завершается: Handoff передаёт контекст PM, но движение Product/Extension по стадиям `Starting → Development → QA → Transfer` выполняется уже в Projects Hub.
 
 ---
 

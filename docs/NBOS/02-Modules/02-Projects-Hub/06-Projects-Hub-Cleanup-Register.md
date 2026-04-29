@@ -221,66 +221,38 @@ This keeps `Tasks` as the internal execution layer and `Support` as customer/SLA
 
 ### B1. Старый Projects Hub ещё местами описан как продолжение CRM
 
-Где осталось:
+Статус: `PHASE 4 DOCS CLEANUP DONE`
 
-- [docs/NBOS/03-Business-Logic/02-Order-to-Delivery-Process.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/03-Business-Logic/02-Order-to-Delivery-Process.md:17)
-- [docs/NBOS/03-Business-Logic/01-Lead-to-Cash-Process.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/03-Business-Logic/01-Lead-to-Cash-Process.md:213)
-- [docs/NBOS/02-Modules/01-CRM/04-Offers-and-Handoff.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/02-Modules/01-CRM/04-Offers-and-Handoff.md:104)
+Active cross-module docs now separate CRM handoff from Projects Hub operational lifecycle:
 
-Проблема:
+- CRM handoff creates/transfers context after `Deal Won` and paid first invoice;
+- Product/Extension delivery movement happens in Projects Hub;
+- `Starting → Development → QA → Transfer` is the canonical stage line for delivery entities.
 
-- старые тексты всё ещё тянут `Creating` и delivery-движение как будто это продолжение CRM handoff flow;
-- это конфликтует с новым правилом, что `Projects Hub` начинается уже после создания delivery-сущности.
-
-Что надо сделать:
-
-- дочистить cross-module формулировки;
-- везде отделить `CRM handoff` от `Projects Hub operational lifecycle`.
+This removes the confusing reading that CRM continues to own delivery after handoff.
 
 ### B2. Старые названия стадий `New / Creating / Lost` всё ещё живут в смежных docs
 
-Где осталось:
+Статус: `PHASE 4 DOCS CLEANUP DONE`
 
-- [docs/NBOS/archive/00-Technical-Architecture-Brief.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/archive/00-Technical-Architecture-Brief.md:58)
-- [docs/NBOS/03-Business-Logic/02-Order-to-Delivery-Process.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/03-Business-Logic/02-Order-to-Delivery-Process.md:68)
-- [docs/NBOS/03-Business-Logic/06-Entity-Relationships.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/03-Business-Logic/06-Entity-Relationships.md:250)
-- [docs/NBOS/05-UI-Specifications/03-Project-Hub-Pages.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/05-UI-Specifications/03-Project-Hub-Pages.md:187)
-- [docs/NBOS/05-UI-Specifications/05-Task-and-Support-Pages.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/05-UI-Specifications/05-Task-and-Support-Pages.md:164)
+Active docs now use the canonical delivery lifecycle:
 
-Проблема:
+- stages: `Starting`, `Development`, `QA`, `Transfer`;
+- pause status: `On Hold`;
+- terminal outcomes: `Done`, `Cancelled`.
 
-- старый lifecycle всё ещё размазан по нескольким документам;
-- это будет снова путать реализацию, если не зачистить.
-
-Что надо сделать:
-
-- заменить старые линейки стадий на:
-  - `Starting`
-  - `Development`
-  - `QA`
-  - `Transfer`
-- `On Hold` описывать как pause-status;
-- `Done / Cancelled` описывать как terminal outcomes / closed view.
+Archived architecture notes remain historical and are not used as implementation canon.
 
 ### B3. Отдельная Delivery Board ещё не прописана во всех UI docs
 
-Где осталось:
+Статус: `PHASE 4 DOCS CLEANUP DONE`
 
-- [docs/NBOS/05-UI-Specifications/03-Project-Hub-Pages.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/05-UI-Specifications/03-Project-Hub-Pages.md:21)
-- [docs/NBOS/00-Delta-New-Description.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/00-Delta-New-Description.md:114)
+UI docs now define `Delivery Board` inside Project detail as the operational board over Product and Extension cards:
 
-Проблема:
-
-- product-centric direction упомянута, но отдельная `Delivery Board` как operational board с карточками `Product` и `Extension` ещё не зафиксирована везде одинаково;
-- без этого можно снова свалиться в "одну большую карточку проекта".
-
-Что надо сделать:
-
-- выровнять UI docs под модель:
-  - `Projects List`
-  - `Project Shell`
-  - `Delivery Board`
-  - `Product / Extension card details`
+- active cards group by canonical stages;
+- `On Hold` stays within the current stage as pause status;
+- `Done / Cancelled` are shown in closed view;
+- cards link into Product tasks, support tickets and extensions.
 
 ### B4. Старое описание extension как необязательной связи с product больше не подходит
 
