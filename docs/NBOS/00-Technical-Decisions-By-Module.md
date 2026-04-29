@@ -144,6 +144,20 @@ These rules apply to all modules unless a module-specific decision explicitly sa
 | Missing data | Show data-quality warnings or missing state; never fake zero values.                            |
 | Cache        | Use simple refresh/cache in MVP; live widgets are later unless required by a specific workflow. |
 
+### Documents
+
+| Area            | Decision                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| Module name     | Use `Documents / Документы` in UI and docs.                                                      |
+| Native editor   | Use TipTap for native document editing.                                                          |
+| Content storage | Store native TipTap JSON in PostgreSQL; derive HTML and plain text for display/search.           |
+| Files           | Store images, DOCX, XLSX, PDF, exports and attachments through Drive File Asset / R2.            |
+| Search          | Use PostgreSQL search over title, tags, section and extracted plain text for first release.      |
+| History         | Keep first release history lightweight: updated fields and activity log, not full revision diff. |
+| Permissions     | Enforce `documents.*` permissions and section/document access in backend services.               |
+| Google          | Google Docs / Sheets integration is v2 and must not block native Documents.                      |
+| AI              | AI Assistant is a separate future platform module, not part of Documents core.                   |
+
 ### Technical Infrastructure
 
 | Area       | Decision                                                                             |

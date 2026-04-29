@@ -263,10 +263,11 @@ Key docs:
 
 ## Phase 5 - Collaboration and knowledge
 
-Goal: files, chats, credentials and notifications become integrated but not blocking.
+Goal: documents, files, chats, credentials and notifications become integrated but not blocking.
 
 Scope:
 
+- Documents;
 - Drive;
 - Credentials;
 - Messenger;
@@ -277,6 +278,7 @@ Scope:
 
 Exit criteria:
 
+- Documents supports daily creation, reading, editing, search and access control;
 - files are stored once and linked logically;
 - credentials are secure and auditable;
 - internal/external messenger boundaries are clear;
@@ -287,6 +289,7 @@ Exit criteria:
 
 Key docs:
 
+- `02-Modules/20-Documents/*`
 - `02-Modules/11-Drive/*`
 - `02-Modules/12-Credentials/*`
 - `02-Modules/09-Messenger/*`
