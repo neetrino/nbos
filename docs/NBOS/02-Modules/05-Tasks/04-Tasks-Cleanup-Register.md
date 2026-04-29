@@ -241,8 +241,8 @@
 
 Проблема:
 
-- нет отдельного `Review`;
-- нет reviewer approval layer.
+- full `Review` / approval runtime is intentionally deferred beyond Phase 4;
+- final task status enum cleanup is still pending.
 
 Что потом нужно сделать:
 
@@ -267,9 +267,9 @@ Runtime now has the first Work Space foundation:
 
 Remaining depth:
 
-- Sprint runtime model;
-- workspace-level Kanban/Scrum views;
-- migration from legacy board-only task views.
+- Sprint runtime model is deferred beyond Phase 4;
+- workspace-level Kanban/Scrum views are deferred beyond Phase 4;
+- migration from legacy board-only task views remains a later refactor.
 
 ### C5. Project task tab and deeper Work Space views still use legacy UI shape
 
@@ -354,13 +354,13 @@ Remaining depth:
 
 Когда перейдём от документации к реализации, приоритет лучше держать таким:
 
-1. ввести runtime-сущность `Work Space`;
-2. expose connected Work Space in Product/Extension delivery UI;
-3. реализовать completion rules runtime foundation;
-4. привести task statuses к новому канону в DB/shared/backend/frontend;
-5. реализовать `Review`;
-6. перестроить project task UI и full workspace views;
-7. потом расширять recurring / automation / blueprints.
+1. Phase 4 done: runtime-сущность `Work Space`;
+2. Phase 4 done: connected Work Space in Product/Extension delivery UI;
+3. Phase 4 done: completion rules runtime foundation and blocker UI;
+4. later: привести task statuses к новому канону в DB/shared/backend/frontend;
+5. later: реализовать `Review`;
+6. later: перестроить project task UI и full workspace views;
+7. later: расширять recurring / automation / blueprints.
 
 ---
 
@@ -375,6 +375,8 @@ Remaining depth:
 - auto-generated tasks;
 - my plan / kanban board stages.
 
-Но новый канон всё ещё требует одного большого следующего шага:
+После Phase 4 foundation новый канон всё ещё требует следующих крупных шагов:
 
-- перейти от просто “системы задач с досками” к модели `Task + Work Space + Sprint + Completion Rules`.
+- status enum cleanup;
+- review/approval runtime;
+- full `Task + Work Space + Sprint + Completion Rules` depth.

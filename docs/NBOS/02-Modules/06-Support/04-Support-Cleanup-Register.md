@@ -73,11 +73,12 @@
 
 Когда дойдём до реализации, Support лучше приводить к канону в таком порядке:
 
-1. очистить enum/status model и ввести overlay-state для waiting/escalation;
-2. полноценно использовать `productId` и project/product context;
-3. добавить linked task / work space bridge;
-4. вынести `Change Request` в отдельный change-control flow;
-5. добавить Support -> Technical Infrastructure links для incidents;
-6. добавить coverage decision и bridge к Maintenance / Finance / CRM;
-7. добавить SLA pause / escalation / auto-close orchestration;
-8. только потом усложнять messenger-automation и AI triage.
+1. Phase 4 done: `productId` context foundation;
+2. Phase 4 done: linked task / work space bridge;
+3. Phase 4 done: `Change Request` -> Extension Deal bridge;
+4. Phase 4 done: coverage decision runtime field and read-only SLA state;
+5. later: очистить enum/status model и ввести overlay-state для waiting/escalation;
+6. later: добавить Support -> Technical Infrastructure links для incidents;
+7. later: добавить bridge к Maintenance / Finance / CRM;
+8. later: добавить SLA pause / escalation / auto-close orchestration;
+9. only then: messenger automation and AI triage.

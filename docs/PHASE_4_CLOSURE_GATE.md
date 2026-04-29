@@ -4,9 +4,11 @@
 
 ## 1. Decision
 
-Phase 4 is **not fully closed yet**.
+Phase 4 is **closed as runtime foundation**.
 
-The Projects Hub delivery lifecycle slice is ready for closure review, and the first connected Work Space, task completion rules UI, Support bridges, coverage decision and read-only SLA state now exist. The remaining Phase 4 depth is mostly Task review/approval decisions and optional Support automation. Those areas must be finished or explicitly moved out of Phase 4 before the phase can be marked `Done`.
+Closure decision: keep Phase 4 focused on delivery runtime, Work Space foundation, task completion blockers and Support handoff bridges. Do not force full Task review/approval, full Scrum runtime or Support automation into Phase 4, because those require deeper state-machine, Drive/Messenger/Notifications and workflow-model work.
+
+Those remaining items are explicitly deferred to later Tasks / Collaboration / Control slices.
 
 ## 2. Confirmed Done In Projects Hub
 
@@ -30,19 +32,22 @@ The Projects Hub delivery lifecycle slice is ready for closure review, and the f
 
 ## 3. Must Stay Out Of This Closure
 
-These items are not safe to fake inside Projects Hub closure:
+These items are not safe to fake inside Phase 4 closure:
 
 - DB-backed Drive `FileAsset` / `FileLink` runtime.
 - Product-specific credential links and richer Vault access model.
 - Messenger, Mail, Notifications and Technical Infrastructure depth.
 - Global Reports / Analytics, scheduled exports and Control Center work.
 - Full old `status` enum removal; legacy status remains a compatibility mirror for now.
+- Full Task review/approval runtime.
+- Full workspace-level Scrum/Sprint runtime.
+- Support waiting/escalation overlays, SLA pause orchestration and notification automation.
 
-## 4. Remaining Phase 4 Scope
+## 4. Deferred Beyond Phase 4
 
 ### Tasks / Work Space
 
-Required before full Phase 4 closure:
+Closed in Phase 4:
 
 - `Work Space` exists as runtime planning context, not just a board label.
 - Product and Extension can ensure connected Work Spaces through API.
@@ -51,14 +56,15 @@ Required before full Phase 4 closure:
 - Task completion rules are explicit and can return human-readable blockers.
 - Product execution tasks remain linked to Product stage gates without duplicating delivery lifecycle.
 
-Remaining Tasks depth:
+Deferred depth:
 
 - Review / approval flow is still not implemented.
 - Full workspace-level Scrum views are still not implemented.
+- Final task status enum cleanup is still not implemented.
 
 ### Support
 
-Required before full Phase 4 closure:
+Closed in Phase 4:
 
 - Support tickets can create or link execution tasks safely.
 - Change Request tickets can create or link Extension Deal flow without becoming free work.
@@ -66,7 +72,7 @@ Required before full Phase 4 closure:
 - SLA warnings/breach state is visible without pretending notification automation exists.
 - Product Done readiness and Product support tabs remain based on real ticket data.
 
-Remaining Support depth:
+Deferred depth:
 
 - Change Request auto-close after Extension Done is still not implemented.
 - Waiting / escalation overlays and SLA pause logic are still not implemented.
@@ -74,11 +80,11 @@ Remaining Support depth:
 
 ## 5. Closure Checklist
 
-Mark full Phase 4 `Done` only when:
+Phase 4 is closed when:
 
 - Projects Hub items in section 2 stay green after regression checks.
-- Tasks / Work Space items in section 4 are implemented or formally moved to a later phase.
-- Support items in section 4 are implemented or formally moved to a later phase.
+- Tasks / Work Space deferred items in section 4 are formally moved to later phases.
+- Support deferred items in section 4 are formally moved to later phases.
 - API/Web typecheck and lint pass.
 - Targeted tests cover lifecycle gates, ProductsService, ExtensionsService, Tasks and Support changes.
 - `docs/IMPLEMENTATION_PROGRESS.md` and relevant cleanup registers are updated.
@@ -86,6 +92,6 @@ Mark full Phase 4 `Done` only when:
 
 ## 6. Recommended Next Slice
 
-Continue with **review/approval decision** or prepare a **Phase 4 closure review**.
+Start **Phase 5 - Collaboration and knowledge**.
 
-The Work Space, completion rules UI and Support runtime foundations now exist; the remaining decision is whether review/approval runtime belongs in Phase 4 or moves later.
+The normal first slice is Documents/Drive foundation because Phase 4 Done readiness, task attachments, support evidence, CRM handoff files and credentials boundaries all depend on DB-backed file metadata and logical links.
