@@ -62,4 +62,9 @@ export const mailApi = {
     const resp = await api.get<MailThreadDetailDto>(`/api/mail/threads/${threadId}`);
     return resp.data;
   },
+
+  async markThreadRead(threadId: string): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/mark-read`);
+    return resp.data;
+  },
 };

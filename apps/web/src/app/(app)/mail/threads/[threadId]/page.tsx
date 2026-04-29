@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Mail } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { ArrowLeft, Check, Mail } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
@@ -17,8 +17,10 @@ export default function MailThreadDetailPage() {
   const threadId = typeof params.threadId === 'string' ? params.threadId : '';
   const { can } = usePermission();
   const canView = can('VIEW', 'MAIL');
+  const canEdit = can('EDIT', 'MAIL');
   const [detail, setDetail] = useState<MailThreadDetailDto | null>(null);
   const [loading, setLoading] = useState(true);
+  const [markingRead, setMarkingRead] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -35,6 +37,20 @@ export default function MailThreadDetailPage() {
       setLoading(false);
     }
   }, [threadId]);
+
+  const markRead = useCallback(async () => {
+    if (!threadId || !detail?.thread.hasUnread) return;
+    setMarkingRead(true);
+    setError(null);
+    try {
+      const d = await mailApi.markThreadRead(threadId);
+      setDetail(d);
+    } catch (e) {
+      setError(getApiErrorMessage(e, 'Could not mark thread as read.'));
+    } finally {
+      setMarkingRead(false);
+    }
+  }, [threadId, detail?.thread.hasUnread]);
 
   useEffect(() => {
     if (!canView || !threadId) {
@@ -72,7 +88,20 @@ export default function MailThreadDetailPage() {
           <PageHeader
             title={detail.messages[0]?.subject ?? detail.thread.subjectNormalized}
             description={`${detail.mailAccount.emailAddress} · ${detail.mailAccount.status}`}
-          />
+          >
+            {canEdit && detail.thread.hasUnread ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                disabled={markingRead}
+                onClick={() => void markRead()}
+              >
+                <Check size={14} /> Mark read
+              </Button>
+            ) : null}
+          </PageHeader>
           {detail.messages.length === 0 ? (
             <EmptyThreadPlaceholder />
           ) : (

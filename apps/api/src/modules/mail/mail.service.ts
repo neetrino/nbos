@@ -89,6 +89,40 @@ export class MailService {
       messages: messages.map(toMessageRow),
     };
   }
+
+  /**
+   * Marks every message in the thread read and clears thread-level unread (NBOS user state).
+   */
+  async markThreadRead(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+  ): Promise<MailThreadDetailDto> {
+    const thread = await this.prisma.emailThread.findFirst({
+      where: { id: threadId },
+      include: { mailAccount: true },
+    });
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+    const accountOk = await this.prisma.mailAccount.findFirst({
+      where: { id: thread.mailAccountId, ...mailAccountWhereForViewer(employeeId, accessScope) },
+    });
+    if (!accountOk) {
+      throw new NotFoundException('Thread not found');
+    }
+    await this.prisma.$transaction([
+      this.prisma.emailMessage.updateMany({
+        where: { threadId },
+        data: { readState: 'READ' },
+      }),
+      this.prisma.emailThread.update({
+        where: { id: threadId },
+        data: { hasUnread: false },
+      }),
+    ]);
+    return this.getThreadDetail(employeeId, accessScope, threadId);
+  }
 }
 
 function toAccountRow(row: {

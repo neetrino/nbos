@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
@@ -40,5 +40,17 @@ export class MailController {
     @Param('threadId') threadId: string,
   ) {
     return this.mailService.getThreadDetail(user.id, req.permissionScope ?? 'OWN', threadId);
+  }
+
+  @Post('threads/:threadId/mark-read')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({ summary: 'Mark all messages in a thread as read (NBOS state)' })
+  async markThreadRead(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+  ) {
+    return this.mailService.markThreadRead(user.id, req.permissionScope ?? 'OWN', threadId);
   }
 }
