@@ -89,6 +89,15 @@ export interface UpdateExtensionData {
   description?: string | null;
 }
 
+export interface PauseDeliveryData {
+  reason: string;
+  onHoldUntil: string;
+}
+
+export interface CancelDeliveryData {
+  reason: string;
+}
+
 export const extensionsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData> {
     const resp = await api.get<ListData>('/api/projects/extensions', { params });
@@ -112,6 +121,21 @@ export const extensionsApi = {
 
   async updateStatus(id: string, status: string): Promise<Extension> {
     const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/status`, { status });
+    return resp.data;
+  },
+
+  async pause(id: string, data: PauseDeliveryData): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/pause`, data);
+    return resp.data;
+  },
+
+  async resume(id: string): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/resume`);
+    return resp.data;
+  },
+
+  async cancel(id: string, data: CancelDeliveryData): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/cancel`, data);
     return resp.data;
   },
 

@@ -267,6 +267,91 @@ describe('ProductsService', () => {
     });
   });
 
+  describe('dedicated delivery actions', () => {
+    it('pauses product delivery with canonical hold fields', async () => {
+      prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'ON_HOLD',
+        deliveryStage: 'DEVELOPMENT',
+        deliveryWorkStatus: 'ON_HOLD',
+        deliveryResolution: null,
+        onHoldReason: 'Waiting for client',
+        onHoldUntil: new Date('2026-05-01T00:00:00.000Z'),
+      });
+
+      const result = await service.pause('p1', {
+        reason: 'Waiting for client',
+        onHoldUntil: '2026-05-01T00:00:00.000Z',
+      });
+
+      expect(prisma.product.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'ON_HOLD',
+            deliveryStage: 'DEVELOPMENT',
+            deliveryWorkStatus: 'ON_HOLD',
+            onHoldReason: 'Waiting for client',
+          }),
+        }),
+      );
+      expect(result.deliveryLifecycle.workStatus).toBe('ON_HOLD');
+    });
+
+    it('resumes product delivery to the saved canonical stage', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'ON_HOLD',
+        deliveryStage: 'QA',
+        deliveryWorkStatus: 'ON_HOLD',
+      });
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'QA',
+        deliveryStage: 'QA',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+
+      const result = await service.resume('p1');
+
+      expect(prisma.product.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'QA',
+            deliveryWorkStatus: 'ACTIVE',
+            onHoldReason: null,
+            onHoldUntil: null,
+          }),
+        }),
+      );
+      expect(result.status).toBe('QA');
+    });
+
+    it('cancels product delivery with a reason', async () => {
+      prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'LOST',
+        deliveryResolution: 'CANCELLED',
+        cancellationReason: 'Scope cancelled',
+      });
+
+      const result = await service.cancel('p1', { reason: 'Scope cancelled' });
+
+      expect(prisma.product.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'LOST',
+            deliveryStage: null,
+            deliveryResolution: 'CANCELLED',
+            cancellationReason: 'Scope cancelled',
+          }),
+        }),
+      );
+      expect(result.deliveryLifecycle.resolution).toBe('CANCELLED');
+    });
+  });
+
   describe('delete', () => {
     it('deletes when found', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1' });

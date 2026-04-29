@@ -103,6 +103,24 @@ export class ExtensionsController {
     return this.extensionsService.updateStatus(id, body.status);
   }
 
+  @Patch(':id/pause')
+  @ApiOperation({ summary: 'Pause extension delivery with reason and resume date' })
+  async pause(@Param('id') id: string, @Body() body: { reason: string; onHoldUntil: string }) {
+    return this.extensionsService.pause(id, body);
+  }
+
+  @Patch(':id/resume')
+  @ApiOperation({ summary: 'Resume paused extension delivery' })
+  async resume(@Param('id') id: string) {
+    return this.extensionsService.resume(id);
+  }
+
+  @Patch(':id/cancel')
+  @ApiOperation({ summary: 'Cancel extension delivery with reason' })
+  async cancel(@Param('id') id: string, @Body() body: { reason: string }) {
+    return this.extensionsService.cancel(id, body);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete extension' })

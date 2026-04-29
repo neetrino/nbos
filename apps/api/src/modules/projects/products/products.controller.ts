@@ -107,6 +107,24 @@ export class ProductsController {
     return this.productsService.updateStatus(id, body.status);
   }
 
+  @Patch(':id/pause')
+  @ApiOperation({ summary: 'Pause product delivery with reason and resume date' })
+  async pause(@Param('id') id: string, @Body() body: { reason: string; onHoldUntil: string }) {
+    return this.productsService.pause(id, body);
+  }
+
+  @Patch(':id/resume')
+  @ApiOperation({ summary: 'Resume paused product delivery' })
+  async resume(@Param('id') id: string) {
+    return this.productsService.resume(id);
+  }
+
+  @Patch(':id/cancel')
+  @ApiOperation({ summary: 'Cancel product delivery with reason' })
+  async cancel(@Param('id') id: string, @Body() body: { reason: string }) {
+    return this.productsService.cancel(id, body);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete product' })

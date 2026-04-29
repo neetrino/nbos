@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -11,7 +11,12 @@ import {
   validateExtensionStageGate,
   validateExtensionTransition,
 } from './extension-stage-gates';
-import { buildDeliveryLifecycleWrite } from '../delivery-lifecycle';
+import {
+  buildDeliveryLifecycleWrite,
+  buildDeliveryPauseWrite,
+  buildDeliveryResumeWrite,
+  extensionLegacyStatusForStage,
+} from '../delivery-lifecycle';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -28,6 +33,15 @@ interface UpdateExtensionDto {
   size?: string;
   assignedTo?: string | null;
   description?: string | null;
+}
+
+interface PauseDeliveryDto {
+  reason: string;
+  onHoldUntil: string;
+}
+
+interface CancelDeliveryDto {
+  reason: string;
 }
 
 interface ExtensionQueryParams {
@@ -177,6 +191,62 @@ export class ExtensionsService {
     return attachExtensionReadiness(updated);
   }
 
+  async pause(id: string, data: PauseDeliveryDto) {
+    const extension = await this.findById(id);
+    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
+    const reason = requireText(data.reason, 'reason');
+    const onHoldUntil = parseDate(data.onHoldUntil, 'onHoldUntil');
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: buildDeliveryPauseWrite(extension, reason, onHoldUntil),
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
+  async resume(id: string) {
+    const extension = await this.findById(id);
+    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
+    if (extension.deliveryLifecycle.workStatus !== 'ON_HOLD') {
+      throw new BadRequestException('Extension is not on hold');
+    }
+    const nextStatus = extensionLegacyStatusForStage(extension.deliveryLifecycle.stage);
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: { status: nextStatus as ExtensionStatusEnum, ...buildDeliveryResumeWrite(extension) },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
+  async cancel(id: string, data: CancelDeliveryDto) {
+    const extension = await this.findById(id);
+    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
+    const reason = requireText(data.reason, 'reason');
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: {
+        status: 'LOST',
+        ...buildDeliveryLifecycleWrite('LOST', extension),
+        cancellationReason: reason,
+      },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
   async delete(id: string) {
     await this.findById(id);
     return this.prisma.extension.delete({ where: { id } });
@@ -194,4 +264,23 @@ export class ExtensionsService {
 
     return { total, byStatus, bySize };
   }
+
+  private ensureNotTerminal(resolution: string | null) {
+    if (resolution) {
+      throw new BadRequestException('Terminal delivery item cannot be changed');
+    }
+  }
+}
+
+function requireText(value: string | undefined, field: string) {
+  const text = value?.trim();
+  if (!text) throw new BadRequestException(`${field} is required`);
+  return text;
+}
+
+function parseDate(value: string | undefined, field: string) {
+  const raw = requireText(value, field);
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} is invalid`);
+  return date;
 }

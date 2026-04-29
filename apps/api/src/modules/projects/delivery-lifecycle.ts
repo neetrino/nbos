@@ -34,6 +34,23 @@ export interface DeliveryLifecycleWrite {
   onHoldUntil?: null;
 }
 
+export interface DeliveryPauseWrite {
+  deliveryStage: Exclude<DeliveryStage, null> | null;
+  deliveryWorkStatus: 'ON_HOLD';
+  deliveryResolution: null;
+  onHoldReason: string;
+  onHoldUntil: Date;
+  cancellationReason: null;
+}
+
+export interface DeliveryResumeWrite {
+  deliveryStage: Exclude<DeliveryStage, null> | null;
+  deliveryWorkStatus: 'ACTIVE';
+  deliveryResolution: null;
+  onHoldReason: null;
+  onHoldUntil: null;
+}
+
 export function buildProductDeliveryLifecycle(
   product: DeliveryStatusCarrier,
 ): DeliveryLifecycleProjection {
@@ -103,6 +120,41 @@ export function buildDeliveryLifecycleWrite(
     onHoldReason: null,
     onHoldUntil: null,
   };
+}
+
+export function buildDeliveryPauseWrite(
+  current: DeliveryStatusCarrier,
+  reason: string,
+  onHoldUntil: Date,
+): DeliveryPauseWrite {
+  return {
+    deliveryStage: current.deliveryStage ?? mapDeliveryStage(current.status ?? null),
+    deliveryWorkStatus: 'ON_HOLD',
+    deliveryResolution: null,
+    onHoldReason: reason,
+    onHoldUntil,
+    cancellationReason: null,
+  };
+}
+
+export function buildDeliveryResumeWrite(current: DeliveryStatusCarrier): DeliveryResumeWrite {
+  return {
+    deliveryStage: current.deliveryStage ?? mapDeliveryStage(current.status ?? null),
+    deliveryWorkStatus: 'ACTIVE',
+    deliveryResolution: null,
+    onHoldReason: null,
+    onHoldUntil: null,
+  };
+}
+
+export function productLegacyStatusForStage(stage: DeliveryStage): string {
+  if (stage === 'DEVELOPMENT' || stage === 'QA' || stage === 'TRANSFER') return stage;
+  return 'CREATING';
+}
+
+export function extensionLegacyStatusForStage(stage: DeliveryStage): string {
+  if (stage === 'DEVELOPMENT' || stage === 'QA' || stage === 'TRANSFER') return stage;
+  return 'NEW';
 }
 
 function mapDeliveryStage(legacyStatus: string | null): DeliveryStage {

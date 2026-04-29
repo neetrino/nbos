@@ -94,6 +94,21 @@ Runtime now has compatible canonical fields on both `Product` and `Extension`:
 
 Legacy `status` remains during the transition, but backend writes now keep canonical lifecycle fields synchronized for status changes.
 
+### A6. Dedicated pause / resume / cancel actions exist
+
+Статус: `PHASE 4 ACTION ALIGNMENT`
+
+Runtime now exposes explicit lifecycle actions for both `Product` and `Extension`:
+
+- `PATCH /api/projects/products/:id/pause`;
+- `PATCH /api/projects/products/:id/resume`;
+- `PATCH /api/projects/products/:id/cancel`;
+- `PATCH /api/projects/extensions/:id/pause`;
+- `PATCH /api/projects/extensions/:id/resume`;
+- `PATCH /api/projects/extensions/:id/cancel`.
+
+These actions use canonical lifecycle fields and keep legacy `status` synchronized only for compatibility.
+
 ---
 
 ## B. Устарело только в документации или описаниях
@@ -213,7 +228,7 @@ Legacy `status` remains during the transition, but backend writes now keep canon
 - заменить `LOST` на `CANCELLED`;
 - обновить backend transitions, DTO, tests и frontend badges.
 
-Phase 4 already added read-only canonical projection and compatible schema fields. Remaining work is to replace legacy status actions with dedicated stage / pause / resume / cancel actions and then retire old enum usage safely.
+Phase 4 already added read-only canonical projection, compatible schema fields and dedicated pause/resume/cancel actions. Remaining work is to replace generic status transitions with stage-specific actions and then retire old enum usage safely.
 
 ### C2. Runtime extension statuses тоже старые
 

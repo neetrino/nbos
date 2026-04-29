@@ -251,6 +251,90 @@ describe('ExtensionsService', () => {
     });
   });
 
+  describe('dedicated delivery actions', () => {
+    it('pauses extension delivery without changing legacy stage status', async () => {
+      prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'QA' });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'QA',
+        deliveryStage: 'QA',
+        deliveryWorkStatus: 'ON_HOLD',
+        onHoldReason: 'Waiting for client',
+        onHoldUntil: new Date('2026-05-01T00:00:00.000Z'),
+      });
+
+      const result = await service.pause('e1', {
+        reason: 'Waiting for client',
+        onHoldUntil: '2026-05-01T00:00:00.000Z',
+      });
+
+      expect(prisma.extension.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            deliveryStage: 'QA',
+            deliveryWorkStatus: 'ON_HOLD',
+            onHoldReason: 'Waiting for client',
+          }),
+        }),
+      );
+      expect(result.status).toBe('QA');
+      expect(result.deliveryLifecycle.workStatus).toBe('ON_HOLD');
+    });
+
+    it('resumes extension delivery to the saved canonical stage', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'QA',
+        deliveryStage: 'QA',
+        deliveryWorkStatus: 'ON_HOLD',
+      });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'QA',
+        deliveryStage: 'QA',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+
+      const result = await service.resume('e1');
+
+      expect(prisma.extension.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'QA',
+            deliveryWorkStatus: 'ACTIVE',
+            onHoldReason: null,
+            onHoldUntil: null,
+          }),
+        }),
+      );
+      expect(result.deliveryLifecycle.workStatus).toBe('ACTIVE');
+    });
+
+    it('cancels extension delivery with a reason', async () => {
+      prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'DEVELOPMENT' });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'LOST',
+        deliveryResolution: 'CANCELLED',
+        cancellationReason: 'No longer needed',
+      });
+
+      const result = await service.cancel('e1', { reason: 'No longer needed' });
+
+      expect(prisma.extension.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'LOST',
+            deliveryStage: null,
+            deliveryResolution: 'CANCELLED',
+            cancellationReason: 'No longer needed',
+          }),
+        }),
+      );
+      expect(result.deliveryLifecycle.resolution).toBe('CANCELLED');
+    });
+  });
+
   describe('delete', () => {
     it('deletes when found', async () => {
       prisma.extension.findUnique.mockResolvedValue({ id: 'e1' });

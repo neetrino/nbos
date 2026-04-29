@@ -14,7 +14,13 @@ import {
   validateProductTransition,
 } from './product-stage-gates';
 import { PROJECT_KICKOFF_CHECKLIST_ITEMS } from '../project-kickoff-checklist.constants';
-import { attachProductDeliveryLifecycle, buildDeliveryLifecycleWrite } from '../delivery-lifecycle';
+import {
+  attachProductDeliveryLifecycle,
+  buildDeliveryLifecycleWrite,
+  buildDeliveryPauseWrite,
+  buildDeliveryResumeWrite,
+  productLegacyStatusForStage,
+} from '../delivery-lifecycle';
 
 interface CreateProductDto {
   projectId: string;
@@ -35,6 +41,15 @@ interface UpdateProductDto {
   deadline?: string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+}
+
+interface PauseDeliveryDto {
+  reason: string;
+  onHoldUntil: string;
+}
+
+interface CancelDeliveryDto {
+  reason: string;
 }
 
 interface ProductQueryParams {
@@ -206,6 +221,53 @@ export class ProductsService {
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
+  async pause(id: string, data: PauseDeliveryDto) {
+    const product = await this.findById(id);
+    this.ensureNotTerminal(product.deliveryLifecycle.resolution);
+    const reason = requireText(data.reason, 'reason');
+    const onHoldUntil = parseFutureDate(data.onHoldUntil, 'onHoldUntil');
+    const updatedProduct = await this.prisma.product.update({
+      where: { id },
+      data: {
+        status: 'ON_HOLD',
+        ...buildDeliveryPauseWrite(product, reason, onHoldUntil),
+      },
+      include: { project: { select: { id: true, code: true, name: true } } },
+    });
+    return attachProductDeliveryLifecycle(updatedProduct);
+  }
+
+  async resume(id: string) {
+    const product = await this.findById(id);
+    this.ensureNotTerminal(product.deliveryLifecycle.resolution);
+    if (product.deliveryLifecycle.workStatus !== 'ON_HOLD') {
+      throw new BadRequestException('Product is not on hold');
+    }
+    const nextStatus = productLegacyStatusForStage(product.deliveryLifecycle.stage);
+    const updatedProduct = await this.prisma.product.update({
+      where: { id },
+      data: { status: nextStatus as ProductStatusEnum, ...buildDeliveryResumeWrite(product) },
+      include: { project: { select: { id: true, code: true, name: true } } },
+    });
+    return attachProductDeliveryLifecycle(updatedProduct);
+  }
+
+  async cancel(id: string, data: CancelDeliveryDto) {
+    const product = await this.findById(id);
+    this.ensureNotTerminal(product.deliveryLifecycle.resolution);
+    const reason = requireText(data.reason, 'reason');
+    const updatedProduct = await this.prisma.product.update({
+      where: { id },
+      data: {
+        status: 'LOST',
+        ...buildDeliveryLifecycleWrite('LOST', product),
+        cancellationReason: reason,
+      },
+      include: { project: { select: { id: true, code: true, name: true } } },
+    });
+    return attachProductDeliveryLifecycle(updatedProduct);
+  }
+
   async delete(id: string) {
     await this.findById(id);
     return this.prisma.product.delete({ where: { id } });
@@ -232,6 +294,12 @@ export class ProductsService {
     });
     validateKickoffChecklistGate(checklist.length > 0 ? checklist : getMissingKickoffChecklist());
   }
+
+  private ensureNotTerminal(resolution: string | null) {
+    if (resolution) {
+      throw new BadRequestException('Terminal delivery item cannot be changed');
+    }
+  }
 }
 
 function getMissingKickoffChecklist() {
@@ -241,4 +309,17 @@ function getMissingKickoffChecklist() {
     isRequired: item.isRequired,
     isChecked: false,
   }));
+}
+
+function requireText(value: string | undefined, field: string) {
+  const text = value?.trim();
+  if (!text) throw new BadRequestException(`${field} is required`);
+  return text;
+}
+
+function parseFutureDate(value: string | undefined, field: string) {
+  const raw = requireText(value, field);
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} is invalid`);
+  return date;
 }
