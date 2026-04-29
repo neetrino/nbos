@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Download, Hash, Loader2, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Download, Hash, Loader2, TableProperties, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ErrorState, LoadingState } from '@/components/shared';
@@ -19,6 +19,7 @@ import {
   uniqueProjectsFromRows,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
 import { useBonusBoardCsvExport } from '@/features/finance/components/bonus/use-bonus-board-csv-export';
+import { useBonusScopeStatsCsvExport } from '@/features/finance/components/bonus/use-bonus-scope-stats-csv-export';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -143,6 +144,8 @@ export function BonusBoardPageContent() {
     serverProjectScope,
   );
 
+  const { handleExportScopeStatsCsv } = useBonusScopeStatsCsvExport(stats);
+
   const canUseGlobalBonusStats = useMemo(
     () =>
       search.trim() === '' &&
@@ -212,22 +215,35 @@ export function BonusBoardPageContent() {
             ) : null}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="shrink-0 gap-1.5"
-          disabled={exportCsvSubmitting || filtered.length === 0}
-          onClick={() => handleExportCsv()}
-          title="UTF-8 CSV of visible rows plus a final amount total row (same filters as the board)"
-        >
-          {exportCsvSubmitting ? (
-            <Loader2 size={14} className="animate-spin" aria-hidden />
-          ) : (
-            <Download size={14} aria-hidden />
-          )}
-          Export CSV
-        </Button>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || !stats}
+            onClick={() => handleExportScopeStatsCsv()}
+            aria-label="Export bonus scope statistics as CSV"
+            title="UTF-8 CSV from GET /api/bonus/stats (global workspace totals; board filters not applied—see scope_note). Unavailable when list uses server ?projectId=."
+          >
+            <TableProperties size={16} aria-hidden />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={exportCsvSubmitting || filtered.length === 0}
+            onClick={() => handleExportCsv()}
+            title="UTF-8 CSV of visible rows plus a final amount total row (same filters as the board)"
+          >
+            {exportCsvSubmitting ? (
+              <Loader2 size={14} className="animate-spin" aria-hidden />
+            ) : (
+              <Download size={14} aria-hidden />
+            )}
+            Export CSV
+          </Button>
+        </div>
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
