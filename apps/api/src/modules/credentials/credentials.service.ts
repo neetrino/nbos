@@ -10,6 +10,12 @@ type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
 
 type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
 
+/** Caller identity for row-level credential access (mirrors list visibility rules). */
+export interface CredentialsAccessContext {
+  employeeId: string;
+  departmentIds: string[];
+}
+
 interface CredentialQueryParams {
   page?: number;
   pageSize?: number;
@@ -182,8 +188,15 @@ export class CredentialsService {
     employeeId: string,
     departmentIds: string[],
   ) {
-    where.OR = [
-      ...(where.OR ?? []),
+    where.OR = [...(where.OR ?? []), ...this.visibilityAccessOr(employeeId, departmentIds)];
+  }
+
+  /** Same rules as list `applyVisibilityFilter` OR branch, for single-row guards. */
+  private visibilityAccessOr(
+    employeeId: string,
+    departmentIds: string[],
+  ): Prisma.CredentialWhereInput[] {
+    return [
       { accessLevel: 'ALL' },
       { accessLevel: 'PERSONAL', ownerId: employeeId },
       ...(departmentIds.length > 0
@@ -211,9 +224,12 @@ export class CredentialsService {
     ];
   }
 
-  async findById(id: string, userId: string) {
-    const credential = await this.prisma.credential.findUnique({
-      where: { id },
+  async findById(id: string, access: CredentialsAccessContext) {
+    const credential = await this.prisma.credential.findFirst({
+      where: {
+        id,
+        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+      },
       include: { project: { select: { id: true, name: true } } },
     });
     if (!credential) throw new NotFoundException(`Credential ${id} not found`);
@@ -222,7 +238,7 @@ export class CredentialsService {
       entityType: 'credential',
       entityId: id,
       action: 'credential.view',
-      userId,
+      userId: access.employeeId,
       projectId: credential.projectId ?? undefined,
     });
 
@@ -265,8 +281,13 @@ export class CredentialsService {
     return this.decryptSensitive(credential);
   }
 
-  async update(id: string, data: UpdateCredentialDto, userId: string) {
-    const existing = await this.prisma.credential.findUnique({ where: { id } });
+  async update(id: string, data: UpdateCredentialDto, access: CredentialsAccessContext) {
+    const existing = await this.prisma.credential.findFirst({
+      where: {
+        id,
+        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+      },
+    });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
 
     const encrypted = this.encryptSensitive(data);
@@ -301,7 +322,7 @@ export class CredentialsService {
       entityType: 'credential',
       entityId: id,
       action: 'credential.update',
-      userId,
+      userId: access.employeeId,
       projectId: credential.projectId ?? undefined,
       changes: changedFields,
     });
@@ -309,8 +330,13 @@ export class CredentialsService {
     return this.decryptSensitive(credential);
   }
 
-  async delete(id: string, userId: string) {
-    const existing = await this.prisma.credential.findUnique({ where: { id } });
+  async delete(id: string, access: CredentialsAccessContext) {
+    const existing = await this.prisma.credential.findFirst({
+      where: {
+        id,
+        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+      },
+    });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
 
     await this.prisma.credential.delete({ where: { id } });
@@ -319,7 +345,7 @@ export class CredentialsService {
       entityType: 'credential',
       entityId: id,
       action: 'credential.delete',
-      userId,
+      userId: access.employeeId,
       projectId: existing.projectId ?? undefined,
     });
   }

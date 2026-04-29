@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                                         |
-| ------------- | ------------------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**                       |
-| Current task  | Phase 5 Documents — remaining Drive/Documents polish per plan |
-| Status        | Phase 5 in progress                                           |
-| Last updated  | 2026-04-29                                                    |
+| Field         | Value                                                       |
+| ------------- | ----------------------------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge**                     |
+| Current task  | Phase 5 — Credentials row-level access on get/update/delete |
+| Status        | Phase 5 in progress                                         |
+| Last updated  | 2026-04-29                                                  |
 
 ## Phase Snapshot
 
@@ -87,6 +87,7 @@ Future Finance depth:
 | 2026-04-29 | Document list search + attachments   | List `search` OR-path on linked `file_assets` names; `searchSnippet` fallback from attachment display/original names (not in `search_vector` yet).                      |
 | 2026-04-29 | Document attachment FTS column       | `documents.attachment_search_vector` + GIN; triggers on `document_attachments` and `file_assets` updates; list FTS rank blends attachment matches (weight constant).    |
 | 2026-04-29 | Document restore from archive        | `POST /api/documents/:id/restore` (DELETE perm); PUBLISHED if `published_at` set else DRAFT; web Restore on archived detail; activity `restored` + snippet hint.        |
+| 2026-04-29 | Credentials row-level access         | `GET/PUT/DELETE /credentials/:id` use list-equivalent visibility (`findFirst` + OR); view audit only after row found; no secret leak by id alone.                       |
 
 ## Next Action
 
