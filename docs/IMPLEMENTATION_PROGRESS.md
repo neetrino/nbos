@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                               |
-| ------------- | --------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**             |
-| Current task  | Phase 5 — Credentials URL-open audit + vault polish |
-| Status        | Phase 5 in progress                                 |
-| Last updated  | 2026-04-29                                          |
+| Field         | Value                                                |
+| ------------- | ---------------------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge**              |
+| Current task  | Phase 5 — Credentials vault UX (edit metadata in UI) |
+| Status        | Phase 5 in progress                                  |
+| Last updated  | 2026-04-29                                           |
 
 ## Phase Snapshot
 
@@ -90,6 +90,7 @@ Future Finance depth:
 | 2026-04-29 | Credentials row-level access         | `GET/PUT/DELETE /credentials/:id` use list-equivalent visibility (`findFirst` + OR); view audit only after row found; no secret leak by id alone.                                 |
 | 2026-04-29 | Credentials reveal/copy + redaction  | List/detail/create/update omit secret blobs; `secretsPresent`; `POST …/secrets/reveal` and `…/secrets/copy` + audit; web vault dialog; project credentials select strips secrets. |
 | 2026-04-29 | Credentials URL open audit           | `POST /api/credentials/:id/open-url` validates http(s), audit `credential.url_opened`, returns URL; web vault dialog, credentials list, project Credentials tab use it.           |
+| 2026-04-29 | Credentials web edit dialog          | `/credentials` table Edit (CREDENTIALS EDIT): load detail, save via `PUT /api/credentials/:id`; optional new password; phone + SECRET allow-list like create.                     |
 
 ## Next Action
 

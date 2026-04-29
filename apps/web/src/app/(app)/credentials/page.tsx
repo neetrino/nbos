@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
+  Pencil,
   RefreshCcw,
   KeyRound,
   Eye,
@@ -49,6 +50,7 @@ import {
   getAccessLevel,
 } from '@/features/credentials/constants/credentials';
 import { CredentialDetailDialog } from '@/features/credentials/components/CredentialDetailDialog';
+import { EditCredentialDialog } from '@/features/credentials/components/EditCredentialDialog';
 import { credentialsApi } from '@/lib/api/credentials';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { PermissionGate } from '@/lib/permissions';
@@ -94,6 +96,8 @@ export default function CredentialsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [detailCredentialId, setDetailCredentialId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [editCredentialId, setEditCredentialId] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const fetchCredentials = useCallback(async () => {
     setLoading(true);
@@ -194,6 +198,10 @@ export default function CredentialsPage() {
                 setDetailCredentialId(id);
                 setDetailOpen(true);
               }}
+              onOpenEdit={(id) => {
+                setEditCredentialId(id);
+                setEditOpen(true);
+              }}
             />
           </TabsContent>
         ))}
@@ -213,6 +221,16 @@ export default function CredentialsPage() {
           if (!open) setDetailCredentialId(null);
         }}
       />
+
+      <EditCredentialDialog
+        credentialId={editCredentialId}
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open);
+          if (!open) setEditCredentialId(null);
+        }}
+        onSaved={fetchCredentials}
+      />
     </div>
   );
 }
@@ -225,6 +243,7 @@ function CredentialTable({
   onCopy,
   onCreateOpen,
   onOpenVault,
+  onOpenEdit,
 }: {
   credentials: CredentialListItem[];
   loading: boolean;
@@ -233,6 +252,7 @@ function CredentialTable({
   onCopy: (text: string) => void;
   onCreateOpen: () => void;
   onOpenVault: (id: string) => void;
+  onOpenEdit: (id: string) => void;
 }) {
   if (loading) {
     return (
@@ -274,6 +294,7 @@ function CredentialTable({
             <TableHead>Owner</TableHead>
             <TableHead>Project</TableHead>
             <TableHead>URL</TableHead>
+            <TableHead className="w-20 text-center">Edit</TableHead>
             <TableHead className="w-24 text-right">Vault</TableHead>
           </TableRow>
         </TableHeader>
@@ -369,6 +390,22 @@ function CredentialTable({
                   ) : (
                     '—'
                   )}
+                </TableCell>
+                <TableCell className="text-center">
+                  <PermissionGate module="CREDENTIALS" action="EDIT">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      title="Edit credential"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenEdit(cred.id);
+                      }}
+                    >
+                      <Pencil size={12} />
+                    </Button>
+                  </PermissionGate>
                 </TableCell>
                 <TableCell className="text-right">
                   <PermissionGate module="CREDENTIALS" action="VIEW">
