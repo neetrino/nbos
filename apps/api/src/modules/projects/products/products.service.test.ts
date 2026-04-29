@@ -315,6 +315,48 @@ describe('ProductsService', () => {
       expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
+    it('completes product delivery through dedicated action', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'DONE',
+        deliveryStage: null,
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'DONE',
+      });
+
+      const result = await service.complete('p1');
+
+      expect(prisma.product.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'DONE',
+            deliveryStage: null,
+            deliveryWorkStatus: 'ACTIVE',
+            deliveryResolution: 'DONE',
+          }),
+        }),
+      );
+      expect(result.deliveryLifecycle.resolution).toBe('DONE');
+    });
+
+    it('blocks completion while product is paused', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'ON_HOLD',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ON_HOLD',
+      });
+
+      await expect(service.complete('p1')).rejects.toThrow(BadRequestException);
+      expect(prisma.product.update).not.toHaveBeenCalled();
+    });
+
     it('pauses product delivery with canonical hold fields', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
       prisma.product.update.mockResolvedValue({

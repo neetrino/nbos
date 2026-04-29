@@ -51,6 +51,8 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
       const stage = PRODUCT_STAGE_BY_STATUS[newStatus];
       if (stage) {
         await productsApi.moveStage(product.id, { stage });
+      } else if (newStatus === 'DONE') {
+        await productsApi.complete(product.id);
       } else {
         await productsApi.updateStatus(product.id, newStatus);
       }

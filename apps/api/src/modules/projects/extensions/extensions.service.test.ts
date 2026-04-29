@@ -295,6 +295,48 @@ describe('ExtensionsService', () => {
       expect(prisma.extension.update).not.toHaveBeenCalled();
     });
 
+    it('completes extension delivery through dedicated action', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'DONE',
+        deliveryStage: null,
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'DONE',
+      });
+
+      const result = await service.complete('e1');
+
+      expect(prisma.extension.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'DONE',
+            deliveryStage: null,
+            deliveryWorkStatus: 'ACTIVE',
+            deliveryResolution: 'DONE',
+          }),
+        }),
+      );
+      expect(result.deliveryLifecycle.resolution).toBe('DONE');
+    });
+
+    it('blocks completion while extension is paused', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'TRANSFER',
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ON_HOLD',
+      });
+
+      await expect(service.complete('e1')).rejects.toThrow(BadRequestException);
+      expect(prisma.extension.update).not.toHaveBeenCalled();
+    });
+
     it('pauses extension delivery without changing legacy stage status', async () => {
       prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'QA' });
       prisma.extension.update.mockResolvedValue({

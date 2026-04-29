@@ -148,6 +148,11 @@ export const extensionsApi = {
     return resp.data;
   },
 
+  async complete(id: string): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/complete`);
+    return resp.data;
+  },
+
   async delete(id: string): Promise<void> {
     await api.delete(`/api/projects/extensions/${id}`);
   },

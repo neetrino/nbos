@@ -273,6 +273,26 @@ export class ExtensionsService {
     return attachExtensionReadiness(updated);
   }
 
+  async complete(id: string) {
+    const extension = await this.findById(id);
+    this.ensureActiveForStageMove(extension.deliveryLifecycle);
+    const target = 'DONE' as ExtensionStatusEnum;
+
+    validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
+    validateExtensionStageGate(extension, target);
+
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
   async delete(id: string) {
     await this.findById(id);
     return this.prisma.extension.delete({ where: { id } });

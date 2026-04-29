@@ -127,6 +127,17 @@ These actions accept canonical stages only:
 
 Product and extension UI stage controls now use these canonical endpoints for active-stage movement. Legacy `status` endpoints remain available as compatibility paths and for still-unseparated terminal actions.
 
+### A8. Dedicated complete actions exist
+
+Статус: `PHASE 4 ACTION ALIGNMENT`
+
+Runtime now exposes explicit terminal completion actions for both `Product` and `Extension`:
+
+- `PATCH /api/projects/products/:id/complete`;
+- `PATCH /api/projects/extensions/:id/complete`.
+
+These actions set canonical `delivery_resolution = DONE`, clear active stage fields and keep legacy `status = DONE` only for compatibility. Product and extension UI terminal controls now use these actions instead of the legacy generic `status` endpoint.
+
 ---
 
 ## B. Устарело только в документации или описаниях

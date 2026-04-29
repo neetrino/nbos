@@ -291,6 +291,22 @@ export class ProductsService {
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
+  async complete(id: string) {
+    const product = await this.findById(id);
+    this.ensureActiveForStageMove(product.deliveryLifecycle);
+    const target = 'DONE' as ProductStatusEnum;
+
+    validateProductTransition(product.status as ProductStatusEnum, target);
+    validateProductStageGate(product, target);
+
+    const updatedProduct = await this.prisma.product.update({
+      where: { id },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
+      include: { project: { select: { id: true, code: true, name: true } } },
+    });
+    return attachProductDeliveryLifecycle(updatedProduct);
+  }
+
   async delete(id: string) {
     await this.findById(id);
     return this.prisma.product.delete({ where: { id } });

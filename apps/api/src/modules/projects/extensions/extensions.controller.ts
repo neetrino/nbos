@@ -127,6 +127,12 @@ export class ExtensionsController {
     return this.extensionsService.cancel(id, body);
   }
 
+  @Patch(':id/complete')
+  @ApiOperation({ summary: 'Complete extension delivery' })
+  async complete(@Param('id') id: string) {
+    return this.extensionsService.complete(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete extension' })

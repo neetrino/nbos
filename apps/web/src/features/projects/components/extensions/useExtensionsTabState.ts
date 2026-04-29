@@ -72,9 +72,7 @@ function useExtensionStatusChange(
     async (extension: Extension, newStatus: string) => {
       try {
         const stage = EXTENSION_STAGE_BY_STATUS[newStatus];
-        const updated = stage
-          ? await extensionsApi.moveStage(extension.id, { stage })
-          : await extensionsApi.updateStatus(extension.id, newStatus);
+        const updated = await updateExtensionDeliveryStatus(extension, newStatus, stage);
         setExtensions((current) => replaceExtension(current, updated));
         setBlocker(null);
       } catch (error) {
@@ -83,6 +81,16 @@ function useExtensionStatusChange(
     },
     [setBlocker, setExtensions],
   );
+}
+
+async function updateExtensionDeliveryStatus(
+  extension: Extension,
+  newStatus: string,
+  stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER' | undefined,
+) {
+  if (stage) return extensionsApi.moveStage(extension.id, { stage });
+  if (newStatus === 'DONE') return extensionsApi.complete(extension.id);
+  return extensionsApi.updateStatus(extension.id, newStatus);
 }
 
 function replaceExtension(extensions: Extension[], updated: Extension) {

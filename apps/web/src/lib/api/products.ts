@@ -163,6 +163,11 @@ export const productsApi = {
     return resp.data;
   },
 
+  async complete(id: string): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/complete`);
+    return resp.data;
+  },
+
   async delete(id: string): Promise<void> {
     await api.delete(`/api/projects/products/${id}`);
   },

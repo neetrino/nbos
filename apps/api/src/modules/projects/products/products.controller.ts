@@ -131,6 +131,12 @@ export class ProductsController {
     return this.productsService.cancel(id, body);
   }
 
+  @Patch(':id/complete')
+  @ApiOperation({ summary: 'Complete product delivery' })
+  async complete(@Param('id') id: string) {
+    return this.productsService.complete(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete product' })
