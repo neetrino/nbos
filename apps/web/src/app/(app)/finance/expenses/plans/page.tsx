@@ -1,8 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { CalendarDays, FileOutput, Loader2, Plus, RefreshCcw, Trash2, Wand2 } from 'lucide-react';
+import {
+  CalendarDays,
+  Download,
+  FileOutput,
+  Loader2,
+  Plus,
+  RefreshCcw,
+  Trash2,
+  Wand2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -17,6 +26,7 @@ import { formatAmount } from '@/features/finance/constants/finance';
 import { expensePlansListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { CreateExpensePlanDialog } from '@/features/finance/components/expenses/CreateExpensePlanDialog';
 import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components/expenses/GenerateExpenseCardFromPlanDialog';
+import { useExpensePlansCsvExport } from '@/features/finance/components/expenses/use-expense-plans-csv-export';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -36,6 +46,15 @@ export default function ExpensePlansPage() {
   const [generateOpen, setGenerateOpen] = useState(false);
   const [generatePlan, setGeneratePlan] = useState<ExpensePlan | null>(null);
   const [autoRunning, setAutoRunning] = useState(false);
+
+  const expensePlanListExportParams = useMemo(
+    () => ({ sortBy: 'name', sortOrder: 'asc' as const }),
+    [],
+  );
+
+  const { exportCsvSubmitting, handleExportCsv } = useExpensePlansCsvExport(
+    expensePlanListExportParams,
+  );
 
   const fetchPlans = useCallback(async () => {
     setLoading(true);
@@ -98,9 +117,24 @@ export default function ExpensePlansPage() {
     <div className="flex h-full flex-col gap-5">
       <PageHeader
         title="Expense plans"
-        description="Recurring or expected outgoing spend (NBOS Expense Plan). Cards and payments stay on the Board."
+        description="Recurring or expected outgoing spend (NBOS Expense Plan). Cards and payments stay on the Board. CSV export lists all plans (paged fetch, name sort) with UTF-8 BOM and a trailing money + linked-card total row."
       >
         <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={loading || exportCsvSubmitting}
+            onClick={() => void handleExportCsv()}
+            title="UTF-8 CSV of all expense plans (name ascending), including grand totals"
+          >
+            {exportCsvSubmitting ? (
+              <Loader2 size={16} className="mr-1 animate-spin" aria-hidden />
+            ) : (
+              <Download size={16} className="mr-1" aria-hidden />
+            )}
+            Export CSV
+          </Button>
           <Button type="button" variant="outline" size="sm" onClick={() => void fetchPlans()}>
             <RefreshCcw size={16} className="mr-1" />
             Refresh

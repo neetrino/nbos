@@ -38,8 +38,18 @@ export interface CreateExpensePlanPayload {
   notes?: string | null;
 }
 
+export interface ExpensePlanListParams {
+  page?: number;
+  pageSize?: number;
+  projectId?: string;
+  category?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
 export const expensePlansApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<ExpensePlan>> {
+  async getAll(params?: ExpensePlanListParams): Promise<ListData<ExpensePlan>> {
     const resp = await api.get<ListData<ExpensePlan>>('/api/expense-plans', { params });
     return resp.data;
   },
