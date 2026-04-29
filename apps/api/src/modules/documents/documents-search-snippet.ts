@@ -1,5 +1,24 @@
 const SNIPPET_RADIUS_CHARS = 110;
 
+export type AttachmentFileNameRow = {
+  fileAsset: { displayName: string; originalName: string | null };
+};
+
+/** Builds a flat list of searchable file labels from list `attachments` include. */
+export function collectAttachmentSearchNames(
+  attachments: AttachmentFileNameRow[] | undefined,
+): string[] | undefined {
+  if (!attachments?.length) return undefined;
+  const names: string[] = [];
+  for (const a of attachments) {
+    const primary = a.fileAsset.displayName?.trim();
+    const orig = a.fileAsset.originalName?.trim();
+    if (primary) names.push(primary);
+    if (orig && orig !== primary) names.push(orig);
+  }
+  return names.length > 0 ? names : undefined;
+}
+
 /**
  * Short excerpt around the first case-insensitive match of `term`, for list cards.
  */
@@ -8,6 +27,7 @@ export function pickDocumentSearchSnippet(
   description: string | null | undefined,
   title: string,
   termRaw: string,
+  attachmentFileNames?: readonly string[],
 ): string | undefined {
   const term = termRaw.trim().toLowerCase();
   if (!term) return undefined;
@@ -25,7 +45,15 @@ export function pickDocumentSearchSnippet(
     return `${prefix}${slice}${suffix}`;
   };
 
+  const attachmentBlob =
+    attachmentFileNames && attachmentFileNames.length > 0
+      ? attachmentFileNames.filter((n) => n.trim().length > 0).join('\n')
+      : undefined;
+
   return (
-    pick(plainText) ?? pick(description) ?? (title.toLowerCase().includes(term) ? title : undefined)
+    pick(plainText) ??
+    pick(description) ??
+    (title.toLowerCase().includes(term) ? title : undefined) ??
+    pick(attachmentBlob)
   );
 }

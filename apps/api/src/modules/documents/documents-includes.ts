@@ -8,6 +8,17 @@ export const DOCUMENT_LIST_INCLUDE: Prisma.DocumentInclude = {
   tagLinks: { include: { tag: { select: { id: true, name: true, slug: true } } } },
 };
 
+/** List rows when `search` is set: attachment file names feed snippet fallback. */
+export const DOCUMENT_LIST_SEARCH_INCLUDE: Prisma.DocumentInclude = {
+  ...DOCUMENT_LIST_INCLUDE,
+  attachments: {
+    select: {
+      id: true,
+      fileAsset: { select: { displayName: true, originalName: true } },
+    },
+  },
+};
+
 const documentDetailSectionSelect = {
   id: true,
   name: true,

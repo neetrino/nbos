@@ -115,6 +115,18 @@ export async function searchDocumentIdsForList(
         INNER JOIN document_tags dt ON dt.id = dtl.tag_id
         WHERE dtl.document_id = d.id AND dt.name ILIKE ${pattern} ESCAPE '\\'
       )
+      OR EXISTS (
+        SELECT 1
+        FROM document_attachments da
+        INNER JOIN file_assets fa ON fa.id = da.file_asset_id
+        WHERE da.document_id = d.id
+          AND fa.deleted_at IS NULL
+          AND fa.status = ${'ACTIVE'}::"FileAssetStatusEnum"
+          AND (
+            fa.display_name ILIKE ${pattern} ESCAPE '\\'
+            OR COALESCE(fa.original_name, '') ILIKE ${pattern} ESCAPE '\\'
+          )
+      )
     )
     ORDER BY rank DESC, d.updated_at DESC
     LIMIT ${params.limit}

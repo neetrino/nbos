@@ -32,6 +32,7 @@ import {
 } from './documents-update-policy';
 import {
   DOCUMENT_LIST_INCLUDE,
+  DOCUMENT_LIST_SEARCH_INCLUDE,
   DOCUMENT_DETAIL_INCLUDE,
   DOCUMENT_DETAIL_WITHOUT_ACTIVITY,
 } from './documents-includes';
@@ -49,7 +50,11 @@ import {
   encodeDocumentActivityCursor,
 } from './documents-activity-cursor';
 import { searchDocumentIdsForList } from './documents-list-fts';
-import { pickDocumentSearchSnippet } from './documents-search-snippet';
+import {
+  type AttachmentFileNameRow,
+  collectAttachmentSearchNames,
+  pickDocumentSearchSnippet,
+} from './documents-search-snippet';
 import { slugifyTitle } from './documents-slug';
 import type {
   AddDocumentAttachmentDto,
@@ -128,13 +133,24 @@ export class DocumentsService {
     const ids = ranked.map((r) => r.id);
     const rows = await this.prisma.document.findMany({
       where: { ...where, id: { in: ids } },
-      include: DOCUMENT_LIST_INCLUDE,
+      include: DOCUMENT_LIST_SEARCH_INCLUDE,
     });
     const sorted = [...rows].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
-    return sorted.map((r) => ({
-      ...r,
-      searchSnippet: pickDocumentSearchSnippet(r.plainText, r.description, r.title, searchTerm),
-    }));
+    return sorted.map((r) => {
+      const { attachments, ...rest } = r;
+      return {
+        ...rest,
+        searchSnippet: pickDocumentSearchSnippet(
+          rest.plainText,
+          rest.description,
+          rest.title,
+          searchTerm,
+          collectAttachmentSearchNames(
+            attachments as unknown as AttachmentFileNameRow[] | undefined,
+          ),
+        ),
+      };
+    });
   }
 
   async getDocument(id: string, access: DocumentsDetailAccess) {

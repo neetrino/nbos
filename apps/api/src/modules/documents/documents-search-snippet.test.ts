@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { pickDocumentSearchSnippet } from './documents-search-snippet';
+import {
+  collectAttachmentSearchNames,
+  pickDocumentSearchSnippet,
+} from './documents-search-snippet';
 
 describe('pickDocumentSearchSnippet', () => {
   it('returns window around match in plain text', () => {
@@ -16,5 +19,30 @@ describe('pickDocumentSearchSnippet', () => {
 
   it('returns undefined when nothing matches', () => {
     expect(pickDocumentSearchSnippet('a', 'b', 'c', 'zzz')).toBeUndefined();
+  });
+
+  it('falls back to attachment file names when body and title miss', () => {
+    const s = pickDocumentSearchSnippet('no match', null, 'Title', 'payroll', [
+      'Q4 payroll export.xlsx',
+    ]);
+    expect(s).toContain('payroll');
+  });
+});
+
+describe('collectAttachmentSearchNames', () => {
+  it('dedupes when display equals original', () => {
+    expect(
+      collectAttachmentSearchNames([
+        { fileAsset: { displayName: 'Spec.pdf', originalName: 'Spec.pdf' } },
+      ]),
+    ).toEqual(['Spec.pdf']);
+  });
+
+  it('includes both when display and original differ', () => {
+    expect(
+      collectAttachmentSearchNames([
+        { fileAsset: { displayName: 'Shown name', originalName: 'raw.bin' } },
+      ]),
+    ).toEqual(['Shown name', 'raw.bin']);
   });
 });
