@@ -41,6 +41,8 @@
 - нет Drive attachments;
 - нет permission model и audit log.
 
+**Partial (2026-04-29):** MVP HTTP routes use `RequirePermission` (`MESSENGER` VIEW / ADD / EDIT); channel and DM send use the authenticated employee id and display name (no client-supplied `senderId`).
+
 ## C. Старый Messenger doc заменён
 
 Старый `01-Messenger-Overview.md` описывал:
