@@ -33,6 +33,13 @@ interface TicketQueryParams {
   search?: string;
 }
 
+/** Workspace aggregates from `GET /api/support/stats` (Prisma `groupBy`). */
+export interface SupportStats {
+  byStatus: Array<{ status: string; _count: number }>;
+  byPriority: Array<{ priority: string; _count: number }>;
+  byCategory: Array<{ category: string; _count: number }>;
+}
+
 export const supportApi = {
   async getAll(params?: TicketQueryParams): Promise<ListData<SupportTicket>> {
     const resp = await api.get<ListData<SupportTicket>>('/api/support', { params });
@@ -65,8 +72,8 @@ export const supportApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/support/${id}`);
   },
-  async getStats() {
-    const resp = await api.get('/api/support/stats');
+  async getStats(): Promise<SupportStats> {
+    const resp = await api.get<SupportStats>('/api/support/stats');
     return resp.data;
   },
 };

@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, RefreshCcw, Headphones, LayoutGrid, List, FolderKanban } from 'lucide-react';
+import {
+  Plus,
+  RefreshCcw,
+  Headphones,
+  LayoutGrid,
+  List,
+  FolderKanban,
+  TableProperties,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -29,6 +37,8 @@ import {
   getTicketStatus,
 } from '@/features/support/constants/support';
 import { api } from '@/lib/api';
+import { supportApi, type SupportStats } from '@/lib/api/support';
+import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-scope-stats-csv-export';
 
 interface Ticket {
   id: string;
@@ -49,11 +59,14 @@ type ViewMode = 'kanban' | 'list';
 
 export default function SupportPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [stats, setStats] = useState<SupportStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('list');
+
+  const { handleExportScopeStatsCsv } = useSupportScopeStatsCsvExport(stats);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -68,8 +81,14 @@ export default function SupportPage() {
       });
       setTickets(resp.data.items ?? resp.data ?? []);
       setError(null);
+      try {
+        setStats(await supportApi.getStats());
+      } catch {
+        setStats(null);
+      }
     } catch {
       setError('Support tickets could not be loaded. Check your connection and try again.');
+      setStats(null);
     } finally {
       setLoading(false);
     }
@@ -109,8 +128,24 @@ export default function SupportPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Support" description={`${openTickets.length} open tickets`}>
-        <Button variant="outline" size="icon" onClick={fetchTickets}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={fetchTickets}
+          aria-label="Refresh support tickets"
+        >
           <RefreshCcw size={16} />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          disabled={loading || !stats}
+          onClick={() => handleExportScopeStatsCsv()}
+          aria-label="Export support scope statistics as CSV"
+          title="UTF-8 CSV snapshot from GET /api/support/stats (workspace-wide groupBy; list filters not applied—see scope_note row)"
+        >
+          <TableProperties size={16} aria-hidden />
         </Button>
         <div className="border-border flex rounded-lg border">
           <Button
