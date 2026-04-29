@@ -55,6 +55,10 @@ export function validateProductStageGate(product: ProductForStageGate, target: P
     validateProductCreatingGate(product);
   }
 
+  if (product.status === 'DEVELOPMENT' && target === 'QA') {
+    validateProductQaGate(product);
+  }
+
   if (target === 'DONE') {
     validateProductDoneGate(product);
   }
@@ -71,6 +75,23 @@ function validateProductCreatingGate(product: ProductForStageGate) {
       `Cannot transition to CREATING: missing required fields ${missing.join(', ')}`,
     );
   }
+}
+
+function validateProductQaGate(product: ProductForStageGate) {
+  const errors = buildOpenItemError('tasks', product.tasks ?? [], [
+    'DONE',
+    'DEFERRED',
+    'CANCELLED',
+  ]);
+
+  if (errors.length === 0) return;
+
+  throw new BadRequestException({
+    statusCode: 400,
+    code: 'STAGE_GATE_VALIDATION',
+    message: 'Cannot move product to QA while execution tasks are still open.',
+    errors,
+  });
 }
 
 function validateProductDoneGate(product: ProductForStageGate) {

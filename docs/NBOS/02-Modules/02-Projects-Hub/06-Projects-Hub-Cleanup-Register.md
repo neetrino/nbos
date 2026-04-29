@@ -241,6 +241,18 @@ Stage-gate UI now gives operators clearer context without changing runtime rules
 
 This keeps gates enforceable in backend services while making the UI explain why movement is allowed or blocked.
 
+### A17. Product QA gate blocks open execution tasks
+
+Статус: `PHASE 4 RUNTIME ALIGNMENT`
+
+Product stage-gate runtime now enforces a first `Development -> QA` rule:
+
+- Product cannot move from `Development` to `QA` while linked Product tasks are open;
+- closed task statuses for this gate are `DONE`, `DEFERRED` and `CANCELLED`;
+- blocker response uses the existing structured stage-gate error shape.
+
+This implements the canon rule that execution work must be closed before QA while keeping deeper QA/deployment checklists for later runtime slices.
+
 ---
 
 ## B. Устарело только в документации или описаниях

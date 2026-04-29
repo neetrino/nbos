@@ -140,8 +140,29 @@ describe('ProductsService', () => {
       expect(result.status).toBe('CREATING');
     });
 
-    it('allows DEVELOPMENT → QA', async () => {
-      prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
+    it('blocks DEVELOPMENT → QA when product tasks are still open', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'DEVELOPMENT',
+        tasks: [{ status: 'IN_PROGRESS' }, { status: 'DONE' }],
+      });
+
+      const error = await service.updateStatus('p1', 'QA').catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: 'STAGE_GATE_VALIDATION',
+        errors: [{ field: 'tasks', message: expect.any(String) }],
+      });
+      expect(prisma.product.update).not.toHaveBeenCalled();
+    });
+
+    it('allows DEVELOPMENT → QA when product tasks are closed', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'DEVELOPMENT',
+        tasks: [{ status: 'DONE' }, { status: 'DEFERRED' }],
+      });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'QA' });
       const result = await service.updateStatus('p1', 'QA');
       expect(result.status).toBe('QA');
