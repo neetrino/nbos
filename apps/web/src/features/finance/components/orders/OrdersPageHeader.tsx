@@ -1,4 +1,4 @@
-import { Download, Loader2, Plus, RefreshCcw } from 'lucide-react';
+import { Download, Loader2, Plus, RefreshCcw, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
@@ -11,6 +11,8 @@ interface OrdersPageHeaderProps {
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
   exportInProgress: boolean;
+  statsExportDisabled: boolean;
+  onExportScopeStatsCsv: () => void;
 }
 
 export function OrdersPageHeader({
@@ -21,6 +23,8 @@ export function OrdersPageHeader({
   onExportCsv,
   exportDisabled,
   exportInProgress,
+  statsExportDisabled,
+  onExportScopeStatsCsv,
 }: OrdersPageHeaderProps) {
   return (
     <PageHeader title="Orders" description={description}>
@@ -38,6 +42,17 @@ export function OrdersPageHeader({
       </div>
       <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh orders">
         <RefreshCcw size={16} />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={statsExportDisabled}
+        onClick={() => onExportScopeStatsCsv()}
+        aria-label="Export order scope statistics as CSV"
+        title="UTF-8 CSV snapshot from GET /finance/orders/stats for the same query as the last load (see scope_note row for gap vs non-gap behavior)"
+      >
+        <TableProperties size={16} aria-hidden />
       </Button>
       <Button
         type="button"

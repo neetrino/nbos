@@ -29,6 +29,7 @@ import { OrdersPageHeader } from '@/features/finance/components/orders/OrdersPag
 import { OrdersStatsCards } from '@/features/finance/components/orders/OrdersStatsCards';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
 import { useOrdersCsvExport } from '@/features/finance/components/orders/use-orders-csv-export';
+import { useOrdersScopeStatsCsvExport } from '@/features/finance/components/orders/use-orders-scope-stats-csv-export';
 import { buildOrderListApiParams } from '@/features/finance/utils/build-order-list-api-params';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import type { ListData } from '@/lib/api/finance-common';
@@ -74,6 +75,27 @@ function OrdersPageContent() {
 
   const { exportCsvSubmitting, handleExportCsv } = useOrdersCsvExport(orderListExportParams);
 
+  const orderStatsQueryParams = useMemo((): OrderStatsQueryParams => {
+    const periodParams = getFinancePeriodParams(period);
+    const statusFilter = filters.status && filters.status !== 'all' ? filters.status : undefined;
+    return {
+      ...periodParams,
+      ...(partnerIdFromUrl?.trim() ? { partnerId: partnerIdFromUrl.trim() } : {}),
+      ...(gap
+        ? {
+            gap,
+            status: statusFilter,
+            search: search.trim() || undefined,
+          }
+        : {}),
+    };
+  }, [period, partnerIdFromUrl, gap, filters.status, search]);
+
+  const { handleExportScopeStatsCsv } = useOrdersScopeStatsCsvExport(stats, {
+    period,
+    statsQuery: orderStatsQueryParams,
+  });
+
   const clearMutationError = useCallback(() => {
     setMutationError(null);
   }, []);
@@ -81,9 +103,7 @@ function OrdersPageContent() {
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
-      const periodParams = getFinancePeriodParams(period);
       const pageSize = gap ? ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE : 100;
-      const statusFilter = filters.status && filters.status !== 'all' ? filters.status : undefined;
       const listParams: OrderListParams = {
         ...buildOrderListApiParams({
           search,
@@ -94,20 +114,9 @@ function OrdersPageContent() {
         }),
         pageSize,
       };
-      const statsParams: OrderStatsQueryParams = {
-        ...periodParams,
-        ...(partnerIdFromUrl ? { partnerId: partnerIdFromUrl } : {}),
-        ...(gap
-          ? {
-              gap,
-              status: statusFilter,
-              search: search || undefined,
-            }
-          : {}),
-      };
       const [data, orderStats] = await Promise.all([
         ordersApi.getAll(listParams),
-        ordersApi.getStats(statsParams),
+        ordersApi.getStats(orderStatsQueryParams),
       ]);
       setOrders(data.items);
       setListMeta(data.meta);
@@ -124,7 +133,7 @@ function OrdersPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters, period, gap, partnerIdFromUrl]);
+  }, [search, filters, period, gap, partnerIdFromUrl, orderStatsQueryParams]);
 
   useEffect(() => {
     fetchOrders();
@@ -177,6 +186,8 @@ function OrdersPageContent() {
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={loading || !stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
       />
 
       {gap ? <ReconciliationGapBanner gap={gap} onClear={clearReconciliationGap} /> : null}
