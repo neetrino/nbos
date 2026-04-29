@@ -17,7 +17,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
+import { projectsApi } from '@/lib/api/projects';
 import { supportApi } from '@/lib/api/support';
+import { tasksApi } from '@/lib/api/tasks';
 
 interface DashboardData {
   revenue: { mtd: number; change: number };
@@ -93,10 +95,10 @@ export default function DashboardPage() {
     try {
       const [projectsRes, dealsRes, invoicesRes, tasksRes, ticketsRes, employeesRes] =
         await Promise.allSettled([
-          api.get('/api/projects/stats'),
+          projectsApi.getStats().then((data) => ({ data })),
           api.get('/api/crm/deals', { params: { pageSize: 200 } }),
           api.get('/api/finance/invoices', { params: { pageSize: 200 } }),
-          api.get('/api/tasks', { params: { pageSize: 200 } }),
+          tasksApi.getAll({ pageSize: 200 }).then((listData) => ({ data: listData })),
           supportApi.getAll({ pageSize: 200 }).then((listData) => ({ data: listData })),
           api.get('/api/employees'),
         ]);
@@ -110,7 +112,7 @@ export default function DashboardPage() {
 
       const deals = dealsData?.items ?? dealsData ?? [];
       const invoices = invoicesData?.items ?? invoicesData ?? [];
-      const tasks = tasksData?.items ?? tasksData ?? [];
+      const tasks = tasksData?.items ?? [];
       const tickets = ticketsData?.items ?? [];
       const employees = employeesData?.items ?? employeesData ?? [];
 

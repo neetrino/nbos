@@ -208,7 +208,17 @@ export interface ProjectListData {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+/** Workspace-wide counts from `GET /api/projects/stats`. */
+export interface ProjectWorkspaceStats {
+  total: number;
+}
+
 export const projectsApi = {
+  async getStats(): Promise<ProjectWorkspaceStats> {
+    const resp = await api.get<ProjectWorkspaceStats>('/api/projects/stats');
+    return resp.data;
+  },
+
   async getAll(params?: Record<string, unknown>): Promise<ProjectListData> {
     const resp = await api.get<ProjectListData>('/api/projects', { params });
     return resp.data;
