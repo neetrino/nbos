@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
   Pencil,
+  Trash2,
   RefreshCcw,
   KeyRound,
   Eye,
@@ -51,6 +52,7 @@ import {
 } from '@/features/credentials/constants/credentials';
 import { CredentialDetailDialog } from '@/features/credentials/components/CredentialDetailDialog';
 import { EditCredentialDialog } from '@/features/credentials/components/EditCredentialDialog';
+import { DeleteCredentialDialog } from '@/features/credentials/components/DeleteCredentialDialog';
 import { credentialsApi } from '@/lib/api/credentials';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { PermissionGate } from '@/lib/permissions';
@@ -98,6 +100,7 @@ export default function CredentialsPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [editCredentialId, setEditCredentialId] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const fetchCredentials = useCallback(async () => {
     setLoading(true);
@@ -202,6 +205,7 @@ export default function CredentialsPage() {
                 setEditCredentialId(id);
                 setEditOpen(true);
               }}
+              onRequestDelete={(id, name) => setDeleteTarget({ id, name })}
             />
           </TabsContent>
         ))}
@@ -231,6 +235,16 @@ export default function CredentialsPage() {
         }}
         onSaved={fetchCredentials}
       />
+
+      <DeleteCredentialDialog
+        credentialId={deleteTarget?.id ?? null}
+        credentialName={deleteTarget?.name ?? null}
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        onDeleted={fetchCredentials}
+      />
     </div>
   );
 }
@@ -244,6 +258,7 @@ function CredentialTable({
   onCreateOpen,
   onOpenVault,
   onOpenEdit,
+  onRequestDelete,
 }: {
   credentials: CredentialListItem[];
   loading: boolean;
@@ -253,6 +268,7 @@ function CredentialTable({
   onCreateOpen: () => void;
   onOpenVault: (id: string) => void;
   onOpenEdit: (id: string) => void;
+  onRequestDelete: (id: string, name: string) => void;
 }) {
   if (loading) {
     return (
@@ -294,7 +310,7 @@ function CredentialTable({
             <TableHead>Owner</TableHead>
             <TableHead>Project</TableHead>
             <TableHead>URL</TableHead>
-            <TableHead className="w-20 text-center">Edit</TableHead>
+            <TableHead className="w-28 text-center">Actions</TableHead>
             <TableHead className="w-24 text-right">Vault</TableHead>
           </TableRow>
         </TableHeader>
@@ -392,20 +408,37 @@ function CredentialTable({
                   )}
                 </TableCell>
                 <TableCell className="text-center">
-                  <PermissionGate module="CREDENTIALS" action="EDIT">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      title="Edit credential"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenEdit(cred.id);
-                      }}
-                    >
-                      <Pencil size={12} />
-                    </Button>
-                  </PermissionGate>
+                  <div className="flex items-center justify-center gap-0.5">
+                    <PermissionGate module="CREDENTIALS" action="EDIT">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        title="Edit credential"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenEdit(cred.id);
+                        }}
+                      >
+                        <Pencil size={12} />
+                      </Button>
+                    </PermissionGate>
+                    <PermissionGate module="CREDENTIALS" action="DELETE">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        title="Delete credential"
+                        className="text-destructive hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRequestDelete(cred.id, cred.name);
+                        }}
+                      >
+                        <Trash2 size={12} />
+                      </Button>
+                    </PermissionGate>
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <PermissionGate module="CREDENTIALS" action="VIEW">
