@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
+import { supportApi } from '@/lib/api/support';
 
 interface DashboardData {
   revenue: { mtd: number; change: number };
@@ -96,7 +97,7 @@ export default function DashboardPage() {
           api.get('/api/crm/deals', { params: { pageSize: 200 } }),
           api.get('/api/finance/invoices', { params: { pageSize: 200 } }),
           api.get('/api/tasks', { params: { pageSize: 200 } }),
-          api.get('/api/support', { params: { pageSize: 200 } }),
+          supportApi.getAll({ pageSize: 200 }).then((listData) => ({ data: listData })),
           api.get('/api/employees'),
         ]);
 
@@ -110,7 +111,7 @@ export default function DashboardPage() {
       const deals = dealsData?.items ?? dealsData ?? [];
       const invoices = invoicesData?.items ?? invoicesData ?? [];
       const tasks = tasksData?.items ?? tasksData ?? [];
-      const tickets = ticketsData?.items ?? ticketsData ?? [];
+      const tickets = ticketsData?.items ?? [];
       const employees = employeesData?.items ?? employeesData ?? [];
 
       const pendingInvoices = invoices.filter(
@@ -138,11 +139,9 @@ export default function DashboardPage() {
       );
 
       const openTickets = tickets.filter(
-        (t: { status: string }) => t.status === 'OPEN' || t.status === 'IN_PROGRESS',
+        (t: { status: string }) => !['RESOLVED', 'CLOSED'].includes(t.status),
       );
-      const criticalTickets = openTickets.filter(
-        (t: { priority: string }) => t.priority === 'CRITICAL',
-      );
+      const criticalTickets = openTickets.filter((t: { priority: string }) => t.priority === 'P1');
 
       const statusCounts: Record<string, number> = {};
       for (const d of deals) {
