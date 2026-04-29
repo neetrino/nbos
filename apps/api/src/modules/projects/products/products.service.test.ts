@@ -87,7 +87,11 @@ describe('ProductsService', () => {
         name: 'Test',
         status: 'CREATING',
         clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
-        project: { _count: { credentials: 1, domains: 1 } },
+        project: {
+          credentials: [{ category: 'HOSTING' }],
+          domains: [{ status: 'ACTIVE' }],
+          _count: { credentials: 1, domains: 1 },
+        },
         order: { status: 'FULLY_PAID', invoices: [{ status: 'PAID' }] },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
@@ -104,7 +108,7 @@ describe('ProductsService', () => {
         blockers: [],
         warnings: [],
         missingRuntimeSignals: [],
-        summary: { clientAccepted: true },
+        summary: { clientAccepted: true, handoffCredentialCount: 1 },
       });
     });
 
@@ -113,7 +117,7 @@ describe('ProductsService', () => {
         id: 'p1',
         name: 'Test',
         status: 'TRANSFER',
-        project: { _count: { credentials: 0, domains: 0 } },
+        project: { credentials: [], domains: [], _count: { credentials: 0, domains: 0 } },
         order: { status: 'PARTIALLY_PAID', invoices: [{ status: 'WAITING' }] },
         extensions: [{ status: 'DEVELOPMENT' }],
         tasks: [{ status: 'IN_PROGRESS' }],
@@ -128,6 +132,9 @@ describe('ProductsService', () => {
           credentialCount: 0,
           clientAccepted: false,
           domainCount: 0,
+          expiredDomainCount: 0,
+          expiringDomainCount: 0,
+          handoffCredentialCount: 0,
           openExtensionCount: 1,
           openTaskCount: 1,
           openTicketCount: 1,
@@ -147,6 +154,40 @@ describe('ProductsService', () => {
       expect(result.doneReadiness.warnings.map((item) => item.code)).toEqual([
         'NO_PROJECT_CREDENTIALS',
         'NO_PROJECT_DOMAINS',
+      ]);
+    });
+
+    it('surfaces handoff credential and domain readiness', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        name: 'Test',
+        status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        project: {
+          credentials: [{ category: 'OTHER' }],
+          domains: [{ status: 'EXPIRED' }, { status: 'EXPIRING_SOON' }],
+          _count: { credentials: 1, domains: 2 },
+        },
+        order: { status: 'FULLY_PAID', invoices: [{ status: 'PAID' }] },
+        extensions: [{ status: 'DONE' }],
+        tasks: [{ status: 'DONE' }],
+        tickets: [{ status: 'RESOLVED' }],
+      });
+
+      const result = await service.findById('p1');
+
+      expect(result.doneReadiness).toMatchObject({
+        canCompleteWithRuntimeData: false,
+        summary: {
+          expiredDomainCount: 1,
+          expiringDomainCount: 1,
+          handoffCredentialCount: 0,
+        },
+      });
+      expect(result.doneReadiness.blockers.map((item) => item.code)).toEqual(['EXPIRED_DOMAINS']);
+      expect(result.doneReadiness.warnings.map((item) => item.code)).toEqual([
+        'NO_HANDOFF_CREDENTIALS',
+        'EXPIRING_DOMAINS',
       ]);
     });
   });

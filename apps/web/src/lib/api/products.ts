@@ -47,6 +47,9 @@ export interface ProductDoneReadiness {
     clientAccepted: boolean;
     credentialCount: number;
     domainCount: number;
+    expiringDomainCount: number;
+    expiredDomainCount: number;
+    handoffCredentialCount: number;
     openExtensionCount: number;
     openTaskCount: number;
     openTicketCount: number;

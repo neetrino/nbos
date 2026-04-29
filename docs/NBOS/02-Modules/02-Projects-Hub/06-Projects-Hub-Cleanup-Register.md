@@ -357,6 +357,19 @@ The backend exposes `PATCH /api/projects/products/:id/acceptance` to record acce
 
 This implements the acceptance part of the Done canon as real runtime state instead of a placeholder warning.
 
+### A26. Product Done readiness includes handoff documentation health
+
+Статус: `PHASE 4 RUNTIME + UX ALIGNMENT`
+
+Product Done readiness now reads existing Project `credentials` and `domains` metadata for handoff depth:
+
+- handoff credential categories count `ADMIN`, `DOMAIN`, `HOSTING`, `APP`, `API_KEY` and `DATABASE`;
+- missing Project credentials/domains remain warnings because Product-specific credential links are not in runtime yet;
+- existing expired domains are blockers before Done readiness;
+- expiring domains are surfaced as warnings before handoff.
+
+This improves transfer/handoff visibility using real runtime data without inventing a Product credential schema ahead of the Credentials module refactor.
+
 ---
 
 ## B. Устарело только в документации или описаниях

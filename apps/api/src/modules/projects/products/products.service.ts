@@ -150,6 +150,8 @@ export class ProductsService {
             id: true,
             code: true,
             name: true,
+            credentials: { select: { category: true } },
+            domains: { select: { status: true } },
             _count: { select: { credentials: true, domains: true } },
           },
         },

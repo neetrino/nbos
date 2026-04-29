@@ -7,6 +7,9 @@ export interface ProductDoneReadiness {
     clientAccepted: boolean;
     credentialCount: number;
     domainCount: number;
+    expiringDomainCount: number;
+    expiredDomainCount: number;
+    handoffCredentialCount: number;
     openExtensionCount: number;
     openTaskCount: number;
     openTicketCount: number;
@@ -22,7 +25,11 @@ interface ProductDoneReadinessItem {
 
 interface ProductForDoneReadiness {
   clientAcceptedAt?: Date | string | null;
-  project?: { _count?: { credentials?: number; domains?: number } } | null;
+  project?: {
+    credentials?: Array<{ category: string }>;
+    domains?: Array<{ status: string }>;
+    _count?: { credentials?: number; domains?: number };
+  } | null;
   order?: { status?: string | null; invoices?: Array<{ status: string }> } | null;
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
@@ -33,6 +40,7 @@ const CLOSED_EXTENSION_STATUSES = ['DONE', 'LOST'];
 const CLOSED_TASK_STATUSES = ['DONE', 'DEFERRED', 'CANCELLED'];
 const CLOSED_TICKET_STATUSES = ['RESOLVED', 'CLOSED'];
 const CLOSED_ORDER_STATUSES = ['FULLY_PAID', 'CLOSED'];
+const HANDOFF_CREDENTIAL_CATEGORIES = ['ADMIN', 'DOMAIN', 'HOSTING', 'APP', 'API_KEY', 'DATABASE'];
 
 export function buildProductDoneReadiness(product: ProductForDoneReadiness): ProductDoneReadiness {
   const summary = buildDoneReadinessSummary(product);
@@ -40,6 +48,7 @@ export function buildProductDoneReadiness(product: ProductForDoneReadiness): Pro
     ...buildClientAcceptanceBlockers(summary),
     ...buildOpenWorkBlockers(summary),
     ...buildFinanceBlockers(product.order, summary.unpaidInvoiceCount),
+    ...buildHandoffBlockers(summary),
   ];
   const warnings = buildDocumentationWarnings(summary);
   const missingRuntimeSignals: ProductDoneReadinessItem[] = [];
@@ -58,6 +67,9 @@ function buildDoneReadinessSummary(product: ProductForDoneReadiness) {
     clientAccepted: Boolean(product.clientAcceptedAt),
     credentialCount: product.project?._count?.credentials ?? 0,
     domainCount: product.project?._count?.domains ?? 0,
+    expiringDomainCount: countDomains(product.project?.domains ?? [], 'EXPIRING_SOON'),
+    expiredDomainCount: countDomains(product.project?.domains ?? [], 'EXPIRED'),
+    handoffCredentialCount: countHandoffCredentials(product.project?.credentials ?? []),
     openExtensionCount: countOpen(product.extensions ?? [], CLOSED_EXTENSION_STATUSES),
     openTaskCount: countOpen(product.tasks ?? [], CLOSED_TASK_STATUSES),
     openTicketCount: countOpen(product.tickets ?? [], CLOSED_TICKET_STATUSES),
@@ -98,6 +110,17 @@ function buildFinanceBlockers(order: ProductForDoneReadiness['order'], unpaidInv
   return blockers;
 }
 
+function buildHandoffBlockers(summary: ProductDoneReadiness['summary']) {
+  if (summary.expiredDomainCount === 0) return [];
+  return [
+    {
+      code: 'EXPIRED_DOMAINS',
+      label: 'Domains',
+      message: `${summary.expiredDomainCount} project domains are expired before handoff.`,
+    },
+  ];
+}
+
 function buildDocumentationWarnings(summary: ProductDoneReadiness['summary']) {
   return [
     ...buildMissingDocumentationWarning(
@@ -106,6 +129,8 @@ function buildDocumentationWarnings(summary: ProductDoneReadiness['summary']) {
       summary.credentialCount,
     ),
     ...buildMissingDocumentationWarning('NO_PROJECT_DOMAINS', 'Domains', summary.domainCount),
+    ...buildMissingHandoffCredentialWarning(summary),
+    ...buildExpiringDomainWarning(summary.expiringDomainCount),
   ];
 }
 
@@ -121,6 +146,38 @@ function buildMissingDocumentationWarning(code: string, label: string, count: nu
   return [{ code, label, message: `${label} are not documented on the project yet.` }];
 }
 
+function buildMissingHandoffCredentialWarning(summary: ProductDoneReadiness['summary']) {
+  if (summary.credentialCount === 0 || summary.handoffCredentialCount > 0) return [];
+  return [
+    {
+      code: 'NO_HANDOFF_CREDENTIALS',
+      label: 'Credentials',
+      message: 'Project credentials exist, but none are marked as delivery handoff categories.',
+    },
+  ];
+}
+
+function buildExpiringDomainWarning(count: number) {
+  if (count === 0) return [];
+  return [
+    {
+      code: 'EXPIRING_DOMAINS',
+      label: 'Domains',
+      message: `${count} project domains are expiring soon and should be checked before handoff.`,
+    },
+  ];
+}
+
 function countOpen(items: Array<{ status: string }>, closedStatuses: string[]) {
   return items.filter((item) => !closedStatuses.includes(item.status)).length;
+}
+
+function countDomains(domains: Array<{ status: string }>, status: string) {
+  return domains.filter((domain) => domain.status === status).length;
+}
+
+function countHandoffCredentials(credentials: Array<{ category: string }>) {
+  return credentials.filter((credential) =>
+    HANDOFF_CREDENTIAL_CATEGORIES.includes(credential.category),
+  ).length;
 }
