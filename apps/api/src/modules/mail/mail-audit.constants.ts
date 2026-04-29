@@ -7,6 +7,9 @@ export const MAIL_AUDIT_ENTITY_MESSAGE = 'mail_message';
 /** User marked NBOS thread read (no provider sync). */
 export const MAIL_AUDIT_ACTION_THREAD_MARKED_READ = 'mail.thread_marked_read';
 
+/** Thread `needsBusinessLink` flag changed (MVP; no polymorphic link payload yet). */
+export const MAIL_AUDIT_ACTION_THREAD_NEEDS_LINK_UPDATED = 'mail.thread_needs_link_updated';
+
 /** Outbound draft persisted locally (no SMTP send). */
 export const MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED = 'mail.outbound_draft_created';
 

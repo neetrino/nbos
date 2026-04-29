@@ -26,6 +26,7 @@ export default function MailThreadDetailPage() {
   const [queueingMessageId, setQueueingMessageId] = useState<string | null>(null);
   const [finalizingMessageId, setFinalizingMessageId] = useState<string | null>(null);
   const [cancellingMessageId, setCancellingMessageId] = useState<string | null>(null);
+  const [patchingNeedsLink, setPatchingNeedsLink] = useState(false);
 
   const load = useCallback(async () => {
     if (!threadId) return;
@@ -107,6 +108,23 @@ export default function MailThreadDetailPage() {
     [threadId],
   );
 
+  const setNeedsBusinessLink = useCallback(
+    async (needsBusinessLink: boolean) => {
+      if (!threadId) return;
+      setPatchingNeedsLink(true);
+      setError(null);
+      try {
+        const d = await mailApi.patchThread(threadId, { needsBusinessLink });
+        setDetail(d);
+      } catch (e) {
+        setError(getApiErrorMessage(e, 'Could not update thread.'));
+      } finally {
+        setPatchingNeedsLink(false);
+      }
+    },
+    [threadId],
+  );
+
   useEffect(() => {
     if (!canView || !threadId) {
       setLoading(false);
@@ -142,20 +160,46 @@ export default function MailThreadDetailPage() {
         <>
           <PageHeader
             title={detail.messages[0]?.subject ?? detail.thread.subjectNormalized}
-            description={`${detail.mailAccount.emailAddress} · ${detail.mailAccount.status}`}
+            description={`${detail.mailAccount.emailAddress} · ${detail.mailAccount.status}${
+              detail.thread.needsBusinessLink ? ' · Needs business link' : ''
+            }`}
           >
-            {canEdit && detail.thread.hasUnread ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                disabled={markingRead}
-                onClick={() => void markRead()}
-              >
-                <Check size={14} /> Mark read
-              </Button>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              {canEdit && detail.thread.hasUnread ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  disabled={markingRead || patchingNeedsLink}
+                  onClick={() => void markRead()}
+                >
+                  <Check size={14} /> Mark read
+                </Button>
+              ) : null}
+              {canEdit && detail.thread.needsBusinessLink ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={patchingNeedsLink || markingRead}
+                  onClick={() => void setNeedsBusinessLink(false)}
+                >
+                  {patchingNeedsLink ? 'Updating…' : 'Clear needs link'}
+                </Button>
+              ) : null}
+              {canEdit && !detail.thread.needsBusinessLink ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={patchingNeedsLink || markingRead}
+                  onClick={() => void setNeedsBusinessLink(true)}
+                >
+                  {patchingNeedsLink ? 'Updating…' : 'Flag needs link'}
+                </Button>
+              ) : null}
+            </div>
           </PageHeader>
           <MailThreadMessages
             messages={detail.messages}

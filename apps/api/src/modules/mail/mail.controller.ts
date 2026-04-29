@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -13,7 +14,9 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
+import { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { MailService } from './mail.service';
+import { MailThreadCommandService } from './mail-thread-command.service';
 
 type AuthedRequest = Request & { permissionScope?: string };
 
@@ -29,7 +32,10 @@ function isQueryFlagTrue(value: string | undefined): boolean {
 @ApiBearerAuth()
 @Controller('mail')
 export class MailController {
-  constructor(private readonly mailService: MailService) {}
+  constructor(
+    private readonly mailService: MailService,
+    private readonly mailThreadCommandService: MailThreadCommandService,
+  ) {}
 
   @Get('accounts')
   @RequirePermission('MAIL', 'VIEW')
@@ -64,6 +70,26 @@ export class MailController {
       unreadOnly: isQueryFlagTrue(unreadOnly),
       needsLinkOnly: isQueryFlagTrue(needsLinkOnly),
     });
+  }
+
+  @Patch('threads/:threadId')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({
+    summary: 'Update thread flags (MVP: needsBusinessLink only)',
+  })
+  async patchThread(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+    @Body() body: PatchMailThreadDto,
+  ) {
+    return this.mailThreadCommandService.patchThread(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+      body,
+    );
   }
 
   @Get('threads/:threadId')
@@ -164,6 +190,10 @@ export class MailController {
     @Req() req: AuthedRequest,
     @Param('threadId') threadId: string,
   ) {
-    return this.mailService.markThreadRead(user.id, req.permissionScope ?? 'OWN', threadId);
+    return this.mailThreadCommandService.markThreadRead(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+    );
   }
 }

@@ -7,9 +7,7 @@ import {
   MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_CANCELLED,
   MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED,
   MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED,
-  MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
   MAIL_AUDIT_ENTITY_MESSAGE,
-  MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
 import { cancelOutboundDraftOrQueued } from './mail-outbound-cancel.ops';
 import { failQueuedOutboundStubNoProvider } from './mail-outbound-finalize-stub.ops';
@@ -67,46 +65,6 @@ export class MailService {
       throw new NotFoundException('Thread not found');
     }
     return dto;
-  }
-
-  /**
-   * Marks every message in the thread read and clears thread-level unread (NBOS user state).
-   */
-  async markThreadRead(
-    employeeId: string,
-    accessScope: string,
-    threadId: string,
-  ): Promise<MailThreadDetailDto> {
-    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
-      threadId,
-      employeeId,
-      accessScope,
-    });
-    if (!thread) {
-      throw new NotFoundException('Thread not found');
-    }
-    await this.prisma.$transaction([
-      this.prisma.emailMessage.updateMany({
-        where: { threadId },
-        data: { readState: 'READ' },
-      }),
-      this.prisma.emailThread.update({
-        where: { id: threadId },
-        data: { hasUnread: false },
-      }),
-    ]);
-    const auditChanges: InputJsonValue = {
-      mailAccountId: thread.mailAccountId,
-      subjectNormalized: thread.subjectNormalized,
-    };
-    await this.auditService.log({
-      entityType: MAIL_AUDIT_ENTITY_THREAD,
-      entityId: threadId,
-      action: MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
-      userId: employeeId,
-      changes: auditChanges,
-    });
-    return this.getThreadDetail(employeeId, accessScope, threadId);
   }
 
   /**
