@@ -74,7 +74,7 @@ interface ListData {
 
 export interface CreateExtensionData {
   projectId: string;
-  productId?: string;
+  productId: string;
   name: string;
   size?: string;
   assignedTo?: string;
@@ -83,7 +83,7 @@ export interface CreateExtensionData {
 
 export interface UpdateExtensionData {
   name?: string;
-  productId?: string | null;
+  productId?: string;
   size?: string;
   assignedTo?: string | null;
   description?: string | null;

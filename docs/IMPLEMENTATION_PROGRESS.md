@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                        |
-| ------------- | -------------------------------------------- |
-| Current phase | **Phase 4 — Delivery ops**                   |
-| Current task  | Cross-module delivery lifecycle docs cleanup |
-| Status        | Phase 4 Projects Hub lifecycle alignment     |
-| Last updated  | 2026-04-29                                   |
+| Field         | Value                                    |
+| ------------- | ---------------------------------------- |
+| Current phase | **Phase 4 — Delivery ops**               |
+| Current task  | Extension ownership/product-link cleanup |
+| Status        | Phase 4 Projects Hub runtime alignment   |
+| Last updated  | 2026-04-29                               |
 
 ## Phase Snapshot
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~64% | Projects Hub lifecycle docs now align with canonical Product/Extension delivery            |
+| Phase 4 — Delivery ops              | In progress |     ~66% | Extension creation now requires a primary Product link at API/UI boundary                  |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -86,10 +86,11 @@ Future Finance depth:
 | 2026-04-29 | Delivery Board task/support depth  | Card context links into Product tasks, support tickets and extensions    | web typecheck, lint                                                   |
 | 2026-04-29 | Product task/support summaries     | Product tabs expose execution and support health from runtime data       | web typecheck, lint                                                   |
 | 2026-04-29 | Delivery lifecycle docs cleanup    | CRM/handoff and UI docs now separate handoff from Projects Hub lifecycle | docs review                                                           |
+| 2026-04-29 | Extension product ownership        | Extension create/update requires same-project primary Product link       | api/web typecheck, lint, targeted Vitest                              |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: Extension ownership/product-link cleanup or Product detail polish.
+1. Continue Projects Hub lifecycle refactor: migrate `extensions.product_id` to required after data check, or Product detail polish.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

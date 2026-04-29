@@ -103,7 +103,19 @@ describe('ExtensionsService', () => {
   });
 
   describe('create', () => {
-    it('creates extension with required fields', async () => {
+    it('requires a linked product', async () => {
+      await expect(
+        service.create({
+          projectId: 'proj-1',
+          productId: '',
+          name: 'Add login',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.extension.create).not.toHaveBeenCalled();
+    });
+
+    it('creates extension with required product link', async () => {
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'proj-1' });
       prisma.extension.create.mockResolvedValue({
         id: 'e1',
         name: 'Add login',
@@ -111,12 +123,14 @@ describe('ExtensionsService', () => {
       });
       const result = await service.create({
         projectId: 'proj-1',
+        productId: 'prod-1',
         name: 'Add login',
       });
       expect(result.size).toBe('SMALL');
     });
 
     it('creates extension with product link', async () => {
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'proj-1' });
       prisma.extension.create.mockResolvedValue({ id: 'e1', name: 'Feature' });
       await service.create({
         projectId: 'proj-1',
@@ -132,6 +146,54 @@ describe('ExtensionsService', () => {
             size: 'MEDIUM',
             assignedTo: 'dev-1',
           }),
+        }),
+      );
+    });
+
+    it('rejects product from another project', async () => {
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-2', projectId: 'other-project' });
+
+      await expect(
+        service.create({
+          projectId: 'proj-1',
+          productId: 'prod-2',
+          name: 'Feature',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.extension.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('update', () => {
+    it('rejects attempts to remove linked product', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        productId: 'prod-1',
+      });
+
+      await expect(service.update('e1', { productId: null })).rejects.toThrow(BadRequestException);
+      expect(prisma.extension.update).not.toHaveBeenCalled();
+    });
+
+    it('allows relinking to product from the same project', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        productId: 'prod-1',
+      });
+      prisma.product.findUnique.mockResolvedValue({ id: 'prod-2', projectId: 'proj-1' });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        productId: 'prod-2',
+      });
+
+      await service.update('e1', { productId: 'prod-2' });
+
+      expect(prisma.extension.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ productId: 'prod-2' }),
         }),
       );
     });

@@ -62,7 +62,7 @@ export function CreateExtensionDialog({
     }
   }, [preselectedProductId]);
 
-  const canSubmit = form.name.trim();
+  const canSubmit = Boolean(form.name.trim() && form.productId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +72,7 @@ export function CreateExtensionDialog({
       const data: CreateExtensionData = {
         projectId,
         name: form.name.trim(),
-        productId: form.productId || undefined,
+        productId: form.productId,
         size: form.size,
         description: form.description || undefined,
       };
@@ -104,10 +104,11 @@ export function CreateExtensionDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Product</Label>
+              <Label>Product *</Label>
               <Select
                 value={form.productId || undefined}
                 onValueChange={(v) => setForm({ ...form, productId: v ?? '' })}
+                disabled={products.length === 0}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select product" />
@@ -120,6 +121,11 @@ export function CreateExtensionDialog({
                   ))}
                 </SelectContent>
               </Select>
+              {products.length === 0 && (
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Create a Product before adding an Extension.
+                </p>
+              )}
             </div>
             <div>
               <Label>Size</Label>

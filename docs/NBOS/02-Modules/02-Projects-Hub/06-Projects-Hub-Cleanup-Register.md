@@ -256,18 +256,17 @@ UI docs now define `Delivery Board` inside Project detail as the operational boa
 
 ### B4. Старое описание extension как необязательной связи с product больше не подходит
 
-Где осталось:
+Статус: `PHASE 4 RUNTIME ALIGNMENT`
 
-- [docs/NBOS/03-Business-Logic/06-Entity-Relationships.md](/Users/user/{} Development/1. Production/nbos/docs/NBOS/03-Business-Logic/06-Entity-Relationships.md:260)
+Extension ownership is now aligned at API/UI boundary:
 
-Проблема:
+- create extension requires `productId`;
+- update extension cannot remove the linked Product;
+- API validates that the linked Product belongs to the same Project;
+- Create Extension UI requires Product selection before submit;
+- active docs describe Extension as belonging to both Project and one primary Product.
 
-- старые тексты допускают слишком мягкую модель extension;
-- новый канон уже жёстче: `Extension` всегда внутри `Project` и всегда с одним основным `Product`.
-
-Что надо сделать:
-
-- дочистить оставшиеся тексты, где extension описан слишком абстрактно.
+Remaining schema hardening (`extensions.product_id NOT NULL`) should be a separate migration slice after checking existing data for legacy null Product links.
 
 ---
 

@@ -21,7 +21,7 @@ import {
 
 interface CreateExtensionDto {
   projectId: string;
-  productId?: string;
+  productId: string;
   name: string;
   size?: string;
   assignedTo?: string;
@@ -138,10 +138,12 @@ export class ExtensionsService {
   }
 
   async create(data: CreateExtensionDto) {
+    const productId = requireText(data.productId, 'productId');
+    await this.ensureProductBelongsToProject(productId, data.projectId);
     const extension = await this.prisma.extension.create({
       data: {
         projectId: data.projectId,
-        productId: data.productId,
+        productId,
         name: data.name,
         size: (data.size as ExtensionSizeEnum) ?? 'SMALL',
         assignedTo: data.assignedTo,
@@ -157,12 +159,17 @@ export class ExtensionsService {
   }
 
   async update(id: string, data: UpdateExtensionDto) {
-    await this.findById(id);
+    const current = await this.findById(id);
+    const productId =
+      data.productId !== undefined
+        ? requireText(data.productId ?? undefined, 'productId')
+        : undefined;
+    if (productId) await this.ensureProductBelongsToProject(productId, current.projectId);
     const extension = await this.prisma.extension.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
-        ...(data.productId !== undefined && { productId: data.productId }),
+        ...(productId !== undefined && { productId }),
         ...(data.size !== undefined && { size: data.size as ExtensionSizeEnum }),
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.description !== undefined && { description: data.description }),
@@ -329,6 +336,18 @@ export class ExtensionsService {
       return requireDeliveryStage(stage);
     } catch {
       throw new BadRequestException(`Invalid delivery stage: ${stage}`);
+    }
+  }
+
+  private async ensureProductBelongsToProject(productId: string, projectId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, projectId: true },
+    });
+
+    if (!product) throw new NotFoundException(`Product ${productId} not found`);
+    if (product.projectId !== projectId) {
+      throw new BadRequestException('Extension product must belong to the same project');
     }
   }
 }

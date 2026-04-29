@@ -71,7 +71,7 @@ export class ExtensionsController {
     @Body()
     body: {
       projectId: string;
-      productId?: string;
+      productId: string;
       name: string;
       size?: string;
       assignedTo?: string;
@@ -88,7 +88,7 @@ export class ExtensionsController {
     @Body()
     body: {
       name?: string;
-      productId?: string | null;
+      productId?: string;
       size?: string;
       assignedTo?: string | null;
       description?: string | null;
