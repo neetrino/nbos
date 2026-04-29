@@ -12,6 +12,14 @@ Use this folder for:
 - workflow examples;
 - payment provider integration references.
 
+## Platform how-tos (cron, workers)
+
+Operational recipes for calling NBOS APIs from schedulers and automation:
+
+```text
+docs/reference/platforms/
+```
+
 ## Payment Integrations
 
 Payment references live in:
