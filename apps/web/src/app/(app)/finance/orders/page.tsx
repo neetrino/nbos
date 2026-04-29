@@ -1,22 +1,17 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, RefreshCcw, ShoppingCart, X } from 'lucide-react';
+import { Plus, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  PageHeader,
   FilterBar,
   EmptyState,
   ErrorState,
   ListMutationErrorBanner,
   LoadingState,
 } from '@/components/shared';
-import {
-  FINANCE_PERIOD_OPTIONS,
-  getFinancePeriodParams,
-  type FinancePeriod,
-} from '@/features/finance/constants/finance';
+import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE,
   ORDER_RECONCILIATION_GAP_QUERY,
@@ -30,13 +25,17 @@ import {
   buildOrdersDescription,
   ReconciliationGapBanner,
 } from '@/features/finance/components/orders/orders-page-helpers';
+import { OrdersPageHeader } from '@/features/finance/components/orders/OrdersPageHeader';
 import { OrdersStatsCards } from '@/features/finance/components/orders/OrdersStatsCards';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
+import { useOrdersCsvExport } from '@/features/finance/components/orders/use-orders-csv-export';
+import { buildOrderListApiParams } from '@/features/finance/utils/build-order-list-api-params';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import type { ListData } from '@/lib/api/finance-common';
 import {
   ordersApi,
   type Order,
+  type OrderListParams,
   type OrderStats,
   type OrderStatsQueryParams,
 } from '@/lib/api/finance';
@@ -61,6 +60,20 @@ function OrdersPageContent() {
   const [listMeta, setListMeta] = useState<ListData<Order>['meta'] | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
+  const orderListExportParams: Omit<OrderListParams, 'page' | 'pageSize'> = useMemo(
+    () =>
+      buildOrderListApiParams({
+        search,
+        filters,
+        partnerIdFromUrl,
+        period,
+        gap,
+      }),
+    [search, filters, partnerIdFromUrl, period, gap],
+  );
+
+  const { exportCsvSubmitting, handleExportCsv } = useOrdersCsvExport(orderListExportParams);
+
   const clearMutationError = useCallback(() => {
     setMutationError(null);
   }, []);
@@ -71,16 +84,16 @@ function OrdersPageContent() {
       const periodParams = getFinancePeriodParams(period);
       const pageSize = gap ? ORDER_RECONCILIATION_DRILLDOWN_PAGE_SIZE : 100;
       const statusFilter = filters.status && filters.status !== 'all' ? filters.status : undefined;
-      const listParams: Record<string, unknown> = {
+      const listParams: OrderListParams = {
+        ...buildOrderListApiParams({
+          search,
+          filters,
+          partnerIdFromUrl,
+          period,
+          gap,
+        }),
         pageSize,
-        search: search || undefined,
-        status: statusFilter,
-        ...periodParams,
-        ...(partnerIdFromUrl ? { partnerId: partnerIdFromUrl } : {}),
       };
-      if (gap) {
-        listParams.gap = gap;
-      }
       const statsParams: OrderStatsQueryParams = {
         ...periodParams,
         ...(partnerIdFromUrl ? { partnerId: partnerIdFromUrl } : {}),
@@ -156,27 +169,15 @@ function OrdersPageContent() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Orders" description={description}>
-        <div className="border-border flex rounded-lg border p-1">
-          {FINANCE_PERIOD_OPTIONS.map((option) => (
-            <Button
-              key={option.value}
-              variant={period === option.value ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setPeriod(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
-        <Button variant="outline" size="icon" onClick={fetchOrders}>
-          <RefreshCcw size={16} />
-        </Button>
-        <Button>
-          <Plus size={16} />
-          New Order
-        </Button>
-      </PageHeader>
+      <OrdersPageHeader
+        description={description}
+        period={period}
+        onPeriodChange={setPeriod}
+        onRefresh={fetchOrders}
+        onExportCsv={handleExportCsv}
+        exportDisabled={loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
+      />
 
       {gap ? <ReconciliationGapBanner gap={gap} onClear={clearReconciliationGap} /> : null}
 

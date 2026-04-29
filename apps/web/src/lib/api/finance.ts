@@ -118,6 +118,19 @@ export interface OrderReconciliationWarning {
   message: string;
 }
 
+/** Query `gap` for `GET /finance/orders` reconciliation drill-down. */
+export type OrderReconciliationListGap = 'uninvoiced' | 'outstanding';
+
+export interface OrderListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  projectId?: string;
+  partnerId?: string;
+  search?: string;
+  gap?: OrderReconciliationListGap;
+}
+
 /** Ledger roll-up from `GET /expenses/:id` (optional on list rows). */
 export type ExpenseLedgerPaymentStatus = 'UNPAID' | 'PARTIAL' | 'PAID';
 
@@ -275,7 +288,7 @@ export interface OrderStats {
 
 /** Query params for `ordersApi.getStats` (optional reconciliation drill-down). */
 export interface OrderStatsQueryParams extends FinanceDateRangeParams {
-  gap?: 'uninvoiced' | 'outstanding';
+  gap?: OrderReconciliationListGap;
   /** With gap: align stats with the orders list. */
   status?: string;
   projectId?: string;
@@ -390,7 +403,7 @@ export const paymentsApi = {
 };
 
 export const ordersApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Order>> {
+  async getAll(params?: OrderListParams): Promise<ListData<Order>> {
     const resp = await api.get<ListData<Order>>('/api/finance/orders', { params });
     return resp.data;
   },
