@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { Task } from './tasks';
 
 export interface SupportTicket {
   id: string;
@@ -6,6 +7,7 @@ export interface SupportTicket {
   title: string;
   description: string | null;
   projectId: string;
+  productId: string | null;
   category: string;
   priority: string;
   status: string;
@@ -14,8 +16,10 @@ export interface SupportTicket {
   createdAt: string;
   updatedAt: string;
   project: { id: string; code: string; name: string };
+  product: { id: string; name: string; status: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   assignee: { id: string; firstName: string; lastName: string } | null;
+  executionTasks?: Task[];
 }
 
 interface ListData<T> {
@@ -30,6 +34,7 @@ interface TicketQueryParams {
   priority?: string;
   category?: string;
   projectId?: string;
+  productId?: string;
   search?: string;
 }
 
@@ -55,6 +60,7 @@ export const supportApi = {
     category: string;
     priority?: string;
     description?: string;
+    productId?: string;
     contactId?: string;
     billable?: boolean;
   }): Promise<SupportTicket> {
@@ -67,6 +73,13 @@ export const supportApi = {
   },
   async updateStatus(id: string, status: string): Promise<SupportTicket> {
     const resp = await api.patch<SupportTicket>(`/api/support/${id}/status`, { status });
+    return resp.data;
+  },
+  async createExecutionTask(
+    id: string,
+    data: { creatorId: string; title?: string; description?: string; dueDate?: string | null },
+  ): Promise<Task> {
+    const resp = await api.post<Task>(`/api/support/${id}/actions/create-task`, data);
     return resp.data;
   },
   async delete(id: string): Promise<void> {

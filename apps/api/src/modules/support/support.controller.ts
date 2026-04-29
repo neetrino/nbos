@@ -25,6 +25,7 @@ export class SupportController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'priority', required: false })
   @ApiQuery({ name: 'category', required: false })
@@ -34,6 +35,7 @@ export class SupportController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
     @Query('status') status?: string,
     @Query('priority') priority?: string,
     @Query('category') category?: string,
@@ -46,6 +48,7 @@ export class SupportController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
+      productId,
       status,
       priority,
       category,
@@ -77,6 +80,7 @@ export class SupportController {
       projectId: string;
       category: string;
       description?: string;
+      productId?: string;
       contactId?: string;
       priority?: string;
       billable?: boolean;
@@ -95,6 +99,7 @@ export class SupportController {
       title?: string;
       description?: string;
       projectId?: string;
+      productId?: string | null;
       contactId?: string;
       category?: string;
       priority?: string;
@@ -109,6 +114,21 @@ export class SupportController {
   @ApiOperation({ summary: 'Update support ticket status' })
   async updateStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.supportService.updateStatus(id, status);
+  }
+
+  @Post(':id/actions/create-task')
+  @ApiOperation({ summary: 'Create linked execution task for support ticket' })
+  async createExecutionTask(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      creatorId: string;
+      title?: string;
+      description?: string;
+      dueDate?: string | null;
+    },
+  ) {
+    return this.supportService.createExecutionTask(id, body);
   }
 
   @Delete(':id')

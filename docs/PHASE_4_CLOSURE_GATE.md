@@ -6,7 +6,7 @@
 
 Phase 4 is **not fully closed yet**.
 
-The Projects Hub delivery lifecycle slice is ready for closure review, and the first connected Work Space plus task completion rules runtime slices now exist. The full Phase 4 roadmap still includes Scrum/review polish and Support runtime depth. Those areas must be finished or explicitly moved out of Phase 4 before the phase can be marked `Done`.
+The Projects Hub delivery lifecycle slice is ready for closure review, and the first connected Work Space, task completion rules and Support-to-Task runtime slices now exist. The full Phase 4 roadmap still includes Scrum/review polish and deeper Support change-control/SLA work. Those areas must be finished or explicitly moved out of Phase 4 before the phase can be marked `Done`.
 
 ## 2. Confirmed Done In Projects Hub
 
@@ -23,6 +23,7 @@ The Projects Hub delivery lifecycle slice is ready for closure review, and the f
 - Handoff readiness surfaces Project credentials, domain health and linked CRM/Order handoff file gaps.
 - Product and Extension can ensure connected Work Spaces; Product detail exposes the connected Work Space context.
 - Task completion can enforce explicit rules and return human-readable blocker reasons.
+- Support tickets can create linked execution tasks while keeping ticket lifecycle separate.
 
 ## 3. Must Stay Out Of This Closure
 
@@ -63,6 +64,12 @@ Required before full Phase 4 closure:
 - SLA warnings/breach state is visible without pretending notification automation exists.
 - Product Done readiness and Product support tabs remain based on real ticket data.
 
+Remaining Support depth:
+
+- Change Request -> Extension Deal bridge is still not implemented.
+- Waiting / escalation overlays and SLA pause logic are still not implemented.
+- Coverage decision is still not a first-class runtime field.
+
 ## 5. Closure Checklist
 
 Mark full Phase 4 `Done` only when:
@@ -77,6 +84,6 @@ Mark full Phase 4 `Done` only when:
 
 ## 6. Recommended Next Slice
 
-Continue with **Support runtime depth** or **task completion UI/review polish**.
+Continue with **Support change-control depth** or **task completion UI/review polish**.
 
-The Work Space and completion rules foundations now exist; the next closure blockers are Support-to-Task runtime depth and richer task completion UI/review flow.
+The Work Space, completion rules and Support-to-Task foundations now exist; the next closure blockers are Support change-control/SLA depth and richer task completion UI/review flow.

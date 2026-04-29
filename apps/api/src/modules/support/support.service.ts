@@ -1,7 +1,8 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
+  type TaskPriorityEnum,
   type TicketStatusEnum,
   type TicketPriorityEnum,
   type TicketCategoryEnum,
@@ -14,11 +15,41 @@ const SLA_DEADLINES: Record<string, { responseHours: number; resolveHours: numbe
   P3: { responseHours: 24, resolveHours: 72 },
 };
 
+const SUPPORT_TICKET_ENTITY_TYPE = 'SUPPORT_TICKET';
+const PROJECT_ENTITY_TYPE = 'PROJECT';
+const PRODUCT_ENTITY_TYPE = 'PRODUCT';
+
+const TICKET_PRIORITY_TO_TASK_PRIORITY: Record<TicketPriorityEnum, TaskPriorityEnum> = {
+  P1: 'CRITICAL',
+  P2: 'HIGH',
+  P3: 'NORMAL',
+};
+
+const SUPPORT_TICKET_INCLUDE = {
+  project: { select: { id: true, code: true, name: true } },
+  product: { select: { id: true, name: true, status: true } },
+  contact: { select: { id: true, firstName: true, lastName: true, phone: true, email: true } },
+  assignee: { select: { id: true, firstName: true, lastName: true } },
+} satisfies Prisma.SupportTicketInclude;
+
+const SUPPORT_TASK_INCLUDE = {
+  creator: { select: { id: true, firstName: true, lastName: true } },
+  assignee: { select: { id: true, firstName: true, lastName: true } },
+  links: true,
+  checklists: { include: { items: { orderBy: { sortOrder: 'asc' as const } } } },
+  subtasks: {
+    select: { id: true, code: true, title: true, status: true, assigneeId: true },
+    orderBy: { createdAt: 'asc' as const },
+  },
+  _count: { select: { subtasks: true, checklists: true } },
+} satisfies Prisma.TaskInclude;
+
 interface CreateTicketDto {
   title: string;
   projectId: string;
   category: string;
   description?: string;
+  productId?: string;
   contactId?: string;
   priority?: string;
   billable?: boolean;
@@ -29,6 +60,7 @@ interface UpdateTicketDto {
   title?: string;
   description?: string;
   projectId?: string;
+  productId?: string | null;
   contactId?: string;
   category?: string;
   priority?: string;
@@ -40,6 +72,7 @@ interface TicketQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  productId?: string;
   status?: string;
   priority?: string;
   category?: string;
@@ -47,6 +80,13 @@ interface TicketQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+}
+
+interface CreateTicketTaskDto {
+  creatorId: string;
+  title?: string;
+  description?: string;
+  dueDate?: string | null;
 }
 
 @Injectable()
@@ -72,11 +112,7 @@ export class SupportService {
     const [items, total] = await Promise.all([
       this.prisma.supportTicket.findMany({
         where,
-        include: {
-          project: { select: { id: true, code: true, name: true } },
-          contact: { select: { id: true, firstName: true, lastName: true } },
-          assignee: { select: { id: true, firstName: true, lastName: true } },
-        },
+        include: SUPPORT_TICKET_INCLUDE,
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -93,16 +129,11 @@ export class SupportService {
   async findById(id: string) {
     const ticket = await this.prisma.supportTicket.findUnique({
       where: { id },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        contact: {
-          select: { id: true, firstName: true, lastName: true, phone: true, email: true },
-        },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-      },
+      include: SUPPORT_TICKET_INCLUDE,
     });
     if (!ticket) throw new NotFoundException(`Support ticket ${id} not found`);
-    return ticket;
+    const executionTasks = await this.findExecutionTasks(id);
+    return { ...ticket, executionTasks };
   }
 
   async create(data: CreateTicketDto) {
@@ -115,6 +146,7 @@ export class SupportService {
         code,
         title: data.title,
         projectId: data.projectId,
+        productId: data.productId,
         category: data.category as TicketCategoryEnum,
         description: data.description,
         contactId: data.contactId,
@@ -124,11 +156,7 @@ export class SupportService {
         slaResponseDeadline: sla.responseDeadline,
         slaResolveDeadline: sla.resolveDeadline,
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        contact: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-      },
+      include: SUPPORT_TICKET_INCLUDE,
     });
   }
 
@@ -139,6 +167,9 @@ export class SupportService {
       ...(data.title && { title: data.title }),
       ...(data.description !== undefined && { description: data.description }),
       ...(data.projectId && { project: { connect: { id: data.projectId } } }),
+      ...(data.productId !== undefined && {
+        product: data.productId ? { connect: { id: data.productId } } : { disconnect: true },
+      }),
       ...(data.contactId !== undefined && {
         contact: data.contactId ? { connect: { id: data.contactId } } : { disconnect: true },
       }),
@@ -159,11 +190,31 @@ export class SupportService {
     return this.prisma.supportTicket.update({
       where: { id },
       data: updateData,
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        contact: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+  }
+
+  async createExecutionTask(id: string, data: CreateTicketTaskDto) {
+    const ticket = await this.findTicketForTaskBridge(id);
+    if (['RESOLVED', 'CLOSED'].includes(ticket.status)) {
+      throw new BadRequestException('Resolved or closed support tickets cannot create tasks.');
+    }
+
+    const workspaceId = await this.findProductWorkspaceId(ticket.productId);
+    return this.prisma.task.create({
+      data: {
+        code: await this.generateTaskCode(),
+        title: this.buildExecutionTaskTitle(ticket, data.title),
+        creatorId: data.creatorId,
+        description: data.description ?? this.buildExecutionTaskDescription(ticket),
+        assigneeId: ticket.assignedTo,
+        priority: TICKET_PRIORITY_TO_TASK_PRIORITY[ticket.priority],
+        dueDate: data.dueDate ? new Date(data.dueDate) : ticket.slaResolveDeadline,
+        workspaceId,
+        ...(workspaceId && { planningStatus: 'BACKLOG' }),
+        links: { createMany: { data: this.buildTaskLinks(ticket) } },
       },
+      include: SUPPORT_TASK_INCLUDE,
     });
   }
 
@@ -203,6 +254,7 @@ export class SupportService {
   ): Prisma.SupportTicketWhereInput {
     const where: Prisma.SupportTicketWhereInput = {};
     if (filters.projectId) where.projectId = filters.projectId;
+    if (filters.productId) where.productId = filters.productId;
     if (filters.status) where.status = filters.status as TicketStatusEnum;
     if (filters.priority) where.priority = filters.priority as TicketPriorityEnum;
     if (filters.category) where.category = filters.category as TicketCategoryEnum;
@@ -224,5 +276,65 @@ export class SupportService {
     });
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `TKT-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private async generateTaskCode(): Promise<string> {
+    const year = new Date().getFullYear();
+    const last = await this.prisma.task.findFirst({
+      where: { code: { startsWith: `T-${year}-` } },
+      orderBy: { code: 'desc' },
+    });
+    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
+    return `T-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private async findExecutionTasks(ticketId: string) {
+    return this.prisma.task.findMany({
+      where: { links: { some: { entityType: SUPPORT_TICKET_ENTITY_TYPE, entityId: ticketId } } },
+      include: SUPPORT_TASK_INCLUDE,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  private async findTicketForTaskBridge(id: string) {
+    const ticket = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    if (!ticket) throw new NotFoundException(`Support ticket ${id} not found`);
+    return ticket;
+  }
+
+  private async findProductWorkspaceId(productId: string | null) {
+    if (!productId) return undefined;
+    const workspace = await this.prisma.workSpace.findUnique({
+      where: { productId },
+      select: { id: true },
+    });
+    return workspace?.id;
+  }
+
+  private buildTaskLinks(ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>) {
+    return [
+      { entityType: SUPPORT_TICKET_ENTITY_TYPE, entityId: ticket.id },
+      { entityType: PROJECT_ENTITY_TYPE, entityId: ticket.projectId },
+      ...(ticket.productId
+        ? [{ entityType: PRODUCT_ENTITY_TYPE, entityId: ticket.productId }]
+        : []),
+    ];
+  }
+
+  private buildExecutionTaskTitle(
+    ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>,
+    title?: string,
+  ) {
+    const trimmed = title?.trim();
+    return trimmed || `[${ticket.code}] ${ticket.title}`;
+  }
+
+  private buildExecutionTaskDescription(
+    ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>,
+  ) {
+    return `Support ticket: ${ticket.code}\n${ticket.description ?? ''}`.trim();
   }
 }

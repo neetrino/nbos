@@ -9,6 +9,7 @@ import {
   List,
   FolderKanban,
   TableProperties,
+  CheckSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,6 +39,8 @@ import {
 } from '@/features/support/constants/support';
 import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
 import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-scope-stats-csv-export';
+import { usePermission } from '@/lib/permissions';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 type ViewMode = 'kanban' | 'list';
 
@@ -49,6 +52,8 @@ export default function SupportPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('list');
+  const [actionId, setActionId] = useState<string | null>(null);
+  const { me } = usePermission();
 
   const { handleExportScopeStatsCsv } = useSupportScopeStatsCsvExport(stats);
 
@@ -107,6 +112,20 @@ export default function SupportPage() {
     color: status.color,
     items: tickets.filter((t) => t.status === status.value),
   }));
+
+  const handleCreateExecutionTask = async (ticket: SupportTicket) => {
+    if (!me?.id) return;
+    setActionId(ticket.id);
+    try {
+      await supportApi.createExecutionTask(ticket.id, { creatorId: me.id });
+      await fetchTickets();
+      setError(null);
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Execution task could not be created.'));
+    } finally {
+      setActionId(null);
+    }
+  };
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -219,6 +238,7 @@ export default function SupportPage() {
                 <div className="flex items-center gap-2">
                   {cat && <StatusBadge label={cat.label} variant={cat.variant} />}
                   {ticket.billable && <StatusBadge label="Billable" variant="amber" />}
+                  {ticket.product && <StatusBadge label="Product" variant="blue" />}
                 </div>
                 {ticket.project && (
                   <div className="text-muted-foreground flex items-center gap-1 text-xs">
@@ -226,6 +246,20 @@ export default function SupportPage() {
                     {ticket.project.name}
                   </div>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={
+                    !me?.id ||
+                    actionId === ticket.id ||
+                    ['RESOLVED', 'CLOSED'].includes(ticket.status)
+                  }
+                  onClick={() => void handleCreateExecutionTask(ticket)}
+                  className="h-7 gap-1 px-2 text-xs"
+                >
+                  <CheckSquare size={12} />
+                  Create task
+                </Button>
               </div>
             );
           }}
@@ -240,8 +274,10 @@ export default function SupportPage() {
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Project</TableHead>
+                <TableHead>Product</TableHead>
                 <TableHead>Assignee</TableHead>
                 <TableHead>Billable</TableHead>
+                <TableHead>Execution</TableHead>
                 <TableHead>Created</TableHead>
               </TableRow>
             </TableHeader>
@@ -270,6 +306,9 @@ export default function SupportPage() {
                     <TableCell className="text-muted-foreground text-sm">
                       {ticket.project?.name ?? '—'}
                     </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {ticket.product?.name ?? '—'}
+                    </TableCell>
                     <TableCell className="text-sm">
                       {ticket.assignee
                         ? `${ticket.assignee.firstName} ${ticket.assignee.lastName}`
@@ -281,6 +320,22 @@ export default function SupportPage() {
                       ) : (
                         <StatusBadge label="Free" variant="gray" />
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={
+                          !me?.id ||
+                          actionId === ticket.id ||
+                          ['RESOLVED', 'CLOSED'].includes(ticket.status)
+                        }
+                        onClick={() => void handleCreateExecutionTask(ticket)}
+                        className="h-7 gap-1 px-2 text-xs"
+                      >
+                        <CheckSquare size={12} />
+                        Task
+                      </Button>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {new Date(ticket.createdAt).toLocaleDateString()}

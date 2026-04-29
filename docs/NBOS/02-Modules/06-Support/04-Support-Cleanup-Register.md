@@ -14,7 +14,8 @@
 | Категории `INCIDENT / SERVICE_REQUEST / CHANGE_REQUEST / PROBLEM`                   | `OK`      | Хорошо совпадают с каноном                                                 |
 | Базовый lifecycle `NEW -> TRIAGED -> ASSIGNED -> IN_PROGRESS -> RESOLVED -> CLOSED` | `OK`      | Основа правильная, нужна только логическая доочистка вокруг reopen/waiting |
 | Связь `Ticket -> Project`                                                           | `OK`      | Уже обязательна в runtime                                                  |
-| Связь `Ticket -> Product`                                                           | `PARTIAL` | Поле есть в схеме БД, но почти не используется в текущем API/UI            |
+| Связь `Ticket -> Product`                                                           | `PARTIAL` | Поле есть и участвует в API/UI bridge, но product-context ещё неполный     |
+| Support -> execution task bridge                                                    | `PARTIAL` | Ticket can create linked Task without becoming a task itself               |
 | Базовые SLA deadlines                                                               | `PARTIAL` | Есть вычисление дедлайнов по priority, но процесс вокруг них ещё упрощён   |
 
 ---
@@ -41,8 +42,8 @@
 | -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------- |
 | `REOPENED` в `TicketStatusEnum`                    | `STALE CODE` | В runtime reopen живёт как отдельный enum status, а канон переводит его в событие/transition    |
 | Нет explicit waiting overlay model                 | `STALE CODE` | Нет `waiting for client / third party / escalated` как отдельного overlay-state                 |
-| API create/update ticket не работает с `productId` | `STALE CODE` | Поле есть в БД, но не участвует в текущем DTO/service flow                                      |
-| Ticket detail and task bridge                      | `STALE CODE` | Нет реального linked execution flow с `Task / Work Space`                                       |
+| API create/update ticket не работает с `productId` | `PARTIAL`    | Product context is accepted by API, deeper UI creation/filtering still needed                   |
+| Ticket detail and task bridge                      | `PARTIAL`    | Ticket can create linked execution tasks; richer detail/timeline still missing                  |
 | Change control bridge                              | `STALE CODE` | Нет runtime-механизма `Ticket -> Extension Deal -> auto-close after Extension Done`             |
 | SLA pause / breach / escalation logic              | `STALE CODE` | Есть только дедлайны, но нет зрелого pause/escalation orchestration                             |
 | Support UI                                         | `STALE CODE` | Сейчас это базовая list/kanban page без product-context, change-control view и waiting overlays |
