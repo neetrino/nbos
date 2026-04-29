@@ -4,24 +4,24 @@
 
 ## Current Focus
 
-| Field         | Value                                                                               |
-| ------------- | ----------------------------------------------------------------------------------- |
-| Current phase | **Phase 3 — Finance full closure**                                                  |
-| Current task  | Project P&L v1 aggregate and `/finance/reports` snapshot                            |
-| Status        | Phase 3 pragmatic scope is closed; full closure is continuing from the product gate |
-| Last updated  | 2026-04-29                                                                          |
+| Field         | Value                                          |
+| ------------- | ---------------------------------------------- |
+| Current phase | **Phase 4 — Delivery ops**                     |
+| Current task  | Start delivery ops slice after Finance closure |
+| Status        | Phase 3 Finance full closure is complete       |
+| Last updated  | 2026-04-29                                     |
 
 ## Phase Snapshot
 
-| Phase                               | Status                   | Progress | Notes                                                                                        |
-| ----------------------------------- | ------------------------ | -------: | -------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done                     |     100% | Navigation, RBAC shell, shared states, admin foundation                                      |
-| Phase 2 — CRM / Marketing / Intake  | Done                     |     100% | Intake, CRM handoff, marketing spend links, project entry points                             |
-| Phase 3 — Finance core              | Full closure in progress |     ~98% | Client Services runtime + flows done; report definitions shell and all six report aggregates |
-| Phase 4 — Delivery ops              | Early                    |     ~10% | Tasks/support list foundations exist; full delivery lifecycle waits Phase 3 pause/close      |
-| Phase 5 — Collaboration / knowledge | Not started              |       0% | Drive, credentials, messenger, notifications                                                 |
-| Phase 6 — Control layer             | Early                    |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later            |
-| Phase 7 — Integrations / migration  | Not started              |       0% | WhatsApp, bank/gov, Bitrix migration                                                         |
+| Phase                               | Status      | Progress | Notes                                                                                      |
+| ----------------------------------- | ----------- | -------: | ------------------------------------------------------------------------------------------ |
+| Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
+| Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
+| Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
+| Phase 4 — Delivery ops              | Next        |     ~10% | Tasks/support list foundations exist; next work starts from delivery lifecycle detail      |
+| Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
+| Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
+| Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
 
 ## Phase 3 Full Closure Gate
 
@@ -49,16 +49,16 @@ Shipped Finance foundations:
 - Client Services runtime: Prisma model, API, UI, stats and linked flow actions.
 - Finance reports: definitions shell, Company P&L v1, Project P&L v1, Cash Flow v1, Expense Plan vs Actual v1, MRR v1 and Payroll Report v1 snapshots.
 
-In progress:
+Closed by the full-closure gate:
 
-- `GET /api/finance/reports/project-pnl`: project revenue, actual costs, net profit and margin.
-- `/finance/reports` Project P&L live snapshot.
+- `Client Service Record` runtime, UI, stats and linked flow actions.
+- Finance report definitions v1 and read-only aggregates for all six approved reports.
+- Separate `NBOS pool` intentionally not created; canonical Project Bonus Pool remains the v1 scope.
 
-Remaining Phase 3 Finance work:
+Future Finance depth:
 
-- Finish Project P&L v1 verification and commit.
-- Close Phase 3 Finance full-closure docs after final verification.
-- Optional Client Services depth only after Phase 3 close: detail page, CSV, stronger payment-driven automation.
+- Global Reports / Analytics catalog, scheduled reports, advanced dashboards, accrual depth, period close and Operational Journal-backed reporting stay Phase 6/control work.
+- Optional Client Services depth can be handled later: detail page, CSV, stronger payment-driven automation.
 
 ## Recent Milestones
 
@@ -72,13 +72,13 @@ Remaining Phase 3 Finance work:
 | 2026-04-29 | Expense Plan vs Actual v1          | `GET /api/finance/reports/expense-plan-vs-actual` and live UI snapshot   | api/web typecheck, lint, targeted Vitest                              |
 | 2026-04-29 | MRR / Subscription Revenue v1      | `GET /api/finance/reports/mrr-subscription-revenue` and live UI snapshot | api/web typecheck, lint, targeted Vitest                              |
 | 2026-04-29 | Payroll Report v1                  | `GET /api/finance/reports/payroll` and live UI snapshot                  | api/web typecheck, lint, targeted Vitest                              |
-| 2026-04-29 | Project P&L v1                     | In progress, verification pending                                        | Pending                                                               |
+| 2026-04-29 | Project P&L v1                     | `GET /api/finance/reports/project-pnl` and live UI snapshot              | api/web typecheck, lint, targeted Vitest                              |
+| 2026-04-29 | Phase 3 Finance full closure       | Gate scope completed; Phase 4 can start                                  | Final docs closure                                                    |
 
 ## Next Action
 
-1. Finish Project P&L v1 verification and commit the slice.
-2. Mark Phase 3 Finance full closure complete if checks stay green.
-3. Return to Phase 4 delivery ops only after Phase 3 Finance is closed or explicitly paused.
+1. Start Phase 4 delivery ops from the documented delivery/task/support scope.
+2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD
 

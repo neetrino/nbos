@@ -1,7 +1,7 @@
 # Phase 3 — полное закрытие: продуктовый шлюз (gate)
 
 > **Назначение:** один документ, который снимает повторяющиеся вопросы («что значит 72%», «что мешает закрыть Phase 3», «где это в NBOS») и задаёт **явные решения** до начала реализации оставшегося объёма.  
-> **Статус:** черновик для подтверждения владельцем продукта / командой. После заполнения блока «Подтверждение» ниже можно планировать срезы кода и обновлять [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md).
+> **Статус:** закрыто. Подтверждённый ниже v1-scope реализован и отражён в [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md).
 
 ---
 
@@ -74,9 +74,9 @@
 
 ## 5. После подтверждения — что делает реализация
 
-1. Перенести принятые строки из §4 в короткий **implementation slice** (или несколько срезов) в духе [AI-START-HERE.md](./AI-START-HERE.md): один связный коммит на срез, `tsc`, ESLint, Vitest по затронутым модулям.
-2. Обновить [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md): убрать/сузить **Deferred** для включённых тем; при завершении — статус Phase 3 **Done (full)** или новый процент.
-3. Обновить [10-Finance-Cleanup-Register.md](../NBOS/02-Modules/04-Finance/10-Finance-Cleanup-Register.md) по факту закрытых пунктов.
+1. Принятые строки из §4 реализованы срезами: Client Services runtime, Client Services flows, Finance report definitions v1 and six read-only aggregates.
+2. [IMPLEMENTATION_PROGRESS.md](./IMPLEMENTATION_PROGRESS.md) обновлён до статуса Phase 3 **Done (full)**.
+3. [10-Finance-Cleanup-Register.md](../NBOS/02-Modules/04-Finance/10-Finance-Cleanup-Register.md) обновлён по закрытым Phase 3 v1 пунктам и оставляет Phase 6/control work как future scope.
 
 **Правила репозитория:** схема БД и публичные API — только после явного согласования (см. workspace rules).
 
@@ -92,14 +92,16 @@
     3. company-paid service flow: service -> expense / expense plan -> renewal tracking and cost visibility.
   - Report definitions v1: Finance-owned read-only definitions for Company P&L, Project P&L, Cash Flow, MRR / Subscription Revenue, Expense Plan vs Actual and Payroll Report. Existing APIs may be reused; new read-only aggregating endpoints are allowed where needed for trustworthy rows and drill-downs.
   - Отдельная сущность NBOS pool: нет. Phase 3 v1 uses the canonical Project Bonus Pool only. Any separate company-level pool requires a future product/schema gate.
+- **Результат реализации:** Phase 3 Finance full closure complete for confirmed v1 scope.
 - **Подпись / роль:** Product Owner
 
-До заполнения этого блока документ служит **справкой и чеклистом**; реализацию «закрыть Phase 3 полностью» без него не стоит трактовать как зафиксированный контракт объёма.
+Этот документ теперь служит закрывающей записью по Phase 3 Finance v1-scope. Новые Finance темы после этой точки требуют отдельного product/schema gate либо явного включения в Phase 4/6.
 
 ---
 
 ## 7. Версия
 
-| Версия | Дата       | Изменение                         |
-| ------ | ---------- | --------------------------------- |
-| 1.0    | 2026-04-28 | Первичная фиксация gate-документа |
+| Версия | Дата       | Изменение                                         |
+| ------ | ---------- | ------------------------------------------------- |
+| 1.0    | 2026-04-28 | Первичная фиксация gate-документа                 |
+| 1.1    | 2026-04-29 | Закрытие подтверждённого Phase 3 Finance v1-scope |

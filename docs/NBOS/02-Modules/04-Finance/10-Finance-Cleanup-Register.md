@@ -301,9 +301,9 @@ Runtime does not yet implement this layer.
 
 ### C6a. Finance report definitions v1 shell + aggregates
 
-Статус: `PARTIAL RUNTIME ALIGNMENT`
+Статус: `PHASE 3 V1 RUNTIME ALIGNMENT`
 
-Runtime now exposes the Phase 3 report catalog boundary and first aggregates:
+Runtime now exposes the Phase 3 report catalog boundary and all approved v1 aggregates:
 
 - `GET /api/finance/reports/definitions`;
 - `GET /api/finance/reports/definitions/:id`;
