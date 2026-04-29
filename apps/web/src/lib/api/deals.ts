@@ -95,6 +95,27 @@ export interface DealListData {
   };
 }
 
+/** Row shape from Prisma `groupBy` on deals (serialized JSON). */
+export interface DealStatsByStatusRow {
+  status: string;
+  _count: number;
+  _sum?: { amount: number | null } | null;
+}
+
+export interface DealStatsByTypeRow {
+  type: string;
+  _count: number;
+  _sum?: { amount: number | null } | null;
+}
+
+/** Workspace aggregates from `GET /api/crm/deals/stats`. */
+export interface DealStats {
+  total: number;
+  byStatus: DealStatsByStatusRow[];
+  /** Present when API returns type breakdown (same payload as `DealsService.getStats`). */
+  byType?: DealStatsByTypeRow[];
+}
+
 interface DealQueryParams {
   page?: number;
   pageSize?: number;
@@ -169,8 +190,8 @@ export const dealsApi = {
     await api.delete(`/api/crm/deals/${id}`);
   },
 
-  async getStats() {
-    const resp = await api.get('/api/crm/deals/stats');
+  async getStats(): Promise<DealStats> {
+    const resp = await api.get<DealStats>('/api/crm/deals/stats');
     return resp.data;
   },
 };
