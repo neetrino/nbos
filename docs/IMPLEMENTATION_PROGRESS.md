@@ -7,7 +7,7 @@
 | Field         | Value                          |
 | ------------- | ------------------------------ |
 | Current phase | **Phase 4 — Delivery ops**     |
-| Current task  | Product handoff readiness      |
+| Current task  | Product Drive readiness        |
 | Status        | Phase 4 Projects Hub lifecycle |
 | Last updated  | 2026-04-29                     |
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~88% | Product Done readiness includes client acceptance, finance and handoff documentation depth |
+| Phase 4 — Delivery ops              | In progress |     ~89% | Product Done readiness includes acceptance, finance, handoff and Drive runtime gaps        |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -101,10 +101,11 @@ Future Finance depth:
 | 2026-04-29 | Product Done readiness             | Product detail shows Done blockers, warnings and missing runtime signals | api/web typecheck, targeted Vitest                                    |
 | 2026-04-29 | Product acceptance runtime         | Product Done blocks until explicit client acceptance is recorded         | database/api/web typecheck, lint, targeted Vitest                     |
 | 2026-04-29 | Product handoff readiness          | Done readiness checks handoff credentials and domain health              | api/web typecheck, lint, targeted Vitest                              |
+| 2026-04-29 | Product Drive readiness            | Done readiness surfaces CRM handoff files and Drive FileLink gap         | api/web typecheck, lint, targeted Vitest                              |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: prepare Phase 4 closure checklist or add Drive delivery file readiness.
+1. Continue Projects Hub lifecycle refactor: prepare Phase 4 closure checklist.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

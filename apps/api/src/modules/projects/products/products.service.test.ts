@@ -92,7 +92,14 @@ describe('ProductsService', () => {
           domains: [{ status: 'ACTIVE' }],
           _count: { credentials: 1, domains: 1 },
         },
-        order: { status: 'FULLY_PAID', invoices: [{ status: 'PAID' }] },
+        order: {
+          status: 'FULLY_PAID',
+          deal: {
+            offerFileUrl: 'https://cdn.example.com/offer.pdf',
+            contractFileUrl: 'https://cdn.example.com/contract.pdf',
+          },
+          invoices: [{ status: 'PAID' }],
+        },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
         tickets: [{ status: 'RESOLVED' }],
@@ -107,8 +114,13 @@ describe('ProductsService', () => {
         canCompleteWithRuntimeData: true,
         blockers: [],
         warnings: [],
-        missingRuntimeSignals: [],
-        summary: { clientAccepted: true, handoffCredentialCount: 1 },
+        missingRuntimeSignals: [{ code: 'DELIVERY_FILE_LINK_RUNTIME_MISSING' }],
+        summary: {
+          approvedOfferFilePresent: true,
+          clientAccepted: true,
+          contractFilePresent: true,
+          handoffCredentialCount: 1,
+        },
       });
     });
 
@@ -118,7 +130,7 @@ describe('ProductsService', () => {
         name: 'Test',
         status: 'TRANSFER',
         project: { credentials: [], domains: [], _count: { credentials: 0, domains: 0 } },
-        order: { status: 'PARTIALLY_PAID', invoices: [{ status: 'WAITING' }] },
+        order: { status: 'PARTIALLY_PAID', deal: null, invoices: [{ status: 'WAITING' }] },
         extensions: [{ status: 'DEVELOPMENT' }],
         tasks: [{ status: 'IN_PROGRESS' }],
         tickets: [{ status: 'NEW' }],
@@ -130,7 +142,10 @@ describe('ProductsService', () => {
         canCompleteWithRuntimeData: false,
         summary: {
           credentialCount: 0,
+          approvedOfferFilePresent: false,
           clientAccepted: false,
+          contractFilePresent: false,
+          deliveryFileRuntimeAvailable: false,
           domainCount: 0,
           expiredDomainCount: 0,
           expiringDomainCount: 0,
@@ -154,6 +169,8 @@ describe('ProductsService', () => {
       expect(result.doneReadiness.warnings.map((item) => item.code)).toEqual([
         'NO_PROJECT_CREDENTIALS',
         'NO_PROJECT_DOMAINS',
+        'NO_APPROVED_OFFER_FILE',
+        'NO_CONTRACT_FILE',
       ]);
     });
 
@@ -168,7 +185,14 @@ describe('ProductsService', () => {
           domains: [{ status: 'EXPIRED' }, { status: 'EXPIRING_SOON' }],
           _count: { credentials: 1, domains: 2 },
         },
-        order: { status: 'FULLY_PAID', invoices: [{ status: 'PAID' }] },
+        order: {
+          status: 'FULLY_PAID',
+          deal: {
+            offerFileUrl: 'https://cdn.example.com/offer.pdf',
+            contractFileUrl: 'https://cdn.example.com/contract.pdf',
+          },
+          invoices: [{ status: 'PAID' }],
+        },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
         tickets: [{ status: 'RESOLVED' }],
@@ -188,6 +212,46 @@ describe('ProductsService', () => {
       expect(result.doneReadiness.warnings.map((item) => item.code)).toEqual([
         'NO_HANDOFF_CREDENTIALS',
         'EXPIRING_DOMAINS',
+      ]);
+    });
+
+    it('surfaces missing Drive handoff files without blocking runtime completion', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        name: 'Test',
+        status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        project: {
+          credentials: [{ category: 'HOSTING' }],
+          domains: [{ status: 'ACTIVE' }],
+          _count: { credentials: 1, domains: 1 },
+        },
+        order: {
+          status: 'FULLY_PAID',
+          deal: { offerFileUrl: null, contractFileUrl: null },
+          invoices: [{ status: 'PAID' }],
+        },
+        extensions: [{ status: 'DONE' }],
+        tasks: [{ status: 'DONE' }],
+        tickets: [{ status: 'RESOLVED' }],
+      });
+
+      const result = await service.findById('p1');
+
+      expect(result.doneReadiness).toMatchObject({
+        canCompleteWithRuntimeData: true,
+        summary: {
+          approvedOfferFilePresent: false,
+          contractFilePresent: false,
+          deliveryFileRuntimeAvailable: false,
+        },
+      });
+      expect(result.doneReadiness.warnings.map((item) => item.code)).toEqual([
+        'NO_APPROVED_OFFER_FILE',
+        'NO_CONTRACT_FILE',
+      ]);
+      expect(result.doneReadiness.missingRuntimeSignals.map((item) => item.code)).toEqual([
+        'DELIVERY_FILE_LINK_RUNTIME_MISSING',
       ]);
     });
   });

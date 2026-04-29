@@ -44,8 +44,11 @@ export interface ProductDoneReadiness {
   warnings: ProductDoneReadinessItem[];
   missingRuntimeSignals: ProductDoneReadinessItem[];
   summary: {
+    approvedOfferFilePresent: boolean;
     clientAccepted: boolean;
+    contractFilePresent: boolean;
     credentialCount: number;
+    deliveryFileRuntimeAvailable: boolean;
     domainCount: number;
     expiringDomainCount: number;
     expiredDomainCount: number;

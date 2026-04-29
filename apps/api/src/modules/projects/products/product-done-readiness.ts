@@ -4,8 +4,11 @@ export interface ProductDoneReadiness {
   warnings: ProductDoneReadinessItem[];
   missingRuntimeSignals: ProductDoneReadinessItem[];
   summary: {
+    approvedOfferFilePresent: boolean;
     clientAccepted: boolean;
+    contractFilePresent: boolean;
     credentialCount: number;
+    deliveryFileRuntimeAvailable: boolean;
     domainCount: number;
     expiringDomainCount: number;
     expiredDomainCount: number;
@@ -30,7 +33,14 @@ interface ProductForDoneReadiness {
     domains?: Array<{ status: string }>;
     _count?: { credentials?: number; domains?: number };
   } | null;
-  order?: { status?: string | null; invoices?: Array<{ status: string }> } | null;
+  order?: {
+    status?: string | null;
+    deal?: {
+      offerFileUrl?: string | null;
+      contractFileUrl?: string | null;
+    } | null;
+    invoices?: Array<{ status: string }>;
+  } | null;
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
   tickets?: Array<{ status: string }>;
@@ -51,7 +61,7 @@ export function buildProductDoneReadiness(product: ProductForDoneReadiness): Pro
     ...buildHandoffBlockers(summary),
   ];
   const warnings = buildDocumentationWarnings(summary);
-  const missingRuntimeSignals: ProductDoneReadinessItem[] = [];
+  const missingRuntimeSignals = buildMissingRuntimeSignals(summary);
 
   return {
     canCompleteWithRuntimeData: blockers.length === 0,
@@ -64,8 +74,11 @@ export function buildProductDoneReadiness(product: ProductForDoneReadiness): Pro
 
 function buildDoneReadinessSummary(product: ProductForDoneReadiness) {
   return {
+    approvedOfferFilePresent: Boolean(product.order?.deal?.offerFileUrl),
     clientAccepted: Boolean(product.clientAcceptedAt),
+    contractFilePresent: Boolean(product.order?.deal?.contractFileUrl),
     credentialCount: product.project?._count?.credentials ?? 0,
+    deliveryFileRuntimeAvailable: false,
     domainCount: product.project?._count?.domains ?? 0,
     expiringDomainCount: countDomains(product.project?.domains ?? [], 'EXPIRING_SOON'),
     expiredDomainCount: countDomains(product.project?.domains ?? [], 'EXPIRED'),
@@ -130,7 +143,21 @@ function buildDocumentationWarnings(summary: ProductDoneReadiness['summary']) {
     ),
     ...buildMissingDocumentationWarning('NO_PROJECT_DOMAINS', 'Domains', summary.domainCount),
     ...buildMissingHandoffCredentialWarning(summary),
+    ...buildMissingOfferFileWarning(summary),
+    ...buildMissingContractFileWarning(summary),
     ...buildExpiringDomainWarning(summary.expiringDomainCount),
+  ];
+}
+
+function buildMissingRuntimeSignals(summary: ProductDoneReadiness['summary']) {
+  if (summary.deliveryFileRuntimeAvailable) return [];
+  return [
+    {
+      code: 'DELIVERY_FILE_LINK_RUNTIME_MISSING',
+      label: 'Delivery files',
+      message:
+        'Drive FileAsset/FileLink runtime is not available yet, so final delivery files cannot be verified automatically.',
+    },
   ];
 }
 
@@ -153,6 +180,28 @@ function buildMissingHandoffCredentialWarning(summary: ProductDoneReadiness['sum
       code: 'NO_HANDOFF_CREDENTIALS',
       label: 'Credentials',
       message: 'Project credentials exist, but none are marked as delivery handoff categories.',
+    },
+  ];
+}
+
+function buildMissingOfferFileWarning(summary: ProductDoneReadiness['summary']) {
+  if (summary.approvedOfferFilePresent) return [];
+  return [
+    {
+      code: 'NO_APPROVED_OFFER_FILE',
+      label: 'Drive handoff',
+      message: 'Linked order deal has no approved offer file URL recorded.',
+    },
+  ];
+}
+
+function buildMissingContractFileWarning(summary: ProductDoneReadiness['summary']) {
+  if (summary.contractFilePresent) return [];
+  return [
+    {
+      code: 'NO_CONTRACT_FILE',
+      label: 'Drive handoff',
+      message: 'Linked order deal has no contract file URL recorded.',
     },
   ];
 }

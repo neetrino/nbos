@@ -339,7 +339,7 @@ Product detail exposes a read-only Done readiness projection:
 - backend builds `doneReadiness` from existing delivery, finance and project documentation data;
 - runtime blockers include missing client acceptance, open extensions, tasks, support tickets, unpaid invoices and open linked order state;
 - credentials and domains are surfaced as documentation warnings when project records are missing;
-- missing runtime signals remain empty once the dedicated client acceptance field exists.
+- missing runtime signals are reserved for canon requirements that still have no stable runtime source, such as DB-backed Drive file links.
 
 This keeps the Done readiness panel aligned with actual runtime data and avoids silently treating missing credentials/domains as complete.
 
@@ -369,6 +369,19 @@ Product Done readiness now reads existing Project `credentials` and `domains` me
 - expiring domains are surfaced as warnings before handoff.
 
 This improves transfer/handoff visibility using real runtime data without inventing a Product credential schema ahead of the Credentials module refactor.
+
+### A27. Product Done readiness surfaces Drive handoff file gaps
+
+Статус: `PHASE 4 RUNTIME + UX ALIGNMENT`
+
+Product Done readiness now reads existing CRM/Order handoff file metadata:
+
+- linked order deal `offer_file_url` is treated as approved offer handoff evidence;
+- linked order deal `contract_file_url` is treated as contract handoff evidence;
+- missing offer/contract files are warnings, not blockers, because Product Type file rules are not runtime-configured yet;
+- final delivery files are reported as a missing runtime signal until Drive has DB-backed `FileAsset` / `FileLink` relations.
+
+This makes Drive gaps visible in Product Done readiness without querying R2 folders as business truth or inventing FileAsset state before the Drive module refactor.
 
 ---
 

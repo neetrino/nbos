@@ -158,6 +158,12 @@ export class ProductsService {
         pm: { select: { id: true, firstName: true, lastName: true, email: true } },
         order: {
           include: {
+            deal: {
+              select: {
+                offerFileUrl: true,
+                contractFileUrl: true,
+              },
+            },
             invoices: {
               select: { id: true, code: true, status: true, amount: true, dueDate: true },
             },
