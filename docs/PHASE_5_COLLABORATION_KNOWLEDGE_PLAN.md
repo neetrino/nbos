@@ -109,6 +109,8 @@ Done when:
 - autosave does not create noisy activity history;
 - malformed content and save failures are visible.
 
+**Implemented (2026-04-29):** TipTap on `/documents/[id]` (Read/Edit tabs when permitted), StarterKit + tasks + tables + links + placeholder, debounced silent PATCH with `recordActivity: false`, manual Save records activity, Publish sends content + `PUBLISHED`, `DocumentHtmlViewer` with DOMPurify, API skips `DocumentActivityEvent` for content-only silent updates.
+
 ### Slice 5. Attachments Through Drive
 
 Goal: connect Documents to Drive without storing binary data in Documents.

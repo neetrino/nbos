@@ -138,10 +138,35 @@ export class DocumentsService {
     }
 
     await this.prisma.document.update({ where: { id }, data });
-    const action =
-      dto.status === 'PUBLISHED' && existing.status === 'DRAFT' ? 'published' : 'updated';
-    await this.recordActivity(id, actorId, action, {});
+    const shouldSkipUpdateActivity = this.shouldSkipUpdateActivityAfterPatch(existing, dto);
+    if (!shouldSkipUpdateActivity) {
+      const action =
+        dto.status === 'PUBLISHED' && existing.status === 'DRAFT' ? 'published' : 'updated';
+      await this.recordActivity(id, actorId, action, {});
+    }
     return this.getDocument(id);
+  }
+
+  private shouldSkipUpdateActivityAfterPatch(
+    existing: { status: DocumentStatusEnum },
+    dto: UpdateDocumentDto,
+  ): boolean {
+    const publishing = dto.status === 'PUBLISHED' && existing.status === 'DRAFT';
+    if (publishing) return false;
+    if (dto.recordActivity !== false) return false;
+    return this.isContentFieldsOnlyPatch(dto);
+  }
+
+  private isContentFieldsOnlyPatch(dto: UpdateDocumentDto): boolean {
+    const touchesContent =
+      dto.contentJson !== undefined || dto.contentHtml !== undefined || dto.plainText !== undefined;
+    if (!touchesContent) return false;
+    return (
+      dto.title === undefined &&
+      dto.description === undefined &&
+      dto.sectionId === undefined &&
+      dto.status === undefined
+    );
   }
 
   async archiveDocument(id: string, actorId: string) {

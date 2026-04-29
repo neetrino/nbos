@@ -40,6 +40,9 @@ export interface DocumentDetail {
   status: string;
   description: string | null;
   type: string;
+  contentJson: unknown;
+  contentHtml: string | null;
+  plainText: string | null;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
@@ -96,6 +99,7 @@ export const documentsApi = {
       contentHtml?: string | null;
       plainText?: string | null;
       status?: string;
+      recordActivity?: boolean;
     },
   ): Promise<DocumentDetail> {
     const resp = await api.patch<DocumentDetail>('/api/documents/' + encodeURIComponent(id), data);

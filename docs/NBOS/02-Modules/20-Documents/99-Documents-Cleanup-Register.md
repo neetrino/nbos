@@ -83,7 +83,7 @@ Done:
 /documents/:id
 ```
 
-Still missing: polish, editor, attachments UI (later slices).
+Still missing: polish, Drive attachments UI in Documents, search depth (later slices).
 
 ### B2. Sidebar item is missing
 
@@ -99,11 +99,11 @@ Done:
 
 Still missing vs full canon:
 
-- UI routes, TipTap, Drive-backed `DocumentAttachment` usage, `search_vector`, section-level ACL.
+- Drive-backed `DocumentAttachment` usage, TipTap image nodes → File Asset, `search_vector`, section-level ACL.
 
 ### B4. TipTap editor is missing
 
-Статус: `MISSING UI / MISSING EDITOR`
+Статус: `PARTIAL` — core editor, viewer, autosave and publish shipped; TipTap images and Drive-backed attachments remain Slice 5.
 
 Need editor with:
 

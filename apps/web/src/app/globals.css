@@ -172,3 +172,28 @@ body {
     @apply font-sans;
   }
 }
+
+/* TipTap / ProseMirror (native documents) */
+.nbos-document-editor .ProseMirror {
+  min-height: 12rem;
+}
+.nbos-document-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--muted-foreground);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.nbos-document-editor .ProseMirror ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+.nbos-document-editor .ProseMirror ul[data-type='taskList'] li {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.35rem;
+}
+.nbos-document-editor .ProseMirror table td,
+.nbos-document-editor .ProseMirror table th {
+  vertical-align: top;
+}

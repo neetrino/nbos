@@ -13,6 +13,8 @@ export interface UpdateDocumentDto {
   contentHtml?: string | null;
   plainText?: string | null;
   status?: string;
+  /** When false with content-only fields, skips `DocumentActivityEvent` (e.g. autosave). */
+  recordActivity?: boolean;
 }
 
 export interface ListDocumentsQuery {

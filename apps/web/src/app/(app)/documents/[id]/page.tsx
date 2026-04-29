@@ -6,38 +6,54 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, Archive, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
+import { DocumentHtmlViewer } from '@/features/documents/DocumentHtmlViewer';
+import { NativeDocumentEditor } from '@/features/documents/NativeDocumentEditor';
+import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
+import { formatDocumentRelativeTime } from '@/features/documents/format-relative-time';
 import { documentsApi, type DocumentDetail } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
-import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
-import { formatDocumentRelativeTime } from '@/features/documents/format-relative-time';
+
+const DOCUMENTS_EDIT_KEY = 'DOCUMENTS_EDIT';
+
+type ContentTab = 'view' | 'edit';
+
+function hasDocumentsEditPermission(permissions: Record<string, string | undefined>): boolean {
+  const scope = permissions[DOCUMENTS_EDIT_KEY];
+  return !!scope && scope !== 'NONE';
+}
 
 export default function DocumentDetailPage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
-  const { can } = usePermission();
+  const { can, permissions } = usePermission();
   const [doc, setDoc] = useState<DocumentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
+  const [contentTab, setContentTab] = useState<ContentTab>('view');
 
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setError(null);
     try {
-      setDoc(await documentsApi.getDocument(id));
+      const next = await documentsApi.getDocument(id);
+      setDoc(next);
+      const canEditDoc = hasDocumentsEditPermission(permissions);
+      setContentTab(next.status === 'DRAFT' && canEditDoc ? 'edit' : 'view');
     } catch (e) {
       setError(getApiErrorMessage(e, 'Document could not be loaded.'));
       setDoc(null);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, permissions]);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const handleArchive = async () => {
@@ -54,6 +70,9 @@ export default function DocumentDetailPage() {
   };
 
   const canDelete = can('DELETE', 'DOCUMENTS');
+  const canEdit = can('EDIT', 'DOCUMENTS');
+  const isNative = doc?.type === 'NATIVE';
+  const showEditorTabs = isNative && canEdit && doc && doc.status !== 'ARCHIVED';
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -107,11 +126,38 @@ export default function DocumentDetailPage() {
             <CardHeader>
               <CardTitle className="text-base">Content</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                TipTap editor and published HTML viewer will appear in Slice 4. Native content stays
-                in PostgreSQL; binary files use Drive.
-              </p>
+            <CardContent className="space-y-4">
+              {!isNative ? (
+                <p className="text-muted-foreground text-sm">
+                  The rich editor is available for native documents only. This document uses another
+                  type.
+                </p>
+              ) : showEditorTabs ? (
+                <Tabs
+                  value={contentTab}
+                  onValueChange={(v) => setContentTab(v as ContentTab)}
+                  className="w-full"
+                >
+                  <TabsList className="w-full justify-start">
+                    <TabsTrigger value="view">Read</TabsTrigger>
+                    <TabsTrigger value="edit">Edit</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="view" className="mt-4">
+                    <DocumentHtmlViewer html={doc.contentHtml} />
+                  </TabsContent>
+                  <TabsContent value="edit" className="mt-4">
+                    <NativeDocumentEditor
+                      key={doc.id}
+                      documentId={doc.id}
+                      documentStatus={doc.status}
+                      initialContentJson={doc.contentJson}
+                      onDocumentUpdated={setDoc}
+                    />
+                  </TabsContent>
+                </Tabs>
+              ) : (
+                <DocumentHtmlViewer html={doc.contentHtml} />
+              )}
             </CardContent>
           </Card>
 

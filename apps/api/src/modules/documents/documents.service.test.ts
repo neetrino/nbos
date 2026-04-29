@@ -47,4 +47,55 @@ describe('DocumentsService', () => {
       }),
     );
   });
+
+  it('skips activity for content-only update when recordActivity is false', async () => {
+    prisma.document.findUnique.mockResolvedValueOnce({
+      id: 'doc-1',
+      status: 'DRAFT',
+    });
+    prisma.document.update.mockResolvedValueOnce({});
+    prisma.document.findUnique.mockResolvedValueOnce({
+      id: 'doc-1',
+      title: 'T',
+      section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
+      tagLinks: [],
+      activityEvents: [],
+    });
+
+    await service.updateDocument(
+      'doc-1',
+      { contentJson: { type: 'doc', content: [] }, recordActivity: false },
+      'user-1',
+    );
+
+    expect(prisma.document.update).toHaveBeenCalled();
+    expect(prisma.documentActivityEvent.create).not.toHaveBeenCalled();
+  });
+
+  it('still records published when publishing draft even if recordActivity is false', async () => {
+    prisma.document.findUnique.mockResolvedValueOnce({
+      id: 'doc-1',
+      status: 'DRAFT',
+    });
+    prisma.document.update.mockResolvedValueOnce({});
+    prisma.document.findUnique.mockResolvedValueOnce({
+      id: 'doc-1',
+      title: 'T',
+      section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
+      tagLinks: [],
+      activityEvents: [],
+    });
+
+    await service.updateDocument(
+      'doc-1',
+      { status: 'PUBLISHED', contentJson: { type: 'doc', content: [] }, recordActivity: false },
+      'user-1',
+    );
+
+    expect(prisma.documentActivityEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action: 'published', actorId: 'user-1' }),
+      }),
+    );
+  });
 });
