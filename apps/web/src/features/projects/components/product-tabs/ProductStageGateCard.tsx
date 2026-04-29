@@ -10,6 +10,14 @@ import { type ApiFieldError, isStageGateApiError } from '@/lib/api-errors';
 import { PRODUCT_STATUSES } from '@/features/projects/constants/projects';
 import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 
+const PRODUCT_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER'> = {
+  NEW: 'STARTING',
+  CREATING: 'STARTING',
+  DEVELOPMENT: 'DEVELOPMENT',
+  QA: 'QA',
+  TRANSFER: 'TRANSFER',
+};
+
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   NEW: ['CREATING', 'LOST'],
   CREATING: ['DEVELOPMENT', 'ON_HOLD', 'LOST'],
@@ -40,7 +48,12 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
     setUpdating(true);
     setBlocker(null);
     try {
-      await productsApi.updateStatus(product.id, newStatus);
+      const stage = PRODUCT_STAGE_BY_STATUS[newStatus];
+      if (stage) {
+        await productsApi.moveStage(product.id, { stage });
+      } else {
+        await productsApi.updateStatus(product.id, newStatus);
+      }
       onStatusChange();
     } catch (error) {
       setBlocker(toStageGateBlocker(error));

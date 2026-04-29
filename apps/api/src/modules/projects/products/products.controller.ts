@@ -107,6 +107,12 @@ export class ProductsController {
     return this.productsService.updateStatus(id, body.status);
   }
 
+  @Patch(':id/stage')
+  @ApiOperation({ summary: 'Move product to a canonical delivery stage' })
+  async moveStage(@Param('id') id: string, @Body() body: { stage: string }) {
+    return this.productsService.moveStage(id, body);
+  }
+
   @Patch(':id/pause')
   @ApiOperation({ summary: 'Pause product delivery with reason and resume date' })
   async pause(@Param('id') id: string, @Body() body: { reason: string; onHoldUntil: string }) {

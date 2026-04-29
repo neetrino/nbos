@@ -103,6 +103,12 @@ export class ExtensionsController {
     return this.extensionsService.updateStatus(id, body.status);
   }
 
+  @Patch(':id/stage')
+  @ApiOperation({ summary: 'Move extension to a canonical delivery stage' })
+  async moveStage(@Param('id') id: string, @Body() body: { stage: string }) {
+    return this.extensionsService.moveStage(id, body);
+  }
+
   @Patch(':id/pause')
   @ApiOperation({ summary: 'Pause extension delivery with reason and resume date' })
   async pause(@Param('id') id: string, @Body() body: { reason: string; onHoldUntil: string }) {

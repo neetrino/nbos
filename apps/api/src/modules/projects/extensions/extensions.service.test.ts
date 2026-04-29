@@ -252,6 +252,49 @@ describe('ExtensionsService', () => {
   });
 
   describe('dedicated delivery actions', () => {
+    it('moves extension to a canonical stage through stage-specific action', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'NEW',
+        description: 'Add loyalty widget',
+        assignedTo: 'dev-1',
+        order: { id: 'ord-1' },
+      });
+      prisma.extension.update.mockResolvedValue({
+        id: 'e1',
+        status: 'DEVELOPMENT',
+        deliveryStage: 'DEVELOPMENT',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+
+      const result = await service.moveStage('e1', { stage: 'DEVELOPMENT' });
+
+      expect(prisma.extension.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'DEVELOPMENT',
+            deliveryStage: 'DEVELOPMENT',
+            deliveryWorkStatus: 'ACTIVE',
+          }),
+        }),
+      );
+      expect(result.deliveryLifecycle.stage).toBe('DEVELOPMENT');
+    });
+
+    it('blocks stage movement while extension is paused', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'QA',
+        deliveryStage: 'QA',
+        deliveryWorkStatus: 'ON_HOLD',
+      });
+
+      await expect(service.moveStage('e1', { stage: 'TRANSFER' })).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.extension.update).not.toHaveBeenCalled();
+    });
+
     it('pauses extension delivery without changing legacy stage status', async () => {
       prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'QA' });
       prisma.extension.update.mockResolvedValue({

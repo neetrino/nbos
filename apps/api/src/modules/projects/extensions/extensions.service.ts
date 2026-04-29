@@ -16,6 +16,7 @@ import {
   buildDeliveryPauseWrite,
   buildDeliveryResumeWrite,
   extensionLegacyStatusForStage,
+  requireDeliveryStage,
 } from '../delivery-lifecycle';
 
 interface CreateExtensionDto {
@@ -42,6 +43,10 @@ interface PauseDeliveryDto {
 
 interface CancelDeliveryDto {
   reason: string;
+}
+
+interface MoveStageDto {
+  stage: string;
 }
 
 interface ExtensionQueryParams {
@@ -191,6 +196,27 @@ export class ExtensionsService {
     return attachExtensionReadiness(updated);
   }
 
+  async moveStage(id: string, data: MoveStageDto) {
+    const extension = await this.findById(id);
+    this.ensureActiveForStageMove(extension.deliveryLifecycle);
+    const stage = this.parseDeliveryStage(data.stage);
+    const target = extensionLegacyStatusForStage(stage) as ExtensionStatusEnum;
+
+    validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
+    validateExtensionStageGate(extension, target);
+
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
   async pause(id: string, data: PauseDeliveryDto) {
     const extension = await this.findById(id);
     this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
@@ -268,6 +294,21 @@ export class ExtensionsService {
   private ensureNotTerminal(resolution: string | null) {
     if (resolution) {
       throw new BadRequestException('Terminal delivery item cannot be changed');
+    }
+  }
+
+  private ensureActiveForStageMove(lifecycle: { resolution: string | null; workStatus: string }) {
+    this.ensureNotTerminal(lifecycle.resolution);
+    if (lifecycle.workStatus === 'ON_HOLD') {
+      throw new BadRequestException('Paused extension must be resumed before stage movement');
+    }
+  }
+
+  private parseDeliveryStage(stage: string) {
+    try {
+      return requireDeliveryStage(stage);
+    } catch {
+      throw new BadRequestException(`Invalid delivery stage: ${stage}`);
     }
   }
 }

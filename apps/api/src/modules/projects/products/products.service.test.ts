@@ -268,6 +268,53 @@ describe('ProductsService', () => {
   });
 
   describe('dedicated delivery actions', () => {
+    it('moves product to a canonical stage through stage-specific action', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'CREATING',
+      });
+      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
+        {
+          key: 'scope_confirmed',
+          title: 'Scope confirmed',
+          isRequired: true,
+          isChecked: true,
+        },
+      ]);
+      prisma.product.update.mockResolvedValue({
+        id: 'p1',
+        status: 'DEVELOPMENT',
+        deliveryStage: 'DEVELOPMENT',
+        deliveryWorkStatus: 'ACTIVE',
+      });
+
+      const result = await service.moveStage('p1', { stage: 'DEVELOPMENT' });
+
+      expect(prisma.product.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'DEVELOPMENT',
+            deliveryStage: 'DEVELOPMENT',
+            deliveryWorkStatus: 'ACTIVE',
+          }),
+        }),
+      );
+      expect(result.deliveryLifecycle.stage).toBe('DEVELOPMENT');
+    });
+
+    it('blocks stage movement while product is paused', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'ON_HOLD',
+        deliveryStage: 'DEVELOPMENT',
+        deliveryWorkStatus: 'ON_HOLD',
+      });
+
+      await expect(service.moveStage('p1', { stage: 'QA' })).rejects.toThrow(BadRequestException);
+      expect(prisma.product.update).not.toHaveBeenCalled();
+    });
+
     it('pauses product delivery with canonical hold fields', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
       prisma.product.update.mockResolvedValue({

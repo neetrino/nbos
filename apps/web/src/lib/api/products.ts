@@ -113,6 +113,10 @@ export interface CancelDeliveryData {
   reason: string;
 }
 
+export interface MoveDeliveryStageData {
+  stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER';
+}
+
 export const productsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData> {
     const resp = await api.get<ListData>('/api/projects/products', { params });
@@ -136,6 +140,11 @@ export const productsApi = {
 
   async updateStatus(id: string, status: string): Promise<Product> {
     const resp = await api.patch<Product>(`/api/projects/products/${id}/status`, { status });
+    return resp.data;
+  },
+
+  async moveStage(id: string, data: MoveDeliveryStageData): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/stage`, data);
     return resp.data;
   },
 

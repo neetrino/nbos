@@ -98,6 +98,10 @@ export interface CancelDeliveryData {
   reason: string;
 }
 
+export interface MoveDeliveryStageData {
+  stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER';
+}
+
 export const extensionsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData> {
     const resp = await api.get<ListData>('/api/projects/extensions', { params });
@@ -121,6 +125,11 @@ export const extensionsApi = {
 
   async updateStatus(id: string, status: string): Promise<Extension> {
     const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/status`, { status });
+    return resp.data;
+  },
+
+  async moveStage(id: string, data: MoveDeliveryStageData): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/stage`, data);
     return resp.data;
   },
 

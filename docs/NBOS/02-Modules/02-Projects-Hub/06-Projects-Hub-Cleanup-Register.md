@@ -109,6 +109,24 @@ Runtime now exposes explicit lifecycle actions for both `Product` and `Extension
 
 These actions use canonical lifecycle fields and keep legacy `status` synchronized only for compatibility.
 
+### A7. Dedicated stage movement actions exist
+
+Статус: `PHASE 4 ACTION ALIGNMENT`
+
+Runtime now exposes explicit stage movement actions for both `Product` and `Extension`:
+
+- `PATCH /api/projects/products/:id/stage`;
+- `PATCH /api/projects/extensions/:id/stage`.
+
+These actions accept canonical stages only:
+
+- `STARTING`;
+- `DEVELOPMENT`;
+- `QA`;
+- `TRANSFER`.
+
+Product and extension UI stage controls now use these canonical endpoints for active-stage movement. Legacy `status` endpoints remain available as compatibility paths and for still-unseparated terminal actions.
+
 ---
 
 ## B. Устарело только в документации или описаниях

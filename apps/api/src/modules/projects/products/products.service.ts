@@ -20,6 +20,7 @@ import {
   buildDeliveryPauseWrite,
   buildDeliveryResumeWrite,
   productLegacyStatusForStage,
+  requireDeliveryStage,
 } from '../delivery-lifecycle';
 
 interface CreateProductDto {
@@ -50,6 +51,10 @@ interface PauseDeliveryDto {
 
 interface CancelDeliveryDto {
   reason: string;
+}
+
+interface MoveStageDto {
+  stage: string;
 }
 
 interface ProductQueryParams {
@@ -221,6 +226,24 @@ export class ProductsService {
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
+  async moveStage(id: string, data: MoveStageDto) {
+    const product = await this.findById(id);
+    this.ensureActiveForStageMove(product.deliveryLifecycle);
+    const stage = this.parseDeliveryStage(data.stage);
+    const target = productLegacyStatusForStage(stage) as ProductStatusEnum;
+
+    validateProductTransition(product.status as ProductStatusEnum, target);
+    validateProductStageGate(product, target);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product.projectId);
+
+    const updatedProduct = await this.prisma.product.update({
+      where: { id },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
+      include: { project: { select: { id: true, code: true, name: true } } },
+    });
+    return attachProductDeliveryLifecycle(updatedProduct);
+  }
+
   async pause(id: string, data: PauseDeliveryDto) {
     const product = await this.findById(id);
     this.ensureNotTerminal(product.deliveryLifecycle.resolution);
@@ -298,6 +321,21 @@ export class ProductsService {
   private ensureNotTerminal(resolution: string | null) {
     if (resolution) {
       throw new BadRequestException('Terminal delivery item cannot be changed');
+    }
+  }
+
+  private ensureActiveForStageMove(lifecycle: { resolution: string | null; workStatus: string }) {
+    this.ensureNotTerminal(lifecycle.resolution);
+    if (lifecycle.workStatus === 'ON_HOLD') {
+      throw new BadRequestException('Paused product must be resumed before stage movement');
+    }
+  }
+
+  private parseDeliveryStage(stage: string) {
+    try {
+      return requireDeliveryStage(stage);
+    } catch {
+      throw new BadRequestException(`Invalid delivery stage: ${stage}`);
     }
   }
 }

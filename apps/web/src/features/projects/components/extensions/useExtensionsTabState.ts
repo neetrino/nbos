@@ -2,6 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { isStageGateApiError, type ApiFieldError } from '@/lib/api-errors';
 import { extensionsApi, type Extension } from '@/lib/api/extensions';
 
+const EXTENSION_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER'> = {
+  NEW: 'STARTING',
+  DEVELOPMENT: 'DEVELOPMENT',
+  QA: 'QA',
+  TRANSFER: 'TRANSFER',
+};
+
 export interface ExtensionBlocker {
   extensionId: string;
   projectId: string;
@@ -64,7 +71,10 @@ function useExtensionStatusChange(
   return useCallback(
     async (extension: Extension, newStatus: string) => {
       try {
-        const updated = await extensionsApi.updateStatus(extension.id, newStatus);
+        const stage = EXTENSION_STAGE_BY_STATUS[newStatus];
+        const updated = stage
+          ? await extensionsApi.moveStage(extension.id, { stage })
+          : await extensionsApi.updateStatus(extension.id, newStatus);
         setExtensions((current) => replaceExtension(current, updated));
         setBlocker(null);
       } catch (error) {

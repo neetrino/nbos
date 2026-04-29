@@ -51,6 +51,13 @@ export interface DeliveryResumeWrite {
   onHoldUntil: null;
 }
 
+export const DELIVERY_STAGES: Array<Exclude<DeliveryStage, null>> = [
+  'STARTING',
+  'DEVELOPMENT',
+  'QA',
+  'TRANSFER',
+];
+
 export function buildProductDeliveryLifecycle(
   product: DeliveryStatusCarrier,
 ): DeliveryLifecycleProjection {
@@ -155,6 +162,11 @@ export function productLegacyStatusForStage(stage: DeliveryStage): string {
 export function extensionLegacyStatusForStage(stage: DeliveryStage): string {
   if (stage === 'DEVELOPMENT' || stage === 'QA' || stage === 'TRANSFER') return stage;
   return 'NEW';
+}
+
+export function requireDeliveryStage(stage: string): Exclude<DeliveryStage, null> {
+  if (DELIVERY_STAGES.some((item) => item === stage)) return stage as Exclude<DeliveryStage, null>;
+  throw new Error(`Invalid delivery stage: ${stage}`);
 }
 
 function mapDeliveryStage(legacyStatus: string | null): DeliveryStage {
