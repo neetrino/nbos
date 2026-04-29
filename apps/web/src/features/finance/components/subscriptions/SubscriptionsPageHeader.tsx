@@ -1,4 +1,4 @@
-import { Download, Loader2, Plus, RefreshCcw } from 'lucide-react';
+import { Download, Loader2, Plus, RefreshCcw, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import {
@@ -16,6 +16,8 @@ interface SubscriptionsPageHeaderProps {
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
   exportInProgress: boolean;
+  statsExportDisabled: boolean;
+  onExportScopeStatsCsv: () => void;
 }
 
 export function SubscriptionsPageHeader({
@@ -27,6 +29,8 @@ export function SubscriptionsPageHeader({
   onExportCsv,
   exportDisabled,
   exportInProgress,
+  statsExportDisabled,
+  onExportScopeStatsCsv,
 }: SubscriptionsPageHeaderProps) {
   return (
     <PageHeader
@@ -47,6 +51,17 @@ export function SubscriptionsPageHeader({
       </div>
       <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh subscriptions">
         <RefreshCcw size={16} />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={statsExportDisabled}
+        onClick={() => onExportScopeStatsCsv()}
+        aria-label="Export subscription scope statistics as CSV"
+        title="UTF-8 CSV snapshot from GET /finance/subscriptions/stats (period + optional partnerId; list search/type/status not applied—see scope_note row)"
+      >
+        <TableProperties size={16} aria-hidden />
       </Button>
       <Button
         type="button"

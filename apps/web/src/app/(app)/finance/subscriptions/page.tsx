@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { FilterBar, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,9 @@ import { SubscriptionsPageContent } from '@/features/finance/components/subscrip
 import { SubscriptionsPageHeader } from '@/features/finance/components/subscriptions/SubscriptionsPageHeader';
 import { SubscriptionStatsCards } from '@/features/finance/components/subscriptions/SubscriptionStatsCards';
 import { useSubscriptionsCsvExport } from '@/features/finance/components/subscriptions/use-subscriptions-csv-export';
+import { useSubscriptionsScopeStatsCsvExport } from '@/features/finance/components/subscriptions/use-subscriptions-scope-stats-csv-export';
 import { useSubscriptionsPageState } from '@/features/finance/components/subscriptions/useSubscriptionsPageState';
+import { buildSubscriptionPageQueries } from '@/features/finance/utils/build-subscription-page-queries';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 
 function SubscriptionsPageInner() {
@@ -27,6 +29,22 @@ function SubscriptionsPageInner() {
   );
   const { partnerFilterOptions, partnerOptionsLoadError, clearPartnerOptionsLoadError } =
     usePartnerFilterOptions();
+
+  const subscriptionStatsQueryParams = useMemo(() => {
+    return buildSubscriptionPageQueries(
+      {
+        filters: page.filters,
+        search: page.search,
+        partnerIdFromUrl: partnerIdFromUrl?.trim() || null,
+      },
+      page.period,
+    ).statsParams;
+  }, [page.filters, page.period, page.search, partnerIdFromUrl]);
+
+  const { handleExportScopeStatsCsv } = useSubscriptionsScopeStatsCsvExport(page.stats, {
+    period: page.period,
+    statsQuery: subscriptionStatsQueryParams,
+  });
 
   useFinanceDocumentTitle(subscriptionsListPageTitle(Boolean(partnerIdFromUrl?.trim())));
 
@@ -92,6 +110,8 @@ function SubscriptionsPageInner() {
         onExportCsv={handleExportCsv}
         exportDisabled={page.loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={page.loading || !page.stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
       />
 
       <SubscriptionStatsCards subscriptions={page.subscriptions} stats={page.stats} />
