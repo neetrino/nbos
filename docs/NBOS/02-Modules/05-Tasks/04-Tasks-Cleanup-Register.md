@@ -248,7 +248,7 @@
 
 - пересобрать task state machine;
 - добавить review/approval runtime;
-- expose completion blockers in TaskSheet UI.
+- extend completion rules beyond the first checklist/subtask/runtime-pending foundation.
 
 ### C4. Work Space runtime foundation exists
 
@@ -291,24 +291,25 @@ Remaining depth:
 - добавить workspace-level mode switching;
 - убрать backlog/future sprint noise из daily board.
 
-### C6. TaskSheet пока не реализует completion rules и review flow
+### C6. TaskSheet exposes completion rules, but review flow is still missing
+
+Статус: `PHASE 4 UI FOUNDATION`
 
 Подтверждение в коде:
 
 - [apps/web/src/features/tasks/components/TaskSheet.tsx](/Users/user/{} Development/1. Production/nbos/apps/web/src/features/tasks/components/TaskSheet.tsx:128)
+- [apps/web/src/features/tasks/components/TaskCompletionRulesPanel.tsx](/Users/user/{} Development/1. Production/nbos/apps/web/src/features/tasks/components/TaskCompletionRulesPanel.tsx:1)
+- [apps/web/src/features/tasks/utils/task-completion-readiness.ts](/Users/user/{} Development/1. Production/nbos/apps/web/src/features/tasks/utils/task-completion-readiness.ts:1)
 
 Проблема:
 
-- UI сразу предлагает `Complete`;
 - нет review request / reviewer approve flow;
-- нет экрана причин, почему задачу нельзя закрыть;
-- нет отображения completion rules как first-class блока.
+- attachment / creator approval / linked entity rules still require deeper runtime sources.
 
 Что потом нужно сделать:
 
-- добавить review/completion UX;
-- встроить completion blockers;
-- добавить section с completion rules/results.
+- добавить review/approval runtime;
+- connect attachment and linked-entity rules to Drive/runtime sources.
 
 ### C7. Recurring существует, но ещё в упрощённой форме
 

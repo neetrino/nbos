@@ -7,7 +7,7 @@
 | Field         | Value                          |
 | ------------- | ------------------------------ |
 | Current phase | **Phase 4 — Delivery ops**     |
-| Current task  | Support SLA / coverage depth   |
+| Current task  | Task completion UI polish      |
 | Status        | Phase 4 Projects Hub lifecycle |
 | Last updated  | 2026-04-29                     |
 
@@ -67,12 +67,12 @@ Future Finance depth:
 | 2026-04-29 | Phase 3 Finance full closure  | Client Services runtime/flows and all six Finance report aggregates done. |
 | 2026-04-29 | Delivery lifecycle runtime    | Product/Extension canonical lifecycle, actions, board, filters and gates. |
 | 2026-04-29 | Product Done readiness        | Done blocks real blockers and surfaces handoff/Drive/client gaps.         |
-| 2026-04-29 | Tasks / Work Space foundation | Work Space runtime, product UI integration and completion blockers exist. |
+| 2026-04-29 | Tasks / Work Space foundation | Work Space runtime, product UI, completion rules and blocker UX exist.    |
 | 2026-04-29 | Support runtime bridges       | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state. |
 
 ## Next Action
 
-1. Continue Phase 4 with task completion UI/review polish or Phase 4 closure review.
+1. Continue Phase 4 with review/approval decision or Phase 4 closure review.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

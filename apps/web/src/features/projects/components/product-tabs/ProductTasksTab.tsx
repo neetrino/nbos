@@ -5,7 +5,9 @@ import { LayoutGrid, List, AlertTriangle, Play, Check, RotateCcw } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { getTaskStatus, getTaskPriority } from '@/features/tasks/constants/tasks';
+import { TaskCompletionReadinessBadge } from '@/features/tasks/components/TaskCompletionReadinessBadge';
 import { ProductTasksSummary } from './ProductTasksSummary';
 import { ProductWorkSpaceHeader } from './ProductWorkSpaceHeader';
 
@@ -20,6 +22,7 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [workspace, setWorkspace] = useState<WorkSpace | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
@@ -47,8 +50,9 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
     try {
       const updated = await tasksApi[action](taskId);
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-    } catch {
-      /* handled by API layer */
+      setActionError(null);
+    } catch (caught) {
+      setActionError(getApiErrorMessage(caught, 'Task action could not be completed.'));
     }
   };
 
@@ -70,6 +74,11 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
       )}
       {tasks.length > 0 && (
         <>
+          {actionError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {actionError}
+            </div>
+          )}
           <ProductTasksSummary tasks={tasks} />
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-xs">
@@ -134,6 +143,7 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
                               {!task.workspaceId && (
                                 <StatusBadge label="Legacy link" variant="amber" />
                               )}
+                              <TaskCompletionReadinessBadge task={task} />
                             </div>
                             {task.assignee && (
                               <div className="mt-2 flex items-center gap-1.5">
@@ -195,6 +205,7 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
                     <th className="px-4 py-2 text-left font-medium">Status</th>
                     <th className="px-4 py-2 text-left font-medium">Priority</th>
                     <th className="px-4 py-2 text-left font-medium">Planning</th>
+                    <th className="px-4 py-2 text-left font-medium">Completion</th>
                     <th className="px-4 py-2 text-left font-medium">Assignee</th>
                     <th className="px-4 py-2 text-left font-medium">Due</th>
                   </tr>
@@ -217,6 +228,9 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
                         </td>
                         <td className="px-4 py-2">
                           <StatusBadge label={formatPlanningStatus(task)} variant="gray" />
+                        </td>
+                        <td className="px-4 py-2">
+                          <TaskCompletionReadinessBadge task={task} />
                         </td>
                         <td className="text-muted-foreground px-4 py-2">
                           {task.assignee

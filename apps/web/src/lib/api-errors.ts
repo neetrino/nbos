@@ -8,6 +8,7 @@ export interface ApiErrorPayload {
   code?: string;
   message?: string | Record<string, unknown>;
   errors?: ApiFieldError[];
+  details?: Record<string, unknown>;
 }
 
 const STAGE_GATE_ERROR_CODES = new Set([
@@ -20,6 +21,7 @@ export class ApiError extends Error {
   readonly statusCode?: number;
   readonly code?: string;
   readonly errors: ApiFieldError[];
+  readonly details: Record<string, unknown>;
 
   constructor(message: string, payload: ApiErrorPayload = {}) {
     super(message);
@@ -27,6 +29,7 @@ export class ApiError extends Error {
     this.statusCode = payload.statusCode;
     this.code = payload.code;
     this.errors = payload.errors ?? [];
+    this.details = payload.details ?? {};
   }
 }
 
@@ -57,6 +60,7 @@ function parsePayload(payload: unknown): ApiErrorPayload {
     code: typeof payload.code === 'string' ? payload.code : undefined,
     message: parseMessage(payload.message),
     errors: parseFieldErrors(payload.errors),
+    details: payload,
   };
 }
 

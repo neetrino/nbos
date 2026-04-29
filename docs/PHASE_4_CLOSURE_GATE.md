@@ -6,7 +6,7 @@
 
 Phase 4 is **not fully closed yet**.
 
-The Projects Hub delivery lifecycle slice is ready for closure review, and the first connected Work Space, task completion rules, Support bridges, coverage decision and read-only SLA state now exist. The remaining Phase 4 depth is mostly Task review/UI polish and optional Support automation. Those areas must be finished or explicitly moved out of Phase 4 before the phase can be marked `Done`.
+The Projects Hub delivery lifecycle slice is ready for closure review, and the first connected Work Space, task completion rules UI, Support bridges, coverage decision and read-only SLA state now exist. The remaining Phase 4 depth is mostly Task review/approval decisions and optional Support automation. Those areas must be finished or explicitly moved out of Phase 4 before the phase can be marked `Done`.
 
 ## 2. Confirmed Done In Projects Hub
 
@@ -23,6 +23,7 @@ The Projects Hub delivery lifecycle slice is ready for closure review, and the f
 - Handoff readiness surfaces Project credentials, domain health and linked CRM/Order handoff file gaps.
 - Product and Extension can ensure connected Work Spaces; Product detail exposes the connected Work Space context.
 - Task completion can enforce explicit rules and return human-readable blocker reasons.
+- Task UI surfaces completion rules/readiness and shows blocker feedback when completion fails.
 - Support tickets can create linked execution tasks while keeping ticket lifecycle separate.
 - Change Request tickets can create linked Extension Deals without becoming free support work.
 - Support tickets expose coverage decision and read-only SLA state without fake notification automation.
@@ -54,7 +55,6 @@ Remaining Tasks depth:
 
 - Review / approval flow is still not implemented.
 - Full workspace-level Scrum views are still not implemented.
-- TaskSheet does not yet render completion rules and blockers as a first-class UI section.
 
 ### Support
 
@@ -86,6 +86,6 @@ Mark full Phase 4 `Done` only when:
 
 ## 6. Recommended Next Slice
 
-Continue with **task completion UI/review polish** or prepare a **Phase 4 closure review**.
+Continue with **review/approval decision** or prepare a **Phase 4 closure review**.
 
-The Work Space, completion rules and Support runtime foundations now exist; the next closure blocker is richer task completion UI/review flow unless it is explicitly moved out of Phase 4.
+The Work Space, completion rules UI and Support runtime foundations now exist; the remaining decision is whether review/approval runtime belongs in Phase 4 or moves later.
