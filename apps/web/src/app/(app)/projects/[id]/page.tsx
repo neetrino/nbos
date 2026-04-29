@@ -9,6 +9,7 @@ import {
   type UpdateKickoffChecklistItemInput,
 } from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
+import { ProjectDeliveryBoard } from '@/features/projects/components/ProjectDeliveryBoard';
 import { ProjectExtensionsSnapshot } from '@/features/projects/components/ProjectExtensionsSnapshot';
 import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
 import { ProjectInfoCard } from '@/features/projects/components/ProjectInfoCard';
@@ -75,6 +76,10 @@ export default function ProjectDetailPage() {
         onKickoffChecklistItemUpdate={handleKickoffChecklistItemUpdate}
       />
       <ProjectExtensionsSnapshot project={project} />
+      <ProjectDeliveryBoard
+        project={project}
+        onOpenProduct={(productId) => router.push(`/projects/${params.id}/products/${productId}`)}
+      />
 
       <ProjectProductsSection
         project={project}

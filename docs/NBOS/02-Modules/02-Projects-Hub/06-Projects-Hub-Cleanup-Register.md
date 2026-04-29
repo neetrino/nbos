@@ -150,6 +150,19 @@ Product and extension delivery UI now exposes canonical operational controls:
 
 Stage movement remains separate from pause/resume/cancel/complete, matching the canon rule that `On Hold` is a work status and `Cancelled` is a terminal outcome, not a delivery stage.
 
+### A10. Delivery Board v1 exists in Project shell
+
+Статус: `PHASE 4 UI ALIGNMENT`
+
+Project shell now renders a first Delivery Board view over existing runtime entities:
+
+- `Product` cards;
+- `Extension` cards;
+- active columns `Starting / Development / QA / Transfer`;
+- separate `Closed` strip for terminal outcomes.
+
+The board is a computed view over `Product` and `Extension`; no separate board storage or duplicate delivery entity was introduced.
+
 ---
 
 ## B. Устарело только в документации или описаниях
