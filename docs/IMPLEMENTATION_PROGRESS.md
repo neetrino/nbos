@@ -7,7 +7,7 @@
 | Field         | Value                          |
 | ------------- | ------------------------------ |
 | Current phase | **Phase 4 — Delivery ops**     |
-| Current task  | Lifecycle query filters        |
+| Current task  | Expired On Hold visibility     |
 | Status        | Phase 4 Projects Hub lifecycle |
 | Last updated  | 2026-04-29                     |
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~83% | Product/Extension lists support canonical lifecycle filters alongside legacy status        |
+| Phase 4 — Delivery ops              | In progress |     ~84% | Delivery UI highlights expired On Hold states from existing lifecycle data                 |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -97,10 +97,11 @@ Future Finance depth:
 | 2026-04-29 | Generic status UI retirement       | Product/Extension lifecycle controls use canonical endpoints only        | web typecheck, lint                                                   |
 | 2026-04-29 | Backend status deprecation         | Generic status endpoints now expose deprecation signal                   | api typecheck, lint                                                   |
 | 2026-04-29 | Lifecycle query filters            | Product/Extension lists accept canonical lifecycle query params          | api typecheck, targeted Vitest                                        |
+| 2026-04-29 | Expired On Hold visibility         | Delivery UI highlights overdue paused Product/Extension work             | web typecheck, lint                                                   |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: Done acceptance/credentials runtime depth or expired On Hold visibility.
+1. Continue Projects Hub lifecycle refactor: Done acceptance/credentials runtime depth.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

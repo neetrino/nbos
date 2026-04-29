@@ -317,6 +317,19 @@ Product and Extension list APIs now expose canonical lifecycle query filters alo
 
 This lets new API clients filter delivery rows by canonical lifecycle state without using old `NEW / CREATING / LOST` status values. Legacy `status` query remains available as a compatibility filter until the old enum/column path can be removed.
 
+### A23. Expired On Hold state is visible in delivery UI
+
+Статус: `PHASE 4 UX ALIGNMENT`
+
+Delivery UI now surfaces overdue paused work from existing lifecycle data:
+
+- `deliveryLifecycle.onHoldUntil` is interpreted read-only;
+- expired `ON_HOLD` badges use an amber warning variant;
+- Delivery Board cards show hold-until or hold-expired copy;
+- Product detail lifecycle card explains expired holds and keeps the Resume action as the next operational step.
+
+No scheduler, auto-resume or automatic status mutation was introduced.
+
 ---
 
 ## B. Устарело только в документации или описаниях
@@ -467,12 +480,13 @@ Current deprecation rule:
 - Product tab filters and badges prefer canonical lifecycle buckets;
 - PM Intake primary Product label prefers canonical lifecycle;
 - Product and Extension lifecycle controls call canonical endpoints for stage movement and terminal actions.
+- expired `ON_HOLD` states are highlighted from `deliveryLifecycle.onHoldUntil`.
 
 Что потом нужно сделать:
 
 - keep old status labels only as fallback for records that do not yet expose `deliveryLifecycle`;
 - deprecate backend generic status endpoints after API consumers stop using them;
-- implement visual expired-hold state later.
+- keep any future auto-resume or escalation workflow explicit; do not infer it from expired hold UI alone.
 
 ### C4. Product / Extension stage-gate validation пока уже нового канона не покрывает полностью
 

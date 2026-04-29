@@ -5,9 +5,11 @@ import { StatusBadge } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
 import {
   formatDeliveryLifecycleLabel,
+  formatDeliveryHoldUntil,
   getDeliveryLifecycleVariant,
   getProductStatus,
   getProductType,
+  isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
 import { ProductStageGateCard } from './ProductStageGateCard';
 
@@ -140,12 +142,29 @@ function ProductDeliveryLifecycleCard({ product }: { product: FullProduct }) {
           <DeliveryStageStep key={stage.value} stage={stage} lifecycle={lifecycle} />
         ))}
       </div>
-      {lifecycle.workStatus === 'ON_HOLD' && (
-        <p className="text-muted-foreground mt-3 text-xs">
-          Delivery is paused on the current stage until it is resumed.
-        </p>
-      )}
+      {lifecycle.workStatus === 'ON_HOLD' && <HoldStateCopy lifecycle={lifecycle} />}
     </section>
+  );
+}
+
+function HoldStateCopy({
+  lifecycle,
+}: {
+  lifecycle: NonNullable<FullProduct['deliveryLifecycle']>;
+}) {
+  const date = formatDeliveryHoldUntil(lifecycle.onHoldUntil);
+  const expired = isDeliveryHoldExpired(lifecycle);
+  const dateCopy = date ? ` until ${date}` : '';
+  const copy = expired
+    ? `Delivery hold expired${date ? ` on ${date}` : ''}. Resume or update the delivery pause.`
+    : `Delivery is paused${dateCopy}. Resume delivery when work can continue.`;
+
+  return (
+    <p
+      className={`mt-3 text-xs ${expired ? 'font-medium text-amber-600' : 'text-muted-foreground'}`}
+    >
+      {copy}
+    </p>
   );
 }
 
@@ -181,6 +200,7 @@ function getStageStepClassName({
 }) {
   if (lifecycle.resolution === 'CANCELLED') return 'border-red-200 bg-red-50 text-red-700';
   if (isCurrent && lifecycle.workStatus === 'ON_HOLD') {
+    if (isDeliveryHoldExpired(lifecycle)) return 'border-amber-300 bg-amber-50 text-amber-700';
     return 'border-gray-300 bg-gray-100 text-gray-700';
   }
   if (isCurrent) return 'border-purple-300 bg-purple-50 text-purple-700';

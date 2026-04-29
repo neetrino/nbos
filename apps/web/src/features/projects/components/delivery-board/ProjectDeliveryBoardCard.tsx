@@ -17,9 +17,11 @@ import type {
 } from '@/lib/api/projects';
 import {
   formatDeliveryLifecycleLabel,
+  formatDeliveryHoldUntil,
   getExtensionSize,
   getDeliveryLifecycleVariant,
   getProductType,
+  isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
 import {
   getItemLifecycle,
@@ -211,6 +213,7 @@ function DeliveryCardMeta({ item }: { item: DeliveryBoardItem }) {
 }
 
 function ProductCardMeta({ product }: { product: ProjectProductSummary }) {
+  const holdCopy = getHoldCopy(product.deliveryLifecycle);
   return (
     <div className="mt-3 space-y-1.5 text-left">
       {product.pm && (
@@ -223,11 +226,13 @@ function ProductCardMeta({ product }: { product: ProjectProductSummary }) {
         {product._count.tasks} tasks · {product._count.extensions} ext. · {product._count.tickets}{' '}
         tickets
       </p>
+      {holdCopy && <p className={getHoldCopyClassName(product.deliveryLifecycle)}>{holdCopy}</p>}
     </div>
   );
 }
 
 function ExtensionCardMeta({ extension }: { extension: ProjectExtensionSummary }) {
+  const holdCopy = getHoldCopy(extension.deliveryLifecycle);
   return (
     <div className="mt-3 space-y-1.5 text-left">
       {extension.assignee && (
@@ -239,8 +244,23 @@ function ExtensionCardMeta({ extension }: { extension: ProjectExtensionSummary }
       <p className="text-muted-foreground text-xs">
         {extension.product?.name ?? 'No linked product'} · {extension._count.tasks} tasks
       </p>
+      {holdCopy && <p className={getHoldCopyClassName(extension.deliveryLifecycle)}>{holdCopy}</p>}
     </div>
   );
+}
+
+function getHoldCopy(lifecycle: DeliveryLifecycleProjection | undefined) {
+  if (lifecycle?.workStatus !== 'ON_HOLD') return null;
+  const date = formatDeliveryHoldUntil(lifecycle.onHoldUntil);
+  if (isDeliveryHoldExpired(lifecycle)) return date ? `Hold expired on ${date}` : 'Hold expired';
+  return date ? `On hold until ${date}` : 'On hold';
+}
+
+function getHoldCopyClassName(lifecycle: DeliveryLifecycleProjection | undefined) {
+  const base = 'text-xs font-medium';
+  return lifecycle && isDeliveryHoldExpired(lifecycle)
+    ? `${base} text-amber-600`
+    : `${base} text-muted-foreground`;
 }
 
 function MetaLine({ icon: Icon, label }: { icon: typeof User; label: string }) {

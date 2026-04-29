@@ -129,10 +129,14 @@ export function formatDeliveryLifecycleLabel(lifecycle: {
   stage: string | null;
   workStatus: string;
   resolution: string | null;
+  onHoldUntil?: string | null;
 }) {
   if (lifecycle.resolution === 'DONE') return 'Done';
   if (lifecycle.resolution === 'CANCELLED') return 'Cancelled';
   const stageLabel = lifecycle.stage === 'STARTING' ? 'Starting' : lifecycle.stage;
+  if (isDeliveryHoldExpired(lifecycle)) {
+    return stageLabel ? `${stageLabel} · Hold expired` : 'Hold expired';
+  }
   if (lifecycle.workStatus === 'ON_HOLD') return stageLabel ? `${stageLabel} · On Hold` : 'On Hold';
   return stageLabel ? toTitleCase(stageLabel) : 'Not staged';
 }
@@ -140,11 +144,29 @@ export function formatDeliveryLifecycleLabel(lifecycle: {
 export function getDeliveryLifecycleVariant(lifecycle: {
   workStatus: string;
   resolution: string | null;
+  onHoldUntil?: string | null;
 }): StatusVariant {
   if (lifecycle.resolution === 'DONE') return 'green';
   if (lifecycle.resolution === 'CANCELLED') return 'red';
+  if (isDeliveryHoldExpired(lifecycle)) return 'amber';
   if (lifecycle.workStatus === 'ON_HOLD') return 'gray';
   return 'purple';
+}
+
+export function isDeliveryHoldExpired(lifecycle: {
+  workStatus: string;
+  resolution: string | null;
+  onHoldUntil?: string | null;
+}) {
+  if (lifecycle.resolution || lifecycle.workStatus !== 'ON_HOLD' || !lifecycle.onHoldUntil) {
+    return false;
+  }
+  return new Date(lifecycle.onHoldUntil).getTime() < Date.now();
+}
+
+export function formatDeliveryHoldUntil(onHoldUntil: string | null) {
+  if (!onHoldUntil) return null;
+  return new Date(onHoldUntil).toLocaleDateString();
 }
 
 export function getExtensionStatus(value: string) {

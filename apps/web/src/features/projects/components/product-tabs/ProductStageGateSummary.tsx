@@ -4,6 +4,7 @@ import {
   formatDeliveryLifecycleLabel,
   getDeliveryLifecycleVariant,
   getProductStatus,
+  isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
 
 interface ProductStageGateSummaryProps {
@@ -53,6 +54,9 @@ function getGateFocus(status: string) {
 }
 
 function getNoMoveCopy(product: FullProduct) {
+  if (product.deliveryLifecycle && isDeliveryHoldExpired(product.deliveryLifecycle)) {
+    return 'hold expired, resume delivery first';
+  }
   if (product.deliveryLifecycle?.workStatus === 'ON_HOLD') return 'resume delivery first';
   if (product.deliveryLifecycle?.resolution === 'DONE') return 'product is done';
   if (product.deliveryLifecycle?.resolution === 'CANCELLED') return 'product is cancelled';
