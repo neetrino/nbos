@@ -2,8 +2,12 @@ import type { Prisma, PrismaClient } from '@nbos/database';
 import { mailAccountWhereForViewer } from './mail-account-scope';
 import { toAccountRow, toMessageRow, toThreadListRow } from './mail-dto-map';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
-import type { MailAccountRow, MailThreadDetailDto, MailThreadListRow } from './mail.types';
+import type { MailAccountRow, MailThreadDetailDto, MailThreadListPageDto } from './mail.types';
 import { normalizeMailThreadSearchQuery } from './mail-thread-search';
+import {
+  buildMailThreadListPageMeta,
+  normalizeMailThreadListPagination,
+} from './mail-thread-list-pagination.ops';
 
 export interface ListMailThreadsOptions {
   mailAccountId?: string;
@@ -12,10 +16,13 @@ export interface ListMailThreadsOptions {
   needsLinkOnly?: boolean;
   /** Case-insensitive substring match on `subjectNormalized` (from query `q`). */
   search?: string;
+  /** 1-based page index (default 1). */
+  page?: number;
+  pageSize?: number;
 }
 
 export type ListMailThreadsQueryResult =
-  | { ok: true; rows: MailThreadListRow[] }
+  | { ok: true; data: MailThreadListPageDto }
   | { ok: false; error: 'mail_account_not_found' };
 
 export async function listMailAccountsForViewer(
@@ -46,7 +53,17 @@ export async function listMailThreadsForViewer(
   });
   const ids = accounts.map((a) => a.id);
   if (ids.length === 0) {
-    return { ok: true, rows: [] };
+    const { page, pageSize } = normalizeMailThreadListPagination({
+      page: options.page,
+      pageSize: options.pageSize,
+    });
+    return {
+      ok: true,
+      data: {
+        items: [],
+        meta: buildMailThreadListPageMeta({ page, pageSize, totalCount: 0 }),
+      },
+    };
   }
   if (mailAccountId && !ids.includes(mailAccountId)) {
     return { ok: false, error: 'mail_account_not_found' };
@@ -64,12 +81,27 @@ export async function listMailThreadsForViewer(
         }
       : {}),
   };
-  const threads = await prisma.emailThread.findMany({
-    where,
-    orderBy: { lastMessageAt: 'desc' },
-    take: 100,
+  const { page, pageSize, skip } = normalizeMailThreadListPagination({
+    page: options.page,
+    pageSize: options.pageSize,
   });
-  return { ok: true, rows: threads.map(toThreadListRow) };
+  const [totalCount, threads] = await prisma.$transaction([
+    prisma.emailThread.count({ where }),
+    prisma.emailThread.findMany({
+      where,
+      orderBy: { lastMessageAt: 'desc' },
+      skip,
+      take: pageSize,
+    }),
+  ]);
+  const items = threads.map(toThreadListRow);
+  return {
+    ok: true,
+    data: {
+      items,
+      meta: buildMailThreadListPageMeta({ page, pageSize, totalCount }),
+    },
+  };
 }
 
 export async function getMailThreadDetailDtoOrNull(

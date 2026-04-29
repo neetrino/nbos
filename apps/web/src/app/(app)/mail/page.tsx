@@ -6,7 +6,12 @@ import { Mail, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
-import { mailApi, type MailAccountHealthSummaryRow, type MailThreadListRow } from '@/lib/api/mail';
+import {
+  mailApi,
+  type MailAccountHealthSummaryRow,
+  type MailThreadListPageMeta,
+  type MailThreadListRow,
+} from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
@@ -28,6 +33,8 @@ export default function MailInboxPage() {
   const canEdit = can('EDIT', 'MAIL');
   const [accountHealth, setAccountHealth] = useState<MailAccountHealthSummaryRow[]>([]);
   const [threads, setThreads] = useState<MailThreadListRow[]>([]);
+  const [threadListMeta, setThreadListMeta] = useState<MailThreadListPageMeta | null>(null);
+  const [threadPage, setThreadPage] = useState(1);
   const [filterAccountId, setFilterAccountId] = useState<string | null>(null);
   /** Inbox segment: all, unread-only, or needs-business-link only (mutually exclusive). */
   const [threadListSegment, setThreadListSegment] = useState<'all' | 'unread' | 'needs_link'>(
@@ -41,6 +48,7 @@ export default function MailInboxPage() {
 
   useEffect(() => {
     const t = window.setTimeout(() => {
+      setThreadPage(1);
       setThreadSearchQuery(threadSearchDraft.trim());
     }, MAIL_INBOX_SEARCH_DEBOUNCE_MS);
     return () => window.clearTimeout(t);
@@ -57,16 +65,18 @@ export default function MailInboxPage() {
           threadListSegment === 'unread',
           threadListSegment === 'needs_link',
           threadSearchQuery || undefined,
+          { page: threadPage },
         ),
       ]);
       setAccountHealth(health);
-      setThreads(th);
+      setThreads(th.items);
+      setThreadListMeta(th.meta);
     } catch (e) {
       setError(getApiErrorMessage(e, 'Mail could not be loaded.'));
     } finally {
       setLoading(false);
     }
-  }, [filterAccountId, threadListSegment, threadSearchQuery]);
+  }, [filterAccountId, threadListSegment, threadSearchQuery, threadPage]);
 
   const runSyncStub = useCallback(
     async (accountId: string) => {
@@ -119,7 +129,10 @@ export default function MailInboxPage() {
             type="button"
             variant={threadListSegment === 'all' ? 'secondary' : 'outline'}
             size="sm"
-            onClick={() => setThreadListSegment('all')}
+            onClick={() => {
+              setThreadPage(1);
+              setThreadListSegment('all');
+            }}
           >
             All threads
           </Button>
@@ -127,7 +140,10 @@ export default function MailInboxPage() {
             type="button"
             variant={threadListSegment === 'unread' ? 'secondary' : 'outline'}
             size="sm"
-            onClick={() => setThreadListSegment('unread')}
+            onClick={() => {
+              setThreadPage(1);
+              setThreadListSegment('unread');
+            }}
           >
             Unread only
           </Button>
@@ -135,7 +151,10 @@ export default function MailInboxPage() {
             type="button"
             variant={threadListSegment === 'needs_link' ? 'secondary' : 'outline'}
             size="sm"
-            onClick={() => setThreadListSegment('needs_link')}
+            onClick={() => {
+              setThreadPage(1);
+              setThreadListSegment('needs_link');
+            }}
           >
             Needs link
           </Button>
@@ -166,7 +185,10 @@ export default function MailInboxPage() {
             <CardContent className="flex flex-col gap-1">
               <button
                 type="button"
-                onClick={() => setFilterAccountId(null)}
+                onClick={() => {
+                  setThreadPage(1);
+                  setFilterAccountId(null);
+                }}
                 className={cn(
                   'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
                   filterAccountId === null ? 'bg-muted font-medium' : 'hover:bg-muted/60',
@@ -187,7 +209,10 @@ export default function MailInboxPage() {
                   >
                     <button
                       type="button"
-                      onClick={() => setFilterAccountId(a.id)}
+                      onClick={() => {
+                        setThreadPage(1);
+                        setFilterAccountId(a.id);
+                      }}
                       className={cn(
                         'min-w-0 flex-1 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
                         filterAccountId === a.id ? 'font-medium' : 'hover:bg-muted/60',
@@ -246,7 +271,7 @@ export default function MailInboxPage() {
               />
             </CardHeader>
             <CardContent>
-              {threads.length === 0 ? (
+              {threads.length === 0 && (!threadListMeta || threadListMeta.totalCount === 0) ? (
                 <EmptyState
                   icon={Mail}
                   title="No threads"
@@ -256,26 +281,76 @@ export default function MailInboxPage() {
                       : 'Connect a mailbox or wait for sync once the Mail pipeline is enabled.'
                   }
                 />
+              ) : threads.length === 0 ? (
+                <div className="space-y-3">
+                  <p className="text-muted-foreground text-sm">
+                    No threads on this page. Try the previous page.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={loading || !threadListMeta?.hasPreviousPage}
+                    onClick={() => setThreadPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous page
+                  </Button>
+                </div>
               ) : (
-                <ul className="divide-y rounded-md border">
-                  {threads.map((t) => (
-                    <li key={t.id}>
-                      <Link
-                        href={`/mail/threads/${t.id}`}
-                        className="hover:bg-muted/50 flex flex-col gap-0.5 px-3 py-3 text-sm"
-                      >
-                        <span className="font-medium">
-                          {formatThreadTitle(t.subjectNormalized)}
-                        </span>
-                        <span className="text-muted-foreground text-xs">
-                          {new Date(t.lastMessageAt).toLocaleString()}
-                          {t.hasUnread ? ' · Unread' : ''}
-                          {t.needsBusinessLink ? ' · Needs link' : ''}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="divide-y rounded-md border">
+                    {threads.map((t) => (
+                      <li key={t.id}>
+                        <Link
+                          href={`/mail/threads/${t.id}`}
+                          className="hover:bg-muted/50 flex flex-col gap-0.5 px-3 py-3 text-sm"
+                        >
+                          <span className="font-medium">
+                            {formatThreadTitle(t.subjectNormalized)}
+                          </span>
+                          <span className="text-muted-foreground text-xs">
+                            {new Date(t.lastMessageAt).toLocaleString()}
+                            {t.hasUnread ? ' · Unread' : ''}
+                            {t.needsBusinessLink ? ' · Needs link' : ''}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  {threadListMeta && threadListMeta.totalPages > 1 ? (
+                    <div className="text-muted-foreground mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span>
+                        Page {threadListMeta.page} of {threadListMeta.totalPages} ·{' '}
+                        {threadListMeta.totalCount} threads
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={loading || !threadListMeta.hasPreviousPage}
+                          onClick={() => setThreadPage((p) => Math.max(1, p - 1))}
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={loading || !threadListMeta.hasNextPage}
+                          onClick={() => setThreadPage((p) => p + 1)}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  ) : threadListMeta && threadListMeta.totalCount > 0 ? (
+                    <p className="text-muted-foreground mt-2 text-xs">
+                      {threadListMeta.totalCount} thread
+                      {threadListMeta.totalCount === 1 ? '' : 's'}
+                    </p>
+                  ) : null}
+                </>
               )}
             </CardContent>
           </Card>

@@ -14,7 +14,7 @@ import type {
   MailAccountRow,
   MailDeliveryLogRow,
   MailThreadDetailDto,
-  MailThreadListRow,
+  MailThreadListPageDto,
 } from './mail.types';
 
 export type { ListMailThreadsOptions } from './mail-inbox-query.ops';
@@ -38,12 +38,12 @@ export class MailService {
     employeeId: string,
     viewScope: string,
     options: ListMailThreadsOptions = {},
-  ): Promise<MailThreadListRow[]> {
+  ): Promise<MailThreadListPageDto> {
     const result = await listMailThreadsForViewer(this.prisma, employeeId, viewScope, options);
     if (!result.ok) {
       throw new NotFoundException('Mail account not found');
     }
-    return result.rows;
+    return result.data;
   }
 
   async getThreadDetail(

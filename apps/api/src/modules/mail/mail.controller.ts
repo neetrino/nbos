@@ -18,6 +18,7 @@ import { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { MailAccountCommandService } from './mail-account-command.service';
 import { MailOutboundMutationService } from './mail-outbound-mutation.service';
 import { MailOutboundSendMutationService } from './mail-outbound-send-mutation.service';
+import { parseMailThreadListIntQuery } from './mail-thread-list-pagination.ops';
 import { MailService } from './mail.service';
 import { MailThreadCommandService } from './mail-thread-command.service';
 
@@ -100,6 +101,16 @@ export class MailController {
     required: false,
     description: 'Search thread subject (normalized); case-insensitive substring',
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: '1-based page index (default 1)',
+  })
+  @ApiQuery({
+    name: 'pageSize',
+    required: false,
+    description: 'Page size (default 50, max 100)',
+  })
   async listThreads(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
@@ -107,12 +118,16 @@ export class MailController {
     @Query('unreadOnly') unreadOnly?: string,
     @Query('needsLinkOnly') needsLinkOnly?: string,
     @Query('q') q?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
   ) {
     return this.mailService.listThreads(user.id, req.permissionScope ?? 'OWN', {
       mailAccountId,
       unreadOnly: isQueryFlagTrue(unreadOnly),
       needsLinkOnly: isQueryFlagTrue(needsLinkOnly),
       search: q,
+      page: parseMailThreadListIntQuery(page),
+      pageSize: parseMailThreadListIntQuery(pageSize),
     });
   }
 

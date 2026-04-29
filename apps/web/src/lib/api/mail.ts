@@ -28,6 +28,20 @@ export interface MailThreadListRow {
   status: string;
 }
 
+export interface MailThreadListPageMeta {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface MailThreadListPageDto {
+  items: MailThreadListRow[];
+  meta: MailThreadListPageMeta;
+}
+
 export interface MailRecipientRow {
   kind: string;
   email: string;
@@ -92,7 +106,8 @@ export const mailApi = {
     unreadOnly?: boolean,
     needsLinkOnly?: boolean,
     searchQuery?: string,
-  ): Promise<MailThreadListRow[]> {
+    pagination?: { page?: number; pageSize?: number },
+  ): Promise<MailThreadListPageDto> {
     const params: Record<string, string> = {};
     if (mailAccountId) {
       params.mailAccountId = mailAccountId;
@@ -106,7 +121,13 @@ export const mailApi = {
     if (searchQuery !== undefined && searchQuery.trim() !== '') {
       params.q = searchQuery.trim();
     }
-    const resp = await api.get<MailThreadListRow[]>('/api/mail/threads', {
+    if (pagination?.page !== undefined) {
+      params.page = String(pagination.page);
+    }
+    if (pagination?.pageSize !== undefined) {
+      params.pageSize = String(pagination.pageSize);
+    }
+    const resp = await api.get<MailThreadListPageDto>('/api/mail/threads', {
       params: Object.keys(params).length > 0 ? params : undefined,
     });
     return resp.data;

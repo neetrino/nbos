@@ -27,6 +27,20 @@ export interface MailThreadListRow {
   status: string;
 }
 
+export interface MailThreadListPageMeta {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface MailThreadListPageDto {
+  items: MailThreadListRow[];
+  meta: MailThreadListPageMeta;
+}
+
 export interface MailRecipientRow {
   kind: string;
   email: string;
