@@ -1,5 +1,6 @@
 import { ListChecks, Puzzle, Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { tasksApi } from '@/lib/api/tasks';
 import { getNavigableProductId, type DeliveryBoardItem } from './project-delivery-board-model';
 
 export type ProductBoardTab = 'tasks' | 'tickets' | 'extensions';
@@ -48,7 +49,7 @@ function ProductContextLinks({
     <>
       <ContextLink
         icon={ListChecks}
-        label={`${item.product._count.tasks} tasks`}
+        label={`${item.product._count.tasks} Work Space`}
         onClick={() => onOpenProductTab(productId, 'tasks')}
       />
       <ContextLink
@@ -78,8 +79,8 @@ function ExtensionContextLinks({
     <>
       <ContextLink
         icon={ListChecks}
-        label={`${item.extension._count.tasks} tasks`}
-        onClick={() => onOpenProductTab(productId, 'tasks')}
+        label={`${item.extension._count.tasks} Work Space`}
+        onClick={() => openExtensionWorkSpace(item.extension.id, productId, onOpenProductTab)}
       />
       <ContextLink
         icon={Puzzle}
@@ -88,6 +89,16 @@ function ExtensionContextLinks({
       />
     </>
   );
+}
+
+function openExtensionWorkSpace(
+  extensionId: string,
+  productId: string,
+  onOpenProductTab: (productId: string, tab: ProductBoardTab) => void,
+) {
+  void tasksApi.ensureExtensionWorkSpace(extensionId).finally(() => {
+    onOpenProductTab(productId, 'tasks');
+  });
 }
 
 function ContextLink({

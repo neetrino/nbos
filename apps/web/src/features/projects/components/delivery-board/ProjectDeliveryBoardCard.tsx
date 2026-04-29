@@ -223,8 +223,8 @@ function ProductCardMeta({ product }: { product: ProjectProductSummary }) {
         <MetaLine icon={Calendar} label={new Date(product.deadline).toLocaleDateString()} />
       )}
       <p className="text-muted-foreground text-xs">
-        {product._count.tasks} tasks · {product._count.extensions} ext. · {product._count.tickets}{' '}
-        tickets
+        {product._count.tasks} Work Space tasks · {product._count.extensions} ext. ·{' '}
+        {product._count.tickets} tickets
       </p>
       {holdCopy && <p className={getHoldCopyClassName(product.deliveryLifecycle)}>{holdCopy}</p>}
     </div>
@@ -242,7 +242,7 @@ function ExtensionCardMeta({ extension }: { extension: ProjectExtensionSummary }
         />
       )}
       <p className="text-muted-foreground text-xs">
-        {extension.product?.name ?? 'No linked product'} · {extension._count.tasks} tasks
+        {extension.product?.name ?? 'No linked product'} · {extension._count.tasks} Work Space tasks
       </p>
       {holdCopy && <p className={getHoldCopyClassName(extension.deliveryLifecycle)}>{holdCopy}</p>}
     </div>

@@ -251,7 +251,7 @@
 
 ### C4. Work Space runtime foundation exists
 
-Статус: `PHASE 4 RUNTIME FOUNDATION`
+Статус: `PHASE 4 RUNTIME + UI FOUNDATION`
 
 Runtime now has the first Work Space foundation:
 
@@ -260,16 +260,17 @@ Runtime now has the first Work Space foundation:
 - task records can link to a Work Space through `workspace_id`;
 - task planning state is separate from workflow status through `planning_status`;
 - API exposes Work Space list/detail/create/update and ensure endpoints for Product/Extension;
-- web API types can call those endpoints.
+- web API types can call those endpoints;
+- Product detail now exposes Work Space context in the former Tasks tab;
+- Delivery Board context links can ensure connected Product/Extension Work Spaces before opening the Product Work Space view.
 
 Remaining depth:
 
-- connected Work Space UI on Product/Extension pages;
 - Sprint runtime model;
 - workspace-level Kanban/Scrum views;
 - migration from legacy board-only task views.
 
-### C5. Product и Project task tabs всё ещё живут по старой UI-модели
+### C5. Project task tab and deeper Work Space views still use legacy UI shape
 
 Подтверждение в коде:
 
@@ -279,13 +280,13 @@ Remaining depth:
 
 Проблема:
 
-- product page всё ещё использует `ProductTasksTab`;
+- Product page now ensures and displays the connected Work Space, but still uses the old workflow columns;
+- Project-level task tab still uses project-linked tasks only;
 - kanban columns там ещё `NEW / IN_PROGRESS / DONE / DEFERRED`;
-- workspace vocabulary и scrum planning layer в runtime UI ещё отсутствуют.
+- full scrum planning layer in runtime UI ещё отсутствует.
 
 Что потом нужно сделать:
 
-- переименовать и перестроить tab под `Work Space`;
 - добавить workspace-level mode switching;
 - убрать backlog/future sprint noise из daily board.
 
@@ -352,10 +353,11 @@ Remaining depth:
 Когда перейдём от документации к реализации, приоритет лучше держать таким:
 
 1. ввести runtime-сущность `Work Space`;
-2. привести task statuses к новому канону в DB/shared/backend/frontend;
-3. реализовать `Review` и `Completion Rules`;
-4. перестроить product/project task UI в `Work Space`;
-5. потом расширять recurring / automation / blueprints.
+2. expose connected Work Space in Product/Extension delivery UI;
+3. привести task statuses к новому канону в DB/shared/backend/frontend;
+4. реализовать `Review` и `Completion Rules`;
+5. перестроить project task UI и full workspace views;
+6. потом расширять recurring / automation / blueprints.
 
 ---
 

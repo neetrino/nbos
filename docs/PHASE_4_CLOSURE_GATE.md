@@ -6,7 +6,7 @@
 
 Phase 4 is **not fully closed yet**.
 
-The Projects Hub delivery lifecycle slice is ready for closure review, but the full Phase 4 roadmap also includes Work Spaces, Scrum/Task workflows and Support runtime depth. Those areas must be finished or explicitly moved out of Phase 4 before the phase can be marked `Done`.
+The Projects Hub delivery lifecycle slice is ready for closure review, and the first connected Work Space runtime/UI slice now exists. The full Phase 4 roadmap still includes Scrum/Task completion rules and Support runtime depth. Those areas must be finished or explicitly moved out of Phase 4 before the phase can be marked `Done`.
 
 ## 2. Confirmed Done In Projects Hub
 
@@ -21,6 +21,7 @@ The Projects Hub delivery lifecycle slice is ready for closure review, but the f
 - Product Done blocks open delivery items, unpaid invoices, open order status and missing client acceptance.
 - Product Done readiness surfaces runtime blockers, documentation warnings and missing runtime signals.
 - Handoff readiness surfaces Project credentials, domain health and linked CRM/Order handoff file gaps.
+- Product and Extension can ensure connected Work Spaces; Product detail exposes the connected Work Space context.
 
 ## 3. Must Stay Out Of This Closure
 
@@ -41,6 +42,7 @@ Required before full Phase 4 closure:
 - `Work Space` exists as runtime planning context, not just a board label.
 - Product and Extension can ensure connected Work Spaces through API.
 - Backlog / future sprint / active sprint are separated from task workflow status.
+- Product Work Space is visible in Product delivery UI.
 - Task completion rules are explicit and can return human-readable blockers.
 - Product execution tasks remain linked to Product stage gates without duplicating delivery lifecycle.
 
@@ -68,6 +70,6 @@ Mark full Phase 4 `Done` only when:
 
 ## 6. Recommended Next Slice
 
-Continue with **Work Space UI integration** or **task completion rules**.
+Continue with **task completion rules** or **Support runtime depth**.
 
-The runtime foundation now exists; the next closure blockers are exposing connected Work Spaces in Product/Extension UI and adding task completion rules with human-readable blockers.
+The Work Space foundation is now visible in Product delivery UI; the next closure blockers are task completion rules with human-readable blockers and Support-to-Task runtime depth.

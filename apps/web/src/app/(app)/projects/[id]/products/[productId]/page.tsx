@@ -36,7 +36,7 @@ import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { value: 'tasks', label: 'Tasks', icon: ListChecks },
+  { value: 'tasks', label: 'Work Space', icon: ListChecks },
   { value: 'extensions', label: 'Extensions', icon: Puzzle },
   { value: 'tickets', label: 'Tickets', icon: Ticket },
   { value: 'credentials', label: 'Credentials', icon: KeyRound },
