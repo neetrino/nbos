@@ -93,16 +93,15 @@ Documents
 
 ### B3. Document data model is missing
 
-Статус: `MISSING DATA MODEL`
+Статус: `PARTIAL` (Prisma + migration + REST foundation)
 
-Need:
+Done:
 
-- Document;
-- DocumentSection;
-- DocumentTag;
-- DocumentAttachment;
-- DocumentActivityEvent;
-- ExternalDocumentLink.
+- `Document`, `DocumentSection`, `DocumentTag`, `DocumentTagOnDocument`, `DocumentAttachment`, `DocumentActivityEvent`, `ExternalDocumentLink` in PostgreSQL.
+
+Still missing vs full canon:
+
+- UI routes, TipTap, Drive-backed `DocumentAttachment` usage, `search_vector`, section-level ACL.
 
 ### B4. TipTap editor is missing
 
@@ -145,9 +144,9 @@ Need backend access checks for view/edit/archive/manage.
 
 ### B8. Activity log is missing
 
-Статус: `MISSING CODE`
+Статус: `PARTIAL`
 
-Need simple document activity events.
+`DocumentActivityEvent` exists; API records `created`, `updated`, `published`, `archived` on key actions. Deeper history and UI tab remain later slices.
 
 ### B9. Google integration is intentionally deferred
 

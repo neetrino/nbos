@@ -78,6 +78,13 @@ export const ModelName = {
   FileLink: 'FileLink',
   FileAuditEvent: 'FileAuditEvent',
   FileUploadSession: 'FileUploadSession',
+  DocumentSection: 'DocumentSection',
+  ExternalDocumentLink: 'ExternalDocumentLink',
+  Document: 'Document',
+  DocumentTag: 'DocumentTag',
+  DocumentTagOnDocument: 'DocumentTagOnDocument',
+  DocumentAttachment: 'DocumentAttachment',
+  DocumentActivityEvent: 'DocumentActivityEvent',
   TaskBoardStage: 'TaskBoardStage',
   RecurringTaskTemplate: 'RecurringTaskTemplate',
   SupportTicket: 'SupportTicket',
@@ -707,6 +714,116 @@ export const FileUploadSessionScalarFieldEnum = {
 
 export type FileUploadSessionScalarFieldEnum =
   (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum];
+
+export const DocumentSectionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  parentId: 'parentId',
+  icon: 'icon',
+  sortOrder: 'sortOrder',
+  defaultVisibility: 'defaultVisibility',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DocumentSectionScalarFieldEnum =
+  (typeof DocumentSectionScalarFieldEnum)[keyof typeof DocumentSectionScalarFieldEnum];
+
+export const ExternalDocumentLinkScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  url: 'url',
+  externalId: 'externalId',
+  title: 'title',
+  mimeType: 'mimeType',
+  lastSyncedAt: 'lastSyncedAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ExternalDocumentLinkScalarFieldEnum =
+  (typeof ExternalDocumentLinkScalarFieldEnum)[keyof typeof ExternalDocumentLinkScalarFieldEnum];
+
+export const DocumentScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  title: 'title',
+  slug: 'slug',
+  description: 'description',
+  sectionId: 'sectionId',
+  parentId: 'parentId',
+  status: 'status',
+  ownerId: 'ownerId',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  publishedById: 'publishedById',
+  publishedAt: 'publishedAt',
+  archivedAt: 'archivedAt',
+  contentJson: 'contentJson',
+  contentHtml: 'contentHtml',
+  plainText: 'plainText',
+  coverFileAssetId: 'coverFileAssetId',
+  externalDocumentLinkId: 'externalDocumentLinkId',
+  visibility: 'visibility',
+  contentStorage: 'contentStorage',
+  contentObjectKey: 'contentObjectKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DocumentScalarFieldEnum =
+  (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum];
+
+export const DocumentTagScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  color: 'color',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentTagScalarFieldEnum =
+  (typeof DocumentTagScalarFieldEnum)[keyof typeof DocumentTagScalarFieldEnum];
+
+export const DocumentTagOnDocumentScalarFieldEnum = {
+  documentId: 'documentId',
+  tagId: 'tagId',
+  assignedAt: 'assignedAt',
+} as const;
+
+export type DocumentTagOnDocumentScalarFieldEnum =
+  (typeof DocumentTagOnDocumentScalarFieldEnum)[keyof typeof DocumentTagOnDocumentScalarFieldEnum];
+
+export const DocumentAttachmentScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  fileAssetId: 'fileAssetId',
+  purpose: 'purpose',
+  sortOrder: 'sortOrder',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentAttachmentScalarFieldEnum =
+  (typeof DocumentAttachmentScalarFieldEnum)[keyof typeof DocumentAttachmentScalarFieldEnum];
+
+export const DocumentActivityEventScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  actorId: 'actorId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentActivityEventScalarFieldEnum =
+  (typeof DocumentActivityEventScalarFieldEnum)[keyof typeof DocumentActivityEventScalarFieldEnum];
 
 export const TaskBoardStageScalarFieldEnum = {
   id: 'id',

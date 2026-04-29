@@ -518,6 +518,54 @@ export const FileUploadSessionStatusEnum = {
 export type FileUploadSessionStatusEnum =
   (typeof FileUploadSessionStatusEnum)[keyof typeof FileUploadSessionStatusEnum];
 
+export const DocumentTypeEnum = {
+  NATIVE: 'NATIVE',
+  UPLOADED_FILE: 'UPLOADED_FILE',
+  EXTERNAL_LINK: 'EXTERNAL_LINK',
+  GOOGLE_DOC: 'GOOGLE_DOC',
+  GOOGLE_SHEET: 'GOOGLE_SHEET',
+} as const;
+
+export type DocumentTypeEnum = (typeof DocumentTypeEnum)[keyof typeof DocumentTypeEnum];
+
+export const DocumentStatusEnum = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type DocumentStatusEnum = (typeof DocumentStatusEnum)[keyof typeof DocumentStatusEnum];
+
+export const DocumentContentStorageEnum = {
+  DB: 'DB',
+  R2: 'R2',
+  EXTERNAL: 'EXTERNAL',
+} as const;
+
+export type DocumentContentStorageEnum =
+  (typeof DocumentContentStorageEnum)[keyof typeof DocumentContentStorageEnum];
+
+export const ExternalLinkProviderEnum = {
+  MANUAL_URL: 'MANUAL_URL',
+  GOOGLE_DOCS: 'GOOGLE_DOCS',
+  GOOGLE_SHEETS: 'GOOGLE_SHEETS',
+  GOOGLE_DRIVE: 'GOOGLE_DRIVE',
+} as const;
+
+export type ExternalLinkProviderEnum =
+  (typeof ExternalLinkProviderEnum)[keyof typeof ExternalLinkProviderEnum];
+
+export const DocumentAttachmentPurposeEnum = {
+  INLINE_IMAGE: 'INLINE_IMAGE',
+  ATTACHMENT: 'ATTACHMENT',
+  COVER: 'COVER',
+  SOURCE_FILE: 'SOURCE_FILE',
+  EXPORT: 'EXPORT',
+} as const;
+
+export type DocumentAttachmentPurposeEnum =
+  (typeof DocumentAttachmentPurposeEnum)[keyof typeof DocumentAttachmentPurposeEnum];
+
 export const TicketCategoryEnum = {
   INCIDENT: 'INCIDENT',
   SERVICE_REQUEST: 'SERVICE_REQUEST',

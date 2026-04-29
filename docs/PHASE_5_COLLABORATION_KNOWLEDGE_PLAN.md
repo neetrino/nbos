@@ -70,6 +70,8 @@ Done when:
 - Documents can exist without Google integration;
 - search cannot leak restricted records.
 
+**Implemented (2026-04-29):** Prisma models for Document, Section, Tag, TagLink, Attachment, Activity, ExternalLink; migration; `DocumentsModule` REST (`/api/documents`, sections/tags, CRUD, archive); `DOCUMENTS` RBAC module in `seed-rbac.ts`; default sections via `document_sections.count` gate; web `documentsApi`.
+
 ### Slice 3. Documents UI Shell
 
 Goal: make `/documents` visible and useful before editor depth.

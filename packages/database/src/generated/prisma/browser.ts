@@ -167,6 +167,41 @@ export type FileAuditEvent = Prisma.FileAuditEventModel;
  */
 export type FileUploadSession = Prisma.FileUploadSessionModel;
 /**
+ * Model DocumentSection
+ *
+ */
+export type DocumentSection = Prisma.DocumentSectionModel;
+/**
+ * Model ExternalDocumentLink
+ *
+ */
+export type ExternalDocumentLink = Prisma.ExternalDocumentLinkModel;
+/**
+ * Model Document
+ *
+ */
+export type Document = Prisma.DocumentModel;
+/**
+ * Model DocumentTag
+ *
+ */
+export type DocumentTag = Prisma.DocumentTagModel;
+/**
+ * Model DocumentTagOnDocument
+ *
+ */
+export type DocumentTagOnDocument = Prisma.DocumentTagOnDocumentModel;
+/**
+ * Model DocumentAttachment
+ *
+ */
+export type DocumentAttachment = Prisma.DocumentAttachmentModel;
+/**
+ * Model DocumentActivityEvent
+ *
+ */
+export type DocumentActivityEvent = Prisma.DocumentActivityEventModel;
+/**
  * Model TaskBoardStage
  *
  */

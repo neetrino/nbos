@@ -405,6 +405,13 @@ export const ModelName = {
   FileLink: 'FileLink',
   FileAuditEvent: 'FileAuditEvent',
   FileUploadSession: 'FileUploadSession',
+  DocumentSection: 'DocumentSection',
+  ExternalDocumentLink: 'ExternalDocumentLink',
+  Document: 'Document',
+  DocumentTag: 'DocumentTag',
+  DocumentTagOnDocument: 'DocumentTagOnDocument',
+  DocumentAttachment: 'DocumentAttachment',
+  DocumentActivityEvent: 'DocumentActivityEvent',
   TaskBoardStage: 'TaskBoardStage',
   RecurringTaskTemplate: 'RecurringTaskTemplate',
   SupportTicket: 'SupportTicket',
@@ -471,6 +478,13 @@ export type TypeMap<
       | 'fileLink'
       | 'fileAuditEvent'
       | 'fileUploadSession'
+      | 'documentSection'
+      | 'externalDocumentLink'
+      | 'document'
+      | 'documentTag'
+      | 'documentTagOnDocument'
+      | 'documentAttachment'
+      | 'documentActivityEvent'
       | 'taskBoardStage'
       | 'recurringTaskTemplate'
       | 'supportTicket'
@@ -2728,6 +2742,534 @@ export type TypeMap<
         };
       };
     };
+    DocumentSection: {
+      payload: Prisma.$DocumentSectionPayload<ExtArgs>;
+      fields: Prisma.DocumentSectionFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentSectionFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DocumentSectionFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>;
+        };
+        findFirst: {
+          args: Prisma.DocumentSectionFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DocumentSectionFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>;
+        };
+        findMany: {
+          args: Prisma.DocumentSectionFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>[];
+        };
+        create: {
+          args: Prisma.DocumentSectionCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>;
+        };
+        createMany: {
+          args: Prisma.DocumentSectionCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DocumentSectionCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>[];
+        };
+        delete: {
+          args: Prisma.DocumentSectionDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>;
+        };
+        update: {
+          args: Prisma.DocumentSectionUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>;
+        };
+        deleteMany: {
+          args: Prisma.DocumentSectionDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DocumentSectionUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DocumentSectionUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>[];
+        };
+        upsert: {
+          args: Prisma.DocumentSectionUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentSectionPayload>;
+        };
+        aggregate: {
+          args: Prisma.DocumentSectionAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentSection>;
+        };
+        groupBy: {
+          args: Prisma.DocumentSectionGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DocumentSectionGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DocumentSectionCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.DocumentSectionCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ExternalDocumentLink: {
+      payload: Prisma.$ExternalDocumentLinkPayload<ExtArgs>;
+      fields: Prisma.ExternalDocumentLinkFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ExternalDocumentLinkFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ExternalDocumentLinkFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>;
+        };
+        findFirst: {
+          args: Prisma.ExternalDocumentLinkFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ExternalDocumentLinkFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>;
+        };
+        findMany: {
+          args: Prisma.ExternalDocumentLinkFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>[];
+        };
+        create: {
+          args: Prisma.ExternalDocumentLinkCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>;
+        };
+        createMany: {
+          args: Prisma.ExternalDocumentLinkCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ExternalDocumentLinkCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>[];
+        };
+        delete: {
+          args: Prisma.ExternalDocumentLinkDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>;
+        };
+        update: {
+          args: Prisma.ExternalDocumentLinkUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ExternalDocumentLinkDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ExternalDocumentLinkUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ExternalDocumentLinkUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>[];
+        };
+        upsert: {
+          args: Prisma.ExternalDocumentLinkUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExternalDocumentLinkPayload>;
+        };
+        aggregate: {
+          args: Prisma.ExternalDocumentLinkAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExternalDocumentLink>;
+        };
+        groupBy: {
+          args: Prisma.ExternalDocumentLinkGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ExternalDocumentLinkGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ExternalDocumentLinkCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ExternalDocumentLinkCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    Document: {
+      payload: Prisma.$DocumentPayload<ExtArgs>;
+      fields: Prisma.DocumentFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DocumentFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>;
+        };
+        findFirst: {
+          args: Prisma.DocumentFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DocumentFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>;
+        };
+        findMany: {
+          args: Prisma.DocumentFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>[];
+        };
+        create: {
+          args: Prisma.DocumentCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>;
+        };
+        createMany: {
+          args: Prisma.DocumentCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DocumentCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>[];
+        };
+        delete: {
+          args: Prisma.DocumentDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>;
+        };
+        update: {
+          args: Prisma.DocumentUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>;
+        };
+        deleteMany: {
+          args: Prisma.DocumentDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DocumentUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DocumentUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>[];
+        };
+        upsert: {
+          args: Prisma.DocumentUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentPayload>;
+        };
+        aggregate: {
+          args: Prisma.DocumentAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocument>;
+        };
+        groupBy: {
+          args: Prisma.DocumentGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DocumentGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DocumentCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DocumentCountAggregateOutputType> | number;
+        };
+      };
+    };
+    DocumentTag: {
+      payload: Prisma.$DocumentTagPayload<ExtArgs>;
+      fields: Prisma.DocumentTagFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentTagFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DocumentTagFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>;
+        };
+        findFirst: {
+          args: Prisma.DocumentTagFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DocumentTagFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>;
+        };
+        findMany: {
+          args: Prisma.DocumentTagFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>[];
+        };
+        create: {
+          args: Prisma.DocumentTagCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>;
+        };
+        createMany: {
+          args: Prisma.DocumentTagCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DocumentTagCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>[];
+        };
+        delete: {
+          args: Prisma.DocumentTagDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>;
+        };
+        update: {
+          args: Prisma.DocumentTagUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>;
+        };
+        deleteMany: {
+          args: Prisma.DocumentTagDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DocumentTagUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DocumentTagUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>[];
+        };
+        upsert: {
+          args: Prisma.DocumentTagUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagPayload>;
+        };
+        aggregate: {
+          args: Prisma.DocumentTagAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentTag>;
+        };
+        groupBy: {
+          args: Prisma.DocumentTagGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DocumentTagGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DocumentTagCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DocumentTagCountAggregateOutputType> | number;
+        };
+      };
+    };
+    DocumentTagOnDocument: {
+      payload: Prisma.$DocumentTagOnDocumentPayload<ExtArgs>;
+      fields: Prisma.DocumentTagOnDocumentFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentTagOnDocumentFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DocumentTagOnDocumentFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>;
+        };
+        findFirst: {
+          args: Prisma.DocumentTagOnDocumentFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DocumentTagOnDocumentFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>;
+        };
+        findMany: {
+          args: Prisma.DocumentTagOnDocumentFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>[];
+        };
+        create: {
+          args: Prisma.DocumentTagOnDocumentCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>;
+        };
+        createMany: {
+          args: Prisma.DocumentTagOnDocumentCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DocumentTagOnDocumentCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>[];
+        };
+        delete: {
+          args: Prisma.DocumentTagOnDocumentDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>;
+        };
+        update: {
+          args: Prisma.DocumentTagOnDocumentUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>;
+        };
+        deleteMany: {
+          args: Prisma.DocumentTagOnDocumentDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DocumentTagOnDocumentUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DocumentTagOnDocumentUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>[];
+        };
+        upsert: {
+          args: Prisma.DocumentTagOnDocumentUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTagOnDocumentPayload>;
+        };
+        aggregate: {
+          args: Prisma.DocumentTagOnDocumentAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentTagOnDocument>;
+        };
+        groupBy: {
+          args: Prisma.DocumentTagOnDocumentGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DocumentTagOnDocumentGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DocumentTagOnDocumentCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.DocumentTagOnDocumentCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    DocumentAttachment: {
+      payload: Prisma.$DocumentAttachmentPayload<ExtArgs>;
+      fields: Prisma.DocumentAttachmentFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentAttachmentFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DocumentAttachmentFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>;
+        };
+        findFirst: {
+          args: Prisma.DocumentAttachmentFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DocumentAttachmentFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>;
+        };
+        findMany: {
+          args: Prisma.DocumentAttachmentFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>[];
+        };
+        create: {
+          args: Prisma.DocumentAttachmentCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>;
+        };
+        createMany: {
+          args: Prisma.DocumentAttachmentCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DocumentAttachmentCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>[];
+        };
+        delete: {
+          args: Prisma.DocumentAttachmentDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>;
+        };
+        update: {
+          args: Prisma.DocumentAttachmentUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>;
+        };
+        deleteMany: {
+          args: Prisma.DocumentAttachmentDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DocumentAttachmentUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DocumentAttachmentUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>[];
+        };
+        upsert: {
+          args: Prisma.DocumentAttachmentUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentAttachmentPayload>;
+        };
+        aggregate: {
+          args: Prisma.DocumentAttachmentAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentAttachment>;
+        };
+        groupBy: {
+          args: Prisma.DocumentAttachmentGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DocumentAttachmentGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DocumentAttachmentCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.DocumentAttachmentCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    DocumentActivityEvent: {
+      payload: Prisma.$DocumentActivityEventPayload<ExtArgs>;
+      fields: Prisma.DocumentActivityEventFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentActivityEventFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DocumentActivityEventFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>;
+        };
+        findFirst: {
+          args: Prisma.DocumentActivityEventFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DocumentActivityEventFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>;
+        };
+        findMany: {
+          args: Prisma.DocumentActivityEventFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>[];
+        };
+        create: {
+          args: Prisma.DocumentActivityEventCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>;
+        };
+        createMany: {
+          args: Prisma.DocumentActivityEventCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DocumentActivityEventCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>[];
+        };
+        delete: {
+          args: Prisma.DocumentActivityEventDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>;
+        };
+        update: {
+          args: Prisma.DocumentActivityEventUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>;
+        };
+        deleteMany: {
+          args: Prisma.DocumentActivityEventDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DocumentActivityEventUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DocumentActivityEventUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>[];
+        };
+        upsert: {
+          args: Prisma.DocumentActivityEventUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentActivityEventPayload>;
+        };
+        aggregate: {
+          args: Prisma.DocumentActivityEventAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentActivityEvent>;
+        };
+        groupBy: {
+          args: Prisma.DocumentActivityEventGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DocumentActivityEventGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DocumentActivityEventCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.DocumentActivityEventCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     TaskBoardStage: {
       payload: Prisma.$TaskBoardStagePayload<ExtArgs>;
       fields: Prisma.TaskBoardStageFieldRefs;
@@ -4561,6 +5103,116 @@ export const FileUploadSessionScalarFieldEnum = {
 export type FileUploadSessionScalarFieldEnum =
   (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum];
 
+export const DocumentSectionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  parentId: 'parentId',
+  icon: 'icon',
+  sortOrder: 'sortOrder',
+  defaultVisibility: 'defaultVisibility',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DocumentSectionScalarFieldEnum =
+  (typeof DocumentSectionScalarFieldEnum)[keyof typeof DocumentSectionScalarFieldEnum];
+
+export const ExternalDocumentLinkScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  url: 'url',
+  externalId: 'externalId',
+  title: 'title',
+  mimeType: 'mimeType',
+  lastSyncedAt: 'lastSyncedAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ExternalDocumentLinkScalarFieldEnum =
+  (typeof ExternalDocumentLinkScalarFieldEnum)[keyof typeof ExternalDocumentLinkScalarFieldEnum];
+
+export const DocumentScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  title: 'title',
+  slug: 'slug',
+  description: 'description',
+  sectionId: 'sectionId',
+  parentId: 'parentId',
+  status: 'status',
+  ownerId: 'ownerId',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  publishedById: 'publishedById',
+  publishedAt: 'publishedAt',
+  archivedAt: 'archivedAt',
+  contentJson: 'contentJson',
+  contentHtml: 'contentHtml',
+  plainText: 'plainText',
+  coverFileAssetId: 'coverFileAssetId',
+  externalDocumentLinkId: 'externalDocumentLinkId',
+  visibility: 'visibility',
+  contentStorage: 'contentStorage',
+  contentObjectKey: 'contentObjectKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DocumentScalarFieldEnum =
+  (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum];
+
+export const DocumentTagScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  color: 'color',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentTagScalarFieldEnum =
+  (typeof DocumentTagScalarFieldEnum)[keyof typeof DocumentTagScalarFieldEnum];
+
+export const DocumentTagOnDocumentScalarFieldEnum = {
+  documentId: 'documentId',
+  tagId: 'tagId',
+  assignedAt: 'assignedAt',
+} as const;
+
+export type DocumentTagOnDocumentScalarFieldEnum =
+  (typeof DocumentTagOnDocumentScalarFieldEnum)[keyof typeof DocumentTagOnDocumentScalarFieldEnum];
+
+export const DocumentAttachmentScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  fileAssetId: 'fileAssetId',
+  purpose: 'purpose',
+  sortOrder: 'sortOrder',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentAttachmentScalarFieldEnum =
+  (typeof DocumentAttachmentScalarFieldEnum)[keyof typeof DocumentAttachmentScalarFieldEnum];
+
+export const DocumentActivityEventScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  actorId: 'actorId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentActivityEventScalarFieldEnum =
+  (typeof DocumentActivityEventScalarFieldEnum)[keyof typeof DocumentActivityEventScalarFieldEnum];
+
 export const TaskBoardStageScalarFieldEnum = {
   id: 'id',
   ownerId: 'ownerId',
@@ -5694,6 +6346,86 @@ export type ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel> = Fie
 >;
 
 /**
+ * Reference to a field of type 'ExternalLinkProviderEnum'
+ */
+export type EnumExternalLinkProviderEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExternalLinkProviderEnum'
+>;
+
+/**
+ * Reference to a field of type 'ExternalLinkProviderEnum[]'
+ */
+export type ListEnumExternalLinkProviderEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExternalLinkProviderEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DocumentTypeEnum'
+ */
+export type EnumDocumentTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'DocumentTypeEnum[]'
+ */
+export type ListEnumDocumentTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DocumentStatusEnum'
+ */
+export type EnumDocumentStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'DocumentStatusEnum[]'
+ */
+export type ListEnumDocumentStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DocumentContentStorageEnum'
+ */
+export type EnumDocumentContentStorageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentContentStorageEnum'
+>;
+
+/**
+ * Reference to a field of type 'DocumentContentStorageEnum[]'
+ */
+export type ListEnumDocumentContentStorageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentContentStorageEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DocumentAttachmentPurposeEnum'
+ */
+export type EnumDocumentAttachmentPurposeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentAttachmentPurposeEnum'
+>;
+
+/**
+ * Reference to a field of type 'DocumentAttachmentPurposeEnum[]'
+ */
+export type ListEnumDocumentAttachmentPurposeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentAttachmentPurposeEnum[]'
+>;
+
+/**
  * Reference to a field of type 'TicketCategoryEnum'
  */
 export type EnumTicketCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -6092,6 +6824,13 @@ export type GlobalOmitConfig = {
   fileLink?: Prisma.FileLinkOmit;
   fileAuditEvent?: Prisma.FileAuditEventOmit;
   fileUploadSession?: Prisma.FileUploadSessionOmit;
+  documentSection?: Prisma.DocumentSectionOmit;
+  externalDocumentLink?: Prisma.ExternalDocumentLinkOmit;
+  document?: Prisma.DocumentOmit;
+  documentTag?: Prisma.DocumentTagOmit;
+  documentTagOnDocument?: Prisma.DocumentTagOnDocumentOmit;
+  documentAttachment?: Prisma.DocumentAttachmentOmit;
+  documentActivityEvent?: Prisma.DocumentActivityEventOmit;
   taskBoardStage?: Prisma.TaskBoardStageOmit;
   recurringTaskTemplate?: Prisma.RecurringTaskTemplateOmit;
   supportTicket?: Prisma.SupportTicketOmit;

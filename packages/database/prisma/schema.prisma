@@ -1096,6 +1096,8 @@ model FileAsset {
   versions    FileVersion[]
   links       FileLink[]
   auditEvents FileAuditEvent[]
+  documentCovers     Document[]            @relation("DocumentCoverAsset")
+  documentAttachments DocumentAttachment[]
 
   @@index([status])
   @@index([purpose])
@@ -1192,6 +1194,186 @@ model FileUploadSession {
   @@index([createdById])
   @@index([entityType, entityId])
   @@map("file_upload_sessions")
+}
+
+// ─── DOCUMENTS (native knowledge module) ───────────────────
+
+enum DocumentTypeEnum {
+  NATIVE
+  UPLOADED_FILE
+  EXTERNAL_LINK
+  GOOGLE_DOC
+  GOOGLE_SHEET
+}
+
+enum DocumentStatusEnum {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum DocumentContentStorageEnum {
+  DB
+  R2
+  EXTERNAL
+}
+
+enum ExternalLinkProviderEnum {
+  MANUAL_URL
+  GOOGLE_DOCS
+  GOOGLE_SHEETS
+  GOOGLE_DRIVE
+}
+
+enum DocumentAttachmentPurposeEnum {
+  INLINE_IMAGE
+  ATTACHMENT
+  COVER
+  SOURCE_FILE
+  EXPORT
+}
+
+model DocumentSection {
+  id                 String              @id @default(uuid())
+  name               String
+  slug               String              @unique
+  description        String?
+  parentId           String?             @map("parent_id")
+  icon               String?
+  sortOrder          Int                 @default(0) @map("sort_order")
+  defaultVisibility  FileVisibilityEnum  @default(INTERNAL) @map("default_visibility")
+  createdById        String?             @map("created_by_id")
+  updatedById        String?             @map("updated_by_id")
+  archivedAt         DateTime?           @map("archived_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  parent   DocumentSection?  @relation("DocumentSectionHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children DocumentSection[] @relation("DocumentSectionHierarchy")
+  documents Document[]
+
+  @@index([parentId])
+  @@index([sortOrder])
+  @@map("document_sections")
+}
+
+model ExternalDocumentLink {
+  id           String                 @id @default(uuid())
+  provider     ExternalLinkProviderEnum
+  url          String
+  externalId   String?                @map("external_id")
+  title        String?
+  mimeType     String?                @map("mime_type")
+  lastSyncedAt DateTime?              @map("last_synced_at")
+  createdById  String?                @map("created_by_id")
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
+
+  documents Document[]
+
+  @@index([provider])
+  @@map("external_document_links")
+}
+
+model Document {
+  id                     String                   @id @default(uuid())
+  type                   DocumentTypeEnum         @default(NATIVE)
+  title                  String
+  slug                   String                   @unique
+  description            String?
+  sectionId              String                   @map("section_id")
+  parentId               String?                  @map("parent_id")
+  status                 DocumentStatusEnum       @default(DRAFT)
+  ownerId                String?                  @map("owner_id")
+  createdById            String?                  @map("created_by_id")
+  updatedById            String?                  @map("updated_by_id")
+  publishedById          String?                  @map("published_by_id")
+  publishedAt            DateTime?                @map("published_at")
+  archivedAt             DateTime?                @map("archived_at")
+  contentJson            Json?                    @map("content_json")
+  contentHtml            String?                  @map("content_html")
+  plainText              String?                  @map("plain_text")
+  coverFileAssetId       String?                  @map("cover_file_asset_id")
+  externalDocumentLinkId String?                  @map("external_document_link_id")
+  visibility             FileVisibilityEnum       @default(INTERNAL)
+  contentStorage         DocumentContentStorageEnum @default(DB) @map("content_storage")
+  contentObjectKey       String?                  @map("content_object_key")
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  updatedAt              DateTime                 @updatedAt @map("updated_at")
+
+  section        DocumentSection         @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  parent         Document?               @relation("DocumentHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children       Document[]              @relation("DocumentHierarchy")
+  coverFileAsset FileAsset?              @relation("DocumentCoverAsset", fields: [coverFileAssetId], references: [id], onDelete: SetNull)
+  externalLink   ExternalDocumentLink?   @relation(fields: [externalDocumentLinkId], references: [id], onDelete: SetNull)
+  tagLinks       DocumentTagOnDocument[]
+  attachments    DocumentAttachment[]
+  activityEvents DocumentActivityEvent[]
+
+  @@index([sectionId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("documents")
+}
+
+model DocumentTag {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  color     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  documentLinks DocumentTagOnDocument[]
+
+  @@index([name])
+  @@map("document_tags")
+}
+
+model DocumentTagOnDocument {
+  documentId String   @map("document_id")
+  tagId       String   @map("tag_id")
+  assignedAt  DateTime @default(now()) @map("assigned_at")
+
+  document Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  tag      DocumentTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([documentId, tagId])
+  @@index([tagId])
+  @@map("document_tag_links")
+}
+
+model DocumentAttachment {
+  id          String                       @id @default(uuid())
+  documentId  String                       @map("document_id")
+  fileAssetId String                       @map("file_asset_id")
+  purpose     DocumentAttachmentPurposeEnum @default(ATTACHMENT)
+  sortOrder   Int                          @default(0) @map("sort_order")
+  createdById String?                      @map("created_by_id")
+  createdAt   DateTime                     @default(now()) @map("created_at")
+
+  document  Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  fileAsset FileAsset @relation(fields: [fileAssetId], references: [id], onDelete: Restrict)
+
+  @@index([documentId])
+  @@index([fileAssetId])
+  @@map("document_attachments")
+}
+
+model DocumentActivityEvent {
+  id         String   @id @default(uuid())
+  documentId String   @map("document_id")
+  actorId    String?  @map("actor_id")
+  action     String
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("document_activity_events")
 }
 
 model TaskBoardStage {

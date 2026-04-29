@@ -19,6 +19,7 @@ import { ClientServicesModule } from './modules/client-services/client-services.
 import { AuditModule } from './modules/audit/audit.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
 import { DriveModule } from './modules/drive/drive.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { AutomationModule } from './modules/automation/automation.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
@@ -60,6 +61,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     AuditModule,
     CredentialsModule,
     DriveModule,
+    DocumentsModule,
     NotificationModule,
     AutomationModule,
     SchedulerModule,
