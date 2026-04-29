@@ -70,6 +70,26 @@ export class MailController {
     return this.mailService.getThreadDetail(user.id, req.permissionScope ?? 'OWN', threadId);
   }
 
+  @Post('threads/:threadId/messages/:messageId/finalize-send-stub')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({
+    summary: 'Stub finalize queued send (QUEUED → FAILED; no mail provider or worker in this MVP)',
+  })
+  async finalizeQueuedOutboundStub(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    return this.mailService.finalizeQueuedOutboundStub(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+      messageId,
+    );
+  }
+
   @Post('threads/:threadId/messages/:messageId/queue')
   @HttpCode(HttpStatus.OK)
   @RequirePermission('MAIL', 'EDIT')

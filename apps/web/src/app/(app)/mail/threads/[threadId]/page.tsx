@@ -24,6 +24,7 @@ export default function MailThreadDetailPage() {
   const [markingRead, setMarkingRead] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [queueingMessageId, setQueueingMessageId] = useState<string | null>(null);
+  const [finalizingMessageId, setFinalizingMessageId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!threadId) return;
@@ -66,6 +67,23 @@ export default function MailThreadDetailPage() {
         setError(getApiErrorMessage(e, 'Could not queue message.'));
       } finally {
         setQueueingMessageId(null);
+      }
+    },
+    [threadId],
+  );
+
+  const finalizeQueuedStub = useCallback(
+    async (messageId: string) => {
+      if (!threadId) return;
+      setFinalizingMessageId(messageId);
+      setError(null);
+      try {
+        const d = await mailApi.finalizeQueuedOutboundStub(threadId, messageId);
+        setDetail(d);
+      } catch (e) {
+        setError(getApiErrorMessage(e, 'Could not finalize send (stub).'));
+      } finally {
+        setFinalizingMessageId(null);
       }
     },
     [threadId],
@@ -125,7 +143,9 @@ export default function MailThreadDetailPage() {
             messages={detail.messages}
             canEdit={canEdit}
             queueingMessageId={queueingMessageId}
+            finalizingMessageId={finalizingMessageId}
             onQueueDraft={queueDraftForSend}
+            onFinalizeQueuedStub={finalizeQueuedStub}
           />
           {canEdit ? (
             <MailThreadReplyDraftCard

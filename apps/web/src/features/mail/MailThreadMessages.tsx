@@ -9,14 +9,18 @@ export interface MailThreadMessagesProps {
   messages: MailMessageRow[];
   canEdit: boolean;
   queueingMessageId: string | null;
+  finalizingMessageId: string | null;
   onQueueDraft: (messageId: string) => void | Promise<void>;
+  onFinalizeQueuedStub: (messageId: string) => void | Promise<void>;
 }
 
 export function MailThreadMessages({
   messages,
   canEdit,
   queueingMessageId,
+  finalizingMessageId,
   onQueueDraft,
+  onFinalizeQueuedStub,
 }: MailThreadMessagesProps) {
   if (messages.length === 0) {
     return <EmptyThreadPlaceholder />;
@@ -41,10 +45,21 @@ export function MailThreadMessages({
                 type="button"
                 variant="secondary"
                 size="sm"
-                disabled={queueingMessageId === m.id}
+                disabled={queueingMessageId === m.id || finalizingMessageId !== null}
                 onClick={() => void onQueueDraft(m.id)}
               >
                 {queueingMessageId === m.id ? 'Queuing…' : 'Queue for send'}
+              </Button>
+            ) : null}
+            {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'QUEUED' ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={finalizingMessageId === m.id || queueingMessageId !== null}
+                onClick={() => void onFinalizeQueuedStub(m.id)}
+              >
+                {finalizingMessageId === m.id ? 'Finalizing…' : 'Finalize send (stub → failed)'}
               </Button>
             ) : null}
           </CardContent>

@@ -12,3 +12,6 @@ export const MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED = 'mail.outbound_draft_cre
 
 /** Outbound draft moved to queued (no worker/SMTP in this MVP). */
 export const MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED = 'mail.outbound_message_queued';
+
+/** Stub finalize: QUEUED → FAILED because no mail provider / worker (MVP). */
+export const MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED = 'mail.outbound_send_stub_failed';

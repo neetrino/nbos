@@ -97,4 +97,14 @@ export const mailApi = {
     );
     return resp.data;
   },
+
+  async finalizeQueuedOutboundStub(
+    threadId: string,
+    messageId: string,
+  ): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>(
+      `/api/mail/threads/${threadId}/messages/${messageId}/finalize-send-stub`,
+    );
+    return resp.data;
+  },
 };

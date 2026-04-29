@@ -5,11 +5,15 @@ import { AuditService } from '../audit/audit.service';
 import {
   MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED,
   MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED,
+  MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED,
   MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
   MAIL_AUDIT_ENTITY_MESSAGE,
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
 import { mailAccountWhereForViewer } from './mail-account-scope';
+import { failQueuedOutboundStubNoProvider } from './mail-outbound-finalize-stub.ops';
+import { MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER } from './mail-outbound-stub.constants';
+import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
 import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { dedupeEmailsCaseInsensitive } from './mail-outbound-draft.helpers';
 import { toAccountRow, toMessageRow, toThreadListRow } from './mail-dto-map';
@@ -73,17 +77,12 @@ export class MailService {
     viewScope: string,
     threadId: string,
   ): Promise<MailThreadDetailDto> {
-    const thread = await this.prisma.emailThread.findFirst({
-      where: { id: threadId },
-      include: { mailAccount: true },
+    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope: viewScope,
     });
     if (!thread) {
-      throw new NotFoundException('Thread not found');
-    }
-    const accountOk = await this.prisma.mailAccount.findFirst({
-      where: { id: thread.mailAccountId, ...mailAccountWhereForViewer(employeeId, viewScope) },
-    });
-    if (!accountOk) {
       throw new NotFoundException('Thread not found');
     }
     const messages = await this.prisma.emailMessage.findMany({
@@ -106,17 +105,12 @@ export class MailService {
     accessScope: string,
     threadId: string,
   ): Promise<MailThreadDetailDto> {
-    const thread = await this.prisma.emailThread.findFirst({
-      where: { id: threadId },
-      include: { mailAccount: true },
+    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope,
     });
     if (!thread) {
-      throw new NotFoundException('Thread not found');
-    }
-    const accountOk = await this.prisma.mailAccount.findFirst({
-      where: { id: thread.mailAccountId, ...mailAccountWhereForViewer(employeeId, accessScope) },
-    });
-    if (!accountOk) {
       throw new NotFoundException('Thread not found');
     }
     await this.prisma.$transaction([
@@ -152,17 +146,12 @@ export class MailService {
     threadId: string,
     dto: CreateMailOutboundDraftDto,
   ): Promise<MailThreadDetailDto> {
-    const thread = await this.prisma.emailThread.findFirst({
-      where: { id: threadId },
-      include: { mailAccount: true },
+    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope,
     });
     if (!thread) {
-      throw new NotFoundException('Thread not found');
-    }
-    const accountOk = await this.prisma.mailAccount.findFirst({
-      where: { id: thread.mailAccountId, ...mailAccountWhereForViewer(employeeId, accessScope) },
-    });
-    if (!accountOk) {
       throw new NotFoundException('Thread not found');
     }
     const account = thread.mailAccount;
@@ -201,17 +190,12 @@ export class MailService {
     threadId: string,
     messageId: string,
   ): Promise<MailThreadDetailDto> {
-    const thread = await this.prisma.emailThread.findFirst({
-      where: { id: threadId },
-      include: { mailAccount: true },
+    const mailboxAccess = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope,
     });
-    if (!thread) {
-      throw new NotFoundException('Thread not found');
-    }
-    const accountOk = await this.prisma.mailAccount.findFirst({
-      where: { id: thread.mailAccountId, ...mailAccountWhereForViewer(employeeId, accessScope) },
-    });
-    if (!accountOk) {
+    if (!mailboxAccess) {
       throw new NotFoundException('Thread not found');
     }
     const msg = await this.prisma.emailMessage.findFirst({
@@ -232,6 +216,50 @@ export class MailService {
       entityType: MAIL_AUDIT_ENTITY_MESSAGE,
       entityId: messageId,
       action: MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED,
+      userId: employeeId,
+      changes: auditChanges,
+    });
+    return this.getThreadDetail(employeeId, accessScope, threadId);
+  }
+
+  /**
+   * MVP stub: finalizes a QUEUED outbound message as FAILED (no SMTP/worker yet).
+   */
+  async finalizeQueuedOutboundStub(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+    messageId: string,
+  ): Promise<MailThreadDetailDto> {
+    const mailboxAccess = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope,
+    });
+    if (!mailboxAccess) {
+      throw new NotFoundException('Thread not found');
+    }
+    const msg = await this.prisma.emailMessage.findFirst({
+      where: { id: messageId, threadId },
+    });
+    if (!msg) {
+      throw new NotFoundException('Message not found');
+    }
+    if (msg.direction !== 'OUTBOUND' || msg.deliveryStatus !== 'QUEUED') {
+      throw new BadRequestException('Only queued outbound messages can be finalized (stub)');
+    }
+    const updated = await failQueuedOutboundStubNoProvider(this.prisma, { threadId, messageId });
+    if (!updated) {
+      throw new BadRequestException('Only queued outbound messages can be finalized (stub)');
+    }
+    const auditChanges: InputJsonValue = {
+      threadId,
+      reason: MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER,
+    };
+    await this.auditService.log({
+      entityType: MAIL_AUDIT_ENTITY_MESSAGE,
+      entityId: messageId,
+      action: MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED,
       userId: employeeId,
       changes: auditChanges,
     });
