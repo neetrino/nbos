@@ -1,6 +1,5 @@
 import type { Deal } from '@/lib/api/deals';
-
-export const PARTNER_PERCENT = 30;
+import { computePartnerDealFinancePreview } from '@nbos/shared';
 
 export const TAX_STATUS_OPTIONS = [
   { value: 'TAX', label: 'Tax' },
@@ -23,19 +22,21 @@ export function toDateInputValue(value: string | null) {
 
 export function computeFinance(deal: Deal) {
   const amount = Number(deal.amount ?? 0);
-  const isSubscription = deal.paymentType === 'SUBSCRIPTION';
-  const total = isSubscription ? amount * 12 : amount;
-  const partnerAmount =
-    deal.source === 'PARTNER' ? Math.round(amount * (PARTNER_PERCENT / 100)) : 0;
+  const preview = computePartnerDealFinancePreview({
+    amount,
+    paymentType: deal.paymentType,
+    dealSource: deal.source,
+    partnerDefaultPercent: deal.sourcePartner?.defaultPercent,
+  });
   const paidInvoiceTotal = getPaidInvoiceTotal(deal);
-  const revenue = total - partnerAmount;
 
   return {
-    total,
-    partnerAmount,
-    revenue,
-    toReceive: total - paidInvoiceTotal,
-    isFromPartner: deal.source === 'PARTNER',
+    total: preview.total,
+    partnerAmount: preview.partnerAmount,
+    revenue: preview.revenue,
+    toReceive: preview.total - paidInvoiceTotal,
+    isFromPartner: preview.isFromPartner,
+    commissionPercentUsed: preview.commissionPercentUsed,
   };
 }
 

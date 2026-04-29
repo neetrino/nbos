@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PartnersService } from './partners.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
@@ -112,6 +112,15 @@ describe('PartnersService', () => {
         }),
       );
     });
+
+    it('should reject defaultPercent out of range', async () => {
+      await expect(service.create({ name: 'x', defaultPercent: 101 })).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.create({ name: 'x', defaultPercent: Number.NaN })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
   describe('update', () => {
@@ -133,6 +142,13 @@ describe('PartnersService', () => {
     it('should throw NotFoundException for missing partner', async () => {
       prisma.partner.findUnique.mockResolvedValue(null);
       await expect(service.update('missing', { name: 'x' })).rejects.toThrow(NotFoundException);
+    });
+
+    it('should reject invalid defaultPercent on update', async () => {
+      prisma.partner.findUnique.mockResolvedValue({ id: '1' });
+      await expect(service.update('1', { defaultPercent: -1 })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -47,6 +47,13 @@ export class PartnersService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
   ) {}
 
+  private assertDefaultPercentInRange(value: number): number {
+    if (Number.isNaN(value) || value < 0 || value > 100) {
+      throw new BadRequestException('defaultPercent must be a number from 0 to 100');
+    }
+    return value;
+  }
+
   async findAll(params: PartnerQueryParams) {
     const { page = 1, pageSize = 20, search, status, type, direction } = params;
     const where: Prisma.PartnerWhereInput = {};
@@ -85,12 +92,17 @@ export class PartnersService {
   }
 
   async create(data: CreatePartnerDto) {
+    const defaultPercent =
+      data.defaultPercent === undefined
+        ? 30
+        : this.assertDefaultPercentInRange(data.defaultPercent);
+
     return this.prisma.partner.create({
       data: {
         name: data.name,
         type: (data.type as PartnerTypeEnum) ?? 'REGULAR',
         direction: (data.direction as PartnerDirectionEnum) ?? 'INBOUND',
-        defaultPercent: data.defaultPercent ?? 30,
+        defaultPercent,
         status: (data.status as PartnerStatusEnum) ?? 'ACTIVE',
         contactId: data.contactId,
       },
@@ -101,13 +113,18 @@ export class PartnersService {
   async update(id: string, data: UpdatePartnerDto) {
     await this.findById(id);
 
+    const defaultPercent =
+      data.defaultPercent === undefined
+        ? undefined
+        : this.assertDefaultPercentInRange(data.defaultPercent);
+
     return this.prisma.partner.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.type && { type: data.type as PartnerTypeEnum }),
         ...(data.direction && { direction: data.direction as PartnerDirectionEnum }),
-        ...(data.defaultPercent !== undefined && { defaultPercent: data.defaultPercent }),
+        ...(defaultPercent !== undefined && { defaultPercent }),
         ...(data.status && { status: data.status as PartnerStatusEnum }),
         ...(data.contactId !== undefined && { contactId: data.contactId || null }),
       },

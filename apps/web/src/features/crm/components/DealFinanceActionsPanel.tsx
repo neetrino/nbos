@@ -7,7 +7,7 @@ import { invoicesApi, ordersApi } from '@/lib/api/finance';
 import { tasksApi } from '@/lib/api/tasks';
 import { formatAmount } from '../constants/dealPipeline';
 import { DisabledInvoiceAction, InvoiceAction, TaskAction } from './DealActionControls';
-import { computeFinance, PARTNER_PERCENT } from './deal-general-tab.helpers';
+import { computeFinance } from './deal-general-tab.helpers';
 
 interface DealFinanceActionsPanelProps {
   deal: Deal;
@@ -104,7 +104,7 @@ export function DealFinanceActionsPanel({
           <FinanceRow label="Total" value={finance.total > 0 ? formatAmount(finance.total) : '—'} />
           {finance.isFromPartner && (
             <FinanceRow
-              label={`Partner ${PARTNER_PERCENT}%`}
+              label={`Partner ${finance.commissionPercentUsed}%`}
               value={`-${formatAmount(finance.partnerAmount)}`}
               valueClassName="text-orange-500 dark:text-orange-400"
             />

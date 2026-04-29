@@ -79,7 +79,7 @@ export interface Deal {
   seller: { id: string; firstName: string; lastName: string };
   orders: DealOrder[];
   handoff?: DealHandoffReferences;
-  sourcePartner: { id: string; name: string } | null;
+  sourcePartner: { id: string; name: string; defaultPercent?: number | string | null } | null;
   sourceContact: { id: string; firstName: string; lastName: string } | null;
   marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;
   marketingActivity: { id: string; title: string; channel: string; status: string } | null;
