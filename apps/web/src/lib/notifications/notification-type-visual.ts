@@ -1,5 +1,15 @@
 import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, Ban, Bell, FilePenLine, Mail, RotateCcw, Send } from 'lucide-react';
+import {
+  AlertTriangle,
+  Ban,
+  Bell,
+  CheckCircle2,
+  FilePenLine,
+  Flag,
+  Mail,
+  RotateCcw,
+  Send,
+} from 'lucide-react';
 import {
   MAIL_NOTIFICATION_TYPE_ACCOUNT_SYNC_STUB,
   MAIL_NOTIFICATION_TYPE_OUTBOUND_DRAFT_CREATED_IN_APP,
@@ -7,6 +17,8 @@ import {
   MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_CANCELLED,
   MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_QUEUED_IN_APP,
   MAIL_NOTIFICATION_TYPE_OUTBOUND_SEND_STUB_FAILED,
+  MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_CLEARED,
+  MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_FLAGGED,
 } from './notification-types';
 
 export interface NotificationVisual {
@@ -52,6 +64,18 @@ export function getNotificationVisual(type: string): NotificationVisual {
   }
   if (type === MAIL_NOTIFICATION_TYPE_ACCOUNT_SYNC_STUB) {
     return MAIL_VISUAL;
+  }
+  if (type === MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_FLAGGED) {
+    return {
+      Icon: Flag,
+      iconClassName: 'bg-amber-500/10 text-amber-800',
+    };
+  }
+  if (type === MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_CLEARED) {
+    return {
+      Icon: CheckCircle2,
+      iconClassName: 'bg-emerald-500/10 text-emerald-700',
+    };
   }
   if (type.startsWith('mail.')) {
     return MAIL_VISUAL;

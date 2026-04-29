@@ -2,15 +2,17 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { NotificationService } from '../notifications/notification.service';
 import {
   MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
   MAIL_AUDIT_ACTION_THREAD_NEEDS_LINK_UPDATED,
   MAIL_AUDIT_ENTITY_THREAD,
 } from './mail-audit.constants';
 import type { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
-import { getMailThreadDetailDtoOrNull } from './mail-inbox-query.ops';
 import { patchThreadNeedsBusinessLinkIfChanged } from './mail-thread-needs-link.ops';
+import { publishMailThreadNeedsLinkChangedNotifications } from './mail-thread-needs-link-notify.ops';
 import { getMailThreadWithMailboxAccess } from './mail-thread-access.ops';
+import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
 import type { MailThreadDetailDto } from './mail.types';
 
 @Injectable()
@@ -18,23 +20,8 @@ export class MailThreadCommandService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    private readonly notificationService: NotificationService,
   ) {}
-
-  private async requireThreadDetail(
-    employeeId: string,
-    accessScope: string,
-    threadId: string,
-  ): Promise<MailThreadDetailDto> {
-    const dto = await getMailThreadDetailDtoOrNull(this.prisma, {
-      employeeId,
-      viewScope: accessScope,
-      threadId,
-    });
-    if (!dto) {
-      throw new NotFoundException('Thread not found');
-    }
-    return dto;
-  }
 
   /**
    * Marks every message in the thread read and clears thread-level unread (NBOS user state).
@@ -73,7 +60,11 @@ export class MailThreadCommandService {
       userId: employeeId,
       changes: auditChanges,
     });
-    return this.requireThreadDetail(employeeId, accessScope, threadId);
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
   }
 
   /**
@@ -95,7 +86,11 @@ export class MailThreadCommandService {
       throw new NotFoundException('Thread not found');
     }
     if (outcome.kind === 'noop') {
-      return this.requireThreadDetail(employeeId, accessScope, threadId);
+      return requireMailThreadDetailDto(this.prisma, {
+        employeeId,
+        viewScope: accessScope,
+        threadId,
+      });
     }
     const auditChanges: InputJsonValue = {
       mailAccountId: outcome.mailAccountId,
@@ -109,6 +104,18 @@ export class MailThreadCommandService {
       userId: employeeId,
       changes: auditChanges,
     });
-    return this.requireThreadDetail(employeeId, accessScope, threadId);
+    await publishMailThreadNeedsLinkChangedNotifications(this.notificationService, {
+      actorEmployeeId: employeeId,
+      threadId,
+      to: outcome.to,
+      subjectNormalized: outcome.subjectNormalized,
+      emailAddress: outcome.emailAddress,
+      ownerEmployeeId: outcome.ownerEmployeeId,
+    });
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
   }
 }

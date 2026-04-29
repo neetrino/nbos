@@ -35,3 +35,17 @@ export const MAIL_NOTIFICATION_TYPE_OUTBOUND_DRAFT_CREATED_IN_APP =
 
 export const MAIL_NOTIFICATION_TITLE_OUTBOUND_DRAFT_CREATED_IN_APP =
   'Mail: outbound draft saved' as const;
+
+/** Thread `needsBusinessLink` set to true (MVP: flag only; no CRM entity id yet). */
+export const MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_FLAGGED =
+  'mail.thread_needs_link_flagged' as const;
+
+export const MAIL_NOTIFICATION_TITLE_THREAD_NEEDS_LINK_FLAGGED =
+  'Mail: thread needs business link' as const;
+
+/** Thread `needsBusinessLink` cleared (false). */
+export const MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_CLEARED =
+  'mail.thread_needs_link_cleared' as const;
+
+export const MAIL_NOTIFICATION_TITLE_THREAD_NEEDS_LINK_CLEARED =
+  'Mail: thread needs-link flag cleared' as const;

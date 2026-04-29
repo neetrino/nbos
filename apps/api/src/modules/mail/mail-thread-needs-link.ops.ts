@@ -19,7 +19,15 @@ export async function updateThreadNeedsBusinessLink(
 export type PatchThreadNeedsLinkResult =
   | { kind: 'no_access' }
   | { kind: 'noop' }
-  | { kind: 'updated'; mailAccountId: string; from: boolean; to: boolean };
+  | {
+      kind: 'updated';
+      mailAccountId: string;
+      from: boolean;
+      to: boolean;
+      emailAddress: string;
+      ownerEmployeeId: string | null;
+      subjectNormalized: string;
+    };
 
 /**
  * Resolves mailbox access, skips if unchanged, otherwise persists the new flag.
@@ -56,5 +64,8 @@ export async function patchThreadNeedsBusinessLinkIfChanged(
     mailAccountId: thread.mailAccountId,
     from: thread.needsBusinessLink,
     to: params.needsBusinessLink,
+    emailAddress: thread.mailAccount.emailAddress,
+    ownerEmployeeId: thread.mailAccount.ownerEmployeeId,
+    subjectNormalized: thread.subjectNormalized,
   };
 }

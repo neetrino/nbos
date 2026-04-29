@@ -15,3 +15,9 @@ export const MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_QUEUED_IN_APP =
 
 export const MAIL_NOTIFICATION_TYPE_OUTBOUND_DRAFT_CREATED_IN_APP =
   'mail.outbound_draft_created' as const;
+
+export const MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_FLAGGED =
+  'mail.thread_needs_link_flagged' as const;
+
+export const MAIL_NOTIFICATION_TYPE_THREAD_NEEDS_LINK_CLEARED =
+  'mail.thread_needs_link_cleared' as const;
