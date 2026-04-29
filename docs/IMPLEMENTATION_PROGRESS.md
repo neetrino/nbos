@@ -7,8 +7,8 @@
 | Field         | Value                                   |
 | ------------- | --------------------------------------- |
 | Current phase | **Phase 5 — Collaboration / knowledge** |
-| Current task  | Drive file metadata foundation          |
-| Status        | Phase 5 in progress                     |
+| Current task  | Documents / Drive implementation plan   |
+| Status        | Phase 5 planned and in progress         |
 | Last updated  | 2026-04-29                              |
 
 ## Phase Snapshot
@@ -19,7 +19,7 @@
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
 | Phase 4 — Delivery ops              | Done        |     100% | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation       |
-| Phase 5 — Collaboration / knowledge | In progress |      ~5% | Drive file metadata foundation started; Documents foundation next                          |
+| Phase 5 — Collaboration / knowledge | In progress |      ~5% | Drive metadata foundation started; Documents plan added as standalone module               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
 
@@ -71,11 +71,13 @@ Future Finance depth:
 | 2026-04-29 | Support runtime bridges        | Ticket -> Task, Change Request -> Extension Deal, coverage and SLA state. |
 | 2026-04-29 | Phase 4 Delivery closure       | Review/Scrum/automation depth moved later; Phase 5 can start.             |
 | 2026-04-29 | Drive file metadata foundation | DB-backed File Assets, versions, links and metadata API foundation.       |
+| 2026-04-29 | Phase 5 Documents plan         | Documents defined as standalone module with Drive-backed attachments.     |
 
 ## Next Action
 
-1. Continue Phase 5 with Drive upload-session/library UI or Documents DB model + route.
-2. Keep credentials secrets, messenger automation and notifications out until file/link boundaries are stable.
+1. Continue Phase 5 per `docs/PHASE_5_COLLABORATION_KNOWLEDGE_PLAN.md`.
+2. Next normal slice: Drive upload-session/library foundation, then Documents data foundation.
+3. Keep Google v2, AI, complex approval workflow and credentials secrets out of the first Documents release.
 
 ## Slice DoD
 

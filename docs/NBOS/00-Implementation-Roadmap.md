@@ -287,8 +287,28 @@ Exit criteria:
 - Calendar shows only agreed layers: Meet, Delivery Deadlines, Personal;
 - technical assets are tracked.
 
+Implementation order:
+
+1. Drive file metadata and upload/session foundation.
+2. Documents data foundation as standalone module.
+3. Documents UI shell: route, sidebar, home, sections, list and create flow.
+4. Native TipTap editor and viewer mode.
+5. Documents attachments through Drive File Assets.
+6. Documents access, activity and PostgreSQL search depth.
+7. Credentials, Messenger, Mail, Notifications, Calendar and Technical Infrastructure after file/document boundaries are stable.
+
+Keep out of the first Documents release:
+
+- Google Docs / Sheets sync;
+- AI writing assistant;
+- heavy approval workflow;
+- collaborative live cursors;
+- public anonymous sharing;
+- secrets in Documents or Drive.
+
 Key docs:
 
+- `../PHASE_5_COLLABORATION_KNOWLEDGE_PLAN.md`
 - `02-Modules/20-Documents/*`
 - `02-Modules/11-Drive/*`
 - `02-Modules/12-Credentials/*`

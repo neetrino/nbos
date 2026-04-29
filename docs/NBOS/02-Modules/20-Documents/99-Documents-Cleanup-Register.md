@@ -165,20 +165,24 @@ Do not implement AI inside Documents before AI Assistant module canon is approve
 
 ## C. Implementation order
 
-1. Add Documents sidebar item and route.
-2. Add DB model for Document, Section, Tag, Attachment and Activity.
-3. Add backend permissions and API.
-4. Add Documents Home with search and section list.
-5. Add section page and document list.
-6. Add create flow.
-7. Add TipTap editor and viewer mode.
-8. Add save/autosave and `plain_text` extraction.
-9. Add image/file upload through Drive File Asset.
-10. Add document access UI and backend enforcement.
-11. Add activity log.
-12. Add archive/restore flow.
-13. Add favorites/recent documents.
-14. Add templates if time allows.
+Phase 5 execution plan is tracked in `docs/PHASE_5_COLLABORATION_KNOWLEDGE_PLAN.md`.
+
+Recommended implementation order:
+
+1. Finish Drive upload-session/library foundation so Documents can attach files through File Assets.
+2. Add Documents DB model for Document, Section, Tag, Attachment, Activity and ExternalDocumentLink.
+3. Add Documents backend permissions and API.
+4. Add Documents sidebar item and `/documents` route.
+5. Add Documents Home with search, sections, recent and draft blocks.
+6. Add section page and document list.
+7. Add short create flow.
+8. Add TipTap editor and viewer mode.
+9. Add save/autosave and `plain_text` extraction.
+10. Add image/file upload through Drive File Asset.
+11. Add document access UI and backend enforcement.
+12. Add activity log.
+13. Add archive/restore flow.
+14. Add favorites/recent documents.
 15. Add Google integration only after first release is stable.
 
 ## D. Non-goals for first release
