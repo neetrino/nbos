@@ -26,12 +26,31 @@ describe('buildPayrollRunsCsvContent', () => {
     expect(csv).toContain('run-1');
     expect(csv).toContain('materializedExpenseLineCount');
     expect(csv).toContain('3');
+    expect(csv).toContain('totalRemaining');
+    const cells = csv.split('\r\n')[1]?.split(',');
+    expect(cells?.[9]).toBe('100.00');
+    expect(cells?.[10]).toBe('0.00');
+    expect(cells?.[11]).toBe('100.00');
   });
 
   it('returns header only when no rows', () => {
     const csv = buildPayrollRunsCsvContent([]);
     expect(csv).toBe(
-      'id,payrollMonth,status,salaryLinesCount,materializedExpenseLineCount,totalBaseSalary,totalBonuses,totalAdjustments,totalDeductions,totalPayable,totalPaid,createdAt,updatedAt',
+      'id,payrollMonth,status,salaryLinesCount,materializedExpenseLineCount,totalBaseSalary,totalBonuses,totalAdjustments,totalDeductions,totalPayable,totalPaid,totalRemaining,createdAt,updatedAt',
     );
+  });
+
+  it('derives negative totalRemaining when paid exceeds payable', () => {
+    const row: PayrollRunListRow = {
+      ...sampleRow,
+      id: 'run-2',
+      totalPayable: '10.00',
+      totalPaid: '25.00',
+    };
+    const csv = buildPayrollRunsCsvContent([row]);
+    const cells = csv.split('\r\n')[1]?.split(',');
+    expect(cells?.[9]).toBe('10.00');
+    expect(cells?.[10]).toBe('25.00');
+    expect(cells?.[11]).toBe('-15.00');
   });
 });

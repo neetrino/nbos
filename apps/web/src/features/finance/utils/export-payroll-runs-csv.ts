@@ -12,9 +12,27 @@ const CSV_HEADERS = [
   'totalDeductions',
   'totalPayable',
   'totalPaid',
+  'totalRemaining',
   'createdAt',
   'updatedAt',
 ] as const;
+
+/** Two-decimal money strings → cents to avoid float drift in CSV. */
+function moneyStringToCents(value: string): number {
+  const n = Number.parseFloat(value);
+  if (!Number.isFinite(n)) {
+    return 0;
+  }
+  return Math.round(n * 100);
+}
+
+function centsToMoneyString(cents: number): string {
+  return (cents / 100).toFixed(2);
+}
+
+function payrollRunRemainingString(totalPayable: string, totalPaid: string): string {
+  return centsToMoneyString(moneyStringToCents(totalPayable) - moneyStringToCents(totalPaid));
+}
 
 const CSV_UTF8_BOM = '\uFEFF';
 
@@ -38,6 +56,7 @@ function rowToCsvCells(row: PayrollRunListRow): string[] {
     row.totalDeductions,
     row.totalPayable,
     row.totalPaid,
+    payrollRunRemainingString(row.totalPayable, row.totalPaid),
     row.createdAt,
     row.updatedAt,
   ];

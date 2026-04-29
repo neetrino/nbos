@@ -86,7 +86,7 @@ export function PayrollRunsListToolbar(props: {
           void onExportCsv();
         }}
         aria-label="Export payroll runs as CSV"
-        title="Export all runs matching current filters (paginated GET /payroll-runs)"
+        title="UTF-8 CSV of all runs matching current filters (includes totalRemaining per run)"
       >
         {exportCsvSubmitting ? (
           <Loader2 size={16} className="animate-spin" aria-hidden />
