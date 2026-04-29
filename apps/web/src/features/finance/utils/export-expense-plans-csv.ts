@@ -52,12 +52,12 @@ function planToCsvCells(row: ExpensePlan): string[] {
   return cells.map((c) => escapeCsvCell(String(c)));
 }
 
-function grandTotalExpensePlansCsvLine(rows: ExpensePlan[]): string {
+function grandTotalExpensePlansCsvLine(rows: ExpensePlan[], summarySecondCell: string): string {
   const amount = sumMoneyStringsMajorUnits(rows.map((r) => r.amount)).toFixed(2);
   const linked = rows.reduce((acc, r) => acc + r._count.expenses, 0);
   const cells = [
     '_grand_total',
-    `All expense plans (${rows.length})`,
+    summarySecondCell,
     '',
     amount,
     '',
@@ -76,13 +76,17 @@ function grandTotalExpensePlansCsvLine(rows: ExpensePlan[]): string {
   return cells.map((c) => escapeCsvCell(String(c))).join(',');
 }
 
-export function buildExpensePlansCsvContent(rows: ExpensePlan[]): string {
+export function buildExpensePlansCsvContent(
+  rows: ExpensePlan[],
+  options?: { grandTotalSummary?: string },
+): string {
   const headerLine = CSV_HEADERS.join(',');
   if (rows.length === 0) {
     return headerLine;
   }
+  const summary = options?.grandTotalSummary ?? `All expense plans (${rows.length})`;
   const body = rows.map((r) => planToCsvCells(r).join(',')).join('\r\n');
-  return `${headerLine}\r\n${body}\r\n${grandTotalExpensePlansCsvLine(rows)}`;
+  return `${headerLine}\r\n${body}\r\n${grandTotalExpensePlansCsvLine(rows, summary)}`;
 }
 
 export function triggerExpensePlansCsvDownload(csvBodyWithoutBom: string, filename: string): void {
@@ -98,8 +102,37 @@ export function triggerExpensePlansCsvDownload(csvBodyWithoutBom: string, filena
   URL.revokeObjectURL(url);
 }
 
-export function downloadExpensePlansCsv(rows: ExpensePlan[]): void {
-  const content = buildExpensePlansCsvContent(rows);
+export interface ExpensePlansCsvDownloadOptions {
+  hasActiveFilters?: boolean;
+  filenameHints?: {
+    category?: string;
+    projectId?: string;
+  };
+}
+
+function buildExpensePlansCsvFilename(
+  dateStamp: string,
+  options?: ExpensePlansCsvDownloadOptions,
+): string {
+  const cat = options?.filenameHints?.category?.trim();
+  const proj = options?.filenameHints?.projectId?.trim();
+  const catPart = cat ? `-cat-${cat.toLowerCase()}` : '';
+  const projPart = proj ? `-proj-${proj.slice(0, 8)}` : '';
+  const filterPart = options?.hasActiveFilters ? '-filtered' : '';
+  return `nbos-expense-plans${filterPart}${catPart}${projPart}-${dateStamp}.csv`;
+}
+
+export function downloadExpensePlansCsv(
+  rows: ExpensePlan[],
+  options?: ExpensePlansCsvDownloadOptions,
+): void {
+  const summary =
+    options?.hasActiveFilters && rows.length > 0
+      ? `Filtered expense plans (${rows.length})`
+      : rows.length > 0
+        ? `All expense plans (${rows.length})`
+        : undefined;
+  const content = buildExpensePlansCsvContent(rows, { grandTotalSummary: summary });
   const dateStamp = new Date().toISOString().slice(0, 10);
-  triggerExpensePlansCsvDownload(content, `nbos-expense-plans-${dateStamp}.csv`);
+  triggerExpensePlansCsvDownload(content, buildExpensePlansCsvFilename(dateStamp, options));
 }

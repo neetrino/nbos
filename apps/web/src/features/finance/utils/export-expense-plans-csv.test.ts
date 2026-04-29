@@ -34,4 +34,11 @@ describe('buildExpensePlansCsvContent', () => {
     expect(csv).toContain('100.50');
     expect(csv).toContain(',2,');
   });
+
+  it('honors custom grand total summary', () => {
+    const csv = buildExpensePlansCsvContent([PLAN_A], {
+      grandTotalSummary: 'Filtered expense plans (1)',
+    });
+    expect(csv).toContain('Filtered expense plans (1)');
+  });
 });
