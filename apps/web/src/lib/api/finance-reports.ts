@@ -163,6 +163,42 @@ export interface MrrSubscriptionRevenueReport {
   notes: string[];
 }
 
+export interface PayrollReport {
+  reportId: 'payroll-report';
+  title: 'Payroll Report';
+  currency: 'AMD';
+  period: {
+    dateFrom: string | null;
+    dateTo: string | null;
+    basis: 'cash';
+  };
+  totals: {
+    payrollRunCount: number;
+    salaryLineCount: number;
+    totalBaseSalary: string;
+    totalBonuses: string;
+    totalAdjustments: string;
+    totalDeductions: string;
+    totalPayable: string;
+    totalPaid: string;
+    totalRemaining: string;
+    salaryExpensePaid: string;
+    payrollAsPercentOfRevenue: number | null;
+  };
+  byStatus: Array<{
+    status: string;
+    runCount: number;
+    totalPayable: string;
+    totalPaid: string;
+    totalRemaining: string;
+  }>;
+  revenueControl: {
+    incomingPayments: string;
+    paymentCount: number;
+  };
+  notes: string[];
+}
+
 export const financeReportsApi = {
   async getDefinitions(): Promise<FinanceReportDefinitionsResponse> {
     const resp = await api.get<FinanceReportDefinitionsResponse>(
@@ -192,6 +228,11 @@ export const financeReportsApi = {
     const resp = await api.get<MrrSubscriptionRevenueReport>(
       '/api/finance/reports/mrr-subscription-revenue',
     );
+    return resp.data;
+  },
+
+  async getPayrollReport(): Promise<PayrollReport> {
+    const resp = await api.get<PayrollReport>('/api/finance/reports/payroll');
     return resp.data;
   },
 };

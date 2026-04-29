@@ -5,6 +5,7 @@ import { CompanyPnlService } from './company-pnl.service';
 import { ExpensePlanVsActualService } from './expense-plan-vs-actual.service';
 import { FinanceReportsService } from './reports.service';
 import { MrrSubscriptionRevenueService } from './mrr-subscription-revenue.service';
+import { PayrollReportService } from './payroll-report.service';
 
 @ApiTags('Finance / Reports')
 @ApiBearerAuth()
@@ -16,6 +17,7 @@ export class FinanceReportsController {
     private readonly cashFlowService: CashFlowService,
     private readonly expensePlanVsActualService: ExpensePlanVsActualService,
     private readonly mrrSubscriptionRevenueService: MrrSubscriptionRevenueService,
+    private readonly payrollReportService: PayrollReportService,
   ) {}
 
   @Get('definitions')
@@ -79,5 +81,15 @@ export class FinanceReportsController {
     @Query('dateTo') dateTo?: string,
   ) {
     return this.mrrSubscriptionRevenueService.getReport({ dateFrom, dateTo });
+  }
+
+  @Get('payroll')
+  @ApiOperation({
+    summary: 'Get Payroll Report v1 aggregate',
+    description:
+      'Phase 3 aggregate for payroll payable, paid, remaining, salary-linked expense payments and payroll as percent of incoming revenue.',
+  })
+  getPayrollReport(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.payrollReportService.getReport({ dateFrom, dateTo });
   }
 }

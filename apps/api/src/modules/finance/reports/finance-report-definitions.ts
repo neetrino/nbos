@@ -94,10 +94,11 @@ export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
     title: 'Payroll Report',
     audience: ['CEO', 'Finance Director'],
     description: 'Payroll payable, paid, remaining, base salary, bonuses and revenue ratio.',
-    v1Status: 'partial_sources',
+    v1Status: 'definition_ready',
     sourceEndpoints: ['/api/payroll-runs/stats'],
     drillDownHrefs: ['/finance/payroll'],
     phase3Scope: 'Wrap existing payroll stats as a named Finance-owned report definition.',
     phase6Deferred: 'Scheduled payroll packets, department comparisons and dashboard packaging.',
+    aggregateEndpoint: '/api/finance/reports/payroll',
   },
 ];

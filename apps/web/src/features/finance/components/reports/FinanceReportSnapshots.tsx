@@ -5,6 +5,7 @@ import type {
   CompanyPnlReport,
   ExpensePlanVsActualReport,
   MrrSubscriptionRevenueReport,
+  PayrollReport,
 } from '@/lib/api/finance-reports';
 
 export function CompanyPnlSnapshot({ report }: { report: CompanyPnlReport }) {
@@ -194,6 +195,59 @@ export function MrrSubscriptionRevenueSnapshot({
   );
 }
 
+export function PayrollReportSnapshot({ report }: { report: PayrollReport }) {
+  const largestStatus = report.byStatus.reduce<(typeof report.byStatus)[number] | null>(
+    (current, row) =>
+      !current || Number(row.totalPayable) > Number(current.totalPayable) ? row : current,
+    null,
+  );
+  return (
+    <ReportSnapshot
+      title="Payroll Report v1 snapshot"
+      subtitle="Payroll payable, paid, remaining and revenue ratio from live payroll data."
+    >
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <SnapshotMetric
+          label="Total payable"
+          value={formatCompanyPnlAmount(report.totals.totalPayable)}
+        />
+        <SnapshotMetric label="Paid" value={formatCompanyPnlAmount(report.totals.totalPaid)} />
+        <SnapshotMetric
+          label="Remaining"
+          value={formatCompanyPnlAmount(report.totals.totalRemaining)}
+        />
+        <SnapshotMetric
+          label="Payroll / revenue"
+          value={formatPercent(report.totals.payrollAsPercentOfRevenue)}
+        />
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <SnapshotMetric
+          label="Payroll runs"
+          value={String(report.totals.payrollRunCount)}
+          compact
+        />
+        <SnapshotMetric
+          label="Salary lines"
+          value={String(report.totals.salaryLineCount)}
+          compact
+        />
+        <SnapshotMetric
+          label="Salary expense paid"
+          value={formatCompanyPnlAmount(report.totals.salaryExpensePaid)}
+          compact
+        />
+      </div>
+      {largestStatus ? (
+        <p className="text-muted-foreground mt-4 text-sm">
+          Largest status bucket: <span className="font-medium">{largestStatus.status}</span> at{' '}
+          {formatCompanyPnlAmount(largestStatus.totalPayable)} payable.
+        </p>
+      ) : null}
+    </ReportSnapshot>
+  );
+}
+
 function ReportSnapshot({
   title,
   subtitle,
@@ -217,6 +271,10 @@ function ReportSnapshot({
       <div className="mt-5">{children}</div>
     </article>
   );
+}
+
+function formatPercent(value: number | null): string {
+  return value === null ? 'N/A' : `${value.toFixed(2)}%`;
 }
 
 function SnapshotMetric({

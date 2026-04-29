@@ -14,6 +14,7 @@ import {
   CompanyPnlSnapshot,
   ExpensePlanVsActualSnapshot,
   MrrSubscriptionRevenueSnapshot,
+  PayrollReportSnapshot,
 } from '@/features/finance/components/reports/FinanceReportSnapshots';
 import { financeReportsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -25,6 +26,7 @@ import {
   type FinanceReportDefinition,
   type FinanceReportDefinitionsResponse,
   type MrrSubscriptionRevenueReport,
+  type PayrollReport,
 } from '@/lib/api/finance-reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -39,6 +41,7 @@ export default function FinanceReportsPage() {
   );
   const [mrrSubscriptionRevenue, setMrrSubscriptionRevenue] =
     useState<MrrSubscriptionRevenueReport | null>(null);
+  const [payrollReport, setPayrollReport] = useState<PayrollReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,18 +54,21 @@ export default function FinanceReportsPage() {
         cashFlowReport,
         expensePlanVsActualReport,
         mrrSubscriptionRevenueReport,
+        payrollReportData,
       ] = await Promise.all([
         financeReportsApi.getDefinitions(),
         financeReportsApi.getCompanyPnl(),
         financeReportsApi.getCashFlow(),
         financeReportsApi.getExpensePlanVsActual(),
         financeReportsApi.getMrrSubscriptionRevenue(),
+        financeReportsApi.getPayrollReport(),
       ]);
       setData(definitions);
       setCompanyPnl(companyPnlReport);
       setCashFlow(cashFlowReport);
       setExpensePlanVsActual(expensePlanVsActualReport);
       setMrrSubscriptionRevenue(mrrSubscriptionRevenueReport);
+      setPayrollReport(payrollReportData);
       setError(null);
     } catch (caught) {
       setData(null);
@@ -119,6 +125,7 @@ export default function FinanceReportsPage() {
         {mrrSubscriptionRevenue ? (
           <MrrSubscriptionRevenueSnapshot report={mrrSubscriptionRevenue} />
         ) : null}
+        {payrollReport ? <PayrollReportSnapshot report={payrollReport} /> : null}
         {data.items.map((definition) => (
           <ReportDefinitionCard key={definition.id} definition={definition} />
         ))}
