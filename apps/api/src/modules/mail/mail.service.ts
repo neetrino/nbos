@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { NotificationService } from '../notifications/notification.service';
 import {
   MAIL_AUDIT_ACTION_OUTBOUND_DRAFT_CREATED,
   MAIL_AUDIT_ACTION_OUTBOUND_FAILED_RESET_TO_DRAFT,
@@ -11,6 +12,7 @@ import {
   MAIL_AUDIT_ENTITY_MESSAGE,
 } from './mail-audit.constants';
 import { cancelOutboundDraftOrQueued } from './mail-outbound-cancel.ops';
+import { publishMailOutboundSendStubFailedNotifications } from './mail-outbound-finalize-stub-notify.ops';
 import { failQueuedOutboundStubNoProvider } from './mail-outbound-finalize-stub.ops';
 import { MAIL_OUTBOUND_STUB_FAIL_REASON_NO_PROVIDER } from './mail-outbound-stub.constants';
 import {
@@ -35,6 +37,7 @@ export class MailService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async listAccounts(employeeId: string, viewScope: string): Promise<MailAccountRow[]> {
@@ -192,6 +195,15 @@ export class MailService {
       action: MAIL_AUDIT_ACTION_OUTBOUND_SEND_STUB_FAILED,
       userId: employeeId,
       changes: auditChanges,
+    });
+    const account = access.thread.mailAccount;
+    await publishMailOutboundSendStubFailedNotifications(this.notificationService, {
+      actorEmployeeId: employeeId,
+      threadId,
+      messageId,
+      subject: msg.subject,
+      emailAddress: account.emailAddress,
+      ownerEmployeeId: account.ownerEmployeeId,
     });
     return this.getThreadDetail(employeeId, accessScope, threadId);
   }
