@@ -3578,6 +3578,12 @@ export const ProductScalarFieldEnum = {
   productCategory: 'productCategory',
   productType: 'productType',
   status: 'status',
+  deliveryStage: 'deliveryStage',
+  deliveryWorkStatus: 'deliveryWorkStatus',
+  deliveryResolution: 'deliveryResolution',
+  onHoldReason: 'onHoldReason',
+  onHoldUntil: 'onHoldUntil',
+  cancellationReason: 'cancellationReason',
   pmId: 'pmId',
   deadline: 'deadline',
   description: 'description',
@@ -3596,6 +3602,12 @@ export const ExtensionScalarFieldEnum = {
   name: 'name',
   size: 'size',
   status: 'status',
+  deliveryStage: 'deliveryStage',
+  deliveryWorkStatus: 'deliveryWorkStatus',
+  deliveryResolution: 'deliveryResolution',
+  onHoldReason: 'onHoldReason',
+  onHoldUntil: 'onHoldUntil',
+  cancellationReason: 'cancellationReason',
   assignedTo: 'assignedTo',
   description: 'description',
   createdAt: 'createdAt',
@@ -4420,6 +4432,54 @@ export type EnumProductStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType
 export type ListEnumProductStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'ProductStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryStageEnum'
+ */
+export type EnumDeliveryStageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryStageEnum'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryStageEnum[]'
+ */
+export type ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryStageEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryWorkStatusEnum'
+ */
+export type EnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryWorkStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryWorkStatusEnum[]'
+ */
+export type ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryWorkStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryResolutionEnum'
+ */
+export type EnumDeliveryResolutionEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryResolutionEnum'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryResolutionEnum[]'
+ */
+export type ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryResolutionEnum[]'
 >;
 
 /**

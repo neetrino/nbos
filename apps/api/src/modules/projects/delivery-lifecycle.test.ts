@@ -12,6 +12,9 @@ describe('delivery lifecycle projection', () => {
       stage: 'STARTING',
       workStatus: 'ACTIVE',
       resolution: null,
+      onHoldReason: null,
+      onHoldUntil: null,
+      cancellationReason: null,
       isActive: true,
       isTerminal: false,
     });
@@ -25,6 +28,9 @@ describe('delivery lifecycle projection', () => {
       stage: 'QA',
       workStatus: 'ACTIVE',
       resolution: null,
+      onHoldReason: null,
+      onHoldUntil: null,
+      cancellationReason: null,
     });
     expect(buildExtensionDeliveryLifecycle({ status: 'LOST' })).toMatchObject({
       stage: null,
@@ -41,8 +47,29 @@ describe('delivery lifecycle projection', () => {
       stage: null,
       workStatus: 'ON_HOLD',
       resolution: null,
+      onHoldReason: null,
+      onHoldUntil: null,
+      cancellationReason: null,
       isActive: true,
       isTerminal: false,
+    });
+  });
+
+  it('prefers canonical persisted fields over legacy status', () => {
+    expect(
+      buildProductDeliveryLifecycle({
+        status: 'ON_HOLD',
+        deliveryStage: 'DEVELOPMENT',
+        deliveryWorkStatus: 'ON_HOLD',
+        deliveryResolution: null,
+        onHoldReason: 'Waiting for client materials',
+        onHoldUntil: new Date('2026-05-01T00:00:00.000Z'),
+      }),
+    ).toMatchObject({
+      stage: 'DEVELOPMENT',
+      workStatus: 'ON_HOLD',
+      onHoldReason: 'Waiting for client materials',
+      onHoldUntil: '2026-05-01T00:00:00.000Z',
     });
   });
 });

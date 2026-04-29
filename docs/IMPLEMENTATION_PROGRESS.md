@@ -7,7 +7,7 @@
 | Field         | Value                                         |
 | ------------- | --------------------------------------------- |
 | Current phase | **Phase 4 — Delivery ops**                    |
-| Current task  | Delivery lifecycle canonical projection       |
+| Current task  | Delivery lifecycle schema alignment           |
 | Status        | Phase 4 started after Phase 3 Finance closure |
 | Last updated  | 2026-04-29                                    |
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~15% | Tasks/support list foundations exist; canonical delivery lifecycle projection started      |
+| Phase 4 — Delivery ops              | In progress |     ~20% | Tasks/support list foundations exist; canonical Product/Extension lifecycle fields started |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -75,10 +75,11 @@ Future Finance depth:
 | 2026-04-29 | Project P&L v1                     | `GET /api/finance/reports/project-pnl` and live UI snapshot              | api/web typecheck, lint, targeted Vitest                              |
 | 2026-04-29 | Phase 3 Finance full closure       | Gate scope completed; Phase 4 can start                                  | Final docs closure                                                    |
 | 2026-04-29 | Delivery lifecycle projection      | Product/Extension API exposes canonical lifecycle over legacy statuses   | api/web typecheck, targeted Vitest                                    |
+| 2026-04-29 | Delivery lifecycle schema fields   | Added `stage`, `workStatus`, `resolution` and pause fields for delivery  | database/api typecheck, targeted Vitest                               |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: real pause fields and terminal `Cancelled` naming.
+1. Continue Projects Hub lifecycle refactor: dedicated pause/resume/cancel actions.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

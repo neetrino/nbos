@@ -9,24 +9,41 @@ export interface DeliveryLifecycleProjection {
   stage: DeliveryStage;
   workStatus: DeliveryWorkStatus;
   resolution: DeliveryResolution;
+  onHoldReason: string | null;
+  onHoldUntil: string | null;
+  cancellationReason: string | null;
   isActive: boolean;
   isTerminal: boolean;
 }
 
 interface DeliveryStatusCarrier {
   status?: string | null;
+  deliveryStage?: DeliveryStage;
+  deliveryWorkStatus?: DeliveryWorkStatus | null;
+  deliveryResolution?: DeliveryResolution;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+}
+
+export interface DeliveryLifecycleWrite {
+  deliveryStage: Exclude<DeliveryStage, null> | null;
+  deliveryWorkStatus: DeliveryWorkStatus;
+  deliveryResolution: Exclude<DeliveryResolution, null> | null;
+  onHoldReason?: null;
+  onHoldUntil?: null;
 }
 
 export function buildProductDeliveryLifecycle(
   product: DeliveryStatusCarrier,
 ): DeliveryLifecycleProjection {
-  return buildDeliveryLifecycle('PRODUCT', product.status ?? null);
+  return buildDeliveryLifecycle('PRODUCT', product.status ?? null, product);
 }
 
 export function buildExtensionDeliveryLifecycle(
   extension: DeliveryStatusCarrier,
 ): DeliveryLifecycleProjection {
-  return buildDeliveryLifecycle('EXTENSION', extension.status ?? null);
+  return buildDeliveryLifecycle('EXTENSION', extension.status ?? null, extension);
 }
 
 export function attachProductDeliveryLifecycle<T extends DeliveryStatusCarrier>(product: T) {
@@ -40,17 +57,51 @@ export function attachExtensionDeliveryLifecycle<T extends DeliveryStatusCarrier
 function buildDeliveryLifecycle(
   entityKind: DeliveryEntityKind,
   legacyStatus: string | null,
+  source?: DeliveryStatusCarrier,
 ): DeliveryLifecycleProjection {
-  const resolution = mapDeliveryResolution(legacyStatus);
-  const workStatus = legacyStatus === 'ON_HOLD' ? 'ON_HOLD' : 'ACTIVE';
+  const resolution = source?.deliveryResolution ?? mapDeliveryResolution(legacyStatus);
+  const workStatus = source?.deliveryWorkStatus ?? mapDeliveryWorkStatus(legacyStatus);
   return {
     entityKind,
     legacyStatus,
-    stage: resolution ? null : mapDeliveryStage(legacyStatus),
+    stage: resolution ? null : (source?.deliveryStage ?? mapDeliveryStage(legacyStatus)),
     workStatus,
     resolution,
+    onHoldReason: source?.onHoldReason ?? null,
+    onHoldUntil: toIsoDate(source?.onHoldUntil),
+    cancellationReason: source?.cancellationReason ?? null,
     isActive: !resolution,
     isTerminal: Boolean(resolution),
+  };
+}
+
+export function buildDeliveryLifecycleWrite(
+  legacyStatus: string,
+  current?: DeliveryStatusCarrier,
+): DeliveryLifecycleWrite {
+  const resolution = mapDeliveryResolution(legacyStatus);
+  if (resolution) {
+    return {
+      deliveryStage: null,
+      deliveryWorkStatus: 'ACTIVE',
+      deliveryResolution: resolution,
+      onHoldReason: null,
+      onHoldUntil: null,
+    };
+  }
+  if (legacyStatus === 'ON_HOLD') {
+    return {
+      deliveryStage: current?.deliveryStage ?? mapDeliveryStage(current?.status ?? null),
+      deliveryWorkStatus: 'ON_HOLD',
+      deliveryResolution: null,
+    };
+  }
+  return {
+    deliveryStage: mapDeliveryStage(legacyStatus),
+    deliveryWorkStatus: 'ACTIVE',
+    deliveryResolution: null,
+    onHoldReason: null,
+    onHoldUntil: null,
   };
 }
 
@@ -66,4 +117,13 @@ function mapDeliveryResolution(legacyStatus: string | null): DeliveryResolution 
   if (legacyStatus === 'DONE') return 'DONE';
   if (legacyStatus === 'LOST') return 'CANCELLED';
   return null;
+}
+
+function mapDeliveryWorkStatus(legacyStatus: string | null): DeliveryWorkStatus {
+  return legacyStatus === 'ON_HOLD' ? 'ON_HOLD' : 'ACTIVE';
+}
+
+function toIsoDate(value: Date | string | null | undefined): string | null {
+  if (!value) return null;
+  return value instanceof Date ? value.toISOString() : value;
 }

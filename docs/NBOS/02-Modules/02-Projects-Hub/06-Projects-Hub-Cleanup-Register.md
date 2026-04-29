@@ -68,7 +68,7 @@
 
 ### A4. Canonical delivery lifecycle projection exists in runtime
 
-Статус: `PHASE 4 FIRST ALIGNMENT`
+Статус: `PHASE 4 RUNTIME ALIGNMENT`
 
 Runtime now exposes a canonical `deliveryLifecycle` projection for `Product` and `Extension` responses:
 
@@ -78,6 +78,21 @@ Runtime now exposes a canonical `deliveryLifecycle` projection for `Product` and
 - legacy status remains available for backward compatibility while DB enum refactor is pending.
 
 This is the safe bridge from old runtime statuses to the new Projects Hub canon.
+
+### A5. Canonical delivery lifecycle fields exist in schema
+
+Статус: `PHASE 4 SCHEMA ALIGNMENT`
+
+Runtime now has compatible canonical fields on both `Product` and `Extension`:
+
+- `delivery_stage`;
+- `delivery_work_status`;
+- `delivery_resolution`;
+- `on_hold_reason`;
+- `on_hold_until`;
+- `cancellation_reason`.
+
+Legacy `status` remains during the transition, but backend writes now keep canonical lifecycle fields synchronized for status changes.
 
 ---
 
@@ -198,7 +213,7 @@ This is the safe bridge from old runtime statuses to the new Projects Hub canon.
 - заменить `LOST` на `CANCELLED`;
 - обновить backend transitions, DTO, tests и frontend badges.
 
-Первый Phase 4 срез уже добавил read-only canonical projection поверх legacy enum. Следующий шаг — схема/миграция для реального разделения `stage`, `work_status` и `resolution`.
+Phase 4 already added read-only canonical projection and compatible schema fields. Remaining work is to replace legacy status actions with dedicated stage / pause / resume / cancel actions and then retire old enum usage safely.
 
 ### C2. Runtime extension statuses тоже старые
 

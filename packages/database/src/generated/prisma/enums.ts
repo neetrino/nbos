@@ -76,6 +76,31 @@ export const ProductStatusEnum = {
 
 export type ProductStatusEnum = (typeof ProductStatusEnum)[keyof typeof ProductStatusEnum];
 
+export const DeliveryStageEnum = {
+  STARTING: 'STARTING',
+  DEVELOPMENT: 'DEVELOPMENT',
+  QA: 'QA',
+  TRANSFER: 'TRANSFER',
+} as const;
+
+export type DeliveryStageEnum = (typeof DeliveryStageEnum)[keyof typeof DeliveryStageEnum];
+
+export const DeliveryWorkStatusEnum = {
+  ACTIVE: 'ACTIVE',
+  ON_HOLD: 'ON_HOLD',
+} as const;
+
+export type DeliveryWorkStatusEnum =
+  (typeof DeliveryWorkStatusEnum)[keyof typeof DeliveryWorkStatusEnum];
+
+export const DeliveryResolutionEnum = {
+  DONE: 'DONE',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type DeliveryResolutionEnum =
+  (typeof DeliveryResolutionEnum)[keyof typeof DeliveryResolutionEnum];
+
 export const ExtensionSizeEnum = {
   MICRO: 'MICRO',
   SMALL: 'SMALL',

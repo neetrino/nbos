@@ -14,6 +14,9 @@ export interface DeliveryLifecycleProjection {
   stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER' | null;
   workStatus: 'ACTIVE' | 'ON_HOLD';
   resolution: 'DONE' | 'CANCELLED' | null;
+  onHoldReason: string | null;
+  onHoldUntil: string | null;
+  cancellationReason: string | null;
   isActive: boolean;
   isTerminal: boolean;
 }

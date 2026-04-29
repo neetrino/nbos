@@ -30,6 +30,12 @@ export type ProductMinAggregateOutputType = {
   productCategory: $Enums.ProductCategoryEnum | null;
   productType: $Enums.ProductTypeEnum | null;
   status: $Enums.ProductStatusEnum | null;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus: $Enums.DeliveryWorkStatusEnum | null;
+  deliveryResolution: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason: string | null;
+  onHoldUntil: Date | null;
+  cancellationReason: string | null;
   pmId: string | null;
   deadline: Date | null;
   description: string | null;
@@ -45,6 +51,12 @@ export type ProductMaxAggregateOutputType = {
   productCategory: $Enums.ProductCategoryEnum | null;
   productType: $Enums.ProductTypeEnum | null;
   status: $Enums.ProductStatusEnum | null;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus: $Enums.DeliveryWorkStatusEnum | null;
+  deliveryResolution: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason: string | null;
+  onHoldUntil: Date | null;
+  cancellationReason: string | null;
   pmId: string | null;
   deadline: Date | null;
   description: string | null;
@@ -60,6 +72,12 @@ export type ProductCountAggregateOutputType = {
   productCategory: number;
   productType: number;
   status: number;
+  deliveryStage: number;
+  deliveryWorkStatus: number;
+  deliveryResolution: number;
+  onHoldReason: number;
+  onHoldUntil: number;
+  cancellationReason: number;
   pmId: number;
   deadline: number;
   description: number;
@@ -76,6 +94,12 @@ export type ProductMinAggregateInputType = {
   productCategory?: true;
   productType?: true;
   status?: true;
+  deliveryStage?: true;
+  deliveryWorkStatus?: true;
+  deliveryResolution?: true;
+  onHoldReason?: true;
+  onHoldUntil?: true;
+  cancellationReason?: true;
   pmId?: true;
   deadline?: true;
   description?: true;
@@ -91,6 +115,12 @@ export type ProductMaxAggregateInputType = {
   productCategory?: true;
   productType?: true;
   status?: true;
+  deliveryStage?: true;
+  deliveryWorkStatus?: true;
+  deliveryResolution?: true;
+  onHoldReason?: true;
+  onHoldUntil?: true;
+  cancellationReason?: true;
   pmId?: true;
   deadline?: true;
   description?: true;
@@ -106,6 +136,12 @@ export type ProductCountAggregateInputType = {
   productCategory?: true;
   productType?: true;
   status?: true;
+  deliveryStage?: true;
+  deliveryWorkStatus?: true;
+  deliveryResolution?: true;
+  onHoldReason?: true;
+  onHoldUntil?: true;
+  cancellationReason?: true;
   pmId?: true;
   deadline?: true;
   description?: true;
@@ -195,6 +231,12 @@ export type ProductGroupByOutputType = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status: $Enums.ProductStatusEnum;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason: string | null;
+  onHoldUntil: Date | null;
+  cancellationReason: string | null;
   pmId: string | null;
   deadline: Date | null;
   description: string | null;
@@ -228,6 +270,20 @@ export type ProductWhereInput = {
   productCategory?: Prisma.EnumProductCategoryEnumFilter<'Product'> | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFilter<'Product'> | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFilter<'Product'> | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableFilter<'Product'>
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFilter<'Product'>
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.EnumDeliveryResolutionEnumNullableFilter<'Product'>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.StringNullableFilter<'Product'> | string | null;
+  onHoldUntil?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+  cancellationReason?: Prisma.StringNullableFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -251,6 +307,12 @@ export type ProductOrderByWithRelationInput = {
   productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrderInput | Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrderInput | Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrderInput | Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -278,6 +340,20 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     productCategory?: Prisma.EnumProductCategoryEnumFilter<'Product'> | $Enums.ProductCategoryEnum;
     productType?: Prisma.EnumProductTypeEnumFilter<'Product'> | $Enums.ProductTypeEnum;
     status?: Prisma.EnumProductStatusEnumFilter<'Product'> | $Enums.ProductStatusEnum;
+    deliveryStage?:
+      | Prisma.EnumDeliveryStageEnumNullableFilter<'Product'>
+      | $Enums.DeliveryStageEnum
+      | null;
+    deliveryWorkStatus?:
+      | Prisma.EnumDeliveryWorkStatusEnumFilter<'Product'>
+      | $Enums.DeliveryWorkStatusEnum;
+    deliveryResolution?:
+      | Prisma.EnumDeliveryResolutionEnumNullableFilter<'Product'>
+      | $Enums.DeliveryResolutionEnum
+      | null;
+    onHoldReason?: Prisma.StringNullableFilter<'Product'> | string | null;
+    onHoldUntil?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+    cancellationReason?: Prisma.StringNullableFilter<'Product'> | string | null;
     pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
     deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -303,6 +379,12 @@ export type ProductOrderByWithAggregationInput = {
   productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrderInput | Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrderInput | Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrderInput | Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -330,6 +412,20 @@ export type ProductScalarWhereWithAggregatesInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumWithAggregatesFilter<'Product'> | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumWithAggregatesFilter<'Product'> | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableWithAggregatesFilter<'Product'>
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumWithAggregatesFilter<'Product'>
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.EnumDeliveryResolutionEnumNullableWithAggregatesFilter<'Product'>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  onHoldUntil?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
+  cancellationReason?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
@@ -344,6 +440,12 @@ export type ProductCreateInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -366,6 +468,12 @@ export type ProductUncheckedCreateInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -388,6 +496,20 @@ export type ProductUpdateInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -412,6 +534,20 @@ export type ProductUncheckedUpdateInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -433,6 +569,12 @@ export type ProductCreateManyInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -449,6 +591,20 @@ export type ProductUpdateManyMutationInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -465,6 +621,20 @@ export type ProductUncheckedUpdateManyInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -490,6 +660,12 @@ export type ProductCountOrderByAggregateInput = {
   productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
@@ -505,6 +681,12 @@ export type ProductMaxOrderByAggregateInput = {
   productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
@@ -520,6 +702,12 @@ export type ProductMinOrderByAggregateInput = {
   productCategory?: Prisma.SortOrder;
   productType?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
@@ -629,6 +817,18 @@ export type EnumProductTypeEnumFieldUpdateOperationsInput = {
 
 export type EnumProductStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.ProductStatusEnum;
+};
+
+export type NullableEnumDeliveryStageEnumFieldUpdateOperationsInput = {
+  set?: $Enums.DeliveryStageEnum | null;
+};
+
+export type EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.DeliveryWorkStatusEnum;
+};
+
+export type NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput = {
+  set?: $Enums.DeliveryResolutionEnum | null;
 };
 
 export type ProductCreateNestedOneWithoutExtensionsInput = {
@@ -879,6 +1079,12 @@ export type ProductCreateWithoutProjectInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -899,6 +1105,12 @@ export type ProductUncheckedCreateWithoutProjectInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -964,6 +1176,20 @@ export type ProductScalarWhereInput = {
   productCategory?: Prisma.EnumProductCategoryEnumFilter<'Product'> | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFilter<'Product'> | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFilter<'Product'> | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableFilter<'Product'>
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFilter<'Product'>
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.EnumDeliveryResolutionEnumNullableFilter<'Product'>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.StringNullableFilter<'Product'> | string | null;
+  onHoldUntil?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+  cancellationReason?: Prisma.StringNullableFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -978,6 +1204,12 @@ export type ProductCreateWithoutExtensionsInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -999,6 +1231,12 @@ export type ProductUncheckedCreateWithoutExtensionsInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1048,6 +1286,20 @@ export type ProductUpdateWithoutExtensionsInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1071,6 +1323,20 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1090,6 +1356,12 @@ export type ProductCreateWithoutDealsLinkedInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1111,6 +1383,12 @@ export type ProductUncheckedCreateWithoutDealsLinkedInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1160,6 +1438,20 @@ export type ProductUpdateWithoutDealsLinkedInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1183,6 +1475,20 @@ export type ProductUncheckedUpdateWithoutDealsLinkedInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1202,6 +1508,12 @@ export type ProductCreateWithoutOrderInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1223,6 +1535,12 @@ export type ProductUncheckedCreateWithoutOrderInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1272,6 +1590,20 @@ export type ProductUpdateWithoutOrderInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1295,6 +1627,20 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1314,6 +1660,12 @@ export type ProductCreateWithoutTasksInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1335,6 +1687,12 @@ export type ProductUncheckedCreateWithoutTasksInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1384,6 +1742,20 @@ export type ProductUpdateWithoutTasksInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1407,6 +1779,20 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1426,6 +1812,12 @@ export type ProductCreateWithoutTicketsInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1447,6 +1839,12 @@ export type ProductUncheckedCreateWithoutTicketsInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1496,6 +1894,20 @@ export type ProductUpdateWithoutTicketsInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1519,6 +1931,20 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1538,6 +1964,12 @@ export type ProductCreateWithoutClientServiceRecordsInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1559,6 +1991,12 @@ export type ProductUncheckedCreateWithoutClientServiceRecordsInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1608,6 +2046,20 @@ export type ProductUpdateWithoutClientServiceRecordsInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1631,6 +2083,20 @@ export type ProductUncheckedUpdateWithoutClientServiceRecordsInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1650,6 +2116,12 @@ export type ProductCreateWithoutPmInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1671,6 +2143,12 @@ export type ProductUncheckedCreateWithoutPmInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1728,6 +2206,12 @@ export type ProductCreateManyProjectInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
@@ -1744,6 +2228,20 @@ export type ProductUpdateWithoutProjectInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1766,6 +2264,20 @@ export type ProductUncheckedUpdateWithoutProjectInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1788,6 +2300,20 @@ export type ProductUncheckedUpdateManyWithoutProjectInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1803,6 +2329,12 @@ export type ProductCreateManyPmInput = {
   productCategory: $Enums.ProductCategoryEnum;
   productType: $Enums.ProductTypeEnum;
   status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -1818,6 +2350,20 @@ export type ProductUpdateWithoutPmInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1841,6 +2387,20 @@ export type ProductUncheckedUpdateWithoutPmInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1863,6 +2423,20 @@ export type ProductUncheckedUpdateManyWithoutPmInput = {
     | $Enums.ProductCategoryEnum;
   productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
   status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1959,6 +2533,12 @@ export type ProductSelect<
     productCategory?: boolean;
     productType?: boolean;
     status?: boolean;
+    deliveryStage?: boolean;
+    deliveryWorkStatus?: boolean;
+    deliveryResolution?: boolean;
+    onHoldReason?: boolean;
+    onHoldUntil?: boolean;
+    cancellationReason?: boolean;
     pmId?: boolean;
     deadline?: boolean;
     description?: boolean;
@@ -1988,6 +2568,12 @@ export type ProductSelectCreateManyAndReturn<
     productCategory?: boolean;
     productType?: boolean;
     status?: boolean;
+    deliveryStage?: boolean;
+    deliveryWorkStatus?: boolean;
+    deliveryResolution?: boolean;
+    onHoldReason?: boolean;
+    onHoldUntil?: boolean;
+    cancellationReason?: boolean;
     pmId?: boolean;
     deadline?: boolean;
     description?: boolean;
@@ -2010,6 +2596,12 @@ export type ProductSelectUpdateManyAndReturn<
     productCategory?: boolean;
     productType?: boolean;
     status?: boolean;
+    deliveryStage?: boolean;
+    deliveryWorkStatus?: boolean;
+    deliveryResolution?: boolean;
+    onHoldReason?: boolean;
+    onHoldUntil?: boolean;
+    cancellationReason?: boolean;
     pmId?: boolean;
     deadline?: boolean;
     description?: boolean;
@@ -2029,6 +2621,12 @@ export type ProductSelectScalar = {
   productCategory?: boolean;
   productType?: boolean;
   status?: boolean;
+  deliveryStage?: boolean;
+  deliveryWorkStatus?: boolean;
+  deliveryResolution?: boolean;
+  onHoldReason?: boolean;
+  onHoldUntil?: boolean;
+  cancellationReason?: boolean;
   pmId?: boolean;
   deadline?: boolean;
   description?: boolean;
@@ -2046,6 +2644,12 @@ export type ProductOmit<
   | 'productCategory'
   | 'productType'
   | 'status'
+  | 'deliveryStage'
+  | 'deliveryWorkStatus'
+  | 'deliveryResolution'
+  | 'onHoldReason'
+  | 'onHoldUntil'
+  | 'cancellationReason'
   | 'pmId'
   | 'deadline'
   | 'description'
@@ -2102,6 +2706,12 @@ export type $ProductPayload<
       productCategory: $Enums.ProductCategoryEnum;
       productType: $Enums.ProductTypeEnum;
       status: $Enums.ProductStatusEnum;
+      deliveryStage: $Enums.DeliveryStageEnum | null;
+      deliveryWorkStatus: $Enums.DeliveryWorkStatusEnum;
+      deliveryResolution: $Enums.DeliveryResolutionEnum | null;
+      onHoldReason: string | null;
+      onHoldUntil: Date | null;
+      cancellationReason: string | null;
       pmId: string | null;
       deadline: Date | null;
       description: string | null;
@@ -2745,6 +3355,12 @@ export interface ProductFieldRefs {
   readonly productCategory: Prisma.FieldRef<'Product', 'ProductCategoryEnum'>;
   readonly productType: Prisma.FieldRef<'Product', 'ProductTypeEnum'>;
   readonly status: Prisma.FieldRef<'Product', 'ProductStatusEnum'>;
+  readonly deliveryStage: Prisma.FieldRef<'Product', 'DeliveryStageEnum'>;
+  readonly deliveryWorkStatus: Prisma.FieldRef<'Product', 'DeliveryWorkStatusEnum'>;
+  readonly deliveryResolution: Prisma.FieldRef<'Product', 'DeliveryResolutionEnum'>;
+  readonly onHoldReason: Prisma.FieldRef<'Product', 'String'>;
+  readonly onHoldUntil: Prisma.FieldRef<'Product', 'DateTime'>;
+  readonly cancellationReason: Prisma.FieldRef<'Product', 'String'>;
   readonly pmId: Prisma.FieldRef<'Product', 'String'>;
   readonly deadline: Prisma.FieldRef<'Product', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Product', 'String'>;

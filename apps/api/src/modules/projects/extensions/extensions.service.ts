@@ -11,6 +11,7 @@ import {
   validateExtensionStageGate,
   validateExtensionTransition,
 } from './extension-stage-gates';
+import { buildDeliveryLifecycleWrite } from '../delivery-lifecycle';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -166,7 +167,7 @@ export class ExtensionsService {
 
     const updated = await this.prisma.extension.update({
       where: { id },
-      data: { status: target },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true } },

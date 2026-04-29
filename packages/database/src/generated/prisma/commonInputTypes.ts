@@ -316,6 +316,57 @@ export type EnumProductStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel> | $Enums.ProductStatusEnum;
 };
 
+export type EnumDeliveryStageEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryStageEnum
+    | Prisma.EnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DeliveryStageEnum[]
+    | Prisma.ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DeliveryStageEnum[]
+    | Prisma.ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDeliveryStageEnumNullableFilter<$PrismaModel>
+    | $Enums.DeliveryStageEnum
+    | null;
+};
+
+export type EnumDeliveryWorkStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryWorkStatusEnum
+    | Prisma.EnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DeliveryWorkStatusEnum[]
+    | Prisma.ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DeliveryWorkStatusEnum[]
+    | Prisma.ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDeliveryWorkStatusEnumFilter<$PrismaModel> | $Enums.DeliveryWorkStatusEnum;
+};
+
+export type EnumDeliveryResolutionEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryResolutionEnum
+    | Prisma.EnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DeliveryResolutionEnum[]
+    | Prisma.ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DeliveryResolutionEnum[]
+    | Prisma.ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDeliveryResolutionEnumNullableFilter<$PrismaModel>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+};
+
 export type EnumProductCategoryEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ProductCategoryEnum | Prisma.EnumProductCategoryEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.ProductCategoryEnum[] | Prisma.ListEnumProductCategoryEnumFieldRefInput<$PrismaModel>;
@@ -350,6 +401,68 @@ export type EnumProductStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel>;
+};
+
+export type EnumDeliveryStageEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryStageEnum
+    | Prisma.EnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DeliveryStageEnum[]
+    | Prisma.ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DeliveryStageEnum[]
+    | Prisma.ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDeliveryStageEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.DeliveryStageEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDeliveryStageEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDeliveryStageEnumNullableFilter<$PrismaModel>;
+};
+
+export type EnumDeliveryWorkStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryWorkStatusEnum
+    | Prisma.EnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DeliveryWorkStatusEnum[]
+    | Prisma.ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DeliveryWorkStatusEnum[]
+    | Prisma.ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumDeliveryWorkStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.DeliveryWorkStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDeliveryWorkStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDeliveryWorkStatusEnumFilter<$PrismaModel>;
+};
+
+export type EnumDeliveryResolutionEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryResolutionEnum
+    | Prisma.EnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DeliveryResolutionEnum[]
+    | Prisma.ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DeliveryResolutionEnum[]
+    | Prisma.ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDeliveryResolutionEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDeliveryResolutionEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDeliveryResolutionEnumNullableFilter<$PrismaModel>;
 };
 
 export type EnumExtensionSizeEnumFilter<$PrismaModel = never> = {
@@ -1992,6 +2105,57 @@ export type NestedEnumProductStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel> | $Enums.ProductStatusEnum;
 };
 
+export type NestedEnumDeliveryStageEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryStageEnum
+    | Prisma.EnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DeliveryStageEnum[]
+    | Prisma.ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DeliveryStageEnum[]
+    | Prisma.ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDeliveryStageEnumNullableFilter<$PrismaModel>
+    | $Enums.DeliveryStageEnum
+    | null;
+};
+
+export type NestedEnumDeliveryWorkStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryWorkStatusEnum
+    | Prisma.EnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DeliveryWorkStatusEnum[]
+    | Prisma.ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DeliveryWorkStatusEnum[]
+    | Prisma.ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDeliveryWorkStatusEnumFilter<$PrismaModel> | $Enums.DeliveryWorkStatusEnum;
+};
+
+export type NestedEnumDeliveryResolutionEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryResolutionEnum
+    | Prisma.EnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DeliveryResolutionEnum[]
+    | Prisma.ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DeliveryResolutionEnum[]
+    | Prisma.ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDeliveryResolutionEnumNullableFilter<$PrismaModel>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+};
+
 export type NestedEnumProductCategoryEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ProductCategoryEnum | Prisma.EnumProductCategoryEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.ProductCategoryEnum[] | Prisma.ListEnumProductCategoryEnumFieldRefInput<$PrismaModel>;
@@ -2026,6 +2190,68 @@ export type NestedEnumProductStatusEnumWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumProductStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumDeliveryStageEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryStageEnum
+    | Prisma.EnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DeliveryStageEnum[]
+    | Prisma.ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DeliveryStageEnum[]
+    | Prisma.ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDeliveryStageEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.DeliveryStageEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDeliveryStageEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDeliveryStageEnumNullableFilter<$PrismaModel>;
+};
+
+export type NestedEnumDeliveryWorkStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryWorkStatusEnum
+    | Prisma.EnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DeliveryWorkStatusEnum[]
+    | Prisma.ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DeliveryWorkStatusEnum[]
+    | Prisma.ListEnumDeliveryWorkStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumDeliveryWorkStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.DeliveryWorkStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDeliveryWorkStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDeliveryWorkStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumDeliveryResolutionEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DeliveryResolutionEnum
+    | Prisma.EnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DeliveryResolutionEnum[]
+    | Prisma.ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DeliveryResolutionEnum[]
+    | Prisma.ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDeliveryResolutionEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDeliveryResolutionEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDeliveryResolutionEnumNullableFilter<$PrismaModel>;
 };
 
 export type NestedEnumExtensionSizeEnumFilter<$PrismaModel = never> = {

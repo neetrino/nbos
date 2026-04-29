@@ -14,7 +14,7 @@ import {
   validateProductTransition,
 } from './product-stage-gates';
 import { PROJECT_KICKOFF_CHECKLIST_ITEMS } from '../project-kickoff-checklist.constants';
-import { attachProductDeliveryLifecycle } from '../delivery-lifecycle';
+import { attachProductDeliveryLifecycle, buildDeliveryLifecycleWrite } from '../delivery-lifecycle';
 
 interface CreateProductDto {
   projectId: string;
@@ -198,7 +198,7 @@ export class ProductsService {
 
     const updatedProduct = await this.prisma.product.update({
       where: { id },
-      data: { status: target },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
       include: {
         project: { select: { id: true, code: true, name: true } },
       },
