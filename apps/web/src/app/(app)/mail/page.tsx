@@ -25,7 +25,10 @@ export default function MailInboxPage() {
   const [accounts, setAccounts] = useState<MailAccountRow[]>([]);
   const [threads, setThreads] = useState<MailThreadListRow[]>([]);
   const [filterAccountId, setFilterAccountId] = useState<string | null>(null);
-  const [unreadOnly, setUnreadOnly] = useState(false);
+  /** Inbox segment: all, unread-only, or needs-business-link only (mutually exclusive). */
+  const [threadListSegment, setThreadListSegment] = useState<'all' | 'unread' | 'needs_link'>(
+    'all',
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +38,11 @@ export default function MailInboxPage() {
     try {
       const [acc, th] = await Promise.all([
         mailApi.listAccounts(),
-        mailApi.listThreads(filterAccountId ?? undefined, unreadOnly),
+        mailApi.listThreads(
+          filterAccountId ?? undefined,
+          threadListSegment === 'unread',
+          threadListSegment === 'needs_link',
+        ),
       ]);
       setAccounts(acc);
       setThreads(th);
@@ -44,7 +51,7 @@ export default function MailInboxPage() {
     } finally {
       setLoading(false);
     }
-  }, [filterAccountId, unreadOnly]);
+  }, [filterAccountId, threadListSegment]);
 
   useEffect(() => {
     if (!canView) {
@@ -79,19 +86,27 @@ export default function MailInboxPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
-            variant={unreadOnly ? 'outline' : 'secondary'}
+            variant={threadListSegment === 'all' ? 'secondary' : 'outline'}
             size="sm"
-            onClick={() => setUnreadOnly(false)}
+            onClick={() => setThreadListSegment('all')}
           >
             All threads
           </Button>
           <Button
             type="button"
-            variant={unreadOnly ? 'secondary' : 'outline'}
+            variant={threadListSegment === 'unread' ? 'secondary' : 'outline'}
             size="sm"
-            onClick={() => setUnreadOnly(true)}
+            onClick={() => setThreadListSegment('unread')}
           >
             Unread only
+          </Button>
+          <Button
+            type="button"
+            variant={threadListSegment === 'needs_link' ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => setThreadListSegment('needs_link')}
+          >
+            Needs link
           </Button>
           <Button
             variant="outline"

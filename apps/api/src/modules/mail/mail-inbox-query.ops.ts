@@ -7,6 +7,8 @@ import type { MailAccountRow, MailThreadDetailDto, MailThreadListRow } from './m
 export interface ListMailThreadsOptions {
   mailAccountId?: string;
   unreadOnly?: boolean;
+  /** When true, only threads flagged for business context linking. */
+  needsLinkOnly?: boolean;
 }
 
 export type ListMailThreadsQueryResult =
@@ -32,7 +34,7 @@ export async function listMailThreadsForViewer(
   viewScope: string,
   options: ListMailThreadsOptions = {},
 ): Promise<ListMailThreadsQueryResult> {
-  const { mailAccountId, unreadOnly } = options;
+  const { mailAccountId, unreadOnly, needsLinkOnly } = options;
   const accountWhere = mailAccountWhereForViewer(employeeId, viewScope);
   const accounts = await prisma.mailAccount.findMany({
     where: accountWhere,
@@ -48,6 +50,7 @@ export async function listMailThreadsForViewer(
   const where: Prisma.EmailThreadWhereInput = {
     ...(mailAccountId ? { mailAccountId } : { mailAccountId: { in: ids } }),
     ...(unreadOnly ? { hasUnread: true } : {}),
+    ...(needsLinkOnly ? { needsBusinessLink: true } : {}),
   };
   const threads = await prisma.emailThread.findMany({
     where,

@@ -47,15 +47,22 @@ export class MailController {
     required: false,
     description: 'If true, only threads with hasUnread',
   })
+  @ApiQuery({
+    name: 'needsLinkOnly',
+    required: false,
+    description: 'If true, only threads with needsBusinessLink',
+  })
   async listThreads(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
     @Query('mailAccountId') mailAccountId?: string,
     @Query('unreadOnly') unreadOnly?: string,
+    @Query('needsLinkOnly') needsLinkOnly?: string,
   ) {
     return this.mailService.listThreads(user.id, req.permissionScope ?? 'OWN', {
       mailAccountId,
       unreadOnly: isQueryFlagTrue(unreadOnly),
+      needsLinkOnly: isQueryFlagTrue(needsLinkOnly),
     });
   }
 

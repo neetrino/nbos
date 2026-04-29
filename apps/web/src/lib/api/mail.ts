@@ -59,13 +59,20 @@ export const mailApi = {
     return resp.data;
   },
 
-  async listThreads(mailAccountId?: string, unreadOnly?: boolean): Promise<MailThreadListRow[]> {
+  async listThreads(
+    mailAccountId?: string,
+    unreadOnly?: boolean,
+    needsLinkOnly?: boolean,
+  ): Promise<MailThreadListRow[]> {
     const params: Record<string, string> = {};
     if (mailAccountId) {
       params.mailAccountId = mailAccountId;
     }
     if (unreadOnly) {
       params.unreadOnly = 'true';
+    }
+    if (needsLinkOnly) {
+      params.needsLinkOnly = 'true';
     }
     const resp = await api.get<MailThreadListRow[]>('/api/mail/threads', {
       params: Object.keys(params).length > 0 ? params : undefined,

@@ -113,6 +113,7 @@ Future Finance depth:
 | 2026-04-29 | Mail draft → queued (stub)            | `POST /api/mail/threads/:id/messages/:messageId/queue` (`MAIL` EDIT); DRAFT→QUEUED; audit `mail.outbound_message_queued`; web **Queue for send**; `mail-dto-map` extract.                                                                                     |
 | 2026-04-29 | Mail queued stub finalize → FAILED    | `POST …/messages/:messageId/finalize-send-stub`; QUEUED→FAILED (`NO_MAIL_PROVIDER`); audit `mail.outbound_send_stub_failed`; shared `getMailThreadWithMailboxAccess`; web **Finalize send (stub → failed)**.                                                  |
 | 2026-04-29 | Mail outbound cancel (draft/queued)   | `POST …/messages/:messageId/cancel`; DRAFT\|QUEUED→CANCELLED; audit `mail.outbound_message_cancelled`; `fetchMailThreadMessageForEdit`; web **Cancel**; inbox list/detail queries moved to `mail-inbox-query.ops.ts` (service line budget).                   |
+| 2026-04-29 | Mail inbox “Needs link” list filter   | `GET /api/mail/threads?needsLinkOnly=true`; web inbox **Needs link** segment (with All / Unread); filters `needsBusinessLink`.                                                                                                                                |
 
 ## Next Action
 
