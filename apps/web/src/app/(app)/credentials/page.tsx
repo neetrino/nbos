@@ -55,6 +55,7 @@ import {
 import { CredentialDetailDialog } from '@/features/credentials/components/CredentialDetailDialog';
 import { EditCredentialDialog } from '@/features/credentials/components/EditCredentialDialog';
 import { DeleteCredentialDialog } from '@/features/credentials/components/DeleteCredentialDialog';
+import { PermanentDeleteCredentialDialog } from '@/features/credentials/components/PermanentDeleteCredentialDialog';
 import { credentialsApi } from '@/lib/api/credentials';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { PermissionGate } from '@/lib/permissions';
@@ -104,6 +105,7 @@ export default function CredentialsPage() {
   const [editCredentialId, setEditCredentialId] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [purgeTarget, setPurgeTarget] = useState<{ id: string; name: string } | null>(null);
   const [vaultListScope, setVaultListScope] = useState<VaultListScope>('active');
 
   const fetchCredentials = useCallback(async () => {
@@ -230,6 +232,7 @@ export default function CredentialsPage() {
                 setEditOpen(true);
               }}
               onRequestDelete={(id, name) => setDeleteTarget({ id, name })}
+              onRequestPurge={(id, name) => setPurgeTarget({ id, name })}
               onRestored={fetchCredentials}
             />
           </TabsContent>
@@ -270,6 +273,16 @@ export default function CredentialsPage() {
         }}
         onDeleted={fetchCredentials}
       />
+
+      <PermanentDeleteCredentialDialog
+        credentialId={purgeTarget?.id ?? null}
+        credentialName={purgeTarget?.name ?? null}
+        open={purgeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setPurgeTarget(null);
+        }}
+        onDeleted={fetchCredentials}
+      />
     </div>
   );
 }
@@ -285,6 +298,7 @@ function CredentialTable({
   onOpenVault,
   onOpenEdit,
   onRequestDelete,
+  onRequestPurge,
   onRestored,
 }: {
   credentials: CredentialListItem[];
@@ -297,6 +311,7 @@ function CredentialTable({
   onOpenVault: (id: string) => void;
   onOpenEdit: (id: string) => void;
   onRequestDelete: (id: string, name: string) => void;
+  onRequestPurge: (id: string, name: string) => void;
   onRestored: () => void;
 }) {
   const isArchivedList = listScope === 'archived';
@@ -441,29 +456,45 @@ function CredentialTable({
                 </TableCell>
                 <TableCell className="text-center">
                   {isArchivedList ? (
-                    <PermissionGate module="CREDENTIALS" action="EDIT">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 gap-1"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void (async () => {
-                            try {
-                              await credentialsApi.restore(cred.id);
-                              toast.success('Credential restored');
-                              onRestored();
-                            } catch {
-                              toast.error('Could not restore');
-                            }
-                          })();
-                        }}
-                      >
-                        <RotateCcw size={12} />
-                        Restore
-                      </Button>
-                    </PermissionGate>
+                    <div className="flex flex-wrap items-center justify-center gap-1.5">
+                      <PermissionGate module="CREDENTIALS" action="EDIT">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void (async () => {
+                              try {
+                                await credentialsApi.restore(cred.id);
+                                toast.success('Credential restored');
+                                onRestored();
+                              } catch {
+                                toast.error('Could not restore');
+                              }
+                            })();
+                          }}
+                        >
+                          <RotateCcw size={12} />
+                          Restore
+                        </Button>
+                      </PermissionGate>
+                      <PermissionGate module="CREDENTIALS" action="DELETE">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive border-destructive/40 hover:bg-destructive/10 h-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRequestPurge(cred.id, cred.name);
+                          }}
+                        >
+                          Erase
+                        </Button>
+                      </PermissionGate>
+                    </div>
                   ) : (
                     <div className="flex items-center justify-center gap-0.5">
                       <PermissionGate module="CREDENTIALS" action="EDIT">

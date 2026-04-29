@@ -490,6 +490,30 @@ export class CredentialsService {
     });
   }
 
+  /**
+   * Physical row removal; only allowed when the credential is already archived.
+   */
+  async permanentlyDelete(id: string, access: CredentialsAccessContext) {
+    const existing = await this.prisma.credential.findFirst({
+      where: {
+        id,
+        archivedAt: { not: null },
+        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+      },
+    });
+    if (!existing) throw new NotFoundException(`Credential ${id} not found`);
+
+    await this.prisma.credential.delete({ where: { id } });
+
+    await this.auditService.log({
+      entityType: 'credential',
+      entityId: id,
+      action: 'credential.permanently_deleted',
+      userId: access.employeeId,
+      projectId: existing.projectId ?? undefined,
+    });
+  }
+
   private encryptSensitive(data: Partial<Record<SensitiveField, string | undefined | null>>) {
     const result: Record<string, string | undefined | null> = {};
     for (const field of SENSITIVE_FIELDS) {

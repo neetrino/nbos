@@ -175,6 +175,19 @@ export class CredentialsController {
     });
   }
 
+  @Delete(':id/permanent')
+  @RequirePermission('CREDENTIALS', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Permanently delete an archived credential (cannot be undone)',
+  })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.credentialsService.permanentlyDelete(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
   @Delete(':id')
   @RequirePermission('CREDENTIALS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)

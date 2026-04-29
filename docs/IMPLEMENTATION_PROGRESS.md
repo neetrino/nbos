@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                        |
-| ------------- | -------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**      |
-| Current task  | Phase 5 — Credentials soft archive + restore |
-| Status        | Phase 5 in progress                          |
-| Last updated  | 2026-04-29                                   |
+| Field         | Value                                                 |
+| ------------- | ----------------------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge**               |
+| Current task  | Phase 5 — Credentials permanent purge (archived only) |
+| Status        | Phase 5 in progress                                   |
+| Last updated  | 2026-04-29                                            |
 
 ## Phase Snapshot
 
@@ -94,6 +94,7 @@ Future Finance depth:
 | 2026-04-29 | Credentials web delete confirm        | Actions column: archive confirm dialog; `DELETE /api/credentials/:id` archives (soft); `CREDENTIALS` DELETE gate.                                                                                          |
 | 2026-04-29 | Credentials apiKey + envData in forms | New credential dialog and edit dialog: optional API key and environment textarea; edit only sends new values when non-empty (existing values not shown).                                                   |
 | 2026-04-29 | Credentials archive + restore         | Prisma `archived_at`; list `includeArchived`; DELETE sets archive + audit `credential.archived`; `POST …/restore` + `credential.restored`; web Active/Archived + Restore; project counts exclude archived. |
+| 2026-04-29 | Credentials permanent purge           | `DELETE …/permanent` for archived rows + `credential.permanently_deleted`; web Erase + name-confirm dialog.                                                                                                |
 
 ## Next Action
 

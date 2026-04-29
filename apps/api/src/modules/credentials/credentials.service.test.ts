@@ -435,4 +435,31 @@ describe('CredentialsService', () => {
       await expect(service.restore('missing', accessUser1)).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('permanentlyDelete', () => {
+    it('should delete row when archived and log permanently_deleted', async () => {
+      prisma.credential.findFirst.mockResolvedValue({
+        id: '1',
+        projectId: 'p1',
+        archivedAt: new Date(),
+      });
+
+      await service.permanentlyDelete('1', accessUser1);
+
+      expect(prisma.credential.delete).toHaveBeenCalledWith({ where: { id: '1' } });
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'credential.permanently_deleted',
+          entityId: '1',
+        }),
+      );
+    });
+
+    it('should throw when credential is not archived', async () => {
+      prisma.credential.findFirst.mockResolvedValue(null);
+
+      await expect(service.permanentlyDelete('1', accessUser1)).rejects.toThrow(NotFoundException);
+      expect(prisma.credential.delete).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -60,6 +60,10 @@ export const credentialsApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/credentials/${id}`);
   },
+  /** Remove archived row from DB (CREDENTIALS DELETE). */
+  async permanentDelete(id: string): Promise<void> {
+    await api.delete(`/api/credentials/${id}/permanent`);
+  },
   async revealSecret(
     id: string,
     field: CredentialSecretField,
