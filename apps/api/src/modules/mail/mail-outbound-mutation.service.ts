@@ -13,6 +13,7 @@ import {
 } from './mail-audit.constants';
 import { publishMailOutboundCancelledNotifications } from './mail-outbound-cancel-notify.ops';
 import { cancelOutboundDraftOrQueued } from './mail-outbound-cancel.ops';
+import { publishMailOutboundQueuedNotifications } from './mail-outbound-queue-notify.ops';
 import { publishMailOutboundSendStubFailedNotifications } from './mail-outbound-finalize-stub-notify.ops';
 import { failQueuedOutboundStubNoProvider } from './mail-outbound-finalize-stub.ops';
 import { dedupeEmailsCaseInsensitive } from './mail-outbound-draft.helpers';
@@ -125,6 +126,15 @@ export class MailOutboundMutationService {
       action: MAIL_AUDIT_ACTION_OUTBOUND_MESSAGE_QUEUED,
       userId: employeeId,
       changes: auditChanges,
+    });
+    const account = access.thread.mailAccount;
+    await publishMailOutboundQueuedNotifications(this.notificationService, {
+      actorEmployeeId: employeeId,
+      threadId,
+      messageId,
+      subject: msg.subject,
+      emailAddress: account.emailAddress,
+      ownerEmployeeId: account.ownerEmployeeId,
     });
     return this.requireThreadDetail(employeeId, accessScope, threadId);
   }

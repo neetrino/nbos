@@ -22,3 +22,10 @@ export const MAIL_NOTIFICATION_TYPE_OUTBOUND_FAILED_RESET_TO_DRAFT =
 
 export const MAIL_NOTIFICATION_TITLE_OUTBOUND_FAILED_RESET_TO_DRAFT =
   'Mail: failed send reset to draft' as const;
+
+/** In-app notification when outbound DRAFT → QUEUED (stub pipeline). */
+export const MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_QUEUED_IN_APP =
+  'mail.outbound_message_queued' as const;
+
+export const MAIL_NOTIFICATION_TITLE_OUTBOUND_MESSAGE_QUEUED_IN_APP =
+  'Mail: outbound queued for send (stub)' as const;

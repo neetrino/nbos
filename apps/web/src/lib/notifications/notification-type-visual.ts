@@ -1,9 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, Ban, Bell, Mail, RotateCcw } from 'lucide-react';
+import { AlertTriangle, Ban, Bell, Mail, RotateCcw, Send } from 'lucide-react';
 import {
   MAIL_NOTIFICATION_TYPE_ACCOUNT_SYNC_STUB,
   MAIL_NOTIFICATION_TYPE_OUTBOUND_FAILED_RESET_TO_DRAFT,
   MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_CANCELLED,
+  MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_QUEUED_IN_APP,
   MAIL_NOTIFICATION_TYPE_OUTBOUND_SEND_STUB_FAILED,
 } from './notification-types';
 
@@ -34,6 +35,12 @@ export function getNotificationVisual(type: string): NotificationVisual {
     return {
       Icon: AlertTriangle,
       iconClassName: 'bg-amber-500/10 text-amber-700',
+    };
+  }
+  if (type === MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_QUEUED_IN_APP) {
+    return {
+      Icon: Send,
+      iconClassName: 'bg-sky-500/10 text-sky-700',
     };
   }
   if (type === MAIL_NOTIFICATION_TYPE_ACCOUNT_SYNC_STUB) {
