@@ -7,6 +7,10 @@ import {
 } from './project-kickoff-checklist.service';
 import { projectDetailInclude } from './project.includes';
 import { buildProjectIntake } from './project-intake';
+import {
+  attachExtensionDeliveryLifecycle,
+  attachProductDeliveryLifecycle,
+} from './delivery-lifecycle';
 
 interface CreateProjectDto {
   name: string;
@@ -86,7 +90,8 @@ export class ProjectsService {
     });
     if (!project) throw new NotFoundException(`Project ${id} not found`);
     const kickoffChecklist = await this.kickoffChecklist.ensureForProject(id);
-    return { ...project, intake: buildProjectIntake(project), kickoffChecklist };
+    const deliveryProject = attachProjectDeliveryLifecycles(project);
+    return { ...deliveryProject, intake: buildProjectIntake(deliveryProject), kickoffChecklist };
   }
 
   updateKickoffChecklistItem(id: string, itemId: string, data: UpdateKickoffChecklistItemDto) {
@@ -147,4 +152,24 @@ export class ProjectsService {
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `P-${year}-${String(nextNum).padStart(4, '0')}`;
   }
+}
+
+interface ProjectDeliveryCarrier {
+  status?: string | null;
+  deliveryStage?: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER' | null;
+  deliveryWorkStatus?: 'ACTIVE' | 'ON_HOLD' | null;
+  deliveryResolution?: 'DONE' | 'CANCELLED' | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+}
+
+function attachProjectDeliveryLifecycles<
+  T extends { products?: ProjectDeliveryCarrier[]; extensions?: ProjectDeliveryCarrier[] },
+>(project: T) {
+  return {
+    ...project,
+    products: project.products?.map((product) => attachProductDeliveryLifecycle(product)),
+    extensions: project.extensions?.map((extension) => attachExtensionDeliveryLifecycle(extension)),
+  };
 }

@@ -18,8 +18,7 @@ import type {
 import {
   formatDeliveryLifecycleLabel,
   getExtensionSize,
-  getExtensionStatus,
-  getProductStatus,
+  getDeliveryLifecycleVariant,
   getProductType,
 } from '@/features/projects/constants/projects';
 import {
@@ -76,7 +75,7 @@ export function ProjectDeliveryBoardCard({
               {metaLabel && <p className="text-muted-foreground truncate text-xs">{metaLabel}</p>}
             </div>
           </div>
-          {lifecycle && <LifecycleBadge lifecycle={lifecycle} item={item} />}
+          {lifecycle && <LifecycleBadge lifecycle={lifecycle} />}
         </div>
         <DeliveryCardMeta item={item} />
       </button>
@@ -197,21 +196,11 @@ function CardKindIcon({ isExtension }: { isExtension: boolean }) {
   );
 }
 
-function LifecycleBadge({
-  lifecycle,
-  item,
-}: {
-  lifecycle: DeliveryLifecycleProjection;
-  item: DeliveryBoardItem;
-}) {
-  const status =
-    item.kind === 'PRODUCT'
-      ? getProductStatus(item.product.status)
-      : getExtensionStatus(item.extension.status);
+function LifecycleBadge({ lifecycle }: { lifecycle: DeliveryLifecycleProjection }) {
   return (
     <StatusBadge
       label={formatDeliveryLifecycleLabel(lifecycle)}
-      variant={status?.variant ?? 'gray'}
+      variant={getDeliveryLifecycleVariant(lifecycle)}
     />
   );
 }

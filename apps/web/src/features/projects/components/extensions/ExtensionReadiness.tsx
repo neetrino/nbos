@@ -10,7 +10,7 @@ interface ExtensionReadinessProps {
 }
 
 export function ExtensionReadiness({ extension }: ExtensionReadinessProps) {
-  if (extension.status !== 'NEW') return null;
+  if (!isStartingExtension(extension)) return null;
 
   const missing = extension.readiness?.missing ?? [];
   if (missing.length === 0) {
@@ -30,6 +30,12 @@ export function ExtensionReadiness({ extension }: ExtensionReadinessProps) {
       </span>
     </div>
   );
+}
+
+function isStartingExtension(extension: Extension) {
+  const lifecycle = extension.deliveryLifecycle;
+  if (!lifecycle) return extension.status === 'NEW';
+  return lifecycle.stage === 'STARTING' && lifecycle.isActive;
 }
 
 export function ExtensionBlockerPanel({

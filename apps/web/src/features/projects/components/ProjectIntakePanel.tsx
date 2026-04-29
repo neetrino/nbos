@@ -7,6 +7,7 @@ import type {
   ProjectKickoffChecklistItem,
   UpdateKickoffChecklistItemInput,
 } from '@/lib/api/projects';
+import { formatDeliveryLifecycleLabel } from '@/features/projects/constants/projects';
 import { ProjectKickoffChecklist } from './ProjectKickoffChecklist';
 
 interface ProjectIntakePanelProps {
@@ -52,7 +53,7 @@ export function ProjectIntakePanel({
           </p>
           <p className="text-sm font-semibold">{intake.primaryProduct.name}</p>
           <p className="text-muted-foreground text-xs">
-            {intake.primaryProduct.status.replace(/_/g, ' ')}
+            {formatPrimaryProductDelivery(intake.primaryProduct)}
           </p>
         </div>
       )}
@@ -171,6 +172,7 @@ function getFallbackIntake(project: FullProject): ProjectIntakeSummary {
           status: primaryProduct.status,
           deadline: primaryProduct.deadline,
           pm: primaryProduct.pm,
+          deliveryLifecycle: primaryProduct.deliveryLifecycle,
         }
       : null,
     hasProduct: project.products.length > 0,
@@ -187,6 +189,13 @@ function getFallbackIntake(project: FullProject): ProjectIntakeSummary {
     credentialCount: project.credentials.length,
     subscriptionStatuses: project.subscriptions.map((subscription) => subscription.status),
   };
+}
+
+function formatPrimaryProductDelivery(
+  product: NonNullable<ProjectIntakeSummary['primaryProduct']>,
+) {
+  if (product.deliveryLifecycle) return formatDeliveryLifecycleLabel(product.deliveryLifecycle);
+  return product.status.replace(/_/g, ' ');
 }
 
 function getFallbackTaskCount(project: FullProject) {

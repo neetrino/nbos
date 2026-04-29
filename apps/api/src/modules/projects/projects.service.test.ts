@@ -74,6 +74,14 @@ describe('ProjectsService', () => {
 
       expect(result.products).toHaveLength(1);
       expect(result.extensions).toHaveLength(1);
+      expect(result.products[0].deliveryLifecycle).toMatchObject({
+        entityKind: 'PRODUCT',
+        stage: 'DEVELOPMENT',
+      });
+      expect(result.extensions[0].deliveryLifecycle).toMatchObject({
+        entityKind: 'EXTENSION',
+        stage: 'QA',
+      });
       expect(result.intake).toMatchObject({
         hasProduct: true,
         hasPm: true,
@@ -83,6 +91,10 @@ describe('ProjectsService', () => {
         hasCredentials: true,
         openTaskCount: 5,
         credentialCount: 1,
+      });
+      expect(result.intake.primaryProduct?.deliveryLifecycle).toMatchObject({
+        entityKind: 'PRODUCT',
+        stage: 'DEVELOPMENT',
       });
       expect(result.kickoffChecklist).toEqual([]);
       expect(result._count).toMatchObject({ products: 1, extensions: 1 });

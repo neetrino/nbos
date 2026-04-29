@@ -1,9 +1,12 @@
+import { type DeliveryLifecycleProjection } from './delivery-lifecycle';
+
 interface ProjectIntakeProduct {
   id: string;
   name: string;
   status: string;
   deadline: Date | string | null;
   pm: { id: string; firstName: string; lastName: string } | null;
+  deliveryLifecycle?: DeliveryLifecycleProjection;
   _count?: { tasks?: number; extensions?: number; tickets?: number };
 }
 
@@ -39,6 +42,7 @@ export interface ProjectIntakeSummary {
     status: string;
     deadline: Date | string | null;
     pm: { id: string; firstName: string; lastName: string } | null;
+    deliveryLifecycle?: DeliveryLifecycleProjection;
   } | null;
   hasProduct: boolean;
   hasPm: boolean;
@@ -82,6 +86,7 @@ function toPrimaryProduct(product: ProjectIntakeProduct) {
     status: product.status,
     deadline: product.deadline,
     pm: product.pm,
+    deliveryLifecycle: product.deliveryLifecycle,
   };
 }
 
