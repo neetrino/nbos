@@ -18,6 +18,7 @@ import {
   MessageCircle,
   Calendar,
   HardDrive,
+  FileText,
   KeyRound,
   Settings,
   ChevronLeft,
@@ -261,6 +262,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/drive',
     icon: <HardDrive size={20} />,
     permission: { module: 'DRIVE', action: 'VIEW' },
+  },
+  {
+    label: 'Documents',
+    href: '/documents',
+    icon: <FileText size={20} />,
+    permission: { module: 'DOCUMENTS', action: 'VIEW' },
   },
   {
     label: 'Credentials',

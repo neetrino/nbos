@@ -73,23 +73,21 @@ AI Assistant will be discussed as a separate, large platform module and integrat
 
 ### B1. Documents module route is missing
 
-Статус: `MISSING MODULE`
+Статус: `PARTIAL`
 
-Need:
+Done:
 
 ```text
 /documents
+/documents/sections/:sectionId
+/documents/:id
 ```
+
+Still missing: polish, editor, attachments UI (later slices).
 
 ### B2. Sidebar item is missing
 
-Статус: `MISSING UI`
-
-Need top-level sidebar item:
-
-```text
-Documents
-```
+Статус: `DONE` (gated by `DOCUMENTS` + `VIEW`)
 
 ### B3. Document data model is missing
 

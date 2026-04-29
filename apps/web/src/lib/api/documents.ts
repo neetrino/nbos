@@ -8,17 +8,56 @@ export interface DocumentSection {
   sortOrder: number;
 }
 
+export interface DocumentTag {
+  id: string;
+  name: string;
+  slug: string;
+  color: string | null;
+}
+
 export interface DocumentListItem {
   id: string;
   title: string;
   slug: string;
   status: string;
+  createdById: string | null;
+  updatedAt: string;
   section: { id: string; name: string; slug: string; sortOrder: number };
+}
+
+export interface DocumentActivityItem {
+  id: string;
+  action: string;
+  actorId: string | null;
+  createdAt: string;
+  metadata: unknown;
+}
+
+export interface DocumentDetail {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+  description: string | null;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+  archivedAt: string | null;
+  createdById: string | null;
+  section: { id: string; name: string; slug: string; sortOrder: number };
+  tagLinks: Array<{ tag: DocumentTag }>;
+  activityEvents: DocumentActivityItem[];
 }
 
 export const documentsApi = {
   async listSections(): Promise<DocumentSection[]> {
     const resp = await api.get<DocumentSection[]>('/api/documents/sections');
+    return resp.data;
+  },
+
+  async listTags(): Promise<DocumentTag[]> {
+    const resp = await api.get<DocumentTag[]>('/api/documents/tags');
     return resp.data;
   },
 
@@ -32,8 +71,8 @@ export const documentsApi = {
     return resp.data;
   },
 
-  async getDocument(id: string): Promise<unknown> {
-    const resp = await api.get('/api/documents/' + encodeURIComponent(id));
+  async getDocument(id: string): Promise<DocumentDetail> {
+    const resp = await api.get<DocumentDetail>('/api/documents/' + encodeURIComponent(id));
     return resp.data;
   },
 
@@ -42,8 +81,8 @@ export const documentsApi = {
     sectionId: string;
     type?: string;
     description?: string;
-  }): Promise<unknown> {
-    const resp = await api.post('/api/documents', data);
+  }): Promise<DocumentDetail> {
+    const resp = await api.post<DocumentDetail>('/api/documents', data);
     return resp.data;
   },
 
@@ -58,13 +97,16 @@ export const documentsApi = {
       plainText?: string | null;
       status?: string;
     },
-  ): Promise<unknown> {
-    const resp = await api.patch('/api/documents/' + encodeURIComponent(id), data);
+  ): Promise<DocumentDetail> {
+    const resp = await api.patch<DocumentDetail>('/api/documents/' + encodeURIComponent(id), data);
     return resp.data;
   },
 
-  async archiveDocument(id: string): Promise<unknown> {
-    const resp = await api.post('/api/documents/' + encodeURIComponent(id) + '/archive', {});
+  async archiveDocument(id: string): Promise<DocumentDetail> {
+    const resp = await api.post<DocumentDetail>(
+      '/api/documents/' + encodeURIComponent(id) + '/archive',
+      {},
+    );
     return resp.data;
   },
 };

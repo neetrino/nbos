@@ -89,6 +89,8 @@ Done when:
 - user can open Documents, see sections and create/read basic records;
 - UI language uses `Documents`, `Sections`, `Draft`, `Published`, `Archive`.
 
+**Implemented (2026-04-29):** Web `/documents` home (sections, recent, my drafts, search placeholder), `/documents/sections/[sectionId]`, `/documents/[id]` read-only shell with activity + archive, `CreateDocumentDialog`, sidebar `Documents` with `DOCUMENTS` VIEW.
+
 ### Slice 4. Native Editor And Viewer
 
 Goal: make native Documents usable for daily work.

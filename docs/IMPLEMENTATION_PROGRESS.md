@@ -7,8 +7,8 @@
 | Field         | Value                                   |
 | ------------- | --------------------------------------- |
 | Current phase | **Phase 5 — Collaboration / knowledge** |
-| Current task  | Documents / Drive implementation plan   |
-| Status        | Phase 5 planned and in progress         |
+| Current task  | Documents editor (Slice 4)              |
+| Status        | Phase 5 in progress                     |
 | Last updated  | 2026-04-29                              |
 
 ## Phase Snapshot
@@ -19,7 +19,7 @@
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
 | Phase 4 — Delivery ops              | Done        |     100% | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation       |
-| Phase 5 — Collaboration / knowledge | In progress |     ~22% | Documents Prisma + API + RBAC seed; Documents UI shell next                                |
+| Phase 5 — Collaboration / knowledge | In progress |     ~32% | Documents home, section list, detail shell, sidebar; editor slice next                     |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
 
@@ -74,11 +74,12 @@ Future Finance depth:
 | 2026-04-29 | Phase 5 Documents plan         | Documents defined as standalone module with Drive-backed attachments.                    |
 | 2026-04-29 | Drive upload session + library | `FileUploadSession`, presigned PUT, complete → FileAsset+link, `GET /drive/library`.     |
 | 2026-04-29 | Documents data foundation      | Prisma Document\*, `/api/documents`, `DOCUMENTS` RBAC, default sections, `documentsApi`. |
+| 2026-04-29 | Documents UI shell             | `/documents`, sections, tables, create dialog, detail + archive, sidebar `Documents`.    |
 
 ## Next Action
 
 1. Continue Phase 5 per `docs/PHASE_5_COLLABORATION_KNOWLEDGE_PLAN.md`.
-2. Next normal slice: **Slice 3 — Documents UI shell** (`/documents`, sections list, create draft, empty states).
+2. Next normal slice: **Slice 4 — Native editor and viewer** (TipTap, save, publish UX).
 3. Keep Google v2, AI, complex approval workflow and credentials secrets out of the first Documents release.
 
 ## Slice DoD

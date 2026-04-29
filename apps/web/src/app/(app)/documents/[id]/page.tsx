@@ -1,0 +1,146 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { ArrowLeft, Archive, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
+import { documentsApi, type DocumentDetail } from '@/lib/api/documents';
+import { getApiErrorMessage } from '@/lib/api-errors';
+import { usePermission } from '@/lib/permissions';
+import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
+import { formatDocumentRelativeTime } from '@/features/documents/format-relative-time';
+
+export default function DocumentDetailPage() {
+  const params = useParams();
+  const id = typeof params.id === 'string' ? params.id : '';
+  const { can } = usePermission();
+  const [doc, setDoc] = useState<DocumentDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [archiving, setArchiving] = useState(false);
+
+  const load = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      setDoc(await documentsApi.getDocument(id));
+    } catch (e) {
+      setError(getApiErrorMessage(e, 'Document could not be loaded.'));
+      setDoc(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleArchive = async () => {
+    if (!id || doc?.status === 'ARCHIVED') return;
+    setArchiving(true);
+    try {
+      await documentsApi.archiveDocument(id);
+      await load();
+    } catch (e) {
+      setError(getApiErrorMessage(e, 'Could not archive document.'));
+    } finally {
+      setArchiving(false);
+    }
+  };
+
+  const canDelete = can('DELETE', 'DOCUMENTS');
+
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      <Link
+        href="/documents"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
+      >
+        <ArrowLeft size={14} /> Documents
+      </Link>
+
+      {loading ? <LoadingState variant="list" count={3} /> : null}
+      {error && !doc ? <ErrorState description={error} onRetry={load} /> : null}
+
+      {doc ? (
+        <>
+          <PageHeader title={doc.title} description={doc.description ?? undefined}>
+            {canDelete && doc.status !== 'ARCHIVED' ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={handleArchive}
+                disabled={archiving}
+              >
+                {archiving ? <Loader2 size={14} className="animate-spin" /> : <Archive size={14} />}
+                Archive
+              </Button>
+            ) : null}
+          </PageHeader>
+
+          <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+            <DocumentStatusBadge status={doc.status} />
+            <span>
+              Section:{' '}
+              <Link
+                href={`/documents/sections/${doc.section.id}`}
+                className="text-primary font-medium hover:underline"
+              >
+                {doc.section.name}
+              </Link>
+            </span>
+            <span>Updated {formatDocumentRelativeTime(doc.updatedAt)}</span>
+            {doc.publishedAt ? (
+              <span>Published {formatDocumentRelativeTime(doc.publishedAt)}</span>
+            ) : null}
+          </div>
+
+          {error ? <ErrorState description={error} onRetry={load} /> : null}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Content</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm">
+                TipTap editor and published HTML viewer will appear in Slice 4. Native content stays
+                in PostgreSQL; binary files use Drive.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {doc.activityEvents.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No activity yet.</p>
+              ) : (
+                <ul className="divide-border divide-y text-sm">
+                  {doc.activityEvents.map((ev) => (
+                    <li
+                      key={ev.id}
+                      className="flex flex-wrap items-baseline justify-between gap-2 py-2"
+                    >
+                      <span className="font-medium capitalize">{ev.action.replace(/_/g, ' ')}</span>
+                      <span className="text-muted-foreground">
+                        {formatDocumentRelativeTime(ev.createdAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      ) : null}
+    </div>
+  );
+}
