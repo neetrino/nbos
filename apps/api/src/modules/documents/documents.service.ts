@@ -437,6 +437,27 @@ export class DocumentsService {
     return this.getDocument(id, access);
   }
 
+  async restoreDocument(id: string, actorId: string, access: DocumentsDetailAccess) {
+    await this.ensureDefaultSections();
+    await assertDocumentReadableByAccess(this.prisma, id, access);
+    const existing = await this.prisma.document.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException(`Document ${id} not found`);
+    if (existing.status !== 'ARCHIVED') {
+      throw new BadRequestException('Only archived documents can be restored.');
+    }
+    const nextStatus = existing.publishedAt ? 'PUBLISHED' : 'DRAFT';
+    await this.prisma.document.update({
+      where: { id },
+      data: {
+        status: nextStatus as DocumentStatusEnum,
+        archivedAt: null,
+        updatedById: actorId,
+      },
+    });
+    await this.recordActivity(id, actorId, 'restored', { status: nextStatus });
+    return this.getDocument(id, access);
+  }
+
   async addDocumentAttachment(
     documentId: string,
     dto: AddDocumentAttachmentDto,

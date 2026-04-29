@@ -357,6 +357,72 @@ describe('DocumentsService', () => {
     );
   });
 
+  it('restores archived document to PUBLISHED when it was published before', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.employeeDepartment.findMany.mockResolvedValue([]);
+    prisma.document.findUnique
+      .mockResolvedValueOnce({
+        ownerId: 'employee-1',
+        createdById: 'employee-1',
+        listScopeOverride: null,
+        section: { defaultListScope: 'ALL' },
+      })
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        status: 'ARCHIVED',
+        publishedAt: new Date('2026-01-01'),
+      })
+      .mockResolvedValueOnce({ ...detailDoc, id: 'doc-1', status: 'PUBLISHED', archivedAt: null });
+    prisma.document.update.mockResolvedValue({});
+    prisma.documentActivityEvent.create.mockResolvedValue({});
+
+    const doc = await service.restoreDocument('doc-1', 'employee-1', detailAccessAll);
+
+    expect(doc.status).toBe('PUBLISHED');
+    expect(prisma.document.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'PUBLISHED',
+          archivedAt: null,
+        }),
+      }),
+    );
+    expect(prisma.documentActivityEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action: 'restored', metadata: { status: 'PUBLISHED' } }),
+      }),
+    );
+  });
+
+  it('restores archived document to DRAFT when never published', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.employeeDepartment.findMany.mockResolvedValue([]);
+    prisma.document.findUnique
+      .mockResolvedValueOnce({
+        ownerId: 'employee-1',
+        createdById: 'employee-1',
+        listScopeOverride: null,
+        section: { defaultListScope: 'ALL' },
+      })
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        status: 'ARCHIVED',
+        publishedAt: null,
+      })
+      .mockResolvedValueOnce({ ...detailDoc, id: 'doc-1', status: 'DRAFT', archivedAt: null });
+    prisma.document.update.mockResolvedValue({});
+    prisma.documentActivityEvent.create.mockResolvedValue({});
+
+    const doc = await service.restoreDocument('doc-1', 'employee-1', detailAccessAll);
+
+    expect(doc.status).toBe('DRAFT');
+    expect(prisma.documentActivityEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action: 'restored', metadata: { status: 'DRAFT' } }),
+      }),
+    );
+  });
+
   it('rejects invalid activity cursor on listDocumentActivity', async () => {
     prisma.documentSection.count.mockResolvedValue(10);
     prisma.document.findUnique.mockResolvedValueOnce({

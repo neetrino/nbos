@@ -101,7 +101,7 @@ Scope:
 - viewer mode over trusted rendered content;
 - `content_json`, derived `plain_text` and optional `content_html`;
 - save state and safe autosave/debounce;
-- publish/archive/restore actions.
+- publish/archive/restore actions (**restore:** `POST /api/documents/:id/restore`, back to PUBLISHED if previously published).
 
 Done when:
 
@@ -109,7 +109,7 @@ Done when:
 - autosave does not create noisy activity history;
 - malformed content and save failures are visible.
 
-**Implemented (2026-04-29):** TipTap on `/documents/[id]` (Read/Edit tabs when permitted), StarterKit + tasks + tables + links + placeholder, debounced silent PATCH with `recordActivity: false`, manual Save records activity, Publish sends content + `PUBLISHED`, `DocumentHtmlViewer` with DOMPurify, API skips `DocumentActivityEvent` for content-only silent updates.
+**Implemented (2026-04-29):** TipTap on `/documents/[id]` (Read/Edit tabs when permitted), StarterKit + tasks + tables + links + placeholder, debounced silent PATCH with `recordActivity: false`, manual Save records activity, Publish sends content + `PUBLISHED`, `DocumentHtmlViewer` with DOMPurify, API skips `DocumentActivityEvent` for content-only silent updates, `POST …/restore` for archived docs + Restore button when `DELETE` on Documents.
 
 ### Slice 5. Attachments Through Drive
 

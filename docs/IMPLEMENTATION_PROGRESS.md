@@ -13,15 +13,15 @@
 
 ## Phase Snapshot
 
-| Phase                               | Status      | Progress | Notes                                                                                             |
-| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                           |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                  |
-| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates        |
-| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation              |
-| Phase 5 — Collaboration / knowledge | In progress | ~87%     | Documents: `attachment_search_vector` GIN + FTS rank; triggers on attachments/file_assets renames |
-| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                 |
-| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                              |
+| Phase                               | Status      | Progress | Notes                                                                                      |
+| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------ |
+| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                    |
+| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                           |
+| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
+| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation       |
+| Phase 5 — Collaboration / knowledge | In progress | ~88%     | Documents: archive/restore API+UI (`POST …/restore`, activity `restored`)                  |
+| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
+| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                       |
 
 ## Phase 3 Full Closure Gate
 
@@ -86,6 +86,7 @@ Future Finance depth:
 | 2026-04-29 | Document-scoped Drive preview        | `GET …/drive/files/:id/preview-url?forDocumentId=` enforces Documents read + attachment or DOCUMENT `FileLink`; web passes `documentId` in viewer, editor, attachments. |
 | 2026-04-29 | Document list search + attachments   | List `search` OR-path on linked `file_assets` names; `searchSnippet` fallback from attachment display/original names (not in `search_vector` yet).                      |
 | 2026-04-29 | Document attachment FTS column       | `documents.attachment_search_vector` + GIN; triggers on `document_attachments` and `file_assets` updates; list FTS rank blends attachment matches (weight constant).    |
+| 2026-04-29 | Document restore from archive        | `POST /api/documents/:id/restore` (DELETE perm); PUBLISHED if `published_at` set else DRAFT; web Restore on archived detail; activity `restored` + snippet hint.        |
 
 ## Next Action
 

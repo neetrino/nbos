@@ -179,4 +179,14 @@ export class DocumentsController {
   async archiveDocument(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     return this.documentsService.archiveDocument(id, user.id, buildDocumentsDetailAccess(user));
   }
+
+  @Post(':id/restore')
+  @RequirePermission('DOCUMENTS', 'DELETE')
+  @ApiOperation({
+    summary: 'Restore archived document',
+    description: 'Sets status to PUBLISHED if the document was published before; otherwise DRAFT.',
+  })
+  async restoreDocument(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.documentsService.restoreDocument(id, user.id, buildDocumentsDetailAccess(user));
+  }
 }

@@ -25,5 +25,8 @@ export function formatDocumentActivityDetail(action: string, metadata: unknown):
     const prevLabel = prev === null || prev === undefined ? 'section default' : String(prev);
     return `List scope ${prevLabel} → ${nextLabel}`;
   }
+  if (action === 'restored' && typeof m.status === 'string') {
+    return `Now ${m.status.toLowerCase()}`;
+  }
   return null;
 }

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Archive, Loader2 } from 'lucide-react';
+import { ArrowLeft, Archive, Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,6 +43,7 @@ export default function DocumentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [contentTab, setContentTab] = useState<ContentTab>('view');
 
   const docRef = useRef<DocumentDetail | null>(null);
@@ -99,6 +100,19 @@ export default function DocumentDetailPage() {
     }
   };
 
+  const handleRestore = async () => {
+    if (!id || doc?.status !== 'ARCHIVED') return;
+    setRestoring(true);
+    try {
+      await documentsApi.restoreDocument(id);
+      await load();
+    } catch (e) {
+      setError(getApiErrorMessage(e, 'Could not restore document.'));
+    } finally {
+      setRestoring(false);
+    }
+  };
+
   const loadMoreActivity = async () => {
     if (!id || !activityPagingCursor) return;
     setActivityLoadingMore(true);
@@ -139,7 +153,22 @@ export default function DocumentDetailPage() {
       {doc ? (
         <>
           <PageHeader title={doc.title} description={doc.description ?? undefined}>
-            {canDelete && doc.status !== 'ARCHIVED' ? (
+            {canDelete && doc.status === 'ARCHIVED' ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => void handleRestore()}
+                disabled={restoring}
+              >
+                {restoring ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <RotateCcw size={14} />
+                )}
+                Restore
+              </Button>
+            ) : canDelete && doc.status !== 'ARCHIVED' ? (
               <Button
                 variant="outline"
                 size="sm"

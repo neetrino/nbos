@@ -172,6 +172,14 @@ export const documentsApi = {
     return resp.data;
   },
 
+  async restoreDocument(id: string): Promise<DocumentDetail> {
+    const resp = await api.post<DocumentDetail>(
+      '/api/documents/' + encodeURIComponent(id) + '/restore',
+      {},
+    );
+    return resp.data;
+  },
+
   async addDocumentAttachment(
     documentId: string,
     data: { fileAssetId: string; purpose?: string; sortOrder?: number },

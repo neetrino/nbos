@@ -178,7 +178,7 @@ Recommended implementation order:
 10. Add image/file upload through Drive File Asset.
 11. Add document access UI and backend enforcement.
 12. Add activity log.
-13. Add archive/restore flow.
+13. Add archive/restore flow. **Shipped:** `POST …/archive`, `POST …/restore`, detail UI Restore when `DOCUMENTS` DELETE; activity `restored`.
 14. Add favorites/recent documents.
 15. Add Google integration only after first release is stable.
 
