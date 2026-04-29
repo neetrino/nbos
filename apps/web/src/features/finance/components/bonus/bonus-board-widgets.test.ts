@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { uniqueProjectsFromRows } from './bonus-board-widgets';
+import {
+  countBonusEntriesWithStatus,
+  sumBonusEntryAmounts,
+  uniqueProjectsFromRows,
+} from './bonus-board-widgets';
 import type { BonusEntryListRow } from '../../../../lib/api/bonus';
 
 function row(
@@ -40,5 +44,28 @@ describe('uniqueProjectsFromRows', () => {
 
   it('returns empty when no projects', () => {
     expect(uniqueProjectsFromRows([])).toEqual([]);
+  });
+});
+
+describe('sumBonusEntryAmounts', () => {
+  it('sums entry amounts', () => {
+    expect(
+      sumBonusEntryAmounts([row({ id: 'a', amount: '10.5' }), row({ id: 'b', amount: '2' })]),
+    ).toBe(12.5);
+  });
+
+  it('returns zero for empty', () => {
+    expect(sumBonusEntryAmounts([])).toBe(0);
+  });
+});
+
+describe('countBonusEntriesWithStatus', () => {
+  it('counts matching status', () => {
+    const rows = [
+      row({ id: '1', status: 'PAID' }),
+      row({ id: '2', status: 'ACTIVE' }),
+      row({ id: '3', status: 'PAID' }),
+    ];
+    expect(countBonusEntriesWithStatus(rows, 'PAID')).toBe(2);
   });
 });

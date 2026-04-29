@@ -10,9 +10,11 @@ import {
   BonusBoardColumns,
   BonusBoardToolbar,
   SummaryCard,
+  countBonusEntriesWithStatus,
   employeeDisplayName,
   parseBonusAmount,
   projectLabel,
+  sumBonusEntryAmounts,
   uniqueEmployeesFromRows,
   uniqueProjectsFromRows,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
@@ -141,21 +143,31 @@ export function BonusBoardPageContent() {
     serverProjectScope,
   );
 
+  const canUseGlobalBonusStats = useMemo(
+    () =>
+      search.trim() === '' &&
+      typeFilter === 'ALL' &&
+      employeeFilter === 'ALL' &&
+      projectFilter === 'ALL',
+    [search, typeFilter, employeeFilter, projectFilter],
+  );
+
   const totalAmountDisplay = useMemo(() => {
-    if (stats?.totalAmount != null && stats.totalAmount !== '' && projectFilter === 'ALL') {
+    if (canUseGlobalBonusStats && stats?.totalAmount != null && stats.totalAmount !== '') {
       return formatAmount(parseBonusAmount(stats.totalAmount));
     }
-    const sum = rows.reduce((acc, r) => acc + parseBonusAmount(r.amount), 0);
-    return formatAmount(sum);
-  }, [stats, rows, projectFilter]);
+    return formatAmount(sumBonusEntryAmounts(filtered));
+  }, [canUseGlobalBonusStats, stats, filtered]);
 
   const paidCountDisplay = useMemo(() => {
-    if (projectFilter === 'ALL') {
-      const fromStats = stats?.byStatus.find((s) => s.status === 'PAID')?._count;
+    if (canUseGlobalBonusStats && stats) {
+      const fromStats = stats.byStatus.find((s) => s.status === 'PAID')?._count;
       if (typeof fromStats === 'number') return String(fromStats);
     }
-    return String(rows.filter((r) => r.status === 'PAID').length);
-  }, [stats, rows, projectFilter]);
+    return String(countBonusEntriesWithStatus(filtered, 'PAID'));
+  }, [canUseGlobalBonusStats, stats, filtered]);
+
+  const visibleEmployeeCount = useMemo(() => uniqueEmployeesFromRows(filtered).length, [filtered]);
 
   if (loading) {
     return (
@@ -186,7 +198,15 @@ export function BonusBoardPageContent() {
         <div>
           <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {rows.length} bonuses &middot; {uniqueEmployees.length} employees
+            {filtered.length === rows.length ? (
+              <>
+                {rows.length} bonuses &middot; {visibleEmployeeCount} employees
+              </>
+            ) : (
+              <>
+                {filtered.length} visible of {rows.length} &middot; {visibleEmployeeCount} employees
+              </>
+            )}
             {projectFilter !== 'ALL' ? (
               <span className="text-foreground"> &middot; project scope (server filter)</span>
             ) : null}
@@ -211,7 +231,7 @@ export function BonusBoardPageContent() {
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <SummaryCard label="Total Bonuses" value={String(rows.length)} icon={Hash} />
+        <SummaryCard label="Total Bonuses" value={String(filtered.length)} icon={Hash} />
         <SummaryCard label="Total Amount" value={totalAmountDisplay} icon={TrendingUp} accent />
         <SummaryCard label="Paid" value={paidCountDisplay} icon={CheckCircle2} />
       </div>

@@ -12,7 +12,7 @@ import {
   BONUS_BOARD_TYPE_CONFIG,
 } from '@/features/finance/constants/bonus-board';
 import { formatAmount } from '@/features/finance/constants/finance';
-import type { BonusEntryListRow, BonusType } from '@/lib/api/bonus';
+import type { BonusEntryListRow, BonusStatus, BonusType } from '@/lib/api/bonus';
 
 export function employeeDisplayName(employee: BonusEntryListRow['employee']): string {
   return `${employee.firstName} ${employee.lastName}`.trim();
@@ -21,6 +21,25 @@ export function employeeDisplayName(employee: BonusEntryListRow['employee']): st
 export function parseBonusAmount(amount: string): number {
   const n = Number.parseFloat(amount);
   return Number.isFinite(n) ? n : 0;
+}
+
+export function sumBonusEntryAmounts(rows: ReadonlyArray<BonusEntryListRow>): number {
+  let total = 0;
+  for (const r of rows) {
+    total += parseBonusAmount(r.amount);
+  }
+  return total;
+}
+
+export function countBonusEntriesWithStatus(
+  rows: ReadonlyArray<BonusEntryListRow>,
+  status: BonusStatus,
+): number {
+  let n = 0;
+  for (const r of rows) {
+    if (r.status === status) n += 1;
+  }
+  return n;
 }
 
 export function projectLabel(project: BonusEntryListRow['project']): string | null {
