@@ -17,6 +17,7 @@ import {
 } from './messenger-channel-type.util';
 import { orderedParticipantIds } from './messenger-participants.util';
 import { MessengerGateway } from './messenger.gateway';
+import { getChannelLastOwnReadReceipt } from './messenger-channel-read-receipt.ops';
 import { loadMessengerDmConversations } from './messenger-dm-conversations.query';
 import {
   mapPrismaChannelMessageToDto,
@@ -30,6 +31,7 @@ import {
 } from './messenger-read-state.ops';
 import type {
   MessengerChannelDto,
+  MessengerChannelPagedMessagesDto,
   MessengerDmConversationDto,
   MessengerDmPagedMessagesDto,
   MessengerMessageDto,
@@ -37,6 +39,7 @@ import type {
 
 export type {
   MessengerChannelDto,
+  MessengerChannelPagedMessagesDto,
   MessengerDmConversationDto,
   MessengerDmPagedMessagesDto,
   MessengerMessageDto,
@@ -111,22 +114,29 @@ export class MessengerService {
     };
   }
 
-  async getMessages(channelId: string, pagination: PaginationParams = {}) {
+  async getMessages(
+    channelId: string,
+    viewerId: string,
+    pagination: PaginationParams = {},
+  ): Promise<MessengerChannelPagedMessagesDto> {
     const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
+    const emptyMeta = {
+      total: 0,
+      page: DEFAULT_PAGE,
+      pageSize: DEFAULT_PAGE_SIZE,
+      totalPages: 1,
+    };
     if (!channel) {
       return {
         items: [] as MessengerMessageDto[],
-        meta: {
-          total: 0,
-          page: DEFAULT_PAGE,
-          pageSize: DEFAULT_PAGE_SIZE,
-          totalPages: 1,
-        },
+        meta: emptyMeta,
+        lastOwnMessageId: null,
+        lastOwnMessageSeenByOthers: false,
       };
     }
     const { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE } = pagination;
     const skip = (page - 1) * pageSize;
-    const [total, rows] = await Promise.all([
+    const [total, rows, receipt] = await Promise.all([
       this.prisma.messengerChannelMessage.count({ where: { channelId } }),
       this.prisma.messengerChannelMessage.findMany({
         where: { channelId },
@@ -134,6 +144,7 @@ export class MessengerService {
         skip,
         take: pageSize,
       }),
+      getChannelLastOwnReadReceipt(this.prisma, channelId, viewerId),
     ]);
     return {
       items: rows.map((m) => mapPrismaChannelMessageToDto(m)),
@@ -143,6 +154,8 @@ export class MessengerService {
         pageSize,
         totalPages: Math.ceil(total / pageSize) || 1,
       },
+      lastOwnMessageId: receipt.lastOwnMessageId,
+      lastOwnMessageSeenByOthers: receipt.lastOwnMessageSeenByOthers,
     };
   }
 
@@ -277,8 +290,13 @@ export class MessengerService {
     if (!channel) {
       throw new NotFoundException('Channel not found');
     }
-    await markChannelReadForEmployee(this.prisma, channelId, employeeId);
+    const lastReadAt = await markChannelReadForEmployee(this.prisma, channelId, employeeId);
     this.messengerGateway.emitReadListsUpdated(employeeId);
+    this.messengerGateway.emitChannelPeerRead(channelId, {
+      channelId,
+      readerId: employeeId,
+      lastReadAt: lastReadAt.toISOString(),
+    });
   }
 
   async markDirectConversationRead(actorId: string, recipientId: string): Promise<void> {

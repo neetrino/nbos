@@ -4,7 +4,30 @@ import type { MessengerChannelRow } from '@/lib/api/messenger';
 import { formatMessengerTime, messengerDateLabel } from './messenger-format';
 import type { MessengerViewMessage } from './messenger-message-mapper';
 import { MESSENGER_DM_READ_RECEIPT_LABEL } from './messenger-dm-read-receipt.util';
+import { MESSENGER_CHANNEL_RECEIPT_OFFVIEW_HINT } from './messenger-channel-receipt-banner.constants';
 import type { MessengerActiveView } from './messenger-active-view';
+
+function readReceiptLabelForMessage(
+  active: MessengerActiveView,
+  msg: MessengerViewMessage,
+  dmReadReceiptMessageId: string | null | undefined,
+  channelReadReceipt: { seen: boolean; anchorId: string | null } | null | undefined,
+): string | null {
+  if (active.type === 'dm') {
+    if (dmReadReceiptMessageId != null && dmReadReceiptMessageId === msg.id) {
+      return MESSENGER_DM_READ_RECEIPT_LABEL;
+    }
+    return null;
+  }
+  if (
+    active.type === 'channel' &&
+    channelReadReceipt?.seen &&
+    channelReadReceipt.anchorId === msg.id
+  ) {
+    return MESSENGER_DM_READ_RECEIPT_LABEL;
+  }
+  return null;
+}
 
 function Avatar({ initials }: { initials: string }) {
   return (
@@ -69,6 +92,7 @@ export function MessengerThread({
   remoteTypingHint,
   onComposerTypingIntent,
   dmReadReceiptMessageId,
+  channelReadReceipt,
 }: {
   active: MessengerActiveView;
   /** Undefined if the channel id is missing from the current list (stale selection). */
@@ -86,6 +110,8 @@ export function MessengerThread({
   onComposerTypingIntent?: () => void;
   /** When `active.type === 'dm'`, message id under which to show the read receipt. */
   dmReadReceiptMessageId?: string | null;
+  /** When `active.type === 'channel'`, server-derived receipt for the viewer’s last own message. */
+  channelReadReceipt?: { seen: boolean; anchorId: string | null } | null;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -110,6 +136,13 @@ export function MessengerThread({
         ? `Message ${channelRow.name.startsWith('#') ? channelRow.name : `#${channelRow.name}`}`
         : 'Message this channel'
       : `Message ${dmTitle}`;
+
+  const showChannelReceiptOffviewBanner =
+    active.type === 'channel' &&
+    channelReadReceipt?.seen === true &&
+    channelReadReceipt.anchorId != null &&
+    messages.length > 0 &&
+    !messages.some((m) => m.id === channelReadReceipt.anchorId);
 
   return (
     <div className="flex flex-1 flex-col bg-white">
@@ -159,13 +192,12 @@ export function MessengerThread({
                 <MessageBubble
                   key={msg.id}
                   message={msg}
-                  readReceiptLabel={
-                    active.type === 'dm' &&
-                    dmReadReceiptMessageId != null &&
-                    dmReadReceiptMessageId === msg.id
-                      ? MESSENGER_DM_READ_RECEIPT_LABEL
-                      : null
-                  }
+                  readReceiptLabel={readReceiptLabelForMessage(
+                    active,
+                    msg,
+                    dmReadReceiptMessageId,
+                    channelReadReceipt ?? null,
+                  )}
                 />
               ))}
             </div>
@@ -175,6 +207,9 @@ export function MessengerThread({
       </div>
 
       <div className="border-t border-black/[0.06] px-5 py-3">
+        {showChannelReceiptOffviewBanner ? (
+          <p className="mb-2 text-xs text-black/45">{MESSENGER_CHANNEL_RECEIPT_OFFVIEW_HINT}</p>
+        ) : null}
         {remoteTypingHint ? (
           <p className="mb-2 text-xs text-black/45 italic">{remoteTypingHint}</p>
         ) : null}

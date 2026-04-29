@@ -24,10 +24,12 @@ import {
   MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_READ_UPDATED_SCOPE,
+  MESSENGER_WS_SERVER_CHANNEL_PEER_READ,
   MESSENGER_WS_SERVER_DM_PEER_READ,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
+  type MessengerWsChannelPeerReadPayload,
   type MessengerWsDmPeerReadPayload,
   messengerSocketChannelRoom,
   messengerSocketUserRoom,
@@ -174,6 +176,13 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     this.server
       .to(messengerSocketUserRoom(peerEmployeeId))
       .emit(MESSENGER_WS_SERVER_DM_PEER_READ, payload);
+  }
+
+  emitChannelPeerRead(channelId: string, payload: MessengerWsChannelPeerReadPayload): void {
+    if (!this.server) return;
+    this.server
+      .to(messengerSocketChannelRoom(channelId))
+      .emit(MESSENGER_WS_SERVER_CHANNEL_PEER_READ, payload);
   }
 
   private async authenticateAndJoinUserRoom(client: Socket): Promise<void> {

@@ -33,7 +33,7 @@ export async function markChannelReadForEmployee(
   prisma: PrismaClient,
   channelId: string,
   employeeId: string,
-): Promise<void> {
+): Promise<Date> {
   const latest = await prisma.messengerChannelMessage.findFirst({
     where: { channelId },
     orderBy: { createdAt: 'desc' },
@@ -45,6 +45,7 @@ export async function markChannelReadForEmployee(
     create: { channelId, employeeId, lastReadAt },
     update: { lastReadAt },
   });
+  return lastReadAt;
 }
 
 export async function markDmThreadReadForEmployee(

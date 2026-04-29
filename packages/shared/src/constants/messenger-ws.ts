@@ -57,6 +57,15 @@ export interface MessengerWsDmPeerReadPayload {
   lastReadAt: string;
 }
 
+/** Server → client: someone marked this channel read (refresh receipt hints). */
+export const MESSENGER_WS_SERVER_CHANNEL_PEER_READ = 'messenger.channel.peer_read';
+
+export interface MessengerWsChannelPeerReadPayload {
+  channelId: string;
+  readerId: string;
+  lastReadAt: string;
+}
+
 export function messengerSocketUserRoom(employeeId: string): string {
   return `messenger:user:${employeeId}`;
 }

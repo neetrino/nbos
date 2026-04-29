@@ -48,15 +48,18 @@ export class MessengerController {
 
   @Get('channels/:id/messages')
   @RequirePermission('MESSENGER', 'VIEW')
-  @ApiOperation({ summary: 'Get messages in a channel' })
+  @ApiOperation({
+    summary: 'Get messages in a channel (includes last-own read receipt hints for the viewer)',
+  })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   getMessages(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
   ) {
-    return this.messengerService.getMessages(id, {
+    return this.messengerService.getMessages(id, user.id, {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
     });

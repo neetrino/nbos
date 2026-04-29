@@ -39,3 +39,10 @@ export interface MessengerDmPagedMessagesDto {
   meta: MessengerListMetaDto;
   peerLastReadAt: Date | null;
 }
+
+export interface MessengerChannelPagedMessagesDto {
+  items: MessengerMessageDto[];
+  meta: MessengerListMetaDto;
+  lastOwnMessageId: string | null;
+  lastOwnMessageSeenByOthers: boolean;
+}

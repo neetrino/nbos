@@ -9,6 +9,7 @@ import {
   MESSENGER_WS_CLIENT_TYPING_CHANNEL,
   MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
+  MESSENGER_WS_SERVER_CHANNEL_PEER_READ,
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_READ_UPDATED_SCOPE,
   MESSENGER_WS_SERVER_DM_MESSAGE,
@@ -17,6 +18,7 @@ import {
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
+  type MessengerWsChannelPeerReadPayload,
   type MessengerWsDmPeerReadPayload,
 } from '@nbos/shared';
 import type { MessengerMessageRow } from '@/lib/api/messenger';
@@ -64,6 +66,19 @@ function parseMessengerDmPeerReadPayload(payload: unknown): MessengerWsDmPeerRea
   return { counterpartId, threadId, lastReadAt };
 }
 
+function parseMessengerChannelPeerReadPayload(
+  payload: unknown,
+): MessengerWsChannelPeerReadPayload | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const channelId = (payload as { channelId?: unknown }).channelId;
+  const readerId = (payload as { readerId?: unknown }).readerId;
+  const lastReadAt = (payload as { lastReadAt?: unknown }).lastReadAt;
+  if (typeof channelId !== 'string' || channelId.trim().length === 0) return null;
+  if (typeof readerId !== 'string' || readerId.trim().length === 0) return null;
+  if (typeof lastReadAt !== 'string' || lastReadAt.trim().length === 0) return null;
+  return { channelId, readerId, lastReadAt };
+}
+
 export interface MessengerRealtimeControls {
   emitChannelTyping: (channelId: string) => void;
   emitDmTyping: (recipientId: string) => void;
@@ -82,6 +97,8 @@ export function useMessengerRealtime(options: {
   onReadListsInvalidate?: () => void;
   /** DM peer advanced their read cursor (receipts on your own messages). */
   onDmPeerRead?: (payload: MessengerWsDmPeerReadPayload) => void;
+  /** Channel member advanced read cursor (receipt hints for senders in that channel). */
+  onChannelPeerRead?: (payload: MessengerWsChannelPeerReadPayload) => void;
 }): MessengerRealtimeControls {
   const { data: session } = useSession();
   const accessToken = session?.accessToken ?? null;
@@ -95,6 +112,7 @@ export function useMessengerRealtime(options: {
   const onPresenceDeltaRef = useRef(options.onPresenceDelta);
   const onReadListsInvalidateRef = useRef(options.onReadListsInvalidate);
   const onDmPeerReadRef = useRef(options.onDmPeerRead);
+  const onChannelPeerReadRef = useRef(options.onChannelPeerRead);
 
   useLayoutEffect(() => {
     activeRef.current = options.active;
@@ -106,6 +124,7 @@ export function useMessengerRealtime(options: {
     onPresenceDeltaRef.current = options.onPresenceDelta;
     onReadListsInvalidateRef.current = options.onReadListsInvalidate;
     onDmPeerReadRef.current = options.onDmPeerRead;
+    onChannelPeerReadRef.current = options.onChannelPeerRead;
   });
 
   const emitChannelTyping = useCallback((channelId: string) => {
@@ -195,6 +214,11 @@ export function useMessengerRealtime(options: {
     socket.on(MESSENGER_WS_SERVER_DM_PEER_READ, (payload: unknown) => {
       const p = parseMessengerDmPeerReadPayload(payload);
       if (p) onDmPeerReadRef.current?.(p);
+    });
+
+    socket.on(MESSENGER_WS_SERVER_CHANNEL_PEER_READ, (payload: unknown) => {
+      const p = parseMessengerChannelPeerReadPayload(payload);
+      if (p) onChannelPeerReadRef.current?.(p);
     });
 
     return () => {

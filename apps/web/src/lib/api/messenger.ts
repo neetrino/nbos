@@ -36,6 +36,11 @@ export interface MessengerDmPagedMessages extends MessengerPagedMessages {
   peerLastReadAt: string | null;
 }
 
+export interface MessengerChannelPagedMessages extends MessengerPagedMessages {
+  lastOwnMessageId: string | null;
+  lastOwnMessageSeenByOthers: boolean;
+}
+
 export interface MessengerDmConversationRow {
   recipientId: string;
   lastMessage: MessengerMessageRow;
@@ -53,8 +58,8 @@ export const messengerApi = {
   async listChannelMessages(
     channelId: string,
     params?: { page?: number; pageSize?: number },
-  ): Promise<MessengerPagedMessages> {
-    const resp = await api.get<MessengerPagedMessages>(
+  ): Promise<MessengerChannelPagedMessages> {
+    const resp = await api.get<MessengerChannelPagedMessages>(
       `/api/messenger/channels/${channelId}/messages`,
       {
         params: {
