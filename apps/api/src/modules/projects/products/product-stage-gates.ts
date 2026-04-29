@@ -59,6 +59,10 @@ export function validateProductStageGate(product: ProductForStageGate, target: P
     validateProductQaGate(product);
   }
 
+  if (product.status === 'QA' && target === 'TRANSFER') {
+    validateProductTransferGate(product);
+  }
+
   if (target === 'DONE') {
     validateProductDoneGate(product);
   }
@@ -78,11 +82,12 @@ function validateProductCreatingGate(product: ProductForStageGate) {
 }
 
 function validateProductQaGate(product: ProductForStageGate) {
-  const errors = buildOpenItemError('tasks', product.tasks ?? [], [
-    'DONE',
-    'DEFERRED',
-    'CANCELLED',
-  ]);
+  const errors = buildOpenItemError(
+    'tasks',
+    product.tasks ?? [],
+    ['DONE', 'DEFERRED', 'CANCELLED'],
+    'Product QA',
+  );
 
   if (errors.length === 0) return;
 
@@ -94,11 +99,34 @@ function validateProductQaGate(product: ProductForStageGate) {
   });
 }
 
+function validateProductTransferGate(product: ProductForStageGate) {
+  const errors = buildOpenItemError(
+    'tasks',
+    product.tasks ?? [],
+    ['DONE', 'DEFERRED', 'CANCELLED'],
+    'Product Transfer',
+  );
+
+  if (errors.length === 0) return;
+
+  throw new BadRequestException({
+    statusCode: 400,
+    code: 'STAGE_GATE_VALIDATION',
+    message: 'Cannot move product to Transfer while QA tasks are still open.',
+    errors,
+  });
+}
+
 function validateProductDoneGate(product: ProductForStageGate) {
   const errors = [
-    ...buildOpenItemError('extensions', product.extensions ?? [], ['DONE', 'LOST']),
-    ...buildOpenItemError('tasks', product.tasks ?? [], ['DONE', 'DEFERRED', 'CANCELLED']),
-    ...buildOpenItemError('tickets', product.tickets ?? [], ['RESOLVED', 'CLOSED']),
+    ...buildOpenItemError('extensions', product.extensions ?? [], ['DONE', 'LOST'], 'Product Done'),
+    ...buildOpenItemError(
+      'tasks',
+      product.tasks ?? [],
+      ['DONE', 'DEFERRED', 'CANCELLED'],
+      'Product Done',
+    ),
+    ...buildOpenItemError('tickets', product.tickets ?? [], ['RESOLVED', 'CLOSED'], 'Product Done'),
   ];
 
   if (errors.length === 0) return;
@@ -115,6 +143,7 @@ function buildOpenItemError(
   field: string,
   items: Array<{ status: string }>,
   closedStatuses: string[],
+  targetLabel: string,
 ) {
   const openCount = items.filter((item) => !closedStatuses.includes(item.status)).length;
   if (openCount === 0) return [];
@@ -122,7 +151,7 @@ function buildOpenItemError(
   return [
     {
       field,
-      message: `${openCount} ${field} still require completion before Product Done.`,
+      message: `${openCount} ${field} still require completion before ${targetLabel}.`,
     },
   ];
 }
