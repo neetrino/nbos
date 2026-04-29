@@ -36,29 +36,13 @@ import {
   getTicketPriority,
   getTicketStatus,
 } from '@/features/support/constants/support';
-import { api } from '@/lib/api';
-import { supportApi, type SupportStats } from '@/lib/api/support';
+import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
 import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-scope-stats-csv-export';
-
-interface Ticket {
-  id: string;
-  code: string;
-  title: string;
-  description: string | null;
-  category: string;
-  priority: string;
-  status: string;
-  billable: boolean;
-  createdAt: string;
-  assignee: { id: string; firstName: string; lastName: string } | null;
-  project: { id: string; name: string } | null;
-  contact: { id: string; firstName: string; lastName: string } | null;
-}
 
 type ViewMode = 'kanban' | 'list';
 
 export default function SupportPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [stats, setStats] = useState<SupportStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,15 +55,14 @@ export default function SupportPage() {
   const fetchTickets = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/support', {
-        params: {
-          pageSize: 100,
-          search: search || undefined,
-          category: filters.category && filters.category !== 'all' ? filters.category : undefined,
-          priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
-        },
+      const { items } = await supportApi.getAll({
+        pageSize: 100,
+        search: search || undefined,
+        category: filters.category && filters.category !== 'all' ? filters.category : undefined,
+        priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
+        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
       });
-      setTickets(resp.data.items ?? resp.data ?? []);
+      setTickets(items);
       setError(null);
       try {
         setStats(await supportApi.getStats());
@@ -220,8 +203,8 @@ export default function SupportPage() {
       ) : view === 'kanban' ? (
         <KanbanBoard
           columns={kanbanColumns}
-          getItemId={(t: Ticket) => t.id}
-          renderCard={(ticket: Ticket) => {
+          getItemId={(t: SupportTicket) => t.id}
+          renderCard={(ticket: SupportTicket) => {
             const cat = getTicketCategory(ticket.category);
             const pri = getTicketPriority(ticket.priority);
             return (
