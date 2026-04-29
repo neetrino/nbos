@@ -96,11 +96,9 @@ New docs replace this with:
 
 ## E. Cross-document cleanup still needed
 
-After this pass, review and align:
+**Done (2026-04-30):** выровнены `06-Integrations/05-Automation-Scenarios.md` (INV-04 заголовок и сводка; NOT-01 — WhatsApp group + Notification Engine vs Meta Cloud «templates»; явная граница Email канала vs модуль Mail) и `06-Integrations/04-External-Services.md` (секция **Notifications, Mail и внешний WhatsApp**; приоритет MVP для WhatsApp).
 
-- `06-Integrations/05-Automation-Scenarios.md`;
-- `06-Integrations/04-External-Services.md`;
-- old business logic pages that still say "WhatsApp client template" instead of WhatsApp group message through Notification Engine.
+Точечный обзор остальных business-logic страниц вне `06-Integrations` — по мере нахождения устаревших формулировок (WhatsApp Business API как основной путь, смешение с Mail inbox).
 
 ## F. Mail vs Notifications (documented)
 

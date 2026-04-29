@@ -6,6 +6,14 @@
 
 ---
 
+## Notifications, Mail и внешний WhatsApp
+
+Исходящие автоматические сообщения во внешние каналы по правилам платформы (в т.ч. **Project WhatsApp Group**) инициирует **Notification Engine** и доставляет через адаптеры; канон WhatsApp: `WhatsAppWebAdapter` → WAHA, основной сценарий — **группы**, а не массовая 1:1 рассылка и не Meta Cloud API как MVP — см. `01-WhatsApp-Integration.md` и `../02-Modules/13-Notifications/01-Notifications-System.md`.
+
+**NBOS Mail** (подключённые ящики, inbox, переписка и ответы из Mail UI) — отдельный модуль: `../02-Modules/17-Mail/00-Mail-Overview.md` (не путать с transactional Email канала Notifications).
+
+---
+
 ## Google Drive
 
 ### Назначение
@@ -273,7 +281,7 @@ Instagram / Facebook Messenger
 
 ```
 Приоритет 1 (MVP):
-  → WhatsApp (клиентские уведомления)
+  → WhatsApp (группы + Notification Engine → WhatsAppWebAdapter → WAHA)
   → Telegram (командные уведомления)
 
 Приоритет 2 (Фаза 2):

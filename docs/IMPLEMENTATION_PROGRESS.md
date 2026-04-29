@@ -72,6 +72,7 @@ Roll-up only. Per-feature detail: **`docs/NBOS/02-Modules/*`**, tests, and **git
 | 2026-04-29–30 | Messenger            | Prisma + Socket.IO; typing, presence, read/unread + list sync; DM and channel read receipts; audits.                                                                                                                                                                                                    |
 | 2026-04-29    | Mail & Notifications | Mail MVP + **`q`**; **`GET …/threads`** `{ items, meta }` paging; **`GET …/accounts/health-summary`**; **`MailDeliveryLog`** + delivery-log UI; **`MailOutboundSendMutationService`**; in-app: stub sync, outbound, **needs-link patch**; **`in_app_notifications`** + Topbar API.                      |
 | 2026-04-30    | Docs                 | Mail boundaries in canon: Notifications (**Email** vs inbox); **Credentials** (mailbox secrets); **Drive** (`FileAsset` / attachments); **Messenger** (vs inbox); **Calendar** (time surface vs inbox); **Technical Infrastructure** (product ops vs mailbox health) — cross-links + cleanup registers. |
+| 2026-04-30    | Docs                 | `06-Integrations` (`05-Automation-Scenarios`, `04-External-Services`) aligned with Notification Engine + WhatsApp WAHA groups + Mail vs transactional Email; Notifications cleanup register §E.                                                                                                         |
 
 ## Next Action
 
