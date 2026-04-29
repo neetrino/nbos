@@ -148,6 +148,10 @@ Transactional **Email** канала Notification Engine (invites, отчёты,
 - **Credentials** — OAuth/IMAP/SMTP секреты для подключённых ящиков: `../12-Credentials/05-Credentials-Integrations.md` (секция **Mail**).
 - **Drive** — бинарные вложения писем как `FileAsset` и связь с тредом: `../11-Drive/05-Drive-Module-Integrations.md` (секция **13. Mail**).
 
+## Связь с Messenger
+
+Чаты (**Messenger**) и почтовый inbox (**Mail**) — разные модули и модели данных. См. `../09-Messenger/00-Messenger-Overview.md` и `../09-Messenger/04-Messenger-Integrations.md` (секция **Mail**); обратно — `04-Mail-Integrations.md` (**Messenger**).
+
 ## Связанные документы
 
 - `01-Mail-Accounts-and-Sync.md`

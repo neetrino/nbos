@@ -13,13 +13,32 @@
 
 ## Что Messenger не заменяет
 
-| Не заменяет     | Почему                                                                              |
-| --------------- | ----------------------------------------------------------------------------------- |
-| `Tasks`         | Сообщение может создать Task, но не является задачей                                |
-| `Notifications` | Messenger хранит диалог, Notifications доставляет системные напоминания             |
-| `Drive`         | Файлы в чате хранятся как `File Asset`, Messenger только показывает их в контексте  |
-| `CRM`           | CRM управляет Lead/Deal, Messenger показывает коммуникацию                          |
-| `Support`       | Support Ticket остаётся рабочей сущностью обращения, Messenger только канал общения |
+| Не заменяет     | Почему                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| `Tasks`         | Сообщение может создать Task, но не является задачей                                                    |
+| `Notifications` | Messenger хранит диалог, Notifications доставляет системные напоминания                                 |
+| `Drive`         | Файлы в чате хранятся как `File Asset`, Messenger только показывает их в контексте                      |
+| `CRM`           | CRM управляет Lead/Deal, Messenger показывает коммуникацию                                              |
+| `Support`       | Support Ticket остаётся рабочей сущностью обращения, Messenger только канал общения                     |
+| `Mail`          | Подключённые ящики, `EmailThread` / `EmailMessage`, IMAP/SMTP sync — модуль **`17-Mail`**, не Messenger |
+
+## Граница с Mail (NBOS Mail)
+
+**NBOS Mail** (`docs/NBOS/02-Modules/17-Mail/*`) — это **email**: threads по `Message-ID`/subject, inbox UI `/mail`, вложения через Drive, секреты через Credentials.
+
+**Messenger** — чаты (internal/external), WhatsApp groups, CRM Inbox как **чат**, а не почтовый протокол.
+
+Нельзя:
+
+- показывать `EmailThread` в общем списке Messenger как «ещё один чат» без явного UX-разделения;
+- смешивать модели `Conversation`/`Message` (Messenger) с `EmailThread`/`EmailMessage` (Mail) в одной таблице.
+
+Можно:
+
+- ссылаться из Deal/Project на **и** связанный Mail thread, **и** связанные Messenger conversations как разные entry points;
+- дублировать краткий контекст (например «есть непрочитанное письмо») в карточке сущности, если продуктово нужно — через ссылки, не через общий message store.
+
+Подробнее: `../17-Mail/04-Mail-Integrations.md` (секция **Messenger**), обзор Mail — `../17-Mail/00-Mail-Overview.md`.
 
 ## Каноническая структура
 

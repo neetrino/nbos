@@ -16,14 +16,14 @@ Mail module является новым каноном. На момент соз
 
 ## Documentation cleanup
 
-| Area                           | Status    | Action                                                                                                                                 |
-| ------------------------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Mail module docs               | `OK`      | Новый канон создан в `17-Mail`                                                                                                         |
-| Documentation hub link         | `OK`      | Mail добавлен в центральный указатель документации                                                                                     |
-| Cross-links from Messenger     | `MISSING` | При следующем проходе Messenger добавить явное разделение Mail vs Messenger                                                            |
-| Cross-links from Notifications | `OK`      | **2026-04-30:** `13-Notifications/01-Notifications-System.md` + `04-Notification-Integrations.md` — Mail inbox vs Email канал / in-app |
-| Cross-links from Credentials   | `OK`      | **2026-04-30:** `12-Credentials/05-Credentials-Integrations.md` (**Mail**) + `17-Mail/01` + `00` overview                              |
-| Cross-links from Drive         | `OK`      | **2026-04-30:** `11-Drive/05-Drive-Module-Integrations.md` (**§13 Mail**) + `17-Mail/04`                                               |
+| Area                           | Status | Action                                                                                                                                    |
+| ------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Mail module docs               | `OK`   | Новый канон создан в `17-Mail`                                                                                                            |
+| Documentation hub link         | `OK`   | Mail добавлен в центральный указатель документации                                                                                        |
+| Cross-links from Messenger     | `OK`   | **2026-04-30:** `09-Messenger/00-Messenger-Overview.md` + `04-Messenger-Integrations.md` (**Mail**); обратные ссылки в `17-Mail/00`, `04` |
+| Cross-links from Notifications | `OK`   | **2026-04-30:** `13-Notifications/01-Notifications-System.md` + `04-Notification-Integrations.md` — Mail inbox vs Email канал / in-app    |
+| Cross-links from Credentials   | `OK`   | **2026-04-30:** `12-Credentials/05-Credentials-Integrations.md` (**Mail**) + `17-Mail/01` + `00` overview                                 |
+| Cross-links from Drive         | `OK`   | **2026-04-30:** `11-Drive/05-Drive-Module-Integrations.md` (**§13 Mail**) + `17-Mail/04`                                                  |
 
 ## Runtime cleanup
 

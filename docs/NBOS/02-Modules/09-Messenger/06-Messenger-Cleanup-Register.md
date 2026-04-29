@@ -109,6 +109,12 @@
 - archive/lock/mute;
 - export and cleanup support.
 
+## E.1. Documentation: Mail module boundary
+
+| Область            | Статус | Примечание                                                                                                                  |
+| ------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------- |
+| Cross-link to Mail | `OK`   | **2026-04-30:** `00-Messenger-Overview.md` (таблица + секция **Граница с Mail**), `04-Messenger-Integrations.md` — **Mail** |
+
 ## E. Migration note
 
 Так как текущий Messenger выглядит как MVP/mock и in-memory сервис, исторических production messages в этой реализации нет. Старые mock channels/messages можно удалить или заменить seed-данными нового канона.
