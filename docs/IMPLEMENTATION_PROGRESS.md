@@ -117,6 +117,7 @@ Future Finance depth:
 | 2026-04-29 | Mail thread needsBusinessLink PATCH   | `PATCH /api/mail/threads/:id` (`MAIL` EDIT); audit `mail.thread_needs_link_updated`; web **Clear needs link** / **Flag needs link**; `MailThreadCommandService` + `patchThreadNeedsBusinessLinkIfChanged`.                                                    |
 | 2026-04-29 | Mail FAILED outbound reset to DRAFT   | `POST …/messages/:messageId/reset-failed-to-draft`; FAILED→DRAFT; audit `mail.outbound_failed_reset_to_draft`; web **Reset to draft (retry)** after stub failure.                                                                                             |
 | 2026-04-29 | Mail account sync stub (timestamps)   | `POST /api/mail/accounts/:id/sync-stub` (`MAIL` EDIT); `lastSyncAt` + clear `lastErrorAt`; audit `mail.mail_account_sync_stub` (`NO_MAIL_PROVIDER_SYNC`); web per-mailbox **stub sync** icon; `MailAccountCommandService`.                                    |
+| 2026-04-29 | Mail stub sync → in-app notification  | После успешного `sync-stub`: `NotificationService` (in-memory MVP) — получатель актор и (если отличается) владелец ящика; тип `mail.account_sync_stub`, ссылка `/mail`; `publishMailAccountSyncStubNotifications` + тесты.                                    |
 
 ## Next Action
 

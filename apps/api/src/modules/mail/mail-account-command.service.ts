@@ -2,10 +2,12 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { NotificationService } from '../notifications/notification.service';
 import {
   MAIL_AUDIT_ACTION_MAIL_ACCOUNT_SYNC_STUB,
   MAIL_AUDIT_ENTITY_MAIL_ACCOUNT,
 } from './mail-audit.constants';
+import { publishMailAccountSyncStubNotifications } from './mail-account-sync-stub-notify.ops';
 import { recordMailAccountSyncStubOp } from './mail-account-sync-stub.ops';
 import { toAccountRow } from './mail-dto-map';
 import { MAIL_SYNC_STUB_REASON_NO_PROVIDER } from './mail-sync-stub.constants';
@@ -16,6 +18,7 @@ export class MailAccountCommandService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -44,6 +47,12 @@ export class MailAccountCommandService {
       action: MAIL_AUDIT_ACTION_MAIL_ACCOUNT_SYNC_STUB,
       userId: employeeId,
       changes: auditChanges,
+    });
+    publishMailAccountSyncStubNotifications(this.notificationService, {
+      actorEmployeeId: employeeId,
+      accountId,
+      emailAddress: outcome.account.emailAddress,
+      ownerEmployeeId: outcome.account.ownerEmployeeId,
     });
     return toAccountRow(outcome.account);
   }
