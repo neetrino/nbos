@@ -60,15 +60,15 @@
 
 Отметьте **In scope for v1** / **Out of scope** / **Later**.
 
-| #   | Вопрос                                                                                                  | Решение команды |
-| --- | ------------------------------------------------------------------------------------------------------- | --------------- |
-| A   | Client Services: входит в v1 полноценный `Client Service Record` + UI?                                  |                 |
-| B   | Если да — какие 1–3 пользовательских сценария обязаны работать end-to-end?                              |                 |
-| C   | Report definitions: фиксированный список отчётов v1 (перечислить)?                                      |                 |
-| D   | Отчёты v1: только read-only из существующих API или нужны новые агрегирующие endpoint’ы?                |                 |
-| E   | NBOS pool: это **отдельная** сущность от Project Bonus Pool? (да/нет)                                   |                 |
-| F   | Если да на E — одна строка назначения сущности + обязательные поля (или ссылка на приложение со схемой) |                 |
-| G   | Закрытие Phase 3 «full» допускает оставить часть строк C–D на Phase 6? (да/нет)                         |                 |
+| #   | Вопрос                                                                                                  | Решение команды                                                                                                                                                                                                                                                                                                                                             |
+| --- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A   | Client Services: входит в v1 полноценный `Client Service Record` + UI?                                  | **In scope for v1.** Нужен полноценный runtime-модуль `Client Service Record` с UI, API и связями с Finance / Projects.                                                                                                                                                                                                                                     |
+| B   | Если да — какие 1–3 пользовательских сценария обязаны работать end-to-end?                              | 1. Создание и управление сервисом клиента: Domain / Hosting / Service / Account / License с проектом, продуктом, провайдером, billing model, суммами, renewal date и статусом. 2. Client-paid flow: service -> invoice card -> payment -> task -> expense. 3. Company-paid flow: service -> expense / expense plan -> renewal tracking and cost visibility. |
+| C   | Report definitions: фиксированный список отчётов v1 (перечислить)?                                      | **In scope for v1:** Finance-owned read-only definitions for Company P&L, Project P&L, Cash Flow, MRR / Subscription Revenue, Expense Plan vs Actual and Payroll Report.                                                                                                                                                                                    |
+| D   | Отчёты v1: только read-only из существующих API или нужны новые агрегирующие endpoint’ы?                | Отчёты v1 read-only и строятся только из реальных NBOS operational tables. Existing stats/list APIs may be reused where enough; new read-only aggregating endpoints are allowed where needed for trustworthy rows and drill-down links.                                                                                                                     |
+| E   | NBOS pool: это **отдельная** сущность от Project Bonus Pool? (да/нет)                                   | **No.** В Phase 3 v1 отдельная сущность `NBOS pool` не создаётся. Используется уже описанный в каноне `Project Bonus Pool`.                                                                                                                                                                                                                                 |
+| F   | Если да на E — одна строка назначения сущности + обязательные поля (или ссылка на приложение со схемой) | Not applicable (`E = No`). Если позже понадобится отдельный company-level pool, он требует нового product/schema gate.                                                                                                                                                                                                                                      |
+| G   | Закрытие Phase 3 «full» допускает оставить часть строк C–D на Phase 6? (да/нет)                         | Phase 3 full закрывает Finance-owned report definitions v1 и минимально нужные read-only endpoints. Phase 6 остаётся владельцем global Reports / Analytics catalog, scheduled reports, advanced dashboards, BI presentation, accrual depth and period close.                                                                                                |
 
 ---
 
@@ -84,12 +84,15 @@
 
 ## 6. Подтверждение (заполняет владелец продукта / команда)
 
-- **Дата:** ******\_\_\_******
+- **Дата:** 2026-04-29
 - **Мы подтверждаем in-scope для закрытия Phase 3 (full) в этом цикле:**
-  - [ ] Client Services (уточнить сценарии: ************\_************)
-  - [ ] Report definitions v1 (список: ************\_************)
-  - [ ] Отдельная сущность NBOS pool (приложение со схемой: да / нет / ссылка: ****\_\_****)
-- **Подпись / роль:** ******\_\_\_******
+  - Client Services: полноценный `Client Service Record` + UI. v1 scenarios:
+    1. create/manage client service records for Domain, Hosting, Service, Account and License;
+    2. client-paid service flow: service -> invoice card -> payment -> task -> expense;
+    3. company-paid service flow: service -> expense / expense plan -> renewal tracking and cost visibility.
+  - Report definitions v1: Finance-owned read-only definitions for Company P&L, Project P&L, Cash Flow, MRR / Subscription Revenue, Expense Plan vs Actual and Payroll Report. Existing APIs may be reused; new read-only aggregating endpoints are allowed where needed for trustworthy rows and drill-downs.
+  - Отдельная сущность NBOS pool: нет. Phase 3 v1 uses the canonical Project Bonus Pool only. Any separate company-level pool requires a future product/schema gate.
+- **Подпись / роль:** Product Owner
 
 До заполнения этого блока документ служит **справкой и чеклистом**; реализацию «закрыть Phase 3 полностью» без него не стоит трактовать как зафиксированный контракт объёма.
 

@@ -434,6 +434,43 @@ export const DomainStatusEnum = {
 
 export type DomainStatusEnum = (typeof DomainStatusEnum)[keyof typeof DomainStatusEnum];
 
+export const ClientServiceType = {
+  DOMAIN: 'DOMAIN',
+  HOSTING: 'HOSTING',
+  SERVICE: 'SERVICE',
+  ACCOUNT: 'ACCOUNT',
+  LICENSE: 'LICENSE',
+} as const;
+
+export type ClientServiceType = (typeof ClientServiceType)[keyof typeof ClientServiceType];
+
+export const ClientServiceStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  EXPIRING_SOON: 'EXPIRING_SOON',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type ClientServiceStatus = (typeof ClientServiceStatus)[keyof typeof ClientServiceStatus];
+
+export const ClientServiceBillingModel = {
+  CLIENT_PAID: 'CLIENT_PAID',
+  COMPANY_PAID: 'COMPANY_PAID',
+} as const;
+
+export type ClientServiceBillingModel =
+  (typeof ClientServiceBillingModel)[keyof typeof ClientServiceBillingModel];
+
+export const ClientServicePricingModel = {
+  FIXED: 'FIXED',
+  USAGE_BASED: 'USAGE_BASED',
+} as const;
+
+export type ClientServicePricingModel =
+  (typeof ClientServicePricingModel)[keyof typeof ClientServicePricingModel];
+
 export const EmployeeLevelEnum = {
   JUNIOR: 'JUNIOR',
   MIDDLE: 'MIDDLE',

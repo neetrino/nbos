@@ -36,6 +36,7 @@ export type * from './models/RecurringTaskTemplate';
 export type * from './models/SupportTicket';
 export type * from './models/Credential';
 export type * from './models/Domain';
+export type * from './models/ClientServiceRecord';
 export type * from './models/Department';
 export type * from './models/EmployeeDepartment';
 export type * from './models/Role';

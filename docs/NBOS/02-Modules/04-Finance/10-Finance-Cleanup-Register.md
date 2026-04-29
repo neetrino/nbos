@@ -249,9 +249,9 @@ Runtime currently still has only basic employee salary fields and bonus entries.
 - update salary UI from monthly table to `employees x months` matrix;
 - add payroll bonus release workspace.
 
-### C5. Client Service Record is not a runtime entity yet
+### C5. Client Service Record runtime foundation
 
-Статус: `MISSING CODE`
+Статус: `PARTIAL RUNTIME ALIGNMENT`
 
 New canon unifies:
 
@@ -261,15 +261,21 @@ New canon unifies:
 - Account;
 - License.
 
-Runtime currently has `Domain`, but not a general `Client Service Record`.
+Runtime now has first-class `ClientServiceRecord` foundation:
 
-Будущий refactor:
+- Prisma `client_service_records`;
+- optional links from `Invoice`, `ExpensePlan`, and `Expense`;
+- `GET/POST/PUT/DELETE /api/client-services` + stats;
+- Finance `/finance/client-services` list/create/edit/delete UI.
 
-- introduce `ClientServiceRecord`;
+`Domain` still exists as the older inventory entity and has not yet been migrated/wrapped into the general service model.
+
+Remaining runtime refactor:
+
 - migrate / wrap domain logic into the general service model;
-- support billing model: `Client-paid / Company-paid`;
-- support pricing model: `Fixed / Usage-based`;
-- connect to `Invoice Card`, `Expense Card`, `Task`, `Credential`, and Drive File Assets for receipts/proofs/provider documents.
+- implement client-paid flow: service -> Invoice Card -> Payment -> Task -> Expense;
+- implement company-paid flow: service -> Expense Plan / Expense Card -> renewal tracking;
+- connect to `Task`, `Credential`, and Drive File Assets for receipts/proofs/provider documents.
 
 Finance runtime also needs Drive alignment:
 

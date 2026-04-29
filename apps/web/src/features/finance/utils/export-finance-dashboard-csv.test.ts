@@ -39,6 +39,12 @@ function minimalDashboard(): FinanceDashboardData {
         daysLeft: 3,
       },
     ],
+    payrollRuns: {
+      runCount: 1,
+      totalPayable: 100,
+      totalPaid: 60,
+      totalRemaining: 40,
+    },
   };
 }
 

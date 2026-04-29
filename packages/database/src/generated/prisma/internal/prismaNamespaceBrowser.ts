@@ -77,6 +77,7 @@ export const ModelName = {
   SupportTicket: 'SupportTicket',
   Credential: 'Credential',
   Domain: 'Domain',
+  ClientServiceRecord: 'ClientServiceRecord',
   Department: 'Department',
   EmployeeDepartment: 'EmployeeDepartment',
   Role: 'Role',
@@ -341,6 +342,7 @@ export const InvoiceScalarFieldEnum = {
   subscriptionId: 'subscriptionId',
   projectId: 'projectId',
   companyId: 'companyId',
+  clientServiceRecordId: 'clientServiceRecordId',
   amount: 'amount',
   taxStatus: 'taxStatus',
   type: 'type',
@@ -399,6 +401,7 @@ export const ExpensePlanScalarFieldEnum = {
   nextDueDate: 'nextDueDate',
   provider: 'provider',
   projectId: 'projectId',
+  clientServiceRecordId: 'clientServiceRecordId',
   autoGenerate: 'autoGenerate',
   notes: 'notes',
   createdAt: 'createdAt',
@@ -419,6 +422,7 @@ export const ExpenseScalarFieldEnum = {
   status: 'status',
   projectId: 'projectId',
   expensePlanId: 'expensePlanId',
+  clientServiceRecordId: 'clientServiceRecordId',
   isPassThrough: 'isPassThrough',
   taxStatus: 'taxStatus',
   backlogReason: 'backlogReason',
@@ -668,6 +672,32 @@ export const DomainScalarFieldEnum = {
 
 export type DomainScalarFieldEnum =
   (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum];
+
+export const ClientServiceRecordScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  type: 'type',
+  name: 'name',
+  provider: 'provider',
+  providerAccountId: 'providerAccountId',
+  status: 'status',
+  billingModel: 'billingModel',
+  pricingModel: 'pricingModel',
+  frequency: 'frequency',
+  ourCost: 'ourCost',
+  clientCharge: 'clientCharge',
+  taxStatus: 'taxStatus',
+  notificationsEnabled: 'notificationsEnabled',
+  startDate: 'startDate',
+  renewalDate: 'renewalDate',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ClientServiceRecordScalarFieldEnum =
+  (typeof ClientServiceRecordScalarFieldEnum)[keyof typeof ClientServiceRecordScalarFieldEnum];
 
 export const DepartmentScalarFieldEnum = {
   id: 'id',

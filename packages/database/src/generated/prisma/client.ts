@@ -190,6 +190,11 @@ export type Credential = Prisma.CredentialModel;
  */
 export type Domain = Prisma.DomainModel;
 /**
+ * Model ClientServiceRecord
+ *
+ */
+export type ClientServiceRecord = Prisma.ClientServiceRecordModel;
+/**
  * Model Department
  *
  */

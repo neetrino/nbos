@@ -134,6 +134,11 @@ const NAV_ITEMS: NavItem[] = [
         permission: { module: 'FINANCE_SUBSCRIPTIONS', action: 'VIEW' },
       },
       {
+        label: 'Client services',
+        href: '/finance/client-services',
+        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
+      },
+      {
         label: 'Expenses',
         href: '/finance/expenses',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },

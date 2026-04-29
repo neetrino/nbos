@@ -404,6 +404,7 @@ export const ModelName = {
   SupportTicket: 'SupportTicket',
   Credential: 'Credential',
   Domain: 'Domain',
+  ClientServiceRecord: 'ClientServiceRecord',
   Department: 'Department',
   EmployeeDepartment: 'EmployeeDepartment',
   Role: 'Role',
@@ -463,6 +464,7 @@ export type TypeMap<
       | 'supportTicket'
       | 'credential'
       | 'domain'
+      | 'clientServiceRecord'
       | 'department'
       | 'employeeDepartment'
       | 'role'
@@ -2642,6 +2644,82 @@ export type TypeMap<
         };
       };
     };
+    ClientServiceRecord: {
+      payload: Prisma.$ClientServiceRecordPayload<ExtArgs>;
+      fields: Prisma.ClientServiceRecordFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ClientServiceRecordFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ClientServiceRecordFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>;
+        };
+        findFirst: {
+          args: Prisma.ClientServiceRecordFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ClientServiceRecordFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>;
+        };
+        findMany: {
+          args: Prisma.ClientServiceRecordFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>[];
+        };
+        create: {
+          args: Prisma.ClientServiceRecordCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>;
+        };
+        createMany: {
+          args: Prisma.ClientServiceRecordCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ClientServiceRecordCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>[];
+        };
+        delete: {
+          args: Prisma.ClientServiceRecordDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>;
+        };
+        update: {
+          args: Prisma.ClientServiceRecordUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ClientServiceRecordDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ClientServiceRecordUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ClientServiceRecordUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>[];
+        };
+        upsert: {
+          args: Prisma.ClientServiceRecordUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientServiceRecordPayload>;
+        };
+        aggregate: {
+          args: Prisma.ClientServiceRecordAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClientServiceRecord>;
+        };
+        groupBy: {
+          args: Prisma.ClientServiceRecordGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ClientServiceRecordGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ClientServiceRecordCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ClientServiceRecordCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     Department: {
       payload: Prisma.$DepartmentPayload<ExtArgs>;
       fields: Prisma.DepartmentFieldRefs;
@@ -3663,6 +3741,7 @@ export const InvoiceScalarFieldEnum = {
   subscriptionId: 'subscriptionId',
   projectId: 'projectId',
   companyId: 'companyId',
+  clientServiceRecordId: 'clientServiceRecordId',
   amount: 'amount',
   taxStatus: 'taxStatus',
   type: 'type',
@@ -3721,6 +3800,7 @@ export const ExpensePlanScalarFieldEnum = {
   nextDueDate: 'nextDueDate',
   provider: 'provider',
   projectId: 'projectId',
+  clientServiceRecordId: 'clientServiceRecordId',
   autoGenerate: 'autoGenerate',
   notes: 'notes',
   createdAt: 'createdAt',
@@ -3741,6 +3821,7 @@ export const ExpenseScalarFieldEnum = {
   status: 'status',
   projectId: 'projectId',
   expensePlanId: 'expensePlanId',
+  clientServiceRecordId: 'clientServiceRecordId',
   isPassThrough: 'isPassThrough',
   taxStatus: 'taxStatus',
   backlogReason: 'backlogReason',
@@ -3990,6 +4071,32 @@ export const DomainScalarFieldEnum = {
 
 export type DomainScalarFieldEnum =
   (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum];
+
+export const ClientServiceRecordScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  type: 'type',
+  name: 'name',
+  provider: 'provider',
+  providerAccountId: 'providerAccountId',
+  status: 'status',
+  billingModel: 'billingModel',
+  pricingModel: 'pricingModel',
+  frequency: 'frequency',
+  ourCost: 'ourCost',
+  clientCharge: 'clientCharge',
+  taxStatus: 'taxStatus',
+  notificationsEnabled: 'notificationsEnabled',
+  startDate: 'startDate',
+  renewalDate: 'renewalDate',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ClientServiceRecordScalarFieldEnum =
+  (typeof ClientServiceRecordScalarFieldEnum)[keyof typeof ClientServiceRecordScalarFieldEnum];
 
 export const DepartmentScalarFieldEnum = {
   id: 'id',
@@ -4870,6 +4977,70 @@ export type ListEnumDomainStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputT
 >;
 
 /**
+ * Reference to a field of type 'ClientServiceType'
+ */
+export type EnumClientServiceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ClientServiceType'
+>;
+
+/**
+ * Reference to a field of type 'ClientServiceType[]'
+ */
+export type ListEnumClientServiceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ClientServiceType[]'
+>;
+
+/**
+ * Reference to a field of type 'ClientServiceStatus'
+ */
+export type EnumClientServiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ClientServiceStatus'
+>;
+
+/**
+ * Reference to a field of type 'ClientServiceStatus[]'
+ */
+export type ListEnumClientServiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ClientServiceStatus[]'
+>;
+
+/**
+ * Reference to a field of type 'ClientServiceBillingModel'
+ */
+export type EnumClientServiceBillingModelFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ClientServiceBillingModel'
+>;
+
+/**
+ * Reference to a field of type 'ClientServiceBillingModel[]'
+ */
+export type ListEnumClientServiceBillingModelFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ClientServiceBillingModel[]'
+>;
+
+/**
+ * Reference to a field of type 'ClientServicePricingModel'
+ */
+export type EnumClientServicePricingModelFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ClientServicePricingModel'
+>;
+
+/**
+ * Reference to a field of type 'ClientServicePricingModel[]'
+ */
+export type ListEnumClientServicePricingModelFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ClientServicePricingModel[]'
+>;
+
+/**
  * Reference to a field of type 'EmployeeLevelEnum'
  */
 export type EnumEmployeeLevelEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -5091,6 +5262,7 @@ export type GlobalOmitConfig = {
   supportTicket?: Prisma.SupportTicketOmit;
   credential?: Prisma.CredentialOmit;
   domain?: Prisma.DomainOmit;
+  clientServiceRecord?: Prisma.ClientServiceRecordOmit;
   department?: Prisma.DepartmentOmit;
   employeeDepartment?: Prisma.EmployeeDepartmentOmit;
   role?: Prisma.RoleOmit;
