@@ -10,9 +10,14 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
+import {
+  GENERIC_STATUS_DEPRECATION_DESCRIPTION,
+  GENERIC_STATUS_DEPRECATION_HEADER,
+} from '../delivery-status-deprecation';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -102,7 +107,12 @@ export class ProductsController {
   }
 
   @Patch(':id/status')
-  @ApiOperation({ summary: 'Update product status (stage gate validation)' })
+  @Header('Deprecation', GENERIC_STATUS_DEPRECATION_HEADER)
+  @ApiOperation({
+    summary: 'Update product status (deprecated compatibility path)',
+    description: GENERIC_STATUS_DEPRECATION_DESCRIPTION,
+    deprecated: true,
+  })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.productsService.updateStatus(id, body.status);
   }

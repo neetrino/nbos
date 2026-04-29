@@ -294,6 +294,17 @@ Delivery lifecycle controls in the Projects UI now avoid generic status mutation
 
 Generic `PATCH /status` endpoints remain available only as backend compatibility paths while the old enum/column retirement is staged.
 
+### A21. Generic status endpoints are deprecated compatibility paths
+
+Статус: `PHASE 4 API COMPATIBILITY ALIGNMENT`
+
+The old generic lifecycle mutation endpoints remain available, but are now explicitly marked as deprecated:
+
+- `PATCH /api/projects/products/:id/status`;
+- `PATCH /api/projects/extensions/:id/status`.
+
+Both routes keep existing behavior for old clients, return `Deprecation: true`, and are marked deprecated in Swagger docs. New clients must use canonical lifecycle endpoints: `stage`, `pause`, `resume`, `cancel` and `complete`.
+
 ---
 
 ## B. Устарело только в документации или описаниях
@@ -390,7 +401,7 @@ Phase 4 already added read-only canonical projection, compatible schema fields, 
 Current deprecation rule:
 
 - `deliveryLifecycle.stage`, `deliveryLifecycle.workStatus` and `deliveryLifecycle.resolution` are the Product delivery source of truth for UI and new API behavior;
-- legacy `status` remains a compatibility mirror and sync target until backend generic status endpoints are retired;
+- legacy `status` remains a compatibility mirror and sync target until deprecated backend generic status endpoints are removed;
 - do not remove `ProductStatusEnum` or the `products.status` column until old clients and tests stop depending on it.
 
 ### C2. Runtime extension statuses тоже старые
@@ -426,7 +437,7 @@ Current deprecation rule:
 Current deprecation rule:
 
 - `deliveryLifecycle.stage`, `deliveryLifecycle.workStatus` and `deliveryLifecycle.resolution` are the Extension delivery source of truth for UI and new API behavior;
-- legacy `status` remains a compatibility mirror and sync target until backend generic status endpoints are retired;
+- legacy `status` remains a compatibility mirror and sync target until deprecated backend generic status endpoints are removed;
 - do not remove `ExtensionStatusEnum` or the `extensions.status` column until old clients and tests stop depending on it.
 
 ### C3. Frontend transitions и board helpers частично живут по старой схеме

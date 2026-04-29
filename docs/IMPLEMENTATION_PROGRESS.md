@@ -7,7 +7,7 @@
 | Field         | Value                          |
 | ------------- | ------------------------------ |
 | Current phase | **Phase 4 — Delivery ops**     |
-| Current task  | Generic status UI retirement   |
+| Current task  | Backend status deprecation     |
 | Status        | Phase 4 Projects Hub lifecycle |
 | Last updated  | 2026-04-29                     |
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~81% | Product/Extension UI no longer calls generic status endpoints for lifecycle movement       |
+| Phase 4 — Delivery ops              | In progress |     ~82% | Generic Product/Extension status endpoints are marked deprecated compatibility paths       |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -95,10 +95,11 @@ Future Finance depth:
 | 2026-04-29 | Product Done order gate            | Product Done blocks while linked order is not fully paid or closed       | api typecheck, lint, targeted Vitest                                  |
 | 2026-04-29 | Legacy status compatibility        | Project shell/UI prefers canonical lifecycle; old status remains mirror  | api/web typecheck, lint, targeted Vitest                              |
 | 2026-04-29 | Generic status UI retirement       | Product/Extension lifecycle controls use canonical endpoints only        | web typecheck, lint                                                   |
+| 2026-04-29 | Backend status deprecation         | Generic status endpoints now expose deprecation signal                   | api typecheck, lint                                                   |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: backend generic status deprecation or Done acceptance/credentials runtime depth.
+1. Continue Projects Hub lifecycle refactor: Done acceptance/credentials runtime depth or status query compatibility cleanup.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

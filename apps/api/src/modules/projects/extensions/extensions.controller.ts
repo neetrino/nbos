@@ -10,9 +10,14 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ExtensionsService } from './extensions.service';
+import {
+  GENERIC_STATUS_DEPRECATION_DESCRIPTION,
+  GENERIC_STATUS_DEPRECATION_HEADER,
+} from '../delivery-status-deprecation';
 
 @ApiTags('Extensions')
 @ApiBearerAuth()
@@ -98,7 +103,12 @@ export class ExtensionsController {
   }
 
   @Patch(':id/status')
-  @ApiOperation({ summary: 'Update extension status (stage gate validation)' })
+  @Header('Deprecation', GENERIC_STATUS_DEPRECATION_HEADER)
+  @ApiOperation({
+    summary: 'Update extension status (deprecated compatibility path)',
+    description: GENERIC_STATUS_DEPRECATION_DESCRIPTION,
+    deprecated: true,
+  })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.extensionsService.updateStatus(id, body.status);
   }
