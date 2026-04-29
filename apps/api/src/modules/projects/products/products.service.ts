@@ -5,6 +5,9 @@ import {
   type ProductCategoryEnum,
   type ProductTypeEnum,
   type ProductStatusEnum,
+  type DeliveryResolutionEnum,
+  type DeliveryStageEnum,
+  type DeliveryWorkStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import {
@@ -62,6 +65,9 @@ interface ProductQueryParams {
   pageSize?: number;
   projectId?: string;
   status?: string;
+  deliveryStage?: string;
+  deliveryWorkStatus?: string;
+  deliveryResolution?: string;
   productCategory?: string;
   productType?: string;
   pmId?: string;
@@ -81,6 +87,9 @@ export class ProductsService {
       pageSize = 20,
       projectId,
       status,
+      deliveryStage,
+      deliveryWorkStatus,
+      deliveryResolution,
       productCategory,
       productType,
       pmId,
@@ -90,6 +99,13 @@ export class ProductsService {
 
     if (projectId) where.projectId = projectId;
     if (status) where.status = status as ProductStatusEnum;
+    if (deliveryStage) where.deliveryStage = deliveryStage as DeliveryStageEnum;
+    if (deliveryWorkStatus) {
+      where.deliveryWorkStatus = deliveryWorkStatus as DeliveryWorkStatusEnum;
+    }
+    if (deliveryResolution) {
+      where.deliveryResolution = deliveryResolution as DeliveryResolutionEnum;
+    }
     if (productCategory) where.productCategory = productCategory as ProductCategoryEnum;
     if (productType) where.productType = productType as ProductTypeEnum;
     if (pmId) where.pmId = pmId;

@@ -305,6 +305,18 @@ The old generic lifecycle mutation endpoints remain available, but are now expli
 
 Both routes keep existing behavior for old clients, return `Deprecation: true`, and are marked deprecated in Swagger docs. New clients must use canonical lifecycle endpoints: `stage`, `pause`, `resume`, `cancel` and `complete`.
 
+### A22. Product/Extension lists accept canonical lifecycle filters
+
+Статус: `PHASE 4 API COMPATIBILITY ALIGNMENT`
+
+Product and Extension list APIs now expose canonical lifecycle query filters alongside legacy `status`:
+
+- `deliveryStage`;
+- `deliveryWorkStatus`;
+- `deliveryResolution`.
+
+This lets new API clients filter delivery rows by canonical lifecycle state without using old `NEW / CREATING / LOST` status values. Legacy `status` query remains available as a compatibility filter until the old enum/column path can be removed.
+
 ---
 
 ## B. Устарело только в документации или описаниях
@@ -401,6 +413,7 @@ Phase 4 already added read-only canonical projection, compatible schema fields, 
 Current deprecation rule:
 
 - `deliveryLifecycle.stage`, `deliveryLifecycle.workStatus` and `deliveryLifecycle.resolution` are the Product delivery source of truth for UI and new API behavior;
+- list APIs should prefer canonical `deliveryStage`, `deliveryWorkStatus` and `deliveryResolution` query filters;
 - legacy `status` remains a compatibility mirror and sync target until deprecated backend generic status endpoints are removed;
 - do not remove `ProductStatusEnum` or the `products.status` column until old clients and tests stop depending on it.
 
@@ -437,6 +450,7 @@ Current deprecation rule:
 Current deprecation rule:
 
 - `deliveryLifecycle.stage`, `deliveryLifecycle.workStatus` and `deliveryLifecycle.resolution` are the Extension delivery source of truth for UI and new API behavior;
+- list APIs should prefer canonical `deliveryStage`, `deliveryWorkStatus` and `deliveryResolution` query filters;
 - legacy `status` remains a compatibility mirror and sync target until deprecated backend generic status endpoints are removed;
 - do not remove `ExtensionStatusEnum` or the `extensions.status` column until old clients and tests stop depending on it.
 

@@ -72,6 +72,24 @@ describe('ExtensionsService', () => {
       );
     });
 
+    it('applies canonical lifecycle filters', async () => {
+      await service.findAll({
+        deliveryStage: 'TRANSFER',
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: 'CANCELLED',
+      });
+
+      expect(prisma.extension.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            deliveryStage: 'TRANSFER',
+            deliveryWorkStatus: 'ACTIVE',
+            deliveryResolution: 'CANCELLED',
+          }),
+        }),
+      );
+    });
+
     it('applies size filter', async () => {
       await service.findAll({ size: 'LARGE' });
       expect(prisma.extension.findMany).toHaveBeenCalledWith(

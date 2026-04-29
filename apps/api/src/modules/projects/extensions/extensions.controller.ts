@@ -32,6 +32,9 @@ export class ExtensionsController {
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'deliveryStage', required: false })
+  @ApiQuery({ name: 'deliveryWorkStatus', required: false })
+  @ApiQuery({ name: 'deliveryResolution', required: false })
   @ApiQuery({ name: 'size', required: false })
   @ApiQuery({ name: 'assignedTo', required: false })
   @ApiQuery({ name: 'search', required: false })
@@ -41,6 +44,9 @@ export class ExtensionsController {
     @Query('projectId') projectId?: string,
     @Query('productId') productId?: string,
     @Query('status') status?: string,
+    @Query('deliveryStage') deliveryStage?: string,
+    @Query('deliveryWorkStatus') deliveryWorkStatus?: string,
+    @Query('deliveryResolution') deliveryResolution?: string,
     @Query('size') size?: string,
     @Query('assignedTo') assignedTo?: string,
     @Query('search') search?: string,
@@ -51,6 +57,9 @@ export class ExtensionsController {
       projectId,
       productId,
       status,
+      deliveryStage,
+      deliveryWorkStatus,
+      deliveryResolution,
       size,
       assignedTo,
       search,

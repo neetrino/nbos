@@ -37,6 +37,24 @@ describe('ProductsService', () => {
       );
     });
 
+    it('applies canonical lifecycle filters', async () => {
+      await service.findAll({
+        deliveryStage: 'QA',
+        deliveryWorkStatus: 'ON_HOLD',
+        deliveryResolution: 'DONE',
+      });
+
+      expect(prisma.product.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            deliveryStage: 'QA',
+            deliveryWorkStatus: 'ON_HOLD',
+            deliveryResolution: 'DONE',
+          }),
+        }),
+      );
+    });
+
     it('applies productType filter', async () => {
       await service.findAll({ productType: 'COMPANY_WEBSITE' });
       expect(prisma.product.findMany).toHaveBeenCalledWith(

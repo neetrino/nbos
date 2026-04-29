@@ -4,6 +4,9 @@ import {
   type Prisma,
   type ExtensionSizeEnum,
   type ExtensionStatusEnum,
+  type DeliveryResolutionEnum,
+  type DeliveryStageEnum,
+  type DeliveryWorkStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import {
@@ -55,6 +58,9 @@ interface ExtensionQueryParams {
   projectId?: string;
   productId?: string;
   status?: string;
+  deliveryStage?: string;
+  deliveryWorkStatus?: string;
+  deliveryResolution?: string;
   size?: string;
   assignedTo?: string;
   search?: string;
@@ -74,6 +80,9 @@ export class ExtensionsService {
       projectId,
       productId,
       status,
+      deliveryStage,
+      deliveryWorkStatus,
+      deliveryResolution,
       size,
       assignedTo,
       search,
@@ -83,6 +92,13 @@ export class ExtensionsService {
     if (projectId) where.projectId = projectId;
     if (productId) where.productId = productId;
     if (status) where.status = status as ExtensionStatusEnum;
+    if (deliveryStage) where.deliveryStage = deliveryStage as DeliveryStageEnum;
+    if (deliveryWorkStatus) {
+      where.deliveryWorkStatus = deliveryWorkStatus as DeliveryWorkStatusEnum;
+    }
+    if (deliveryResolution) {
+      where.deliveryResolution = deliveryResolution as DeliveryResolutionEnum;
+    }
     if (size) where.size = size as ExtensionSizeEnum;
     if (assignedTo) where.assignedTo = assignedTo;
     if (search) {

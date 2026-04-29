@@ -31,6 +31,9 @@ export class ProductsController {
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'deliveryStage', required: false })
+  @ApiQuery({ name: 'deliveryWorkStatus', required: false })
+  @ApiQuery({ name: 'deliveryResolution', required: false })
   @ApiQuery({ name: 'productCategory', required: false })
   @ApiQuery({ name: 'productType', required: false })
   @ApiQuery({ name: 'pmId', required: false })
@@ -40,6 +43,9 @@ export class ProductsController {
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
     @Query('status') status?: string,
+    @Query('deliveryStage') deliveryStage?: string,
+    @Query('deliveryWorkStatus') deliveryWorkStatus?: string,
+    @Query('deliveryResolution') deliveryResolution?: string,
     @Query('productCategory') productCategory?: string,
     @Query('productType') productType?: string,
     @Query('pmId') pmId?: string,
@@ -50,6 +56,9 @@ export class ProductsController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
       status,
+      deliveryStage,
+      deliveryWorkStatus,
+      deliveryResolution,
       productCategory,
       productType,
       pmId,
