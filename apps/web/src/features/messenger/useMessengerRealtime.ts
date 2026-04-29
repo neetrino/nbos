@@ -12,10 +12,12 @@ import {
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_READ_UPDATED_SCOPE,
   MESSENGER_WS_SERVER_DM_MESSAGE,
+  MESSENGER_WS_SERVER_DM_PEER_READ,
   MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
+  type MessengerWsDmPeerReadPayload,
 } from '@nbos/shared';
 import type { MessengerMessageRow } from '@/lib/api/messenger';
 import { mapMessengerRowToView, type MessengerViewMessage } from './messenger-message-mapper';
@@ -51,6 +53,17 @@ function isMessengerReadListsPayload(payload: unknown): boolean {
   return (payload as { scope?: unknown }).scope === MESSENGER_WS_READ_UPDATED_SCOPE.LISTS;
 }
 
+function parseMessengerDmPeerReadPayload(payload: unknown): MessengerWsDmPeerReadPayload | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const counterpartId = (payload as { counterpartId?: unknown }).counterpartId;
+  const threadId = (payload as { threadId?: unknown }).threadId;
+  const lastReadAt = (payload as { lastReadAt?: unknown }).lastReadAt;
+  if (typeof counterpartId !== 'string' || counterpartId.trim().length === 0) return null;
+  if (typeof threadId !== 'string' || threadId.trim().length === 0) return null;
+  if (typeof lastReadAt !== 'string' || lastReadAt.trim().length === 0) return null;
+  return { counterpartId, threadId, lastReadAt };
+}
+
 export interface MessengerRealtimeControls {
   emitChannelTyping: (channelId: string) => void;
   emitDmTyping: (recipientId: string) => void;
@@ -67,6 +80,8 @@ export function useMessengerRealtime(options: {
   onPresenceDelta?: (employeeId: string, state: 'online' | 'offline') => void;
   /** Fired when this user’s read cursors changed on another tab/device (re-fetch list unread). */
   onReadListsInvalidate?: () => void;
+  /** DM peer advanced their read cursor (receipts on your own messages). */
+  onDmPeerRead?: (payload: MessengerWsDmPeerReadPayload) => void;
 }): MessengerRealtimeControls {
   const { data: session } = useSession();
   const accessToken = session?.accessToken ?? null;
@@ -79,6 +94,7 @@ export function useMessengerRealtime(options: {
   const onPresenceSnapshotRef = useRef(options.onPresenceSnapshot);
   const onPresenceDeltaRef = useRef(options.onPresenceDelta);
   const onReadListsInvalidateRef = useRef(options.onReadListsInvalidate);
+  const onDmPeerReadRef = useRef(options.onDmPeerRead);
 
   useLayoutEffect(() => {
     activeRef.current = options.active;
@@ -89,6 +105,7 @@ export function useMessengerRealtime(options: {
     onPresenceSnapshotRef.current = options.onPresenceSnapshot;
     onPresenceDeltaRef.current = options.onPresenceDelta;
     onReadListsInvalidateRef.current = options.onReadListsInvalidate;
+    onDmPeerReadRef.current = options.onDmPeerRead;
   });
 
   const emitChannelTyping = useCallback((channelId: string) => {
@@ -173,6 +190,11 @@ export function useMessengerRealtime(options: {
     socket.on(MESSENGER_WS_SERVER_READ_UPDATED, (payload: unknown) => {
       if (!isMessengerReadListsPayload(payload)) return;
       onReadListsInvalidateRef.current?.();
+    });
+
+    socket.on(MESSENGER_WS_SERVER_DM_PEER_READ, (payload: unknown) => {
+      const p = parseMessengerDmPeerReadPayload(payload);
+      if (p) onDmPeerReadRef.current?.(p);
     });
 
     return () => {

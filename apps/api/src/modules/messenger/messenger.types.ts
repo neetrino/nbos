@@ -25,3 +25,17 @@ export interface MessengerDmConversationDto {
   lastMessage: MessengerMessageDto;
   unreadCount: number;
 }
+
+export interface MessengerListMetaDto {
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+/** DM history page: includes the peer’s read cursor for receipts on the viewer’s own messages. */
+export interface MessengerDmPagedMessagesDto {
+  items: MessengerMessageDto[];
+  meta: MessengerListMetaDto;
+  peerLastReadAt: Date | null;
+}

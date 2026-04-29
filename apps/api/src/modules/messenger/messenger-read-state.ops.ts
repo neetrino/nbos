@@ -51,7 +51,7 @@ export async function markDmThreadReadForEmployee(
   prisma: PrismaClient,
   threadId: string,
   employeeId: string,
-): Promise<void> {
+): Promise<Date> {
   const latest = await prisma.messengerDirectMessage.findFirst({
     where: { threadId },
     orderBy: { createdAt: 'desc' },
@@ -63,4 +63,5 @@ export async function markDmThreadReadForEmployee(
     create: { threadId, employeeId, lastReadAt },
     update: { lastReadAt },
   });
+  return lastReadAt;
 }

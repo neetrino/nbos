@@ -3,6 +3,7 @@ import { Hash, Send } from 'lucide-react';
 import type { MessengerChannelRow } from '@/lib/api/messenger';
 import { formatMessengerTime, messengerDateLabel } from './messenger-format';
 import type { MessengerViewMessage } from './messenger-message-mapper';
+import { MESSENGER_DM_READ_RECEIPT_LABEL } from './messenger-dm-read-receipt.util';
 import type { MessengerActiveView } from './messenger-active-view';
 
 function Avatar({ initials }: { initials: string }) {
@@ -23,7 +24,13 @@ function DateDivider({ label }: { label: string }) {
   );
 }
 
-function MessageBubble({ message }: { message: MessengerViewMessage }) {
+function MessageBubble({
+  message,
+  readReceiptLabel,
+}: {
+  message: MessengerViewMessage;
+  readReceiptLabel: string | null;
+}) {
   return (
     <div className="group flex gap-3 px-5 py-1.5 hover:bg-black/[0.02]">
       <Avatar initials={message.initials} />
@@ -33,6 +40,9 @@ function MessageBubble({ message }: { message: MessengerViewMessage }) {
           <span className="text-xs text-black/35">{formatMessengerTime(message.timestamp)}</span>
         </div>
         <p className="text-sm leading-relaxed text-black/75">{message.content}</p>
+        {readReceiptLabel ? (
+          <p className="mt-0.5 text-[10px] font-medium text-black/35">{readReceiptLabel}</p>
+        ) : null}
       </div>
     </div>
   );
@@ -58,6 +68,7 @@ export function MessengerThread({
   sendDisabled,
   remoteTypingHint,
   onComposerTypingIntent,
+  dmReadReceiptMessageId,
 }: {
   active: MessengerActiveView;
   /** Undefined if the channel id is missing from the current list (stale selection). */
@@ -73,6 +84,8 @@ export function MessengerThread({
   sendDisabled: boolean;
   remoteTypingHint: string | null;
   onComposerTypingIntent?: () => void;
+  /** When `active.type === 'dm'`, message id under which to show the read receipt. */
+  dmReadReceiptMessageId?: string | null;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -143,7 +156,17 @@ export function MessengerThread({
             <div key={group.label}>
               <DateDivider label={group.label} />
               {group.items.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
+                <MessageBubble
+                  key={msg.id}
+                  message={msg}
+                  readReceiptLabel={
+                    active.type === 'dm' &&
+                    dmReadReceiptMessageId != null &&
+                    dmReadReceiptMessageId === msg.id
+                      ? MESSENGER_DM_READ_RECEIPT_LABEL
+                      : null
+                  }
+                />
               ))}
             </div>
           ))

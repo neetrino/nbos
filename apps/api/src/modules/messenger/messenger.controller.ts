@@ -98,7 +98,9 @@ export class MessengerController {
 
   @Get('dm/:userId1/:userId2')
   @RequirePermission('MESSENGER', 'VIEW')
-  @ApiOperation({ summary: 'Get direct messages between two users (one must be you)' })
+  @ApiOperation({
+    summary: 'Get direct messages (includes peerLastReadAt for DM read receipts on your sends)',
+  })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   getDirectMessages(
@@ -111,7 +113,8 @@ export class MessengerController {
     if (user.id !== userId1 && user.id !== userId2) {
       throw new ForbiddenException('You may only read your own direct messages');
     }
-    return this.messengerService.getDirectMessages(userId1, userId2, {
+    const peerId = user.id === userId1 ? userId2 : userId1;
+    return this.messengerService.getDirectMessages(user.id, peerId, {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
     });

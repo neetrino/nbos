@@ -31,12 +31,14 @@ import {
 import type {
   MessengerChannelDto,
   MessengerDmConversationDto,
+  MessengerDmPagedMessagesDto,
   MessengerMessageDto,
 } from './messenger.types';
 
 export type {
   MessengerChannelDto,
   MessengerDmConversationDto,
+  MessengerDmPagedMessagesDto,
   MessengerMessageDto,
 } from './messenger.types';
 
@@ -179,32 +181,42 @@ export class MessengerService {
     return dto;
   }
 
-  async getDirectMessages(userId1: string, userId2: string, pagination: PaginationParams = {}) {
-    const [a, b] = orderedParticipantIds(userId1, userId2);
+  async getDirectMessages(
+    viewerId: string,
+    peerId: string,
+    pagination: PaginationParams = {},
+  ): Promise<MessengerDmPagedMessagesDto> {
+    const [a, b] = orderedParticipantIds(viewerId, peerId);
     const thread = await this.prisma.messengerDirectThread.findUnique({
       where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
     });
+    const emptyMeta = {
+      total: 0,
+      page: DEFAULT_PAGE,
+      pageSize: DEFAULT_PAGE_SIZE,
+      totalPages: 1,
+    };
     if (!thread) {
       return {
         items: [] as MessengerMessageDto[],
-        meta: {
-          total: 0,
-          page: DEFAULT_PAGE,
-          pageSize: DEFAULT_PAGE_SIZE,
-          totalPages: 1,
-        },
+        meta: emptyMeta,
+        peerLastReadAt: null,
       };
     }
     const { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE } = pagination;
     const skip = (page - 1) * pageSize;
     const where = { threadId: thread.id };
-    const [total, rows] = await Promise.all([
+    const [total, rows, peerRead] = await Promise.all([
       this.prisma.messengerDirectMessage.count({ where }),
       this.prisma.messengerDirectMessage.findMany({
         where,
         orderBy: { createdAt: 'asc' },
         skip,
         take: pageSize,
+      }),
+      this.prisma.messengerDirectThreadReadState.findUnique({
+        where: { threadId_employeeId: { threadId: thread.id, employeeId: peerId } },
+        select: { lastReadAt: true },
       }),
     ]);
     return {
@@ -215,6 +227,7 @@ export class MessengerService {
         pageSize,
         totalPages: Math.ceil(total / pageSize) || 1,
       },
+      peerLastReadAt: peerRead?.lastReadAt ?? null,
     };
   }
 
@@ -274,7 +287,12 @@ export class MessengerService {
       where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
     });
     if (!thread) return;
-    await markDmThreadReadForEmployee(this.prisma, thread.id, actorId);
+    const lastReadAt = await markDmThreadReadForEmployee(this.prisma, thread.id, actorId);
     this.messengerGateway.emitReadListsUpdated(actorId);
+    this.messengerGateway.emitDmPeerRead(recipientId, {
+      counterpartId: actorId,
+      threadId: thread.id,
+      lastReadAt: lastReadAt.toISOString(),
+    });
   }
 }

@@ -46,6 +46,17 @@ export interface MessengerWsReadUpdatedPayload {
   scope: MessengerWsReadUpdatedScope;
 }
 
+/** Server → client: DM peer advanced their read cursor (notify the other participant). */
+export const MESSENGER_WS_SERVER_DM_PEER_READ = 'messenger.dm.peer_read';
+
+export interface MessengerWsDmPeerReadPayload {
+  /** Employee who marked read (viewer of the receipt). */
+  counterpartId: string;
+  threadId: string;
+  /** ISO-8601 instant of their stored read cursor. */
+  lastReadAt: string;
+}
+
 export function messengerSocketUserRoom(employeeId: string): string {
   return `messenger:user:${employeeId}`;
 }

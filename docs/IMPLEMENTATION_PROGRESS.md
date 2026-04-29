@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                                      |
-| ------------- | ---------------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**                    |
-| Current task  | Phase 5 — Messenger (per-message read receipts / delivery) |
-| Status        | Phase 5 in progress                                        |
-| Last updated  | 2026-04-30                                                 |
+| Field         | Value                                                           |
+| ------------- | --------------------------------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge**                         |
+| Current task  | Phase 5 — Messenger (channel receipts / delivery) or Mail slice |
+| Status        | Phase 5 in progress                                             |
+| Last updated  | 2026-04-30                                                      |
 
 ## Phase Snapshot
 
@@ -104,6 +104,7 @@ Future Finance depth:
 | 2026-04-30 | Messenger WS presence                 | Ref-counted `/messenger` connections; `messenger.presence` + snapshot; DM sidebar online dots in web.                                                                                                      |
 | 2026-04-30 | Messenger read cursors + unread UI    | Prisma read-state rows; `unreadCount` on channel + DM lists; POST mark-read; web badges + mark on open/WS inbound.                                                                                         |
 | 2026-04-30 | Messenger WS read lists sync          | `messenger.read.updated` (`scope: lists`) to user room after mark-read; web refetch channel + DM lists.                                                                                                    |
+| 2026-04-30 | Messenger DM read receipts            | `peerLastReadAt` on DM GET; WS `messenger.dm.peer_read`; web receipt label + util tests.                                                                                                                   |
 
 ## Next Action
 

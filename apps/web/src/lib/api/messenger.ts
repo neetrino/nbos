@@ -31,6 +31,11 @@ export interface MessengerPagedMessages {
   meta: MessengerListMeta;
 }
 
+/** DM thread history includes the peer’s read cursor for receipts on your own messages. */
+export interface MessengerDmPagedMessages extends MessengerPagedMessages {
+  peerLastReadAt: string | null;
+}
+
 export interface MessengerDmConversationRow {
   recipientId: string;
   lastMessage: MessengerMessageRow;
@@ -85,13 +90,16 @@ export const messengerApi = {
     userId1: string,
     userId2: string,
     params?: { page?: number; pageSize?: number },
-  ): Promise<MessengerPagedMessages> {
-    const resp = await api.get<MessengerPagedMessages>(`/api/messenger/dm/${userId1}/${userId2}`, {
-      params: {
-        page: params?.page ?? 1,
-        pageSize: params?.pageSize ?? LIST_PAGE_SIZE,
+  ): Promise<MessengerDmPagedMessages> {
+    const resp = await api.get<MessengerDmPagedMessages>(
+      `/api/messenger/dm/${userId1}/${userId2}`,
+      {
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? LIST_PAGE_SIZE,
+        },
       },
-    });
+    );
     return resp.data;
   },
 

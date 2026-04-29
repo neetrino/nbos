@@ -24,9 +24,11 @@ import {
   MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_READ_UPDATED_SCOPE,
+  MESSENGER_WS_SERVER_DM_PEER_READ,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
+  type MessengerWsDmPeerReadPayload,
   messengerSocketChannelRoom,
   messengerSocketUserRoom,
 } from '@nbos/shared';
@@ -164,6 +166,14 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     this.server.to(messengerSocketUserRoom(employeeId)).emit(MESSENGER_WS_SERVER_READ_UPDATED, {
       scope: MESSENGER_WS_READ_UPDATED_SCOPE.LISTS,
     });
+  }
+
+  /** Notifies `peerEmployeeId` that `payload.counterpartId` advanced their DM read cursor. */
+  emitDmPeerRead(peerEmployeeId: string, payload: MessengerWsDmPeerReadPayload): void {
+    if (!this.server) return;
+    this.server
+      .to(messengerSocketUserRoom(peerEmployeeId))
+      .emit(MESSENGER_WS_SERVER_DM_PEER_READ, payload);
   }
 
   private async authenticateAndJoinUserRoom(client: Socket): Promise<void> {

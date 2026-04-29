@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MESSENGER_TYPING_EMIT_MIN_MS } from '@nbos/shared';
+import { MESSENGER_TYPING_EMIT_MIN_MS, type MessengerWsDmPeerReadPayload } from '@nbos/shared';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { employeesApi } from '@/lib/api/employees';
 import {
@@ -17,6 +17,7 @@ import {
   mapMessengerRowToView,
   type MessengerViewMessage,
 } from './messenger-message-mapper';
+import { dmReadReceiptMessageId as computeDmReadReceiptMessageId } from './messenger-dm-read-receipt.util';
 import { MESSENGER_REMOTE_TYPING_HINT_MS } from './messenger-typing-ui.constants';
 import { useMessengerRealtime } from './useMessengerRealtime';
 
@@ -38,6 +39,7 @@ export function MessengerClient() {
   const [newMessage, setNewMessage] = useState('');
   const [remoteTypingHint, setRemoteTypingHint] = useState<string | null>(null);
   const [onlineInMessengerById, setOnlineInMessengerById] = useState<Record<string, true>>({});
+  const [dmPeerLastReadAt, setDmPeerLastReadAt] = useState<string | null>(null);
 
   const typingClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLocalTypingEmitRef = useRef(0);
@@ -134,6 +136,16 @@ export function MessengerClient() {
     });
   }, []);
 
+  const onDmPeerRead = useCallback((p: MessengerWsDmPeerReadPayload) => {
+    if (activeRef.current?.type !== 'dm') return;
+    if (p.counterpartId !== activeRef.current.userId) return;
+    setDmPeerLastReadAt((prev) => {
+      if (!p.lastReadAt) return prev;
+      if (!prev) return p.lastReadAt;
+      return new Date(p.lastReadAt) > new Date(prev) ? p.lastReadAt : prev;
+    });
+  }, []);
+
   const { emitChannelTyping, emitDmTyping } = useMessengerRealtime({
     canViewMessenger,
     meId: me?.id,
@@ -144,6 +156,7 @@ export function MessengerClient() {
     onPresenceSnapshot,
     onPresenceDelta,
     onReadListsInvalidate: refreshMessengerLists,
+    onDmPeerRead,
   });
 
   const fireLocalTypingIntent = useCallback(() => {
@@ -211,7 +224,10 @@ export function MessengerClient() {
   }, [permsLoading, me, canViewMessenger]);
 
   useEffect(() => {
-    if (!canViewMessenger || !me || !active) return;
+    if (!canViewMessenger || !me || !active) {
+      setDmPeerLastReadAt(null);
+      return;
+    }
     const activeSnapshot = active;
     const meId = me.id;
     let cancelled = false;
@@ -220,15 +236,18 @@ export function MessengerClient() {
       setListError(null);
       try {
         if (activeSnapshot.type === 'channel') {
+          setDmPeerLastReadAt(null);
           const res = await messengerApi.listChannelMessages(activeSnapshot.id);
           if (cancelled) return;
           setMessages(res.items.map(mapMessengerRowToView));
           await messengerApi.markChannelRead(activeSnapshot.id);
           if (!cancelled) refreshMessengerLists();
         } else {
+          setDmPeerLastReadAt(null);
           const res = await messengerApi.listDirectMessages(meId, activeSnapshot.userId);
           if (cancelled) return;
           setMessages(res.items.map(mapMessengerRowToView));
+          setDmPeerLastReadAt(res.peerLastReadAt ?? null);
           await messengerApi.markDmRead(activeSnapshot.userId);
           if (!cancelled) refreshMessengerLists();
         }
@@ -236,6 +255,7 @@ export function MessengerClient() {
         if (!cancelled) {
           setListError(e instanceof Error ? e.message : 'Failed to load messages');
           setMessages([]);
+          setDmPeerLastReadAt(null);
         }
       } finally {
         if (!cancelled) setMessagesLoading(false);
@@ -267,6 +287,7 @@ export function MessengerClient() {
         await messengerApi.sendDirectMessage({ recipientId: active.userId, content: text });
         const res = await messengerApi.listDirectMessages(me.id, active.userId);
         setMessages(res.items.map(mapMessengerRowToView));
+        setDmPeerLastReadAt(res.peerLastReadAt ?? null);
         await messengerApi.markDmRead(active.userId);
         refreshMessengerLists();
       }
@@ -325,6 +346,11 @@ export function MessengerClient() {
     active?.type === 'channel' ? channels.find((c) => c.id === active.id) : undefined;
   const dmPeer = active?.type === 'dm' ? dmPeers.find((p) => p.id === active.userId) : undefined;
 
+  const dmReadReceiptTargetId =
+    active?.type === 'dm' && me
+      ? computeDmReadReceiptMessageId(messages, me.id, dmPeerLastReadAt)
+      : null;
+
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]">
       {listError ? (
@@ -362,6 +388,7 @@ export function MessengerClient() {
             sendDisabled={!newMessage.trim() || sendBusy}
             remoteTypingHint={remoteTypingHint}
             onComposerTypingIntent={canEditMessenger ? fireLocalTypingIntent : undefined}
+            dmReadReceiptMessageId={dmReadReceiptTargetId}
           />
         )}
       </div>
