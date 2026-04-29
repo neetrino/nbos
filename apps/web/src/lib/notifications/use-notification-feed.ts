@@ -25,23 +25,36 @@ export function useNotificationFeed(employeeId: string | undefined, listOpen: bo
     }
   }, [employeeId]);
 
-  const refreshList = useCallback(async () => {
-    if (!employeeId) {
-      setItems([]);
-      return;
-    }
-    setListLoading(true);
-    setListError(false);
-    try {
-      const res = await notificationsApi.list(1, NOTIFICATION_LIST_PAGE_SIZE);
-      setItems(res.items);
-    } catch {
-      setListError(true);
-      setItems([]);
-    } finally {
-      setListLoading(false);
-    }
-  }, [employeeId]);
+  const loadList = useCallback(
+    async (mode: 'full' | 'silent') => {
+      if (!employeeId) {
+        setItems([]);
+        return;
+      }
+      if (mode === 'full') {
+        setListLoading(true);
+        setListError(false);
+      }
+      try {
+        const res = await notificationsApi.list(1, NOTIFICATION_LIST_PAGE_SIZE);
+        setItems(res.items);
+      } catch {
+        if (mode === 'full') {
+          setListError(true);
+          setItems([]);
+        }
+      } finally {
+        if (mode === 'full') {
+          setListLoading(false);
+        }
+      }
+    },
+    [employeeId],
+  );
+
+  const refreshList = useCallback(() => {
+    void loadList('full');
+  }, [loadList]);
 
   useEffect(() => {
     if (!employeeId) return undefined;
@@ -54,9 +67,26 @@ export function useNotificationFeed(employeeId: string | undefined, listOpen: bo
 
   useEffect(() => {
     if (!employeeId || !listOpen) return;
-    void refreshList();
+    void loadList('full');
     void refreshUnread();
-  }, [employeeId, listOpen, refreshList, refreshUnread]);
+  }, [employeeId, listOpen, loadList, refreshUnread]);
+
+  useEffect(() => {
+    if (!employeeId) return undefined;
+    const onForeground = () => {
+      void refreshUnread();
+      if (listOpen) void loadList('silent');
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') onForeground();
+    };
+    window.addEventListener('focus', onForeground);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('focus', onForeground);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [employeeId, listOpen, refreshUnread, loadList]);
 
   const markAllRead = useCallback(async () => {
     if (!employeeId) return;
