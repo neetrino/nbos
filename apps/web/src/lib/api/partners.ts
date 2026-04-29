@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { ListData } from './finance-common';
 
 /** Resolved contact when `partner.contactId` points to a row in `contacts`. */
 export interface PartnerContactSummary {
@@ -26,6 +27,15 @@ export interface PartnerStats {
   avgPayoutPercent: number;
 }
 
+export interface PartnerListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  status?: string;
+  type?: string;
+  direction?: string;
+}
+
 export interface CreatePartnerPayload {
   name: string;
   type?: string;
@@ -44,13 +54,8 @@ export interface UpdatePartnerPayload {
   contactId?: string | null;
 }
 
-interface ListData<T> {
-  items: T[];
-  meta: { total: number; page: number; pageSize: number; totalPages: number };
-}
-
 export const partnersApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Partner>> {
+  async getAll(params?: PartnerListParams): Promise<ListData<Partner>> {
     const resp = await api.get<ListData<Partner>>('/api/partners', { params });
     return resp.data;
   },

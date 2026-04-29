@@ -1,15 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Plus,
-  RefreshCcw,
-  Handshake,
-  ArrowDownLeft,
-  ArrowUpRight,
-  ArrowLeftRight,
-} from 'lucide-react';
+import { Plus, Handshake, ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -19,14 +12,7 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import {
-  PageHeader,
-  FilterBar,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  StatusBadge,
-} from '@/components/shared';
+import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import {
   PARTNER_TYPES,
   PARTNER_DIRECTIONS,
@@ -36,7 +22,15 @@ import {
   getPartnerStatus,
 } from '@/features/partners/constants/partners';
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
-import { partnersApi, type Partner, type PartnerStats } from '@/lib/api/partners';
+import { PartnersPageHeader } from '@/features/partners/components/PartnersPageHeader';
+import { usePartnersCsvExport } from '@/features/partners/components/use-partners-csv-export';
+import { buildPartnerListApiParams } from '@/features/partners/utils/build-partner-list-api-params';
+import {
+  partnersApi,
+  type Partner,
+  type PartnerListParams,
+  type PartnerStats,
+} from '@/lib/api/partners';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 const PARTNERS_LIST_PAGE_SIZE = 100;
@@ -58,16 +52,20 @@ export default function PartnersPage() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [createOpen, setCreateOpen] = useState(false);
 
+  const partnerListExportParams: Omit<PartnerListParams, 'page' | 'pageSize'> = useMemo(
+    () => buildPartnerListApiParams({ search, filters }),
+    [search, filters],
+  );
+
+  const { exportCsvSubmitting, handleExportCsv } = usePartnersCsvExport(partnerListExportParams);
+
   const fetchPartners = useCallback(async () => {
     setLoading(true);
     try {
-      const params = {
+      const params: PartnerListParams = {
         page: 1,
         pageSize: PARTNERS_LIST_PAGE_SIZE,
-        search: search || undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-        type: filters.type && filters.type !== 'all' ? filters.type : undefined,
-        direction: filters.direction && filters.direction !== 'all' ? filters.direction : undefined,
+        ...buildPartnerListApiParams({ search, filters }),
       };
       const [listRes, statsRes] = await Promise.all([
         partnersApi.getAll(params),
@@ -119,18 +117,14 @@ export default function PartnersPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Partners"
+      <PartnersPageHeader
         description={`${listTotal} partner${listTotal === 1 ? '' : 's'}`}
-      >
-        <Button variant="outline" size="icon" onClick={fetchPartners}>
-          <RefreshCcw size={16} />
-        </Button>
-        <Button type="button" onClick={() => setCreateOpen(true)}>
-          <Plus size={16} />
-          Add Partner
-        </Button>
-      </PageHeader>
+        onRefresh={fetchPartners}
+        onExportCsv={handleExportCsv}
+        exportDisabled={loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
+        onAddPartner={() => setCreateOpen(true)}
+      />
 
       <CreatePartnerDialog
         open={createOpen}
