@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildExpenseListApiParams } from './build-expense-list-api-params';
+import {
+  buildExpenseListApiParams,
+  pickExpenseStatsQueryParams,
+} from './build-expense-list-api-params';
 
 describe('buildExpenseListApiParams', () => {
   it('maps filters, period, sort, and project scope', () => {
@@ -74,5 +77,30 @@ describe('buildExpenseListApiParams', () => {
     });
     expect(params.expensePlanId).toBe('plan-99');
     expect(params.activeBoard).toBeUndefined();
+  });
+});
+
+describe('pickExpenseStatsQueryParams', () => {
+  it('drops list-only fields (search, category, sort) for stats parity', () => {
+    const list = buildExpenseListApiParams({
+      search: 'host',
+      filters: { category: 'TOOLS', status: 'PAID', project: 'all' },
+      period: 'month',
+      effectiveProjectId: 'proj-1',
+      sortBy: 'amount',
+      sortOrder: 'asc',
+      pageVariant: 'default',
+    });
+    const stats = pickExpenseStatsQueryParams(list);
+    expect(stats).toEqual({
+      dateFrom: list.dateFrom,
+      dateTo: list.dateTo,
+      projectId: 'proj-1',
+      expensePlanId: list.expensePlanId,
+      status: 'PAID',
+      activeBoard: undefined,
+    });
+    expect('search' in stats).toBe(false);
+    expect('category' in stats).toBe(false);
   });
 });

@@ -1,7 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { Download, Loader2, Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
+import {
+  Download,
+  Loader2,
+  Plus,
+  RefreshCcw,
+  LayoutGrid,
+  List,
+  TableProperties,
+} from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
@@ -28,6 +36,8 @@ interface ExpensesPageHeaderProps {
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
   exportInProgress: boolean;
+  statsExportDisabled: boolean;
+  onExportScopeStatsCsv: () => void;
   onCreateClick: () => void;
 }
 
@@ -43,6 +53,8 @@ export function ExpensesPageHeader({
   onExportCsv,
   exportDisabled,
   exportInProgress,
+  statsExportDisabled,
+  onExportScopeStatsCsv,
   onCreateClick,
 }: ExpensesPageHeaderProps) {
   const listNav =
@@ -101,6 +113,17 @@ export function ExpensesPageHeader({
       </div>
       <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh expenses">
         <RefreshCcw size={16} />
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={statsExportDisabled}
+        onClick={() => onExportScopeStatsCsv()}
+        aria-label="Export expense scope statistics as CSV"
+        title="UTF-8 CSV snapshot from GET /finance/expenses/stats (period + list-aligned scope fields; search/category/type/sort not applied—see scope_note row)"
+      >
+        <TableProperties size={16} aria-hidden />
       </Button>
       <Button
         type="button"

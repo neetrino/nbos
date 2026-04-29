@@ -1,5 +1,9 @@
 import { getFinancePeriodParams, type FinancePeriod } from '../constants/finance';
-import type { ExpenseListParams, ExpenseListSortField } from '@/lib/api/finance';
+import type {
+  ExpenseListParams,
+  ExpenseListSortField,
+  ExpenseStatsQueryParams,
+} from '@/lib/api/finance';
 
 /** Page size for the on-screen expenses table/kanban (separate from CSV export chunking). */
 export const EXPENSE_LIST_UI_PAGE_SIZE = 100;
@@ -41,5 +45,19 @@ export function buildExpenseListApiParams(input: {
     ...projectParams,
     ...planParams,
     ...activeBoard,
+  };
+}
+
+/** Mirrors `GET /expenses/stats` scope vs the list: same period, project, plan, status, activeBoard — no search/category/type/frequency/sort. */
+export function pickExpenseStatsQueryParams(
+  list: Omit<ExpenseListParams, 'page' | 'pageSize'>,
+): ExpenseStatsQueryParams {
+  return {
+    dateFrom: list.dateFrom,
+    dateTo: list.dateTo,
+    projectId: list.projectId,
+    expensePlanId: list.expensePlanId,
+    status: list.status,
+    activeBoard: list.activeBoard,
   };
 }

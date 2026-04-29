@@ -35,8 +35,10 @@ import { useExpenseProjectFilterOptions } from './use-expense-project-filter-opt
 import {
   buildExpenseListApiParams,
   EXPENSE_LIST_UI_PAGE_SIZE,
+  pickExpenseStatsQueryParams,
 } from '@/features/finance/utils/build-expense-list-api-params';
 import { useExpenseCsvExport } from './use-expense-csv-export';
+import { useExpensesScopeStatsCsvExport } from './use-expenses-scope-stats-csv-export';
 import { useExpenseProjectBannerLabel } from './use-expense-project-banner-label';
 
 interface ExpensesPageContentProps {
@@ -118,6 +120,16 @@ export function ExpensesPageContent({
 
   const { exportCsvSubmitting, handleExportCsv } = useExpenseCsvExport(listApiParams);
 
+  const expenseStatsQueryParams = useMemo(
+    () => pickExpenseStatsQueryParams(listApiParams),
+    [listApiParams],
+  );
+
+  const { handleExportScopeStatsCsv } = useExpensesScopeStatsCsvExport(stats, {
+    period,
+    statsQuery: expenseStatsQueryParams,
+  });
+
   const projectBannerLabel = useExpenseProjectBannerLabel(projectIdFromUrl);
   const planBannerLabel = useExpensePlanBannerLabel(expensePlanIdFromUrl);
 
@@ -155,14 +167,7 @@ export function ExpensesPageContent({
           ...listApiParams,
           pageSize: EXPENSE_LIST_UI_PAGE_SIZE,
         }),
-        expensesApi.getStats({
-          dateFrom: listApiParams.dateFrom,
-          dateTo: listApiParams.dateTo,
-          projectId: listApiParams.projectId,
-          expensePlanId: listApiParams.expensePlanId,
-          status: listApiParams.status,
-          activeBoard: listApiParams.activeBoard,
-        }),
+        expensesApi.getStats(pickExpenseStatsQueryParams(listApiParams)),
       ]);
       setExpenses(data.items);
       setStats(expenseStats);
@@ -239,6 +244,8 @@ export function ExpensesPageContent({
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={loading || !stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
         onCreateClick={() => setCreateOpen(true)}
       />
 
