@@ -6,6 +6,7 @@ import type {
   ExpensePlanVsActualReport,
   MrrSubscriptionRevenueReport,
   PayrollReport,
+  ProjectPnlReport,
 } from '@/lib/api/finance-reports';
 
 export function CompanyPnlSnapshot({ report }: { report: CompanyPnlReport }) {
@@ -242,6 +243,48 @@ export function PayrollReportSnapshot({ report }: { report: PayrollReport }) {
         <p className="text-muted-foreground mt-4 text-sm">
           Largest status bucket: <span className="font-medium">{largestStatus.status}</span> at{' '}
           {formatCompanyPnlAmount(largestStatus.totalPayable)} payable.
+        </p>
+      ) : null}
+    </ReportSnapshot>
+  );
+}
+
+export function ProjectPnlSnapshot({ report }: { report: ProjectPnlReport }) {
+  const topProject = report.topProjects[0] ?? null;
+  return (
+    <ReportSnapshot
+      title="Project P&L v1 snapshot"
+      subtitle="Cash-basis project profitability from payments and actual expense payments."
+    >
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <SnapshotMetric label="Revenue" value={formatCompanyPnlAmount(report.totals.revenue)} />
+        <SnapshotMetric
+          label="Actual costs"
+          value={formatCompanyPnlAmount(report.totals.actualCosts)}
+        />
+        <SnapshotMetric
+          label="Net profit"
+          value={formatCompanyPnlAmount(report.totals.netProfit)}
+        />
+        <SnapshotMetric label="Margin" value={formatPercent(report.totals.marginPercent)} />
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <SnapshotMetric label="Projects" value={String(report.totals.projectCount)} compact />
+        <SnapshotMetric label="Payments" value={String(report.totals.paymentCount)} compact />
+        <SnapshotMetric
+          label="Expense payments"
+          value={String(report.totals.expensePaymentCount)}
+          compact
+        />
+      </div>
+      {topProject ? (
+        <p className="text-muted-foreground mt-4 text-sm">
+          Top project:{' '}
+          <span className="font-medium">
+            {topProject.projectCode ? `${topProject.projectCode} · ` : ''}
+            {topProject.projectName}
+          </span>{' '}
+          at {formatCompanyPnlAmount(topProject.netProfit)} net profit.
         </p>
       ) : null}
     </ReportSnapshot>

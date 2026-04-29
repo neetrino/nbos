@@ -42,7 +42,7 @@ export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
     audience: ['CEO', 'Finance Director', 'PM limited'],
     description:
       'Project revenue, costs and margin across orders, subscriptions and client services.',
-    v1Status: 'needs_aggregate_endpoint',
+    v1Status: 'definition_ready',
     sourceEndpoints: [
       '/api/finance/orders/stats',
       '/api/expenses/stats',
@@ -51,6 +51,7 @@ export const FINANCE_REPORT_DEFINITIONS: FinanceReportDefinition[] = [
     drillDownHrefs: ['/finance/orders', '/finance/expenses', '/finance/client-services'],
     phase3Scope: 'Server-side project profitability projection with source drill-downs.',
     phase6Deferred: 'Cross-module report center and advanced project comparison dashboards.',
+    aggregateEndpoint: '/api/finance/reports/project-pnl',
   },
   {
     id: 'cash-flow',

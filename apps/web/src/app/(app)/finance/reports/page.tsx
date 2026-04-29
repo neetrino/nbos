@@ -15,6 +15,7 @@ import {
   ExpensePlanVsActualSnapshot,
   MrrSubscriptionRevenueSnapshot,
   PayrollReportSnapshot,
+  ProjectPnlSnapshot,
 } from '@/features/finance/components/reports/FinanceReportSnapshots';
 import { financeReportsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -27,6 +28,7 @@ import {
   type FinanceReportDefinitionsResponse,
   type MrrSubscriptionRevenueReport,
   type PayrollReport,
+  type ProjectPnlReport,
 } from '@/lib/api/finance-reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -42,6 +44,7 @@ export default function FinanceReportsPage() {
   const [mrrSubscriptionRevenue, setMrrSubscriptionRevenue] =
     useState<MrrSubscriptionRevenueReport | null>(null);
   const [payrollReport, setPayrollReport] = useState<PayrollReport | null>(null);
+  const [projectPnl, setProjectPnl] = useState<ProjectPnlReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,6 +58,7 @@ export default function FinanceReportsPage() {
         expensePlanVsActualReport,
         mrrSubscriptionRevenueReport,
         payrollReportData,
+        projectPnlReport,
       ] = await Promise.all([
         financeReportsApi.getDefinitions(),
         financeReportsApi.getCompanyPnl(),
@@ -62,6 +66,7 @@ export default function FinanceReportsPage() {
         financeReportsApi.getExpensePlanVsActual(),
         financeReportsApi.getMrrSubscriptionRevenue(),
         financeReportsApi.getPayrollReport(),
+        financeReportsApi.getProjectPnl(),
       ]);
       setData(definitions);
       setCompanyPnl(companyPnlReport);
@@ -69,6 +74,7 @@ export default function FinanceReportsPage() {
       setExpensePlanVsActual(expensePlanVsActualReport);
       setMrrSubscriptionRevenue(mrrSubscriptionRevenueReport);
       setPayrollReport(payrollReportData);
+      setProjectPnl(projectPnlReport);
       setError(null);
     } catch (caught) {
       setData(null);
@@ -126,6 +132,7 @@ export default function FinanceReportsPage() {
           <MrrSubscriptionRevenueSnapshot report={mrrSubscriptionRevenue} />
         ) : null}
         {payrollReport ? <PayrollReportSnapshot report={payrollReport} /> : null}
+        {projectPnl ? <ProjectPnlSnapshot report={projectPnl} /> : null}
         {data.items.map((definition) => (
           <ReportDefinitionCard key={definition.id} definition={definition} />
         ))}

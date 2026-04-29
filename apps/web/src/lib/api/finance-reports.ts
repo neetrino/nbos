@@ -199,6 +199,38 @@ export interface PayrollReport {
   notes: string[];
 }
 
+export interface ProjectPnlReport {
+  reportId: 'project-pnl';
+  title: 'Project P&L';
+  currency: 'AMD';
+  period: {
+    dateFrom: string | null;
+    dateTo: string | null;
+    basis: 'cash';
+  };
+  totals: {
+    projectCount: number;
+    revenue: string;
+    actualCosts: string;
+    netProfit: string;
+    marginPercent: number | null;
+    paymentCount: number;
+    expensePaymentCount: number;
+  };
+  topProjects: Array<{
+    projectId: string;
+    projectCode: string | null;
+    projectName: string;
+    revenue: string;
+    actualCosts: string;
+    netProfit: string;
+    marginPercent: number | null;
+    paymentCount: number;
+    expensePaymentCount: number;
+  }>;
+  notes: string[];
+}
+
 export const financeReportsApi = {
   async getDefinitions(): Promise<FinanceReportDefinitionsResponse> {
     const resp = await api.get<FinanceReportDefinitionsResponse>(
@@ -233,6 +265,11 @@ export const financeReportsApi = {
 
   async getPayrollReport(): Promise<PayrollReport> {
     const resp = await api.get<PayrollReport>('/api/finance/reports/payroll');
+    return resp.data;
+  },
+
+  async getProjectPnl(): Promise<ProjectPnlReport> {
+    const resp = await api.get<ProjectPnlReport>('/api/finance/reports/project-pnl');
     return resp.data;
   },
 };

@@ -6,6 +6,7 @@ import { FinanceReportsController } from './reports.controller';
 import { FinanceReportsService } from './reports.service';
 import { MrrSubscriptionRevenueService } from './mrr-subscription-revenue.service';
 import { PayrollReportService } from './payroll-report.service';
+import { ProjectPnlService } from './project-pnl.service';
 
 @Module({
   controllers: [FinanceReportsController],
@@ -16,6 +17,7 @@ import { PayrollReportService } from './payroll-report.service';
     ExpensePlanVsActualService,
     MrrSubscriptionRevenueService,
     PayrollReportService,
+    ProjectPnlService,
   ],
   exports: [
     FinanceReportsService,
@@ -24,6 +26,7 @@ import { PayrollReportService } from './payroll-report.service';
     ExpensePlanVsActualService,
     MrrSubscriptionRevenueService,
     PayrollReportService,
+    ProjectPnlService,
   ],
 })
 export class FinanceReportsModule {}

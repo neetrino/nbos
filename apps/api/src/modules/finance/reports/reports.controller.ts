@@ -6,6 +6,7 @@ import { ExpensePlanVsActualService } from './expense-plan-vs-actual.service';
 import { FinanceReportsService } from './reports.service';
 import { MrrSubscriptionRevenueService } from './mrr-subscription-revenue.service';
 import { PayrollReportService } from './payroll-report.service';
+import { ProjectPnlService } from './project-pnl.service';
 
 @ApiTags('Finance / Reports')
 @ApiBearerAuth()
@@ -18,6 +19,7 @@ export class FinanceReportsController {
     private readonly expensePlanVsActualService: ExpensePlanVsActualService,
     private readonly mrrSubscriptionRevenueService: MrrSubscriptionRevenueService,
     private readonly payrollReportService: PayrollReportService,
+    private readonly projectPnlService: ProjectPnlService,
   ) {}
 
   @Get('definitions')
@@ -91,5 +93,15 @@ export class FinanceReportsController {
   })
   getPayrollReport(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
     return this.payrollReportService.getReport({ dateFrom, dateTo });
+  }
+
+  @Get('project-pnl')
+  @ApiOperation({
+    summary: 'Get Project P&L v1 aggregate',
+    description:
+      'Cash-driven Phase 3 aggregate for project revenue, actual costs, net profit and margin from live payments and expense payments.',
+  })
+  getProjectPnl(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.projectPnlService.getReport({ dateFrom, dateTo });
   }
 }
