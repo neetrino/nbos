@@ -1,4 +1,8 @@
-import { payrollRunRemainingString2dp } from '@/features/finance/utils/payroll-run-remaining-from-strings';
+import {
+  payrollRunRemainingString2dp,
+  sumMoneyStringsMajorUnits,
+  sumPayrollRunsRemainingMajorUnits,
+} from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { PayrollRunListRow } from '@/lib/api/payroll-runs';
 
 const CSV_HEADERS = [
@@ -47,10 +51,42 @@ function rowToCsvCells(row: PayrollRunListRow): string[] {
   return cells.map((c) => escapeCsvCell(String(c)));
 }
 
+function grandTotalPayrollRunsCsvLine(rows: PayrollRunListRow[]): string {
+  const salaryLines = rows.reduce((acc, r) => acc + r._count.salaryLines, 0);
+  const materialized = rows.reduce((acc, r) => acc + r.materializedExpenseLineCount, 0);
+  const base = sumMoneyStringsMajorUnits(rows.map((r) => r.totalBaseSalary)).toFixed(2);
+  const bonuses = sumMoneyStringsMajorUnits(rows.map((r) => r.totalBonuses)).toFixed(2);
+  const adjustments = sumMoneyStringsMajorUnits(rows.map((r) => r.totalAdjustments)).toFixed(2);
+  const deductions = sumMoneyStringsMajorUnits(rows.map((r) => r.totalDeductions)).toFixed(2);
+  const payable = sumMoneyStringsMajorUnits(rows.map((r) => r.totalPayable)).toFixed(2);
+  const paid = sumMoneyStringsMajorUnits(rows.map((r) => r.totalPaid)).toFixed(2);
+  const remaining = sumPayrollRunsRemainingMajorUnits(rows).toFixed(2);
+  const cells = [
+    '_grand_total',
+    `All runs (${rows.length})`,
+    '',
+    String(salaryLines),
+    String(materialized),
+    base,
+    bonuses,
+    adjustments,
+    deductions,
+    payable,
+    paid,
+    remaining,
+    '',
+    '',
+  ];
+  return cells.map((c) => escapeCsvCell(String(c))).join(',');
+}
+
 export function buildPayrollRunsCsvContent(rows: PayrollRunListRow[]): string {
   const headerLine = CSV_HEADERS.join(',');
+  if (rows.length === 0) {
+    return headerLine;
+  }
   const body = rows.map((r) => rowToCsvCells(r).join(',')).join('\r\n');
-  return body ? `${headerLine}\r\n${body}` : headerLine;
+  return `${headerLine}\r\n${body}\r\n${grandTotalPayrollRunsCsvLine(rows)}`;
 }
 
 export function triggerPayrollRunsCsvDownload(csvBodyWithoutBom: string, filename: string): void {

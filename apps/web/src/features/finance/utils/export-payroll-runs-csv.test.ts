@@ -53,4 +53,31 @@ describe('buildPayrollRunsCsvContent', () => {
     expect(cells?.[10]).toBe('25.00');
     expect(cells?.[11]).toBe('-15.00');
   });
+
+  it('appends grand total row with rolled-up numeric columns', () => {
+    const row2: PayrollRunListRow = {
+      ...sampleRow,
+      id: 'run-9',
+      payrollMonth: '2026-05',
+      totalBaseSalary: '50.00',
+      totalBonuses: '10.00',
+      totalPayable: '60.00',
+      totalPaid: '10.00',
+      _count: { salaryLines: 3 },
+      materializedExpenseLineCount: 1,
+    };
+    const csv = buildPayrollRunsCsvContent([sampleRow, row2]);
+    const lines = csv.split('\r\n');
+    expect(lines).toHaveLength(4);
+    const totalCells = lines[3]?.split(',');
+    expect(totalCells?.[0]).toBe('_grand_total');
+    expect(totalCells?.[1]).toBe('All runs (2)');
+    expect(totalCells?.[3]).toBe('8');
+    expect(totalCells?.[4]).toBe('4');
+    expect(totalCells?.[5]).toBe('150.00');
+    expect(totalCells?.[6]).toBe('10.00');
+    expect(totalCells?.[9]).toBe('160.00');
+    expect(totalCells?.[10]).toBe('10.00');
+    expect(totalCells?.[11]).toBe('150.00');
+  });
 });
