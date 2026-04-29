@@ -85,6 +85,27 @@ export class DocumentsController {
     );
   }
 
+  @Get(':id/activity')
+  @RequirePermission('DOCUMENTS', 'VIEW')
+  @ApiOperation({ summary: 'List document activity (cursor pagination)' })
+  @ApiQuery({ name: 'cursor', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  async listDocumentActivity(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limitRaw?: string,
+  ) {
+    const parsed =
+      limitRaw === undefined || limitRaw === '' ? undefined : Number.parseInt(limitRaw, 10);
+    const limit = Number.isFinite(parsed) ? parsed : undefined;
+    return this.documentsService.listDocumentActivity(
+      id,
+      { cursor: cursor?.trim() || undefined, limit },
+      buildDocumentsDetailAccess(user),
+    );
+  }
+
   @Get(':id')
   @RequirePermission('DOCUMENTS', 'VIEW')
   @ApiOperation({ summary: 'Get document by id' })

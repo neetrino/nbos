@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { BadRequestException } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import { encodeDocumentActivityCursor } from './documents-activity-cursor';
 
 const readAllAccess = {
   employeeId: 'employee-1',
@@ -275,6 +277,99 @@ describe('DocumentsService', () => {
         userId: 'user-1',
       }),
     );
+  });
+
+  it('trims document detail activity to page size and exposes activityNextCursor', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    const base = Date.UTC(2026, 0, 1, 12, 0, 0);
+    const activityEvents = Array.from({ length: 31 }, (_, idx) => ({
+      id: `00000000-0000-4000-8000-${String(100000 + idx).padStart(12, '0')}`,
+      action: 'updated',
+      actorId: 'employee-1',
+      metadata: {},
+      createdAt: new Date(base + (31 - idx) * 1000),
+    }));
+    prisma.document.findUnique.mockResolvedValueOnce({
+      ...detailDoc,
+      activityEvents,
+    });
+
+    const doc = await service.getDocument('doc-1', detailAccessAll);
+
+    expect(doc.activityEvents).toHaveLength(30);
+    expect(doc.activityNextCursor).toBeTruthy();
+    const oldestShown = activityEvents[29];
+    expect(doc.activityNextCursor).toBe(
+      encodeDocumentActivityCursor(oldestShown.createdAt, oldestShown.id),
+    );
+  });
+
+  it('lists older document activity after cursor', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.document.findUnique.mockResolvedValueOnce({
+      id: 'doc-1',
+      ownerId: 'employee-1',
+      createdById: 'employee-1',
+      listScopeOverride: null,
+      section: { defaultListScope: 'ALL' },
+    });
+    const t0 = new Date('2026-02-01T10:00:00.000Z');
+    const t1 = new Date('2026-02-01T09:00:00.000Z');
+    prisma.documentActivityEvent.findMany.mockResolvedValueOnce([
+      {
+        id: '00000000-0000-4000-8000-000000000002',
+        documentId: 'doc-1',
+        action: 'archived',
+        actorId: 'employee-1',
+        metadata: {},
+        createdAt: t0,
+      },
+      {
+        id: '00000000-0000-4000-8000-000000000001',
+        documentId: 'doc-1',
+        action: 'published',
+        actorId: 'employee-1',
+        metadata: {},
+        createdAt: t1,
+      },
+    ]);
+
+    const cursor = encodeDocumentActivityCursor(
+      new Date('2026-02-01T11:00:00.000Z'),
+      '00000000-0000-4000-8000-000000000099',
+    );
+    const page = await service.listDocumentActivity(
+      'doc-1',
+      { cursor, limit: 10 },
+      detailAccessAll,
+    );
+
+    expect(page.items).toHaveLength(2);
+    expect(page.nextCursor).toBeNull();
+    expect(prisma.documentActivityEvent.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          documentId: 'doc-1',
+          OR: expect.any(Array),
+        }),
+        take: 11,
+      }),
+    );
+  });
+
+  it('rejects invalid activity cursor on listDocumentActivity', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.document.findUnique.mockResolvedValueOnce({
+      id: 'doc-1',
+      ownerId: 'employee-1',
+      createdById: 'employee-1',
+      listScopeOverride: null,
+      section: { defaultListScope: 'ALL' },
+    });
+
+    await expect(
+      service.listDocumentActivity('doc-1', { cursor: '!!!' }, detailAccessAll),
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('updates section default list scope and writes audit', async () => {

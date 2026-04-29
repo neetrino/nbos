@@ -1,8 +1,14 @@
 /** Max documents returned in one list query. */
 export const DOCUMENT_LIST_LIMIT = 100;
 
-/** Activity events returned with document detail. */
-export const DOCUMENT_ACTIVITY_LIMIT = 30;
+/** Activity events per page (detail first page and activity endpoint default). */
+export const DOCUMENT_ACTIVITY_PAGE_SIZE = 30;
+
+/** Max `limit` query for `GET …/activity`. */
+export const DOCUMENT_ACTIVITY_MAX_PAGE = 50;
+
+/** Nested include fetches one extra row to set `activityNextCursor` on detail. */
+export const DOCUMENT_ACTIVITY_FIRST_PAGE_TAKE = DOCUMENT_ACTIVITY_PAGE_SIZE + 1;
 
 /** Global audit log (`audit_logs`) for document access changes. */
 export const DOCUMENT_AUDIT_ENTITY_TYPE = 'DOCUMENT' as const;

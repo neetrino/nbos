@@ -79,6 +79,13 @@ export interface DocumentDetail {
   activityEvents: DocumentActivityItem[];
   /** False when RBAC hides the activity feed (`DOCUMENTS_VIEW_ACTIVITY` NONE with no VIEW fallback). */
   activityRevealed?: boolean;
+  /** Present when more activity exists; pass to `listDocumentActivity` as `cursor`. */
+  activityNextCursor?: string | null;
+}
+
+export interface DocumentActivityPage {
+  items: DocumentActivityItem[];
+  nextCursor: string | null;
 }
 
 export const documentsApi = {
@@ -115,6 +122,17 @@ export const documentsApi = {
 
   async getDocument(id: string): Promise<DocumentDetail> {
     const resp = await api.get<DocumentDetail>('/api/documents/' + encodeURIComponent(id));
+    return resp.data;
+  },
+
+  async listDocumentActivity(
+    documentId: string,
+    params?: { cursor?: string; limit?: number },
+  ): Promise<DocumentActivityPage> {
+    const resp = await api.get<DocumentActivityPage>(
+      '/api/documents/' + encodeURIComponent(documentId) + '/activity',
+      { params },
+    );
     return resp.data;
   },
 

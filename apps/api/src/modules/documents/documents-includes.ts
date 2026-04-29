@@ -1,5 +1,5 @@
 import type { Prisma } from '@nbos/database';
-import { DOCUMENT_ACTIVITY_LIMIT } from './documents.constants';
+import { DOCUMENT_ACTIVITY_FIRST_PAGE_TAKE } from './documents.constants';
 
 export const DOCUMENT_LIST_INCLUDE: Prisma.DocumentInclude = {
   section: {
@@ -41,5 +41,8 @@ export const DOCUMENT_DETAIL_WITHOUT_ACTIVITY: Prisma.DocumentInclude = {
 
 export const DOCUMENT_DETAIL_INCLUDE: Prisma.DocumentInclude = {
   ...DOCUMENT_DETAIL_WITHOUT_ACTIVITY,
-  activityEvents: { orderBy: { createdAt: 'desc' }, take: DOCUMENT_ACTIVITY_LIMIT },
+  activityEvents: {
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+    take: DOCUMENT_ACTIVITY_FIRST_PAGE_TAKE,
+  },
 };

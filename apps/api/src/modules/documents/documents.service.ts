@@ -36,12 +36,18 @@ import {
   DOCUMENT_DETAIL_WITHOUT_ACTIVITY,
 } from './documents-includes';
 import {
+  DOCUMENT_ACTIVITY_MAX_PAGE,
+  DOCUMENT_ACTIVITY_PAGE_SIZE,
   DOCUMENT_AUDIT_ACTION_ACCESS_CHANGED,
   DOCUMENT_AUDIT_ACTION_SECTION_LIST_SCOPE_CHANGED,
   DOCUMENT_AUDIT_ENTITY_TYPE,
   DOCUMENT_LIST_LIMIT,
   DOCUMENT_SECTION_AUDIT_ENTITY_TYPE,
 } from './documents.constants';
+import {
+  decodeDocumentActivityCursor,
+  encodeDocumentActivityCursor,
+} from './documents-activity-cursor';
 import { searchDocumentIdsForList } from './documents-list-fts';
 import { pickDocumentSearchSnippet } from './documents-search-snippet';
 import { slugifyTitle } from './documents-slug';
@@ -156,11 +162,100 @@ export class DocumentsService {
     ) {
       throw new NotFoundException(`Document ${id} not found`);
     }
+    let activityEvents = includeActivity ? [...(doc.activityEvents ?? [])] : [];
+    let activityNextCursor: string | null = null;
+    if (includeActivity && activityEvents.length > DOCUMENT_ACTIVITY_PAGE_SIZE) {
+      const oldestKept = activityEvents[DOCUMENT_ACTIVITY_PAGE_SIZE - 1];
+      activityNextCursor =
+        oldestKept !== undefined
+          ? encodeDocumentActivityCursor(oldestKept.createdAt, oldestKept.id)
+          : null;
+      activityEvents = activityEvents.slice(0, DOCUMENT_ACTIVITY_PAGE_SIZE);
+    }
     return {
       ...doc,
-      activityEvents: includeActivity ? (doc.activityEvents ?? []) : [],
+      activityEvents,
       activityRevealed: includeActivity,
+      activityNextCursor: includeActivity ? activityNextCursor : null,
     };
+  }
+
+  async listDocumentActivity(
+    documentId: string,
+    query: { cursor?: string; limit?: number },
+    access: DocumentsDetailAccess,
+  ) {
+    await this.ensureDefaultSections();
+    const read = await resolveDocumentsReadContext(this.prisma, access);
+    if (read.denied) throw new NotFoundException(`Document ${documentId} not found`);
+    if (!documentActivityEventsAllowed(access)) {
+      throw new NotFoundException(`Document ${documentId} not found`);
+    }
+    const doc = await this.prisma.document.findUnique({
+      where: { id: documentId },
+      select: {
+        id: true,
+        ownerId: true,
+        createdById: true,
+        listScopeOverride: true,
+        section: { select: { defaultListScope: true } },
+      },
+    });
+    if (!doc) throw new NotFoundException(`Document ${documentId} not found`);
+    if (
+      !employeeCanReadDocumentRow(
+        {
+          ownerId: doc.ownerId,
+          createdById: doc.createdById,
+          listScopeOverride: doc.listScopeOverride,
+          section: doc.section,
+        },
+        read.viewScope,
+        access.employeeId,
+        read.colleagueIds,
+      )
+    ) {
+      throw new NotFoundException(`Document ${documentId} not found`);
+    }
+
+    const rawLimit = query.limit;
+    const parsedLimit =
+      typeof rawLimit === 'number' && Number.isFinite(rawLimit) ? Math.floor(rawLimit) : NaN;
+    const limit = Math.min(
+      DOCUMENT_ACTIVITY_MAX_PAGE,
+      Math.max(1, Number.isNaN(parsedLimit) ? DOCUMENT_ACTIVITY_PAGE_SIZE : parsedLimit),
+    );
+
+    const cursorRaw = query.cursor?.trim();
+    const cursorBoundary = cursorRaw ? decodeDocumentActivityCursor(cursorRaw) : undefined;
+
+    const pageWhere: Prisma.DocumentActivityEventWhereInput = {
+      documentId,
+      ...(cursorBoundary
+        ? {
+            OR: [
+              { createdAt: { lt: cursorBoundary.createdAt } },
+              {
+                AND: [{ createdAt: cursorBoundary.createdAt }, { id: { lt: cursorBoundary.id } }],
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const rows = await this.prisma.documentActivityEvent.findMany({
+      where: pageWhere,
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+    });
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const oldestInPage = items[items.length - 1];
+    const nextCursor =
+      hasMore && oldestInPage
+        ? encodeDocumentActivityCursor(oldestInPage.createdAt, oldestInPage.id)
+        : null;
+    return { items, nextCursor };
   }
 
   async createDocument(dto: CreateDocumentDto, actorId: string, access: DocumentsDetailAccess) {

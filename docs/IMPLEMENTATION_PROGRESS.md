@@ -4,24 +4,24 @@
 
 ## Current Focus
 
-| Field         | Value                                                               |
-| ------------- | ------------------------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**                             |
-| Current task  | Phase 5 Documents — activity pagination / remaining polish per plan |
-| Status        | Phase 5 in progress                                                 |
-| Last updated  | 2026-04-29                                                          |
+| Field         | Value                                                         |
+| ------------- | ------------------------------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge**                       |
+| Current task  | Phase 5 Documents — remaining Drive/Documents polish per plan |
+| Status        | Phase 5 in progress                                           |
+| Last updated  | 2026-04-29                                                    |
 
 ## Phase Snapshot
 
-| Phase                               | Status      | Progress | Notes                                                                                                                                      |
-| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                                                    |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                                           |
-| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates                                                 |
-| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                                                       |
-| Phase 5 — Collaboration / knowledge | In progress | ~80%     | Documents: Slice 6 depth + section `default_list_scope` admin (`MANAGE_SECTIONS`, PATCH section, web card); activity pagination still open |
-| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                                                          |
-| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                                                       |
+| Phase                               | Status      | Progress | Notes                                                                                                            |
+| ----------------------------------- | ----------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                          |
+| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                 |
+| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates                       |
+| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                             |
+| Phase 5 — Collaboration / knowledge | In progress | ~82%     | Documents: activity cursor pagination (`GET …/activity`, detail `activityNextCursor`, web “Load older activity”) |
+| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                                |
+| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                             |
 
 ## Phase 3 Full Closure Gate
 
@@ -82,11 +82,12 @@ Future Finance depth:
 | 2026-04-29 | Documents list-scope ACL             | Section `default_list_scope`, document `list_scope_override`, read/search enforcement, PATCH + `access_changed`.                                                      |
 | 2026-04-29 | Documents view_activity + audit log  | `DOCUMENTS_VIEW_ACTIVITY` in seed; `activityRevealed` on detail; `AuditService` on `access_changed`.                                                                  |
 | 2026-04-29 | Section default list scope admin     | `perm-documents-manage-sections` / `MANAGE_SECTIONS`; `PATCH /api/documents/sections/:id`; section page visibility card; audit `document_section_list_scope_changed`. |
+| 2026-04-29 | Document activity pagination         | `GET /api/documents/:id/activity` (cursor + limit); detail over-fetch + `activityNextCursor`; document detail “Load older activity”.                                  |
 
 ## Next Action
 
 1. Continue Phase 5 per `docs/PHASE_5_COLLABORATION_KNOWLEDGE_PLAN.md`.
-2. Next normal slice: **Phase 5** — activity pagination on document detail; remaining Documents/Drive polish per plan.
+2. Next normal slice: **Phase 5** — remaining Documents/Drive polish per plan (preview permissions UX, attachment index depth, etc.).
 3. Keep Google v2, AI, complex approval workflow and credentials secrets out of the first Documents release.
 
 ## Slice DoD

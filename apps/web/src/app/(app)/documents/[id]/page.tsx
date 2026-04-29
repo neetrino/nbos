@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Archive, Loader2 } from 'lucide-react';
@@ -14,7 +14,7 @@ import { DocumentHtmlViewer } from '@/features/documents/DocumentHtmlViewer';
 import { NativeDocumentEditor } from '@/features/documents/NativeDocumentEditor';
 import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
 import { formatDocumentRelativeTime } from '@/features/documents/format-relative-time';
-import { documentsApi, type DocumentDetail } from '@/lib/api/documents';
+import { documentsApi, type DocumentActivityItem, type DocumentDetail } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 
@@ -37,10 +37,31 @@ export default function DocumentDetailPage() {
   const id = typeof params.id === 'string' ? params.id : '';
   const { can, permissions } = usePermission();
   const [doc, setDoc] = useState<DocumentDetail | null>(null);
+  const [olderActivity, setOlderActivity] = useState<DocumentActivityItem[]>([]);
+  const [activityPagingCursor, setActivityPagingCursor] = useState<string | null>(null);
+  const [activityLoadingMore, setActivityLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
   const [contentTab, setContentTab] = useState<ContentTab>('view');
+
+  const docRef = useRef<DocumentDetail | null>(null);
+  docRef.current = doc;
+
+  const activityLayoutKey = useMemo(() => {
+    if (!doc) return '';
+    const ev0 = doc.activityEvents[0];
+    return `${doc.id}:${ev0?.id ?? ''}:${doc.activityEvents.length}:${doc.activityNextCursor ?? ''}`;
+  }, [doc]);
+
+  const prevActivityLayoutKeyRef = useRef('');
+  useEffect(() => {
+    if (!activityLayoutKey) return;
+    if (prevActivityLayoutKeyRef.current === activityLayoutKey) return;
+    prevActivityLayoutKeyRef.current = activityLayoutKey;
+    setOlderActivity([]);
+    setActivityPagingCursor(docRef.current?.activityNextCursor ?? null);
+  }, [activityLayoutKey]);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -48,6 +69,8 @@ export default function DocumentDetailPage() {
     setError(null);
     try {
       const next = await documentsApi.getDocument(id);
+      setOlderActivity([]);
+      setActivityPagingCursor(next.activityNextCursor ?? null);
       setDoc(next);
       const canEditDoc = hasDocumentsEditPermission(permissions);
       setContentTab(next.status === 'DRAFT' && canEditDoc ? 'edit' : 'view');
@@ -75,6 +98,25 @@ export default function DocumentDetailPage() {
       setArchiving(false);
     }
   };
+
+  const loadMoreActivity = async () => {
+    if (!id || !activityPagingCursor) return;
+    setActivityLoadingMore(true);
+    try {
+      const page = await documentsApi.listDocumentActivity(id, {
+        cursor: activityPagingCursor,
+      });
+      setOlderActivity((prev) => [...prev, ...page.items]);
+      setActivityPagingCursor(page.nextCursor);
+    } catch (e) {
+      setError(getApiErrorMessage(e, 'Could not load older activity.'));
+    } finally {
+      setActivityLoadingMore(false);
+    }
+  };
+
+  const visibleActivity =
+    doc && doc.activityRevealed !== false ? [...doc.activityEvents, ...olderActivity] : [];
 
   const canDelete = can('DELETE', 'DOCUMENTS');
   const canEdit = can('EDIT', 'DOCUMENTS');
@@ -212,34 +254,54 @@ export default function DocumentDetailPage() {
                 <p className="text-muted-foreground text-sm">
                   Activity history is hidden for your role.
                 </p>
-              ) : doc.activityEvents.length === 0 ? (
+              ) : visibleActivity.length === 0 ? (
                 <p className="text-muted-foreground text-sm">No activity yet.</p>
               ) : (
-                <ul className="divide-border divide-y text-sm">
-                  {doc.activityEvents.map((ev) => {
-                    const detail = formatDocumentActivityDetail(ev.action, ev.metadata);
-                    return (
-                      <li
-                        key={ev.id}
-                        className="flex flex-col gap-0.5 py-2 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-2"
-                      >
-                        <div className="min-w-0">
-                          <span className="font-medium capitalize">
-                            {ev.action.replace(/_/g, ' ')}
-                          </span>
-                          {detail ? (
-                            <span className="text-muted-foreground ml-0 block text-xs sm:ml-2 sm:inline">
-                              {detail}
+                <div className="space-y-3">
+                  <ul className="divide-border divide-y text-sm">
+                    {visibleActivity.map((ev) => {
+                      const detail = formatDocumentActivityDetail(ev.action, ev.metadata);
+                      return (
+                        <li
+                          key={ev.id}
+                          className="flex flex-col gap-0.5 py-2 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-2"
+                        >
+                          <div className="min-w-0">
+                            <span className="font-medium capitalize">
+                              {ev.action.replace(/_/g, ' ')}
                             </span>
-                          ) : null}
-                        </div>
-                        <span className="text-muted-foreground shrink-0 text-xs sm:text-sm">
-                          {formatDocumentRelativeTime(ev.createdAt)}
+                            {detail ? (
+                              <span className="text-muted-foreground ml-0 block text-xs sm:ml-2 sm:inline">
+                                {detail}
+                              </span>
+                            ) : null}
+                          </div>
+                          <span className="text-muted-foreground shrink-0 text-xs sm:text-sm">
+                            {formatDocumentRelativeTime(ev.createdAt)}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {activityPagingCursor ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto"
+                      disabled={activityLoadingMore}
+                      onClick={() => void loadMoreActivity()}
+                    >
+                      {activityLoadingMore ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Loader2 size={14} className="animate-spin" /> Loading…
                         </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                      ) : (
+                        'Load older activity'
+                      )}
+                    </Button>
+                  ) : null}
+                </div>
               )}
             </CardContent>
           </Card>
