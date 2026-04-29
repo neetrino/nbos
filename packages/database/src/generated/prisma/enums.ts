@@ -566,6 +566,15 @@ export const DocumentAttachmentPurposeEnum = {
 export type DocumentAttachmentPurposeEnum =
   (typeof DocumentAttachmentPurposeEnum)[keyof typeof DocumentAttachmentPurposeEnum];
 
+export const DocumentListScopeEnum = {
+  ALL: 'ALL',
+  OWN: 'OWN',
+  DEPARTMENT: 'DEPARTMENT',
+} as const;
+
+export type DocumentListScopeEnum =
+  (typeof DocumentListScopeEnum)[keyof typeof DocumentListScopeEnum];
+
 export const TicketCategoryEnum = {
   INCIDENT: 'INCIDENT',
   SERVICE_REQUEST: 'SERVICE_REQUEST',

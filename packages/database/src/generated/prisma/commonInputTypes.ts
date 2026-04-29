@@ -1703,6 +1703,37 @@ export type EnumFileUploadSessionStatusEnumWithAggregatesFilter<$PrismaModel = n
   _max?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
 };
 
+export type EnumDocumentListScopeEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DocumentListScopeEnum
+    | Prisma.EnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDocumentListScopeEnumFilter<$PrismaModel> | $Enums.DocumentListScopeEnum;
+};
+
+export type EnumDocumentListScopeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DocumentListScopeEnum
+    | Prisma.EnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumDocumentListScopeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.DocumentListScopeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDocumentListScopeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDocumentListScopeEnumFilter<$PrismaModel>;
+};
+
 export type EnumExternalLinkProviderEnumFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.ExternalLinkProviderEnum
@@ -1767,6 +1798,25 @@ export type EnumDocumentContentStorageEnumFilter<$PrismaModel = never> = {
     | $Enums.DocumentContentStorageEnum;
 };
 
+export type EnumDocumentListScopeEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DocumentListScopeEnum
+    | Prisma.EnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDocumentListScopeEnumNullableFilter<$PrismaModel>
+    | $Enums.DocumentListScopeEnum
+    | null;
+};
+
 export type EnumDocumentTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.DocumentTypeEnum | Prisma.EnumDocumentTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.DocumentTypeEnum[] | Prisma.ListEnumDocumentTypeEnumFieldRefInput<$PrismaModel>;
@@ -1809,6 +1859,28 @@ export type EnumDocumentContentStorageEnumWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumDocumentContentStorageEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumDocumentContentStorageEnumFilter<$PrismaModel>;
+};
+
+export type EnumDocumentListScopeEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DocumentListScopeEnum
+    | Prisma.EnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDocumentListScopeEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.DocumentListScopeEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDocumentListScopeEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDocumentListScopeEnumNullableFilter<$PrismaModel>;
 };
 
 export type EnumDocumentAttachmentPurposeEnumFilter<$PrismaModel = never> = {
@@ -3974,6 +4046,37 @@ export type NestedEnumFileUploadSessionStatusEnumWithAggregatesFilter<$PrismaMod
   _max?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
 };
 
+export type NestedEnumDocumentListScopeEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DocumentListScopeEnum
+    | Prisma.EnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDocumentListScopeEnumFilter<$PrismaModel> | $Enums.DocumentListScopeEnum;
+};
+
+export type NestedEnumDocumentListScopeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DocumentListScopeEnum
+    | Prisma.EnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumDocumentListScopeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.DocumentListScopeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDocumentListScopeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDocumentListScopeEnumFilter<$PrismaModel>;
+};
+
 export type NestedEnumExternalLinkProviderEnumFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.ExternalLinkProviderEnum
@@ -4038,6 +4141,25 @@ export type NestedEnumDocumentContentStorageEnumFilter<$PrismaModel = never> = {
     | $Enums.DocumentContentStorageEnum;
 };
 
+export type NestedEnumDocumentListScopeEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DocumentListScopeEnum
+    | Prisma.EnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDocumentListScopeEnumNullableFilter<$PrismaModel>
+    | $Enums.DocumentListScopeEnum
+    | null;
+};
+
 export type NestedEnumDocumentTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.DocumentTypeEnum | Prisma.EnumDocumentTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.DocumentTypeEnum[] | Prisma.ListEnumDocumentTypeEnumFieldRefInput<$PrismaModel>;
@@ -4080,6 +4202,28 @@ export type NestedEnumDocumentContentStorageEnumWithAggregatesFilter<$PrismaMode
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumDocumentContentStorageEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumDocumentContentStorageEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumDocumentListScopeEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DocumentListScopeEnum
+    | Prisma.EnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.DocumentListScopeEnum[]
+    | Prisma.ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumDocumentListScopeEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.DocumentListScopeEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDocumentListScopeEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDocumentListScopeEnumNullableFilter<$PrismaModel>;
 };
 
 export type NestedEnumDocumentAttachmentPurposeEnumFilter<$PrismaModel = never> = {

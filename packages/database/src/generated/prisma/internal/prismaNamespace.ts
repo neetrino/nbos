@@ -5111,6 +5111,7 @@ export const DocumentSectionScalarFieldEnum = {
   parentId: 'parentId',
   icon: 'icon',
   sortOrder: 'sortOrder',
+  defaultListScope: 'defaultListScope',
   defaultVisibility: 'defaultVisibility',
   createdById: 'createdById',
   updatedById: 'updatedById',
@@ -5163,6 +5164,7 @@ export const DocumentScalarFieldEnum = {
   contentObjectKey: 'contentObjectKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  listScopeOverride: 'listScopeOverride',
 } as const;
 
 export type DocumentScalarFieldEnum =
@@ -6343,6 +6345,22 @@ export type EnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel> = FieldRe
 export type ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'FileUploadSessionStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DocumentListScopeEnum'
+ */
+export type EnumDocumentListScopeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentListScopeEnum'
+>;
+
+/**
+ * Reference to a field of type 'DocumentListScopeEnum[]'
+ */
+export type ListEnumDocumentListScopeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DocumentListScopeEnum[]'
 >;
 
 /**

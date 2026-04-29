@@ -2,6 +2,30 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DocumentsService } from './documents.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
+const readAllAccess = {
+  employeeId: 'employee-1',
+  departmentIds: [] as string[],
+  documentsViewScope: 'ALL' as const,
+};
+
+const detailDoc = {
+  id: 'doc-1',
+  title: 'Hello',
+  ownerId: 'employee-1',
+  createdById: 'employee-1',
+  listScopeOverride: null,
+  section: {
+    id: 'sec',
+    name: 'Technical',
+    slug: 'technical',
+    sortOrder: 80,
+    defaultListScope: 'ALL',
+  },
+  tagLinks: [],
+  attachments: [],
+  activityEvents: [],
+};
+
 describe('DocumentsService', () => {
   let service: DocumentsService;
   let prisma: MockPrisma;
@@ -9,6 +33,7 @@ describe('DocumentsService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
+    prisma.employeeDepartment.findMany.mockResolvedValue([]);
     service = new DocumentsService(prisma as never);
   });
 
@@ -24,7 +49,7 @@ describe('DocumentsService', () => {
         title: 'A',
         plainText: null,
         description: null,
-        section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1, defaultListScope: 'ALL' },
         tagLinks: [],
       },
       {
@@ -32,12 +57,12 @@ describe('DocumentsService', () => {
         title: 'B',
         plainText: null,
         description: null,
-        section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1, defaultListScope: 'ALL' },
         tagLinks: [],
       },
     ]);
 
-    const rows = await service.listDocuments({ search: '  payroll  ' });
+    const rows = await service.listDocuments({ search: '  payroll  ' }, readAllAccess);
 
     expect(prisma.$queryRaw).toHaveBeenCalled();
     expect(prisma.document.findMany).toHaveBeenCalledWith(
@@ -62,20 +87,17 @@ describe('DocumentsService', () => {
   });
 
   it('creates a document and records activity', async () => {
-    prisma.documentSection.count.mockResolvedValueOnce(0).mockResolvedValueOnce(10);
+    prisma.documentSection.count.mockResolvedValueOnce(0).mockResolvedValue(10);
     prisma.documentSection.findFirst.mockResolvedValueOnce({ id: 'sec', archivedAt: null });
     prisma.document.create.mockResolvedValueOnce({ id: 'doc-1' });
     prisma.documentActivityEvent.create.mockResolvedValueOnce({ id: 'ev-1' });
-    prisma.document.findUnique.mockResolvedValueOnce({
-      id: 'doc-1',
-      title: 'Hello',
-      section: { id: 'sec', name: 'Technical', slug: 'technical', sortOrder: 80 },
-      tagLinks: [],
-      attachments: [],
-      activityEvents: [],
-    });
+    prisma.document.findUnique.mockResolvedValueOnce(detailDoc);
 
-    const doc = await service.createDocument({ title: 'Hello', sectionId: 'sec' }, 'employee-1');
+    const doc = await service.createDocument(
+      { title: 'Hello', sectionId: 'sec' },
+      'employee-1',
+      readAllAccess,
+    );
 
     expect(doc.id).toBe('doc-1');
     expect(prisma.document.create).toHaveBeenCalled();
@@ -89,14 +111,18 @@ describe('DocumentsService', () => {
   it('adds document attachment when file is linked to the document', async () => {
     prisma.documentSection.count.mockResolvedValue(10);
     prisma.document.findUnique
+      .mockResolvedValueOnce({
+        ownerId: 'user-1',
+        createdById: 'user-1',
+        listScopeOverride: null,
+        section: { defaultListScope: 'ALL' },
+      })
       .mockResolvedValueOnce({ id: 'doc-1', status: 'DRAFT' })
       .mockResolvedValueOnce({
+        ...detailDoc,
         id: 'doc-1',
         title: 'T',
-        section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
-        tagLinks: [],
-        attachments: [],
-        activityEvents: [],
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1, defaultListScope: 'ALL' },
       });
     prisma.fileLink.findFirst.mockResolvedValueOnce({ id: 'link-1' });
     prisma.fileAsset.findUnique.mockResolvedValueOnce({ id: 'fa-1', mimeType: 'image/png' });
@@ -109,6 +135,7 @@ describe('DocumentsService', () => {
       'doc-1',
       { fileAssetId: 'fa-1', purpose: 'INLINE_IMAGE' },
       'user-1',
+      { employeeId: 'user-1', departmentIds: [], documentsViewScope: 'ALL' },
     );
 
     expect(prisma.documentAttachment.create).toHaveBeenCalledWith(
@@ -123,24 +150,31 @@ describe('DocumentsService', () => {
   });
 
   it('skips activity for content-only update when recordActivity is false', async () => {
-    prisma.document.findUnique.mockResolvedValueOnce({
-      id: 'doc-1',
-      status: 'DRAFT',
-    });
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.document.findUnique
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        status: 'DRAFT',
+        listScopeOverride: null,
+        ownerId: 'user-1',
+        createdById: 'user-1',
+        section: { defaultListScope: 'ALL' },
+      })
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        title: 'T',
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1, defaultListScope: 'ALL' },
+        tagLinks: [],
+        attachments: [],
+        activityEvents: [],
+      });
     prisma.document.update.mockResolvedValueOnce({});
-    prisma.document.findUnique.mockResolvedValueOnce({
-      id: 'doc-1',
-      title: 'T',
-      section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
-      tagLinks: [],
-      attachments: [],
-      activityEvents: [],
-    });
 
     await service.updateDocument(
       'doc-1',
       { contentJson: { type: 'doc', content: [] }, recordActivity: false },
       'user-1',
+      { employeeId: 'user-1', departmentIds: [], documentsViewScope: 'ALL' },
     );
 
     expect(prisma.document.update).toHaveBeenCalled();
@@ -148,24 +182,32 @@ describe('DocumentsService', () => {
   });
 
   it('still records published when publishing draft even if recordActivity is false', async () => {
-    prisma.document.findUnique.mockResolvedValueOnce({
-      id: 'doc-1',
-      status: 'DRAFT',
-    });
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.document.findUnique
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        status: 'DRAFT',
+        listScopeOverride: null,
+        ownerId: 'user-1',
+        createdById: 'user-1',
+        section: { defaultListScope: 'ALL' },
+      })
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        title: 'T',
+        section: { id: 's', name: 'S', slug: 's', sortOrder: 1, defaultListScope: 'ALL' },
+        tagLinks: [],
+        attachments: [],
+        activityEvents: [],
+      });
     prisma.document.update.mockResolvedValueOnce({});
-    prisma.document.findUnique.mockResolvedValueOnce({
-      id: 'doc-1',
-      title: 'T',
-      section: { id: 's', name: 'S', slug: 's', sortOrder: 1 },
-      tagLinks: [],
-      attachments: [],
-      activityEvents: [],
-    });
+    prisma.documentActivityEvent.create.mockResolvedValue({});
 
     await service.updateDocument(
       'doc-1',
       { status: 'PUBLISHED', contentJson: { type: 'doc', content: [] }, recordActivity: false },
       'user-1',
+      { employeeId: 'user-1', departmentIds: [], documentsViewScope: 'ALL' },
     );
 
     expect(prisma.documentActivityEvent.create).toHaveBeenCalledWith(

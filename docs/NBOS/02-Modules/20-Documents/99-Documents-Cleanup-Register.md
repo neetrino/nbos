@@ -123,7 +123,7 @@ Need editor with:
 
 ### B6. Search is missing
 
-Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `ts_rank_cd` with `websearch_to_tsquery`, plus ILIKE on the same fields as before (section name, tags); optional `searchSnippet` for list cards. **Not yet:** attachment metadata in index; stronger ACL-scoped search.
+Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `ts_rank_cd` with `websearch_to_tsquery`, plus ILIKE on the same fields as before (section name, tags); optional `searchSnippet` for list cards. List/detail respect `default_list_scope` / `list_scope_override` intersected with RBAC `DOCUMENTS_VIEW`. **Not yet:** attachment metadata in index; dedicated `documents.view_activity` permission split.
 
 Need PostgreSQL search over:
 

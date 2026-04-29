@@ -1,3 +1,5 @@
+import { PrismaClient } from '@nbos/database';
+
 /** Canonical default sections per `docs/NBOS/02-Modules/20-Documents/01-Document-Types-and-Data-Model.md`. */
 export const DEFAULT_DOCUMENT_SECTIONS = [
   {
@@ -41,3 +43,24 @@ export const DEFAULT_DOCUMENT_SECTIONS = [
   },
   { name: 'Archive', slug: 'archive', description: 'Archived reference material', sortOrder: 100 },
 ] as const;
+
+export async function ensureDefaultDocumentSections(
+  prisma: InstanceType<typeof PrismaClient>,
+  log: (message: string) => void,
+): Promise<void> {
+  const count = await prisma.documentSection.count();
+  if (count > 0) return;
+  log('Seeding default document sections');
+  for (const row of DEFAULT_DOCUMENT_SECTIONS) {
+    await prisma.documentSection.upsert({
+      where: { slug: row.slug },
+      create: {
+        name: row.name,
+        slug: row.slug,
+        description: row.description,
+        sortOrder: row.sortOrder,
+      },
+      update: {},
+    });
+  }
+}

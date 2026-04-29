@@ -18,5 +18,12 @@ export function formatDocumentActivityDetail(action: string, metadata: unknown):
   if (action === 'created' && typeof m.title === 'string') {
     return `“${m.title}”`;
   }
+  if (action === 'access_changed') {
+    const next = m.listScopeOverride;
+    const prev = m.previousListScopeOverride;
+    const nextLabel = next === null || next === undefined ? 'section default' : String(next);
+    const prevLabel = prev === null || prev === undefined ? 'section default' : String(prev);
+    return `List scope ${prevLabel} → ${nextLabel}`;
+  }
   return null;
 }

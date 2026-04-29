@@ -42,6 +42,7 @@ export type DocumentSectionMinAggregateOutputType = {
   parentId: string | null;
   icon: string | null;
   sortOrder: number | null;
+  defaultListScope: $Enums.DocumentListScopeEnum | null;
   defaultVisibility: $Enums.FileVisibilityEnum | null;
   createdById: string | null;
   updatedById: string | null;
@@ -58,6 +59,7 @@ export type DocumentSectionMaxAggregateOutputType = {
   parentId: string | null;
   icon: string | null;
   sortOrder: number | null;
+  defaultListScope: $Enums.DocumentListScopeEnum | null;
   defaultVisibility: $Enums.FileVisibilityEnum | null;
   createdById: string | null;
   updatedById: string | null;
@@ -74,6 +76,7 @@ export type DocumentSectionCountAggregateOutputType = {
   parentId: number;
   icon: number;
   sortOrder: number;
+  defaultListScope: number;
   defaultVisibility: number;
   createdById: number;
   updatedById: number;
@@ -99,6 +102,7 @@ export type DocumentSectionMinAggregateInputType = {
   parentId?: true;
   icon?: true;
   sortOrder?: true;
+  defaultListScope?: true;
   defaultVisibility?: true;
   createdById?: true;
   updatedById?: true;
@@ -115,6 +119,7 @@ export type DocumentSectionMaxAggregateInputType = {
   parentId?: true;
   icon?: true;
   sortOrder?: true;
+  defaultListScope?: true;
   defaultVisibility?: true;
   createdById?: true;
   updatedById?: true;
@@ -131,6 +136,7 @@ export type DocumentSectionCountAggregateInputType = {
   parentId?: true;
   icon?: true;
   sortOrder?: true;
+  defaultListScope?: true;
   defaultVisibility?: true;
   createdById?: true;
   updatedById?: true;
@@ -239,6 +245,7 @@ export type DocumentSectionGroupByOutputType = {
   parentId: string | null;
   icon: string | null;
   sortOrder: number;
+  defaultListScope: $Enums.DocumentListScopeEnum;
   defaultVisibility: $Enums.FileVisibilityEnum;
   createdById: string | null;
   updatedById: string | null;
@@ -275,6 +282,9 @@ export type DocumentSectionWhereInput = {
   parentId?: Prisma.StringNullableFilter<'DocumentSection'> | string | null;
   icon?: Prisma.StringNullableFilter<'DocumentSection'> | string | null;
   sortOrder?: Prisma.IntFilter<'DocumentSection'> | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFilter<'DocumentSection'>
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFilter<'DocumentSection'>
     | $Enums.FileVisibilityEnum;
@@ -299,6 +309,7 @@ export type DocumentSectionOrderByWithRelationInput = {
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder;
   icon?: Prisma.SortOrderInput | Prisma.SortOrder;
   sortOrder?: Prisma.SortOrder;
+  defaultListScope?: Prisma.SortOrder;
   defaultVisibility?: Prisma.SortOrder;
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder;
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -322,6 +333,9 @@ export type DocumentSectionWhereUniqueInput = Prisma.AtLeast<
     parentId?: Prisma.StringNullableFilter<'DocumentSection'> | string | null;
     icon?: Prisma.StringNullableFilter<'DocumentSection'> | string | null;
     sortOrder?: Prisma.IntFilter<'DocumentSection'> | number;
+    defaultListScope?:
+      | Prisma.EnumDocumentListScopeEnumFilter<'DocumentSection'>
+      | $Enums.DocumentListScopeEnum;
     defaultVisibility?:
       | Prisma.EnumFileVisibilityEnumFilter<'DocumentSection'>
       | $Enums.FileVisibilityEnum;
@@ -348,6 +362,7 @@ export type DocumentSectionOrderByWithAggregationInput = {
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder;
   icon?: Prisma.SortOrderInput | Prisma.SortOrder;
   sortOrder?: Prisma.SortOrder;
+  defaultListScope?: Prisma.SortOrder;
   defaultVisibility?: Prisma.SortOrder;
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder;
   updatedById?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -376,6 +391,9 @@ export type DocumentSectionScalarWhereWithAggregatesInput = {
   parentId?: Prisma.StringNullableWithAggregatesFilter<'DocumentSection'> | string | null;
   icon?: Prisma.StringNullableWithAggregatesFilter<'DocumentSection'> | string | null;
   sortOrder?: Prisma.IntWithAggregatesFilter<'DocumentSection'> | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumWithAggregatesFilter<'DocumentSection'>
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumWithAggregatesFilter<'DocumentSection'>
     | $Enums.FileVisibilityEnum;
@@ -397,6 +415,7 @@ export type DocumentSectionCreateInput = {
   description?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -416,6 +435,7 @@ export type DocumentSectionUncheckedCreateInput = {
   parentId?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -433,6 +453,9 @@ export type DocumentSectionUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -454,6 +477,9 @@ export type DocumentSectionUncheckedUpdateInput = {
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -474,6 +500,7 @@ export type DocumentSectionCreateManyInput = {
   parentId?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -489,6 +516,9 @@ export type DocumentSectionUpdateManyMutationInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -507,6 +537,9 @@ export type DocumentSectionUncheckedUpdateManyInput = {
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -540,6 +573,7 @@ export type DocumentSectionCountOrderByAggregateInput = {
   parentId?: Prisma.SortOrder;
   icon?: Prisma.SortOrder;
   sortOrder?: Prisma.SortOrder;
+  defaultListScope?: Prisma.SortOrder;
   defaultVisibility?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   updatedById?: Prisma.SortOrder;
@@ -560,6 +594,7 @@ export type DocumentSectionMaxOrderByAggregateInput = {
   parentId?: Prisma.SortOrder;
   icon?: Prisma.SortOrder;
   sortOrder?: Prisma.SortOrder;
+  defaultListScope?: Prisma.SortOrder;
   defaultVisibility?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   updatedById?: Prisma.SortOrder;
@@ -576,6 +611,7 @@ export type DocumentSectionMinOrderByAggregateInput = {
   parentId?: Prisma.SortOrder;
   icon?: Prisma.SortOrder;
   sortOrder?: Prisma.SortOrder;
+  defaultListScope?: Prisma.SortOrder;
   defaultVisibility?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   updatedById?: Prisma.SortOrder;
@@ -630,6 +666,10 @@ export type DocumentSectionUncheckedCreateNestedManyWithoutParentInput = {
     | Prisma.DocumentSectionCreateOrConnectWithoutParentInput[];
   createMany?: Prisma.DocumentSectionCreateManyParentInputEnvelope;
   connect?: Prisma.DocumentSectionWhereUniqueInput | Prisma.DocumentSectionWhereUniqueInput[];
+};
+
+export type EnumDocumentListScopeEnumFieldUpdateOperationsInput = {
+  set?: $Enums.DocumentListScopeEnum;
 };
 
 export type DocumentSectionUpdateOneWithoutChildrenNestedInput = {
@@ -740,6 +780,7 @@ export type DocumentSectionCreateWithoutChildrenInput = {
   description?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -758,6 +799,7 @@ export type DocumentSectionUncheckedCreateWithoutChildrenInput = {
   parentId?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -782,6 +824,7 @@ export type DocumentSectionCreateWithoutParentInput = {
   description?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -799,6 +842,7 @@ export type DocumentSectionUncheckedCreateWithoutParentInput = {
   description?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -849,6 +893,9 @@ export type DocumentSectionUpdateWithoutChildrenInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -869,6 +916,9 @@ export type DocumentSectionUncheckedUpdateWithoutChildrenInput = {
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -919,6 +969,9 @@ export type DocumentSectionScalarWhereInput = {
   parentId?: Prisma.StringNullableFilter<'DocumentSection'> | string | null;
   icon?: Prisma.StringNullableFilter<'DocumentSection'> | string | null;
   sortOrder?: Prisma.IntFilter<'DocumentSection'> | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFilter<'DocumentSection'>
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFilter<'DocumentSection'>
     | $Enums.FileVisibilityEnum;
@@ -936,6 +989,7 @@ export type DocumentSectionCreateWithoutDocumentsInput = {
   description?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -954,6 +1008,7 @@ export type DocumentSectionUncheckedCreateWithoutDocumentsInput = {
   parentId?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -998,6 +1053,9 @@ export type DocumentSectionUpdateWithoutDocumentsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -1018,6 +1076,9 @@ export type DocumentSectionUncheckedUpdateWithoutDocumentsInput = {
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -1036,6 +1097,7 @@ export type DocumentSectionCreateManyParentInput = {
   description?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  defaultListScope?: $Enums.DocumentListScopeEnum;
   defaultVisibility?: $Enums.FileVisibilityEnum;
   createdById?: string | null;
   updatedById?: string | null;
@@ -1051,6 +1113,9 @@ export type DocumentSectionUpdateWithoutParentInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -1070,6 +1135,9 @@ export type DocumentSectionUncheckedUpdateWithoutParentInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -1089,6 +1157,9 @@ export type DocumentSectionUncheckedUpdateManyWithoutParentInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   icon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  defaultListScope?:
+    | Prisma.EnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum;
   defaultVisibility?:
     | Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput
     | $Enums.FileVisibilityEnum;
@@ -1156,6 +1227,7 @@ export type DocumentSectionSelect<
     parentId?: boolean;
     icon?: boolean;
     sortOrder?: boolean;
+    defaultListScope?: boolean;
     defaultVisibility?: boolean;
     createdById?: boolean;
     updatedById?: boolean;
@@ -1181,6 +1253,7 @@ export type DocumentSectionSelectCreateManyAndReturn<
     parentId?: boolean;
     icon?: boolean;
     sortOrder?: boolean;
+    defaultListScope?: boolean;
     defaultVisibility?: boolean;
     createdById?: boolean;
     updatedById?: boolean;
@@ -1203,6 +1276,7 @@ export type DocumentSectionSelectUpdateManyAndReturn<
     parentId?: boolean;
     icon?: boolean;
     sortOrder?: boolean;
+    defaultListScope?: boolean;
     defaultVisibility?: boolean;
     createdById?: boolean;
     updatedById?: boolean;
@@ -1222,6 +1296,7 @@ export type DocumentSectionSelectScalar = {
   parentId?: boolean;
   icon?: boolean;
   sortOrder?: boolean;
+  defaultListScope?: boolean;
   defaultVisibility?: boolean;
   createdById?: boolean;
   updatedById?: boolean;
@@ -1240,6 +1315,7 @@ export type DocumentSectionOmit<
   | 'parentId'
   | 'icon'
   | 'sortOrder'
+  | 'defaultListScope'
   | 'defaultVisibility'
   | 'createdById'
   | 'updatedById'
@@ -1285,6 +1361,7 @@ export type $DocumentSectionPayload<
       parentId: string | null;
       icon: string | null;
       sortOrder: number;
+      defaultListScope: $Enums.DocumentListScopeEnum;
       defaultVisibility: $Enums.FileVisibilityEnum;
       createdById: string | null;
       updatedById: string | null;
@@ -1905,6 +1982,7 @@ export interface DocumentSectionFieldRefs {
   readonly parentId: Prisma.FieldRef<'DocumentSection', 'String'>;
   readonly icon: Prisma.FieldRef<'DocumentSection', 'String'>;
   readonly sortOrder: Prisma.FieldRef<'DocumentSection', 'Int'>;
+  readonly defaultListScope: Prisma.FieldRef<'DocumentSection', 'DocumentListScopeEnum'>;
   readonly defaultVisibility: Prisma.FieldRef<'DocumentSection', 'FileVisibilityEnum'>;
   readonly createdById: Prisma.FieldRef<'DocumentSection', 'String'>;
   readonly updatedById: Prisma.FieldRef<'DocumentSection', 'String'>;

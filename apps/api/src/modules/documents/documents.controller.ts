@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { buildDocumentsReadAccess } from './documents-read-access.dto';
 import { DocumentsService } from './documents.service';
 import type {
   AddDocumentAttachmentDto,
@@ -55,31 +56,35 @@ export class DocumentsController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'includeArchived', required: false })
   async listDocuments(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('sectionId') sectionId?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
     @Query('includeArchived') includeArchived?: string,
   ) {
-    return this.documentsService.listDocuments({
-      sectionId,
-      status,
-      search,
-      includeArchived: includeArchived === 'true' || includeArchived === '1',
-    });
+    return this.documentsService.listDocuments(
+      {
+        sectionId,
+        status,
+        search,
+        includeArchived: includeArchived === 'true' || includeArchived === '1',
+      },
+      buildDocumentsReadAccess(user),
+    );
   }
 
   @Get(':id')
   @RequirePermission('DOCUMENTS', 'VIEW')
   @ApiOperation({ summary: 'Get document by id' })
-  async getDocument(@Param('id') id: string) {
-    return this.documentsService.getDocument(id);
+  async getDocument(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.documentsService.getDocument(id, buildDocumentsReadAccess(user));
   }
 
   @Post()
   @RequirePermission('DOCUMENTS', 'ADD')
   @ApiOperation({ summary: 'Create draft document' })
   async createDocument(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateDocumentDto) {
-    return this.documentsService.createDocument(body, user.id);
+    return this.documentsService.createDocument(body, user.id, buildDocumentsReadAccess(user));
   }
 
   @Patch(':id')
@@ -90,7 +95,7 @@ export class DocumentsController {
     @Param('id') id: string,
     @Body() body: UpdateDocumentDto,
   ) {
-    return this.documentsService.updateDocument(id, body, user.id);
+    return this.documentsService.updateDocument(id, body, user.id, buildDocumentsReadAccess(user));
   }
 
   @Post(':id/attachments')
@@ -105,7 +110,12 @@ export class DocumentsController {
     @Param('id') id: string,
     @Body() body: AddDocumentAttachmentDto,
   ) {
-    return this.documentsService.addDocumentAttachment(id, body, user.id);
+    return this.documentsService.addDocumentAttachment(
+      id,
+      body,
+      user.id,
+      buildDocumentsReadAccess(user),
+    );
   }
 
   @Delete(':id/attachments/:attachmentId')
@@ -117,13 +127,18 @@ export class DocumentsController {
     @Param('id') id: string,
     @Param('attachmentId') attachmentId: string,
   ) {
-    await this.documentsService.removeDocumentAttachment(id, attachmentId, user.id);
+    await this.documentsService.removeDocumentAttachment(
+      id,
+      attachmentId,
+      user.id,
+      buildDocumentsReadAccess(user),
+    );
   }
 
   @Post(':id/archive')
   @RequirePermission('DOCUMENTS', 'DELETE')
   @ApiOperation({ summary: 'Archive document' })
   async archiveDocument(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
-    return this.documentsService.archiveDocument(id, user.id);
+    return this.documentsService.archiveDocument(id, user.id, buildDocumentsReadAccess(user));
   }
 }

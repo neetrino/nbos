@@ -3,13 +3,30 @@ import { Injectable, Inject, NotFoundException, BadRequestException, Logger } fr
 import {
   PrismaClient,
   type DocumentAttachmentPurposeEnum,
+  type DocumentListScopeEnum,
   type DocumentStatusEnum,
   type DocumentTypeEnum,
   type InputJsonValue,
   type Prisma,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { DEFAULT_DOCUMENT_SECTIONS } from './documents-default-sections';
+import { ensureDefaultDocumentSections } from './documents-default-sections';
+import {
+  assertDocumentModifiable,
+  assertDocumentReadableByAccess,
+  assertFileLinkedToDocument,
+  assertPurposeMatchesMime,
+} from './documents-assertions';
+import {
+  buildDocumentsReadableWhere,
+  employeeCanReadDocumentRow,
+  resolveDocumentsReadContext,
+  type DocumentsReadAccess,
+} from './documents-access-read';
+import {
+  isDocumentsListScopeOnlyPatch,
+  shouldSkipDocumentsUpdateActivityAfterPatch,
+} from './documents-update-policy';
 import { DOCUMENT_LIST_INCLUDE, DOCUMENT_DETAIL_INCLUDE } from './documents-includes';
 import { DOCUMENT_LIST_LIMIT } from './documents.constants';
 import { searchDocumentIdsForList } from './documents-list-fts';
@@ -50,12 +67,18 @@ export class DocumentsService {
     });
   }
 
-  async listDocuments(query: ListDocumentsQuery) {
+  async listDocuments(query: ListDocumentsQuery, access: DocumentsReadAccess) {
     await this.ensureDefaultSections();
-    const where: Prisma.DocumentWhereInput = {};
+    const read = await resolveDocumentsReadContext(this.prisma, access);
+    if (read.denied) return [];
+
+    const where: Prisma.DocumentWhereInput = {
+      AND: [buildDocumentsReadableWhere(read.viewScope, access.employeeId, read.colleagueIds)],
+    };
     if (query.sectionId) where.sectionId = query.sectionId;
     if (query.status) where.status = query.status as DocumentStatusEnum;
     else if (!query.includeArchived) where.status = { not: 'ARCHIVED' };
+
     const searchTerm = query.search?.trim();
     if (!searchTerm) {
       return this.prisma.document.findMany({
@@ -72,6 +95,9 @@ export class DocumentsService {
       status: query.status as DocumentStatusEnum | undefined,
       includeArchived: query.includeArchived === true,
       limit: DOCUMENT_LIST_LIMIT,
+      viewScope: read.viewScope,
+      employeeId: access.employeeId,
+      colleagueIds: read.colleagueIds,
     });
     if (ranked.length === 0) return [];
 
@@ -88,17 +114,34 @@ export class DocumentsService {
     }));
   }
 
-  async getDocument(id: string) {
+  async getDocument(id: string, access: DocumentsReadAccess) {
     await this.ensureDefaultSections();
+    const read = await resolveDocumentsReadContext(this.prisma, access);
+    if (read.denied) throw new NotFoundException(`Document ${id} not found`);
     const doc = await this.prisma.document.findUnique({
       where: { id },
       include: DOCUMENT_DETAIL_INCLUDE,
     });
     if (!doc) throw new NotFoundException(`Document ${id} not found`);
+    if (
+      !employeeCanReadDocumentRow(
+        {
+          ownerId: doc.ownerId,
+          createdById: doc.createdById,
+          listScopeOverride: doc.listScopeOverride,
+          section: doc.section,
+        },
+        read.viewScope,
+        access.employeeId,
+        read.colleagueIds,
+      )
+    ) {
+      throw new NotFoundException(`Document ${id} not found`);
+    }
     return doc;
   }
 
-  async createDocument(dto: CreateDocumentDto, actorId: string) {
+  async createDocument(dto: CreateDocumentDto, actorId: string, access: DocumentsReadAccess) {
     await this.ensureDefaultSections();
     const title = dto.title?.trim();
     if (!title) throw new BadRequestException('Title is required.');
@@ -123,12 +166,46 @@ export class DocumentsService {
       },
     });
     await this.recordActivity(doc.id, actorId, 'created', { title });
-    return this.getDocument(doc.id);
+    return this.getDocument(doc.id, access);
   }
 
-  async updateDocument(id: string, dto: UpdateDocumentDto, actorId: string) {
-    const existing = await this.prisma.document.findUnique({ where: { id } });
+  async updateDocument(
+    id: string,
+    dto: UpdateDocumentDto,
+    actorId: string,
+    access: DocumentsReadAccess,
+  ) {
+    await this.ensureDefaultSections();
+    const read = await resolveDocumentsReadContext(this.prisma, access);
+    if (read.denied) throw new NotFoundException(`Document ${id} not found`);
+
+    const existing = await this.prisma.document.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        listScopeOverride: true,
+        ownerId: true,
+        createdById: true,
+        section: { select: { defaultListScope: true } },
+      },
+    });
     if (!existing) throw new NotFoundException(`Document ${id} not found`);
+    if (
+      !employeeCanReadDocumentRow(
+        {
+          ownerId: existing.ownerId,
+          createdById: existing.createdById,
+          listScopeOverride: existing.listScopeOverride,
+          section: existing.section,
+        },
+        read.viewScope,
+        access.employeeId,
+        read.colleagueIds,
+      )
+    ) {
+      throw new NotFoundException(`Document ${id} not found`);
+    }
 
     if (dto.sectionId) {
       const section = await this.prisma.documentSection.findFirst({
@@ -138,6 +215,23 @@ export class DocumentsService {
     }
 
     const data: Prisma.DocumentUpdateInput = { updatedById: actorId };
+    let accessScopeChanged = false;
+    if (dto.listScopeOverride !== undefined) {
+      const prev = existing.listScopeOverride;
+      if (dto.listScopeOverride === null) {
+        data.listScopeOverride = null;
+        accessScopeChanged = prev !== null;
+      } else {
+        const v = dto.listScopeOverride.trim().toUpperCase();
+        if (v !== 'ALL' && v !== 'OWN' && v !== 'DEPARTMENT') {
+          throw new BadRequestException('listScopeOverride must be ALL, OWN, DEPARTMENT, or null.');
+        }
+        const next = v as DocumentListScopeEnum;
+        data.listScopeOverride = next;
+        accessScopeChanged = prev !== next;
+      }
+    }
+
     if (dto.title !== undefined) {
       const nextTitle = dto.title.trim();
       if (!nextTitle) throw new BadRequestException('Title cannot be empty.');
@@ -163,38 +257,28 @@ export class DocumentsService {
     }
 
     await this.prisma.document.update({ where: { id }, data });
-    const shouldSkipUpdateActivity = this.shouldSkipUpdateActivityAfterPatch(existing, dto);
-    if (!shouldSkipUpdateActivity) {
+
+    if (accessScopeChanged) {
+      await this.recordActivity(id, actorId, 'access_changed', {
+        listScopeOverride: dto.listScopeOverride ?? null,
+        previousListScopeOverride: existing.listScopeOverride,
+      });
+    }
+
+    const shouldSkipUpdateActivity = shouldSkipDocumentsUpdateActivityAfterPatch(existing, dto);
+    const skipGenericActivity =
+      shouldSkipUpdateActivity || (accessScopeChanged && isDocumentsListScopeOnlyPatch(dto));
+    if (!skipGenericActivity) {
       const action =
         dto.status === 'PUBLISHED' && existing.status === 'DRAFT' ? 'published' : 'updated';
       await this.recordActivity(id, actorId, action, {});
     }
-    return this.getDocument(id);
+    return this.getDocument(id, access);
   }
 
-  private shouldSkipUpdateActivityAfterPatch(
-    existing: { status: DocumentStatusEnum },
-    dto: UpdateDocumentDto,
-  ): boolean {
-    const publishing = dto.status === 'PUBLISHED' && existing.status === 'DRAFT';
-    if (publishing) return false;
-    if (dto.recordActivity !== false) return false;
-    return this.isContentFieldsOnlyPatch(dto);
-  }
-
-  private isContentFieldsOnlyPatch(dto: UpdateDocumentDto): boolean {
-    const touchesContent =
-      dto.contentJson !== undefined || dto.contentHtml !== undefined || dto.plainText !== undefined;
-    if (!touchesContent) return false;
-    return (
-      dto.title === undefined &&
-      dto.description === undefined &&
-      dto.sectionId === undefined &&
-      dto.status === undefined
-    );
-  }
-
-  async archiveDocument(id: string, actorId: string) {
+  async archiveDocument(id: string, actorId: string, access: DocumentsReadAccess) {
+    await this.ensureDefaultSections();
+    await assertDocumentReadableByAccess(this.prisma, id, access);
     const existing = await this.prisma.document.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException(`Document ${id} not found`);
     await this.prisma.document.update({
@@ -206,17 +290,23 @@ export class DocumentsService {
       },
     });
     await this.recordActivity(id, actorId, 'archived', {});
-    return this.getDocument(id);
+    return this.getDocument(id, access);
   }
 
-  async addDocumentAttachment(documentId: string, dto: AddDocumentAttachmentDto, actorId: string) {
+  async addDocumentAttachment(
+    documentId: string,
+    dto: AddDocumentAttachmentDto,
+    actorId: string,
+    access: DocumentsReadAccess,
+  ) {
     await this.ensureDefaultSections();
+    await assertDocumentReadableByAccess(this.prisma, documentId, access);
     const fileAssetId = dto.fileAssetId?.trim();
     if (!fileAssetId) throw new BadRequestException('fileAssetId is required.');
-    await this.assertDocumentModifiable(documentId);
-    await this.assertFileLinkedToDocument(fileAssetId, documentId);
+    await assertDocumentModifiable(this.prisma, documentId);
+    await assertFileLinkedToDocument(this.prisma, fileAssetId, documentId);
     const purpose = (dto.purpose ?? 'ATTACHMENT') as DocumentAttachmentPurposeEnum;
-    await this.assertPurposeMatchesMime(purpose, fileAssetId);
+    await assertPurposeMatchesMime(this.prisma, purpose, fileAssetId);
     const duplicate = await this.prisma.documentAttachment.findFirst({
       where: { documentId, fileAssetId },
     });
@@ -235,12 +325,18 @@ export class DocumentsService {
       data: { updatedById: actorId },
     });
     await this.recordActivity(documentId, actorId, 'attachment_added', { fileAssetId });
-    return this.getDocument(documentId);
+    return this.getDocument(documentId, access);
   }
 
-  async removeDocumentAttachment(documentId: string, attachmentId: string, actorId: string) {
+  async removeDocumentAttachment(
+    documentId: string,
+    attachmentId: string,
+    actorId: string,
+    access: DocumentsReadAccess,
+  ) {
     await this.ensureDefaultSections();
-    await this.assertDocumentModifiable(documentId);
+    await assertDocumentReadableByAccess(this.prisma, documentId, access);
+    await assertDocumentModifiable(this.prisma, documentId);
     const row = await this.prisma.documentAttachment.findFirst({
       where: { id: attachmentId, documentId },
     });
@@ -255,53 +351,8 @@ export class DocumentsService {
     });
   }
 
-  private async assertPurposeMatchesMime(
-    purpose: DocumentAttachmentPurposeEnum,
-    fileAssetId: string,
-  ) {
-    if (purpose !== 'INLINE_IMAGE') return;
-    const asset = await this.prisma.fileAsset.findUnique({ where: { id: fileAssetId } });
-    const mime = asset?.mimeType ?? '';
-    if (!mime.startsWith('image/')) {
-      throw new BadRequestException('INLINE_IMAGE requires an image/* MIME type.');
-    }
-  }
-
-  private async assertDocumentModifiable(documentId: string) {
-    const doc = await this.prisma.document.findUnique({ where: { id: documentId } });
-    if (!doc) throw new NotFoundException(`Document ${documentId} not found`);
-    if (doc.status === 'ARCHIVED') {
-      throw new BadRequestException('Cannot change attachments on an archived document.');
-    }
-  }
-
-  private async assertFileLinkedToDocument(fileAssetId: string, documentId: string) {
-    const link = await this.prisma.fileLink.findFirst({
-      where: { fileAssetId, entityType: 'DOCUMENT', entityId: documentId, unlinkedAt: null },
-    });
-    if (!link) {
-      throw new BadRequestException(
-        'File must be uploaded to this document first (Drive link DOCUMENT + document id).',
-      );
-    }
-  }
-
   private async ensureDefaultSections() {
-    const count = await this.prisma.documentSection.count();
-    if (count > 0) return;
-    this.logger.log('Seeding default document sections');
-    for (const row of DEFAULT_DOCUMENT_SECTIONS) {
-      await this.prisma.documentSection.upsert({
-        where: { slug: row.slug },
-        create: {
-          name: row.name,
-          slug: row.slug,
-          description: row.description,
-          sortOrder: row.sortOrder,
-        },
-        update: {},
-      });
-    }
+    await ensureDefaultDocumentSections(this.prisma, (m) => this.logger.log(m));
   }
 
   private async recordActivity(

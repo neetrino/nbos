@@ -149,7 +149,7 @@ Done when:
 - search applies permissions before returning titles/snippets;
 - sensitive access changes can be routed to global audit.
 
-**Partial (2026-04-29):** Multi-field `search` on `GET /api/documents` with optional `searchSnippet` in JSON; list includes tag names; web search on home + section pages; document detail shows owner/last-editor ids and richer activity lines. **Shipped:** PostgreSQL generated `search_vector` + GIN; list search uses ranked `websearch_to_tsquery` combined with ILIKE on title/description/plain text/section/tags. **Not yet:** section ACL columns, `documents.view_activity` split, global audit fan-out.
+**Partial (2026-04-29):** Multi-field `search` on `GET /api/documents` with optional `searchSnippet` in JSON; list includes tag names; web search on home + section pages; document detail shows owner/last-editor ids and richer activity lines. **Shipped:** PostgreSQL generated `search_vector` + GIN; list search uses ranked `websearch_to_tsquery` combined with ILIKE on title/description/plain text/section/tags. **Shipped:** `document_sections.default_list_scope` and `documents.list_scope_override` (`ALL` / `OWN` / `DEPARTMENT`); list/detail/search/attachments/archive enforce RBAC `DOCUMENTS_VIEW` scope intersected with effective list scope; optional PATCH `listScopeOverride` + `access_changed` activity. **Not yet:** `documents.view_activity` split, global audit fan-out.
 
 ## 4. Explicit Non-Goals For First Release
 

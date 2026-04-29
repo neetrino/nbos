@@ -9,6 +9,8 @@ export interface UpdateDocumentDto {
   title?: string;
   description?: string | null;
   sectionId?: string;
+  /** Per-document list visibility override; null clears override (section default applies). */
+  listScopeOverride?: string | null;
   contentJson?: unknown;
   contentHtml?: string | null;
   plainText?: string | null;

@@ -47,6 +47,7 @@ export type DocumentMinAggregateOutputType = {
   contentObjectKey: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
+  listScopeOverride: $Enums.DocumentListScopeEnum | null;
 };
 
 export type DocumentMaxAggregateOutputType = {
@@ -73,6 +74,7 @@ export type DocumentMaxAggregateOutputType = {
   contentObjectKey: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
+  listScopeOverride: $Enums.DocumentListScopeEnum | null;
 };
 
 export type DocumentCountAggregateOutputType = {
@@ -100,6 +102,7 @@ export type DocumentCountAggregateOutputType = {
   contentObjectKey: number;
   createdAt: number;
   updatedAt: number;
+  listScopeOverride: number;
   _all: number;
 };
 
@@ -127,6 +130,7 @@ export type DocumentMinAggregateInputType = {
   contentObjectKey?: true;
   createdAt?: true;
   updatedAt?: true;
+  listScopeOverride?: true;
 };
 
 export type DocumentMaxAggregateInputType = {
@@ -153,6 +157,7 @@ export type DocumentMaxAggregateInputType = {
   contentObjectKey?: true;
   createdAt?: true;
   updatedAt?: true;
+  listScopeOverride?: true;
 };
 
 export type DocumentCountAggregateInputType = {
@@ -180,6 +185,7 @@ export type DocumentCountAggregateInputType = {
   contentObjectKey?: true;
   createdAt?: true;
   updatedAt?: true;
+  listScopeOverride?: true;
   _all?: true;
 };
 
@@ -283,6 +289,7 @@ export type DocumentGroupByOutputType = {
   contentObjectKey: string | null;
   createdAt: Date;
   updatedAt: Date;
+  listScopeOverride: $Enums.DocumentListScopeEnum | null;
   _count: DocumentCountAggregateOutputType | null;
   _min: DocumentMinAggregateOutputType | null;
   _max: DocumentMaxAggregateOutputType | null;
@@ -330,6 +337,10 @@ export type DocumentWhereInput = {
   contentObjectKey?: Prisma.StringNullableFilter<'Document'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
+  listScopeOverride?:
+    | Prisma.EnumDocumentListScopeEnumNullableFilter<'Document'>
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.XOR<
     Prisma.DocumentSectionScalarRelationFilter,
     Prisma.DocumentSectionWhereInput
@@ -377,6 +388,7 @@ export type DocumentOrderByWithRelationInput = {
   contentObjectKey?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  listScopeOverride?: Prisma.SortOrderInput | Prisma.SortOrder;
   section?: Prisma.DocumentSectionOrderByWithRelationInput;
   parent?: Prisma.DocumentOrderByWithRelationInput;
   children?: Prisma.DocumentOrderByRelationAggregateInput;
@@ -418,6 +430,10 @@ export type DocumentWhereUniqueInput = Prisma.AtLeast<
     contentObjectKey?: Prisma.StringNullableFilter<'Document'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
+    listScopeOverride?:
+      | Prisma.EnumDocumentListScopeEnumNullableFilter<'Document'>
+      | $Enums.DocumentListScopeEnum
+      | null;
     section?: Prisma.XOR<
       Prisma.DocumentSectionScalarRelationFilter,
       Prisma.DocumentSectionWhereInput
@@ -467,6 +483,7 @@ export type DocumentOrderByWithAggregationInput = {
   contentObjectKey?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  listScopeOverride?: Prisma.SortOrderInput | Prisma.SortOrder;
   _count?: Prisma.DocumentCountOrderByAggregateInput;
   _max?: Prisma.DocumentMaxOrderByAggregateInput;
   _min?: Prisma.DocumentMinOrderByAggregateInput;
@@ -510,6 +527,10 @@ export type DocumentScalarWhereWithAggregatesInput = {
   contentObjectKey?: Prisma.StringNullableWithAggregatesFilter<'Document'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Document'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Document'> | Date | string;
+  listScopeOverride?:
+    | Prisma.EnumDocumentListScopeEnumNullableWithAggregatesFilter<'Document'>
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 export type DocumentCreateInput = {
@@ -533,6 +554,7 @@ export type DocumentCreateInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
   parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
   children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
@@ -568,6 +590,7 @@ export type DocumentUncheckedCreateInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
   attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
@@ -597,6 +620,10 @@ export type DocumentUpdateInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
   parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
   children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
@@ -634,6 +661,10 @@ export type DocumentUncheckedUpdateInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -665,6 +696,7 @@ export type DocumentCreateManyInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
 };
 
 export type DocumentUpdateManyMutationInput = {
@@ -690,6 +722,10 @@ export type DocumentUpdateManyMutationInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 export type DocumentUncheckedUpdateManyInput = {
@@ -719,6 +755,10 @@ export type DocumentUncheckedUpdateManyInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 export type DocumentListRelationFilter = {
@@ -761,6 +801,7 @@ export type DocumentCountOrderByAggregateInput = {
   contentObjectKey?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  listScopeOverride?: Prisma.SortOrder;
 };
 
 export type DocumentMaxOrderByAggregateInput = {
@@ -787,6 +828,7 @@ export type DocumentMaxOrderByAggregateInput = {
   contentObjectKey?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  listScopeOverride?: Prisma.SortOrder;
 };
 
 export type DocumentMinOrderByAggregateInput = {
@@ -813,6 +855,7 @@ export type DocumentMinOrderByAggregateInput = {
   contentObjectKey?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+  listScopeOverride?: Prisma.SortOrder;
 };
 
 export type DocumentScalarRelationFilter = {
@@ -1129,6 +1172,10 @@ export type EnumDocumentContentStorageEnumFieldUpdateOperationsInput = {
   set?: $Enums.DocumentContentStorageEnum;
 };
 
+export type NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput = {
+  set?: $Enums.DocumentListScopeEnum | null;
+};
+
 export type DocumentUpdateOneWithoutChildrenNestedInput = {
   create?: Prisma.XOR<
     Prisma.DocumentCreateWithoutChildrenInput,
@@ -1303,6 +1350,7 @@ export type DocumentCreateWithoutCoverFileAssetInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
   parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
   children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
@@ -1336,6 +1384,7 @@ export type DocumentUncheckedCreateWithoutCoverFileAssetInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
   attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
@@ -1415,6 +1464,10 @@ export type DocumentScalarWhereInput = {
   contentObjectKey?: Prisma.StringNullableFilter<'Document'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
+  listScopeOverride?:
+    | Prisma.EnumDocumentListScopeEnumNullableFilter<'Document'>
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 export type DocumentCreateWithoutSectionInput = {
@@ -1438,6 +1491,7 @@ export type DocumentCreateWithoutSectionInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
   children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
   coverFileAsset?: Prisma.FileAssetCreateNestedOneWithoutDocumentCoversInput;
@@ -1471,6 +1525,7 @@ export type DocumentUncheckedCreateWithoutSectionInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
   attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
@@ -1539,6 +1594,7 @@ export type DocumentCreateWithoutExternalLinkInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
   parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
   children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
@@ -1572,6 +1628,7 @@ export type DocumentUncheckedCreateWithoutExternalLinkInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
   attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
@@ -1640,6 +1697,7 @@ export type DocumentCreateWithoutChildrenInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
   parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
   coverFileAsset?: Prisma.FileAssetCreateNestedOneWithoutDocumentCoversInput;
@@ -1674,6 +1732,7 @@ export type DocumentUncheckedCreateWithoutChildrenInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
   attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
   activityEvents?: Prisma.DocumentActivityEventUncheckedCreateNestedManyWithoutDocumentInput;
@@ -1708,6 +1767,7 @@ export type DocumentCreateWithoutParentInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
   children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
   coverFileAsset?: Prisma.FileAssetCreateNestedOneWithoutDocumentCoversInput;
@@ -1741,6 +1801,7 @@ export type DocumentUncheckedCreateWithoutParentInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
   attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
@@ -1803,6 +1864,10 @@ export type DocumentUpdateWithoutChildrenInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
   parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
   coverFileAsset?: Prisma.FileAssetUpdateOneWithoutDocumentCoversNestedInput;
@@ -1839,6 +1904,10 @@ export type DocumentUncheckedUpdateWithoutChildrenInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
   activityEvents?: Prisma.DocumentActivityEventUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -1893,6 +1962,7 @@ export type DocumentCreateWithoutTagLinksInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
   parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
   children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
@@ -1927,6 +1997,7 @@ export type DocumentUncheckedCreateWithoutTagLinksInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
   attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
   activityEvents?: Prisma.DocumentActivityEventUncheckedCreateNestedManyWithoutDocumentInput;
@@ -1983,6 +2054,10 @@ export type DocumentUpdateWithoutTagLinksInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
   parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
   children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
@@ -2019,6 +2094,10 @@ export type DocumentUncheckedUpdateWithoutTagLinksInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
   activityEvents?: Prisma.DocumentActivityEventUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -2045,6 +2124,7 @@ export type DocumentCreateWithoutAttachmentsInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
   parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
   children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
@@ -2079,6 +2159,7 @@ export type DocumentUncheckedCreateWithoutAttachmentsInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
   activityEvents?: Prisma.DocumentActivityEventUncheckedCreateNestedManyWithoutDocumentInput;
@@ -2135,6 +2216,10 @@ export type DocumentUpdateWithoutAttachmentsInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
   parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
   children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
@@ -2171,6 +2256,10 @@ export type DocumentUncheckedUpdateWithoutAttachmentsInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
   activityEvents?: Prisma.DocumentActivityEventUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -2197,6 +2286,7 @@ export type DocumentCreateWithoutActivityEventsInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
   parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
   children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
@@ -2231,6 +2321,7 @@ export type DocumentUncheckedCreateWithoutActivityEventsInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
   children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
   attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
@@ -2287,6 +2378,10 @@ export type DocumentUpdateWithoutActivityEventsInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
   parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
   children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
@@ -2323,6 +2418,10 @@ export type DocumentUncheckedUpdateWithoutActivityEventsInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -2352,6 +2451,7 @@ export type DocumentCreateManyCoverFileAssetInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
 };
 
 export type DocumentUpdateWithoutCoverFileAssetInput = {
@@ -2377,6 +2477,10 @@ export type DocumentUpdateWithoutCoverFileAssetInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
   parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
   children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
@@ -2412,6 +2516,10 @@ export type DocumentUncheckedUpdateWithoutCoverFileAssetInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -2444,6 +2552,10 @@ export type DocumentUncheckedUpdateManyWithoutCoverFileAssetInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 export type DocumentCreateManySectionInput = {
@@ -2470,6 +2582,7 @@ export type DocumentCreateManySectionInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
 };
 
 export type DocumentUpdateWithoutSectionInput = {
@@ -2495,6 +2608,10 @@ export type DocumentUpdateWithoutSectionInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
   children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
   coverFileAsset?: Prisma.FileAssetUpdateOneWithoutDocumentCoversNestedInput;
@@ -2530,6 +2647,10 @@ export type DocumentUncheckedUpdateWithoutSectionInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -2562,6 +2683,10 @@ export type DocumentUncheckedUpdateManyWithoutSectionInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 export type DocumentCreateManyExternalLinkInput = {
@@ -2588,6 +2713,7 @@ export type DocumentCreateManyExternalLinkInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
 };
 
 export type DocumentUpdateWithoutExternalLinkInput = {
@@ -2613,6 +2739,10 @@ export type DocumentUpdateWithoutExternalLinkInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
   parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
   children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
@@ -2648,6 +2778,10 @@ export type DocumentUncheckedUpdateWithoutExternalLinkInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -2680,6 +2814,10 @@ export type DocumentUncheckedUpdateManyWithoutExternalLinkInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 export type DocumentCreateManyParentInput = {
@@ -2706,6 +2844,7 @@ export type DocumentCreateManyParentInput = {
   contentObjectKey?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
 };
 
 export type DocumentUpdateWithoutParentInput = {
@@ -2731,6 +2870,10 @@ export type DocumentUpdateWithoutParentInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
   children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
   coverFileAsset?: Prisma.FileAssetUpdateOneWithoutDocumentCoversNestedInput;
@@ -2766,6 +2909,10 @@ export type DocumentUncheckedUpdateWithoutParentInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
   children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
   tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
@@ -2798,6 +2945,10 @@ export type DocumentUncheckedUpdateManyWithoutParentInput = {
   contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 /**
@@ -2896,6 +3047,7 @@ export type DocumentSelect<
     contentObjectKey?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    listScopeOverride?: boolean;
     section?: boolean | Prisma.DocumentSectionDefaultArgs<ExtArgs>;
     parent?: boolean | Prisma.Document$parentArgs<ExtArgs>;
     children?: boolean | Prisma.Document$childrenArgs<ExtArgs>;
@@ -2937,6 +3089,7 @@ export type DocumentSelectCreateManyAndReturn<
     contentObjectKey?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    listScopeOverride?: boolean;
     section?: boolean | Prisma.DocumentSectionDefaultArgs<ExtArgs>;
     parent?: boolean | Prisma.Document$parentArgs<ExtArgs>;
     coverFileAsset?: boolean | Prisma.Document$coverFileAssetArgs<ExtArgs>;
@@ -2973,6 +3126,7 @@ export type DocumentSelectUpdateManyAndReturn<
     contentObjectKey?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    listScopeOverride?: boolean;
     section?: boolean | Prisma.DocumentSectionDefaultArgs<ExtArgs>;
     parent?: boolean | Prisma.Document$parentArgs<ExtArgs>;
     coverFileAsset?: boolean | Prisma.Document$coverFileAssetArgs<ExtArgs>;
@@ -3006,6 +3160,7 @@ export type DocumentSelectScalar = {
   contentObjectKey?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
+  listScopeOverride?: boolean;
 };
 
 export type DocumentOmit<
@@ -3034,7 +3189,8 @@ export type DocumentOmit<
   | 'contentStorage'
   | 'contentObjectKey'
   | 'createdAt'
-  | 'updatedAt',
+  | 'updatedAt'
+  | 'listScopeOverride',
   ExtArgs['result']['document']
 >;
 export type DocumentInclude<
@@ -3107,6 +3263,7 @@ export type $DocumentPayload<
       contentObjectKey: string | null;
       createdAt: Date;
       updatedAt: Date;
+      listScopeOverride: $Enums.DocumentListScopeEnum | null;
     },
     ExtArgs['result']['document']
   >;
@@ -3794,6 +3951,7 @@ export interface DocumentFieldRefs {
   readonly contentObjectKey: Prisma.FieldRef<'Document', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Document', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Document', 'DateTime'>;
+  readonly listScopeOverride: Prisma.FieldRef<'Document', 'DocumentListScopeEnum'>;
 }
 
 // Custom InputTypes

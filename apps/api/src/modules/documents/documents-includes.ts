@@ -2,12 +2,16 @@ import type { Prisma } from '@nbos/database';
 import { DOCUMENT_ACTIVITY_LIMIT } from './documents.constants';
 
 export const DOCUMENT_LIST_INCLUDE: Prisma.DocumentInclude = {
-  section: { select: { id: true, name: true, slug: true, sortOrder: true } },
+  section: {
+    select: { id: true, name: true, slug: true, sortOrder: true, defaultListScope: true },
+  },
   tagLinks: { include: { tag: { select: { id: true, name: true, slug: true } } } },
 };
 
 export const DOCUMENT_DETAIL_INCLUDE: Prisma.DocumentInclude = {
-  section: { select: { id: true, name: true, slug: true, sortOrder: true } },
+  section: {
+    select: { id: true, name: true, slug: true, sortOrder: true, defaultListScope: true },
+  },
   tagLinks: { include: { tag: true } },
   attachments: {
     orderBy: { sortOrder: 'asc' },

@@ -723,6 +723,7 @@ export const DocumentSectionScalarFieldEnum = {
   parentId: 'parentId',
   icon: 'icon',
   sortOrder: 'sortOrder',
+  defaultListScope: 'defaultListScope',
   defaultVisibility: 'defaultVisibility',
   createdById: 'createdById',
   updatedById: 'updatedById',
@@ -775,6 +776,7 @@ export const DocumentScalarFieldEnum = {
   contentObjectKey: 'contentObjectKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  listScopeOverride: 'listScopeOverride',
 } as const;
 
 export type DocumentScalarFieldEnum =
