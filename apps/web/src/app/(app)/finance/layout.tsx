@@ -13,6 +13,7 @@ import {
   Banknote,
   Wallet,
   PieChart,
+  FileChartColumn,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ const TABS = [
   { href: '/finance/payroll', label: 'Payroll', icon: Banknote },
   { href: '/finance/bonus-pools', label: 'Bonus pools', icon: PieChart },
   { href: '/finance/wallet', label: 'My wallet', icon: Wallet },
+  { href: '/finance/reports', label: 'Reports', icon: FileChartColumn },
 ] as const;
 
 export default function FinanceLayout({ children }: { children: ReactNode }) {

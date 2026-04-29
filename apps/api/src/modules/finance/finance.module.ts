@@ -5,6 +5,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { BillingModule } from './billing/billing.module';
 import { FinanceSummaryModule } from './summary/summary.module';
+import { FinanceReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { FinanceSummaryModule } from './summary/summary.module';
     SubscriptionsModule,
     BillingModule,
     FinanceSummaryModule,
+    FinanceReportsModule,
   ],
 })
 export class FinanceModule {}

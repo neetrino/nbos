@@ -173,6 +173,11 @@ const NAV_ITEMS: NavItem[] = [
         href: '/finance/orders',
         permission: { module: 'ORDERS', action: 'VIEW' },
       },
+      {
+        label: 'Reports',
+        href: '/finance/reports',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
     ],
   },
   {

@@ -299,6 +299,23 @@ New canon requires:
 
 Runtime does not yet implement this layer.
 
+### C6a. Finance report definitions v1 shell exists
+
+Статус: `PARTIAL RUNTIME ALIGNMENT`
+
+Runtime now exposes the Phase 3 report catalog boundary:
+
+- `GET /api/finance/reports/definitions`;
+- `GET /api/finance/reports/definitions/:id`;
+- Finance `/finance/reports` UI;
+- six approved definitions: Company P&L, Project P&L, Cash Flow, MRR / Subscription Revenue, Expense Plan vs Actual, Payroll Report.
+
+Remaining runtime refactor:
+
+- implement aggregate endpoints behind the definitions;
+- keep global report scheduling, BI catalog and advanced analytics in Phase 6;
+- connect aggregates to Operational Journal once period close exists.
+
 ### C7. Finance UI still contains old board assumptions
 
 Статус: `STALE CODE`
@@ -356,10 +373,11 @@ They currently calculate status and summary around old invoice and expense stage
 7. Add `Compensation Profile`, `Project Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`.
 8. Add automatic subscription delivery bonus release after project done, with manual override.
 9. Add `Employee Wallet` read model.
-10. Add `Operational Journal`, period close and adjustment flow.
-11. Rebuild Finance UI routes and views around the new canon.
-12. Update finance dashboard/summary/scheduler logic.
-13. Add tests for all transition and generation rules.
+10. Add Finance report aggregate endpoints behind the v1 definitions shell.
+11. Add `Operational Journal`, period close and adjustment flow.
+12. Rebuild Finance UI routes and views around the new canon.
+13. Update finance dashboard/summary/scheduler logic.
+14. Add tests for all transition and generation rules.
 
 ---
 

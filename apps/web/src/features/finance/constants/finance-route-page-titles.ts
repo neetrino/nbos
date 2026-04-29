@@ -59,6 +59,10 @@ export function clientServicesPageTitle(): string {
   return 'Client services';
 }
 
+export function financeReportsPageTitle(): string {
+  return 'Finance reports';
+}
+
 export interface ExpensePlanDetailPageTitleParams {
   loading: boolean;
   loadFailed: boolean;
