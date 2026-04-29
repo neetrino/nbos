@@ -31,6 +31,21 @@ export const MESSENGER_WS_SERVER_PRESENCE = 'messenger.presence';
 /** Server → client (this socket only): ids currently connected to `/messenger`. */
 export const MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT = 'messenger.presence.snapshot';
 
+/** Server → client: read cursors for `employeeId` changed; fan-out to `messenger:user:{employeeId}` only. */
+export const MESSENGER_WS_SERVER_READ_UPDATED = 'messenger.read.updated';
+
+/** Payload `scope` for {@link MESSENGER_WS_SERVER_READ_UPDATED} (re-fetch channel + DM list unread). */
+export const MESSENGER_WS_READ_UPDATED_SCOPE = {
+  LISTS: 'lists',
+} as const;
+
+export type MessengerWsReadUpdatedScope =
+  (typeof MESSENGER_WS_READ_UPDATED_SCOPE)[keyof typeof MESSENGER_WS_READ_UPDATED_SCOPE];
+
+export interface MessengerWsReadUpdatedPayload {
+  scope: MessengerWsReadUpdatedScope;
+}
+
 export function messengerSocketUserRoom(employeeId: string): string {
   return `messenger:user:${employeeId}`;
 }

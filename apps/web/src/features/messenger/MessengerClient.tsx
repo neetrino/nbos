@@ -125,8 +125,9 @@ export function MessengerClient() {
     setOnlineInMessengerById((prev) => {
       if (state === 'offline') {
         if (!(employeeId in prev)) return prev;
-        const { [employeeId]: _removed, ...rest } = prev;
-        return rest;
+        const next = { ...prev };
+        delete next[employeeId];
+        return next;
       }
       if (prev[employeeId]) return prev;
       return { ...prev, [employeeId]: true };
@@ -142,6 +143,7 @@ export function MessengerClient() {
     onRemoteTypingHint: showRemoteTypingHint,
     onPresenceSnapshot,
     onPresenceDelta,
+    onReadListsInvalidate: refreshMessengerLists,
   });
 
   const fireLocalTypingIntent = useCallback(() => {

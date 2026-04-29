@@ -10,10 +10,12 @@ import {
   MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
+  MESSENGER_WS_READ_UPDATED_SCOPE,
   MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
+  MESSENGER_WS_SERVER_READ_UPDATED,
 } from '@nbos/shared';
 import type { MessengerMessageRow } from '@/lib/api/messenger';
 import { mapMessengerRowToView, type MessengerViewMessage } from './messenger-message-mapper';
@@ -44,6 +46,11 @@ function parsePresenceDelta(
   return { employeeId: e, state: s };
 }
 
+function isMessengerReadListsPayload(payload: unknown): boolean {
+  if (!payload || typeof payload !== 'object') return false;
+  return (payload as { scope?: unknown }).scope === MESSENGER_WS_READ_UPDATED_SCOPE.LISTS;
+}
+
 export interface MessengerRealtimeControls {
   emitChannelTyping: (channelId: string) => void;
   emitDmTyping: (recipientId: string) => void;
@@ -58,6 +65,8 @@ export function useMessengerRealtime(options: {
   onRemoteTypingHint: (hint: string) => void;
   onPresenceSnapshot?: (employeeIds: readonly string[]) => void;
   onPresenceDelta?: (employeeId: string, state: 'online' | 'offline') => void;
+  /** Fired when this user’s read cursors changed on another tab/device (re-fetch list unread). */
+  onReadListsInvalidate?: () => void;
 }): MessengerRealtimeControls {
   const { data: session } = useSession();
   const accessToken = session?.accessToken ?? null;
@@ -69,6 +78,7 @@ export function useMessengerRealtime(options: {
   const onTypingHint = useRef(options.onRemoteTypingHint);
   const onPresenceSnapshotRef = useRef(options.onPresenceSnapshot);
   const onPresenceDeltaRef = useRef(options.onPresenceDelta);
+  const onReadListsInvalidateRef = useRef(options.onReadListsInvalidate);
 
   useLayoutEffect(() => {
     activeRef.current = options.active;
@@ -78,6 +88,7 @@ export function useMessengerRealtime(options: {
     onTypingHint.current = options.onRemoteTypingHint;
     onPresenceSnapshotRef.current = options.onPresenceSnapshot;
     onPresenceDeltaRef.current = options.onPresenceDelta;
+    onReadListsInvalidateRef.current = options.onReadListsInvalidate;
   });
 
   const emitChannelTyping = useCallback((channelId: string) => {
@@ -157,6 +168,11 @@ export function useMessengerRealtime(options: {
     socket.on(MESSENGER_WS_SERVER_PRESENCE, (payload: unknown) => {
       const p = parsePresenceDelta(payload);
       if (p) onPresenceDeltaRef.current?.(p.employeeId, p.state);
+    });
+
+    socket.on(MESSENGER_WS_SERVER_READ_UPDATED, (payload: unknown) => {
+      if (!isMessengerReadListsPayload(payload)) return;
+      onReadListsInvalidateRef.current?.();
     });
 
     return () => {

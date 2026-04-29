@@ -23,8 +23,10 @@ import {
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_TYPING,
+  MESSENGER_WS_READ_UPDATED_SCOPE,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
+  MESSENGER_WS_SERVER_READ_UPDATED,
   messengerSocketChannelRoom,
   messengerSocketUserRoom,
 } from '@nbos/shared';
@@ -153,6 +155,14 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
       threadId,
       counterpartId: recipientId,
       message,
+    });
+  }
+
+  /** Notifies all `/messenger` tabs for this employee to refresh list unread (after REST mark-read). */
+  emitReadListsUpdated(employeeId: string): void {
+    if (!this.server) return;
+    this.server.to(messengerSocketUserRoom(employeeId)).emit(MESSENGER_WS_SERVER_READ_UPDATED, {
+      scope: MESSENGER_WS_READ_UPDATED_SCOPE.LISTS,
     });
   }
 

@@ -265,6 +265,7 @@ export class MessengerService {
       throw new NotFoundException('Channel not found');
     }
     await markChannelReadForEmployee(this.prisma, channelId, employeeId);
+    this.messengerGateway.emitReadListsUpdated(employeeId);
   }
 
   async markDirectConversationRead(actorId: string, recipientId: string): Promise<void> {
@@ -274,5 +275,6 @@ export class MessengerService {
     });
     if (!thread) return;
     await markDmThreadReadForEmployee(this.prisma, thread.id, actorId);
+    this.messengerGateway.emitReadListsUpdated(actorId);
   }
 }
