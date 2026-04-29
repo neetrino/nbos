@@ -27,7 +27,7 @@ interface ProductForStageGate {
   status?: string | null;
   description?: string | null;
   deadline?: Date | string | null;
-  order?: { id: string; invoices?: Array<{ status: string }> } | null;
+  order?: { id: string; status?: string; invoices?: Array<{ status: string }> } | null;
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
   tickets?: Array<{ status: string }>;
@@ -127,6 +127,7 @@ function validateProductDoneGate(product: ProductForStageGate) {
       'Product Done',
     ),
     ...buildOpenItemError('tickets', product.tickets ?? [], ['RESOLVED', 'CLOSED'], 'Product Done'),
+    ...buildOpenOrderError(product.order),
     ...buildUnpaidInvoiceError(product.order?.invoices ?? []),
   ];
 
@@ -138,6 +139,17 @@ function validateProductDoneGate(product: ProductForStageGate) {
     message: 'Cannot complete product while delivery items are still open.',
     errors,
   });
+}
+
+function buildOpenOrderError(order: ProductForStageGate['order']) {
+  if (!order?.status || ['FULLY_PAID', 'CLOSED'].includes(order.status)) return [];
+
+  return [
+    {
+      field: 'finance',
+      message: `Order ${order.status} must be fully paid or closed before Product Done.`,
+    },
+  ];
 }
 
 function buildUnpaidInvoiceError(invoices: Array<{ status: string }>) {

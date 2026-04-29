@@ -7,7 +7,7 @@
 | Field         | Value                           |
 | ------------- | ------------------------------- |
 | Current phase | **Phase 4 — Delivery ops**      |
-| Current task  | Stage-gate runtime depth        |
+| Current task  | Product Done order gate         |
 | Status        | Phase 4 Projects Hub gate logic |
 | Last updated  | 2026-04-29                      |
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~78% | Product Done gate now blocks on unpaid linked invoices                                     |
+| Phase 4 — Delivery ops              | In progress |     ~79% | Product Done gate now blocks on unpaid invoices and open linked orders                     |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -92,10 +92,11 @@ Future Finance depth:
 | 2026-04-29 | Stage-gate UX depth                | Product/Extension gates show clearer next moves and blocker labels       | web typecheck, lint                                                   |
 | 2026-04-29 | Stage-gate runtime depth           | Product QA/Transfer gates block while Product tasks are still open       | api typecheck, lint, targeted Vitest                                  |
 | 2026-04-29 | Product Done finance gate          | Product Done blocks when linked order invoices are not paid              | api typecheck, lint, targeted Vitest                                  |
+| 2026-04-29 | Product Done order gate            | Product Done blocks while linked order is not fully paid or closed       | api typecheck, lint, targeted Vitest                                  |
 
 ## Next Action
 
-1. Continue Projects Hub lifecycle refactor: legacy status enum retirement or Done acceptance/credentials gate depth.
+1. Continue Projects Hub lifecycle refactor: legacy status enum retirement or Done acceptance/credentials runtime depth.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

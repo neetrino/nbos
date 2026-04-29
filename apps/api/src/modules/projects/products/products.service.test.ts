@@ -264,7 +264,32 @@ describe('ProductsService', () => {
         tickets: [{ status: 'RESOLVED' }],
         order: {
           id: 'ord-1',
+          status: 'FULLY_PAID',
           invoices: [{ status: 'PAID' }, { status: 'WAITING' }],
+        },
+      });
+
+      const error = await service.updateStatus('p1', 'DONE').catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: 'STAGE_GATE_VALIDATION',
+        errors: [{ field: 'finance', message: expect.any(String) }],
+      });
+      expect(prisma.product.update).not.toHaveBeenCalled();
+    });
+
+    it('blocks TRANSFER → DONE when linked order is not fully paid', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        status: 'TRANSFER',
+        extensions: [{ status: 'DONE' }],
+        tasks: [{ status: 'DONE' }],
+        tickets: [{ status: 'RESOLVED' }],
+        order: {
+          id: 'ord-1',
+          status: 'PARTIALLY_PAID',
+          invoices: [{ status: 'PAID' }],
         },
       });
 
@@ -287,6 +312,7 @@ describe('ProductsService', () => {
         tickets: [{ status: 'RESOLVED' }, { status: 'CLOSED' }],
         order: {
           id: 'ord-1',
+          status: 'FULLY_PAID',
           invoices: [{ status: 'PAID' }],
         },
       });
