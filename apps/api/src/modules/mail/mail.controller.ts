@@ -6,6 +6,14 @@ import { MailService } from './mail.service';
 
 type AuthedRequest = Request & { permissionScope?: string };
 
+function isQueryFlagTrue(value: string | undefined): boolean {
+  if (value === undefined) {
+    return false;
+  }
+  const v = value.toLowerCase();
+  return v === 'true' || v === '1' || v === 'yes';
+}
+
 @ApiTags('Mail')
 @ApiBearerAuth()
 @Controller('mail')
@@ -23,12 +31,21 @@ export class MailController {
   @RequirePermission('MAIL', 'VIEW')
   @ApiOperation({ summary: 'List email threads for accessible mailboxes' })
   @ApiQuery({ name: 'mailAccountId', required: false })
+  @ApiQuery({
+    name: 'unreadOnly',
+    required: false,
+    description: 'If true, only threads with hasUnread',
+  })
   async listThreads(
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
     @Query('mailAccountId') mailAccountId?: string,
+    @Query('unreadOnly') unreadOnly?: string,
   ) {
-    return this.mailService.listThreads(user.id, req.permissionScope ?? 'OWN', mailAccountId);
+    return this.mailService.listThreads(user.id, req.permissionScope ?? 'OWN', {
+      mailAccountId,
+      unreadOnly: isQueryFlagTrue(unreadOnly),
+    });
   }
 
   @Get('threads/:threadId')

@@ -1,6 +1,11 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type InputJsonValue, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
+import {
+  MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
+  MAIL_AUDIT_ENTITY_THREAD,
+} from './mail-audit.constants';
 import { mailAccountWhereForViewer } from './mail-account-scope';
 import type {
   MailAccountRow,
@@ -21,9 +26,17 @@ interface MessageWithRecipients {
   recipients: Array<{ kind: string; email: string; displayName: string | null }>;
 }
 
+export interface ListMailThreadsOptions {
+  mailAccountId?: string;
+  unreadOnly?: boolean;
+}
+
 @Injectable()
 export class MailService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async listAccounts(employeeId: string, viewScope: string): Promise<MailAccountRow[]> {
     const rows = await this.prisma.mailAccount.findMany({
@@ -37,8 +50,9 @@ export class MailService {
   async listThreads(
     employeeId: string,
     viewScope: string,
-    mailAccountId?: string,
+    options: ListMailThreadsOptions = {},
   ): Promise<MailThreadListRow[]> {
+    const { mailAccountId, unreadOnly } = options;
     const accountWhere = mailAccountWhereForViewer(employeeId, viewScope);
     const accounts = await this.prisma.mailAccount.findMany({
       where: accountWhere,
@@ -51,7 +65,10 @@ export class MailService {
     if (mailAccountId && !ids.includes(mailAccountId)) {
       throw new NotFoundException('Mail account not found');
     }
-    const where = mailAccountId ? { mailAccountId } : { mailAccountId: { in: ids } };
+    const where: Prisma.EmailThreadWhereInput = {
+      ...(mailAccountId ? { mailAccountId } : { mailAccountId: { in: ids } }),
+      ...(unreadOnly ? { hasUnread: true } : {}),
+    };
     const threads = await this.prisma.emailThread.findMany({
       where,
       orderBy: { lastMessageAt: 'desc' },
@@ -121,6 +138,17 @@ export class MailService {
         data: { hasUnread: false },
       }),
     ]);
+    const auditChanges: InputJsonValue = {
+      mailAccountId: thread.mailAccountId,
+      subjectNormalized: thread.subjectNormalized,
+    };
+    await this.auditService.log({
+      entityType: MAIL_AUDIT_ENTITY_THREAD,
+      entityId: threadId,
+      action: MAIL_AUDIT_ACTION_THREAD_MARKED_READ,
+      userId: employeeId,
+      changes: auditChanges,
+    });
     return this.getThreadDetail(employeeId, accessScope, threadId);
   }
 }

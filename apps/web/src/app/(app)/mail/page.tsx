@@ -25,6 +25,7 @@ export default function MailInboxPage() {
   const [accounts, setAccounts] = useState<MailAccountRow[]>([]);
   const [threads, setThreads] = useState<MailThreadListRow[]>([]);
   const [filterAccountId, setFilterAccountId] = useState<string | null>(null);
+  const [unreadOnly, setUnreadOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ export default function MailInboxPage() {
     try {
       const [acc, th] = await Promise.all([
         mailApi.listAccounts(),
-        mailApi.listThreads(filterAccountId ?? undefined),
+        mailApi.listThreads(filterAccountId ?? undefined, unreadOnly),
       ]);
       setAccounts(acc);
       setThreads(th);
@@ -43,7 +44,7 @@ export default function MailInboxPage() {
     } finally {
       setLoading(false);
     }
-  }, [filterAccountId]);
+  }, [filterAccountId, unreadOnly]);
 
   useEffect(() => {
     if (!canView) {
@@ -75,15 +76,33 @@ export default function MailInboxPage() {
         title="Mail"
         description="Threads from mailboxes you own or that your role can list (ALL scope). Sync and compose are not wired yet."
       >
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1"
-          onClick={() => void load()}
-          disabled={loading}
-        >
-          <RefreshCcw size={14} /> Refresh
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant={unreadOnly ? 'outline' : 'secondary'}
+            size="sm"
+            onClick={() => setUnreadOnly(false)}
+          >
+            All threads
+          </Button>
+          <Button
+            type="button"
+            variant={unreadOnly ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => setUnreadOnly(true)}
+          >
+            Unread only
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => void load()}
+            disabled={loading}
+          >
+            <RefreshCcw size={14} /> Refresh
+          </Button>
+        </div>
       </PageHeader>
 
       {loading ? <LoadingState /> : null}
