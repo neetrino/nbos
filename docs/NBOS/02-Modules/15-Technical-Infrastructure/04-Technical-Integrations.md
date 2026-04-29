@@ -112,6 +112,14 @@ Notification Engine отправляет:
 - incident opened/resolved;
 - technical readiness missing before Transfer.
 
+## Mail
+
+Операционное здоровье подключённых почтовых ящиков (ошибки sync/send, квоты провайдера) — зона модуля **Mail**.
+
+Technical Infrastructure отвечает за продуктовые активы, среды, деплой и инфраструктурный health. Агрегированные admin/ops дашборды могут показывать mailbox health из Mail, не перенося хранение писем и логику sync в Technical.
+
+Канон: `../17-Mail/00-Mail-Overview.md`, интеграции — `../17-Mail/04-Mail-Integrations.md` (**Technical Infrastructure**).
+
 ## My Company / SOP
 
 Technical processes должны иметь SOP/runbooks:

@@ -102,7 +102,7 @@ Mail
 
 ## Основные принципы
 
-1. Mail - отдельный модуль, но он обязан интегрироваться с `Clients`, `CRM`, `Support`, `Drive`, `Credentials`, `Notifications` и `Messenger`.
+1. Mail - отдельный модуль, но он обязан интегрироваться с `Clients`, `CRM`, `Support`, `Drive`, `Credentials`, `Notifications`, `Messenger`, `Calendar` и `Technical Infrastructure` (с явными границами — см. разделы связи ниже).
 2. Source of truth для email history в NBOS - база данных после sync, а не открытое соединение IMAP/Gmail.
 3. Любой provider подключается через adapter contract.
 4. Вложения не хранятся в Mail напрямую.
@@ -151,6 +151,14 @@ Transactional **Email** канала Notification Engine (invites, отчёты,
 ## Связь с Messenger
 
 Чаты (**Messenger**) и почтовый inbox (**Mail**) — разные модули и модели данных. См. `../09-Messenger/00-Messenger-Overview.md` и `../09-Messenger/04-Messenger-Integrations.md` (секция **Mail**); обратно — `04-Mail-Integrations.md` (**Messenger**).
+
+## Связь с Calendar
+
+Главный **Calendar** (Meetings, сроки поставки, личное) не заменяет почтовый inbox. Переписка и подключённые ящики — **Mail**; напоминания по расписанию — **Notifications**. См. `../10-Calendar/05-Calendar-Integrations.md` (секция **Mail**); обратно — `04-Mail-Integrations.md` (**Calendar**).
+
+## Связь с Technical Infrastructure
+
+Health подключённых ящиков (ошибки sync/send, квоты) — данные **Mail**; продуктовые technical assets, среды и инциденты — **Technical Infrastructure**. См. `../15-Technical-Infrastructure/04-Technical-Integrations.md` (секция **Mail**); обратно — `04-Mail-Integrations.md` (**Technical Infrastructure**).
 
 ## Связанные документы
 

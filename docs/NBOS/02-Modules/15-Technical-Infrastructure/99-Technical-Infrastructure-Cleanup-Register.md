@@ -4,15 +4,16 @@
 
 ## Documentation Cleanup
 
-| Область              | Статус  | Где сейчас                               | Что нужно сделать                                                            |
-| -------------------- | ------- | ---------------------------------------- | ---------------------------------------------------------------------------- |
-| Technical module     | MISSING | отдельного активного модуля нет          | Создан новый канон `15-Technical-Infrastructure`                             |
-| Domain/Hosting logic | PARTIAL | `Finance/07-Domains-Hosting-Licenses.md` | Оставить деньги в Finance, technical dependency показывать в Technical       |
-| Deployment checklist | PARTIAL | `Order-to-Delivery`, `My Company SOP`    | Сделать Technical readiness gate перед Transfer                              |
-| Monitoring           | PARTIAL | упоминается в Support/SOP                | Описать Monitoring Check и operational health                                |
-| Backup               | PARTIAL | Drive/Credentials/SOP/Delivery           | Разделить Drive export backup, Credentials backup и Product technical backup |
-| Incidents            | PARTIAL | Support module                           | Связать Support Incident с Technical Asset/Environment                       |
-| Credentials links    | PARTIAL | Credentials docs                         | Technical должен ссылаться на Credentials, не хранить secrets                |
+| Область              | Статус  | Где сейчас                                                                                                                             | Что нужно сделать                                                            |
+| -------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Technical module     | MISSING | отдельного активного модуля нет                                                                                                        | Создан новый канон `15-Technical-Infrastructure`                             |
+| Domain/Hosting logic | PARTIAL | `Finance/07-Domains-Hosting-Licenses.md`                                                                                               | Оставить деньги в Finance, technical dependency показывать в Technical       |
+| Deployment checklist | PARTIAL | `Order-to-Delivery`, `My Company SOP`                                                                                                  | Сделать Technical readiness gate перед Transfer                              |
+| Monitoring           | PARTIAL | упоминается в Support/SOP                                                                                                              | Описать Monitoring Check и operational health                                |
+| Backup               | PARTIAL | Drive/Credentials/SOP/Delivery                                                                                                         | Разделить Drive export backup, Credentials backup и Product technical backup |
+| Incidents            | PARTIAL | Support module                                                                                                                         | Связать Support Incident с Technical Asset/Environment                       |
+| Credentials links    | PARTIAL | Credentials docs                                                                                                                       | Technical должен ссылаться на Credentials, не хранить secrets                |
+| Mail module boundary | `OK`    | **2026-04-30:** `04-Technical-Integrations.md` (**Mail**) + `17-Mail/00`, `04` — mailbox ops health в Mail, не дублировать в Technical |
 
 ## Runtime Cleanup
 

@@ -56,6 +56,18 @@ Examples:
 - Product deadline approaching;
 - Extension deadline missed.
 
+## Mail
+
+The main Calendar is not an email inbox.
+
+- Email threads, unified inbox and mailbox sync live in **Mail** (`../17-Mail/`).
+- Calendar stays time-focused: Meetings, Delivery Deadlines, Personal layers.
+- Meeting reminders are delivered by **Notifications**; the meeting record is owned by Calendar/CRM workflows.
+
+Future Google Calendar sync may help with conflict awareness; it does not replace Mail as the system of record for inbound/outbound client email.
+
+Canon: `../17-Mail/00-Mail-Overview.md`, integrations — `../17-Mail/04-Mail-Integrations.md` (**Calendar**).
+
 ## Finance
 
 Finance dates are not shown in main Calendar.

@@ -79,3 +79,9 @@ Current Scheduler:
 - keep Task deadlines inside Tasks;
 - keep Support SLA views inside Support;
 - review Platform/UI docs for old broad Calendar descriptions.
+
+## E. Cross-module documentation
+
+| Topic                  | Status | Notes                                                                                                                                        |
+| ---------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mail vs Calendar inbox | `OK`   | **2026-04-30:** `05-Calendar-Integrations.md` (**Mail**) links to `17-Mail`; main Calendar stays time-focused, not email threads or mailbox. |
