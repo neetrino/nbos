@@ -12,3 +12,6 @@ export const MAIL_NOTIFICATION_TYPE_OUTBOUND_FAILED_RESET_TO_DRAFT =
 
 export const MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_QUEUED_IN_APP =
   'mail.outbound_message_queued' as const;
+
+export const MAIL_NOTIFICATION_TYPE_OUTBOUND_DRAFT_CREATED_IN_APP =
+  'mail.outbound_draft_created' as const;

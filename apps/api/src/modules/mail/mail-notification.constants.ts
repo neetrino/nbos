@@ -29,3 +29,9 @@ export const MAIL_NOTIFICATION_TYPE_OUTBOUND_MESSAGE_QUEUED_IN_APP =
 
 export const MAIL_NOTIFICATION_TITLE_OUTBOUND_MESSAGE_QUEUED_IN_APP =
   'Mail: outbound queued for send (stub)' as const;
+
+export const MAIL_NOTIFICATION_TYPE_OUTBOUND_DRAFT_CREATED_IN_APP =
+  'mail.outbound_draft_created' as const;
+
+export const MAIL_NOTIFICATION_TITLE_OUTBOUND_DRAFT_CREATED_IN_APP =
+  'Mail: outbound draft saved' as const;
