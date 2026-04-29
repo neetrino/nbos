@@ -27,6 +27,7 @@ import { PayrollRunsListTable } from '@/features/finance/components/payroll/Payr
 import { PayrollRunsListToolbar } from '@/features/finance/components/payroll/PayrollRunsListToolbar';
 import { PayrollRunsScopeStatsCard } from '@/features/finance/components/payroll/PayrollRunsScopeStatsCard';
 import { usePayrollRunsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-csv-export';
+import { sumPayrollRunsRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 
 function defaultPayrollMonth(): string {
   const d = new Date();
@@ -133,7 +134,13 @@ export function PayrollRunsListPageContent() {
       lines += row._count.salaryLines;
       materialized += row.materializedExpenseLineCount;
     }
-    return { payable, paid, lines, materialized };
+    return {
+      payable,
+      paid,
+      remaining: sumPayrollRunsRemainingMajorUnits(items),
+      lines,
+      materialized,
+    };
   }, [items]);
 
   const csvExportScope = useMemo(

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   payrollRunRemainingMajorUnits,
   payrollRunRemainingString2dp,
+  sumPayrollRunsRemainingMajorUnits,
 } from './payroll-run-remaining-from-strings';
 
 describe('payrollRunRemainingFromStrings', () => {
@@ -16,5 +17,14 @@ describe('payrollRunRemainingFromStrings', () => {
 
   it('treats non-finite inputs as zero', () => {
     expect(payrollRunRemainingString2dp('x', '10.00')).toBe('-10.00');
+  });
+
+  it('sums remaining across run rows in cent space', () => {
+    expect(
+      sumPayrollRunsRemainingMajorUnits([
+        { totalPayable: '100.00', totalPaid: '40.00' },
+        { totalPayable: '10.00', totalPaid: '25.00' },
+      ]),
+    ).toBe(45);
   });
 });

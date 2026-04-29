@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import type { PayrollRunListRow } from '@/lib/api/payroll-runs';
 
@@ -20,7 +21,13 @@ function parseAmount(value: string): number {
 
 export function PayrollRunsListTable(props: {
   items: PayrollRunListRow[];
-  pageTotals: { payable: number; paid: number; lines: number; materialized: number };
+  pageTotals: {
+    payable: number;
+    paid: number;
+    remaining: number;
+    lines: number;
+    materialized: number;
+  };
 }) {
   const { items, pageTotals } = props;
 
@@ -35,6 +42,7 @@ export function PayrollRunsListTable(props: {
             <TableHead className="text-right">Expense cards</TableHead>
             <TableHead className="text-right">Total payable</TableHead>
             <TableHead className="text-right">Paid</TableHead>
+            <TableHead className="text-right">Remaining</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -59,6 +67,9 @@ export function PayrollRunsListTable(props: {
               <TableCell className="text-right">
                 {formatAmount(parseAmount(row.totalPaid))}
               </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {formatAmount(payrollRunRemainingMajorUnits(row.totalPayable, row.totalPaid))}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -76,6 +87,9 @@ export function PayrollRunsListTable(props: {
             </TableCell>
             <TableCell className="text-right tabular-nums">
               {formatAmount(pageTotals.paid)}
+            </TableCell>
+            <TableCell className="text-right tabular-nums">
+              {formatAmount(pageTotals.remaining)}
             </TableCell>
           </TableRow>
         </tfoot>

@@ -20,3 +20,14 @@ export function payrollRunRemainingMajorUnits(totalPayable: string, totalPaid: s
 export function payrollRunRemainingString2dp(totalPayable: string, totalPaid: string): string {
   return payrollRunRemainingMajorUnits(totalPayable, totalPaid).toFixed(2);
 }
+
+/** Sum of per-run (payable − paid) in major units (visible page / client roll-up). */
+export function sumPayrollRunsRemainingMajorUnits(
+  rows: ReadonlyArray<{ totalPayable: string; totalPaid: string }>,
+): number {
+  let cents = 0;
+  for (const row of rows) {
+    cents += parseMoneyToCents(row.totalPayable) - parseMoneyToCents(row.totalPaid);
+  }
+  return cents / 100;
+}
