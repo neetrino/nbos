@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import type { FullProject, ProjectProductSummary } from '@/lib/api/projects';
 import {
+  formatDeliveryLifecycleLabel,
   getProductStatus,
   getProductType,
   PRODUCT_STATUSES,
@@ -145,6 +146,9 @@ function ProductCard({
 }) {
   const status = getProductStatus(product.status);
   const productType = getProductType(product.productType);
+  const statusLabel = product.deliveryLifecycle
+    ? formatDeliveryLifecycleLabel(product.deliveryLifecycle)
+    : status?.label;
 
   return (
     <div
@@ -158,7 +162,7 @@ function ProductCard({
             <span className="text-muted-foreground text-xs">{productType.label}</span>
           )}
         </div>
-        {status && <StatusBadge label={status.label} variant={status.variant} />}
+        {status && statusLabel && <StatusBadge label={statusLabel} variant={status.variant} />}
       </div>
 
       <div className="mt-3 space-y-1.5">

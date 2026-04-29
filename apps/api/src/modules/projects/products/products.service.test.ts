@@ -64,9 +64,13 @@ describe('ProductsService', () => {
     });
 
     it('returns product when found', async () => {
-      prisma.product.findUnique.mockResolvedValue({ id: 'p1', name: 'Test' });
+      prisma.product.findUnique.mockResolvedValue({ id: 'p1', name: 'Test', status: 'CREATING' });
       const result = await service.findById('p1');
       expect(result.name).toBe('Test');
+      expect(result.deliveryLifecycle).toMatchObject({
+        stage: 'STARTING',
+        workStatus: 'ACTIVE',
+      });
     });
   });
 

@@ -14,6 +14,7 @@ import {
   validateProductTransition,
 } from './product-stage-gates';
 import { PROJECT_KICKOFF_CHECKLIST_ITEMS } from '../project-kickoff-checklist.constants';
+import { attachProductDeliveryLifecycle } from '../delivery-lifecycle';
 
 interface CreateProductDto {
   projectId: string;
@@ -93,7 +94,7 @@ export class ProductsService {
     ]);
 
     return {
-      items,
+      items: items.map(attachProductDeliveryLifecycle),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -130,11 +131,11 @@ export class ProductsService {
       },
     });
     if (!product) throw new NotFoundException(`Product ${id} not found`);
-    return product;
+    return attachProductDeliveryLifecycle(product);
   }
 
   async create(data: CreateProductDto) {
-    return this.prisma.product.create({
+    const product = await this.prisma.product.create({
       data: {
         projectId: data.projectId,
         name: data.name,
@@ -150,11 +151,12 @@ export class ProductsService {
         pm: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    return attachProductDeliveryLifecycle(product);
   }
 
   async update(id: string, data: UpdateProductDto) {
     await this.findById(id);
-    return this.prisma.product.update({
+    const product = await this.prisma.product.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
@@ -178,6 +180,7 @@ export class ProductsService {
         pm: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    return attachProductDeliveryLifecycle(product);
   }
 
   async updateStatus(id: string, newStatus: string) {
@@ -193,13 +196,14 @@ export class ProductsService {
     validateProductStageGate(product, target);
     if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product.projectId);
 
-    return this.prisma.product.update({
+    const updatedProduct = await this.prisma.product.update({
       where: { id },
       data: { status: target },
       include: {
         project: { select: { id: true, code: true, name: true } },
       },
     });
+    return attachProductDeliveryLifecycle(updatedProduct);
   }
 
   async delete(id: string) {

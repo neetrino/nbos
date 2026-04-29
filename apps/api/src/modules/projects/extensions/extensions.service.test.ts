@@ -88,9 +88,17 @@ describe('ExtensionsService', () => {
     });
 
     it('returns extension when found', async () => {
-      prisma.extension.findUnique.mockResolvedValue({ id: 'e1', name: 'Feature X' });
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Feature X',
+        status: 'LOST',
+      });
       const result = await service.findById('e1');
       expect(result.name).toBe('Feature X');
+      expect(result.deliveryLifecycle).toMatchObject({
+        resolution: 'CANCELLED',
+        isTerminal: true,
+      });
     });
   });
 

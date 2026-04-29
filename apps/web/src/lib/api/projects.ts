@@ -8,6 +8,16 @@ export interface EmployeeRef {
   role?: string;
 }
 
+export interface DeliveryLifecycleProjection {
+  entityKind: 'PRODUCT' | 'EXTENSION';
+  legacyStatus: string | null;
+  stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER' | null;
+  workStatus: 'ACTIVE' | 'ON_HOLD';
+  resolution: 'DONE' | 'CANCELLED' | null;
+  isActive: boolean;
+  isTerminal: boolean;
+}
+
 export interface Project {
   id: string;
   code: string;
@@ -29,6 +39,7 @@ export interface ProjectProductSummary {
   productType: string;
   deadline: string | null;
   pm: EmployeeRef | null;
+  deliveryLifecycle?: DeliveryLifecycleProjection;
   _count: {
     extensions: number;
     tasks: number;
@@ -44,6 +55,7 @@ export interface ProjectExtensionSummary {
   productId: string | null;
   assignee: EmployeeRef | null;
   product: { id: string; name: string; productType: string; status: string } | null;
+  deliveryLifecycle?: DeliveryLifecycleProjection;
   _count: { tasks: number };
 }
 
@@ -147,6 +159,7 @@ export interface ProjectIntakeSummary {
     status: string;
     deadline: string | null;
     pm: EmployeeRef | null;
+    deliveryLifecycle?: DeliveryLifecycleProjection;
   } | null;
   hasProduct: boolean;
   hasPm: boolean;

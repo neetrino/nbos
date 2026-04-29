@@ -66,6 +66,19 @@
 - модуль не надо проектировать с нуля;
 - дальше потребуется не создавать stage gates заново, а перестраивать их под новый канон.
 
+### A4. Canonical delivery lifecycle projection exists in runtime
+
+Статус: `PHASE 4 FIRST ALIGNMENT`
+
+Runtime now exposes a canonical `deliveryLifecycle` projection for `Product` and `Extension` responses:
+
+- `stage`: `STARTING / DEVELOPMENT / QA / TRANSFER / null`;
+- `workStatus`: `ACTIVE / ON_HOLD`;
+- `resolution`: `DONE / CANCELLED / null`;
+- legacy status remains available for backward compatibility while DB enum refactor is pending.
+
+This is the safe bridge from old runtime statuses to the new Projects Hub canon.
+
 ---
 
 ## B. Устарело только в документации или описаниях
@@ -184,6 +197,8 @@
 - заменить `CREATING` на `STARTING`;
 - заменить `LOST` на `CANCELLED`;
 - обновить backend transitions, DTO, tests и frontend badges.
+
+Первый Phase 4 срез уже добавил read-only canonical projection поверх legacy enum. Следующий шаг — схема/миграция для реального разделения `stage`, `work_status` и `resolution`.
 
 ### C2. Runtime extension statuses тоже старые
 

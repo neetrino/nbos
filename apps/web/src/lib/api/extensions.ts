@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { DeliveryLifecycleProjection } from './projects';
 
 export interface ExtensionEmployee {
   id: string;
@@ -14,6 +15,7 @@ export interface Extension {
   name: string;
   size: string;
   status: string;
+  deliveryLifecycle?: DeliveryLifecycleProjection;
   assignedTo: string | null;
   description: string | null;
   createdAt: string;

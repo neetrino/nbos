@@ -125,10 +125,30 @@ export function getProductStatus(value: string) {
   return PRODUCT_STATUSES.find((s) => s.value === value);
 }
 
+export function formatDeliveryLifecycleLabel(lifecycle: {
+  stage: string | null;
+  workStatus: string;
+  resolution: string | null;
+}) {
+  if (lifecycle.resolution === 'DONE') return 'Done';
+  if (lifecycle.resolution === 'CANCELLED') return 'Cancelled';
+  const stageLabel = lifecycle.stage === 'STARTING' ? 'Starting' : lifecycle.stage;
+  if (lifecycle.workStatus === 'ON_HOLD') return stageLabel ? `${stageLabel} · On Hold` : 'On Hold';
+  return stageLabel ? toTitleCase(stageLabel) : 'Not staged';
+}
+
 export function getExtensionStatus(value: string) {
   return EXTENSION_STATUSES.find((s) => s.value === value);
 }
 
 export function getExtensionSize(value: string) {
   return EXTENSION_SIZES.find((s) => s.value === value);
+}
+
+function toTitleCase(value: string) {
+  return value
+    .toLowerCase()
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
 }

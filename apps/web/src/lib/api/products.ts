@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { DeliveryLifecycleProjection } from './projects';
 
 export interface ProductEmployee {
   id: string;
@@ -14,6 +15,7 @@ export interface Product {
   productCategory: string;
   productType: string;
   status: string;
+  deliveryLifecycle?: DeliveryLifecycleProjection;
   pmId: string | null;
   deadline: string | null;
   description: string | null;

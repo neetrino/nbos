@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import {
   EXTENSION_STATUSES,
+  formatDeliveryLifecycleLabel,
   getExtensionSize,
   getExtensionStatus,
 } from '@/features/projects/constants/projects';
@@ -58,7 +59,7 @@ function ExtensionTableRow({
         {extension.product?.name ?? '-'}
       </td>
       <ExtensionSizeCell size={extension.size} />
-      <ExtensionStatusCell status={extension.status} />
+      <ExtensionStatusCell extension={extension} />
       <ExtensionAssigneeCell extension={extension} />
       <td className="text-muted-foreground px-4 py-2.5 text-xs">{extension._count.tasks}</td>
       <ExtensionActionCell extension={extension} onStatusChange={onStatusChange} />
@@ -89,12 +90,15 @@ function ExtensionSizeCell({ size }: { size: string }) {
   );
 }
 
-function ExtensionStatusCell({ status }: { status: string }) {
-  const extensionStatus = getExtensionStatus(status);
+function ExtensionStatusCell({ extension }: { extension: Extension }) {
+  const extensionStatus = getExtensionStatus(extension.status);
+  const label = extension.deliveryLifecycle
+    ? formatDeliveryLifecycleLabel(extension.deliveryLifecycle)
+    : extensionStatus?.label;
   return (
     <td className="px-4 py-2.5">
       {extensionStatus && (
-        <StatusBadge label={extensionStatus.label} variant={extensionStatus.variant} />
+        <StatusBadge label={label ?? extensionStatus.label} variant={extensionStatus.variant} />
       )}
     </td>
   );

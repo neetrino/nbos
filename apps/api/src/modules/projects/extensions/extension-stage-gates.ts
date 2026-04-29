@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { type ExtensionStatusEnum } from '@nbos/database';
+import { attachExtensionDeliveryLifecycle } from '../delivery-lifecycle';
 
 export const EXTENSION_STAGE_GATE_ERROR_CODE = 'EXTENSION_STAGE_GATE_VALIDATION';
 
@@ -108,5 +109,8 @@ export function buildExtensionReadiness(
 }
 
 export function attachExtensionReadiness<T extends ExtensionForReadiness>(extension: T) {
-  return { ...extension, readiness: buildExtensionReadiness(extension) };
+  return {
+    ...attachExtensionDeliveryLifecycle(extension),
+    readiness: buildExtensionReadiness(extension),
+  };
 }
