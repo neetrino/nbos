@@ -101,6 +101,7 @@ export class TasksController {
       priority?: string;
       workspaceId?: string;
       planningStatus?: string;
+      completionRules?: unknown;
       startDate?: string;
       dueDate?: string;
       parentId?: string;
@@ -131,6 +132,7 @@ export class TasksController {
       workspaceId?: string | null;
       planningStatus?: string;
       workspaceSortOrder?: number;
+      completionRules?: unknown;
     },
   ) {
     return this.tasksService.update(id, body);

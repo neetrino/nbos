@@ -921,6 +921,7 @@ model Task {
   startDate          DateTime?              @map("start_date")
   dueDate            DateTime?              @map("due_date")
   completedAt        DateTime?              @map("completed_at")
+  completionRules    Json?                  @map("completion_rules")
   parentId           String?                @map("parent_id")
   kanbanStageId      String?                @map("kanban_stage_id")
   myPlanStageId      String?                @map("my_plan_stage_id")

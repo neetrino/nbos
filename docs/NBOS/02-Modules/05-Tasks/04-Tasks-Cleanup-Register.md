@@ -223,31 +223,32 @@
 - аккуратно спланировать data migration;
 - синхронизировать БД, API и frontend в одном refactor step.
 
-### C3. TasksService пока не поддерживает новый workflow и completion rules
+### C3. TasksService has first completion rules runtime
 
 Подтверждение в коде:
 
 - [apps/api/src/modules/tasks/tasks.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/tasks.service.ts:202)
 
-Текущее поведение:
+Статус: `PHASE 4 COMPLETION RULES FOUNDATION`
 
-- `start()` переводит только в `IN_PROGRESS`
-- `complete()` сразу делает `DONE`
-- `reopen()` возвращает в `NEW`
-- `defer()` переводит в `DEFERRED`
+Что уже сделано:
+
+- Task stores explicit `completionRules`;
+- `complete()` validates enabled rules before moving to `DONE`;
+- unmet rules return human-readable blockers;
+- checklist completion and open subtask rules are enforced from real runtime data;
+- future rules such as review, attachment and creator approval block with clear `RUNTIME_NOT_AVAILABLE` instead of silently passing.
 
 Проблема:
 
 - нет отдельного `Review`;
-- нет `Completion Rules`;
-- нет blocking reasons при завершении;
 - нет reviewer approval layer.
 
 Что потом нужно сделать:
 
 - пересобрать task state machine;
-- добавить completion validation contract;
-- добавить human-readable blocker response.
+- добавить review/approval runtime;
+- expose completion blockers in TaskSheet UI.
 
 ### C4. Work Space runtime foundation exists
 
@@ -354,10 +355,11 @@ Remaining depth:
 
 1. ввести runtime-сущность `Work Space`;
 2. expose connected Work Space in Product/Extension delivery UI;
-3. привести task statuses к новому канону в DB/shared/backend/frontend;
-4. реализовать `Review` и `Completion Rules`;
-5. перестроить project task UI и full workspace views;
-6. потом расширять recurring / automation / blueprints.
+3. реализовать completion rules runtime foundation;
+4. привести task statuses к новому канону в DB/shared/backend/frontend;
+5. реализовать `Review`;
+6. перестроить project task UI и full workspace views;
+7. потом расширять recurring / automation / blueprints.
 
 ---
 

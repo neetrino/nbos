@@ -109,6 +109,7 @@ export type TaskCountAggregateOutputType = {
   startDate: number;
   dueDate: number;
   completedAt: number;
+  completionRules: number;
   parentId: number;
   kanbanStageId: number;
   myPlanStageId: number;
@@ -206,6 +207,7 @@ export type TaskCountAggregateInputType = {
   startDate?: true;
   dueDate?: true;
   completedAt?: true;
+  completionRules?: true;
   parentId?: true;
   kanbanStageId?: true;
   myPlanStageId?: true;
@@ -324,6 +326,7 @@ export type TaskGroupByOutputType = {
   startDate: Date | null;
   dueDate: Date | null;
   completedAt: Date | null;
+  completionRules: runtime.JsonValue | null;
   parentId: string | null;
   kanbanStageId: string | null;
   myPlanStageId: string | null;
@@ -374,6 +377,7 @@ export type TaskWhereInput = {
   startDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
   dueDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
   completedAt?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
+  completionRules?: Prisma.JsonNullableFilter<'Task'>;
   parentId?: Prisma.StringNullableFilter<'Task'> | string | null;
   kanbanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
   myPlanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
@@ -422,6 +426,7 @@ export type TaskOrderByWithRelationInput = {
   startDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  completionRules?: Prisma.SortOrderInput | Prisma.SortOrder;
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder;
   kanbanStageId?: Prisma.SortOrderInput | Prisma.SortOrder;
   myPlanStageId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -468,6 +473,7 @@ export type TaskWhereUniqueInput = Prisma.AtLeast<
     startDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
     dueDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
     completedAt?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
+    completionRules?: Prisma.JsonNullableFilter<'Task'>;
     parentId?: Prisma.StringNullableFilter<'Task'> | string | null;
     kanbanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
     myPlanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
@@ -520,6 +526,7 @@ export type TaskOrderByWithAggregationInput = {
   startDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  completionRules?: Prisma.SortOrderInput | Prisma.SortOrder;
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder;
   kanbanStageId?: Prisma.SortOrderInput | Prisma.SortOrder;
   myPlanStageId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -560,6 +567,7 @@ export type TaskScalarWhereWithAggregatesInput = {
   startDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null;
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null;
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null;
+  completionRules?: Prisma.JsonNullableWithAggregatesFilter<'Task'>;
   parentId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   kanbanStageId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   myPlanStageId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
@@ -585,6 +593,7 @@ export type TaskCreateInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -623,6 +632,7 @@ export type TaskUncheckedCreateInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -653,6 +663,7 @@ export type TaskUpdateInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -693,6 +704,7 @@ export type TaskUncheckedUpdateInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -726,6 +738,7 @@ export type TaskCreateManyInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -753,6 +766,7 @@ export type TaskUpdateManyMutationInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -784,6 +798,7 @@ export type TaskUncheckedUpdateManyInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -837,6 +852,7 @@ export type TaskCountOrderByAggregateInput = {
   startDate?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
   completedAt?: Prisma.SortOrder;
+  completionRules?: Prisma.SortOrder;
   parentId?: Prisma.SortOrder;
   kanbanStageId?: Prisma.SortOrder;
   myPlanStageId?: Prisma.SortOrder;
@@ -1547,6 +1563,7 @@ export type TaskCreateWithoutProductInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -1583,6 +1600,7 @@ export type TaskUncheckedCreateWithoutProductInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -1660,6 +1678,7 @@ export type TaskScalarWhereInput = {
   startDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
   dueDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
   completedAt?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
+  completionRules?: Prisma.JsonNullableFilter<'Task'>;
   parentId?: Prisma.StringNullableFilter<'Task'> | string | null;
   kanbanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
   myPlanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
@@ -1685,6 +1704,7 @@ export type TaskCreateWithoutExtensionInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -1721,6 +1741,7 @@ export type TaskUncheckedCreateWithoutExtensionInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -1790,6 +1811,7 @@ export type TaskCreateWithoutWorkspaceInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -1826,6 +1848,7 @@ export type TaskUncheckedCreateWithoutWorkspaceInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -1895,6 +1918,7 @@ export type TaskCreateWithoutSubtasksInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -1932,6 +1956,7 @@ export type TaskUncheckedCreateWithoutSubtasksInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -1967,6 +1992,7 @@ export type TaskCreateWithoutParentInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -2004,6 +2030,7 @@ export type TaskUncheckedCreateWithoutParentInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -2066,6 +2093,7 @@ export type TaskUpdateWithoutSubtasksInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2105,6 +2133,7 @@ export type TaskUncheckedUpdateWithoutSubtasksInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2160,6 +2189,7 @@ export type TaskCreateWithoutLinksInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -2197,6 +2227,7 @@ export type TaskUncheckedCreateWithoutLinksInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -2251,6 +2282,7 @@ export type TaskUpdateWithoutLinksInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2290,6 +2322,7 @@ export type TaskUncheckedUpdateWithoutLinksInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2317,6 +2350,7 @@ export type TaskCreateWithoutChecklistsInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -2354,6 +2388,7 @@ export type TaskUncheckedCreateWithoutChecklistsInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -2411,6 +2446,7 @@ export type TaskUpdateWithoutChecklistsInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2450,6 +2486,7 @@ export type TaskUncheckedUpdateWithoutChecklistsInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2477,6 +2514,7 @@ export type TaskCreateWithoutCreatorInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -2513,6 +2551,7 @@ export type TaskUncheckedCreateWithoutCreatorInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -2554,6 +2593,7 @@ export type TaskCreateWithoutAssigneeInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -2590,6 +2630,7 @@ export type TaskUncheckedCreateWithoutAssigneeInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -2691,6 +2732,7 @@ export type TaskCreateManyProductInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -2718,6 +2760,7 @@ export type TaskUpdateWithoutProductInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2756,6 +2799,7 @@ export type TaskUncheckedUpdateWithoutProductInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2790,6 +2834,7 @@ export type TaskUncheckedUpdateManyWithoutProductInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2819,6 +2864,7 @@ export type TaskCreateManyExtensionInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -2846,6 +2892,7 @@ export type TaskUpdateWithoutExtensionInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -2884,6 +2931,7 @@ export type TaskUncheckedUpdateWithoutExtensionInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2918,6 +2966,7 @@ export type TaskUncheckedUpdateManyWithoutExtensionInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2947,6 +2996,7 @@ export type TaskCreateManyWorkspaceInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -2974,6 +3024,7 @@ export type TaskUpdateWithoutWorkspaceInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3012,6 +3063,7 @@ export type TaskUncheckedUpdateWithoutWorkspaceInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3046,6 +3098,7 @@ export type TaskUncheckedUpdateManyWithoutWorkspaceInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3076,6 +3129,7 @@ export type TaskCreateManyParentInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
@@ -3102,6 +3156,7 @@ export type TaskUpdateWithoutParentInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3141,6 +3196,7 @@ export type TaskUncheckedUpdateWithoutParentInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3175,6 +3231,7 @@ export type TaskUncheckedUpdateManyWithoutParentInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3203,6 +3260,7 @@ export type TaskCreateManyCreatorInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -3232,6 +3290,7 @@ export type TaskCreateManyAssigneeInput = {
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
@@ -3259,6 +3318,7 @@ export type TaskUpdateWithoutCreatorInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3297,6 +3357,7 @@ export type TaskUncheckedUpdateWithoutCreatorInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3331,6 +3392,7 @@ export type TaskUncheckedUpdateManyWithoutCreatorInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3358,6 +3420,7 @@ export type TaskUpdateWithoutAssigneeInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
@@ -3396,6 +3459,7 @@ export type TaskUncheckedUpdateWithoutAssigneeInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3430,6 +3494,7 @@ export type TaskUncheckedUpdateManyWithoutAssigneeInput = {
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3520,6 +3585,7 @@ export type TaskSelect<
     startDate?: boolean;
     dueDate?: boolean;
     completedAt?: boolean;
+    completionRules?: boolean;
     parentId?: boolean;
     kanbanStageId?: boolean;
     myPlanStageId?: boolean;
@@ -3565,6 +3631,7 @@ export type TaskSelectCreateManyAndReturn<
     startDate?: boolean;
     dueDate?: boolean;
     completedAt?: boolean;
+    completionRules?: boolean;
     parentId?: boolean;
     kanbanStageId?: boolean;
     myPlanStageId?: boolean;
@@ -3606,6 +3673,7 @@ export type TaskSelectUpdateManyAndReturn<
     startDate?: boolean;
     dueDate?: boolean;
     completedAt?: boolean;
+    completionRules?: boolean;
     parentId?: boolean;
     kanbanStageId?: boolean;
     myPlanStageId?: boolean;
@@ -3644,6 +3712,7 @@ export type TaskSelectScalar = {
   startDate?: boolean;
   dueDate?: boolean;
   completedAt?: boolean;
+  completionRules?: boolean;
   parentId?: boolean;
   kanbanStageId?: boolean;
   myPlanStageId?: boolean;
@@ -3676,6 +3745,7 @@ export type TaskOmit<
   | 'startDate'
   | 'dueDate'
   | 'completedAt'
+  | 'completionRules'
   | 'parentId'
   | 'kanbanStageId'
   | 'myPlanStageId'
@@ -3757,6 +3827,7 @@ export type $TaskPayload<
       startDate: Date | null;
       dueDate: Date | null;
       completedAt: Date | null;
+      completionRules: runtime.JsonValue | null;
       parentId: string | null;
       kanbanStageId: string | null;
       myPlanStageId: string | null;
@@ -4432,6 +4503,7 @@ export interface TaskFieldRefs {
   readonly startDate: Prisma.FieldRef<'Task', 'DateTime'>;
   readonly dueDate: Prisma.FieldRef<'Task', 'DateTime'>;
   readonly completedAt: Prisma.FieldRef<'Task', 'DateTime'>;
+  readonly completionRules: Prisma.FieldRef<'Task', 'Json'>;
   readonly parentId: Prisma.FieldRef<'Task', 'String'>;
   readonly kanbanStageId: Prisma.FieldRef<'Task', 'String'>;
   readonly myPlanStageId: Prisma.FieldRef<'Task', 'String'>;

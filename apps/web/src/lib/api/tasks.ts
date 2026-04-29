@@ -34,6 +34,7 @@ export interface Task {
   startDate: string | null;
   dueDate: string | null;
   completedAt: string | null;
+  completionRules: TaskCompletionRule[] | null;
   parentId: string | null;
   workspaceId: string | null;
   planningStatus: string;
@@ -60,6 +61,21 @@ export interface Task {
     assigneeId: string | null;
   }>;
   _count: { subtasks: number; checklists: number };
+}
+
+export type TaskCompletionRuleType =
+  | 'requires_checklist_complete'
+  | 'requires_subtasks_complete'
+  | 'requires_review'
+  | 'requires_attachment'
+  | 'requires_creator_approval'
+  | 'requires_specific_field'
+  | 'requires_linked_entity_condition';
+
+export interface TaskCompletionRule {
+  type: TaskCompletionRuleType;
+  enabled?: boolean;
+  label?: string;
 }
 
 export interface TaskBoardStage {
@@ -149,6 +165,7 @@ export const tasksApi = {
     priority?: string;
     workspaceId?: string;
     planningStatus?: string;
+    completionRules?: TaskCompletionRule[];
     startDate?: string;
     dueDate?: string;
     parentId?: string;

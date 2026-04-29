@@ -4032,6 +4032,7 @@ export const TaskScalarFieldEnum = {
   startDate: 'startDate',
   dueDate: 'dueDate',
   completedAt: 'completedAt',
+  completionRules: 'completionRules',
   parentId: 'parentId',
   kanbanStageId: 'kanbanStageId',
   myPlanStageId: 'myPlanStageId',

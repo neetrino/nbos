@@ -7,7 +7,7 @@
 | Field         | Value                          |
 | ------------- | ------------------------------ |
 | Current phase | **Phase 4 — Delivery ops**     |
-| Current task  | Work Space UI integration      |
+| Current task  | Task completion rules          |
 | Status        | Phase 4 Projects Hub lifecycle |
 | Last updated  | 2026-04-29                     |
 
@@ -18,7 +18,7 @@
 | Phase 1 — Platform shell            | Done        |     100% | Navigation, RBAC shell, shared states, admin foundation                                    |
 | Phase 2 — CRM / Marketing / Intake  | Done        |     100% | Intake, CRM handoff, marketing spend links, project entry points                           |
 | Phase 3 — Finance core              | Done (full) |     100% | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates |
-| Phase 4 — Delivery ops              | In progress |     ~94% | Work Space runtime is visible in Product/Delivery UI; Support depth remains                |
+| Phase 4 — Delivery ops              | In progress |     ~96% | Work Space UI and Task completion blockers exist; Support depth remains                    |
 | Phase 5 — Collaboration / knowledge | Not started |       0% | Drive, credentials, messenger, notifications                                               |
 | Phase 6 — Control layer             | Early       |     ~35% | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later          |
 | Phase 7 — Integrations / migration  | Not started |       0% | WhatsApp, bank/gov, Bitrix migration                                                       |
@@ -105,10 +105,11 @@ Future Finance depth:
 | 2026-04-29 | Phase 4 closure checklist          | Projects Hub delivery closure gate created; Tasks/Support blockers clear | docs review                                                           |
 | 2026-04-29 | Work Space runtime foundation      | Runtime Work Space entity, planning status and connected ensure API      | database/api/web typecheck, lint, targeted Vitest                     |
 | 2026-04-29 | Work Space UI integration          | Product task tab now ensures and displays connected Work Space context   | web typecheck, lint                                                   |
+| 2026-04-29 | Task completion rules              | Task complete can enforce explicit rules and return blocker reasons      | database/api/web typecheck, lint, targeted Vitest                     |
 
 ## Next Action
 
-1. Continue Phase 4 with task completion rules or Support runtime depth.
+1. Continue Phase 4 with Support runtime depth or task completion UI/review polish.
 2. Keep Phase 6 control/reporting work out of Phase 4 unless explicitly reprioritized.
 
 ## Slice DoD

@@ -98,6 +98,23 @@ describe('TasksService', () => {
         }),
       );
     });
+
+    it('normalizes completion rules on create', async () => {
+      prisma.task.findFirst.mockResolvedValue(null);
+      await service.create({
+        title: 'Controlled task',
+        creatorId: 'c1',
+        completionRules: ['requires_checklist_complete'],
+      });
+
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            completionRules: [{ type: 'requires_checklist_complete', enabled: true }],
+          }),
+        }),
+      );
+    });
   });
 
   describe('update', () => {
@@ -136,10 +153,59 @@ describe('TasksService', () => {
 
   describe('complete', () => {
     it('completes a task', async () => {
-      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'IN_PROGRESS' });
+      prisma.task.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'IN_PROGRESS',
+        completionRules: null,
+        checklists: [],
+        subtasks: [],
+      });
       prisma.task.update.mockResolvedValue({ id: '1', status: 'DONE' });
       const result = await service.complete('1');
       expect(result.status).toBe('DONE');
+    });
+
+    it('blocks completion when required checklist has open items', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'IN_PROGRESS',
+        completionRules: ['requires_checklist_complete'],
+        checklists: [{ items: [{ checked: true }, { checked: false }] }],
+        subtasks: [],
+      });
+
+      await expect(service.complete('1')).rejects.toMatchObject({
+        response: expect.objectContaining({
+          message: 'Task completion blocked.',
+          blockers: [
+            expect.objectContaining({
+              ruleType: 'requires_checklist_complete',
+              code: 'CHECKLIST_INCOMPLETE',
+            }),
+          ],
+        }),
+      });
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('blocks completion when required subtasks are open', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'IN_PROGRESS',
+        completionRules: ['requires_subtasks_complete'],
+        checklists: [],
+        subtasks: [
+          { code: 'T-2026-0002', title: 'Open child', status: 'IN_PROGRESS' },
+          { code: 'T-2026-0003', title: 'Done child', status: 'DONE' },
+        ],
+      });
+
+      await expect(service.complete('1')).rejects.toMatchObject({
+        response: expect.objectContaining({
+          blockers: [expect.objectContaining({ code: 'SUBTASKS_OPEN' })],
+        }),
+      });
+      expect(prisma.task.update).not.toHaveBeenCalled();
     });
   });
 
