@@ -118,6 +118,7 @@ Future Finance depth:
 | 2026-04-29 | Mail FAILED outbound reset to DRAFT   | `POST …/messages/:messageId/reset-failed-to-draft`; FAILED→DRAFT; audit `mail.outbound_failed_reset_to_draft`; web **Reset to draft (retry)** after stub failure.                                                                                             |
 | 2026-04-29 | Mail account sync stub (timestamps)   | `POST /api/mail/accounts/:id/sync-stub` (`MAIL` EDIT); `lastSyncAt` + clear `lastErrorAt`; audit `mail.mail_account_sync_stub` (`NO_MAIL_PROVIDER_SYNC`); web per-mailbox **stub sync** icon; `MailAccountCommandService`.                                    |
 | 2026-04-29 | Mail stub sync → in-app notification  | После успешного `sync-stub`: `NotificationService` (in-memory MVP) — получатель актор и (если отличается) владелец ящика; тип `mail.account_sync_stub`, ссылка `/mail`; `publishMailAccountSyncStubNotifications` + тесты.                                    |
+| 2026-04-29 | Web notifications bell → API MVP      | `notificationsApi`, `NotificationDropdown` в Topbar: список + unread poll, mark read / mark all; иконки по типу (`mail.*` → Mail); `GET/PATCH /api/notifications` без `userId` в query — только JWT (`CurrentUser`).                                          |
 
 ## Next Action
 
