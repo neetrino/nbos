@@ -137,6 +137,16 @@ export function formatDeliveryLifecycleLabel(lifecycle: {
   return stageLabel ? toTitleCase(stageLabel) : 'Not staged';
 }
 
+export function getDeliveryLifecycleVariant(lifecycle: {
+  workStatus: string;
+  resolution: string | null;
+}): StatusVariant {
+  if (lifecycle.resolution === 'DONE') return 'green';
+  if (lifecycle.resolution === 'CANCELLED') return 'red';
+  if (lifecycle.workStatus === 'ON_HOLD') return 'gray';
+  return 'purple';
+}
+
 export function getExtensionStatus(value: string) {
   return EXTENSION_STATUSES.find((s) => s.value === value);
 }

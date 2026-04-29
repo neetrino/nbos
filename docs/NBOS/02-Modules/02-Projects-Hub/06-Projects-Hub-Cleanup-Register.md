@@ -215,6 +215,19 @@ Product detail tabs now surface runtime health summaries without introducing new
 
 This keeps `Tasks` as the internal execution layer and `Support` as customer/SLA context while making delivery risk visible from the Product screen.
 
+### A15. Product detail exposes canonical delivery lifecycle
+
+Статус: `PHASE 4 UX ALIGNMENT`
+
+Product detail now surfaces the canonical delivery lifecycle directly:
+
+- header status badge uses `deliveryLifecycle` when present;
+- overview shows the `Starting / Development / QA / Transfer` stage line;
+- `On Hold` is shown as a pause state on the current stage;
+- `Done / Cancelled` are shown as terminal outcomes instead of plain legacy statuses.
+
+This keeps Product detail aligned with Delivery Board and reduces dependence on old `status` labels while legacy enums are still present for compatibility.
+
 ---
 
 ## B. Устарело только в документации или описаниях

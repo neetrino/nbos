@@ -3,8 +3,20 @@
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
-import { getProductStatus, getProductType } from '@/features/projects/constants/projects';
+import {
+  formatDeliveryLifecycleLabel,
+  getDeliveryLifecycleVariant,
+  getProductStatus,
+  getProductType,
+} from '@/features/projects/constants/projects';
 import { ProductStageGateCard } from './ProductStageGateCard';
+
+const DELIVERY_STAGES = [
+  { value: 'STARTING', label: 'Starting' },
+  { value: 'DEVELOPMENT', label: 'Development' },
+  { value: 'QA', label: 'QA' },
+  { value: 'TRANSFER', label: 'Transfer' },
+] as const;
 
 interface ProductOverviewTabProps {
   product: FullProduct;
@@ -20,6 +32,7 @@ export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewT
   return (
     <div className="space-y-6">
       <ProductStats product={product} doneTasks={doneTasks} doneExtensions={doneExtensions} />
+      <ProductDeliveryLifecycleCard product={product} />
       <div className="grid gap-6 lg:grid-cols-2">
         <ProductDetailsCard product={product} />
         <ProductStageGateCard product={product} onStatusChange={onStatusChange} />
@@ -70,16 +83,27 @@ function ProductStats({
 function ProductDetailsCard({ product }: { product: FullProduct }) {
   const status = getProductStatus(product.status);
   const productType = getProductType(product.productType);
+  const lifecycle = product.deliveryLifecycle;
 
   return (
     <section className="bg-card border-border rounded-xl border p-5">
       <h3 className="mb-4 text-sm font-semibold">Product Details</h3>
       <div className="space-y-3 text-sm">
         <DetailRow label="Type" value={productType?.label} />
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Status</span>
-          {status && <StatusBadge label={status.label} variant={status.variant} />}
-        </div>
+        {lifecycle ? (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Delivery</span>
+            <StatusBadge
+              label={formatDeliveryLifecycleLabel(lifecycle)}
+              variant={getDeliveryLifecycleVariant(lifecycle)}
+            />
+          </div>
+        ) : (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Status</span>
+            {status && <StatusBadge label={status.label} variant={status.variant} />}
+          </div>
+        )}
         {product.pm && (
           <DetailRow label="PM" value={`${product.pm.firstName} ${product.pm.lastName}`} />
         )}
@@ -91,6 +115,77 @@ function ProductDetailsCard({ product }: { product: FullProduct }) {
       </div>
     </section>
   );
+}
+
+function ProductDeliveryLifecycleCard({ product }: { product: FullProduct }) {
+  const lifecycle = product.deliveryLifecycle;
+  if (!lifecycle) return null;
+
+  return (
+    <section className="bg-card border-border rounded-xl border p-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold">Delivery Lifecycle</h3>
+          <p className="text-muted-foreground text-xs">
+            Product delivery source of truth for stage, pause state and terminal outcome.
+          </p>
+        </div>
+        <StatusBadge
+          label={formatDeliveryLifecycleLabel(lifecycle)}
+          variant={getDeliveryLifecycleVariant(lifecycle)}
+        />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-4">
+        {DELIVERY_STAGES.map((stage) => (
+          <DeliveryStageStep key={stage.value} stage={stage} lifecycle={lifecycle} />
+        ))}
+      </div>
+      {lifecycle.workStatus === 'ON_HOLD' && (
+        <p className="text-muted-foreground mt-3 text-xs">
+          Delivery is paused on the current stage until it is resumed.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function DeliveryStageStep({
+  stage,
+  lifecycle,
+}: {
+  stage: (typeof DELIVERY_STAGES)[number];
+  lifecycle: NonNullable<FullProduct['deliveryLifecycle']>;
+}) {
+  const currentIndex = DELIVERY_STAGES.findIndex((item) => item.value === lifecycle.stage);
+  const stageIndex = DELIVERY_STAGES.findIndex((item) => item.value === stage.value);
+  const isCurrent = lifecycle.stage === stage.value && !lifecycle.resolution;
+  const isDone =
+    lifecycle.resolution === 'DONE' || (currentIndex >= 0 && stageIndex < currentIndex);
+  const stateClassName = getStageStepClassName({ isCurrent, isDone, lifecycle });
+
+  return (
+    <div className={`rounded-lg border px-3 py-2 text-xs font-medium ${stateClassName}`}>
+      {stage.label}
+    </div>
+  );
+}
+
+function getStageStepClassName({
+  isCurrent,
+  isDone,
+  lifecycle,
+}: {
+  isCurrent: boolean;
+  isDone: boolean;
+  lifecycle: NonNullable<FullProduct['deliveryLifecycle']>;
+}) {
+  if (lifecycle.resolution === 'CANCELLED') return 'border-red-200 bg-red-50 text-red-700';
+  if (isCurrent && lifecycle.workStatus === 'ON_HOLD') {
+    return 'border-gray-300 bg-gray-100 text-gray-700';
+  }
+  if (isCurrent) return 'border-purple-300 bg-purple-50 text-purple-700';
+  if (isDone) return 'border-green-200 bg-green-50 text-green-700';
+  return 'border-border bg-muted/30 text-muted-foreground';
 }
 
 function StatCard({

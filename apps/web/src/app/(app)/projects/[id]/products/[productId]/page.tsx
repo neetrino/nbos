@@ -21,7 +21,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared';
 import { productsApi, type Product, type FullProduct } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
-import { getProductStatus, getProductType } from '@/features/projects/constants/projects';
+import {
+  formatDeliveryLifecycleLabel,
+  getDeliveryLifecycleVariant,
+  getProductStatus,
+  getProductType,
+} from '@/features/projects/constants/projects';
 import { ProductOverviewTab } from '@/features/projects/components/product-tabs/ProductOverviewTab';
 import { ProductTasksTab } from '@/features/projects/components/product-tabs/ProductTasksTab';
 import { ProductExtensionsTab } from '@/features/projects/components/product-tabs/ProductExtensionsTab';
@@ -126,6 +131,7 @@ export default function ProductDetailPage() {
   const st = getProductStatus(product.status);
   const pt = getProductType(product.productType);
   const otherProducts = siblingProducts.filter((p) => p.id !== product.id);
+  const lifecycle = product.deliveryLifecycle;
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -151,7 +157,14 @@ export default function ProductDetailPage() {
               </div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold">{product.name}</h1>
-                {st && <StatusBadge label={st.label} variant={st.variant} />}
+                {lifecycle ? (
+                  <StatusBadge
+                    label={formatDeliveryLifecycleLabel(lifecycle)}
+                    variant={getDeliveryLifecycleVariant(lifecycle)}
+                  />
+                ) : (
+                  st && <StatusBadge label={st.label} variant={st.variant} />
+                )}
                 {pt && (
                   <span className="bg-secondary rounded-md px-2 py-0.5 text-[10px] font-medium">
                     {pt.label}
