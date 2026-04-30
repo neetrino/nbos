@@ -33,25 +33,11 @@
 
 ## Recent Milestones
 
-| Through    | Area                 | Summary                                                                                                                                 |
-| ---------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-29 | Phase 3–4            | Finance full closure; Delivery / Work Space / Support bridges; product lifecycle + Done readiness.                                      |
-| 2026-04-30 | Phase 5 closure      | Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents P0 slices shipped from approved closure proposal. |
-| 2026-04-30 | Reports / Analytics  | `/reports` catalog shell surfaces Finance-owned definitions with search/category filters and honest scheduled/export empty states.      |
-| 2026-04-30 | Dashboard            | Control Center shell, backend projection API and per-employee preferences shipped for pinned actions, priority cards and mini widgets.  |
-| 2026-04-30 | Reports exports      | `ReportExportJob` foundation, audited create/list API and `/reports` export history shipped with Drive `FileAsset` output relation.     |
-| 2026-04-30 | Reports export files | CSV writer uses Finance-owned aggregate services, writes real Drive/R2 `FileAsset` outputs and records failure/completion audit.        |
-| 2026-04-30 | Scheduled reports    | `ReportSchedule` model, create/list API, scheduled tab UI and audit foundation shipped without fake delivery attempts.                  |
-| 2026-04-30 | Reports data quality | Data-quality warning API and `/reports` tab expose Finance-owned source endpoints and deferred limitations without fake zero values.    |
-| 2026-04-30 | Dashboard defaults   | Role-based pinned action defaults and personal links as Dashboard pinned actions shipped with external-link handling.                   |
-| 2026-04-30 | Reports worker       | BullMQ export queue/worker wiring added; export requests stay queued in DB and write Drive files asynchronously when Redis is present.  |
-| 2026-04-30 | Reports recurrence   | Scheduled Reports use simple `DAILY/WEEKLY/MONTHLY` recurrence with monthly days limited to `1-28`; recurring Tasks stay separate.      |
-| 2026-04-30 | Reports due runner   | Due schedules create queued export jobs, enqueue them through Reports worker wiring and advance `nextRunAt`.                            |
-| 2026-04-30 | Reports schedules    | Pause, resume and archive actions shipped for owned scheduled reports with audit and UI controls.                                       |
-| 2026-04-30 | Reports navigation   | Main sidebar already exposes top-level Reports / Analytics at `/reports`; cleanup register reconciled.                                  |
-| 2026-04-30 | Reports filters      | Basic `dateFrom` / `dateTo` / `asOf` filter shell now feeds export jobs and new scheduled reports.                                      |
-| 2026-04-30 | Reports audit        | Finance-sensitive audit context is explicit on export request/completion/failure and scheduled export queue events.                     |
-| 2026-04-30 | Reports saved views  | Personal saved report views store/apply filter presets for module-owned report definitions.                                             |
+| Through    | Area            | Summary                                                                                                                                  |
+| ---------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-29 | Phase 3–4       | Finance core and Delivery ops closed: money state, Client Services, report aggregates, product lifecycle and Work Space/Support bridges. |
+| 2026-04-30 | Phase 5 closure | Collaboration/knowledge P0 closed: Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents.                |
+| 2026-04-30 | Phase 6 closure | Control layer P0 closed: Dashboard Control Center plus minimal working Reports catalog/export/schedule/filter/audit foundation.          |
 
 ## Next Action
 
