@@ -187,7 +187,12 @@ export function ReportsSchedulePanel({
       ) : (
         <div className="mt-5 space-y-3">
           {sortedSchedules.map((schedule) => (
-            <ScheduleRow key={schedule.id} schedule={schedule} />
+            <ScheduleRow
+              key={schedule.id}
+              schedule={schedule}
+              schedules={schedules}
+              onSchedulesChange={onSchedulesChange}
+            />
           ))}
         </div>
       )}
@@ -195,7 +200,31 @@ export function ReportsSchedulePanel({
   );
 }
 
-function ScheduleRow({ schedule }: { schedule: ReportSchedule }) {
+function ScheduleRow({
+  schedule,
+  schedules,
+  onSchedulesChange,
+}: {
+  schedule: ReportSchedule;
+  schedules: ReportSchedule[];
+  onSchedulesChange: (schedules: ReportSchedule[]) => void;
+}) {
+  const [busyAction, setBusyAction] = useState<'pause' | 'resume' | 'archive' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function runAction(action: 'pause' | 'resume' | 'archive') {
+    setBusyAction(action);
+    setError(null);
+    try {
+      const updated = await updateScheduleStatus(schedule.id, action);
+      onSchedulesChange(schedules.map((item) => (item.id === updated.id ? updated : item)));
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Scheduled report could not be updated.'));
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
   return (
     <div className="rounded-xl border p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -210,15 +239,57 @@ function ScheduleRow({ schedule }: { schedule: ReportSchedule }) {
             Recipients: {schedule.recipientEmails.join(', ')}
           </p>
         </div>
-        <span className="bg-muted rounded-full px-2.5 py-1 text-xs font-medium">
-          {schedule.status}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="bg-muted rounded-full px-2.5 py-1 text-xs font-medium">
+            {schedule.status}
+          </span>
+          {schedule.status === 'ACTIVE' ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={busyAction !== null}
+              onClick={() => void runAction('pause')}
+            >
+              {busyAction === 'pause' ? 'Pausing...' : 'Pause'}
+            </Button>
+          ) : null}
+          {schedule.status === 'PAUSED' || schedule.status === 'FAILED' ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={busyAction !== null}
+              onClick={() => void runAction('resume')}
+            >
+              {busyAction === 'resume' ? 'Resuming...' : 'Resume'}
+            </Button>
+          ) : null}
+          {schedule.status !== 'ARCHIVED' ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={busyAction !== null}
+              onClick={() => void runAction('archive')}
+            >
+              {busyAction === 'archive' ? 'Archiving...' : 'Archive'}
+            </Button>
+          ) : null}
+        </div>
       </div>
       {schedule.failureReason ? (
         <p className="text-destructive mt-2 text-sm">{schedule.failureReason}</p>
       ) : null}
+      {error ? <p className="text-destructive mt-2 text-sm">{error}</p> : null}
     </div>
   );
+}
+
+function updateScheduleStatus(scheduleId: string, action: 'pause' | 'resume' | 'archive') {
+  if (action === 'pause') return reportsApi.pauseSchedule(scheduleId);
+  if (action === 'resume') return reportsApi.resumeSchedule(scheduleId);
+  return reportsApi.archiveSchedule(scheduleId);
 }
 
 function scheduleSummary(schedule: ReportSchedule): string {

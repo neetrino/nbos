@@ -5,6 +5,7 @@ import { FinanceReportsModule } from '../finance/reports/reports.module';
 import { ReportsController } from './reports.controller';
 import { ReportsExportWorker } from './reports-export.worker';
 import { ReportsQueueService } from './reports-queue.service';
+import { ReportsScheduleManagementService } from './reports-schedule-management.service';
 import { ReportsScheduleRunnerService } from './reports-schedule-runner.service';
 import { ReportsService } from './reports.service';
 
@@ -16,6 +17,7 @@ import { ReportsService } from './reports.service';
     ReportsQueueService,
     ReportsExportWorker,
     ReportsScheduleRunnerService,
+    ReportsScheduleManagementService,
   ],
   exports: [ReportsService, ReportsScheduleRunnerService],
 })

@@ -7,22 +7,22 @@
 | Field           | Value                              |
 | --------------- | ---------------------------------- |
 | Current phase   | **Phase 6 — Control layer**        |
-| Current task    | Schedule management actions        |
+| Current task    | Reports navigation inclusion       |
 | Status          | Phase 6 in progress                |
 | Last updated    | 2026-04-30                         |
 | Source of truth | Roadmap + module cleanup registers |
 
 ## Phase Snapshot
 
-| Phase                               | Status      | Progress | Current note                                                                                                                                                  |
-| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                                                                       |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                                                              |
-| Phase 3 — Finance core              | Done        | 100%     | Finance runtime + Client Services + six report aggregates                                                                                                     |
-| Phase 4 — Delivery ops              | Done        | 100%     | Product lifecycle, Work Space, Tasks and Support bridges                                                                                                      |
-| Phase 5 — Collaboration / knowledge | Done        | 100%     | Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents P0 closure slices shipped                                               |
-| Phase 6 — Control layer             | In progress | ~90%     | Reports catalog/export/schedule/data-quality foundation, simple recurrence, due runner and Dashboard Control Center/defaults shipped; management actions next |
-| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                                                                          |
+| Phase                               | Status      | Progress | Current note                                                                                                                                           |
+| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                                                                |
+| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                                                       |
+| Phase 3 — Finance core              | Done        | 100%     | Finance runtime + Client Services + six report aggregates                                                                                              |
+| Phase 4 — Delivery ops              | Done        | 100%     | Product lifecycle, Work Space, Tasks and Support bridges                                                                                               |
+| Phase 5 — Collaboration / knowledge | Done        | 100%     | Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents P0 closure slices shipped                                        |
+| Phase 6 — Control layer             | In progress | ~91%     | Reports catalog/export/schedule/data-quality foundation, simple recurrence, due runner, schedule actions and Dashboard Control Center/defaults shipped |
+| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                                                                   |
 
 ## Closed Gates
 
@@ -46,11 +46,12 @@
 | 2026-04-30 | Reports worker       | BullMQ export queue/worker wiring added; export requests stay queued in DB and write Drive files asynchronously when Redis is present.  |
 | 2026-04-30 | Reports recurrence   | Scheduled Reports use simple `DAILY/WEEKLY/MONTHLY` recurrence with monthly days limited to `1-28`; recurring Tasks stay separate.      |
 | 2026-04-30 | Reports due runner   | Due schedules create queued export jobs, enqueue them through Reports worker wiring and advance `nextRunAt`.                            |
+| 2026-04-30 | Reports schedules    | Pause, resume and archive actions shipped for owned scheduled reports with audit and UI controls.                                       |
 
 ## Next Action
 
 1. Continue Phase 6 control layer per `docs/NBOS/00-Implementation-Roadmap.md`.
-2. Next slice: pause/resume/archive actions for scheduled reports.
+2. Next slice: include Reports in the main sidebar/navigation.
 3. Later Phase 6: recurring Tasks as a separate Tasks-module feature, KPI/Scorecard depth and cross-module report permission centralization.
 4. Keep Google v2, AI, complex approval workflow, WAHA runtime and credentials secrets out unless explicitly approved.
 

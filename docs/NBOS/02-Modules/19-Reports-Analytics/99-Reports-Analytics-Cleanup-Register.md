@@ -111,11 +111,11 @@ Shipped model:
 - monthly days are intentionally limited to `1-28` for Reports so February and short months are never skipped.
 - due schedule runner creates queued `ReportExportJob` records, enqueues them through the Reports export queue and advances `nextRunAt`;
 - `POST /scheduler/report-schedules-due` plus optional in-process cron when `REPORT_SCHEDULES_DUE_CRON_ENABLED=true`.
+- schedule management actions: pause, resume and archive for owned schedules, with audit and UI controls.
 
 Still needed:
 
 - delivery attempts and recipient channel integration;
-- pause/resume/archive endpoints;
 - link last run to real export job execution.
 - richer run history beyond `lastRunAt` / `lastExportJobId`.
 

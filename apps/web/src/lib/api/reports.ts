@@ -107,6 +107,21 @@ export const reportsApi = {
     return resp.data;
   },
 
+  async pauseSchedule(scheduleId: string): Promise<ReportSchedule> {
+    const resp = await api.post<ReportSchedule>(`/api/reports/schedules/${scheduleId}/pause`);
+    return resp.data;
+  },
+
+  async resumeSchedule(scheduleId: string): Promise<ReportSchedule> {
+    const resp = await api.post<ReportSchedule>(`/api/reports/schedules/${scheduleId}/resume`);
+    return resp.data;
+  },
+
+  async archiveSchedule(scheduleId: string): Promise<ReportSchedule> {
+    const resp = await api.post<ReportSchedule>(`/api/reports/schedules/${scheduleId}/archive`);
+    return resp.data;
+  },
+
   async listDataQualityWarnings(): Promise<ReportDataQualityWarningsResponse> {
     const resp = await api.get<ReportDataQualityWarningsResponse>(
       '/api/reports/data-quality-warnings',
