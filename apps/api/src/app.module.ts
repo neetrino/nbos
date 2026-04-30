@@ -23,6 +23,7 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { AutomationModule } from './modules/automation/automation.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MessengerModule } from './modules/messenger/messenger.module';
 import { MailModule } from './modules/mail/mail.module';
@@ -68,6 +69,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     NotificationModule,
     AutomationModule,
     CalendarModule,
+    DashboardModule,
     SchedulerModule,
     PartnersModule,
     MarketingModule,

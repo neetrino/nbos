@@ -7,42 +7,18 @@ import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePermission } from '@/lib/permissions';
-import { buildPriorityCards, loadDashboardControlData } from './dashboard-control-data';
+import { loadDashboardControlData } from './dashboard-control-data';
 import {
   MINI_METRICS,
   PINNED_ACTIONS,
   priorityClass,
   type DashboardData,
   type PinnedAction,
+  type PriorityCard,
 } from './dashboard-control-registry';
 
 export function DashboardControlCenter() {
-  const { can } = usePermission();
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const actions = useMemo(
-    () => PINNED_ACTIONS.filter((action) => can(action.action, action.module)),
-    [can],
-  );
-  const priorities = useMemo(() => buildPriorityCards(data), [data]);
-
-  const fetchDashboard = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setData(await loadDashboardControlData());
-    } catch (caught) {
-      setData(null);
-      setError(caught instanceof Error ? caught.message : 'Dashboard data could not be loaded.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchDashboard();
-  }, [fetchDashboard]);
+  const { actions, data, error, fetchDashboard, loading, priorities } = useDashboardControlCenter();
 
   if (loading) return <DashboardLoadingSkeleton />;
 
@@ -65,6 +41,40 @@ export function DashboardControlCenter() {
       </section>
     </div>
   );
+}
+
+function useDashboardControlCenter() {
+  const { can } = usePermission();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [priorities, setPriorities] = useState<PriorityCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const actions = useMemo(
+    () => PINNED_ACTIONS.filter((action) => can(action.action, action.module)),
+    [can],
+  );
+
+  const fetchDashboard = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const projection = await loadDashboardControlData();
+      setData(projection.metrics);
+      setPriorities(projection.priorities);
+    } catch (caught) {
+      setData(null);
+      setPriorities([]);
+      setError(caught instanceof Error ? caught.message : 'Dashboard data could not be loaded.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchDashboard();
+  }, [fetchDashboard]);
+
+  return { actions, data, error, fetchDashboard, loading, priorities };
 }
 
 function DashboardLoadingSkeleton() {
@@ -128,7 +138,7 @@ function PinnedActionCard({ action }: { action: PinnedAction }) {
   );
 }
 
-function PriorityFeed({ priorities }: { priorities: ReturnType<typeof buildPriorityCards> }) {
+function PriorityFeed({ priorities }: { priorities: PriorityCard[] }) {
   return (
     <div className="border-border bg-card rounded-2xl border p-5">
       <div className="flex items-center gap-2">

@@ -7,21 +7,21 @@
 | Field         | Value                       |
 | ------------- | --------------------------- |
 | Current phase | **Phase 6 — Control layer** |
-| Current task  | Dashboard Control Center P0 |
+| Current task  | Dashboard projection API P0 |
 | Status        | Phase 6 in progress         |
 | Last updated  | 2026-04-30                  |
 
 ## Phase Snapshot
 
-| Phase                               | Status      | Progress | Notes                                                                                                                     |
-| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                                   |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                          |
-| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates                                |
-| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                                      |
-| Phase 5 — Collaboration / knowledge | Done        | 100%     | Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents P0 closure slices shipped           |
-| Phase 6 — Control layer             | In progress | ~45%     | Reports catalog and Dashboard Control Center P0 shells shipped; preferences, projections and scheduling/export depth next |
-| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                                      |
+| Phase                               | Status      | Progress | Notes                                                                                                             |
+| ----------------------------------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                           |
+| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                  |
+| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates                        |
+| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                              |
+| Phase 5 — Collaboration / knowledge | Done        | 100%     | Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents P0 closure slices shipped   |
+| Phase 6 — Control layer             | In progress | ~48%     | Reports catalog and Dashboard Control Center projection API shipped; preferences and scheduling/export depth next |
+| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                              |
 
 ## Phase 3 Full Closure Gate
 
@@ -84,11 +84,12 @@ Roll-up only. Per-feature detail: **`docs/NBOS/02-Modules/*`**, tests, and **git
 | 2026-04-30    | Documents                | P0 closure slice: daily-use polish for create/editor save states, search empty states and attachment UX; existing search/access/Drive attachment paths confirmed and kept as shipped foundation.                                                                                                        |
 | 2026-04-30    | Reports / Analytics      | Phase 6 first slice: `/reports` replaced placeholder with catalog shell that surfaces Finance-owned report definitions, search/category filters and honest scheduled/export empty states.                                                                                                               |
 | 2026-04-30    | Dashboard                | Phase 6 P0 slice: `/dashboard` converted from heavy KPI summary into Control Center shell with permission-filtered pinned actions, priority feed cards and lightweight mini analytics linking to source modules.                                                                                        |
+| 2026-04-30    | Dashboard                | Projection P0 slice: added `GET /api/dashboard/control-center` so the main dashboard consumes lightweight backend counts/priority cards instead of fetching full CRM/Finance/Tasks/Support lists on the client.                                                                                         |
 
 ## Next Action
 
 1. Continue Phase 6 control layer per `docs/NBOS/00-Implementation-Roadmap.md`.
-2. Next slice: Dashboard preferences/projections or Reports export-job foundation, depending on owner priority.
+2. Next slice: Dashboard preferences or Reports export-job foundation, depending on owner priority.
 3. Keep Google v2, AI, complex approval workflow, WAHA runtime and credentials secrets out of closure unless explicitly approved.
 
 ## Slice DoD

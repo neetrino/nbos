@@ -9,15 +9,7 @@ import {
   MessageCircle,
   Plus,
 } from 'lucide-react';
-
-export interface DashboardData {
-  dueTodayTasks: number;
-  openTasks: number;
-  openDeals: number;
-  pendingInvoices: number;
-  openTickets: number;
-  criticalTickets: number;
-}
+import type { DashboardMetricProjection, DashboardPriorityProjection } from '@/lib/api/dashboard';
 
 export interface PinnedAction {
   label: string;
@@ -28,13 +20,8 @@ export interface PinnedAction {
   description: string;
 }
 
-export interface PriorityCard {
-  title: string;
-  context: string;
-  href: string;
-  severity: 'critical' | 'high' | 'normal';
-  source: string;
-}
+export type DashboardData = DashboardMetricProjection;
+export type PriorityCard = DashboardPriorityProjection;
 
 export const PINNED_ACTIONS: PinnedAction[] = [
   {
