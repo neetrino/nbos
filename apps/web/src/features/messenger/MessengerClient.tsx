@@ -12,6 +12,7 @@ import {
   messengerApi,
   type MessengerChannelRow,
   type MessengerDmConversationRow,
+  type MessengerSearchResultRow,
 } from '@/lib/api/messenger';
 import { MessengerSidebar } from './MessengerSidebar';
 import { MessengerThread } from './MessengerThread';
@@ -41,6 +42,9 @@ export function MessengerClient() {
   const [listError, setListError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [newMessage, setNewMessage] = useState('');
+  const [attachmentDraft, setAttachmentDraft] = useState('');
+  const [zone, setZone] = useState<'internal' | 'external'>('internal');
+  const [searchResults, setSearchResults] = useState<MessengerSearchResultRow[]>([]);
   const [remoteTypingHint, setRemoteTypingHint] = useState<string | null>(null);
   const [onlineInMessengerById, setOnlineInMessengerById] = useState<Record<string, true>>({});
   const [dmPeerLastReadAt, setDmPeerLastReadAt] = useState<string | null>(null);
@@ -213,6 +217,28 @@ export function MessengerClient() {
   }, [active]);
 
   useEffect(() => {
+    let cancelled = false;
+    if (search.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const result = await messengerApi.search(search.trim());
+          if (!cancelled) setSearchResults(result.items);
+        } catch {
+          if (!cancelled) setSearchResults([]);
+        }
+      })();
+    }, 250);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [search]);
+
+  useEffect(() => {
     if (permsLoading || !me) return;
     if (!canViewMessenger) {
       setChannels([]);
@@ -310,8 +336,13 @@ export function MessengerClient() {
   async function handleSend() {
     if (!canEditMessenger || !me || !active || !newMessage.trim() || sendBusy) return;
     const text = newMessage.trim();
+    const fileAssetIds = attachmentDraft
+      .split(/[,\s]+/)
+      .map((id) => id.trim())
+      .filter(Boolean);
     setSendBusy(true);
     setNewMessage('');
+    setAttachmentDraft('');
     setRemoteTypingHint(null);
     if (typingClearTimerRef.current) {
       clearTimeout(typingClearTimerRef.current);
@@ -319,7 +350,7 @@ export function MessengerClient() {
     }
     try {
       if (active.type === 'channel') {
-        await messengerApi.sendChannelMessage(active.id, { content: text });
+        await messengerApi.sendChannelMessage(active.id, { content: text, fileAssetIds });
         const res = await messengerApi.listChannelMessages(active.id);
         setMessages(res.items.map(mapMessengerRowToView));
         setChannelReadReceipt({
@@ -329,7 +360,11 @@ export function MessengerClient() {
         await messengerApi.markChannelRead(active.id);
         refreshMessengerLists();
       } else {
-        await messengerApi.sendDirectMessage({ recipientId: active.userId, content: text });
+        await messengerApi.sendDirectMessage({
+          recipientId: active.userId,
+          content: text,
+          fileAssetIds,
+        });
         const res = await messengerApi.listDirectMessages(me.id, active.userId);
         setMessages(res.items.map(mapMessengerRowToView));
         setDmPeerLastReadAt(res.peerLastReadAt ?? null);
@@ -339,6 +374,7 @@ export function MessengerClient() {
     } catch (e) {
       setListError(e instanceof Error ? e.message : 'Send failed');
       setNewMessage(text);
+      setAttachmentDraft(fileAssetIds.join(', '));
     } finally {
       setSendBusy(false);
     }
@@ -398,46 +434,97 @@ export function MessengerClient() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]">
+      <div className="flex gap-2 border-b border-black/[0.06] bg-white px-4 py-2">
+        <button
+          type="button"
+          onClick={() => setZone('internal')}
+          className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+            zone === 'internal'
+              ? 'bg-[#E5A84B]/15 text-black'
+              : 'text-black/45 hover:bg-black/[0.03]'
+          }`}
+        >
+          Internal
+        </button>
+        <button
+          type="button"
+          onClick={() => setZone('external')}
+          className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+            zone === 'external'
+              ? 'bg-[#E5A84B]/15 text-black'
+              : 'text-black/45 hover:bg-black/[0.03]'
+          }`}
+        >
+          External
+        </button>
+      </div>
       {listError ? (
         <div className="border-b border-red-200 bg-red-50 px-4 py-2 text-center text-xs text-red-800">
           {listError}
         </div>
       ) : null}
-      <div className="flex min-h-0 flex-1">
-        <MessengerSidebar
-          channels={channelSidebarItems}
-          dmPeers={dmPeers}
-          active={active}
-          onSelect={setActive}
-          search={search}
-          onSearchChange={setSearch}
-        />
-        {!active ? (
-          <div className="flex flex-1 items-center justify-center bg-white">
-            <p className="text-sm text-black/40">Select a channel or conversation.</p>
+      {zone === 'external' ? (
+        <div className="flex flex-1 items-center justify-center bg-white p-8 text-center">
+          <div className="max-w-md">
+            <h2 className="text-lg font-semibold text-black">
+              External Messenger is not connected yet
+            </h2>
+            <p className="mt-2 text-sm text-black/55">
+              CRM Inbox, Project WhatsApp Groups, Support and Finance external conversations will
+              use
+              <code className="mx-1 rounded bg-black/[0.04] px-1">
+                WhatsAppWebAdapter -&gt; WAHA
+              </code>
+              later. Internal messages cannot be sent to clients from here.
+            </p>
           </div>
-        ) : (
-          <MessengerThread
+        </div>
+      ) : (
+        <div className="flex min-h-0 flex-1">
+          <MessengerSidebar
+            channels={channelSidebarItems}
+            dmPeers={dmPeers}
             active={active}
-            channelRow={channelRow}
-            dmTitle={active.type === 'dm' ? (dmPeer?.name ?? active.userId) : ''}
-            dmInitials={active.type === 'dm' ? (dmPeer?.initials ?? '?') : ''}
-            messages={messages}
-            messagesLoading={messagesLoading}
-            newMessage={newMessage}
-            onNewMessageChange={setNewMessage}
-            onSend={() => {
-              void handleSend();
+            onSelect={setActive}
+            search={search}
+            onSearchChange={setSearch}
+            searchResults={searchResults}
+            onSelectSearchResult={(result) => {
+              if (result.scope === 'channel') setActive({ type: 'channel', id: result.channelId });
+              if (result.scope === 'dm' && result.recipientId) {
+                setActive({ type: 'dm', userId: result.recipientId });
+              }
             }}
-            canSend={canEditMessenger}
-            sendDisabled={!newMessage.trim() || sendBusy}
-            remoteTypingHint={remoteTypingHint}
-            onComposerTypingIntent={canEditMessenger ? fireLocalTypingIntent : undefined}
-            dmReadReceiptMessageId={dmReadReceiptTargetId}
-            channelReadReceipt={active.type === 'channel' ? channelReadReceipt : null}
           />
-        )}
-      </div>
+          {!active ? (
+            <div className="flex flex-1 items-center justify-center bg-white">
+              <p className="text-sm text-black/40">Select a channel or conversation.</p>
+            </div>
+          ) : (
+            <MessengerThread
+              active={active}
+              channelRow={channelRow}
+              dmTitle={active.type === 'dm' ? (dmPeer?.name ?? active.userId) : ''}
+              dmInitials={active.type === 'dm' ? (dmPeer?.initials ?? '?') : ''}
+              messages={messages}
+              messagesLoading={messagesLoading}
+              newMessage={newMessage}
+              onNewMessageChange={setNewMessage}
+              attachmentDraft={attachmentDraft}
+              onAttachmentDraftChange={setAttachmentDraft}
+              onSend={() => {
+                void handleSend();
+              }}
+              canSend={canEditMessenger}
+              sendDisabled={!newMessage.trim() || sendBusy}
+              remoteTypingHint={remoteTypingHint}
+              onComposerTypingIntent={canEditMessenger ? fireLocalTypingIntent : undefined}
+              dmReadReceiptMessageId={dmReadReceiptTargetId}
+              channelReadReceipt={active.type === 'channel' ? channelReadReceipt : null}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

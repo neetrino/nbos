@@ -31,6 +31,14 @@ export class MessengerController {
     return this.messengerService.getChannels(user.id);
   }
 
+  @Get('search')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({ summary: 'Search internal messenger messages' })
+  @ApiQuery({ name: 'q', required: true })
+  search(@CurrentUser() user: CurrentUserPayload, @Query('q') q: string) {
+    return this.messengerService.search(user.id, q ?? '');
+  }
+
   @Post('channels')
   @RequirePermission('MESSENGER', 'ADD')
   @ApiOperation({ summary: 'Create a channel' })
@@ -78,6 +86,7 @@ export class MessengerController {
       user.id,
       messengerUserDisplayName(user),
       body.content,
+      body.fileAssetIds,
     );
   }
 
@@ -135,6 +144,7 @@ export class MessengerController {
       messengerUserDisplayName(user),
       body.recipientId,
       body.content,
+      body.fileAssetIds,
     );
   }
 }

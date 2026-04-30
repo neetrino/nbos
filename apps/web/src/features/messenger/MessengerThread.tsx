@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Hash, Send } from 'lucide-react';
+import { Hash, Paperclip, Send } from 'lucide-react';
 import type { MessengerChannelRow } from '@/lib/api/messenger';
 import { formatMessengerTime, messengerDateLabel } from './messenger-format';
 import type { MessengerViewMessage } from './messenger-message-mapper';
@@ -63,6 +63,19 @@ function MessageBubble({
           <span className="text-xs text-black/35">{formatMessengerTime(message.timestamp)}</span>
         </div>
         <p className="text-sm leading-relaxed text-black/75">{message.content}</p>
+        {message.attachments.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {message.attachments.map((attachment) => (
+              <span
+                key={attachment.id}
+                className="inline-flex items-center gap-1 rounded-full bg-[#F5F5F0] px-2 py-1 text-[11px] text-black/55"
+              >
+                <Paperclip size={11} />
+                FileAsset {attachment.fileAssetId.slice(0, 8)}
+              </span>
+            ))}
+          </div>
+        ) : null}
         {readReceiptLabel ? (
           <p className="mt-0.5 text-[10px] font-medium text-black/35">{readReceiptLabel}</p>
         ) : null}
@@ -86,6 +99,8 @@ export function MessengerThread({
   messagesLoading,
   newMessage,
   onNewMessageChange,
+  attachmentDraft,
+  onAttachmentDraftChange,
   onSend,
   canSend,
   sendDisabled,
@@ -103,6 +118,8 @@ export function MessengerThread({
   messagesLoading: boolean;
   newMessage: string;
   onNewMessageChange: (v: string) => void;
+  attachmentDraft: string;
+  onAttachmentDraftChange: (v: string) => void;
   onSend: () => void;
   canSend: boolean;
   sendDisabled: boolean;
@@ -241,6 +258,14 @@ export function MessengerThread({
             <Send size={16} />
           </button>
         </div>
+        <input
+          type="text"
+          value={attachmentDraft}
+          onChange={(e) => onAttachmentDraftChange(e.target.value)}
+          placeholder="Optional Drive FileAsset IDs, comma separated"
+          disabled={!canSend}
+          className="mt-2 w-full rounded-lg border border-black/[0.08] bg-[#F5F5F0] px-3 py-1.5 text-xs text-black placeholder:text-black/30 focus:ring-2 focus:ring-[#E5A84B]/30 focus:outline-none disabled:opacity-50"
+        />
         {!canSend && (
           <p className="mt-2 text-xs text-black/40">You do not have permission to send messages.</p>
         )}

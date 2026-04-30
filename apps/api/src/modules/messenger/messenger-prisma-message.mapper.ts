@@ -12,6 +12,7 @@ export function mapPrismaChannelMessageToDto(m: {
   content: string;
   createdAt: Date;
   editedAt: Date | null;
+  attachments?: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
 }): MessengerMessageDto {
   return {
     id: m.id,
@@ -21,6 +22,11 @@ export function mapPrismaChannelMessageToDto(m: {
     content: m.content,
     createdAt: m.createdAt,
     editedAt: m.editedAt,
+    attachments: (m.attachments ?? []).map((attachment) => ({
+      id: attachment.id,
+      fileAssetId: attachment.fileAssetId,
+      createdAt: attachment.createdAt,
+    })),
   };
 }
 
@@ -32,6 +38,7 @@ export function mapPrismaDmMessageToDto(
     content: string;
     createdAt: Date;
     editedAt: Date | null;
+    attachments?: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
   },
   threadId: string,
 ): MessengerMessageDto {
@@ -43,6 +50,11 @@ export function mapPrismaDmMessageToDto(
     content: m.content,
     createdAt: m.createdAt,
     editedAt: m.editedAt,
+    attachments: (m.attachments ?? []).map((attachment) => ({
+      id: attachment.id,
+      fileAssetId: attachment.fileAssetId,
+      createdAt: attachment.createdAt,
+    })),
   };
 }
 

@@ -7,21 +7,21 @@
 | Field         | Value                                   |
 | ------------- | --------------------------------------- |
 | Current phase | **Phase 5 — Collaboration / knowledge** |
-| Current task  | Phase 5 closure — Credentials P0        |
+| Current task  | Phase 5 closure — Messenger P0          |
 | Status        | Phase 5 in progress                     |
 | Last updated  | 2026-04-30                              |
 
 ## Phase Snapshot
 
-| Phase                               | Status      | Progress | Notes                                                                                              |
-| ----------------------------------- | ----------- | -------- | -------------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                            |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                   |
-| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates         |
-| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation               |
-| Phase 5 — Collaboration / knowledge | In progress | ~99.4%   | Calendar/Technical/Notifications/Drive P0 runtime; Credentials hardening; Messenger live; Mail MVP |
-| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                  |
-| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                               |
+| Phase                               | Status      | Progress | Notes                                                                                                                           |
+| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                                         |
+| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                                |
+| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates                                      |
+| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                                            |
+| Phase 5 — Collaboration / knowledge | In progress | ~99.6%   | Calendar/Technical/Notifications/Drive P0 runtime; Credentials hardening; Messenger attachments/search/external shell; Mail MVP |
+| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                                               |
+| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                                            |
 
 ## Phase 3 Full Closure Gate
 
@@ -79,11 +79,12 @@ Roll-up only. Per-feature detail: **`docs/NBOS/02-Modules/*`**, tests, and **git
 | 2026-04-30    | Notifications            | P0 closure slice: `NotificationEvent`, `NotificationRule`, `NotificationJob`, `NotificationDelivery`, idempotent in-app delivery, category filters, archive/read actions and full Notification Center page.                                                                                             |
 | 2026-04-30    | Drive                    | P0 closure slice: Drive page now lists DB-backed `FileAsset` records with detail drawer, active links, versions, audit, visibility/confidentiality badges, archive action and new version upload.                                                                                                       |
 | 2026-04-30    | Credentials              | P0 closure slice: `credentialType`, criticality, environment/context fields, encrypted secure notes, public notes and rotation metadata added to vault API/UI.                                                                                                                                          |
+| 2026-04-30    | Messenger                | P0 closure slice: internal messages support Drive `FileAsset` attachments, internal search, explicit Internal/External zone split and honest external adapter placeholder.                                                                                                                              |
 
 ## Next Action
 
 1. Continue Phase 5 closure per approved `docs/PHASE_5_MINIMAL_PRODUCT_CLOSURE_PROPOSAL.md`.
-2. Next slice: **Messenger P0** — internal polish + attachments/search + honest external shell.
+2. Next slice: **Mail P0** — provider boundary + attachment/data model hardening.
 3. Keep Google v2, AI, complex approval workflow, WAHA runtime and credentials secrets out of closure unless explicitly approved.
 
 ## Slice DoD

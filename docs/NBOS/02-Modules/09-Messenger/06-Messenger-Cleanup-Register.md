@@ -35,10 +35,10 @@
 - нет очереди для внешних каналов;
 - нет External Channel Adapter;
 - web page: channels/DM/history/send call API (names for DM peers via `employees` list when `COMPANY` VIEW allows);
-- нет разделения Internal/External;
+- ~~нет разделения Internal/External~~ **Done (2026-04-30):** web Messenger now has explicit Internal / External zones; External is an honest placeholder for future adapter-backed conversations, not a fake provider.
 - нет CRM Inbox;
 - нет Product Chat / Task Chat / WhatsApp Group модели;
-- нет Drive attachments;
+- ~~нет Drive attachments~~ **Done (2026-04-30):** internal channel and DM messages can reference Drive `FileAsset` ids through attachment tables with DB foreign keys.
 - нет permission model и audit log.
 
 **Partial (2026-04-29):** MVP HTTP routes use `RequirePermission` (`MESSENGER` VIEW / ADD / EDIT); channel and DM send use the authenticated employee id and display name (no client-supplied `senderId`).
@@ -77,7 +77,7 @@
 
 ### Phase 2 - Internal Messenger
 
-- реализовать Internal zone;
+- ~~реализовать Internal zone~~ done for the current web Messenger shell (2026-04-30);
 - реализовать tabs: All, Project General, Deal Chats, Product Chats, Task Chats, Favorites;
 - Product page должен открывать один Product Chat;
 - Task card должен иметь task discussion panel;
@@ -92,7 +92,7 @@
 
 ### Phase 4 - External Messenger
 
-- реализовать External zone;
+- ~~реализовать External zone~~ done as an honest not-connected shell (2026-04-30); provider runtime remains deferred;
 - CRM Inbox;
 - Project WhatsApp Groups;
 - Support/Finance Conversations;
@@ -103,8 +103,8 @@
 
 ### Phase 5 - Drive, Search, Audit
 
-- attachments through Drive File Asset;
-- search;
+- ~~attachments through Drive File Asset~~ **Done (2026-04-30):** internal channel/DM message references use Drive `FileAsset` attachment tables;
+- ~~search~~ **Done (2026-04-30):** basic internal message search across channel and DM messages with current-user DM scoping.
 - audit log;
 - archive/lock/mute;
 - export and cleanup support.

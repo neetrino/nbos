@@ -101,9 +101,11 @@ export const ModelName = {
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
+  MessengerChannelMessageAttachment: 'MessengerChannelMessageAttachment',
   MessengerChannelReadState: 'MessengerChannelReadState',
   MessengerDirectThread: 'MessengerDirectThread',
   MessengerDirectMessage: 'MessengerDirectMessage',
+  MessengerDirectMessageAttachment: 'MessengerDirectMessageAttachment',
   MessengerDirectThreadReadState: 'MessengerDirectThreadReadState',
   MailAccount: 'MailAccount',
   EmailThread: 'EmailThread',
@@ -1133,6 +1135,17 @@ export const MessengerChannelMessageScalarFieldEnum = {
 export type MessengerChannelMessageScalarFieldEnum =
   (typeof MessengerChannelMessageScalarFieldEnum)[keyof typeof MessengerChannelMessageScalarFieldEnum];
 
+export const MessengerChannelMessageAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileAssetId: 'fileAssetId',
+  attachedById: 'attachedById',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerChannelMessageAttachmentScalarFieldEnum =
+  (typeof MessengerChannelMessageAttachmentScalarFieldEnum)[keyof typeof MessengerChannelMessageAttachmentScalarFieldEnum];
+
 export const MessengerChannelReadStateScalarFieldEnum = {
   id: 'id',
   channelId: 'channelId',
@@ -1165,6 +1178,17 @@ export const MessengerDirectMessageScalarFieldEnum = {
 
 export type MessengerDirectMessageScalarFieldEnum =
   (typeof MessengerDirectMessageScalarFieldEnum)[keyof typeof MessengerDirectMessageScalarFieldEnum];
+
+export const MessengerDirectMessageAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileAssetId: 'fileAssetId',
+  attachedById: 'attachedById',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerDirectMessageAttachmentScalarFieldEnum =
+  (typeof MessengerDirectMessageAttachmentScalarFieldEnum)[keyof typeof MessengerDirectMessageAttachmentScalarFieldEnum];
 
 export const MessengerDirectThreadReadStateScalarFieldEnum = {
   id: 'id',

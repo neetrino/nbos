@@ -18,6 +18,13 @@ export interface MessengerMessageDto {
   content: string;
   createdAt: Date;
   editedAt: Date | null;
+  attachments: MessengerMessageAttachmentDto[];
+}
+
+export interface MessengerMessageAttachmentDto {
+  id: string;
+  fileAssetId: string;
+  createdAt: Date;
 }
 
 export interface MessengerDmConversationDto {
@@ -45,4 +52,14 @@ export interface MessengerChannelPagedMessagesDto {
   meta: MessengerListMetaDto;
   lastOwnMessageId: string | null;
   lastOwnMessageSeenByOthers: boolean;
+}
+
+export interface MessengerSearchResultDto {
+  scope: 'channel' | 'dm';
+  channelId: string;
+  recipientId: string | null;
+  messageId: string;
+  senderName: string;
+  content: string;
+  createdAt: Date;
 }

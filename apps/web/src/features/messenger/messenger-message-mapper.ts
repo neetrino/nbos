@@ -7,6 +7,7 @@ export interface MessengerViewMessage {
   initials: string;
   content: string;
   timestamp: string;
+  attachments: Array<{ id: string; fileAssetId: string }>;
 }
 
 export function initialsFromDisplayName(name: string): string {
@@ -32,5 +33,9 @@ export function mapMessengerRowToView(row: MessengerMessageRow): MessengerViewMe
     initials: initialsFromDisplayName(row.senderName),
     content: row.content,
     timestamp: row.createdAt,
+    attachments: row.attachments.map((attachment) => ({
+      id: attachment.id,
+      fileAssetId: attachment.fileAssetId,
+    })),
   };
 }

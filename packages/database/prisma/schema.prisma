@@ -1101,11 +1101,13 @@ model FileAsset {
   createdAt        DateTime                @default(now()) @map("created_at")
   updatedAt        DateTime                @updatedAt @map("updated_at")
 
-  versions            FileVersion[]
-  links               FileLink[]
-  auditEvents         FileAuditEvent[]
-  documentCovers      Document[]           @relation("DocumentCoverAsset")
-  documentAttachments DocumentAttachment[]
+  versions                    FileVersion[]
+  links                       FileLink[]
+  auditEvents                 FileAuditEvent[]
+  documentCovers              Document[]                          @relation("DocumentCoverAsset")
+  documentAttachments         DocumentAttachment[]
+  messengerChannelAttachments MessengerChannelMessageAttachment[]
+  messengerDirectAttachments  MessengerDirectMessageAttachment[]
 
   @@index([status])
   @@index([purpose])
@@ -1843,15 +1845,17 @@ model Employee {
   marketingAccountsOwned   MarketingAccount[]      @relation("MarketingAccountOwner")
   marketingActivitiesOwned MarketingActivity[]     @relation("MarketingActivityOwner")
 
-  messengerChannelMessagesSent MessengerChannelMessage[]        @relation("MessengerChannelMessageSender")
-  messengerDirectMessagesSent  MessengerDirectMessage[]         @relation("MessengerDirectMessageSender")
-  messengerDmThreadsAsA        MessengerDirectThread[]          @relation("MessengerDmThreadParticipantA")
-  messengerDmThreadsAsB        MessengerDirectThread[]          @relation("MessengerDmThreadParticipantB")
+  messengerChannelMessagesSent MessengerChannelMessage[]           @relation("MessengerChannelMessageSender")
+  messengerDirectMessagesSent  MessengerDirectMessage[]            @relation("MessengerDirectMessageSender")
+  messengerChannelAttachments  MessengerChannelMessageAttachment[] @relation("MessengerChannelAttachmentActor")
+  messengerDirectAttachments   MessengerDirectMessageAttachment[]  @relation("MessengerDirectAttachmentActor")
+  messengerDmThreadsAsA        MessengerDirectThread[]             @relation("MessengerDmThreadParticipantA")
+  messengerDmThreadsAsB        MessengerDirectThread[]             @relation("MessengerDmThreadParticipantB")
   messengerChannelReadStates   MessengerChannelReadState[]
   messengerDmThreadReadStates  MessengerDirectThreadReadState[]
-  mailAccountsOwned            MailAccount[]                    @relation("MailAccountOwner")
-  mailAccountsCreated          MailAccount[]                    @relation("MailAccountCreatedBy")
-  mailDeliveryLogsActed        MailDeliveryLog[]                @relation("MailDeliveryLogActor")
+  mailAccountsOwned            MailAccount[]                       @relation("MailAccountOwner")
+  mailAccountsCreated          MailAccount[]                       @relation("MailAccountCreatedBy")
+  mailDeliveryLogsActed        MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
   inAppNotificationsReceived   InAppNotification[]
 
   @@map("employees")
@@ -1925,8 +1929,26 @@ model MessengerChannelMessage {
   editedAt           DateTime?        @map("edited_at")
   createdAt          DateTime         @default(now()) @map("created_at")
 
+  attachments MessengerChannelMessageAttachment[]
+
   @@index([channelId, createdAt])
   @@map("messenger_channel_messages")
+}
+
+model MessengerChannelMessageAttachment {
+  id           String   @id @default(uuid())
+  messageId    String   @map("message_id")
+  fileAssetId  String   @map("file_asset_id")
+  attachedById String?  @map("attached_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  message    MessengerChannelMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileAsset  FileAsset               @relation(fields: [fileAssetId], references: [id])
+  attachedBy Employee?               @relation("MessengerChannelAttachmentActor", fields: [attachedById], references: [id], onDelete: SetNull)
+
+  @@index([messageId])
+  @@index([fileAssetId])
+  @@map("messenger_channel_message_attachments")
 }
 
 model MessengerChannelReadState {
@@ -1969,8 +1991,26 @@ model MessengerDirectMessage {
   editedAt           DateTime?             @map("edited_at")
   createdAt          DateTime              @default(now()) @map("created_at")
 
+  attachments MessengerDirectMessageAttachment[]
+
   @@index([threadId, createdAt])
   @@map("messenger_direct_messages")
+}
+
+model MessengerDirectMessageAttachment {
+  id           String   @id @default(uuid())
+  messageId    String   @map("message_id")
+  fileAssetId  String   @map("file_asset_id")
+  attachedById String?  @map("attached_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  message    MessengerDirectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileAsset  FileAsset              @relation(fields: [fileAssetId], references: [id])
+  attachedBy Employee?              @relation("MessengerDirectAttachmentActor", fields: [attachedById], references: [id], onDelete: SetNull)
+
+  @@index([messageId])
+  @@index([fileAssetId])
+  @@map("messenger_direct_message_attachments")
 }
 
 model MessengerDirectThreadReadState {

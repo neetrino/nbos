@@ -34,6 +34,7 @@ import type {
   MessengerChannelPagedMessagesDto,
   MessengerDmConversationDto,
   MessengerDmPagedMessagesDto,
+  MessengerSearchResultDto,
   MessengerMessageDto,
 } from './messenger.types';
 
@@ -52,6 +53,18 @@ interface PaginationParams {
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 50;
+const SEARCH_PAGE_SIZE = 25;
+
+function attachmentCreateMany(fileAssetIds: string[] | undefined, actorId: string) {
+  const uniqueIds = [...new Set(fileAssetIds?.map((id) => id.trim()).filter(Boolean) ?? [])];
+  return uniqueIds.length > 0
+    ? {
+        createMany: {
+          data: uniqueIds.map((fileAssetId) => ({ fileAssetId, attachedById: actorId })),
+        },
+      }
+    : undefined;
+}
 
 @Injectable()
 export class MessengerService {
@@ -140,6 +153,7 @@ export class MessengerService {
       this.prisma.messengerChannelMessage.count({ where: { channelId } }),
       this.prisma.messengerChannelMessage.findMany({
         where: { channelId },
+        include: { attachments: true },
         orderBy: { createdAt: 'asc' },
         skip,
         take: pageSize,
@@ -164,6 +178,7 @@ export class MessengerService {
     senderId: string,
     _senderNameFromJwt: string,
     content: string,
+    fileAssetIds?: string[],
   ): Promise<MessengerMessageDto> {
     const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
     if (!channel) {
@@ -176,7 +191,9 @@ export class MessengerService {
         senderId,
         senderNameSnapshot: snapshot,
         content,
+        attachments: attachmentCreateMany(fileAssetIds, senderId),
       },
+      include: { attachments: true },
     });
     const channelMessageAudit: InputJsonValue = {
       messageId: created.id,
@@ -223,6 +240,7 @@ export class MessengerService {
       this.prisma.messengerDirectMessage.count({ where }),
       this.prisma.messengerDirectMessage.findMany({
         where,
+        include: { attachments: true },
         orderBy: { createdAt: 'asc' },
         skip,
         take: pageSize,
@@ -249,6 +267,7 @@ export class MessengerService {
     _senderNameFromJwt: string,
     recipientId: string,
     content: string,
+    fileAssetIds?: string[],
   ): Promise<MessengerMessageDto> {
     const [a, b] = orderedParticipantIds(senderId, recipientId);
     const thread = await this.prisma.messengerDirectThread.upsert({
@@ -263,7 +282,9 @@ export class MessengerService {
         senderId,
         senderNameSnapshot: snapshot,
         content,
+        attachments: attachmentCreateMany(fileAssetIds, senderId),
       },
+      include: { attachments: true },
     });
     const dmAudit: InputJsonValue = {
       messageId: created.id,
@@ -283,6 +304,49 @@ export class MessengerService {
 
   async getDirectConversations(userId: string): Promise<MessengerDmConversationDto[]> {
     return loadMessengerDmConversations(this.prisma, userId);
+  }
+
+  async search(userId: string, query: string): Promise<{ items: MessengerSearchResultDto[] }> {
+    const q = query.trim();
+    if (q.length < 2) return { items: [] };
+    const [channels, dms] = await Promise.all([
+      this.prisma.messengerChannelMessage.findMany({
+        where: { content: { contains: q, mode: 'insensitive' } },
+        orderBy: { createdAt: 'desc' },
+        take: SEARCH_PAGE_SIZE,
+      }),
+      this.prisma.messengerDirectMessage.findMany({
+        where: {
+          content: { contains: q, mode: 'insensitive' },
+          thread: { OR: [{ participantAId: userId }, { participantBId: userId }] },
+        },
+        include: { thread: true },
+        orderBy: { createdAt: 'desc' },
+        take: SEARCH_PAGE_SIZE,
+      }),
+    ]);
+    const items: MessengerSearchResultDto[] = [
+      ...channels.map((m) => ({
+        scope: 'channel' as const,
+        channelId: m.channelId,
+        recipientId: null,
+        messageId: m.id,
+        senderName: m.senderNameSnapshot,
+        content: m.content,
+        createdAt: m.createdAt,
+      })),
+      ...dms.map((m) => ({
+        scope: 'dm' as const,
+        channelId: m.threadId,
+        recipientId:
+          m.thread.participantAId === userId ? m.thread.participantBId : m.thread.participantAId,
+        messageId: m.id,
+        senderName: m.senderNameSnapshot,
+        content: m.content,
+        createdAt: m.createdAt,
+      })),
+    ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return { items: items.slice(0, SEARCH_PAGE_SIZE) };
   }
 
   async markChannelRead(channelId: string, employeeId: string): Promise<void> {

@@ -1,4 +1,5 @@
 import { Hash, Search } from 'lucide-react';
+import type { MessengerSearchResultRow } from '@/lib/api/messenger';
 import type { MessengerActiveView } from './messenger-active-view';
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from './messenger-sidebar.constants';
 
@@ -36,6 +37,8 @@ export function MessengerSidebar({
   onSelect,
   search,
   onSearchChange,
+  searchResults,
+  onSelectSearchResult,
 }: {
   channels: MessengerSidebarChannel[];
   dmPeers: MessengerSidebarDmPeer[];
@@ -43,6 +46,8 @@ export function MessengerSidebar({
   onSelect: (v: MessengerActiveView) => void;
   search: string;
   onSearchChange: (v: string) => void;
+  searchResults: MessengerSearchResultRow[];
+  onSelectSearchResult: (result: MessengerSearchResultRow) => void;
 }) {
   const q = search.toLowerCase();
   const filteredChannels = channels.filter((c) => c.listLabel.toLowerCase().includes(q));
@@ -64,6 +69,27 @@ export function MessengerSidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-2">
+        {searchResults.length > 0 && (
+          <>
+            <p className="px-2 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-black/40 uppercase">
+              Search Results
+            </p>
+            {searchResults.slice(0, 6).map((result) => (
+              <button
+                key={result.messageId}
+                type="button"
+                onClick={() => onSelectSearchResult(result)}
+                className="mb-0.5 w-full rounded-lg px-2 py-1.5 text-left text-xs text-black/60 hover:bg-black/[0.03]"
+              >
+                <span className="block truncate font-medium text-black/75">
+                  {result.senderName}
+                </span>
+                <span className="line-clamp-2">{result.content}</span>
+              </button>
+            ))}
+          </>
+        )}
+
         <p className="px-2 pt-3 pb-1 text-[11px] font-semibold tracking-wider text-black/40 uppercase">
           Channels
         </p>

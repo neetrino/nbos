@@ -209,6 +209,7 @@ export type MessengerChannelMessageWhereInput = {
     Prisma.MessengerChannelWhereInput
   >;
   sender?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
+  attachments?: Prisma.MessengerChannelMessageAttachmentListRelationFilter;
 };
 
 export type MessengerChannelMessageOrderByWithRelationInput = {
@@ -221,6 +222,7 @@ export type MessengerChannelMessageOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder;
   channel?: Prisma.MessengerChannelOrderByWithRelationInput;
   sender?: Prisma.EmployeeOrderByWithRelationInput;
+  attachments?: Prisma.MessengerChannelMessageAttachmentOrderByRelationAggregateInput;
 };
 
 export type MessengerChannelMessageWhereUniqueInput = Prisma.AtLeast<
@@ -240,6 +242,7 @@ export type MessengerChannelMessageWhereUniqueInput = Prisma.AtLeast<
       Prisma.MessengerChannelWhereInput
     >;
     sender?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
+    attachments?: Prisma.MessengerChannelMessageAttachmentListRelationFilter;
   },
   'id'
 >;
@@ -286,6 +289,7 @@ export type MessengerChannelMessageCreateInput = {
   createdAt?: Date | string;
   channel: Prisma.MessengerChannelCreateNestedOneWithoutMessagesInput;
   sender: Prisma.EmployeeCreateNestedOneWithoutMessengerChannelMessagesSentInput;
+  attachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutMessageInput;
 };
 
 export type MessengerChannelMessageUncheckedCreateInput = {
@@ -296,6 +300,7 @@ export type MessengerChannelMessageUncheckedCreateInput = {
   content: string;
   editedAt?: Date | string | null;
   createdAt?: Date | string;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutMessageInput;
 };
 
 export type MessengerChannelMessageUpdateInput = {
@@ -306,6 +311,7 @@ export type MessengerChannelMessageUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   channel?: Prisma.MessengerChannelUpdateOneRequiredWithoutMessagesNestedInput;
   sender?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerChannelMessagesSentNestedInput;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutMessageNestedInput;
 };
 
 export type MessengerChannelMessageUncheckedUpdateInput = {
@@ -316,6 +322,7 @@ export type MessengerChannelMessageUncheckedUpdateInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string;
   editedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput;
 };
 
 export type MessengerChannelMessageCreateManyInput = {
@@ -384,6 +391,11 @@ export type MessengerChannelMessageMinOrderByAggregateInput = {
   content?: Prisma.SortOrder;
   editedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
+};
+
+export type MessengerChannelMessageScalarRelationFilter = {
+  is?: Prisma.MessengerChannelMessageWhereInput;
+  isNot?: Prisma.MessengerChannelMessageWhereInput;
 };
 
 export type MessengerChannelMessageCreateNestedManyWithoutSenderInput = {
@@ -606,6 +618,32 @@ export type MessengerChannelMessageUncheckedUpdateManyWithoutChannelNestedInput 
     | Prisma.MessengerChannelMessageScalarWhereInput[];
 };
 
+export type MessengerChannelMessageCreateNestedOneWithoutAttachmentsInput = {
+  create?: Prisma.XOR<
+    Prisma.MessengerChannelMessageCreateWithoutAttachmentsInput,
+    Prisma.MessengerChannelMessageUncheckedCreateWithoutAttachmentsInput
+  >;
+  connectOrCreate?: Prisma.MessengerChannelMessageCreateOrConnectWithoutAttachmentsInput;
+  connect?: Prisma.MessengerChannelMessageWhereUniqueInput;
+};
+
+export type MessengerChannelMessageUpdateOneRequiredWithoutAttachmentsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.MessengerChannelMessageCreateWithoutAttachmentsInput,
+    Prisma.MessengerChannelMessageUncheckedCreateWithoutAttachmentsInput
+  >;
+  connectOrCreate?: Prisma.MessengerChannelMessageCreateOrConnectWithoutAttachmentsInput;
+  upsert?: Prisma.MessengerChannelMessageUpsertWithoutAttachmentsInput;
+  connect?: Prisma.MessengerChannelMessageWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.MessengerChannelMessageUpdateToOneWithWhereWithoutAttachmentsInput,
+      Prisma.MessengerChannelMessageUpdateWithoutAttachmentsInput
+    >,
+    Prisma.MessengerChannelMessageUncheckedUpdateWithoutAttachmentsInput
+  >;
+};
+
 export type MessengerChannelMessageCreateWithoutSenderInput = {
   id?: string;
   senderNameSnapshot: string;
@@ -613,6 +651,7 @@ export type MessengerChannelMessageCreateWithoutSenderInput = {
   editedAt?: Date | string | null;
   createdAt?: Date | string;
   channel: Prisma.MessengerChannelCreateNestedOneWithoutMessagesInput;
+  attachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutMessageInput;
 };
 
 export type MessengerChannelMessageUncheckedCreateWithoutSenderInput = {
@@ -622,6 +661,7 @@ export type MessengerChannelMessageUncheckedCreateWithoutSenderInput = {
   content: string;
   editedAt?: Date | string | null;
   createdAt?: Date | string;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutMessageInput;
 };
 
 export type MessengerChannelMessageCreateOrConnectWithoutSenderInput = {
@@ -691,6 +731,7 @@ export type MessengerChannelMessageCreateWithoutChannelInput = {
   editedAt?: Date | string | null;
   createdAt?: Date | string;
   sender: Prisma.EmployeeCreateNestedOneWithoutMessengerChannelMessagesSentInput;
+  attachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutMessageInput;
 };
 
 export type MessengerChannelMessageUncheckedCreateWithoutChannelInput = {
@@ -700,6 +741,7 @@ export type MessengerChannelMessageUncheckedCreateWithoutChannelInput = {
   content: string;
   editedAt?: Date | string | null;
   createdAt?: Date | string;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutMessageInput;
 };
 
 export type MessengerChannelMessageCreateOrConnectWithoutChannelInput = {
@@ -745,6 +787,74 @@ export type MessengerChannelMessageUpdateManyWithWhereWithoutChannelInput = {
   >;
 };
 
+export type MessengerChannelMessageCreateWithoutAttachmentsInput = {
+  id?: string;
+  senderNameSnapshot: string;
+  content: string;
+  editedAt?: Date | string | null;
+  createdAt?: Date | string;
+  channel: Prisma.MessengerChannelCreateNestedOneWithoutMessagesInput;
+  sender: Prisma.EmployeeCreateNestedOneWithoutMessengerChannelMessagesSentInput;
+};
+
+export type MessengerChannelMessageUncheckedCreateWithoutAttachmentsInput = {
+  id?: string;
+  channelId: string;
+  senderId: string;
+  senderNameSnapshot: string;
+  content: string;
+  editedAt?: Date | string | null;
+  createdAt?: Date | string;
+};
+
+export type MessengerChannelMessageCreateOrConnectWithoutAttachmentsInput = {
+  where: Prisma.MessengerChannelMessageWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.MessengerChannelMessageCreateWithoutAttachmentsInput,
+    Prisma.MessengerChannelMessageUncheckedCreateWithoutAttachmentsInput
+  >;
+};
+
+export type MessengerChannelMessageUpsertWithoutAttachmentsInput = {
+  update: Prisma.XOR<
+    Prisma.MessengerChannelMessageUpdateWithoutAttachmentsInput,
+    Prisma.MessengerChannelMessageUncheckedUpdateWithoutAttachmentsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.MessengerChannelMessageCreateWithoutAttachmentsInput,
+    Prisma.MessengerChannelMessageUncheckedCreateWithoutAttachmentsInput
+  >;
+  where?: Prisma.MessengerChannelMessageWhereInput;
+};
+
+export type MessengerChannelMessageUpdateToOneWithWhereWithoutAttachmentsInput = {
+  where?: Prisma.MessengerChannelMessageWhereInput;
+  data: Prisma.XOR<
+    Prisma.MessengerChannelMessageUpdateWithoutAttachmentsInput,
+    Prisma.MessengerChannelMessageUncheckedUpdateWithoutAttachmentsInput
+  >;
+};
+
+export type MessengerChannelMessageUpdateWithoutAttachmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  senderNameSnapshot?: Prisma.StringFieldUpdateOperationsInput | string;
+  content?: Prisma.StringFieldUpdateOperationsInput | string;
+  editedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  channel?: Prisma.MessengerChannelUpdateOneRequiredWithoutMessagesNestedInput;
+  sender?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerChannelMessagesSentNestedInput;
+};
+
+export type MessengerChannelMessageUncheckedUpdateWithoutAttachmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string;
+  senderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  senderNameSnapshot?: Prisma.StringFieldUpdateOperationsInput | string;
+  content?: Prisma.StringFieldUpdateOperationsInput | string;
+  editedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
 export type MessengerChannelMessageCreateManySenderInput = {
   id?: string;
   channelId: string;
@@ -761,6 +871,7 @@ export type MessengerChannelMessageUpdateWithoutSenderInput = {
   editedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   channel?: Prisma.MessengerChannelUpdateOneRequiredWithoutMessagesNestedInput;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutMessageNestedInput;
 };
 
 export type MessengerChannelMessageUncheckedUpdateWithoutSenderInput = {
@@ -770,6 +881,7 @@ export type MessengerChannelMessageUncheckedUpdateWithoutSenderInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string;
   editedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput;
 };
 
 export type MessengerChannelMessageUncheckedUpdateManyWithoutSenderInput = {
@@ -797,6 +909,7 @@ export type MessengerChannelMessageUpdateWithoutChannelInput = {
   editedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   sender?: Prisma.EmployeeUpdateOneRequiredWithoutMessengerChannelMessagesSentNestedInput;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutMessageNestedInput;
 };
 
 export type MessengerChannelMessageUncheckedUpdateWithoutChannelInput = {
@@ -806,6 +919,7 @@ export type MessengerChannelMessageUncheckedUpdateWithoutChannelInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string;
   editedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  attachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput;
 };
 
 export type MessengerChannelMessageUncheckedUpdateManyWithoutChannelInput = {
@@ -815,6 +929,41 @@ export type MessengerChannelMessageUncheckedUpdateManyWithoutChannelInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string;
   editedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+/**
+ * Count Type MessengerChannelMessageCountOutputType
+ */
+
+export type MessengerChannelMessageCountOutputType = {
+  attachments: number;
+};
+
+export type MessengerChannelMessageCountOutputTypeSelect<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  attachments?: boolean | MessengerChannelMessageCountOutputTypeCountAttachmentsArgs;
+};
+
+/**
+ * MessengerChannelMessageCountOutputType without action
+ */
+export type MessengerChannelMessageCountOutputTypeDefaultArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the MessengerChannelMessageCountOutputType
+   */
+  select?: Prisma.MessengerChannelMessageCountOutputTypeSelect<ExtArgs> | null;
+};
+
+/**
+ * MessengerChannelMessageCountOutputType without action
+ */
+export type MessengerChannelMessageCountOutputTypeCountAttachmentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.MessengerChannelMessageAttachmentWhereInput;
 };
 
 export type MessengerChannelMessageSelect<
@@ -830,6 +979,8 @@ export type MessengerChannelMessageSelect<
     createdAt?: boolean;
     channel?: boolean | Prisma.MessengerChannelDefaultArgs<ExtArgs>;
     sender?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
+    attachments?: boolean | Prisma.MessengerChannelMessage$attachmentsArgs<ExtArgs>;
+    _count?: boolean | Prisma.MessengerChannelMessageCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['messengerChannelMessage']
 >;
@@ -889,6 +1040,8 @@ export type MessengerChannelMessageInclude<
 > = {
   channel?: boolean | Prisma.MessengerChannelDefaultArgs<ExtArgs>;
   sender?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
+  attachments?: boolean | Prisma.MessengerChannelMessage$attachmentsArgs<ExtArgs>;
+  _count?: boolean | Prisma.MessengerChannelMessageCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type MessengerChannelMessageIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -910,6 +1063,7 @@ export type $MessengerChannelMessagePayload<
   objects: {
     channel: Prisma.$MessengerChannelPayload<ExtArgs>;
     sender: Prisma.$EmployeePayload<ExtArgs>;
+    attachments: Prisma.$MessengerChannelMessageAttachmentPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1490,6 +1644,17 @@ export interface Prisma__MessengerChannelMessageClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  attachments<T extends Prisma.MessengerChannelMessage$attachmentsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.MessengerChannelMessage$attachmentsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$MessengerChannelMessageAttachmentPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1982,6 +2147,36 @@ export type MessengerChannelMessageDeleteManyArgs<
    * Limit how many MessengerChannelMessages to delete.
    */
   limit?: number;
+};
+
+/**
+ * MessengerChannelMessage.attachments
+ */
+export type MessengerChannelMessage$attachmentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the MessengerChannelMessageAttachment
+   */
+  select?: Prisma.MessengerChannelMessageAttachmentSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the MessengerChannelMessageAttachment
+   */
+  omit?: Prisma.MessengerChannelMessageAttachmentOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessengerChannelMessageAttachmentInclude<ExtArgs> | null;
+  where?: Prisma.MessengerChannelMessageAttachmentWhereInput;
+  orderBy?:
+    | Prisma.MessengerChannelMessageAttachmentOrderByWithRelationInput
+    | Prisma.MessengerChannelMessageAttachmentOrderByWithRelationInput[];
+  cursor?: Prisma.MessengerChannelMessageAttachmentWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.MessengerChannelMessageAttachmentScalarFieldEnum
+    | Prisma.MessengerChannelMessageAttachmentScalarFieldEnum[];
 };
 
 /**

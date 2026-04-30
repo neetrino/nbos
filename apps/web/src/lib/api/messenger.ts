@@ -17,6 +17,13 @@ export interface MessengerMessageRow {
   content: string;
   createdAt: string;
   editedAt: string | null;
+  attachments: MessengerMessageAttachmentRow[];
+}
+
+export interface MessengerMessageAttachmentRow {
+  id: string;
+  fileAssetId: string;
+  createdAt: string;
 }
 
 export interface MessengerListMeta {
@@ -47,6 +54,16 @@ export interface MessengerDmConversationRow {
   unreadCount: number;
 }
 
+export interface MessengerSearchResultRow {
+  scope: 'channel' | 'dm';
+  channelId: string;
+  recipientId: string | null;
+  messageId: string;
+  senderName: string;
+  content: string;
+  createdAt: string;
+}
+
 const LIST_PAGE_SIZE = 100;
 
 export const messengerApi = {
@@ -73,7 +90,7 @@ export const messengerApi = {
 
   async sendChannelMessage(
     channelId: string,
-    body: { content: string },
+    body: { content: string; fileAssetIds?: string[] },
   ): Promise<MessengerMessageRow> {
     const resp = await api.post<MessengerMessageRow>(
       `/api/messenger/channels/${channelId}/messages`,
@@ -111,6 +128,7 @@ export const messengerApi = {
   async sendDirectMessage(body: {
     recipientId: string;
     content: string;
+    fileAssetIds?: string[];
   }): Promise<MessengerMessageRow> {
     const resp = await api.post<MessengerMessageRow>('/api/messenger/dm', body);
     return resp.data;
@@ -118,5 +136,12 @@ export const messengerApi = {
 
   async markDmRead(recipientId: string): Promise<void> {
     await api.post('/api/messenger/dm/mark-read', { recipientId });
+  },
+
+  async search(q: string): Promise<{ items: MessengerSearchResultRow[] }> {
+    const resp = await api.get<{ items: MessengerSearchResultRow[] }>('/api/messenger/search', {
+      params: { q },
+    });
+    return resp.data;
   },
 };

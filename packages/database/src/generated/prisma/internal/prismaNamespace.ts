@@ -428,9 +428,11 @@ export const ModelName = {
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
+  MessengerChannelMessageAttachment: 'MessengerChannelMessageAttachment',
   MessengerChannelReadState: 'MessengerChannelReadState',
   MessengerDirectThread: 'MessengerDirectThread',
   MessengerDirectMessage: 'MessengerDirectMessage',
+  MessengerDirectMessageAttachment: 'MessengerDirectMessageAttachment',
   MessengerDirectThreadReadState: 'MessengerDirectThreadReadState',
   MailAccount: 'MailAccount',
   EmailThread: 'EmailThread',
@@ -522,9 +524,11 @@ export type TypeMap<
       | 'partner'
       | 'messengerChannel'
       | 'messengerChannelMessage'
+      | 'messengerChannelMessageAttachment'
       | 'messengerChannelReadState'
       | 'messengerDirectThread'
       | 'messengerDirectMessage'
+      | 'messengerDirectMessageAttachment'
       | 'messengerDirectThreadReadState'
       | 'mailAccount'
       | 'emailThread'
@@ -4512,6 +4516,82 @@ export type TypeMap<
         };
       };
     };
+    MessengerChannelMessageAttachment: {
+      payload: Prisma.$MessengerChannelMessageAttachmentPayload<ExtArgs>;
+      fields: Prisma.MessengerChannelMessageAttachmentFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MessengerChannelMessageAttachmentFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MessengerChannelMessageAttachmentFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>;
+        };
+        findFirst: {
+          args: Prisma.MessengerChannelMessageAttachmentFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MessengerChannelMessageAttachmentFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>;
+        };
+        findMany: {
+          args: Prisma.MessengerChannelMessageAttachmentFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>[];
+        };
+        create: {
+          args: Prisma.MessengerChannelMessageAttachmentCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>;
+        };
+        createMany: {
+          args: Prisma.MessengerChannelMessageAttachmentCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MessengerChannelMessageAttachmentCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>[];
+        };
+        delete: {
+          args: Prisma.MessengerChannelMessageAttachmentDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>;
+        };
+        update: {
+          args: Prisma.MessengerChannelMessageAttachmentUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>;
+        };
+        deleteMany: {
+          args: Prisma.MessengerChannelMessageAttachmentDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MessengerChannelMessageAttachmentUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MessengerChannelMessageAttachmentUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>[];
+        };
+        upsert: {
+          args: Prisma.MessengerChannelMessageAttachmentUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerChannelMessageAttachmentPayload>;
+        };
+        aggregate: {
+          args: Prisma.MessengerChannelMessageAttachmentAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMessengerChannelMessageAttachment>;
+        };
+        groupBy: {
+          args: Prisma.MessengerChannelMessageAttachmentGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MessengerChannelMessageAttachmentGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MessengerChannelMessageAttachmentCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MessengerChannelMessageAttachmentCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     MessengerChannelReadState: {
       payload: Prisma.$MessengerChannelReadStatePayload<ExtArgs>;
       fields: Prisma.MessengerChannelReadStateFieldRefs;
@@ -4736,6 +4816,82 @@ export type TypeMap<
           args: Prisma.MessengerDirectMessageCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.MessengerDirectMessageCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    MessengerDirectMessageAttachment: {
+      payload: Prisma.$MessengerDirectMessageAttachmentPayload<ExtArgs>;
+      fields: Prisma.MessengerDirectMessageAttachmentFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MessengerDirectMessageAttachmentFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MessengerDirectMessageAttachmentFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>;
+        };
+        findFirst: {
+          args: Prisma.MessengerDirectMessageAttachmentFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MessengerDirectMessageAttachmentFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>;
+        };
+        findMany: {
+          args: Prisma.MessengerDirectMessageAttachmentFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>[];
+        };
+        create: {
+          args: Prisma.MessengerDirectMessageAttachmentCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>;
+        };
+        createMany: {
+          args: Prisma.MessengerDirectMessageAttachmentCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MessengerDirectMessageAttachmentCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>[];
+        };
+        delete: {
+          args: Prisma.MessengerDirectMessageAttachmentDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>;
+        };
+        update: {
+          args: Prisma.MessengerDirectMessageAttachmentUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>;
+        };
+        deleteMany: {
+          args: Prisma.MessengerDirectMessageAttachmentDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MessengerDirectMessageAttachmentUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MessengerDirectMessageAttachmentUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>[];
+        };
+        upsert: {
+          args: Prisma.MessengerDirectMessageAttachmentUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessengerDirectMessageAttachmentPayload>;
+        };
+        aggregate: {
+          args: Prisma.MessengerDirectMessageAttachmentAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMessengerDirectMessageAttachment>;
+        };
+        groupBy: {
+          args: Prisma.MessengerDirectMessageAttachmentGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MessengerDirectMessageAttachmentGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MessengerDirectMessageAttachmentCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MessengerDirectMessageAttachmentCountAggregateOutputType>
             | number;
         };
       };
@@ -7134,6 +7290,17 @@ export const MessengerChannelMessageScalarFieldEnum = {
 export type MessengerChannelMessageScalarFieldEnum =
   (typeof MessengerChannelMessageScalarFieldEnum)[keyof typeof MessengerChannelMessageScalarFieldEnum];
 
+export const MessengerChannelMessageAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileAssetId: 'fileAssetId',
+  attachedById: 'attachedById',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerChannelMessageAttachmentScalarFieldEnum =
+  (typeof MessengerChannelMessageAttachmentScalarFieldEnum)[keyof typeof MessengerChannelMessageAttachmentScalarFieldEnum];
+
 export const MessengerChannelReadStateScalarFieldEnum = {
   id: 'id',
   channelId: 'channelId',
@@ -7166,6 +7333,17 @@ export const MessengerDirectMessageScalarFieldEnum = {
 
 export type MessengerDirectMessageScalarFieldEnum =
   (typeof MessengerDirectMessageScalarFieldEnum)[keyof typeof MessengerDirectMessageScalarFieldEnum];
+
+export const MessengerDirectMessageAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileAssetId: 'fileAssetId',
+  attachedById: 'attachedById',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerDirectMessageAttachmentScalarFieldEnum =
+  (typeof MessengerDirectMessageAttachmentScalarFieldEnum)[keyof typeof MessengerDirectMessageAttachmentScalarFieldEnum];
 
 export const MessengerDirectThreadReadStateScalarFieldEnum = {
   id: 'id',
@@ -9233,9 +9411,11 @@ export type GlobalOmitConfig = {
   partner?: Prisma.PartnerOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;
+  messengerChannelMessageAttachment?: Prisma.MessengerChannelMessageAttachmentOmit;
   messengerChannelReadState?: Prisma.MessengerChannelReadStateOmit;
   messengerDirectThread?: Prisma.MessengerDirectThreadOmit;
   messengerDirectMessage?: Prisma.MessengerDirectMessageOmit;
+  messengerDirectMessageAttachment?: Prisma.MessengerDirectMessageAttachmentOmit;
   messengerDirectThreadReadState?: Prisma.MessengerDirectThreadReadStateOmit;
   mailAccount?: Prisma.MailAccountOmit;
   emailThread?: Prisma.EmailThreadOmit;
