@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { startTransition, useEffect, useState } from 'react';
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
 import { ImageOff, Loader2 } from 'lucide-react';
@@ -63,11 +64,14 @@ export function DocumentImageNodeView(props: NodeViewProps) {
 
   return (
     <NodeViewWrapper className="my-2">
-      <img
+      <Image
         src={src}
         alt={alt}
+        width={640}
+        height={320}
         className="border-border max-h-80 max-w-full rounded-md border object-contain"
         draggable={false}
+        unoptimized
       />
     </NodeViewWrapper>
   );
