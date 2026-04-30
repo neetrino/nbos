@@ -22,7 +22,7 @@
 | Phase 4 — Delivery ops              | Done        | 100%     | Product lifecycle, Work Space, Tasks and Support bridges                                                                                                                    |
 | Phase 5 — Collaboration / knowledge | Done        | 100%     | Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents P0 closure slices shipped                                                             |
 | Phase 6 — Control layer             | Done        | 100%     | P0 closed: Dashboard Control Center plus minimal working Reports catalog/filter/saved-view/export/schedule foundation shipped; deeper BI is later only with product clarity |
-| Phase 7 — Integrations / migration  | In progress | 0%       | Starting discovery for Bitrix migration mapping, WhatsApp adapter path and import/export runbooks                                                                           |
+| Phase 7 — Integrations / migration  | In progress | 0%       | Work plan drafted in `docs/PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md`; next step is owner approval of first slice                                                         |
 
 ## Closed Gates
 
@@ -42,7 +42,7 @@
 ## Next Action
 
 1. Continue Phase 7 per `docs/NBOS/00-Implementation-Roadmap.md`.
-2. Next slice: inspect integration/migration canon and implement the first P0 foundation slice.
+2. Next slice: choose the first Phase 7 slice from `docs/PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md`.
 3. Later Phase 6 depth stays deferred: recurring Tasks, KPI/Scorecard depth, cross-module report registry and centralized report permissions.
 4. Keep Google v2, AI, complex approval workflow, WAHA runtime and credentials secrets out unless explicitly approved.
 
