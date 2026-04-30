@@ -640,6 +640,32 @@ export const CredentialAccessLevelEnum = {
 export type CredentialAccessLevelEnum =
   (typeof CredentialAccessLevelEnum)[keyof typeof CredentialAccessLevelEnum];
 
+export const CredentialTypeEnum = {
+  LOGIN_PASSWORD: 'LOGIN_PASSWORD',
+  API_KEY: 'API_KEY',
+  DATABASE: 'DATABASE',
+  SSH_PRIVATE_KEY: 'SSH_PRIVATE_KEY',
+  ENV_BUNDLE: 'ENV_BUNDLE',
+  DOMAIN_REGISTRAR: 'DOMAIN_REGISTRAR',
+  HOSTING_SERVER: 'HOSTING_SERVER',
+  APP_STORE_ACCOUNT: 'APP_STORE_ACCOUNT',
+  MAIL_SMTP: 'MAIL_SMTP',
+  RECOVERY_CODES: 'RECOVERY_CODES',
+  OTHER_SECRET: 'OTHER_SECRET',
+} as const;
+
+export type CredentialTypeEnum = (typeof CredentialTypeEnum)[keyof typeof CredentialTypeEnum];
+
+export const CredentialCriticalityEnum = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL',
+} as const;
+
+export type CredentialCriticalityEnum =
+  (typeof CredentialCriticalityEnum)[keyof typeof CredentialCriticalityEnum];
+
 export const DomainStatusEnum = {
   ACTIVE: 'ACTIVE',
   EXPIRING_SOON: 'EXPIRING_SOON',

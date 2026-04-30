@@ -5,7 +5,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { encrypt, decrypt } from '../../common/utils/crypto';
 
-const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData'] as const;
+const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData', 'secureNotes'] as const;
 type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
 
 export const CREDENTIAL_SECRET_FIELD_NAMES = SENSITIVE_FIELDS;
@@ -14,6 +14,7 @@ export interface CredentialSecretsPresent {
   password: boolean;
   apiKey: boolean;
   envData: boolean;
+  secureNotes: boolean;
 }
 
 function isSensitiveField(value: string): value is SensitiveField {
@@ -57,9 +58,15 @@ interface CredentialQueryParams {
 
 interface CreateCredentialDto {
   projectId?: string;
+  productId?: string;
+  domainId?: string;
+  clientServiceRecordId?: string;
   departmentId?: string;
   ownerId?: string;
   category: string;
+  credentialType?: string;
+  criticality?: string;
+  environment?: string;
   provider?: string;
   name: string;
   url?: string;
@@ -69,14 +76,25 @@ interface CreateCredentialDto {
   envData?: string;
   phone?: string;
   notes?: string;
+  publicNotes?: string;
+  secureNotes?: string;
+  lastRotatedAt?: string;
+  nextRotationAt?: string;
+  rotationOwnerId?: string;
   accessLevel?: string;
   allowedEmployees?: string[];
 }
 
 interface UpdateCredentialDto {
   projectId?: string;
+  productId?: string;
+  domainId?: string;
+  clientServiceRecordId?: string;
   departmentId?: string;
   category?: string;
+  credentialType?: string;
+  criticality?: string;
+  environment?: string;
   provider?: string;
   name?: string;
   url?: string;
@@ -86,8 +104,19 @@ interface UpdateCredentialDto {
   envData?: string;
   phone?: string;
   notes?: string;
+  publicNotes?: string;
+  secureNotes?: string;
+  lastRotatedAt?: string | null;
+  nextRotationAt?: string | null;
+  rotationOwnerId?: string | null;
   accessLevel?: string;
   allowedEmployees?: string[];
+}
+
+function nullableDate(value: string | null | undefined): Date | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value.trim() === '') return null;
+  return new Date(value);
 }
 
 @Injectable()
@@ -149,9 +178,15 @@ export class CredentialsService {
         select: {
           id: true,
           projectId: true,
+          productId: true,
+          domainId: true,
+          clientServiceRecordId: true,
           departmentId: true,
           ownerId: true,
           category: true,
+          credentialType: true,
+          criticality: true,
+          environment: true,
           provider: true,
           name: true,
           url: true,
@@ -159,12 +194,17 @@ export class CredentialsService {
           phone: true,
           accessLevel: true,
           allowedEmployees: true,
+          publicNotes: true,
+          lastRotatedAt: true,
+          nextRotationAt: true,
+          rotationOwnerId: true,
           createdAt: true,
           updatedAt: true,
           archivedAt: true,
           password: true,
           apiKey: true,
           envData: true,
+          secureNotes: true,
           project: { select: { id: true, name: true } },
           department: { select: { id: true, name: true } },
           owner: { select: { id: true, firstName: true, lastName: true } },
@@ -361,9 +401,17 @@ export class CredentialsService {
     const credential = await this.prisma.credential.create({
       data: {
         projectId: data.projectId,
+        productId: data.productId,
+        domainId: data.domainId,
+        clientServiceRecordId: data.clientServiceRecordId,
         departmentId: data.departmentId,
         ownerId: data.ownerId,
         category: data.category as Prisma.CredentialCreateInput['category'],
+        credentialType:
+          (data.credentialType as Prisma.CredentialCreateInput['credentialType']) ??
+          'LOGIN_PASSWORD',
+        criticality: (data.criticality as Prisma.CredentialCreateInput['criticality']) ?? 'MEDIUM',
+        environment: data.environment,
         provider: data.provider,
         name: data.name,
         url: data.url,
@@ -372,7 +420,12 @@ export class CredentialsService {
         apiKey: encrypted.apiKey,
         envData: encrypted.envData,
         phone: data.phone,
-        notes: data.notes,
+        notes: data.publicNotes ?? data.notes,
+        publicNotes: data.publicNotes ?? data.notes,
+        secureNotes: encrypted.secureNotes,
+        lastRotatedAt: nullableDate(data.lastRotatedAt),
+        nextRotationAt: nullableDate(data.nextRotationAt),
+        rotationOwnerId: data.rotationOwnerId,
         accessLevel:
           (data.accessLevel as Prisma.CredentialCreateInput['accessLevel']) ?? 'PROJECT_TEAM',
         allowedEmployees: data.allowedEmployees ?? [],
@@ -408,10 +461,22 @@ export class CredentialsService {
       where: { id },
       data: {
         ...(data.projectId !== undefined && { projectId: data.projectId }),
+        ...(data.productId !== undefined && { productId: data.productId }),
+        ...(data.domainId !== undefined && { domainId: data.domainId }),
+        ...(data.clientServiceRecordId !== undefined && {
+          clientServiceRecordId: data.clientServiceRecordId,
+        }),
         ...(data.departmentId !== undefined && { departmentId: data.departmentId }),
         ...(data.category && {
           category: data.category as Prisma.CredentialUpdateInput['category'],
         }),
+        ...(data.credentialType && {
+          credentialType: data.credentialType as Prisma.CredentialUpdateInput['credentialType'],
+        }),
+        ...(data.criticality && {
+          criticality: data.criticality as Prisma.CredentialUpdateInput['criticality'],
+        }),
+        ...(data.environment !== undefined && { environment: data.environment }),
         ...(data.provider !== undefined && { provider: data.provider }),
         ...(data.name && { name: data.name }),
         ...(data.url !== undefined && { url: data.url }),
@@ -420,7 +485,19 @@ export class CredentialsService {
         ...(data.apiKey !== undefined && { apiKey: encrypted.apiKey }),
         ...(data.envData !== undefined && { envData: encrypted.envData }),
         ...(data.phone !== undefined && { phone: data.phone }),
-        ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.notes !== undefined && { notes: data.notes, publicNotes: data.notes }),
+        ...(data.publicNotes !== undefined && {
+          notes: data.publicNotes,
+          publicNotes: data.publicNotes,
+        }),
+        ...(data.secureNotes !== undefined && { secureNotes: encrypted.secureNotes }),
+        ...(data.lastRotatedAt !== undefined && {
+          lastRotatedAt: nullableDate(data.lastRotatedAt),
+        }),
+        ...(data.nextRotationAt !== undefined && {
+          nextRotationAt: nullableDate(data.nextRotationAt),
+        }),
+        ...(data.rotationOwnerId !== undefined && { rotationOwnerId: data.rotationOwnerId }),
         ...(data.accessLevel && {
           accessLevel: data.accessLevel as Prisma.CredentialUpdateInput['accessLevel'],
         }),
@@ -552,13 +629,14 @@ export class CredentialsService {
   }
 
   private toCredentialWithoutSecrets(credential: Record<string, unknown>) {
-    const { password, apiKey, envData, ...rest } = credential;
+    const { password, apiKey, envData, secureNotes, ...rest } = credential;
     return {
       ...rest,
       secretsPresent: {
         password: typeof password === 'string' && password.length > 0,
         apiKey: typeof apiKey === 'string' && apiKey.length > 0,
         envData: typeof envData === 'string' && envData.length > 0,
+        secureNotes: typeof secureNotes === 'string' && secureNotes.length > 0,
       } satisfies CredentialSecretsPresent,
     };
   }

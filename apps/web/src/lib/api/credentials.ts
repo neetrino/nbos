@@ -4,6 +4,7 @@ export interface CredentialSecretsPresent {
   password: boolean;
   apiKey: boolean;
   envData: boolean;
+  secureNotes: boolean;
 }
 
 export type CredentialSecretField = keyof CredentialSecretsPresent;
@@ -12,15 +13,25 @@ export type CredentialSecretField = keyof CredentialSecretsPresent;
 export interface CredentialDetail {
   id: string;
   projectId: string | null;
+  productId?: string | null;
+  domainId?: string | null;
+  clientServiceRecordId?: string | null;
   departmentId?: string | null;
   ownerId?: string | null;
   category: string;
+  credentialType: string;
+  criticality: string;
+  environment: string | null;
   provider: string | null;
   name: string;
   url: string | null;
   login: string | null;
   phone?: string | null;
   notes?: string | null;
+  publicNotes?: string | null;
+  lastRotatedAt?: string | null;
+  nextRotationAt?: string | null;
+  rotationOwnerId?: string | null;
   accessLevel: string;
   allowedEmployees: string[];
   createdAt: string;

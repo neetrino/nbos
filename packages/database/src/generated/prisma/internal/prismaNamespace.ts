@@ -6917,9 +6917,15 @@ export type SupportTicketScalarFieldEnum =
 export const CredentialScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
+  productId: 'productId',
+  domainId: 'domainId',
+  clientServiceRecordId: 'clientServiceRecordId',
   departmentId: 'departmentId',
   ownerId: 'ownerId',
   category: 'category',
+  credentialType: 'credentialType',
+  criticality: 'criticality',
+  environment: 'environment',
   provider: 'provider',
   name: 'name',
   url: 'url',
@@ -6929,6 +6935,11 @@ export const CredentialScalarFieldEnum = {
   envData: 'envData',
   phone: 'phone',
   notes: 'notes',
+  publicNotes: 'publicNotes',
+  secureNotes: 'secureNotes',
+  lastRotatedAt: 'lastRotatedAt',
+  nextRotationAt: 'nextRotationAt',
+  rotationOwnerId: 'rotationOwnerId',
   accessLevel: 'accessLevel',
   allowedEmployees: 'allowedEmployees',
   archivedAt: 'archivedAt',
@@ -8494,6 +8505,38 @@ export type EnumCredentialCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInpu
 export type ListEnumCredentialCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'CredentialCategoryEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'CredentialTypeEnum'
+ */
+export type EnumCredentialTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'CredentialTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'CredentialTypeEnum[]'
+ */
+export type ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'CredentialTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'CredentialCriticalityEnum'
+ */
+export type EnumCredentialCriticalityEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'CredentialCriticalityEnum'
+>;
+
+/**
+ * Reference to a field of type 'CredentialCriticalityEnum[]'
+ */
+export type ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'CredentialCriticalityEnum[]'
 >;
 
 /**

@@ -368,4 +368,5 @@ Each slice should update its cleanup register and progress tracker after impleme
 | `technical-p0-assets`          | `DONE` (2026-04-30) | Product technical profile/assets/environments, Product Technical tab and readiness blockers                                      |
 | `notifications-p0-persistence` | `DONE` (2026-04-30) | Event/rule/job/delivery tables, idempotent in-app delivery, Notification Center filters and read/archive actions                 |
 | `drive-p0-files`               | `DONE` (2026-04-30) | DB-backed Drive center, file detail drawer, versions, active links, audit, visibility/confidentiality badges and archive action  |
-| `credentials-p0-hardening`     | `NEXT`              | Secure notes/types/rotation metadata/context links                                                                               |
+| `credentials-p0-hardening`     | `DONE` (2026-04-30) | Credential type, criticality, environment/context fields, encrypted secure notes, public notes and rotation metadata             |
+| `messenger-p0-polish`          | `NEXT`              | Internal polish + attachments/search + honest external shell                                                                     |

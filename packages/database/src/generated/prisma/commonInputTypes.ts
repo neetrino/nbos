@@ -2062,6 +2062,30 @@ export type EnumCredentialCategoryEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumCredentialCategoryEnumFilter<$PrismaModel> | $Enums.CredentialCategoryEnum;
 };
 
+export type EnumCredentialTypeEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.CredentialTypeEnum | Prisma.EnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.CredentialTypeEnum[] | Prisma.ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.CredentialTypeEnum[]
+    | Prisma.ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumCredentialTypeEnumFilter<$PrismaModel> | $Enums.CredentialTypeEnum;
+};
+
+export type EnumCredentialCriticalityEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.CredentialCriticalityEnum
+    | Prisma.EnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.CredentialCriticalityEnum[]
+    | Prisma.ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.CredentialCriticalityEnum[]
+    | Prisma.ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumCredentialCriticalityEnumFilter<$PrismaModel>
+    | $Enums.CredentialCriticalityEnum;
+};
+
 export type EnumCredentialAccessLevelEnumFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.CredentialAccessLevelEnum
@@ -2093,6 +2117,38 @@ export type EnumCredentialCategoryEnumWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumCredentialCategoryEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumCredentialCategoryEnumFilter<$PrismaModel>;
+};
+
+export type EnumCredentialTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CredentialTypeEnum | Prisma.EnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.CredentialTypeEnum[] | Prisma.ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.CredentialTypeEnum[]
+    | Prisma.ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumCredentialTypeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.CredentialTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumCredentialTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumCredentialTypeEnumFilter<$PrismaModel>;
+};
+
+export type EnumCredentialCriticalityEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.CredentialCriticalityEnum
+    | Prisma.EnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.CredentialCriticalityEnum[]
+    | Prisma.ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.CredentialCriticalityEnum[]
+    | Prisma.ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumCredentialCriticalityEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.CredentialCriticalityEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumCredentialCriticalityEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumCredentialCriticalityEnumFilter<$PrismaModel>;
 };
 
 export type EnumCredentialAccessLevelEnumWithAggregatesFilter<$PrismaModel = never> = {
@@ -5055,6 +5111,30 @@ export type NestedEnumCredentialCategoryEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumCredentialCategoryEnumFilter<$PrismaModel> | $Enums.CredentialCategoryEnum;
 };
 
+export type NestedEnumCredentialTypeEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.CredentialTypeEnum | Prisma.EnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.CredentialTypeEnum[] | Prisma.ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.CredentialTypeEnum[]
+    | Prisma.ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumCredentialTypeEnumFilter<$PrismaModel> | $Enums.CredentialTypeEnum;
+};
+
+export type NestedEnumCredentialCriticalityEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.CredentialCriticalityEnum
+    | Prisma.EnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.CredentialCriticalityEnum[]
+    | Prisma.ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.CredentialCriticalityEnum[]
+    | Prisma.ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumCredentialCriticalityEnumFilter<$PrismaModel>
+    | $Enums.CredentialCriticalityEnum;
+};
+
 export type NestedEnumCredentialAccessLevelEnumFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.CredentialAccessLevelEnum
@@ -5086,6 +5166,38 @@ export type NestedEnumCredentialCategoryEnumWithAggregatesFilter<$PrismaModel = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumCredentialCategoryEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumCredentialCategoryEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumCredentialTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CredentialTypeEnum | Prisma.EnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.CredentialTypeEnum[] | Prisma.ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.CredentialTypeEnum[]
+    | Prisma.ListEnumCredentialTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumCredentialTypeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.CredentialTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumCredentialTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumCredentialTypeEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumCredentialCriticalityEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.CredentialCriticalityEnum
+    | Prisma.EnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.CredentialCriticalityEnum[]
+    | Prisma.ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.CredentialCriticalityEnum[]
+    | Prisma.ListEnumCredentialCriticalityEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumCredentialCriticalityEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.CredentialCriticalityEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumCredentialCriticalityEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumCredentialCriticalityEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumCredentialAccessLevelEnumWithAggregatesFilter<$PrismaModel = never> = {

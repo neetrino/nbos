@@ -1519,32 +1519,75 @@ enum CredentialAccessLevelEnum {
   PERSONAL
 }
 
+enum CredentialTypeEnum {
+  LOGIN_PASSWORD
+  API_KEY
+  DATABASE
+  SSH_PRIVATE_KEY
+  ENV_BUNDLE
+  DOMAIN_REGISTRAR
+  HOSTING_SERVER
+  APP_STORE_ACCOUNT
+  MAIL_SMTP
+  RECOVERY_CODES
+  OTHER_SECRET
+}
+
+enum CredentialCriticalityEnum {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model Credential {
-  id               String                    @id @default(uuid())
-  projectId        String?                   @map("project_id")
-  departmentId     String?                   @map("department_id")
-  ownerId          String?                   @map("owner_id")
-  category         CredentialCategoryEnum
-  provider         String?
-  name             String
-  url              String?
-  login            String?
-  password         String?
-  apiKey           String?                   @map("api_key")
-  envData          String?                   @map("env_data")
-  phone            String?
-  notes            String?
-  accessLevel      CredentialAccessLevelEnum @default(PROJECT_TEAM) @map("access_level")
-  allowedEmployees String[]                  @map("allowed_employees")
-  archivedAt       DateTime?                 @map("archived_at")
-  createdAt        DateTime                  @default(now()) @map("created_at")
-  updatedAt        DateTime                  @updatedAt @map("updated_at")
+  id                    String                    @id @default(uuid())
+  projectId             String?                   @map("project_id")
+  productId             String?                   @map("product_id")
+  domainId              String?                   @map("domain_id")
+  clientServiceRecordId String?                   @map("client_service_record_id")
+  departmentId          String?                   @map("department_id")
+  ownerId               String?                   @map("owner_id")
+  category              CredentialCategoryEnum
+  credentialType        CredentialTypeEnum        @default(LOGIN_PASSWORD) @map("credential_type")
+  criticality           CredentialCriticalityEnum @default(MEDIUM)
+  environment           String?
+  provider              String?
+  name                  String
+  url                   String?
+  login                 String?
+  password              String?
+  apiKey                String?                   @map("api_key")
+  envData               String?                   @map("env_data")
+  phone                 String?
+  notes                 String?
+  publicNotes           String?                   @map("public_notes")
+  secureNotes           String?                   @map("secure_notes")
+  lastRotatedAt         DateTime?                 @map("last_rotated_at")
+  nextRotationAt        DateTime?                 @map("next_rotation_at")
+  rotationOwnerId       String?                   @map("rotation_owner_id")
+  accessLevel           CredentialAccessLevelEnum @default(PROJECT_TEAM) @map("access_level")
+  allowedEmployees      String[]                  @map("allowed_employees")
+  archivedAt            DateTime?                 @map("archived_at")
+  createdAt             DateTime                  @default(now()) @map("created_at")
+  updatedAt             DateTime                  @updatedAt @map("updated_at")
 
   project              Project?              @relation(fields: [projectId], references: [id])
   department           Department?           @relation(fields: [departmentId], references: [id])
   owner                Employee?             @relation("CredentialOwner", fields: [ownerId], references: [id])
   clientServiceRecords ClientServiceRecord[]
 
+  @@index([projectId])
+  @@index([productId])
+  @@index([domainId])
+  @@index([clientServiceRecordId])
+  @@index([category])
+  @@index([credentialType])
+  @@index([criticality])
+  @@index([environment])
+  @@index([accessLevel])
+  @@index([ownerId])
+  @@index([nextRotationAt])
   @@map("credentials")
 }
 

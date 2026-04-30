@@ -126,8 +126,14 @@ export class CredentialsController {
     @Body()
     body: {
       projectId?: string;
+      productId?: string;
+      domainId?: string;
+      clientServiceRecordId?: string;
       departmentId?: string;
       category: string;
+      credentialType?: string;
+      criticality?: string;
+      environment?: string;
       provider?: string;
       name: string;
       url?: string;
@@ -137,6 +143,11 @@ export class CredentialsController {
       envData?: string;
       phone?: string;
       notes?: string;
+      publicNotes?: string;
+      secureNotes?: string;
+      lastRotatedAt?: string;
+      nextRotationAt?: string;
+      rotationOwnerId?: string;
       accessLevel?: string;
       allowedEmployees?: string[];
     },
@@ -153,8 +164,14 @@ export class CredentialsController {
     @Body()
     body: {
       projectId?: string;
+      productId?: string;
+      domainId?: string;
+      clientServiceRecordId?: string;
       departmentId?: string;
       category?: string;
+      credentialType?: string;
+      criticality?: string;
+      environment?: string;
       provider?: string;
       name?: string;
       url?: string;
@@ -164,6 +181,11 @@ export class CredentialsController {
       envData?: string;
       phone?: string;
       notes?: string;
+      publicNotes?: string;
+      secureNotes?: string;
+      lastRotatedAt?: string | null;
+      nextRotationAt?: string | null;
+      rotationOwnerId?: string | null;
       accessLevel?: string;
       allowedEmployees?: string[];
     },

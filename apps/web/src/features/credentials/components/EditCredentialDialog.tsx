@@ -20,7 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CREDENTIAL_CATEGORIES, ACCESS_LEVELS } from '@/features/credentials/constants/credentials';
+import {
+  ACCESS_LEVELS,
+  CREDENTIAL_CATEGORIES,
+  CREDENTIAL_CRITICALITIES,
+  CREDENTIAL_TYPES,
+} from '@/features/credentials/constants/credentials';
 import {
   credentialsApi,
   type CredentialDetail,
@@ -46,6 +51,9 @@ export function EditCredentialDialog({
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('SERVICE');
+  const [credentialType, setCredentialType] = useState('LOGIN_PASSWORD');
+  const [criticality, setCriticality] = useState('MEDIUM');
+  const [environment, setEnvironment] = useState('');
   const [provider, setProvider] = useState('');
   const [url, setUrl] = useState('');
   const [login, setLogin] = useState('');
@@ -53,15 +61,20 @@ export function EditCredentialDialog({
   const [password, setPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [envData, setEnvData] = useState('');
+  const [secureNotes, setSecureNotes] = useState('');
   const [secretsPresent, setSecretsPresent] = useState<CredentialSecretsPresent | null>(null);
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
-  const [notes, setNotes] = useState('');
+  const [publicNotes, setPublicNotes] = useState('');
+  const [nextRotationAt, setNextRotationAt] = useState('');
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [allowedEmployees, setAllowedEmployees] = useState<string[]>([]);
 
   const applyDetail = useCallback((d: CredentialDetail) => {
     setName(d.name);
     setCategory(d.category);
+    setCredentialType(d.credentialType);
+    setCriticality(d.criticality);
+    setEnvironment(d.environment ?? '');
     setProvider(d.provider ?? '');
     setUrl(d.url ?? '');
     setLogin(d.login ?? '');
@@ -69,9 +82,11 @@ export function EditCredentialDialog({
     setPassword('');
     setApiKey('');
     setEnvData('');
+    setSecureNotes('');
     setSecretsPresent(d.secretsPresent);
     setAccessLevel(d.accessLevel);
-    setNotes(d.notes ?? '');
+    setPublicNotes(d.publicNotes ?? d.notes ?? '');
+    setNextRotationAt(d.nextRotationAt?.slice(0, 10) ?? '');
     setAllowedEmployees([...d.allowedEmployees]);
   }, []);
 
@@ -116,11 +131,15 @@ export function EditCredentialDialog({
       const body: Record<string, unknown> = {
         name: name.trim(),
         category,
+        credentialType,
+        criticality,
+        environment: environment.trim() || null,
         provider: provider.trim() || null,
         url: url.trim() || null,
         login: login.trim() || null,
         phone: phone.trim() || null,
-        notes: notes.trim() || null,
+        publicNotes: publicNotes.trim() || null,
+        nextRotationAt: nextRotationAt || null,
         accessLevel,
         allowedEmployees: accessLevel === 'SECRET' ? allowedEmployees : [],
       };
@@ -132,6 +151,9 @@ export function EditCredentialDialog({
       }
       if (envData.trim()) {
         body.envData = envData.trim();
+      }
+      if (secureNotes.trim()) {
+        body.secureNotes = secureNotes.trim();
       }
       await credentialsApi.update(credentialId, body);
       toast.success('Credential updated');
@@ -200,6 +222,39 @@ export function EditCredentialDialog({
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Credential type</Label>
+                <Select value={credentialType} onValueChange={(v) => setCredentialType(v ?? '')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CREDENTIAL_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Criticality</Label>
+                <Select value={criticality} onValueChange={(v) => setCriticality(v ?? '')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CREDENTIAL_CRITICALITIES.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="edit-cred-provider">Provider</Label>
               <Input
@@ -208,6 +263,27 @@ export function EditCredentialDialog({
                 onChange={(e) => setProvider(e.target.value)}
                 placeholder="e.g. AWS, Vercel"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-cred-environment">Environment</Label>
+                <Input
+                  id="edit-cred-environment"
+                  value={environment}
+                  onChange={(e) => setEnvironment(e.target.value)}
+                  placeholder="Production, Staging..."
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-cred-next-rotation">Next rotation</Label>
+                <Input
+                  id="edit-cred-next-rotation"
+                  type="date"
+                  value={nextRotationAt}
+                  onChange={(e) => setNextRotationAt(e.target.value)}
+                />
+              </div>
             </div>
 
             <div className="grid gap-2">
@@ -288,9 +364,25 @@ export function EditCredentialDialog({
               <Label htmlFor="edit-cred-notes">Notes</Label>
               <Input
                 id="edit-cred-notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Additional info..."
+                value={publicNotes}
+                onChange={(e) => setPublicNotes(e.target.value)}
+                placeholder="Public non-secret notes..."
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="edit-cred-secure-notes">New secure notes</Label>
+              <Textarea
+                id="edit-cred-secure-notes"
+                autoComplete="off"
+                value={secureNotes}
+                onChange={(e) => setSecureNotes(e.target.value)}
+                placeholder={
+                  secretsPresent?.secureNotes
+                    ? 'Leave blank to keep current encrypted secure notes'
+                    : 'Optional encrypted notes'
+                }
+                className="font-mono text-xs"
               />
             </div>
 

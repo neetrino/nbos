@@ -21,6 +21,7 @@ const SECRET_LABELS: Record<CredentialSecretField, string> = {
   password: 'Password',
   apiKey: 'API key',
   envData: 'Environment data',
+  secureNotes: 'Secure notes',
 };
 
 interface CredentialDetailDialogProps {
@@ -92,7 +93,7 @@ export function CredentialDetailDialog({
     }
   };
 
-  const presentFields = (['password', 'apiKey', 'envData'] as const).filter(
+  const presentFields = (['password', 'apiKey', 'envData', 'secureNotes'] as const).filter(
     (f) => detail?.secretsPresent[f],
   );
 
@@ -113,6 +114,18 @@ export function CredentialDetailDialog({
             <div className="grid grid-cols-3 gap-1">
               <span className="text-muted-foreground">Provider</span>
               <span className="col-span-2">{detail.provider ?? '—'}</span>
+              <span className="text-muted-foreground">Type</span>
+              <span className="col-span-2">{detail.credentialType.replaceAll('_', ' ')}</span>
+              <span className="text-muted-foreground">Criticality</span>
+              <span className="col-span-2">{detail.criticality}</span>
+              <span className="text-muted-foreground">Environment</span>
+              <span className="col-span-2">{detail.environment ?? '—'}</span>
+              <span className="text-muted-foreground">Next rotation</span>
+              <span className="col-span-2">
+                {detail.nextRotationAt ? new Date(detail.nextRotationAt).toLocaleDateString() : '—'}
+              </span>
+              <span className="text-muted-foreground">Public notes</span>
+              <span className="col-span-2 whitespace-pre-wrap">{detail.publicNotes ?? '—'}</span>
               <span className="text-muted-foreground">Login</span>
               <span className="col-span-2 font-mono text-xs">{detail.login ?? '—'}</span>
               <span className="text-muted-foreground">URL</span>
