@@ -12,6 +12,10 @@ import { FinanceReportsService } from '../finance/reports/reports.service';
 import { MrrSubscriptionRevenueService } from '../finance/reports/mrr-subscription-revenue.service';
 import { PayrollReportService } from '../finance/reports/payroll-report.service';
 import { ProjectPnlService } from '../finance/reports/project-pnl.service';
+import {
+  buildSensitiveReportAuditContext,
+  REPORT_FINANCE_CONFIDENTIALITY,
+} from './reports-audit-context';
 import { ReportsQueueService } from './reports-queue.service';
 import { parseReportExportJobInput, parseReportScheduleInput } from './reports-validation';
 import type {
@@ -164,7 +168,6 @@ export class ReportsService {
       action: 'report_schedule.created',
       userId: ownerId,
       changes: {
-        reportKey: schedule.reportKey,
         format: schedule.format,
         recipientCount: schedule.recipientEmails.length,
         scheduleLabel: schedule.scheduleLabel,
@@ -172,6 +175,7 @@ export class ReportsService {
         timeOfDay: schedule.timeOfDay,
         timezone: schedule.timezone,
         nextRunAt: schedule.nextRunAt.toISOString(),
+        ...buildSensitiveReportAuditContext(schedule.reportKey),
       },
     });
 
@@ -198,7 +202,7 @@ export class ReportsService {
       entityId: job.id,
       action: 'report_export.completed',
       userId: actorId,
-      changes: { fileAssetId },
+      changes: { fileAssetId, ...buildSensitiveReportAuditContext(job.reportKey) },
     });
 
     return job;
@@ -226,7 +230,7 @@ export class ReportsService {
         sourceModule: 'REPORTS',
         createdById: actorId,
         visibility: 'RESTRICTED',
-        confidentiality: 'FINANCE_SENSITIVE',
+        confidentiality: REPORT_FINANCE_CONFIDENTIALITY,
         storageKey: buildExportStorageKey(job.reportKey, job.id),
         content: csv,
         contentType: 'text/csv; charset=utf-8',
@@ -245,10 +249,10 @@ export class ReportsService {
     filters?: InputJsonValue,
   ): InputJsonValue {
     return {
-      reportKey,
       format,
       filters: filters ?? null,
       driveOutput: 'pending',
+      ...buildSensitiveReportAuditContext(reportKey),
     };
   }
 
@@ -263,7 +267,7 @@ export class ReportsService {
       entityId: job.id,
       action: 'report_export.failed',
       userId: actorId,
-      changes: { errorMessage: message },
+      changes: { errorMessage: message, ...buildSensitiveReportAuditContext(job.reportKey) },
     });
     return job;
   }

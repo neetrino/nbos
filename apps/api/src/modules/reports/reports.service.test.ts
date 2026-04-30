@@ -116,6 +116,10 @@ describe('ReportsService', () => {
         entityType: 'REPORT_EXPORT_JOB',
         action: 'report_export.requested',
         userId: 'employee-1',
+        changes: expect.objectContaining({
+          sensitive: true,
+          confidentiality: 'FINANCE_SENSITIVE',
+        }),
       }),
     );
   });
@@ -126,6 +130,7 @@ describe('ReportsService', () => {
     expect(drive.createGeneratedFileAsset).toHaveBeenCalledWith(
       expect.objectContaining({
         sourceModule: 'REPORTS',
+        confidentiality: 'FINANCE_SENSITIVE',
         storageKey: expect.stringContaining('Drive/_exports/reports/'),
         contentType: 'text/csv; charset=utf-8',
       }),
@@ -180,6 +185,10 @@ describe('ReportsService', () => {
       expect.objectContaining({
         entityType: 'REPORT_SCHEDULE',
         action: 'report_schedule.created',
+        changes: expect.objectContaining({
+          sensitive: true,
+          confidentiality: 'FINANCE_SENSITIVE',
+        }),
       }),
     );
   });

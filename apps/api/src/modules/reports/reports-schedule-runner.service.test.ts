@@ -79,7 +79,10 @@ describe('ReportsScheduleRunnerService', () => {
       }),
     );
     expect(audit.log).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'report_schedule.export_queued' }),
+      expect.objectContaining({
+        action: 'report_schedule.export_queued',
+        changes: expect.objectContaining({ sensitive: true, confidentiality: 'FINANCE_SENSITIVE' }),
+      }),
     );
   });
 });

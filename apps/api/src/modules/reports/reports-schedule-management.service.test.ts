@@ -6,6 +6,7 @@ import { ReportsScheduleManagementService } from './reports-schedule-management.
 
 const SCHEDULE = {
   id: 'schedule-1',
+  reportKey: 'company-pnl',
   ownerId: 'employee-1',
   status: 'ACTIVE',
   frequency: 'WEEKLY',
@@ -42,7 +43,10 @@ describe('ReportsScheduleManagementService', () => {
       where: { id: 'schedule-1', ownerId: 'employee-1' },
     });
     expect(audit.log).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'report_schedule.paused' }),
+      expect.objectContaining({
+        action: 'report_schedule.paused',
+        changes: expect.objectContaining({ sensitive: true, confidentiality: 'FINANCE_SENSITIVE' }),
+      }),
     );
   });
 
@@ -63,7 +67,10 @@ describe('ReportsScheduleManagementService', () => {
       }),
     );
     expect(audit.log).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'report_schedule.resumed' }),
+      expect.objectContaining({
+        action: 'report_schedule.resumed',
+        changes: expect.objectContaining({ sensitive: true, confidentiality: 'FINANCE_SENSITIVE' }),
+      }),
     );
   });
 
@@ -72,7 +79,10 @@ describe('ReportsScheduleManagementService', () => {
 
     expect(result.status).toBe('ARCHIVED');
     expect(audit.log).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'report_schedule.archived' }),
+      expect.objectContaining({
+        action: 'report_schedule.archived',
+        changes: expect.objectContaining({ sensitive: true, confidentiality: 'FINANCE_SENSITIVE' }),
+      }),
     );
   });
 

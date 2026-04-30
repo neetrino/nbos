@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { buildSensitiveReportAuditContext } from './reports-audit-context';
 import { calculateNextReportScheduleRun } from './reports-schedule-recurrence';
 
 const REPORT_SCHEDULE_AUDIT_ENTITY = 'REPORT_SCHEDULE';
@@ -24,7 +25,7 @@ export class ReportsScheduleManagementService {
       where: { id: schedule.id },
       data: { status: 'PAUSED' },
     });
-    await this.logScheduleAction(ownerId, schedule.id, 'report_schedule.paused');
+    await this.logScheduleAction(ownerId, schedule, 'report_schedule.paused');
     return updated;
   }
 
@@ -46,7 +47,7 @@ export class ReportsScheduleManagementService {
       where: { id: schedule.id },
       data: { status: 'ACTIVE', nextRunAt, lastFailureAt: null, failureReason: null },
     });
-    await this.logScheduleAction(ownerId, schedule.id, 'report_schedule.resumed', {
+    await this.logScheduleAction(ownerId, schedule, 'report_schedule.resumed', {
       nextRunAt: nextRunAt.toISOString(),
     });
     return updated;
@@ -58,7 +59,7 @@ export class ReportsScheduleManagementService {
       where: { id: schedule.id },
       data: { status: 'ARCHIVED' },
     });
-    await this.logScheduleAction(ownerId, schedule.id, 'report_schedule.archived');
+    await this.logScheduleAction(ownerId, schedule, 'report_schedule.archived');
     return updated;
   }
 
@@ -81,16 +82,16 @@ export class ReportsScheduleManagementService {
 
   private async logScheduleAction(
     userId: string,
-    scheduleId: string,
+    schedule: ReportScheduleRecord,
     action: string,
     changes: Record<string, string> = {},
   ): Promise<void> {
     await this.auditService.log({
       entityType: REPORT_SCHEDULE_AUDIT_ENTITY,
-      entityId: scheduleId,
+      entityId: schedule.id,
       action,
       userId,
-      changes,
+      changes: { ...changes, ...buildSensitiveReportAuditContext(schedule.reportKey) },
     });
   }
 }

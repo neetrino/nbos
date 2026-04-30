@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { buildSensitiveReportAuditContext } from './reports-audit-context';
 import { ReportsQueueService } from './reports-queue.service';
 import { calculateNextReportScheduleRun } from './reports-schedule-recurrence';
 
@@ -84,7 +85,11 @@ export class ReportsScheduleRunnerService {
       entityId: schedule.id,
       action: 'report_schedule.export_queued',
       userId: schedule.ownerId,
-      changes: { exportJobId, nextRunAt: nextRunAt.toISOString() },
+      changes: {
+        exportJobId,
+        nextRunAt: nextRunAt.toISOString(),
+        ...buildSensitiveReportAuditContext(schedule.reportKey),
+      },
     });
   }
 

@@ -136,6 +136,7 @@ Shipped foundation:
 - real CSV writer over Finance-owned aggregate services, stored as Drive/R2 `FileAsset`;
 - failure state and audit event when export writing fails.
 - BullMQ export queue/worker wiring when `REDIS_URL` is configured; HTTP requests no longer write export files inline.
+- finance-sensitive audit context is explicit on export request/completion/failure and scheduled export queue events.
 
 Still needed:
 
@@ -178,7 +179,7 @@ Reports must enforce source permissions and cannot bypass module access.
 7. ~~Link exports to Drive.~~ Done as `FileAsset` output relation; real writer worker still needed.
 8. ~~Add scheduled reports model.~~ Done foundation (2026-04-30); runner still needed.
 9. ~~Add data quality warnings.~~ Done foundation (2026-04-30); cross-module/runtime depth still needed.
-10. Add sensitive report audit.
+10. ~~Add sensitive report audit.~~ Done foundation (2026-04-30): finance-sensitive audit markers are explicit on export and scheduled-run events.
 11. Add saved report views.
 
 ## D. Non-goals for MVP
