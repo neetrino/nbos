@@ -36,7 +36,7 @@ export function useNotificationFeed(employeeId: string | undefined, listOpen: bo
         setListError(false);
       }
       try {
-        const res = await notificationsApi.list(1, NOTIFICATION_LIST_PAGE_SIZE);
+        const res = await notificationsApi.list({ page: 1, pageSize: NOTIFICATION_LIST_PAGE_SIZE });
         setItems(res.items);
       } catch {
         if (mode === 'full') {

@@ -26,15 +26,15 @@ Current code:
 
 Problems:
 
-- backend uses in-memory `Map`;
-- no Prisma notification tables;
-- controller accepts `userId` query instead of current authenticated user;
-- no Notification Event/Rule/Job/Delivery model;
-- no queue/retry/delivery log;
+- **Done (2026-04-30):** backend uses Prisma-backed `in_app_notifications` for topbar and Notification Center;
+- **Done (2026-04-30):** controller uses `CurrentUser`, not trusted `userId` query;
+- **Done (2026-04-30):** `NotificationEvent`, `NotificationRule`, `NotificationJob`, `NotificationDelivery` added for P0 source-of-truth and in-app delivery log;
+- **Done (2026-04-30):** idempotency/dedupe keys added for direct in-app delivery;
+- **Done (2026-04-30):** Notification Center page supports category filters, mark read and archive;
+- no scheduler queue/retry/backoff yet;
 - no channel adapters;
 - no integration with Messenger outbound copy;
 - no user preferences beyond mock UI;
-- topbar dropdown uses static mock notifications;
 - no websocket/live unread count.
 
 ## C. Stale documentation removed
@@ -59,26 +59,24 @@ New docs replace this with:
 
 ### Phase 1 - Data foundation
 
-- add Prisma models for notification events/rules/jobs/notifications/deliveries/preferences;
-- remove in-memory store;
-- use current authenticated user;
-- add idempotency/dedupe keys.
+- **Done (2026-04-30):** add Prisma models for notification events/rules/jobs/notifications/deliveries;
+- **Done (2026-04-30):** use current authenticated user;
+- **Done (2026-04-30):** add idempotency/dedupe keys;
+- Preferences remain deferred.
 
 ### Phase 2 - In-App notifications
 
-- persisted Notification Center;
-- topbar unread count from API;
-- mark read/archive;
-- entity links;
-- category filters.
+- **Done (2026-04-30):** persisted Notification Center;
+- **Done (2026-04-30):** topbar unread count from API;
+- **Done (2026-04-30):** mark read/archive;
+- **Done (2026-04-30):** entity links;
+- **Done (2026-04-30):** category filters.
 
 ### Phase 3 - Rules and scheduler
 
-- code/config rules;
-- scheduler integration;
-- queue jobs;
-- retry/backoff;
-- delivery log.
+- **Done (2026-04-30):** code/config rules for P0 high-value event types: task overdue, finance overdue, mail health/send failure and document access change.
+- Scheduler integration, background queue and retry/backoff remain deferred.
+- **Done (2026-04-30):** delivery log for `IN_APP` channel.
 
 ### Phase 4 - Channel adapters
 

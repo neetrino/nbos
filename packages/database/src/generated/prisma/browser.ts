@@ -332,6 +332,26 @@ export type EmailRecipient = Prisma.EmailRecipientModel;
  */
 export type InAppNotification = Prisma.InAppNotificationModel;
 /**
+ * Model NotificationEvent
+ *
+ */
+export type NotificationEvent = Prisma.NotificationEventModel;
+/**
+ * Model NotificationRule
+ *
+ */
+export type NotificationRule = Prisma.NotificationRuleModel;
+/**
+ * Model NotificationJob
+ *
+ */
+export type NotificationJob = Prisma.NotificationJobModel;
+/**
+ * Model NotificationDelivery
+ *
+ */
+export type NotificationDelivery = Prisma.NotificationDeliveryModel;
+/**
  * Model ProductTechnicalProfile
  *
  */

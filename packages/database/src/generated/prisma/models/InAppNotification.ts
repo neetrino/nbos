@@ -28,13 +28,17 @@ export type InAppNotificationMinAggregateOutputType = {
   id: string | null;
   recipientEmployeeId: string | null;
   type: string | null;
+  category: string | null;
+  priority: string | null;
   title: string | null;
   body: string | null;
   link: string | null;
+  actionLabel: string | null;
   entityType: string | null;
   entityId: string | null;
   isRead: boolean | null;
   readAt: Date | null;
+  archivedAt: Date | null;
   createdAt: Date | null;
 };
 
@@ -42,13 +46,17 @@ export type InAppNotificationMaxAggregateOutputType = {
   id: string | null;
   recipientEmployeeId: string | null;
   type: string | null;
+  category: string | null;
+  priority: string | null;
   title: string | null;
   body: string | null;
   link: string | null;
+  actionLabel: string | null;
   entityType: string | null;
   entityId: string | null;
   isRead: boolean | null;
   readAt: Date | null;
+  archivedAt: Date | null;
   createdAt: Date | null;
 };
 
@@ -56,13 +64,17 @@ export type InAppNotificationCountAggregateOutputType = {
   id: number;
   recipientEmployeeId: number;
   type: number;
+  category: number;
+  priority: number;
   title: number;
   body: number;
   link: number;
+  actionLabel: number;
   entityType: number;
   entityId: number;
   isRead: number;
   readAt: number;
+  archivedAt: number;
   createdAt: number;
   _all: number;
 };
@@ -71,13 +83,17 @@ export type InAppNotificationMinAggregateInputType = {
   id?: true;
   recipientEmployeeId?: true;
   type?: true;
+  category?: true;
+  priority?: true;
   title?: true;
   body?: true;
   link?: true;
+  actionLabel?: true;
   entityType?: true;
   entityId?: true;
   isRead?: true;
   readAt?: true;
+  archivedAt?: true;
   createdAt?: true;
 };
 
@@ -85,13 +101,17 @@ export type InAppNotificationMaxAggregateInputType = {
   id?: true;
   recipientEmployeeId?: true;
   type?: true;
+  category?: true;
+  priority?: true;
   title?: true;
   body?: true;
   link?: true;
+  actionLabel?: true;
   entityType?: true;
   entityId?: true;
   isRead?: true;
   readAt?: true;
+  archivedAt?: true;
   createdAt?: true;
 };
 
@@ -99,13 +119,17 @@ export type InAppNotificationCountAggregateInputType = {
   id?: true;
   recipientEmployeeId?: true;
   type?: true;
+  category?: true;
+  priority?: true;
   title?: true;
   body?: true;
   link?: true;
+  actionLabel?: true;
   entityType?: true;
   entityId?: true;
   isRead?: true;
   readAt?: true;
+  archivedAt?: true;
   createdAt?: true;
   _all?: true;
 };
@@ -191,13 +215,17 @@ export type InAppNotificationGroupByOutputType = {
   id: string;
   recipientEmployeeId: string;
   type: string;
+  category: string;
+  priority: string;
   title: string;
   body: string;
   link: string | null;
+  actionLabel: string | null;
   entityType: string | null;
   entityId: string | null;
   isRead: boolean;
   readAt: Date | null;
+  archivedAt: Date | null;
   createdAt: Date;
   _count: InAppNotificationCountAggregateOutputType | null;
   _min: InAppNotificationMinAggregateOutputType | null;
@@ -224,13 +252,17 @@ export type InAppNotificationWhereInput = {
   id?: Prisma.StringFilter<'InAppNotification'> | string;
   recipientEmployeeId?: Prisma.StringFilter<'InAppNotification'> | string;
   type?: Prisma.StringFilter<'InAppNotification'> | string;
+  category?: Prisma.StringFilter<'InAppNotification'> | string;
+  priority?: Prisma.StringFilter<'InAppNotification'> | string;
   title?: Prisma.StringFilter<'InAppNotification'> | string;
   body?: Prisma.StringFilter<'InAppNotification'> | string;
   link?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
+  actionLabel?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
   entityType?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
   entityId?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
   isRead?: Prisma.BoolFilter<'InAppNotification'> | boolean;
   readAt?: Prisma.DateTimeNullableFilter<'InAppNotification'> | Date | string | null;
+  archivedAt?: Prisma.DateTimeNullableFilter<'InAppNotification'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'InAppNotification'> | Date | string;
   recipient?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
 };
@@ -239,13 +271,17 @@ export type InAppNotificationOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   recipientEmployeeId?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  priority?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   body?: Prisma.SortOrder;
   link?: Prisma.SortOrderInput | Prisma.SortOrder;
+  actionLabel?: Prisma.SortOrderInput | Prisma.SortOrder;
   entityType?: Prisma.SortOrderInput | Prisma.SortOrder;
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder;
   isRead?: Prisma.SortOrder;
   readAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   recipient?: Prisma.EmployeeOrderByWithRelationInput;
 };
@@ -258,13 +294,17 @@ export type InAppNotificationWhereUniqueInput = Prisma.AtLeast<
     NOT?: Prisma.InAppNotificationWhereInput | Prisma.InAppNotificationWhereInput[];
     recipientEmployeeId?: Prisma.StringFilter<'InAppNotification'> | string;
     type?: Prisma.StringFilter<'InAppNotification'> | string;
+    category?: Prisma.StringFilter<'InAppNotification'> | string;
+    priority?: Prisma.StringFilter<'InAppNotification'> | string;
     title?: Prisma.StringFilter<'InAppNotification'> | string;
     body?: Prisma.StringFilter<'InAppNotification'> | string;
     link?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
+    actionLabel?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
     entityType?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
     entityId?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
     isRead?: Prisma.BoolFilter<'InAppNotification'> | boolean;
     readAt?: Prisma.DateTimeNullableFilter<'InAppNotification'> | Date | string | null;
+    archivedAt?: Prisma.DateTimeNullableFilter<'InAppNotification'> | Date | string | null;
     createdAt?: Prisma.DateTimeFilter<'InAppNotification'> | Date | string;
     recipient?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
   },
@@ -275,13 +315,17 @@ export type InAppNotificationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   recipientEmployeeId?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  priority?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   body?: Prisma.SortOrder;
   link?: Prisma.SortOrderInput | Prisma.SortOrder;
+  actionLabel?: Prisma.SortOrderInput | Prisma.SortOrder;
   entityType?: Prisma.SortOrderInput | Prisma.SortOrder;
   entityId?: Prisma.SortOrderInput | Prisma.SortOrder;
   isRead?: Prisma.SortOrder;
   readAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   _count?: Prisma.InAppNotificationCountOrderByAggregateInput;
   _max?: Prisma.InAppNotificationMaxOrderByAggregateInput;
@@ -299,26 +343,38 @@ export type InAppNotificationScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<'InAppNotification'> | string;
   recipientEmployeeId?: Prisma.StringWithAggregatesFilter<'InAppNotification'> | string;
   type?: Prisma.StringWithAggregatesFilter<'InAppNotification'> | string;
+  category?: Prisma.StringWithAggregatesFilter<'InAppNotification'> | string;
+  priority?: Prisma.StringWithAggregatesFilter<'InAppNotification'> | string;
   title?: Prisma.StringWithAggregatesFilter<'InAppNotification'> | string;
   body?: Prisma.StringWithAggregatesFilter<'InAppNotification'> | string;
   link?: Prisma.StringNullableWithAggregatesFilter<'InAppNotification'> | string | null;
+  actionLabel?: Prisma.StringNullableWithAggregatesFilter<'InAppNotification'> | string | null;
   entityType?: Prisma.StringNullableWithAggregatesFilter<'InAppNotification'> | string | null;
   entityId?: Prisma.StringNullableWithAggregatesFilter<'InAppNotification'> | string | null;
   isRead?: Prisma.BoolWithAggregatesFilter<'InAppNotification'> | boolean;
   readAt?: Prisma.DateTimeNullableWithAggregatesFilter<'InAppNotification'> | Date | string | null;
+  archivedAt?:
+    | Prisma.DateTimeNullableWithAggregatesFilter<'InAppNotification'>
+    | Date
+    | string
+    | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'InAppNotification'> | Date | string;
 };
 
 export type InAppNotificationCreateInput = {
   id?: string;
   type: string;
+  category?: string;
+  priority?: string;
   title: string;
   body: string;
   link?: string | null;
+  actionLabel?: string | null;
   entityType?: string | null;
   entityId?: string | null;
   isRead?: boolean;
   readAt?: Date | string | null;
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
   recipient: Prisma.EmployeeCreateNestedOneWithoutInAppNotificationsReceivedInput;
 };
@@ -327,26 +383,34 @@ export type InAppNotificationUncheckedCreateInput = {
   id?: string;
   recipientEmployeeId: string;
   type: string;
+  category?: string;
+  priority?: string;
   title: string;
   body: string;
   link?: string | null;
+  actionLabel?: string | null;
   entityType?: string | null;
   entityId?: string | null;
   isRead?: boolean;
   readAt?: Date | string | null;
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
 };
 
 export type InAppNotificationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  priority?: Prisma.StringFieldUpdateOperationsInput | string;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
   link?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  actionLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   recipient?: Prisma.EmployeeUpdateOneRequiredWithoutInAppNotificationsReceivedNestedInput;
 };
@@ -355,13 +419,17 @@ export type InAppNotificationUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   recipientEmployeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  priority?: Prisma.StringFieldUpdateOperationsInput | string;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
   link?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  actionLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
@@ -369,26 +437,34 @@ export type InAppNotificationCreateManyInput = {
   id?: string;
   recipientEmployeeId: string;
   type: string;
+  category?: string;
+  priority?: string;
   title: string;
   body: string;
   link?: string | null;
+  actionLabel?: string | null;
   entityType?: string | null;
   entityId?: string | null;
   isRead?: boolean;
   readAt?: Date | string | null;
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
 };
 
 export type InAppNotificationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  priority?: Prisma.StringFieldUpdateOperationsInput | string;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
   link?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  actionLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
@@ -396,13 +472,17 @@ export type InAppNotificationUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   recipientEmployeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  priority?: Prisma.StringFieldUpdateOperationsInput | string;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
   link?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  actionLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
@@ -420,13 +500,17 @@ export type InAppNotificationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   recipientEmployeeId?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  priority?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   body?: Prisma.SortOrder;
   link?: Prisma.SortOrder;
+  actionLabel?: Prisma.SortOrder;
   entityType?: Prisma.SortOrder;
   entityId?: Prisma.SortOrder;
   isRead?: Prisma.SortOrder;
   readAt?: Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
 };
 
@@ -434,13 +518,17 @@ export type InAppNotificationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   recipientEmployeeId?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  priority?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   body?: Prisma.SortOrder;
   link?: Prisma.SortOrder;
+  actionLabel?: Prisma.SortOrder;
   entityType?: Prisma.SortOrder;
   entityId?: Prisma.SortOrder;
   isRead?: Prisma.SortOrder;
   readAt?: Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
 };
 
@@ -448,13 +536,17 @@ export type InAppNotificationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   recipientEmployeeId?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
+  category?: Prisma.SortOrder;
+  priority?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   body?: Prisma.SortOrder;
   link?: Prisma.SortOrder;
+  actionLabel?: Prisma.SortOrder;
   entityType?: Prisma.SortOrder;
   entityId?: Prisma.SortOrder;
   isRead?: Prisma.SortOrder;
   readAt?: Prisma.SortOrder;
+  archivedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
 };
 
@@ -555,26 +647,34 @@ export type InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput = {
 export type InAppNotificationCreateWithoutRecipientInput = {
   id?: string;
   type: string;
+  category?: string;
+  priority?: string;
   title: string;
   body: string;
   link?: string | null;
+  actionLabel?: string | null;
   entityType?: string | null;
   entityId?: string | null;
   isRead?: boolean;
   readAt?: Date | string | null;
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
 };
 
 export type InAppNotificationUncheckedCreateWithoutRecipientInput = {
   id?: string;
   type: string;
+  category?: string;
+  priority?: string;
   title: string;
   body: string;
   link?: string | null;
+  actionLabel?: string | null;
   entityType?: string | null;
   entityId?: string | null;
   isRead?: boolean;
   readAt?: Date | string | null;
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
 };
 
@@ -628,65 +728,85 @@ export type InAppNotificationScalarWhereInput = {
   id?: Prisma.StringFilter<'InAppNotification'> | string;
   recipientEmployeeId?: Prisma.StringFilter<'InAppNotification'> | string;
   type?: Prisma.StringFilter<'InAppNotification'> | string;
+  category?: Prisma.StringFilter<'InAppNotification'> | string;
+  priority?: Prisma.StringFilter<'InAppNotification'> | string;
   title?: Prisma.StringFilter<'InAppNotification'> | string;
   body?: Prisma.StringFilter<'InAppNotification'> | string;
   link?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
+  actionLabel?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
   entityType?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
   entityId?: Prisma.StringNullableFilter<'InAppNotification'> | string | null;
   isRead?: Prisma.BoolFilter<'InAppNotification'> | boolean;
   readAt?: Prisma.DateTimeNullableFilter<'InAppNotification'> | Date | string | null;
+  archivedAt?: Prisma.DateTimeNullableFilter<'InAppNotification'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'InAppNotification'> | Date | string;
 };
 
 export type InAppNotificationCreateManyRecipientInput = {
   id?: string;
   type: string;
+  category?: string;
+  priority?: string;
   title: string;
   body: string;
   link?: string | null;
+  actionLabel?: string | null;
   entityType?: string | null;
   entityId?: string | null;
   isRead?: boolean;
   readAt?: Date | string | null;
+  archivedAt?: Date | string | null;
   createdAt?: Date | string;
 };
 
 export type InAppNotificationUpdateWithoutRecipientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  priority?: Prisma.StringFieldUpdateOperationsInput | string;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
   link?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  actionLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type InAppNotificationUncheckedUpdateWithoutRecipientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  priority?: Prisma.StringFieldUpdateOperationsInput | string;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
   link?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  actionLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type InAppNotificationUncheckedUpdateManyWithoutRecipientInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.StringFieldUpdateOperationsInput | string;
+  priority?: Prisma.StringFieldUpdateOperationsInput | string;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   body?: Prisma.StringFieldUpdateOperationsInput | string;
   link?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  actionLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   entityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   readAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
@@ -697,13 +817,17 @@ export type InAppNotificationSelect<
     id?: boolean;
     recipientEmployeeId?: boolean;
     type?: boolean;
+    category?: boolean;
+    priority?: boolean;
     title?: boolean;
     body?: boolean;
     link?: boolean;
+    actionLabel?: boolean;
     entityType?: boolean;
     entityId?: boolean;
     isRead?: boolean;
     readAt?: boolean;
+    archivedAt?: boolean;
     createdAt?: boolean;
     recipient?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   },
@@ -717,13 +841,17 @@ export type InAppNotificationSelectCreateManyAndReturn<
     id?: boolean;
     recipientEmployeeId?: boolean;
     type?: boolean;
+    category?: boolean;
+    priority?: boolean;
     title?: boolean;
     body?: boolean;
     link?: boolean;
+    actionLabel?: boolean;
     entityType?: boolean;
     entityId?: boolean;
     isRead?: boolean;
     readAt?: boolean;
+    archivedAt?: boolean;
     createdAt?: boolean;
     recipient?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   },
@@ -737,13 +865,17 @@ export type InAppNotificationSelectUpdateManyAndReturn<
     id?: boolean;
     recipientEmployeeId?: boolean;
     type?: boolean;
+    category?: boolean;
+    priority?: boolean;
     title?: boolean;
     body?: boolean;
     link?: boolean;
+    actionLabel?: boolean;
     entityType?: boolean;
     entityId?: boolean;
     isRead?: boolean;
     readAt?: boolean;
+    archivedAt?: boolean;
     createdAt?: boolean;
     recipient?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   },
@@ -754,13 +886,17 @@ export type InAppNotificationSelectScalar = {
   id?: boolean;
   recipientEmployeeId?: boolean;
   type?: boolean;
+  category?: boolean;
+  priority?: boolean;
   title?: boolean;
   body?: boolean;
   link?: boolean;
+  actionLabel?: boolean;
   entityType?: boolean;
   entityId?: boolean;
   isRead?: boolean;
   readAt?: boolean;
+  archivedAt?: boolean;
   createdAt?: boolean;
 };
 
@@ -770,13 +906,17 @@ export type InAppNotificationOmit<
   | 'id'
   | 'recipientEmployeeId'
   | 'type'
+  | 'category'
+  | 'priority'
   | 'title'
   | 'body'
   | 'link'
+  | 'actionLabel'
   | 'entityType'
   | 'entityId'
   | 'isRead'
   | 'readAt'
+  | 'archivedAt'
   | 'createdAt',
   ExtArgs['result']['inAppNotification']
 >;
@@ -808,13 +948,17 @@ export type $InAppNotificationPayload<
       id: string;
       recipientEmployeeId: string;
       type: string;
+      category: string;
+      priority: string;
       title: string;
       body: string;
       link: string | null;
+      actionLabel: string | null;
       entityType: string | null;
       entityId: string | null;
       isRead: boolean;
       readAt: Date | null;
+      archivedAt: Date | null;
       createdAt: Date;
     },
     ExtArgs['result']['inAppNotification']
@@ -1405,13 +1549,17 @@ export interface InAppNotificationFieldRefs {
   readonly id: Prisma.FieldRef<'InAppNotification', 'String'>;
   readonly recipientEmployeeId: Prisma.FieldRef<'InAppNotification', 'String'>;
   readonly type: Prisma.FieldRef<'InAppNotification', 'String'>;
+  readonly category: Prisma.FieldRef<'InAppNotification', 'String'>;
+  readonly priority: Prisma.FieldRef<'InAppNotification', 'String'>;
   readonly title: Prisma.FieldRef<'InAppNotification', 'String'>;
   readonly body: Prisma.FieldRef<'InAppNotification', 'String'>;
   readonly link: Prisma.FieldRef<'InAppNotification', 'String'>;
+  readonly actionLabel: Prisma.FieldRef<'InAppNotification', 'String'>;
   readonly entityType: Prisma.FieldRef<'InAppNotification', 'String'>;
   readonly entityId: Prisma.FieldRef<'InAppNotification', 'String'>;
   readonly isRead: Prisma.FieldRef<'InAppNotification', 'Boolean'>;
   readonly readAt: Prisma.FieldRef<'InAppNotification', 'DateTime'>;
+  readonly archivedAt: Prisma.FieldRef<'InAppNotification', 'DateTime'>;
   readonly createdAt: Prisma.FieldRef<'InAppNotification', 'DateTime'>;
 }
 

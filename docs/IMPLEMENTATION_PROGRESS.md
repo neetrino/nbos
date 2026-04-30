@@ -4,24 +4,24 @@
 
 ## Current Focus
 
-| Field         | Value                                                           |
-| ------------- | --------------------------------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge**                         |
-| Current task  | Phase 5 closure — Calendar P0 / Technical P0 / Notifications P0 |
-| Status        | Phase 5 in progress                                             |
-| Last updated  | 2026-04-30                                                      |
+| Field         | Value                                   |
+| ------------- | --------------------------------------- |
+| Current phase | **Phase 5 — Collaboration / knowledge** |
+| Current task  | Phase 5 closure — Notifications P0      |
+| Status        | Phase 5 in progress                     |
+| Last updated  | 2026-04-30                              |
 
 ## Phase Snapshot
 
-| Phase                               | Status      | Progress | Notes                                                                                                 |
-| ----------------------------------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                               |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                      |
-| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates            |
-| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                  |
-| Phase 5 — Collaboration / knowledge | In progress | ~98.5%   | Calendar P0 + Technical P0 runtime; Messenger live; Mail MVP; Documents/Drive/Credentials foundations |
-| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                     |
-| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                  |
+| Phase                               | Status      | Progress | Notes                                                                                            |
+| ----------------------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ |
+| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                          |
+| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                 |
+| Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates       |
+| Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation             |
+| Phase 5 — Collaboration / knowledge | In progress | ~99%     | Calendar P0 + Technical P0 runtime; Notifications P0 engine foundation; Messenger live; Mail MVP |
+| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                |
+| Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                             |
 
 ## Phase 3 Full Closure Gate
 
@@ -76,11 +76,12 @@ Roll-up only. Per-feature detail: **`docs/NBOS/02-Modules/*`**, tests, and **git
 | 2026-04-30    | Phase 5 planning         | Drafted `docs/PHASE_5_MINIMAL_PRODUCT_CLOSURE_PROPOSAL.md`: practical P0/P1/P2 closure scope for Documents, Drive, Credentials, Messenger, Mail, Notifications, Calendar and Technical Infrastructure.                                                                                                  |
 | 2026-04-30    | Calendar                 | P0 closure slice: `CalendarMeeting` + `PersonalCalendarEvent`, `GET /api/calendar/events`, Product/Extension delivery deadline projections, RBAC-scoped API, web Calendar replaced mock Billing/internal events with approved layers only.                                                              |
 | 2026-04-30    | Technical Infrastructure | P0 closure slice: `ProductTechnicalProfile`, `TechnicalAsset`, `TechnicalEnvironment`, Product **Technical** tab, readiness blockers for Production environment / credentials / monitoring / backup; secrets remain links to Credentials only.                                                          |
+| 2026-04-30    | Notifications            | P0 closure slice: `NotificationEvent`, `NotificationRule`, `NotificationJob`, `NotificationDelivery`, idempotent in-app delivery, category filters, archive/read actions and full Notification Center page.                                                                                             |
 
 ## Next Action
 
 1. Continue Phase 5 closure per approved `docs/PHASE_5_MINIMAL_PRODUCT_CLOSURE_PROPOSAL.md`.
-2. Next slice: **Notifications P0** — persisted notification center + dedupe/actionable rules.
+2. Next slice: **Drive P0** — file detail/version/entity access polish for modules.
 3. Keep Google v2, AI, complex approval workflow, WAHA runtime and credentials secrets out of closure unless explicitly approved.
 
 ## Slice DoD

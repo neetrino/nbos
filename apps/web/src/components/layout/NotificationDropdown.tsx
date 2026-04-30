@@ -160,7 +160,12 @@ export function NotificationDropdown() {
           </div>
 
           <div className="border-border border-t px-4 py-2.5 text-center">
-            <p className="text-muted-foreground text-[10px]">In-app feed (MVP); latest 20 shown.</p>
+            <Link
+              href="/notifications"
+              className="text-accent hover:text-accent/80 text-xs font-medium"
+            >
+              Open Notification Center
+            </Link>
           </div>
         </div>
       )}

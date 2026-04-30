@@ -13,14 +13,20 @@ export class NotificationController {
   @ApiOperation({ summary: 'Get current user notifications' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
+  @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'includeArchived', required: false })
   async findAll(
     @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
+    @Query('category') category?: string,
+    @Query('includeArchived') includeArchived?: string,
   ) {
     return this.notificationService.findByUser(user.id, {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
+      category,
+      includeArchived: includeArchived === 'true',
     });
   }
 
@@ -40,5 +46,11 @@ export class NotificationController {
   @ApiOperation({ summary: 'Mark notification as read' })
   async markAsRead(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
     return this.notificationService.markAsRead(id, user.id);
+  }
+
+  @Patch(':id/archive')
+  @ApiOperation({ summary: 'Archive notification' })
+  async archive(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.notificationService.archive(id, user.id);
   }
 }

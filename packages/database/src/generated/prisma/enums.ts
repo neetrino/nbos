@@ -807,6 +807,37 @@ export const EmailRecipientKind = {
 
 export type EmailRecipientKind = (typeof EmailRecipientKind)[keyof typeof EmailRecipientKind];
 
+export const NotificationJobStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type NotificationJobStatus =
+  (typeof NotificationJobStatus)[keyof typeof NotificationJobStatus];
+
+export const NotificationDeliveryChannel = {
+  IN_APP: 'IN_APP',
+  TELEGRAM: 'TELEGRAM',
+  WHATSAPP: 'WHATSAPP',
+  EMAIL: 'EMAIL',
+} as const;
+
+export type NotificationDeliveryChannel =
+  (typeof NotificationDeliveryChannel)[keyof typeof NotificationDeliveryChannel];
+
+export const NotificationDeliveryStatus = {
+  PENDING: 'PENDING',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED',
+} as const;
+
+export type NotificationDeliveryStatus =
+  (typeof NotificationDeliveryStatus)[keyof typeof NotificationDeliveryStatus];
+
 export const TechnicalHealthStatus = {
   HEALTHY: 'HEALTHY',
   WARNING: 'WARNING',

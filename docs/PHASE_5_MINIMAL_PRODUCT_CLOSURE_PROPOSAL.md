@@ -366,4 +366,5 @@ Each slice should update its cleanup register and progress tracker after impleme
 | ------------------------------ | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `calendar-p0-api-ui`           | `DONE` (2026-04-30) | `CalendarMeeting`, `PersonalCalendarEvent`, `GET /api/calendar/events`, Product/Extension deadline projections and API-backed UI |
 | `technical-p0-assets`          | `DONE` (2026-04-30) | Product technical profile/assets/environments, Product Technical tab and readiness blockers                                      |
-| `notifications-p0-persistence` | `NEXT`              | Persisted notification center + dedupe/actionable rules                                                                          |
+| `notifications-p0-persistence` | `DONE` (2026-04-30) | Event/rule/job/delivery tables, idempotent in-app delivery, Notification Center filters and read/archive actions                 |
+| `drive-p0-files`               | `NEXT`              | File detail/version/entity access polish for modules                                                                             |

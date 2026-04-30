@@ -2,21 +2,25 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@nbos/database';
+import { NotificationService } from './notification.service';
 
 type InAppNotificationRow = {
   id: string;
   recipientEmployeeId: string;
   type: string;
+  category: string;
+  priority: string;
   title: string;
   body: string;
   link: string | null;
+  actionLabel: string | null;
   entityType: string | null;
   entityId: string | null;
   isRead: boolean;
   readAt: Date | null;
+  archivedAt: Date | null;
   createdAt: Date;
 };
-import { NotificationService } from './notification.service';
 
 type CreateArgs = {
   data: {
@@ -25,29 +29,82 @@ type CreateArgs = {
     title: string;
     body: string;
     link: string | null;
+    actionLabel?: string | null;
+    category?: string;
+    priority?: string;
     entityType: string | null;
     entityId: string | null;
   };
 };
 
+type WhereInput = Partial<InAppNotificationRow>;
+
+type NotificationJobRow = { id: string; dedupeKey: string };
+type NotificationRuleRow = { id: string; code: string };
+type NotificationEventRow = { id: string; idempotencyKey: string };
+
+function matchesWhere(row: InAppNotificationRow, where: WhereInput): boolean {
+  return Object.entries(where).every(([key, value]) => {
+    return row[key as keyof InAppNotificationRow] === value;
+  });
+}
+
 function buildInMemoryPrisma() {
   const rows: InAppNotificationRow[] = [];
+  const jobs: NotificationJobRow[] = [];
+  const rules: NotificationRuleRow[] = [];
+  const events: NotificationEventRow[] = [];
 
   const toRow = (data: CreateArgs['data']): InAppNotificationRow => ({
     id: randomUUID(),
     recipientEmployeeId: data.recipientEmployeeId,
     type: data.type,
+    category: data.category ?? 'informational',
+    priority: data.priority ?? 'normal',
     title: data.title,
     body: data.body,
     link: data.link,
+    actionLabel: data.actionLabel ?? null,
     entityType: data.entityType,
     entityId: data.entityId,
     isRead: false,
     readAt: null,
+    archivedAt: null,
     createdAt: new Date(1_000_000 + rows.length),
   });
 
-  const prisma = {
+  const prisma: Record<string, unknown> = {
+    $transaction: async <T>(fn: (tx: Record<string, unknown>) => Promise<T>) => fn(prisma),
+    notificationJob: {
+      findUnique: async ({ where }: { where: { dedupeKey: string } }) =>
+        jobs.find((job) => job.dedupeKey === where.dedupeKey) ?? null,
+      create: async ({ data }: { data: { dedupeKey: string } }) => {
+        const row = { id: randomUUID(), dedupeKey: data.dedupeKey };
+        jobs.push(row);
+        return row;
+      },
+    },
+    notificationRule: {
+      upsert: async ({ where }: { where: { code: string } }) => {
+        const existing = rules.find((rule) => rule.code === where.code);
+        if (existing) return existing;
+        const row = { id: randomUUID(), code: where.code };
+        rules.push(row);
+        return row;
+      },
+    },
+    notificationEvent: {
+      upsert: async ({ where }: { where: { idempotencyKey: string } }) => {
+        const existing = events.find((event) => event.idempotencyKey === where.idempotencyKey);
+        if (existing) return existing;
+        const row = { id: randomUUID(), idempotencyKey: where.idempotencyKey };
+        events.push(row);
+        return row;
+      },
+    },
+    notificationDelivery: {
+      create: async () => ({ id: randomUUID() }),
+    },
     inAppNotification: {
       create: async ({ data }: CreateArgs) => {
         const row = toRow(data);
@@ -60,32 +117,41 @@ function buildInMemoryPrisma() {
         skip,
         take,
       }: {
-        where: { recipientEmployeeId: string };
+        where: { recipientEmployeeId: string; category?: string; archivedAt?: null };
         orderBy: { createdAt: 'desc' };
         skip: number;
         take: number;
       }) => {
         const list = rows
-          .filter((r) => r.recipientEmployeeId === where.recipientEmployeeId)
+          .filter((r) => matchesWhere(r, where))
           .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
         return list.slice(skip, skip + take);
       },
-      count: async ({ where }: { where: { recipientEmployeeId: string; isRead?: boolean } }) =>
+      count: async ({
+        where,
+      }: {
+        where: {
+          recipientEmployeeId: string;
+          isRead?: boolean;
+          archivedAt?: null;
+          category?: string;
+        };
+      }) =>
         rows.filter((r) => {
           if (r.recipientEmployeeId !== where.recipientEmployeeId) return false;
           if ('isRead' in where && where.isRead === false && r.isRead) return false;
+          if ('archivedAt' in where && r.archivedAt !== where.archivedAt) return false;
+          if (where.category && r.category !== where.category) return false;
           return true;
         }).length,
-      findFirst: async ({ where }: { where: { id: string; recipientEmployeeId: string } }) =>
-        rows.find(
-          (r) => r.id === where.id && r.recipientEmployeeId === where.recipientEmployeeId,
-        ) ?? null,
+      findFirst: async ({ where }: { where: WhereInput }) =>
+        rows.find((r) => matchesWhere(r, where)) ?? null,
       update: async ({
         where,
         data,
       }: {
         where: { id: string };
-        data: { isRead: boolean; readAt: Date };
+        data: { isRead: boolean; readAt: Date; archivedAt?: Date };
       }) => {
         const idx = rows.findIndex((r) => r.id === where.id);
         if (idx < 0) throw new Error('not found');
@@ -98,13 +164,17 @@ function buildInMemoryPrisma() {
         where,
         data,
       }: {
-        where: { recipientEmployeeId: string; isRead: boolean };
+        where: { recipientEmployeeId: string; isRead: boolean; archivedAt?: null };
         data: { isRead: boolean; readAt: Date };
       }) => {
         let n = 0;
         for (let i = 0; i < rows.length; i++) {
           const r = rows[i]!;
-          if (r.recipientEmployeeId === where.recipientEmployeeId && r.isRead === where.isRead) {
+          if (
+            r.recipientEmployeeId === where.recipientEmployeeId &&
+            r.isRead === where.isRead &&
+            (!('archivedAt' in where) || r.archivedAt === where.archivedAt)
+          ) {
             rows[i] = { ...r, ...data };
             n++;
           }
@@ -112,9 +182,9 @@ function buildInMemoryPrisma() {
         return { count: n };
       },
     },
-  } as unknown as InstanceType<typeof PrismaClient>;
+  };
 
-  return { prisma };
+  return { prisma: prisma as unknown as InstanceType<typeof PrismaClient> };
 }
 
 describe('NotificationService', () => {

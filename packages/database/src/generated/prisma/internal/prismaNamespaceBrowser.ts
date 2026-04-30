@@ -111,6 +111,10 @@ export const ModelName = {
   MailDeliveryLog: 'MailDeliveryLog',
   EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
+  NotificationEvent: 'NotificationEvent',
+  NotificationRule: 'NotificationRule',
+  NotificationJob: 'NotificationJob',
+  NotificationDelivery: 'NotificationDelivery',
   ProductTechnicalProfile: 'ProductTechnicalProfile',
   TechnicalAsset: 'TechnicalAsset',
   TechnicalEnvironment: 'TechnicalEnvironment',
@@ -1245,18 +1249,87 @@ export const InAppNotificationScalarFieldEnum = {
   id: 'id',
   recipientEmployeeId: 'recipientEmployeeId',
   type: 'type',
+  category: 'category',
+  priority: 'priority',
   title: 'title',
   body: 'body',
   link: 'link',
+  actionLabel: 'actionLabel',
   entityType: 'entityType',
   entityId: 'entityId',
   isRead: 'isRead',
   readAt: 'readAt',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
 } as const;
 
 export type InAppNotificationScalarFieldEnum =
   (typeof InAppNotificationScalarFieldEnum)[keyof typeof InAppNotificationScalarFieldEnum];
+
+export const NotificationEventScalarFieldEnum = {
+  id: 'id',
+  eventType: 'eventType',
+  sourceModule: 'sourceModule',
+  sourceEntityType: 'sourceEntityType',
+  sourceEntityId: 'sourceEntityId',
+  payload: 'payload',
+  occurredAt: 'occurredAt',
+  idempotencyKey: 'idempotencyKey',
+  createdAt: 'createdAt',
+} as const;
+
+export type NotificationEventScalarFieldEnum =
+  (typeof NotificationEventScalarFieldEnum)[keyof typeof NotificationEventScalarFieldEnum];
+
+export const NotificationRuleScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  eventType: 'eventType',
+  recipientResolver: 'recipientResolver',
+  channels: 'channels',
+  priority: 'priority',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type NotificationRuleScalarFieldEnum =
+  (typeof NotificationRuleScalarFieldEnum)[keyof typeof NotificationRuleScalarFieldEnum];
+
+export const NotificationJobScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  ruleId: 'ruleId',
+  status: 'status',
+  scheduledFor: 'scheduledFor',
+  attemptCount: 'attemptCount',
+  nextRetryAt: 'nextRetryAt',
+  dedupeKey: 'dedupeKey',
+  createdAt: 'createdAt',
+  processedAt: 'processedAt',
+} as const;
+
+export type NotificationJobScalarFieldEnum =
+  (typeof NotificationJobScalarFieldEnum)[keyof typeof NotificationJobScalarFieldEnum];
+
+export const NotificationDeliveryScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  channel: 'channel',
+  recipient: 'recipient',
+  status: 'status',
+  provider: 'provider',
+  providerMessageId: 'providerMessageId',
+  errorCode: 'errorCode',
+  errorMessage: 'errorMessage',
+  sentAt: 'sentAt',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type NotificationDeliveryScalarFieldEnum =
+  (typeof NotificationDeliveryScalarFieldEnum)[keyof typeof NotificationDeliveryScalarFieldEnum];
 
 export const ProductTechnicalProfileScalarFieldEnum = {
   id: 'id',
