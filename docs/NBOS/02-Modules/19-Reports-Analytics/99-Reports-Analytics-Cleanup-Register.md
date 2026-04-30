@@ -83,11 +83,11 @@ Canonical default: top-level `Reports / Analytics`.
 
 ### B3. Report definitions are missing
 
-Статус: `PARTIAL` (2026-04-30)
+Статус: `P0 DONE / LATER DEPTH` (2026-04-30)
 
 Shipped: `/reports` consumes the existing Finance-owned report definition registry and does not copy Finance formulas.
 
-Future registry shape still needed for cross-module reports:
+Future registry shape only when cross-module analytics becomes a clear product need:
 
 ```text
 ReportDefinition
@@ -102,7 +102,7 @@ ReportDefinition
 
 ### B4. Scheduled reports are missing
 
-Статус: `PARTIAL` (2026-04-30)
+Статус: `P0 DONE / LATER DEPTH` (2026-04-30)
 
 Shipped model:
 
@@ -116,7 +116,7 @@ Shipped model:
 - `POST /scheduler/report-schedules-due` plus optional in-process cron when `REPORT_SCHEDULES_DUE_CRON_ENABLED=true`.
 - schedule management actions: pause, resume and archive for owned schedules, with audit and UI controls.
 
-Still needed:
+Later depth, not required for current MVP:
 
 - delivery attempts and recipient channel integration;
 - link last run to real export job execution.
@@ -126,7 +126,7 @@ Note: Bitrix-like recurring task templates belong to the Tasks module, not Repor
 
 ### B5. Export jobs are missing for reports
 
-Статус: `PARTIAL` (2026-04-30)
+Статус: `P0 DONE / LATER DEPTH` (2026-04-30)
 
 Shipped foundation:
 
@@ -139,7 +139,7 @@ Shipped foundation:
 - BullMQ export queue/worker wiring when `REDIS_URL` is configured; HTTP requests no longer write export files inline.
 - finance-sensitive audit context is explicit on export request/completion/failure and scheduled export queue events.
 
-Still needed:
+Later depth, not required for current MVP:
 
 - approved retry/backoff and queue retention policy;
 - XLSX/PDF generators;
@@ -148,7 +148,7 @@ Still needed:
 
 ### B6. Data quality warnings are missing
 
-Статус: `PARTIAL` (2026-04-30)
+Статус: `P0 DONE / LATER DEPTH` (2026-04-30)
 
 Shipped:
 
@@ -156,14 +156,14 @@ Shipped:
 - `/reports` Data quality tab;
 - warning/info projection over Finance-owned report definitions, source endpoints and deferred limitations.
 
-Still needed:
+Later depth, not required for current MVP:
 
 - runtime missing-data warnings from Marketing attribution, cross-module projections and scheduled runs;
 - source-permission-aware warnings when centralized report permissions are added.
 
 ### B7. Report permissions are not centralized
 
-Статус: `NEEDS DESIGN`
+Статус: `LATER / NEEDS PRODUCT CLARITY`
 
 Reports must enforce source permissions and cannot bypass module access.
 
