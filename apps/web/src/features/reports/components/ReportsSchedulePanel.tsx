@@ -22,6 +22,7 @@ const WEEKDAYS = [
 interface ReportsSchedulePanelProps {
   definitions: FinanceReportDefinition[];
   schedules: ReportSchedule[];
+  filters: Record<string, string>;
   onSchedulesChange: (schedules: ReportSchedule[]) => void;
   onRefresh: () => void;
 }
@@ -29,6 +30,7 @@ interface ReportsSchedulePanelProps {
 export function ReportsSchedulePanel({
   definitions,
   schedules,
+  filters,
   onSchedulesChange,
   onRefresh,
 }: ReportsSchedulePanelProps) {
@@ -62,6 +64,7 @@ export function ReportsSchedulePanel({
         timeOfDay,
         dayOfWeek: frequency === 'WEEKLY' ? dayOfWeek : undefined,
         dayOfMonth: frequency === 'MONTHLY' ? dayOfMonth : undefined,
+        filters: Object.keys(filters).length > 0 ? filters : undefined,
       });
       onSchedulesChange([schedule, ...schedules.filter((item) => item.id !== schedule.id)]);
       setRecipientEmail('');
@@ -85,6 +88,9 @@ export function ReportsSchedulePanel({
           <p className="font-medium">Scheduled reports</p>
           <p className="text-muted-foreground text-sm">
             Store owner, recipients and simple recurrence for report exports.
+          </p>
+          <p className="text-muted-foreground mt-1 text-xs">
+            New schedules inherit current report filters: {filtersSummary(filters)}.
           </p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={onRefresh}>
@@ -236,6 +242,9 @@ function ScheduleRow({
           </p>
           <p className="text-muted-foreground mt-1 text-sm">{scheduleSummary(schedule)}</p>
           <p className="text-muted-foreground mt-1 text-sm">
+            Filters: {filtersSummary(schedule.filters ?? {})}
+          </p>
+          <p className="text-muted-foreground mt-1 text-sm">
             Recipients: {schedule.recipientEmails.join(', ')}
           </p>
         </div>
@@ -290,6 +299,12 @@ function updateScheduleStatus(scheduleId: string, action: 'pause' | 'resume' | '
   if (action === 'pause') return reportsApi.pauseSchedule(scheduleId);
   if (action === 'resume') return reportsApi.resumeSchedule(scheduleId);
   return reportsApi.archiveSchedule(scheduleId);
+}
+
+function filtersSummary(filters: Record<string, string | number | boolean | null>): string {
+  const entries = Object.entries(filters).filter(([, value]) => value !== null && value !== '');
+  if (entries.length === 0) return 'none';
+  return entries.map(([key, value]) => `${key}: ${String(value)}`).join(', ');
 }
 
 function scheduleSummary(schedule: ReportSchedule): string {

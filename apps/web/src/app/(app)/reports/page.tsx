@@ -18,6 +18,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 type ReportCategory = 'all' | 'finance' | 'scheduled' | 'exports' | 'quality';
+type ReportFilterState = { dateFrom: string; dateTo: string; asOf: string };
 
 const REPORT_CATEGORIES: Array<{ id: ReportCategory; label: string }> = [
   { id: 'all', label: 'All reports' },
@@ -26,6 +27,8 @@ const REPORT_CATEGORIES: Array<{ id: ReportCategory; label: string }> = [
   { id: 'exports', label: 'Exports' },
   { id: 'quality', label: 'Data quality' },
 ];
+
+const INITIAL_FILTERS = buildInitialFilters();
 
 function matchesSearch(definition: FinanceReportDefinition, query: string): boolean {
   const q = query.trim().toLowerCase();
@@ -43,6 +46,7 @@ export default function ReportsPage() {
   const [dataQualityWarnings, setDataQualityWarnings] = useState<ReportDataQualityWarning[]>([]);
   const [category, setCategory] = useState<ReportCategory>('all');
   const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<ReportFilterState>(INITIAL_FILTERS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creatingExportKey, setCreatingExportKey] = useState<string | null>(null);
@@ -81,6 +85,8 @@ export default function ReportsPage() {
     return definitions.filter((definition) => matchesSearch(definition, search));
   }, [category, definitions, search]);
 
+  const exportFilters = useMemo(() => buildReportFilters(filters), [filters]);
+
   async function requestExport(definition: FinanceReportDefinition) {
     setCreatingExportKey(definition.id);
     setError(null);
@@ -89,6 +95,7 @@ export default function ReportsPage() {
         reportKey: definition.id,
         ownerModule: 'FINANCE',
         format: 'CSV',
+        filters: exportFilters,
       });
       setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
       setCategory('exports');
@@ -143,6 +150,7 @@ export default function ReportsPage() {
               className="pl-9"
             />
           </div>
+          <ReportFilterShell filters={filters} onFiltersChange={setFilters} />
         </div>
 
         <div className="border-border bg-card rounded-2xl border p-5">
@@ -161,6 +169,7 @@ export default function ReportsPage() {
         <ReportsSchedulePanel
           definitions={definitions}
           schedules={schedules}
+          filters={exportFilters}
           onSchedulesChange={setSchedules}
           onRefresh={() => void load()}
         />
@@ -184,6 +193,7 @@ export default function ReportsPage() {
               key={definition.id}
               definition={definition}
               exporting={creatingExportKey === definition.id}
+              filters={exportFilters}
               onExport={() => void requestExport(definition)}
             />
           ))}
@@ -196,10 +206,12 @@ export default function ReportsPage() {
 function ReportCatalogCard({
   definition,
   exporting,
+  filters,
   onExport,
 }: {
   definition: FinanceReportDefinition;
   exporting: boolean;
+  filters: Record<string, string>;
   onExport: () => void;
 }) {
   return (
@@ -245,6 +257,9 @@ function ReportCatalogCard({
           </Link>
         ))}
       </div>
+      <p className="text-muted-foreground mt-3 text-xs">
+        Export filters: {formatReportFilters(filters)}
+      </p>
     </article>
   );
 }
@@ -261,6 +276,56 @@ function CatalogBlock({ title, lines }: { title: string; lines: string[] }) {
         ))}
       </ul>
     </div>
+  );
+}
+
+function ReportFilterShell({
+  filters,
+  onFiltersChange,
+}: {
+  filters: ReportFilterState;
+  onFiltersChange: (filters: ReportFilterState) => void;
+}) {
+  return (
+    <div className="mt-4 grid gap-3 lg:grid-cols-3">
+      <DateInput
+        label="Period from"
+        value={filters.dateFrom}
+        onChange={(dateFrom) => onFiltersChange({ ...filters, dateFrom })}
+      />
+      <DateInput
+        label="Period to"
+        value={filters.dateTo}
+        onChange={(dateTo) => onFiltersChange({ ...filters, dateTo })}
+      />
+      <DateInput
+        label="As of"
+        value={filters.asOf}
+        onChange={(asOf) => onFiltersChange({ ...filters, asOf })}
+      />
+    </div>
+  );
+}
+
+function DateInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="text-muted-foreground text-xs font-medium">
+      {label}
+      <Input
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1"
+      />
+    </label>
   );
 }
 
@@ -308,10 +373,39 @@ function ExportHistory({ jobs, onRefresh }: { jobs: ReportExportJob[]; onRefresh
                   Drive file: {job.fileAsset.displayName}
                 </p>
               ) : null}
+              <p className="text-muted-foreground mt-2 text-sm">
+                Filters: {formatReportFilters(job.filters ?? {})}
+              </p>
             </div>
           ))}
         </div>
       )}
     </div>
   );
+}
+
+function buildInitialFilters(): ReportFilterState {
+  const now = new Date();
+  return {
+    dateFrom: toDateInputValue(new Date(now.getFullYear(), now.getMonth(), 1)),
+    dateTo: toDateInputValue(now),
+    asOf: toDateInputValue(now),
+  };
+}
+
+function buildReportFilters(filters: ReportFilterState): Record<string, string> {
+  return Object.fromEntries(Object.entries(filters).filter(([, value]) => value.trim().length > 0));
+}
+
+function toDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatReportFilters(filters: Record<string, string | number | boolean | null>): string {
+  const entries = Object.entries(filters).filter(([, value]) => value !== null && value !== '');
+  if (entries.length === 0) return 'none';
+  return entries.map(([key, value]) => `${key}: ${String(value)}`).join(', ');
 }

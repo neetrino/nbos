@@ -67,6 +67,7 @@ Shipped P0 catalog shell:
 
 - Report Catalog over module-owned Finance definitions;
 - search and category filters;
+- basic period/as-of filter shell passed into export jobs and new schedules;
 - scheduled reports honest empty state;
 - export history honest empty state.
 
@@ -172,7 +173,7 @@ Reports must enforce source permissions and cannot bypass module access.
 2. ~~Add Report Catalog UI.~~ Done (2026-04-30): Finance definitions catalog shell.
 3. Add cross-module report definition registry.
 4. ~~Add basic reports links to existing module reports.~~ Done for Finance reports (2026-04-30).
-5. Add report period/filter shell.
+5. ~~Add report period/filter shell.~~ Done foundation (2026-04-30): `dateFrom`, `dateTo` and `asOf` are passed to export jobs and schedules.
 6. ~~Add export job model.~~ Done foundation (2026-04-30).
 7. ~~Link exports to Drive.~~ Done as `FileAsset` output relation; real writer worker still needed.
 8. ~~Add scheduled reports model.~~ Done foundation (2026-04-30); runner still needed.
