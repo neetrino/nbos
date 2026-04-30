@@ -53,6 +53,18 @@ export interface ReportSchedule {
   updatedAt: string;
 }
 
+export interface SavedReportView {
+  id: string;
+  reportKey: string;
+  reportTitle: string;
+  ownerModule: string;
+  name: string;
+  filters: Record<string, string | number | boolean | null> | null;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ReportDataQualityWarning {
   reportKey: string;
   reportTitle: string;
@@ -104,6 +116,21 @@ export const reportsApi = {
     filters?: Record<string, string | number | boolean | null>;
   }): Promise<ReportSchedule> {
     const resp = await api.post<ReportSchedule>('/api/reports/schedules', data);
+    return resp.data;
+  },
+
+  async listSavedViews(): Promise<SavedReportView[]> {
+    const resp = await api.get<SavedReportView[]>('/api/reports/saved-views');
+    return resp.data;
+  },
+
+  async createSavedView(data: {
+    reportKey: string;
+    ownerModule?: 'FINANCE';
+    name: string;
+    filters?: Record<string, string | number | boolean | null>;
+  }): Promise<SavedReportView> {
+    const resp = await api.post<SavedReportView>('/api/reports/saved-views', data);
     return resp.data;
   },
 

@@ -379,6 +379,7 @@ export type EmployeeWhereInput = {
   > | null;
   reportExportJobsRequested?: Prisma.ReportExportJobListRelationFilter;
   reportSchedulesOwned?: Prisma.ReportScheduleListRelationFilter;
+  savedReportViews?: Prisma.SavedReportViewListRelationFilter;
   personalLinks?: Prisma.PersonalLinkListRelationFilter;
 };
 
@@ -440,6 +441,7 @@ export type EmployeeOrderByWithRelationInput = {
   dashboardPreference?: Prisma.DashboardPreferenceOrderByWithRelationInput;
   reportExportJobsRequested?: Prisma.ReportExportJobOrderByRelationAggregateInput;
   reportSchedulesOwned?: Prisma.ReportScheduleOrderByRelationAggregateInput;
+  savedReportViews?: Prisma.SavedReportViewOrderByRelationAggregateInput;
   personalLinks?: Prisma.PersonalLinkOrderByRelationAggregateInput;
 };
 
@@ -520,6 +522,7 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
     > | null;
     reportExportJobsRequested?: Prisma.ReportExportJobListRelationFilter;
     reportSchedulesOwned?: Prisma.ReportScheduleListRelationFilter;
+    savedReportViews?: Prisma.SavedReportViewListRelationFilter;
     personalLinks?: Prisma.PersonalLinkListRelationFilter;
   },
   'id' | 'email'
@@ -651,6 +654,7 @@ export type EmployeeCreateInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -711,6 +715,7 @@ export type EmployeeUncheckedCreateInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -780,6 +785,7 @@ export type EmployeeUpdateInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -849,6 +855,7 @@ export type EmployeeUncheckedUpdateInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -1466,6 +1473,32 @@ export type EmployeeUpdateOneRequiredWithoutReportSchedulesOwnedNestedInput = {
       Prisma.EmployeeUpdateWithoutReportSchedulesOwnedInput
     >,
     Prisma.EmployeeUncheckedUpdateWithoutReportSchedulesOwnedInput
+  >;
+};
+
+export type EmployeeCreateNestedOneWithoutSavedReportViewsInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutSavedReportViewsInput,
+    Prisma.EmployeeUncheckedCreateWithoutSavedReportViewsInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutSavedReportViewsInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeUpdateOneRequiredWithoutSavedReportViewsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutSavedReportViewsInput,
+    Prisma.EmployeeUncheckedCreateWithoutSavedReportViewsInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutSavedReportViewsInput;
+  upsert?: Prisma.EmployeeUpsertWithoutSavedReportViewsInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutSavedReportViewsInput,
+      Prisma.EmployeeUpdateWithoutSavedReportViewsInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutSavedReportViewsInput
   >;
 };
 
@@ -2181,6 +2214,7 @@ export type EmployeeCreateWithoutProductsManagingInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -2240,6 +2274,7 @@ export type EmployeeUncheckedCreateWithoutProductsManagingInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -2336,6 +2371,7 @@ export type EmployeeUpdateWithoutProductsManagingInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -2404,6 +2440,7 @@ export type EmployeeUncheckedUpdateWithoutProductsManagingInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -2463,6 +2500,7 @@ export type EmployeeCreateWithoutExtensionsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -2522,6 +2560,7 @@ export type EmployeeUncheckedCreateWithoutExtensionsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -2618,6 +2657,7 @@ export type EmployeeUpdateWithoutExtensionsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -2686,6 +2726,7 @@ export type EmployeeUncheckedUpdateWithoutExtensionsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -2745,6 +2786,7 @@ export type EmployeeCreateWithoutMarketingAccountsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -2804,6 +2846,7 @@ export type EmployeeUncheckedCreateWithoutMarketingAccountsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -2900,6 +2943,7 @@ export type EmployeeUpdateWithoutMarketingAccountsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -2968,6 +3012,7 @@ export type EmployeeUncheckedUpdateWithoutMarketingAccountsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -3027,6 +3072,7 @@ export type EmployeeCreateWithoutMarketingActivitiesOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -3086,6 +3132,7 @@ export type EmployeeUncheckedCreateWithoutMarketingActivitiesOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -3182,6 +3229,7 @@ export type EmployeeUpdateWithoutMarketingActivitiesOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -3250,6 +3298,7 @@ export type EmployeeUncheckedUpdateWithoutMarketingActivitiesOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -3309,6 +3358,7 @@ export type EmployeeCreateWithoutLeadsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -3368,6 +3418,7 @@ export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -3464,6 +3515,7 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -3532,6 +3584,7 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -3591,6 +3644,7 @@ export type EmployeeCreateWithoutDealsSellingInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -3650,6 +3704,7 @@ export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -3717,6 +3772,7 @@ export type EmployeeCreateWithoutDealsPMInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -3776,6 +3832,7 @@ export type EmployeeUncheckedCreateWithoutDealsPMInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -3872,6 +3929,7 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -3940,6 +3998,7 @@ export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -4028,6 +4087,7 @@ export type EmployeeUpdateWithoutDealsPMInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -4096,6 +4156,7 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -4155,6 +4216,7 @@ export type EmployeeCreateWithoutPaymentsConfirmedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -4214,6 +4276,7 @@ export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -4310,6 +4373,7 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -4378,6 +4442,7 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -4437,6 +4502,7 @@ export type EmployeeCreateWithoutBonusEntriesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -4496,6 +4562,7 @@ export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -4592,6 +4659,7 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -4660,6 +4728,7 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -4719,6 +4788,7 @@ export type EmployeeCreateWithoutPayrollRunsCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -4778,6 +4848,7 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -4845,6 +4916,7 @@ export type EmployeeCreateWithoutPayrollRunsApprovedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -4904,6 +4976,7 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsApprovedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -5000,6 +5073,7 @@ export type EmployeeUpdateWithoutPayrollRunsCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -5068,6 +5142,7 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -5156,6 +5231,7 @@ export type EmployeeUpdateWithoutPayrollRunsApprovedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -5224,6 +5300,7 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsApprovedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -5283,6 +5360,7 @@ export type EmployeeCreateWithoutSalaryLinesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -5342,6 +5420,7 @@ export type EmployeeUncheckedCreateWithoutSalaryLinesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -5438,6 +5517,7 @@ export type EmployeeUpdateWithoutSalaryLinesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -5506,6 +5586,7 @@ export type EmployeeUncheckedUpdateWithoutSalaryLinesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -5565,6 +5646,7 @@ export type EmployeeCreateWithoutTasksCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -5624,6 +5706,7 @@ export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -5691,6 +5774,7 @@ export type EmployeeCreateWithoutTasksAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -5750,6 +5834,7 @@ export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -5846,6 +5931,7 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -5914,6 +6000,7 @@ export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -6002,6 +6089,7 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -6070,6 +6158,7 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -6129,6 +6218,7 @@ export type EmployeeCreateWithoutReportExportJobsRequestedInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -6188,6 +6278,7 @@ export type EmployeeUncheckedCreateWithoutReportExportJobsRequestedInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -6284,6 +6375,7 @@ export type EmployeeUpdateWithoutReportExportJobsRequestedInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -6352,6 +6444,7 @@ export type EmployeeUncheckedUpdateWithoutReportExportJobsRequestedInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -6411,6 +6504,7 @@ export type EmployeeCreateWithoutReportSchedulesOwnedInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -6470,6 +6564,7 @@ export type EmployeeUncheckedCreateWithoutReportSchedulesOwnedInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -6566,6 +6661,7 @@ export type EmployeeUpdateWithoutReportSchedulesOwnedInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -6634,6 +6730,293 @@ export type EmployeeUncheckedUpdateWithoutReportSchedulesOwnedInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeCreateWithoutSavedReportViewsInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeUncheckedCreateWithoutSavedReportViewsInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeCreateOrConnectWithoutSavedReportViewsInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutSavedReportViewsInput,
+    Prisma.EmployeeUncheckedCreateWithoutSavedReportViewsInput
+  >;
+};
+
+export type EmployeeUpsertWithoutSavedReportViewsInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutSavedReportViewsInput,
+    Prisma.EmployeeUncheckedUpdateWithoutSavedReportViewsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutSavedReportViewsInput,
+    Prisma.EmployeeUncheckedCreateWithoutSavedReportViewsInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutSavedReportViewsInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutSavedReportViewsInput,
+    Prisma.EmployeeUncheckedUpdateWithoutSavedReportViewsInput
+  >;
+};
+
+export type EmployeeUpdateWithoutSavedReportViewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutSavedReportViewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -6693,6 +7076,7 @@ export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -6752,6 +7136,7 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -6819,6 +7204,7 @@ export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -6878,6 +7264,7 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -6974,6 +7361,7 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -7042,6 +7430,7 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -7130,6 +7519,7 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -7198,6 +7588,7 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -7257,6 +7648,7 @@ export type EmployeeCreateWithoutTicketsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -7316,6 +7708,7 @@ export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -7412,6 +7805,7 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -7480,6 +7874,7 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -7539,6 +7934,7 @@ export type EmployeeCreateWithoutCredentialsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -7598,6 +7994,7 @@ export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -7694,6 +8091,7 @@ export type EmployeeUpdateWithoutCredentialsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -7762,6 +8160,7 @@ export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -7821,6 +8220,7 @@ export type EmployeeCreateWithoutDepartmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -7880,6 +8280,7 @@ export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -7976,6 +8377,7 @@ export type EmployeeUpdateWithoutDepartmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -8044,6 +8446,7 @@ export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -8103,6 +8506,7 @@ export type EmployeeCreateWithoutRoleInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -8162,6 +8566,7 @@ export type EmployeeUncheckedCreateWithoutRoleInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -8294,6 +8699,7 @@ export type EmployeeCreateWithoutInvitationsSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -8353,6 +8759,7 @@ export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -8420,6 +8827,7 @@ export type EmployeeCreateWithoutInvitationReceivedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -8479,6 +8887,7 @@ export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -8575,6 +8984,7 @@ export type EmployeeUpdateWithoutInvitationsSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -8643,6 +9053,7 @@ export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -8731,6 +9142,7 @@ export type EmployeeUpdateWithoutInvitationReceivedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -8799,6 +9211,7 @@ export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -8858,6 +9271,7 @@ export type EmployeeCreateWithoutDashboardPreferenceInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -8917,6 +9331,7 @@ export type EmployeeUncheckedCreateWithoutDashboardPreferenceInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -9013,6 +9428,7 @@ export type EmployeeUpdateWithoutDashboardPreferenceInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -9081,6 +9497,7 @@ export type EmployeeUncheckedUpdateWithoutDashboardPreferenceInput = {
   inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -9141,6 +9558,7 @@ export type EmployeeCreateWithoutPersonalLinksInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPersonalLinksInput = {
@@ -9200,6 +9618,7 @@ export type EmployeeUncheckedCreateWithoutPersonalLinksInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPersonalLinksInput = {
@@ -9296,6 +9715,7 @@ export type EmployeeUpdateWithoutPersonalLinksInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPersonalLinksInput = {
@@ -9364,6 +9784,7 @@ export type EmployeeUncheckedUpdateWithoutPersonalLinksInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerChannelMessagesSentInput = {
@@ -9422,6 +9843,7 @@ export type EmployeeCreateWithoutMessengerChannelMessagesSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -9481,6 +9903,7 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelMessagesSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -9577,6 +10000,7 @@ export type EmployeeUpdateWithoutMessengerChannelMessagesSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -9645,6 +10069,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelMessagesSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -9704,6 +10129,7 @@ export type EmployeeCreateWithoutMessengerChannelAttachmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -9763,6 +10189,7 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelAttachmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -9859,6 +10286,7 @@ export type EmployeeUpdateWithoutMessengerChannelAttachmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -9927,6 +10355,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelAttachmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -9986,6 +10415,7 @@ export type EmployeeCreateWithoutMessengerChannelReadStatesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -10045,6 +10475,7 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelReadStatesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -10141,6 +10572,7 @@ export type EmployeeUpdateWithoutMessengerChannelReadStatesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -10209,6 +10641,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelReadStatesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -10268,6 +10701,7 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsAInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -10327,6 +10761,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsAInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -10394,6 +10829,7 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsBInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -10453,6 +10889,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsBInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -10549,6 +10986,7 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsAInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -10617,6 +11055,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsAInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -10705,6 +11144,7 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsBInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -10773,6 +11213,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsBInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -10832,6 +11273,7 @@ export type EmployeeCreateWithoutMessengerDirectMessagesSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -10891,6 +11333,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectMessagesSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -10987,6 +11430,7 @@ export type EmployeeUpdateWithoutMessengerDirectMessagesSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -11055,6 +11499,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectMessagesSentInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -11114,6 +11559,7 @@ export type EmployeeCreateWithoutMessengerDirectAttachmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -11173,6 +11619,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectAttachmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -11269,6 +11716,7 @@ export type EmployeeUpdateWithoutMessengerDirectAttachmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -11337,6 +11785,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectAttachmentsInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -11396,6 +11845,7 @@ export type EmployeeCreateWithoutMessengerDmThreadReadStatesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -11455,6 +11905,7 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadReadStatesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -11551,6 +12002,7 @@ export type EmployeeUpdateWithoutMessengerDmThreadReadStatesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -11619,6 +12071,7 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadReadStatesInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -11678,6 +12131,7 @@ export type EmployeeCreateWithoutMailAccountsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -11737,6 +12191,7 @@ export type EmployeeUncheckedCreateWithoutMailAccountsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -11804,6 +12259,7 @@ export type EmployeeCreateWithoutMailAccountsCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -11863,6 +12319,7 @@ export type EmployeeUncheckedCreateWithoutMailAccountsCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -11959,6 +12416,7 @@ export type EmployeeUpdateWithoutMailAccountsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12027,6 +12485,7 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsOwnedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12115,6 +12574,7 @@ export type EmployeeUpdateWithoutMailAccountsCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12183,6 +12643,7 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsCreatedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12242,6 +12703,7 @@ export type EmployeeCreateWithoutMailDeliveryLogsActedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -12301,6 +12763,7 @@ export type EmployeeUncheckedCreateWithoutMailDeliveryLogsActedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -12397,6 +12860,7 @@ export type EmployeeUpdateWithoutMailDeliveryLogsActedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12465,6 +12929,7 @@ export type EmployeeUncheckedUpdateWithoutMailDeliveryLogsActedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12524,6 +12989,7 @@ export type EmployeeCreateWithoutInAppNotificationsReceivedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
 };
 
@@ -12583,6 +13049,7 @@ export type EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
 };
 
@@ -12679,6 +13146,7 @@ export type EmployeeUpdateWithoutInAppNotificationsReceivedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12747,6 +13215,7 @@ export type EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12837,6 +13306,7 @@ export type EmployeeUpdateWithoutRoleInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12905,6 +13375,7 @@ export type EmployeeUncheckedUpdateWithoutRoleInput = {
   dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
   reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
   reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
 };
 
@@ -12978,6 +13449,7 @@ export type EmployeeCountOutputType = {
   inAppNotificationsReceived: number;
   reportExportJobsRequested: number;
   reportSchedulesOwned: number;
+  savedReportViews: number;
   personalLinks: number;
 };
 
@@ -13026,6 +13498,7 @@ export type EmployeeCountOutputTypeSelect<
   inAppNotificationsReceived?: boolean | EmployeeCountOutputTypeCountInAppNotificationsReceivedArgs;
   reportExportJobsRequested?: boolean | EmployeeCountOutputTypeCountReportExportJobsRequestedArgs;
   reportSchedulesOwned?: boolean | EmployeeCountOutputTypeCountReportSchedulesOwnedArgs;
+  savedReportViews?: boolean | EmployeeCountOutputTypeCountSavedReportViewsArgs;
   personalLinks?: boolean | EmployeeCountOutputTypeCountPersonalLinksArgs;
 };
 
@@ -13350,6 +13823,15 @@ export type EmployeeCountOutputTypeCountReportSchedulesOwnedArgs<
 /**
  * EmployeeCountOutputType without action
  */
+export type EmployeeCountOutputTypeCountSavedReportViewsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.SavedReportViewWhereInput;
+};
+
+/**
+ * EmployeeCountOutputType without action
+ */
 export type EmployeeCountOutputTypeCountPersonalLinksArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
@@ -13425,6 +13907,7 @@ export type EmployeeSelect<
     dashboardPreference?: boolean | Prisma.Employee$dashboardPreferenceArgs<ExtArgs>;
     reportExportJobsRequested?: boolean | Prisma.Employee$reportExportJobsRequestedArgs<ExtArgs>;
     reportSchedulesOwned?: boolean | Prisma.Employee$reportSchedulesOwnedArgs<ExtArgs>;
+    savedReportViews?: boolean | Prisma.Employee$savedReportViewsArgs<ExtArgs>;
     personalLinks?: boolean | Prisma.Employee$personalLinksArgs<ExtArgs>;
     _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>;
   },
@@ -13579,6 +14062,7 @@ export type EmployeeInclude<
   dashboardPreference?: boolean | Prisma.Employee$dashboardPreferenceArgs<ExtArgs>;
   reportExportJobsRequested?: boolean | Prisma.Employee$reportExportJobsRequestedArgs<ExtArgs>;
   reportSchedulesOwned?: boolean | Prisma.Employee$reportSchedulesOwnedArgs<ExtArgs>;
+  savedReportViews?: boolean | Prisma.Employee$savedReportViewsArgs<ExtArgs>;
   personalLinks?: boolean | Prisma.Employee$personalLinksArgs<ExtArgs>;
   _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>;
 };
@@ -13635,6 +14119,7 @@ export type $EmployeePayload<
     dashboardPreference: Prisma.$DashboardPreferencePayload<ExtArgs> | null;
     reportExportJobsRequested: Prisma.$ReportExportJobPayload<ExtArgs>[];
     reportSchedulesOwned: Prisma.$ReportSchedulePayload<ExtArgs>[];
+    savedReportViews: Prisma.$SavedReportViewPayload<ExtArgs>[];
     personalLinks: Prisma.$PersonalLinkPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
@@ -14591,6 +15076,17 @@ export interface Prisma__EmployeeClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$ReportSchedulePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  savedReportViews<T extends Prisma.Employee$savedReportViewsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$savedReportViewsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$SavedReportViewPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -16065,6 +16561,34 @@ export type Employee$reportSchedulesOwnedArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.ReportScheduleScalarFieldEnum | Prisma.ReportScheduleScalarFieldEnum[];
+};
+
+/**
+ * Employee.savedReportViews
+ */
+export type Employee$savedReportViewsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the SavedReportView
+   */
+  select?: Prisma.SavedReportViewSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the SavedReportView
+   */
+  omit?: Prisma.SavedReportViewOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SavedReportViewInclude<ExtArgs> | null;
+  where?: Prisma.SavedReportViewWhereInput;
+  orderBy?:
+    | Prisma.SavedReportViewOrderByWithRelationInput
+    | Prisma.SavedReportViewOrderByWithRelationInput[];
+  cursor?: Prisma.SavedReportViewWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.SavedReportViewScalarFieldEnum | Prisma.SavedReportViewScalarFieldEnum[];
 };
 
 /**

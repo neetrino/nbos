@@ -177,6 +177,11 @@ export type ReportExportJob = Prisma.ReportExportJobModel;
  */
 export type ReportSchedule = Prisma.ReportScheduleModel;
 /**
+ * Model SavedReportView
+ *
+ */
+export type SavedReportView = Prisma.SavedReportViewModel;
+/**
  * Model DocumentSection
  *
  */

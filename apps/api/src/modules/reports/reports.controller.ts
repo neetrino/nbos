@@ -3,7 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { ReportsScheduleManagementService } from './reports-schedule-management.service';
 import { ReportsService } from './reports.service';
-import type { CreateReportExportJobDto, CreateReportScheduleDto } from './reports.types';
+import type {
+  CreateReportExportJobDto,
+  CreateReportScheduleDto,
+  CreateSavedReportViewDto,
+} from './reports.types';
 
 @ApiTags('Reports / Analytics')
 @ApiBearerAuth()
@@ -52,6 +56,18 @@ export class ReportsController {
   })
   createSchedule(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateReportScheduleDto) {
     return this.reportsService.createSchedule(user.id, body);
+  }
+
+  @Get('saved-views')
+  @ApiOperation({ summary: 'List current user saved report views' })
+  listSavedViews(@CurrentUser() user: CurrentUserPayload) {
+    return this.reportsService.listSavedViews(user.id);
+  }
+
+  @Post('saved-views')
+  @ApiOperation({ summary: 'Create a personal saved report view' })
+  createSavedView(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateSavedReportViewDto) {
+    return this.reportsService.createSavedView(user.id, body);
   }
 
   @Post('schedules/:scheduleId/pause')

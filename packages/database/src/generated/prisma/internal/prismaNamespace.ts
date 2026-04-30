@@ -407,6 +407,7 @@ export const ModelName = {
   FileUploadSession: 'FileUploadSession',
   ReportExportJob: 'ReportExportJob',
   ReportSchedule: 'ReportSchedule',
+  SavedReportView: 'SavedReportView',
   DocumentSection: 'DocumentSection',
   ExternalDocumentLink: 'ExternalDocumentLink',
   Document: 'Document',
@@ -509,6 +510,7 @@ export type TypeMap<
       | 'fileUploadSession'
       | 'reportExportJob'
       | 'reportSchedule'
+      | 'savedReportView'
       | 'documentSection'
       | 'externalDocumentLink'
       | 'document'
@@ -2948,6 +2950,82 @@ export type TypeMap<
           args: Prisma.ReportScheduleCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.ReportScheduleCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    SavedReportView: {
+      payload: Prisma.$SavedReportViewPayload<ExtArgs>;
+      fields: Prisma.SavedReportViewFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.SavedReportViewFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.SavedReportViewFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>;
+        };
+        findFirst: {
+          args: Prisma.SavedReportViewFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.SavedReportViewFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>;
+        };
+        findMany: {
+          args: Prisma.SavedReportViewFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>[];
+        };
+        create: {
+          args: Prisma.SavedReportViewCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>;
+        };
+        createMany: {
+          args: Prisma.SavedReportViewCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.SavedReportViewCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>[];
+        };
+        delete: {
+          args: Prisma.SavedReportViewDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>;
+        };
+        update: {
+          args: Prisma.SavedReportViewUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>;
+        };
+        deleteMany: {
+          args: Prisma.SavedReportViewDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.SavedReportViewUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.SavedReportViewUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>[];
+        };
+        upsert: {
+          args: Prisma.SavedReportViewUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SavedReportViewPayload>;
+        };
+        aggregate: {
+          args: Prisma.SavedReportViewAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSavedReportView>;
+        };
+        groupBy: {
+          args: Prisma.SavedReportViewGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.SavedReportViewGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.SavedReportViewCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.SavedReportViewCountAggregateOutputType>
             | number;
         };
       };
@@ -7413,6 +7491,21 @@ export const ReportScheduleScalarFieldEnum = {
 export type ReportScheduleScalarFieldEnum =
   (typeof ReportScheduleScalarFieldEnum)[keyof typeof ReportScheduleScalarFieldEnum];
 
+export const SavedReportViewScalarFieldEnum = {
+  id: 'id',
+  reportKey: 'reportKey',
+  reportTitle: 'reportTitle',
+  ownerModule: 'ownerModule',
+  name: 'name',
+  filters: 'filters',
+  ownerId: 'ownerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type SavedReportViewScalarFieldEnum =
+  (typeof SavedReportViewScalarFieldEnum)[keyof typeof SavedReportViewScalarFieldEnum];
+
 export const DocumentSectionScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -10077,6 +10170,7 @@ export type GlobalOmitConfig = {
   fileUploadSession?: Prisma.FileUploadSessionOmit;
   reportExportJob?: Prisma.ReportExportJobOmit;
   reportSchedule?: Prisma.ReportScheduleOmit;
+  savedReportView?: Prisma.SavedReportViewOmit;
   documentSection?: Prisma.DocumentSectionOmit;
   externalDocumentLink?: Prisma.ExternalDocumentLinkOmit;
   document?: Prisma.DocumentOmit;

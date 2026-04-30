@@ -68,6 +68,7 @@ Shipped P0 catalog shell:
 - Report Catalog over module-owned Finance definitions;
 - search and category filters;
 - basic period/as-of filter shell passed into export jobs and new schedules;
+- personal saved report views for filters (`SavedReportView`) with list/create/apply UI;
 - scheduled reports honest empty state;
 - export history honest empty state.
 
@@ -180,7 +181,7 @@ Reports must enforce source permissions and cannot bypass module access.
 8. ~~Add scheduled reports model.~~ Done foundation (2026-04-30); runner still needed.
 9. ~~Add data quality warnings.~~ Done foundation (2026-04-30); cross-module/runtime depth still needed.
 10. ~~Add sensitive report audit.~~ Done foundation (2026-04-30): finance-sensitive audit markers are explicit on export and scheduled-run events.
-11. Add saved report views.
+11. ~~Add saved report views.~~ Done foundation (2026-04-30): personal filter presets only; sharing is later.
 
 ## D. Non-goals for MVP
 

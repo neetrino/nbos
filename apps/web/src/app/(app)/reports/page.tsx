@@ -14,6 +14,7 @@ import {
   type ReportDataQualityWarning,
   type ReportExportJob,
   type ReportSchedule,
+  type SavedReportView,
 } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -43,6 +44,7 @@ export default function ReportsPage() {
   const [definitions, setDefinitions] = useState<FinanceReportDefinition[]>([]);
   const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
   const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
+  const [savedViews, setSavedViews] = useState<SavedReportView[]>([]);
   const [dataQualityWarnings, setDataQualityWarnings] = useState<ReportDataQualityWarning[]>([]);
   const [category, setCategory] = useState<ReportCategory>('all');
   const [search, setSearch] = useState('');
@@ -55,20 +57,23 @@ export default function ReportsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [definitionResponse, jobs, scheduledReports, quality] = await Promise.all([
+      const [definitionResponse, jobs, scheduledReports, views, quality] = await Promise.all([
         financeReportsApi.getDefinitions(),
         reportsApi.listExportJobs(),
         reportsApi.listSchedules(),
+        reportsApi.listSavedViews(),
         reportsApi.listDataQualityWarnings(),
       ]);
       setDefinitions(definitionResponse.items);
       setExportJobs(jobs);
       setSchedules(scheduledReports);
+      setSavedViews(views);
       setDataQualityWarnings(quality.items);
     } catch (caught) {
       setDefinitions([]);
       setExportJobs([]);
       setSchedules([]);
+      setSavedViews([]);
       setDataQualityWarnings([]);
       setError(getApiErrorMessage(caught, 'Reports catalog could not be loaded.'));
     } finally {
@@ -150,7 +155,13 @@ export default function ReportsPage() {
               className="pl-9"
             />
           </div>
-          <ReportFilterShell filters={filters} onFiltersChange={setFilters} />
+          <ReportFilterShell
+            definitions={definitions}
+            filters={filters}
+            savedViews={savedViews}
+            onFiltersChange={setFilters}
+            onSavedViewsChange={setSavedViews}
+          />
         </div>
 
         <div className="border-border bg-card rounded-2xl border p-5">
@@ -280,29 +291,106 @@ function CatalogBlock({ title, lines }: { title: string; lines: string[] }) {
 }
 
 function ReportFilterShell({
+  definitions,
   filters,
+  savedViews,
   onFiltersChange,
+  onSavedViewsChange,
 }: {
+  definitions: FinanceReportDefinition[];
   filters: ReportFilterState;
+  savedViews: SavedReportView[];
   onFiltersChange: (filters: ReportFilterState) => void;
+  onSavedViewsChange: (views: SavedReportView[]) => void;
 }) {
+  const defaultReportKey = definitions[0]?.id ?? '';
+  const [reportKey, setReportKey] = useState(defaultReportKey);
+  const [name, setName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const selectedReportKey = reportKey || defaultReportKey;
+
+  async function saveView() {
+    if (!selectedReportKey || !name.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const view = await reportsApi.createSavedView({
+        reportKey: selectedReportKey,
+        ownerModule: 'FINANCE',
+        name: name.trim(),
+        filters: buildReportFilters(filters),
+      });
+      onSavedViewsChange([view, ...savedViews.filter((item) => item.id !== view.id)]);
+      setName('');
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Saved report view could not be created.'));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
-    <div className="mt-4 grid gap-3 lg:grid-cols-3">
-      <DateInput
-        label="Period from"
-        value={filters.dateFrom}
-        onChange={(dateFrom) => onFiltersChange({ ...filters, dateFrom })}
-      />
-      <DateInput
-        label="Period to"
-        value={filters.dateTo}
-        onChange={(dateTo) => onFiltersChange({ ...filters, dateTo })}
-      />
-      <DateInput
-        label="As of"
-        value={filters.asOf}
-        onChange={(asOf) => onFiltersChange({ ...filters, asOf })}
-      />
+    <div className="mt-4 space-y-3">
+      <div className="grid gap-3 lg:grid-cols-3">
+        <DateInput
+          label="Period from"
+          value={filters.dateFrom}
+          onChange={(dateFrom) => onFiltersChange({ ...filters, dateFrom })}
+        />
+        <DateInput
+          label="Period to"
+          value={filters.dateTo}
+          onChange={(dateTo) => onFiltersChange({ ...filters, dateTo })}
+        />
+        <DateInput
+          label="As of"
+          value={filters.asOf}
+          onChange={(asOf) => onFiltersChange({ ...filters, asOf })}
+        />
+      </div>
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px_auto]">
+        <Input
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="Saved view name"
+        />
+        <select
+          value={selectedReportKey}
+          onChange={(event) => setReportKey(event.target.value)}
+          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+        >
+          {definitions.map((definition) => (
+            <option key={definition.id} value={definition.id}>
+              {definition.title}
+            </option>
+          ))}
+        </select>
+        <select
+          value=""
+          onChange={(event) => {
+            const view = savedViews.find((item) => item.id === event.target.value);
+            if (view) onFiltersChange(savedViewToFilters(view));
+          }}
+          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+        >
+          <option value="">Apply saved view</option>
+          {savedViews.map((view) => (
+            <option key={view.id} value={view.id}>
+              {view.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={!selectedReportKey || !name.trim() || saving}
+          onClick={() => void saveView()}
+        >
+          {saving ? 'Saving...' : 'Save view'}
+        </Button>
+      </div>
+      {error ? <p className="text-destructive text-sm">{error}</p> : null}
     </div>
   );
 }
@@ -408,4 +496,20 @@ function formatReportFilters(filters: Record<string, string | number | boolean |
   const entries = Object.entries(filters).filter(([, value]) => value !== null && value !== '');
   if (entries.length === 0) return 'none';
   return entries.map(([key, value]) => `${key}: ${String(value)}`).join(', ');
+}
+
+function savedViewToFilters(view: SavedReportView): ReportFilterState {
+  return {
+    dateFrom: stringFilterValue(view.filters, 'dateFrom'),
+    dateTo: stringFilterValue(view.filters, 'dateTo'),
+    asOf: stringFilterValue(view.filters, 'asOf'),
+  };
+}
+
+function stringFilterValue(
+  filters: Record<string, string | number | boolean | null> | null,
+  key: string,
+): string {
+  const value = filters?.[key];
+  return typeof value === 'string' ? value : '';
 }

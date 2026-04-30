@@ -1300,6 +1300,26 @@ model ReportSchedule {
   @@map("report_schedules")
 }
 
+model SavedReportView {
+  id          String   @id @default(uuid())
+  reportKey   String   @map("report_key")
+  reportTitle String   @map("report_title")
+  ownerModule String   @map("owner_module")
+  name        String
+  filters     Json?
+  ownerId     String   @map("owner_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner Employee @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+
+  @@unique([ownerId, reportKey, name])
+  @@index([ownerId])
+  @@index([reportKey])
+  @@index([ownerModule])
+  @@map("saved_report_views")
+}
+
 // ─── DOCUMENTS (native knowledge module) ───────────────────
 
 enum DocumentTypeEnum {
@@ -1955,6 +1975,7 @@ model Employee {
   dashboardPreference          DashboardPreference?
   reportExportJobsRequested    ReportExportJob[]
   reportSchedulesOwned         ReportSchedule[]
+  savedReportViews             SavedReportView[]
   personalLinks                PersonalLink[]
 
   @@map("employees")

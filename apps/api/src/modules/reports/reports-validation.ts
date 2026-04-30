@@ -10,8 +10,10 @@ import {
 import {
   REPORT_EXPORT_FORMATS,
   REPORT_EXPORT_OWNER_MODULES,
+  type CreateSavedReportViewDto,
   type CreateReportScheduleDto,
   type CreateReportExportJobDto,
+  type ParsedSavedReportViewInput,
   type ParsedReportExportJobInput,
   type ParsedReportScheduleInput,
 } from './reports.types';
@@ -59,6 +61,21 @@ export function parseReportScheduleInput(
   };
 }
 
+export function parseSavedReportViewInput(
+  input: CreateSavedReportViewDto,
+): ParsedSavedReportViewInput {
+  return {
+    reportKey: parseRequiredText(input.reportKey, 'reportKey'),
+    ownerModule: parseEnumValue(
+      input.ownerModule ?? 'FINANCE',
+      REPORT_EXPORT_OWNER_MODULES,
+      'ownerModule',
+    ),
+    name: parseRequiredText(input.name, 'name'),
+    filters: parseFilters(input.filters),
+  };
+}
+
 function parseRequiredText(value: unknown, field: string): string {
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new BadRequestException(`${field} is required.`);
@@ -81,7 +98,7 @@ function parseEnumValue<T extends readonly string[]>(
   return value as T[number];
 }
 
-function parseFilters(value: unknown): InputJsonValue | undefined {
+export function parseFilters(value: unknown): InputJsonValue | undefined {
   if (value === undefined) return undefined;
   if (!isPlainObject(value)) throw new BadRequestException('filters must be an object.');
   const entries = Object.entries(value);

@@ -25,6 +25,13 @@ export interface CreateReportScheduleDto extends CreateReportExportJobDto {
   dayOfMonth?: unknown;
 }
 
+export interface CreateSavedReportViewDto {
+  reportKey?: unknown;
+  ownerModule?: unknown;
+  name?: unknown;
+  filters?: unknown;
+}
+
 export interface ParsedReportExportJobInput {
   reportKey: string;
   ownerModule: ReportExportOwnerModule;
@@ -42,6 +49,13 @@ export interface ParsedReportScheduleInput extends ParsedReportExportJobInput {
   dayOfWeek?: number;
   dayOfMonth?: number;
   nextRunAt: Date;
+}
+
+export interface ParsedSavedReportViewInput {
+  reportKey: string;
+  ownerModule: ReportExportOwnerModule;
+  name: string;
+  filters?: InputJsonValue;
 }
 
 export type ReportDataQualitySeverity = 'INFO' | 'WARNING';

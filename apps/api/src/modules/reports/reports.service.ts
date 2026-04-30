@@ -17,10 +17,15 @@ import {
   REPORT_FINANCE_CONFIDENTIALITY,
 } from './reports-audit-context';
 import { ReportsQueueService } from './reports-queue.service';
-import { parseReportExportJobInput, parseReportScheduleInput } from './reports-validation';
+import {
+  parseReportExportJobInput,
+  parseReportScheduleInput,
+  parseSavedReportViewInput,
+} from './reports-validation';
 import type {
   CreateReportExportJobDto,
   CreateReportScheduleDto,
+  CreateSavedReportViewDto,
   ReportDataQualityWarning,
 } from './reports.types';
 
@@ -28,6 +33,8 @@ const REPORT_EXPORT_AUDIT_ENTITY = 'REPORT_EXPORT_JOB';
 const REPORT_EXPORT_JOB_LIMIT = 25;
 const REPORT_SCHEDULE_AUDIT_ENTITY = 'REPORT_SCHEDULE';
 const REPORT_SCHEDULE_LIMIT = 50;
+const SAVED_REPORT_VIEW_AUDIT_ENTITY = 'SAVED_REPORT_VIEW';
+const SAVED_REPORT_VIEW_LIMIT = 50;
 
 @Injectable()
 export class ReportsService {
@@ -59,6 +66,14 @@ export class ReportsService {
       where: { ownerId },
       orderBy: [{ status: 'asc' }, { nextRunAt: 'asc' }],
       take: REPORT_SCHEDULE_LIMIT,
+    });
+  }
+
+  async listSavedViews(ownerId: string) {
+    return this.prisma.savedReportView.findMany({
+      where: { ownerId },
+      orderBy: [{ reportTitle: 'asc' }, { name: 'asc' }],
+      take: SAVED_REPORT_VIEW_LIMIT,
     });
   }
 
@@ -180,6 +195,38 @@ export class ReportsService {
     });
 
     return schedule;
+  }
+
+  async createSavedView(ownerId: string, input: CreateSavedReportViewDto) {
+    const parsed = parseSavedReportViewInput(input);
+    if (parsed.ownerModule !== 'FINANCE') {
+      throw new BadRequestException(
+        'Only Finance-owned saved report views are wired in this slice.',
+      );
+    }
+    const definition = this.financeReportsService.getDefinition(parsed.reportKey);
+    const view = await this.prisma.savedReportView.create({
+      data: {
+        reportKey: definition.id,
+        reportTitle: definition.title,
+        ownerModule: parsed.ownerModule,
+        name: parsed.name,
+        filters: parsed.filters,
+        ownerId,
+      },
+    });
+    await this.auditService.log({
+      entityType: SAVED_REPORT_VIEW_AUDIT_ENTITY,
+      entityId: view.id,
+      action: 'report_saved_view.created',
+      userId: ownerId,
+      changes: {
+        name: view.name,
+        filters: view.filters ?? null,
+        ...buildSensitiveReportAuditContext(view.reportKey),
+      },
+    });
+    return view;
   }
 
   async completeExportJobWithDriveFile(jobId: string, fileAssetId: string, actorId: string) {

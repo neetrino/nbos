@@ -43,6 +43,7 @@ export function createMockPrisma() {
     fileUploadSession: createModelMock(),
     reportExportJob: createModelMock(),
     reportSchedule: createModelMock(),
+    savedReportView: createModelMock(),
     dashboardPreference: createModelMock(),
     personalLink: createModelMock(),
     documentSection: createModelMock(),

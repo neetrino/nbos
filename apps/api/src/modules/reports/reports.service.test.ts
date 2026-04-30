@@ -193,6 +193,33 @@ describe('ReportsService', () => {
     );
   });
 
+  it('creates a personal saved report view with validated filters', async () => {
+    await service.createSavedView('employee-1', {
+      reportKey: 'company-pnl',
+      ownerModule: 'FINANCE',
+      name: 'Current month P&L',
+      filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
+    });
+
+    expect(prisma.savedReportView.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          reportKey: 'company-pnl',
+          reportTitle: 'Company P&L',
+          ownerModule: 'FINANCE',
+          name: 'Current month P&L',
+          ownerId: 'employee-1',
+        }),
+      }),
+    );
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityType: 'SAVED_REPORT_VIEW',
+        action: 'report_saved_view.created',
+      }),
+    );
+  });
+
   it('exposes data-quality warnings from module-owned report definitions', () => {
     const result = service.listDataQualityWarnings();
 

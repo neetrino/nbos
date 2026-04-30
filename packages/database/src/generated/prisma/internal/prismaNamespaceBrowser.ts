@@ -80,6 +80,7 @@ export const ModelName = {
   FileUploadSession: 'FileUploadSession',
   ReportExportJob: 'ReportExportJob',
   ReportSchedule: 'ReportSchedule',
+  SavedReportView: 'SavedReportView',
   DocumentSection: 'DocumentSection',
   ExternalDocumentLink: 'ExternalDocumentLink',
   Document: 'Document',
@@ -795,6 +796,21 @@ export const ReportScheduleScalarFieldEnum = {
 
 export type ReportScheduleScalarFieldEnum =
   (typeof ReportScheduleScalarFieldEnum)[keyof typeof ReportScheduleScalarFieldEnum];
+
+export const SavedReportViewScalarFieldEnum = {
+  id: 'id',
+  reportKey: 'reportKey',
+  reportTitle: 'reportTitle',
+  ownerModule: 'ownerModule',
+  name: 'name',
+  filters: 'filters',
+  ownerId: 'ownerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type SavedReportViewScalarFieldEnum =
+  (typeof SavedReportViewScalarFieldEnum)[keyof typeof SavedReportViewScalarFieldEnum];
 
 export const DocumentSectionScalarFieldEnum = {
   id: 'id',
