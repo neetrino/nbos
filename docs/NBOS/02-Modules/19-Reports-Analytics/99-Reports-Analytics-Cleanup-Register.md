@@ -72,9 +72,10 @@ Shipped P0 catalog shell:
 
 ### B2. Sidebar does not include Reports / Analytics
 
-Статус: `MISSING UI`
+Статус: `DONE` (2026-04-30)
 
-Нужно добавить top-level module or make it available through Dashboard/More depending on UI decision.
+Top-level `Reports / Analytics` is available in the main sidebar at `/reports`.
+CRM also links sales analytics to `/reports?module=crm`.
 
 Canonical default: top-level `Reports / Analytics`.
 
