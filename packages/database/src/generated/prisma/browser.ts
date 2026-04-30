@@ -332,6 +332,16 @@ export type EmailRecipient = Prisma.EmailRecipientModel;
  */
 export type InAppNotification = Prisma.InAppNotificationModel;
 /**
+ * Model CalendarMeeting
+ *
+ */
+export type CalendarMeeting = Prisma.CalendarMeetingModel;
+/**
+ * Model PersonalCalendarEvent
+ *
+ */
+export type PersonalCalendarEvent = Prisma.PersonalCalendarEventModel;
+/**
  * Model AuditLog
  *
  */

@@ -167,6 +167,7 @@ Do not implement in Phase 5 first release:
 
 ## 5. Professional Development Rules
 
+- For practical Phase 5 closure scope, review and approve `docs/PHASE_5_MINIMAL_PRODUCT_CLOSURE_PROPOSAL.md` before implementing the remaining Calendar, Technical Infrastructure, Notifications, Drive, Credentials, Messenger, Mail and Documents polish slices.
 - Read `docs/NBOS/02-Modules/20-Documents/*`, `docs/NBOS/02-Modules/11-Drive/*` and technical decisions before each schema-affecting slice.
 - Keep Documents and Drive responsibilities separate.
 - Use PostgreSQL as the source of truth for native document content and metadata.

@@ -111,6 +111,8 @@ export const ModelName = {
   MailDeliveryLog: 'MailDeliveryLog',
   EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
+  CalendarMeeting: 'CalendarMeeting',
+  PersonalCalendarEvent: 'PersonalCalendarEvent',
   AuditLog: 'AuditLog',
   SystemListOption: 'SystemListOption',
 } as const;
@@ -238,6 +240,7 @@ export const ExtensionScalarFieldEnum = {
   onHoldUntil: 'onHoldUntil',
   cancellationReason: 'cancellationReason',
   assignedTo: 'assignedTo',
+  deadline: 'deadline',
   description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -1251,6 +1254,47 @@ export const InAppNotificationScalarFieldEnum = {
 
 export type InAppNotificationScalarFieldEnum =
   (typeof InAppNotificationScalarFieldEnum)[keyof typeof InAppNotificationScalarFieldEnum];
+
+export const CalendarMeetingScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  meetingType: 'meetingType',
+  locationType: 'locationType',
+  locationOrLink: 'locationOrLink',
+  agenda: 'agenda',
+  outcomeNotes: 'outcomeNotes',
+  status: 'status',
+  internalParticipantIds: 'internalParticipantIds',
+  externalParticipants: 'externalParticipants',
+  projectId: 'projectId',
+  productId: 'productId',
+  dealId: 'dealId',
+  contactId: 'contactId',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type CalendarMeetingScalarFieldEnum =
+  (typeof CalendarMeetingScalarFieldEnum)[keyof typeof CalendarMeetingScalarFieldEnum];
+
+export const PersonalCalendarEventScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  title: 'title',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  isAllDay: 'isAllDay',
+  notes: 'notes',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PersonalCalendarEventScalarFieldEnum =
+  (typeof PersonalCalendarEventScalarFieldEnum)[keyof typeof PersonalCalendarEventScalarFieldEnum];
 
 export const AuditLogScalarFieldEnum = {
   id: 'id',

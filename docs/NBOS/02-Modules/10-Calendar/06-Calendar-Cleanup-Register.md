@@ -33,11 +33,11 @@ This is too noisy for the main left-menu Calendar and has been replaced with foc
 Current UI:
 
 - `apps/web/src/app/(app)/calendar/page.tsx`;
-- mock data only;
-- event types include `meeting/deadline/billing/personal`;
-- no API integration;
-- no source/projection model;
-- no layer visibility rules.
+- ~~mock data only~~ **Done (2026-04-30):** UI uses `GET /api/calendar/events`;
+- ~~event types include `meeting/deadline/billing/personal`~~ **Done (2026-04-30):** UI exposes only All / Meetings / Delivery Deadlines / Personal;
+- ~~no API integration~~ **Done (2026-04-30):** `CalendarModule` + projection API;
+- ~~no source/projection model~~ **Partial (2026-04-30):** Meeting + Personal models; Product/Extension deadline projections;
+- ~~no layer visibility rules~~ **Partial (2026-04-30):** CALENDAR RBAC scope gates list; personal events are owner-only; delivery projections use owner/PM assignment for non-wide scopes.
 
 Current Scheduler:
 
@@ -51,17 +51,17 @@ Current Scheduler:
 
 ### Phase 1 - Calendar data model
 
-- add Meeting entity;
-- add Personal Calendar Event entity;
-- define Calendar Event Projection API;
-- implement visibility by source entity access.
+- ~~add Meeting entity~~ done (`CalendarMeeting`);
+- ~~add Personal Calendar Event entity~~ done (`PersonalCalendarEvent`);
+- ~~define Calendar Event Projection API~~ done (`GET /api/calendar/events`);
+- implement visibility by source entity access — partial: RBAC scope + PM/assignee/participant rules; deeper per-source access resolver can be added later.
 
 ### Phase 2 - Calendar UI
 
-- replace mock events with API data;
-- tabs/filters: All, Meetings, Delivery Deadlines, Personal;
-- source badges;
-- click-through to source entity;
+- ~~replace mock events with API data~~ done;
+- ~~tabs/filters: All, Meetings, Delivery Deadlines, Personal~~ done;
+- ~~source badges~~ done;
+- ~~click-through to source entity~~ partial: deadline projections include source links; meeting/personal detail pages are not part of P0.
 - user default layer.
 
 ### Phase 3 - Scheduler boundary

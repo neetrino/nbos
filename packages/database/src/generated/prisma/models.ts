@@ -70,6 +70,8 @@ export type * from './models/EmailMessage';
 export type * from './models/MailDeliveryLog';
 export type * from './models/EmailRecipient';
 export type * from './models/InAppNotification';
+export type * from './models/CalendarMeeting';
+export type * from './models/PersonalCalendarEvent';
 export type * from './models/AuditLog';
 export type * from './models/SystemListOption';
 export type * from './commonInputTypes';

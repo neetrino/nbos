@@ -806,3 +806,40 @@ export const EmailRecipientKind = {
 } as const;
 
 export type EmailRecipientKind = (typeof EmailRecipientKind)[keyof typeof EmailRecipientKind];
+
+export const CalendarMeetingType = {
+  SALES_CALL: 'SALES_CALL',
+  OFFER_PRESENTATION: 'OFFER_PRESENTATION',
+  DEMO: 'DEMO',
+  KICKOFF: 'KICKOFF',
+  SUPPORT_CALL: 'SUPPORT_CALL',
+  MAINTENANCE_CALL: 'MAINTENANCE_CALL',
+  OTHER: 'OTHER',
+} as const;
+
+export type CalendarMeetingType = (typeof CalendarMeetingType)[keyof typeof CalendarMeetingType];
+
+export const CalendarLocationType = {
+  ONLINE: 'ONLINE',
+  OFFLINE: 'OFFLINE',
+} as const;
+
+export type CalendarLocationType = (typeof CalendarLocationType)[keyof typeof CalendarLocationType];
+
+export const CalendarMeetingStatus = {
+  SCHEDULED: 'SCHEDULED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW',
+} as const;
+
+export type CalendarMeetingStatus =
+  (typeof CalendarMeetingStatus)[keyof typeof CalendarMeetingStatus];
+
+export const PersonalCalendarEventStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PersonalCalendarEventStatus =
+  (typeof PersonalCalendarEventStatus)[keyof typeof PersonalCalendarEventStatus];

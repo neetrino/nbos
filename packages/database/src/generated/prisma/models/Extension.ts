@@ -37,6 +37,7 @@ export type ExtensionMinAggregateOutputType = {
   onHoldUntil: Date | null;
   cancellationReason: string | null;
   assignedTo: string | null;
+  deadline: Date | null;
   description: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -56,6 +57,7 @@ export type ExtensionMaxAggregateOutputType = {
   onHoldUntil: Date | null;
   cancellationReason: string | null;
   assignedTo: string | null;
+  deadline: Date | null;
   description: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -75,6 +77,7 @@ export type ExtensionCountAggregateOutputType = {
   onHoldUntil: number;
   cancellationReason: number;
   assignedTo: number;
+  deadline: number;
   description: number;
   createdAt: number;
   updatedAt: number;
@@ -95,6 +98,7 @@ export type ExtensionMinAggregateInputType = {
   onHoldUntil?: true;
   cancellationReason?: true;
   assignedTo?: true;
+  deadline?: true;
   description?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -114,6 +118,7 @@ export type ExtensionMaxAggregateInputType = {
   onHoldUntil?: true;
   cancellationReason?: true;
   assignedTo?: true;
+  deadline?: true;
   description?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -133,6 +138,7 @@ export type ExtensionCountAggregateInputType = {
   onHoldUntil?: true;
   cancellationReason?: true;
   assignedTo?: true;
+  deadline?: true;
   description?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -228,6 +234,7 @@ export type ExtensionGroupByOutputType = {
   onHoldUntil: Date | null;
   cancellationReason: string | null;
   assignedTo: string | null;
+  deadline: Date | null;
   description: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -273,6 +280,7 @@ export type ExtensionWhereInput = {
   onHoldUntil?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
   cancellationReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
   assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
@@ -304,6 +312,7 @@ export type ExtensionOrderByWithRelationInput = {
   onHoldUntil?: Prisma.SortOrderInput | Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
+  deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -341,6 +350,7 @@ export type ExtensionWhereUniqueInput = Prisma.AtLeast<
     onHoldUntil?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
     cancellationReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
     assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
+    deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Extension'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
@@ -374,6 +384,7 @@ export type ExtensionOrderByWithAggregationInput = {
   onHoldUntil?: Prisma.SortOrderInput | Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
+  deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -413,6 +424,7 @@ export type ExtensionScalarWhereWithAggregatesInput = {
   onHoldUntil?: Prisma.DateTimeNullableWithAggregatesFilter<'Extension'> | Date | string | null;
   cancellationReason?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
   assignedTo?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
+  deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Extension'> | Date | string;
@@ -429,6 +441,7 @@ export type ExtensionCreateInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -454,6 +467,7 @@ export type ExtensionUncheckedCreateInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -481,6 +495,7 @@ export type ExtensionUpdateInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -514,6 +529,7 @@ export type ExtensionUncheckedUpdateInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -536,6 +552,7 @@ export type ExtensionCreateManyInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -560,6 +577,7 @@ export type ExtensionUpdateManyMutationInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -587,6 +605,7 @@ export type ExtensionUncheckedUpdateManyInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -616,6 +635,7 @@ export type ExtensionCountOrderByAggregateInput = {
   onHoldUntil?: Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
+  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -635,6 +655,7 @@ export type ExtensionMaxOrderByAggregateInput = {
   onHoldUntil?: Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
+  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -654,6 +675,7 @@ export type ExtensionMinOrderByAggregateInput = {
   onHoldUntil?: Prisma.SortOrder;
   cancellationReason?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
+  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -1025,6 +1047,7 @@ export type ExtensionCreateWithoutProjectInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1048,6 +1071,7 @@ export type ExtensionUncheckedCreateWithoutProjectInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1122,6 +1146,7 @@ export type ExtensionScalarWhereInput = {
   onHoldUntil?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
   cancellationReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
   assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
@@ -1138,6 +1163,7 @@ export type ExtensionCreateWithoutProductInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1161,6 +1187,7 @@ export type ExtensionUncheckedCreateWithoutProductInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1221,6 +1248,7 @@ export type ExtensionCreateWithoutOrderInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1245,6 +1273,7 @@ export type ExtensionUncheckedCreateWithoutOrderInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1299,6 +1328,7 @@ export type ExtensionUpdateWithoutOrderInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1331,6 +1361,7 @@ export type ExtensionUncheckedUpdateWithoutOrderInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1349,6 +1380,7 @@ export type ExtensionCreateWithoutWorkSpaceInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1373,6 +1405,7 @@ export type ExtensionUncheckedCreateWithoutWorkSpaceInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1427,6 +1460,7 @@ export type ExtensionUpdateWithoutWorkSpaceInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1459,6 +1493,7 @@ export type ExtensionUncheckedUpdateWithoutWorkSpaceInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1477,6 +1512,7 @@ export type ExtensionCreateWithoutTasksInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1501,6 +1537,7 @@ export type ExtensionUncheckedCreateWithoutTasksInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1555,6 +1592,7 @@ export type ExtensionUpdateWithoutTasksInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1587,6 +1625,7 @@ export type ExtensionUncheckedUpdateWithoutTasksInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1605,6 +1644,7 @@ export type ExtensionCreateWithoutAssigneeInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1628,6 +1668,7 @@ export type ExtensionUncheckedCreateWithoutAssigneeInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1690,6 +1731,7 @@ export type ExtensionCreateManyProjectInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1714,6 +1756,7 @@ export type ExtensionUpdateWithoutProjectInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1745,6 +1788,7 @@ export type ExtensionUncheckedUpdateWithoutProjectInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1774,6 +1818,7 @@ export type ExtensionUncheckedUpdateManyWithoutProjectInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1792,6 +1837,7 @@ export type ExtensionCreateManyProductInput = {
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1816,6 +1862,7 @@ export type ExtensionUpdateWithoutProductInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1847,6 +1894,7 @@ export type ExtensionUncheckedUpdateWithoutProductInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1876,6 +1924,7 @@ export type ExtensionUncheckedUpdateManyWithoutProductInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1894,6 +1943,7 @@ export type ExtensionCreateManyAssigneeInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1918,6 +1968,7 @@ export type ExtensionUpdateWithoutAssigneeInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1949,6 +2000,7 @@ export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1978,6 +2030,7 @@ export type ExtensionUncheckedUpdateManyWithoutAssigneeInput = {
   onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2035,6 +2088,7 @@ export type ExtensionSelect<
     onHoldUntil?: boolean;
     cancellationReason?: boolean;
     assignedTo?: boolean;
+    deadline?: boolean;
     description?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
@@ -2066,6 +2120,7 @@ export type ExtensionSelectCreateManyAndReturn<
     onHoldUntil?: boolean;
     cancellationReason?: boolean;
     assignedTo?: boolean;
+    deadline?: boolean;
     description?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
@@ -2093,6 +2148,7 @@ export type ExtensionSelectUpdateManyAndReturn<
     onHoldUntil?: boolean;
     cancellationReason?: boolean;
     assignedTo?: boolean;
+    deadline?: boolean;
     description?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
@@ -2117,6 +2173,7 @@ export type ExtensionSelectScalar = {
   onHoldUntil?: boolean;
   cancellationReason?: boolean;
   assignedTo?: boolean;
+  deadline?: boolean;
   description?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
@@ -2138,6 +2195,7 @@ export type ExtensionOmit<
   | 'onHoldUntil'
   | 'cancellationReason'
   | 'assignedTo'
+  | 'deadline'
   | 'description'
   | 'createdAt'
   | 'updatedAt',
@@ -2196,6 +2254,7 @@ export type $ExtensionPayload<
       onHoldUntil: Date | null;
       cancellationReason: string | null;
       assignedTo: string | null;
+      deadline: Date | null;
       description: string | null;
       createdAt: Date;
       updatedAt: Date;
@@ -2854,6 +2913,7 @@ export interface ExtensionFieldRefs {
   readonly onHoldUntil: Prisma.FieldRef<'Extension', 'DateTime'>;
   readonly cancellationReason: Prisma.FieldRef<'Extension', 'String'>;
   readonly assignedTo: Prisma.FieldRef<'Extension', 'String'>;
+  readonly deadline: Prisma.FieldRef<'Extension', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Extension', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Extension', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Extension', 'DateTime'>;

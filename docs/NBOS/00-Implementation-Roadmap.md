@@ -309,6 +309,7 @@ Keep out of the first Documents release:
 Key docs:
 
 - `../PHASE_5_COLLABORATION_KNOWLEDGE_PLAN.md`
+- `../PHASE_5_MINIMAL_PRODUCT_CLOSURE_PROPOSAL.md`
 - `02-Modules/20-Documents/*`
 - `02-Modules/11-Drive/*`
 - `02-Modules/12-Credentials/*`
