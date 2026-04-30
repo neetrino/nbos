@@ -67,6 +67,18 @@ export interface CompleteUploadSessionDto {
   checksum?: string;
 }
 
+export interface CreateFileVersionUploadDto {
+  fileName: string;
+  contentType: string;
+}
+
+export interface CompleteFileVersionDto {
+  storageKey: string;
+  sizeBytes?: number;
+  checksum?: string;
+  changeNote?: string;
+}
+
 /** Snapshot of `FileUploadSession` fields needed to materialize a File Asset after R2 upload. */
 export interface FileUploadSessionCompleteRow {
   displayName: string;

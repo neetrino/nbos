@@ -66,8 +66,8 @@
 | Upload session       | `DONE`    | `POST /drive/upload-sessions`, presign, complete, fail, `HeadObject` gate |
 | Entity-aware upload  | `PARTIAL` | Session carries `entityType`/`entityId`; card UX still missing            |
 | File list by library | `PARTIAL` | `GET /drive/library?contextType=&contextId=` maps to linked File Assets   |
-| File detail          | `PARTIAL` | Metadata, versions and links exist; permissions later                     |
-| Version upload       | `MISSING` | Add version to existing File Asset                                        |
+| File detail          | `DONE`    | Metadata, versions, active links and recent audit are exposed in Drive UI |
+| Version upload       | `DONE`    | Existing R2 File Asset can receive a new current version                  |
 | Link/unlink API      | `DONE`    | Connect file to additional entities without copying                       |
 | Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                      |
 | Export API           | `MISSING` | Create export job, generate ZIP + manifest                                |
@@ -76,18 +76,18 @@
 
 ### 3.3. Frontend UI
 
-| Gap                  | Status    | Needed                                                   |
-| -------------------- | --------- | -------------------------------------------------------- |
-| Libraries navigation | `MISSING` | Deals, Projects, Products, Clients, Finance, Partners... |
-| File detail drawer   | `MISSING` | Links, versions, permissions, audit                      |
-| Entity quick attach  | `MISSING` | Reusable upload component for cards                      |
-| Purpose selector     | `MISSING` | Offer, Proof, Design, Delivery, Task Attachment, etc.    |
-| Contextual file tabs | `MISSING` | Files tab in Product, Client Portfolio, Finance cards    |
-| Export UI            | `MISSING` | Export by project/client/purpose/period                  |
-| Cleanup dashboard    | `MISSING` | Orphans, old task files, drafts, storage usage           |
-| Preview support      | `MISSING` | PDF/image/video/code previews                            |
-| Permission badges    | `MISSING` | Finance restricted, client visible, partner visible      |
-| Last selected view   | `MISSING` | Remember grid/list/table per user where useful           |
+| Gap                  | Status    | Needed                                                    |
+| -------------------- | --------- | --------------------------------------------------------- |
+| Libraries navigation | `MISSING` | Deals, Projects, Products, Clients, Finance, Partners...  |
+| File detail drawer   | `DONE`    | Links, versions, visibility/confidentiality badges, audit |
+| Entity quick attach  | `MISSING` | Reusable upload component for cards                       |
+| Purpose selector     | `MISSING` | Offer, Proof, Design, Delivery, Task Attachment, etc.     |
+| Contextual file tabs | `MISSING` | Files tab in Product, Client Portfolio, Finance cards     |
+| Export UI            | `MISSING` | Export by project/client/purpose/period                   |
+| Cleanup dashboard    | `MISSING` | Orphans, old task files, drafts, storage usage            |
+| Preview support      | `MISSING` | PDF/image/video/code previews                             |
+| Permission badges    | `DONE`    | Visibility/confidentiality badges in detail/list          |
+| Last selected view   | `MISSING` | Remember grid/list/table per user where useful            |
 
 ---
 

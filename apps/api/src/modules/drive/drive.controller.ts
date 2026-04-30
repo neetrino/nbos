@@ -16,7 +16,9 @@ import { DriveService } from './drive.service';
 import { DriveUploadSessionService } from './drive-upload-session.service';
 import type {
   CompleteUploadSessionDto,
+  CompleteFileVersionDto,
   CreateFileAssetDto,
+  CreateFileVersionUploadDto,
   CreateFileLinkDto,
   CreateUploadSessionDto,
 } from './drive.types';
@@ -148,6 +150,24 @@ export class DriveController {
   @ApiOperation({ summary: 'Link Drive file asset to another entity' })
   async linkFileAsset(@Param('id') id: string, @Body() body: CreateFileLinkDto) {
     return this.driveService.linkFileAsset(id, body);
+  }
+
+  @Post('files/:id/version-upload-url')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Create presigned upload URL for a new File Asset version' })
+  async createVersionUploadUrl(@Param('id') id: string, @Body() body: CreateFileVersionUploadDto) {
+    return this.driveService.createVersionUploadUrl(id, body);
+  }
+
+  @Post('files/:id/versions')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Complete new version upload for an existing File Asset' })
+  async completeFileVersion(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: CompleteFileVersionDto,
+  ) {
+    return this.driveService.completeFileVersion(id, user.id, body);
   }
 
   @Delete('files/:id/links/:linkId')

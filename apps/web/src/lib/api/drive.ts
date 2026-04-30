@@ -35,6 +35,7 @@ export interface FileAsset {
   updatedAt: string;
   versions: FileVersion[];
   links: FileLink[];
+  auditEvents?: FileAuditEvent[];
 }
 
 export interface FileVersion {
@@ -61,6 +62,15 @@ export interface FileLink {
   linkedById: string | null;
   linkedAt: string;
   unlinkedAt: string | null;
+}
+
+export interface FileAuditEvent {
+  id: string;
+  fileAssetId: string;
+  actorId: string | null;
+  action: string;
+  metadata: unknown;
+  createdAt: string;
 }
 
 export const driveApi = {
@@ -139,6 +149,29 @@ export const driveApi = {
             ? { forDocumentId: params.forDocumentId }
             : undefined,
       },
+    );
+    return resp.data;
+  },
+
+  async createVersionUploadUrl(
+    id: string,
+    data: { fileName: string; contentType: string },
+  ): Promise<{ uploadUrl: string; storageKey: string; expiresInSeconds: number }> {
+    const resp = await api.post<{
+      uploadUrl: string;
+      storageKey: string;
+      expiresInSeconds: number;
+    }>('/api/drive/files/' + encodeURIComponent(id) + '/version-upload-url', data);
+    return resp.data;
+  },
+
+  async completeFileVersion(
+    id: string,
+    data: { storageKey: string; sizeBytes?: number; checksum?: string; changeNote?: string },
+  ): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/versions',
+      data,
     );
     return resp.data;
   },

@@ -1,9 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable, NotFoundException, Logger, Inject, BadRequestException } from '@nestjs/common';
 import {
   ListObjectsV2Command,
   DeleteObjectCommand,
   PutObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
@@ -16,6 +18,8 @@ import {
 import { PRISMA_TOKEN } from '../../database.module';
 import type {
   CreateFileAssetDto,
+  CompleteFileVersionDto,
+  CreateFileVersionUploadDto,
   CreateFileLinkDto,
   FileAssetQueryParams,
   FileEntry,
@@ -42,8 +46,10 @@ import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { DriveR2Client } from './drive-r2.client';
 import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
 import type { DocumentsReadAccess } from '../documents/documents-access-read';
+import { buildSessionUploadStorageKey } from './drive-upload-path';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
+const VERSION_UPLOAD_PREFIX = `${R2_DRIVE_PREFIX}uploads/versions`;
 
 @Injectable()
 export class DriveService {
@@ -233,6 +239,77 @@ export class DriveService {
     await this.getFileAsset(id);
     return this.prisma.fileLink.create({
       data: { fileAssetId: id, ...buildLinkCreateInput(data) },
+    });
+  }
+
+  async createVersionUploadUrl(id: string, data: CreateFileVersionUploadDto) {
+    const file = await this.getFileAsset(id);
+    if (file.storageProvider !== 'R2') {
+      throw new BadRequestException('Only R2-backed files support version uploads.');
+    }
+    const fileName = requireText(data.fileName, 'fileName');
+    const contentType = requireText(data.contentType, 'contentType');
+    const uploadId = randomUUID();
+    const storageKey = buildSessionUploadStorageKey(uploadId, fileName).replace(
+      `${R2_DRIVE_PREFIX}uploads/`,
+      `${VERSION_UPLOAD_PREFIX}/${id}/`,
+    );
+    const command = new PutObjectCommand({
+      Bucket: this.r2.bucket,
+      Key: storageKey,
+      ContentType: contentType,
+    });
+    const uploadUrl = await getSignedUrl(this.r2.ensureS3(), command, {
+      expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,
+    });
+    return { uploadUrl, storageKey, expiresInSeconds: PRESIGNED_URL_EXPIRY_SECONDS };
+  }
+
+  async completeFileVersion(id: string, actorId: string, data: CompleteFileVersionDto) {
+    const storageKey = requireText(data.storageKey, 'storageKey');
+    if (!storageKey.startsWith(`${VERSION_UPLOAD_PREFIX}/${id}/`)) {
+      throw new BadRequestException('storageKey does not belong to this file version upload.');
+    }
+    await this.getFileAsset(id);
+    try {
+      await this.r2
+        .ensureS3()
+        .send(new HeadObjectCommand({ Bucket: this.r2.bucket, Key: storageKey }));
+    } catch (err) {
+      this.logger.warn(`HeadObject failed for file version ${id}: ${String(err)}`);
+      throw new BadRequestException('Uploaded version object was not found in storage.');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const latest = await tx.fileVersion.findFirst({
+        where: { fileAssetId: id },
+        orderBy: { versionNumber: 'desc' },
+      });
+      const versionNumber = (latest?.versionNumber ?? 0) + 1;
+      await tx.fileVersion.updateMany({ where: { fileAssetId: id }, data: { isCurrent: false } });
+      const version = await tx.fileVersion.create({
+        data: {
+          fileAssetId: id,
+          versionNumber,
+          storageKey,
+          uploadedById: actorId,
+          sizeBytes: data.sizeBytes,
+          checksum: data.checksum,
+          changeNote: data.changeNote?.trim() || null,
+          isCurrent: true,
+        },
+      });
+      return tx.fileAsset.update({
+        where: { id },
+        data: {
+          storageKey,
+          sizeBytes: data.sizeBytes,
+          checksum: data.checksum,
+          currentVersionId: version.id,
+          auditEvents: { create: { action: 'version_uploaded', actorId } },
+        },
+        include: FILE_ASSET_INCLUDE,
+      });
     });
   }
 
