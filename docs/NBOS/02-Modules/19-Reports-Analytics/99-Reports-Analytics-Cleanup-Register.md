@@ -120,12 +120,14 @@ Shipped foundation:
 - `POST /api/reports/export-jobs` and `GET /api/reports/export-jobs`;
 - audit event when an export job is requested;
 - `/reports` export history and CSV export request action over Finance-owned definitions.
+- real CSV writer over Finance-owned aggregate services, stored as Drive/R2 `FileAsset`;
+- failure state and audit event when export writing fails.
 
 Still needed:
 
-- BullMQ worker to generate real files;
-- actual CSV/XLSX/PDF file generation through Drive/R2;
-- failure retry/cancellation flow;
+- BullMQ wiring for non-blocking retryable export workers;
+- XLSX/PDF generators;
+- retry/cancellation flow;
 - source-permission centralization before cross-module exports.
 
 ### B6. Data quality warnings are missing

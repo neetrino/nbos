@@ -31,6 +31,15 @@ export interface CreateFileAssetDto {
   link?: CreateFileLinkDto;
 }
 
+export interface CreateGeneratedFileAssetDto extends Omit<
+  CreateFileAssetDto,
+  'storageKey' | 'sizeBytes'
+> {
+  storageKey: string;
+  content: string | Uint8Array;
+  contentType: string;
+}
+
 export interface CreateFileLinkDto {
   entityType: string;
   entityId: string;

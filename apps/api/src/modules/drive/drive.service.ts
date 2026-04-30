@@ -19,6 +19,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import type {
   CreateFileAssetDto,
   CompleteFileVersionDto,
+  CreateGeneratedFileAssetDto,
   CreateFileVersionUploadDto,
   CreateFileLinkDto,
   FileAssetQueryParams,
@@ -233,6 +234,35 @@ export class DriveService {
     });
 
     return file;
+  }
+
+  async createGeneratedFileAsset(data: CreateGeneratedFileAssetDto) {
+    const body =
+      typeof data.content === 'string' ? Buffer.from(data.content, 'utf8') : data.content;
+    await this.r2.ensureS3().send(
+      new PutObjectCommand({
+        Bucket: this.r2.bucket,
+        Key: data.storageKey,
+        Body: body,
+        ContentType: data.contentType,
+      }),
+    );
+    return this.createFileAsset({
+      displayName: data.displayName,
+      originalName: data.originalName,
+      fileType: data.fileType,
+      purpose: data.purpose,
+      sourceModule: data.sourceModule,
+      ownerId: data.ownerId,
+      createdById: data.createdById,
+      visibility: data.visibility,
+      confidentiality: data.confidentiality,
+      storageKey: data.storageKey,
+      mimeType: data.mimeType ?? data.contentType,
+      checksum: data.checksum,
+      link: data.link,
+      sizeBytes: body.byteLength,
+    });
   }
 
   async linkFileAsset(id: string, data: CreateFileLinkDto) {
