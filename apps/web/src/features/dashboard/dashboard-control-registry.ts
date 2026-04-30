@@ -5,12 +5,15 @@ import {
   FolderKanban,
   Handshake,
   Headphones,
+  KeyRound,
   Mail,
   MessageCircle,
   Plus,
+  ReceiptText,
 } from 'lucide-react';
 import type {
   DashboardMetricProjection,
+  DashboardPersonalLink as ApiDashboardPersonalLink,
   DashboardPreferenceProjection,
   DashboardPriorityProjection,
 } from '@/lib/api/dashboard';
@@ -25,14 +28,23 @@ export interface PinnedAction {
   description: string;
 }
 
+export type DashboardPersonalLink = ApiDashboardPersonalLink;
 export type DashboardData = DashboardMetricProjection;
 export type DashboardPreference = DashboardPreferenceProjection;
 export type DashboardPinnedActionKey =
   | 'new-lead'
   | 'new-task'
+  | 'open-deals'
+  | 'open-my-workspaces'
+  | 'open-products'
   | 'open-invoices'
+  | 'open-expenses'
+  | 'open-payroll'
+  | 'open-tasks'
+  | 'open-support'
   | 'open-calendar'
   | 'open-messenger'
+  | 'open-credentials'
   | 'mail-inbox';
 export type DashboardWidgetKey =
   | 'open-deals'
@@ -61,6 +73,33 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Create work for yourself or a teammate.',
   },
   {
+    key: 'open-deals',
+    label: 'Open deals',
+    href: '/crm/deals',
+    icon: Handshake,
+    module: 'CRM_DEALS',
+    action: 'VIEW',
+    description: 'Review active sales pipeline.',
+  },
+  {
+    key: 'open-my-workspaces',
+    label: 'My Work Spaces',
+    href: '/work-spaces',
+    icon: FolderKanban,
+    module: 'WORK_SPACES',
+    action: 'VIEW',
+    description: 'Jump into active delivery spaces.',
+  },
+  {
+    key: 'open-products',
+    label: 'Product board',
+    href: '/projects/products',
+    icon: FolderKanban,
+    module: 'PRODUCTS',
+    action: 'VIEW',
+    description: 'Track product and extension delivery.',
+  },
+  {
     key: 'open-invoices',
     label: 'Open invoices',
     href: '/finance/invoices',
@@ -70,6 +109,42 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Review pending invoice work.',
   },
   {
+    key: 'open-expenses',
+    label: 'Expense board',
+    href: '/finance/expenses',
+    icon: ReceiptText,
+    module: 'EXPENSES',
+    action: 'VIEW',
+    description: 'Review expenses and payment status.',
+  },
+  {
+    key: 'open-payroll',
+    label: 'Salary board',
+    href: '/finance/payroll',
+    icon: FileText,
+    module: 'PAYROLL',
+    action: 'VIEW',
+    description: 'Review salary and payroll runs.',
+  },
+  {
+    key: 'open-tasks',
+    label: 'My tasks',
+    href: '/tasks',
+    icon: CheckSquare,
+    module: 'TASKS',
+    action: 'VIEW',
+    description: 'Open task board for work in progress.',
+  },
+  {
+    key: 'open-support',
+    label: 'Support queue',
+    href: '/support',
+    icon: Headphones,
+    module: 'SUPPORT',
+    action: 'VIEW',
+    description: 'Open tickets waiting for action.',
+  },
+  {
     key: 'open-calendar',
     label: 'Open calendar',
     href: '/calendar',
@@ -77,6 +152,15 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     module: 'CALENDAR',
     action: 'VIEW',
     description: 'See meetings, personal items and deadlines.',
+  },
+  {
+    key: 'open-credentials',
+    label: 'Credentials vault',
+    href: '/credentials',
+    icon: KeyRound,
+    module: 'CREDENTIALS',
+    action: 'VIEW',
+    description: 'Open shared credentials you can access.',
   },
   {
     key: 'open-messenger',

@@ -310,6 +310,11 @@ export type Employee = Prisma.EmployeeModel;
  */
 export type DashboardPreference = Prisma.DashboardPreferenceModel;
 /**
+ * Model PersonalLink
+ *
+ */
+export type PersonalLink = Prisma.PersonalLinkModel;
+/**
  * Model Partner
  *
  */

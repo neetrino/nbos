@@ -428,6 +428,7 @@ export const ModelName = {
   Invitation: 'Invitation',
   Employee: 'Employee',
   DashboardPreference: 'DashboardPreference',
+  PersonalLink: 'PersonalLink',
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
@@ -529,6 +530,7 @@ export type TypeMap<
       | 'invitation'
       | 'employee'
       | 'dashboardPreference'
+      | 'personalLink'
       | 'partner'
       | 'messengerChannel'
       | 'messengerChannelMessage'
@@ -4528,6 +4530,82 @@ export type TypeMap<
         };
       };
     };
+    PersonalLink: {
+      payload: Prisma.$PersonalLinkPayload<ExtArgs>;
+      fields: Prisma.PersonalLinkFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.PersonalLinkFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.PersonalLinkFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>;
+        };
+        findFirst: {
+          args: Prisma.PersonalLinkFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.PersonalLinkFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>;
+        };
+        findMany: {
+          args: Prisma.PersonalLinkFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>[];
+        };
+        create: {
+          args: Prisma.PersonalLinkCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>;
+        };
+        createMany: {
+          args: Prisma.PersonalLinkCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.PersonalLinkCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>[];
+        };
+        delete: {
+          args: Prisma.PersonalLinkDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>;
+        };
+        update: {
+          args: Prisma.PersonalLinkUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>;
+        };
+        deleteMany: {
+          args: Prisma.PersonalLinkDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.PersonalLinkUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.PersonalLinkUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>[];
+        };
+        upsert: {
+          args: Prisma.PersonalLinkUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonalLinkPayload>;
+        };
+        aggregate: {
+          args: Prisma.PersonalLinkAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePersonalLink>;
+        };
+        groupBy: {
+          args: Prisma.PersonalLinkGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.PersonalLinkGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.PersonalLinkCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.PersonalLinkCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     Partner: {
       payload: Prisma.$PartnerPayload<ExtArgs>;
       fields: Prisma.PartnerFieldRefs;
@@ -7702,6 +7780,21 @@ export const DashboardPreferenceScalarFieldEnum = {
 export type DashboardPreferenceScalarFieldEnum =
   (typeof DashboardPreferenceScalarFieldEnum)[keyof typeof DashboardPreferenceScalarFieldEnum];
 
+export const PersonalLinkScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  label: 'label',
+  url: 'url',
+  placement: 'placement',
+  openInNewTab: 'openInNewTab',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PersonalLinkScalarFieldEnum =
+  (typeof PersonalLinkScalarFieldEnum)[keyof typeof PersonalLinkScalarFieldEnum];
+
 export const PartnerScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -9983,6 +10076,7 @@ export type GlobalOmitConfig = {
   invitation?: Prisma.InvitationOmit;
   employee?: Prisma.EmployeeOmit;
   dashboardPreference?: Prisma.DashboardPreferenceOmit;
+  personalLink?: Prisma.PersonalLinkOmit;
   partner?: Prisma.PartnerOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;

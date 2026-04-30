@@ -101,6 +101,7 @@ export const ModelName = {
   Invitation: 'Invitation',
   Employee: 'Employee',
   DashboardPreference: 'DashboardPreference',
+  PersonalLink: 'PersonalLink',
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
@@ -1161,6 +1162,21 @@ export const DashboardPreferenceScalarFieldEnum = {
 
 export type DashboardPreferenceScalarFieldEnum =
   (typeof DashboardPreferenceScalarFieldEnum)[keyof typeof DashboardPreferenceScalarFieldEnum];
+
+export const PersonalLinkScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  label: 'label',
+  url: 'url',
+  placement: 'placement',
+  openInNewTab: 'openInNewTab',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PersonalLinkScalarFieldEnum =
+  (typeof PersonalLinkScalarFieldEnum)[keyof typeof PersonalLinkScalarFieldEnum];
 
 export const PartnerScalarFieldEnum = {
   id: 'id',

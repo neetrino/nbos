@@ -7,11 +7,13 @@ import {
   ArrowUpRight,
   BarChart3,
   EyeOff,
+  ExternalLink,
   RefreshCcw,
   RotateCcw,
 } from 'lucide-react';
 import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { dashboardApi } from '@/lib/api/dashboard';
 import { usePermission } from '@/lib/permissions';
@@ -21,6 +23,7 @@ import {
   PINNED_ACTIONS,
   priorityClass,
   type DashboardData,
+  type DashboardPersonalLink,
   type DashboardPreference,
   type PinnedAction,
   type PriorityCard,
@@ -45,6 +48,8 @@ export function DashboardControlCenter() {
       {dashboard.error ? <DashboardError message={dashboard.error} /> : null}
       <PinnedActions
         actions={dashboard.actions}
+        personalLinks={dashboard.personalLinks}
+        onCreatePersonalLink={dashboard.createPersonalLink}
         onHideAction={dashboard.hidePinnedAction}
         onReset={dashboard.resetPreferences}
         saving={dashboard.savingPreference}
@@ -66,6 +71,7 @@ function useDashboardControlCenter() {
   const { can } = usePermission();
   const [data, setData] = useState<DashboardData | null>(null);
   const [preference, setPreference] = useState<DashboardPreference | null>(null);
+  const [personalLinks, setPersonalLinks] = useState<DashboardPersonalLink[]>([]);
   const [priorities, setPriorities] = useState<PriorityCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,9 +89,11 @@ function useDashboardControlCenter() {
       const projection = await loadDashboardControlData();
       setData(projection.metrics);
       setPreference(projection.preference);
+      setPersonalLinks(projection.personalLinks);
       setPriorities(projection.priorities);
     } catch (caught) {
       setData(null);
+      setPersonalLinks([]);
       setPriorities([]);
       setError(caught instanceof Error ? caught.message : 'Dashboard data could not be loaded.');
     } finally {
@@ -103,9 +111,18 @@ function useDashboardControlCenter() {
     error,
     fetchDashboard,
     loading,
+    personalLinks,
     preference,
     priorities,
     ...preferenceControls,
+    createPersonalLink: async (label: string, url: string) => {
+      const link = await dashboardApi.createPersonalLink({
+        label,
+        url,
+        placement: ['SIDEBAR', 'DASHBOARD_PINNED_ACTIONS'],
+      });
+      setPersonalLinks((current) => [...current, link]);
+    },
   };
 }
 
@@ -178,15 +195,22 @@ function DashboardError({ message }: { message: string }) {
 
 function PinnedActions({
   actions,
+  personalLinks,
+  onCreatePersonalLink,
   onHideAction,
   onReset,
   saving,
 }: {
   actions: PinnedAction[];
+  personalLinks: DashboardPersonalLink[];
+  onCreatePersonalLink: (label: string, url: string) => Promise<void>;
   onHideAction: (key: string) => void;
   onReset: () => void;
   saving: boolean;
 }) {
+  const dashboardLinks = personalLinks.filter((link) =>
+    link.placement.includes('DASHBOARD_PINNED_ACTIONS'),
+  );
   return (
     <section className="border-border bg-card rounded-2xl border p-5">
       <h2 className="text-lg font-semibold">Pinned actions</h2>
@@ -197,7 +221,8 @@ function PinnedActions({
         <RotateCcw className="mr-2 h-4 w-4" />
         Reset layout
       </Button>
-      {actions.length === 0 ? (
+      <PersonalLinkForm onCreate={onCreatePersonalLink} saving={saving} />
+      {actions.length === 0 && dashboardLinks.length === 0 ? (
         <p className="text-muted-foreground mt-4 text-sm">
           No pinned actions are available for your current permissions.
         </p>
@@ -211,9 +236,54 @@ function PinnedActions({
               saving={saving}
             />
           ))}
+          {dashboardLinks.map((link) => (
+            <PersonalLinkCard key={link.id} link={link} />
+          ))}
         </div>
       )}
     </section>
+  );
+}
+
+function PersonalLinkForm({
+  onCreate,
+  saving,
+}: {
+  onCreate: (label: string, url: string) => Promise<void>;
+  saving: boolean;
+}) {
+  const [label, setLabel] = useState('');
+  const [url, setUrl] = useState('');
+  const canSubmit = Boolean(label.trim() && url.trim());
+
+  async function submit() {
+    if (!canSubmit) return;
+    await onCreate(label.trim(), url.trim());
+    setLabel('');
+    setUrl('');
+  }
+
+  return (
+    <div className="mt-4 grid gap-2 lg:grid-cols-[220px_minmax(0,1fr)_auto]">
+      <Input
+        value={label}
+        onChange={(event) => setLabel(event.target.value)}
+        placeholder="Link label"
+      />
+      <Input
+        value={url}
+        onChange={(event) => setUrl(event.target.value)}
+        placeholder="/reports or https://..."
+      />
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={() => void submit()}
+        disabled={!canSubmit || saving}
+      >
+        Add link
+      </Button>
+    </div>
   );
 }
 
@@ -241,6 +311,48 @@ function PinnedActionCard({
         <ArrowUpRight className="h-3.5 w-3.5" />
       </Link>
       <p className="text-muted-foreground mt-1 text-sm">{action.description}</p>
+    </div>
+  );
+}
+
+function PersonalLinkCard({ link }: { link: DashboardPersonalLink }) {
+  const content = (
+    <>
+      {link.label}
+      {link.isExternal ? (
+        <ExternalLink className="h-3.5 w-3.5" />
+      ) : (
+        <ArrowUpRight className="h-3.5 w-3.5" />
+      )}
+    </>
+  );
+  return (
+    <div className="border-border hover:bg-muted/50 rounded-xl border p-4 transition-colors">
+      <div className="flex items-start justify-between gap-3">
+        <div className="bg-primary/10 text-primary rounded-xl p-2.5">
+          <ExternalLink size={18} />
+        </div>
+        {link.isExternal ? (
+          <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700">
+            External
+          </span>
+        ) : null}
+      </div>
+      {link.isExternal ? (
+        <a
+          href={link.url}
+          target={link.openInNewTab ? '_blank' : undefined}
+          rel={link.openInNewTab ? 'noreferrer' : undefined}
+          className="mt-3 flex items-center gap-1 font-medium"
+        >
+          {content}
+        </a>
+      ) : (
+        <Link href={link.url} className="mt-3 flex items-center gap-1 font-medium">
+          {content}
+        </Link>
+      )}
+      <p className="text-muted-foreground mt-1 text-sm">Personal link</p>
     </div>
   );
 }

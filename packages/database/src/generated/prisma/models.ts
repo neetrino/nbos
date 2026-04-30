@@ -60,6 +60,7 @@ export type * from './models/RolePermission';
 export type * from './models/Invitation';
 export type * from './models/Employee';
 export type * from './models/DashboardPreference';
+export type * from './models/PersonalLink';
 export type * from './models/Partner';
 export type * from './models/MessengerChannel';
 export type * from './models/MessengerChannelMessage';

@@ -19,6 +19,7 @@ export interface DashboardControlCenterProjection {
   metrics: DashboardMetricProjection;
   priorities: DashboardPriorityProjection[];
   preference: DashboardPreferenceProjection;
+  personalLinks: DashboardPersonalLinkProjection[];
   meta: {
     source: 'module-projections';
     generatedAt: string;
@@ -32,4 +33,13 @@ export interface DashboardPreferenceProjection {
   hiddenWidgets: string[];
   compactWidgets: string[];
   defaultDashboardMode: string;
+}
+
+export interface DashboardPersonalLinkProjection {
+  id: string;
+  label: string;
+  url: string;
+  placement: string[];
+  openInNewTab: boolean;
+  isExternal: boolean;
 }

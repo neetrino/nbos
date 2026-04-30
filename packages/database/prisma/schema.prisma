@@ -1943,6 +1943,7 @@ model Employee {
   dashboardPreference          DashboardPreference?
   reportExportJobsRequested    ReportExportJob[]
   reportSchedulesOwned         ReportSchedule[]
+  personalLinks                PersonalLink[]
 
   @@map("employees")
 }
@@ -1962,6 +1963,23 @@ model DashboardPreference {
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@map("dashboard_preferences")
+}
+
+model PersonalLink {
+  id           String   @id @default(uuid())
+  ownerId      String   @map("owner_id")
+  label        String
+  url          String
+  placement    String[] @default(["SIDEBAR"])
+  openInNewTab Boolean  @default(false) @map("open_in_new_tab")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  owner Employee @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, sortOrder])
+  @@map("personal_links")
 }
 
 enum PartnerTypeEnum {
