@@ -2600,6 +2600,223 @@ export type EnumEmailRecipientKindWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumEmailRecipientKindFilter<$PrismaModel>;
 };
 
+export type EnumTechnicalHealthStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalHealthStatus
+    | Prisma.EnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalHealthStatus[]
+    | Prisma.ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalHealthStatus[]
+    | Prisma.ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalHealthStatusFilter<$PrismaModel> | $Enums.TechnicalHealthStatus;
+};
+
+export type EnumTechnicalBackupStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalBackupStatus
+    | Prisma.EnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalBackupStatus[]
+    | Prisma.ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalBackupStatus[]
+    | Prisma.ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalBackupStatusFilter<$PrismaModel> | $Enums.TechnicalBackupStatus;
+};
+
+export type EnumTechnicalDeployStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalDeployStatus
+    | Prisma.EnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalDeployStatus[]
+    | Prisma.ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalDeployStatus[]
+    | Prisma.ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalDeployStatusFilter<$PrismaModel> | $Enums.TechnicalDeployStatus;
+};
+
+export type EnumTechnicalHealthStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalHealthStatus
+    | Prisma.EnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalHealthStatus[]
+    | Prisma.ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalHealthStatus[]
+    | Prisma.ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalHealthStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalHealthStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalHealthStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalHealthStatusFilter<$PrismaModel>;
+};
+
+export type EnumTechnicalBackupStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalBackupStatus
+    | Prisma.EnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalBackupStatus[]
+    | Prisma.ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalBackupStatus[]
+    | Prisma.ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalBackupStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalBackupStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalBackupStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalBackupStatusFilter<$PrismaModel>;
+};
+
+export type EnumTechnicalDeployStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalDeployStatus
+    | Prisma.EnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalDeployStatus[]
+    | Prisma.ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalDeployStatus[]
+    | Prisma.ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalDeployStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalDeployStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalDeployStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalDeployStatusFilter<$PrismaModel>;
+};
+
+export type EnumTechnicalAssetTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.TechnicalAssetType | Prisma.EnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.TechnicalAssetType[] | Prisma.ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalAssetType[]
+    | Prisma.ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalAssetTypeFilter<$PrismaModel> | $Enums.TechnicalAssetType;
+};
+
+export type EnumTechnicalEnvironmentKindNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalEnvironmentKind
+    | Prisma.EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumTechnicalEnvironmentKindNullableFilter<$PrismaModel>
+    | $Enums.TechnicalEnvironmentKind
+    | null;
+};
+
+export type EnumTechnicalAssetStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.TechnicalAssetStatus | Prisma.EnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalAssetStatus[]
+    | Prisma.ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalAssetStatus[]
+    | Prisma.ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalAssetStatusFilter<$PrismaModel> | $Enums.TechnicalAssetStatus;
+};
+
+export type EnumTechnicalAssetTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TechnicalAssetType | Prisma.EnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.TechnicalAssetType[] | Prisma.ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalAssetType[]
+    | Prisma.ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalAssetTypeWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalAssetType;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalAssetTypeFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalAssetTypeFilter<$PrismaModel>;
+};
+
+export type EnumTechnicalEnvironmentKindNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalEnvironmentKind
+    | Prisma.EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumTechnicalEnvironmentKindNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalEnvironmentKind
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalEnvironmentKindNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalEnvironmentKindNullableFilter<$PrismaModel>;
+};
+
+export type EnumTechnicalAssetStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TechnicalAssetStatus | Prisma.EnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalAssetStatus[]
+    | Prisma.ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalAssetStatus[]
+    | Prisma.ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalAssetStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalAssetStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalAssetStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalAssetStatusFilter<$PrismaModel>;
+};
+
+export type EnumTechnicalEnvironmentKindFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalEnvironmentKind
+    | Prisma.EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalEnvironmentKindFilter<$PrismaModel>
+    | $Enums.TechnicalEnvironmentKind;
+};
+
+export type EnumTechnicalEnvironmentKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalEnvironmentKind
+    | Prisma.EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalEnvironmentKindWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalEnvironmentKind;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalEnvironmentKindFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalEnvironmentKindFilter<$PrismaModel>;
+};
+
 export type EnumCalendarMeetingTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.CalendarMeetingType | Prisma.EnumCalendarMeetingTypeFieldRefInput<$PrismaModel>;
   in?: $Enums.CalendarMeetingType[] | Prisma.ListEnumCalendarMeetingTypeFieldRefInput<$PrismaModel>;
@@ -5277,6 +5494,223 @@ export type NestedEnumEmailRecipientKindWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumEmailRecipientKindFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumEmailRecipientKindFilter<$PrismaModel>;
+};
+
+export type NestedEnumTechnicalHealthStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalHealthStatus
+    | Prisma.EnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalHealthStatus[]
+    | Prisma.ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalHealthStatus[]
+    | Prisma.ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalHealthStatusFilter<$PrismaModel> | $Enums.TechnicalHealthStatus;
+};
+
+export type NestedEnumTechnicalBackupStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalBackupStatus
+    | Prisma.EnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalBackupStatus[]
+    | Prisma.ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalBackupStatus[]
+    | Prisma.ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalBackupStatusFilter<$PrismaModel> | $Enums.TechnicalBackupStatus;
+};
+
+export type NestedEnumTechnicalDeployStatusFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalDeployStatus
+    | Prisma.EnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalDeployStatus[]
+    | Prisma.ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalDeployStatus[]
+    | Prisma.ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalDeployStatusFilter<$PrismaModel> | $Enums.TechnicalDeployStatus;
+};
+
+export type NestedEnumTechnicalHealthStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalHealthStatus
+    | Prisma.EnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalHealthStatus[]
+    | Prisma.ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalHealthStatus[]
+    | Prisma.ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalHealthStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalHealthStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalHealthStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalHealthStatusFilter<$PrismaModel>;
+};
+
+export type NestedEnumTechnicalBackupStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalBackupStatus
+    | Prisma.EnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalBackupStatus[]
+    | Prisma.ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalBackupStatus[]
+    | Prisma.ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalBackupStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalBackupStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalBackupStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalBackupStatusFilter<$PrismaModel>;
+};
+
+export type NestedEnumTechnicalDeployStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalDeployStatus
+    | Prisma.EnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalDeployStatus[]
+    | Prisma.ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalDeployStatus[]
+    | Prisma.ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalDeployStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalDeployStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalDeployStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalDeployStatusFilter<$PrismaModel>;
+};
+
+export type NestedEnumTechnicalAssetTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.TechnicalAssetType | Prisma.EnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.TechnicalAssetType[] | Prisma.ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalAssetType[]
+    | Prisma.ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalAssetTypeFilter<$PrismaModel> | $Enums.TechnicalAssetType;
+};
+
+export type NestedEnumTechnicalEnvironmentKindNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalEnvironmentKind
+    | Prisma.EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumTechnicalEnvironmentKindNullableFilter<$PrismaModel>
+    | $Enums.TechnicalEnvironmentKind
+    | null;
+};
+
+export type NestedEnumTechnicalAssetStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.TechnicalAssetStatus | Prisma.EnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalAssetStatus[]
+    | Prisma.ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalAssetStatus[]
+    | Prisma.ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTechnicalAssetStatusFilter<$PrismaModel> | $Enums.TechnicalAssetStatus;
+};
+
+export type NestedEnumTechnicalAssetTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TechnicalAssetType | Prisma.EnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  in?: $Enums.TechnicalAssetType[] | Prisma.ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalAssetType[]
+    | Prisma.ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalAssetTypeWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalAssetType;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalAssetTypeFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalAssetTypeFilter<$PrismaModel>;
+};
+
+export type NestedEnumTechnicalEnvironmentKindNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalEnvironmentKind
+    | Prisma.EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumTechnicalEnvironmentKindNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalEnvironmentKind
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalEnvironmentKindNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalEnvironmentKindNullableFilter<$PrismaModel>;
+};
+
+export type NestedEnumTechnicalAssetStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TechnicalAssetStatus | Prisma.EnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalAssetStatus[]
+    | Prisma.ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalAssetStatus[]
+    | Prisma.ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalAssetStatusWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalAssetStatus;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalAssetStatusFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalAssetStatusFilter<$PrismaModel>;
+};
+
+export type NestedEnumTechnicalEnvironmentKindFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalEnvironmentKind
+    | Prisma.EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalEnvironmentKindFilter<$PrismaModel>
+    | $Enums.TechnicalEnvironmentKind;
+};
+
+export type NestedEnumTechnicalEnvironmentKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TechnicalEnvironmentKind
+    | Prisma.EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TechnicalEnvironmentKind[]
+    | Prisma.ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTechnicalEnvironmentKindWithAggregatesFilter<$PrismaModel>
+    | $Enums.TechnicalEnvironmentKind;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTechnicalEnvironmentKindFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTechnicalEnvironmentKindFilter<$PrismaModel>;
 };
 
 export type NestedEnumCalendarMeetingTypeFilter<$PrismaModel = never> = {

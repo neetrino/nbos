@@ -362,7 +362,8 @@ Each slice should update its cleanup register and progress tracker after impleme
 
 ## 9. Implementation status
 
-| Slice                 | Status              | Notes                                                                                                                            |
-| --------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `calendar-p0-api-ui`  | `DONE` (2026-04-30) | `CalendarMeeting`, `PersonalCalendarEvent`, `GET /api/calendar/events`, Product/Extension deadline projections and API-backed UI |
-| `technical-p0-assets` | `NEXT`              | Product technical profile/assets/environments                                                                                    |
+| Slice                          | Status              | Notes                                                                                                                            |
+| ------------------------------ | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `calendar-p0-api-ui`           | `DONE` (2026-04-30) | `CalendarMeeting`, `PersonalCalendarEvent`, `GET /api/calendar/events`, Product/Extension deadline projections and API-backed UI |
+| `technical-p0-assets`          | `DONE` (2026-04-30) | Product technical profile/assets/environments, Product Technical tab and readiness blockers                                      |
+| `notifications-p0-persistence` | `NEXT`              | Persisted notification center + dedupe/actionable rules                                                                          |

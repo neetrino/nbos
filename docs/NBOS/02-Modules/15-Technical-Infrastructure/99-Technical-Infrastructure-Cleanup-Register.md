@@ -17,14 +17,14 @@
 
 ## Runtime Cleanup
 
-| Область                 | Статус  | Что сейчас                              | Что нужно сделать                                                     |
-| ----------------------- | ------- | --------------------------------------- | --------------------------------------------------------------------- |
-| Technical Profile model | MISSING | нет                                     | Добавить Product Technical Profile                                    |
-| Technical Asset model   | MISSING | нет                                     | Добавить assets: domain, hosting, repo, database, storage, monitoring |
-| Environment model       | MISSING | нет                                     | Добавить Production/Staging/Development environments                  |
-| Deployment Record       | MISSING | нет                                     | Фиксировать deploys, failures, rollback                               |
-| Monitoring Check        | MISSING | нет                                     | Добавить checks и status summary                                      |
-| Backup Policy           | MISSING | нет                                     | Добавить product backup policy и restore test                         |
-| Domain model            | PARTIAL | есть `Domain`, но только частный случай | Связать с Client Service Record и Technical Asset                     |
-| Support Incident link   | PARTIAL | есть SupportTicket category Incident    | Добавить связи incident -> asset/environment/deploy                   |
-| Project Product UI      | PARTIAL | есть Product tabs, но нет Technical tab | Добавить Technical / Operations tab                                   |
+| Область                 | Статус  | Что сейчас                                     | Что нужно сделать                                                  |
+| ----------------------- | ------- | ---------------------------------------------- | ------------------------------------------------------------------ |
+| Technical Profile model | `OK`    | **2026-04-30:** `ProductTechnicalProfile`      | Product technical profile linked to Product/Project                |
+| Technical Asset model   | `OK`    | **2026-04-30:** `TechnicalAsset`               | Assets: domain, hosting, repo, database, storage, monitoring, etc. |
+| Environment model       | `OK`    | **2026-04-30:** `TechnicalEnvironment`         | Production/Staging/Development/Preview/Legacy environments         |
+| Deployment Record       | MISSING | нет                                            | Фиксировать deploys, failures, rollback                            |
+| Monitoring Check        | MISSING | нет                                            | Добавить checks и status summary                                   |
+| Backup Policy           | MISSING | нет                                            | Добавить product backup policy и restore test                      |
+| Domain model            | PARTIAL | есть `Domain`, но только частный случай        | Связать с Client Service Record и Technical Asset                  |
+| Support Incident link   | PARTIAL | есть SupportTicket category Incident           | Добавить связи incident -> asset/environment/deploy                |
+| Project Product UI      | `OK`    | **2026-04-30:** Product page tab **Technical** | Technical profile, readiness, assets and environments              |

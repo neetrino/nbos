@@ -438,6 +438,9 @@ export const ModelName = {
   MailDeliveryLog: 'MailDeliveryLog',
   EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
+  ProductTechnicalProfile: 'ProductTechnicalProfile',
+  TechnicalAsset: 'TechnicalAsset',
+  TechnicalEnvironment: 'TechnicalEnvironment',
   CalendarMeeting: 'CalendarMeeting',
   PersonalCalendarEvent: 'PersonalCalendarEvent',
   AuditLog: 'AuditLog',
@@ -525,6 +528,9 @@ export type TypeMap<
       | 'mailDeliveryLog'
       | 'emailRecipient'
       | 'inAppNotification'
+      | 'productTechnicalProfile'
+      | 'technicalAsset'
+      | 'technicalEnvironment'
       | 'calendarMeeting'
       | 'personalCalendarEvent'
       | 'auditLog'
@@ -5254,6 +5260,234 @@ export type TypeMap<
         };
       };
     };
+    ProductTechnicalProfile: {
+      payload: Prisma.$ProductTechnicalProfilePayload<ExtArgs>;
+      fields: Prisma.ProductTechnicalProfileFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ProductTechnicalProfileFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ProductTechnicalProfileFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>;
+        };
+        findFirst: {
+          args: Prisma.ProductTechnicalProfileFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ProductTechnicalProfileFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>;
+        };
+        findMany: {
+          args: Prisma.ProductTechnicalProfileFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>[];
+        };
+        create: {
+          args: Prisma.ProductTechnicalProfileCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>;
+        };
+        createMany: {
+          args: Prisma.ProductTechnicalProfileCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ProductTechnicalProfileCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>[];
+        };
+        delete: {
+          args: Prisma.ProductTechnicalProfileDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>;
+        };
+        update: {
+          args: Prisma.ProductTechnicalProfileUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>;
+        };
+        deleteMany: {
+          args: Prisma.ProductTechnicalProfileDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ProductTechnicalProfileUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ProductTechnicalProfileUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>[];
+        };
+        upsert: {
+          args: Prisma.ProductTechnicalProfileUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductTechnicalProfilePayload>;
+        };
+        aggregate: {
+          args: Prisma.ProductTechnicalProfileAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProductTechnicalProfile>;
+        };
+        groupBy: {
+          args: Prisma.ProductTechnicalProfileGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ProductTechnicalProfileGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ProductTechnicalProfileCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ProductTechnicalProfileCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    TechnicalAsset: {
+      payload: Prisma.$TechnicalAssetPayload<ExtArgs>;
+      fields: Prisma.TechnicalAssetFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.TechnicalAssetFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.TechnicalAssetFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>;
+        };
+        findFirst: {
+          args: Prisma.TechnicalAssetFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.TechnicalAssetFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>;
+        };
+        findMany: {
+          args: Prisma.TechnicalAssetFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>[];
+        };
+        create: {
+          args: Prisma.TechnicalAssetCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>;
+        };
+        createMany: {
+          args: Prisma.TechnicalAssetCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.TechnicalAssetCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>[];
+        };
+        delete: {
+          args: Prisma.TechnicalAssetDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>;
+        };
+        update: {
+          args: Prisma.TechnicalAssetUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>;
+        };
+        deleteMany: {
+          args: Prisma.TechnicalAssetDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.TechnicalAssetUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.TechnicalAssetUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>[];
+        };
+        upsert: {
+          args: Prisma.TechnicalAssetUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalAssetPayload>;
+        };
+        aggregate: {
+          args: Prisma.TechnicalAssetAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTechnicalAsset>;
+        };
+        groupBy: {
+          args: Prisma.TechnicalAssetGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.TechnicalAssetGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.TechnicalAssetCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.TechnicalAssetCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    TechnicalEnvironment: {
+      payload: Prisma.$TechnicalEnvironmentPayload<ExtArgs>;
+      fields: Prisma.TechnicalEnvironmentFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.TechnicalEnvironmentFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.TechnicalEnvironmentFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>;
+        };
+        findFirst: {
+          args: Prisma.TechnicalEnvironmentFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.TechnicalEnvironmentFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>;
+        };
+        findMany: {
+          args: Prisma.TechnicalEnvironmentFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>[];
+        };
+        create: {
+          args: Prisma.TechnicalEnvironmentCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>;
+        };
+        createMany: {
+          args: Prisma.TechnicalEnvironmentCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.TechnicalEnvironmentCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>[];
+        };
+        delete: {
+          args: Prisma.TechnicalEnvironmentDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>;
+        };
+        update: {
+          args: Prisma.TechnicalEnvironmentUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>;
+        };
+        deleteMany: {
+          args: Prisma.TechnicalEnvironmentDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.TechnicalEnvironmentUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.TechnicalEnvironmentUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>[];
+        };
+        upsert: {
+          args: Prisma.TechnicalEnvironmentUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TechnicalEnvironmentPayload>;
+        };
+        aggregate: {
+          args: Prisma.TechnicalEnvironmentAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTechnicalEnvironment>;
+        };
+        groupBy: {
+          args: Prisma.TechnicalEnvironmentGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.TechnicalEnvironmentGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.TechnicalEnvironmentCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.TechnicalEnvironmentCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     CalendarMeeting: {
       payload: Prisma.$CalendarMeetingPayload<ExtArgs>;
       fields: Prisma.CalendarMeetingFieldRefs;
@@ -6717,6 +6951,69 @@ export const InAppNotificationScalarFieldEnum = {
 export type InAppNotificationScalarFieldEnum =
   (typeof InAppNotificationScalarFieldEnum)[keyof typeof InAppNotificationScalarFieldEnum];
 
+export const ProductTechnicalProfileScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  projectId: 'projectId',
+  technicalOwnerId: 'technicalOwnerId',
+  productionUrl: 'productionUrl',
+  stagingUrl: 'stagingUrl',
+  repositoryUrl: 'repositoryUrl',
+  deploymentMethod: 'deploymentMethod',
+  hostingProvider: 'hostingProvider',
+  monitoringStatus: 'monitoringStatus',
+  backupStatus: 'backupStatus',
+  lastDeployAt: 'lastDeployAt',
+  lastDeployStatus: 'lastDeployStatus',
+  technicalNotes: 'technicalNotes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductTechnicalProfileScalarFieldEnum =
+  (typeof ProductTechnicalProfileScalarFieldEnum)[keyof typeof ProductTechnicalProfileScalarFieldEnum];
+
+export const TechnicalAssetScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  projectId: 'projectId',
+  type: 'type',
+  name: 'name',
+  provider: 'provider',
+  environment: 'environment',
+  status: 'status',
+  url: 'url',
+  ownerId: 'ownerId',
+  credentialId: 'credentialId',
+  clientServiceRecordId: 'clientServiceRecordId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type TechnicalAssetScalarFieldEnum =
+  (typeof TechnicalAssetScalarFieldEnum)[keyof typeof TechnicalAssetScalarFieldEnum];
+
+export const TechnicalEnvironmentScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  projectId: 'projectId',
+  kind: 'kind',
+  name: 'name',
+  url: 'url',
+  branch: 'branch',
+  deploymentTarget: 'deploymentTarget',
+  envCredentialId: 'envCredentialId',
+  databaseAssetId: 'databaseAssetId',
+  status: 'status',
+  lastCheckedAt: 'lastCheckedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type TechnicalEnvironmentScalarFieldEnum =
+  (typeof TechnicalEnvironmentScalarFieldEnum)[keyof typeof TechnicalEnvironmentScalarFieldEnum];
+
 export const CalendarMeetingScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -8139,6 +8436,102 @@ export type ListEnumEmailRecipientKindFieldRefInput<$PrismaModel> = FieldRefInpu
 >;
 
 /**
+ * Reference to a field of type 'TechnicalHealthStatus'
+ */
+export type EnumTechnicalHealthStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalHealthStatus'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalHealthStatus[]'
+ */
+export type ListEnumTechnicalHealthStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalHealthStatus[]'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalBackupStatus'
+ */
+export type EnumTechnicalBackupStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalBackupStatus'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalBackupStatus[]'
+ */
+export type ListEnumTechnicalBackupStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalBackupStatus[]'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalDeployStatus'
+ */
+export type EnumTechnicalDeployStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalDeployStatus'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalDeployStatus[]'
+ */
+export type ListEnumTechnicalDeployStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalDeployStatus[]'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalAssetType'
+ */
+export type EnumTechnicalAssetTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalAssetType'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalAssetType[]'
+ */
+export type ListEnumTechnicalAssetTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalAssetType[]'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalEnvironmentKind'
+ */
+export type EnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalEnvironmentKind'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalEnvironmentKind[]'
+ */
+export type ListEnumTechnicalEnvironmentKindFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalEnvironmentKind[]'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalAssetStatus'
+ */
+export type EnumTechnicalAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalAssetStatus'
+>;
+
+/**
+ * Reference to a field of type 'TechnicalAssetStatus[]'
+ */
+export type ListEnumTechnicalAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TechnicalAssetStatus[]'
+>;
+
+/**
  * Reference to a field of type 'CalendarMeetingType'
  */
 export type EnumCalendarMeetingTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -8378,6 +8771,9 @@ export type GlobalOmitConfig = {
   mailDeliveryLog?: Prisma.MailDeliveryLogOmit;
   emailRecipient?: Prisma.EmailRecipientOmit;
   inAppNotification?: Prisma.InAppNotificationOmit;
+  productTechnicalProfile?: Prisma.ProductTechnicalProfileOmit;
+  technicalAsset?: Prisma.TechnicalAssetOmit;
+  technicalEnvironment?: Prisma.TechnicalEnvironmentOmit;
   calendarMeeting?: Prisma.CalendarMeetingOmit;
   personalCalendarEvent?: Prisma.PersonalCalendarEventOmit;
   auditLog?: Prisma.AuditLogOmit;

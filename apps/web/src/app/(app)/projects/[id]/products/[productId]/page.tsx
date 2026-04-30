@@ -12,6 +12,7 @@ import {
   Ticket,
   KeyRound,
   DollarSign,
+  ServerCog,
   ChevronRight,
   ChevronsUpDown,
 } from 'lucide-react';
@@ -31,6 +32,7 @@ import { ProductOverviewTab } from '@/features/projects/components/product-tabs/
 import { ProductTasksTab } from '@/features/projects/components/product-tabs/ProductTasksTab';
 import { ProductExtensionsTab } from '@/features/projects/components/product-tabs/ProductExtensionsTab';
 import { ProductTicketsTab } from '@/features/projects/components/product-tabs/ProductTicketsTab';
+import { ProductTechnicalTab } from '@/features/projects/components/product-tabs/ProductTechnicalTab';
 import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 
@@ -39,6 +41,7 @@ const TAB_ITEMS = [
   { value: 'tasks', label: 'Work Space', icon: ListChecks },
   { value: 'extensions', label: 'Extensions', icon: Puzzle },
   { value: 'tickets', label: 'Tickets', icon: Ticket },
+  { value: 'technical', label: 'Technical', icon: ServerCog },
   { value: 'credentials', label: 'Credentials', icon: KeyRound },
   { value: 'finance', label: 'Finance', icon: DollarSign },
 ] as const;
@@ -257,6 +260,10 @@ export default function ProductDetailPage() {
 
         <TabsContent value="tickets" className="mt-5">
           <ProductTicketsTab tickets={product.tickets} />
+        </TabsContent>
+
+        <TabsContent value="technical" className="mt-5">
+          <ProductTechnicalTab productId={product.id} />
         </TabsContent>
 
         <TabsContent value="credentials" className="mt-5">

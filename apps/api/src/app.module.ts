@@ -29,6 +29,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { PartnersModule } from './modules/partners/partners.module';
 import { MarketingModule } from './modules/marketing/marketing.module';
 import { SystemListsModule } from './modules/system-lists/system-lists.module';
+import { TechnicalModule } from './modules/technical/technical.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
@@ -72,6 +73,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     MarketingModule,
     MessengerModule,
     MailModule,
+    TechnicalModule,
     SystemListsModule,
     RolesModule,
     DepartmentsModule,

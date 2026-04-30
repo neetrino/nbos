@@ -111,6 +111,9 @@ export const ModelName = {
   MailDeliveryLog: 'MailDeliveryLog',
   EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
+  ProductTechnicalProfile: 'ProductTechnicalProfile',
+  TechnicalAsset: 'TechnicalAsset',
+  TechnicalEnvironment: 'TechnicalEnvironment',
   CalendarMeeting: 'CalendarMeeting',
   PersonalCalendarEvent: 'PersonalCalendarEvent',
   AuditLog: 'AuditLog',
@@ -1254,6 +1257,69 @@ export const InAppNotificationScalarFieldEnum = {
 
 export type InAppNotificationScalarFieldEnum =
   (typeof InAppNotificationScalarFieldEnum)[keyof typeof InAppNotificationScalarFieldEnum];
+
+export const ProductTechnicalProfileScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  projectId: 'projectId',
+  technicalOwnerId: 'technicalOwnerId',
+  productionUrl: 'productionUrl',
+  stagingUrl: 'stagingUrl',
+  repositoryUrl: 'repositoryUrl',
+  deploymentMethod: 'deploymentMethod',
+  hostingProvider: 'hostingProvider',
+  monitoringStatus: 'monitoringStatus',
+  backupStatus: 'backupStatus',
+  lastDeployAt: 'lastDeployAt',
+  lastDeployStatus: 'lastDeployStatus',
+  technicalNotes: 'technicalNotes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductTechnicalProfileScalarFieldEnum =
+  (typeof ProductTechnicalProfileScalarFieldEnum)[keyof typeof ProductTechnicalProfileScalarFieldEnum];
+
+export const TechnicalAssetScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  projectId: 'projectId',
+  type: 'type',
+  name: 'name',
+  provider: 'provider',
+  environment: 'environment',
+  status: 'status',
+  url: 'url',
+  ownerId: 'ownerId',
+  credentialId: 'credentialId',
+  clientServiceRecordId: 'clientServiceRecordId',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type TechnicalAssetScalarFieldEnum =
+  (typeof TechnicalAssetScalarFieldEnum)[keyof typeof TechnicalAssetScalarFieldEnum];
+
+export const TechnicalEnvironmentScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  projectId: 'projectId',
+  kind: 'kind',
+  name: 'name',
+  url: 'url',
+  branch: 'branch',
+  deploymentTarget: 'deploymentTarget',
+  envCredentialId: 'envCredentialId',
+  databaseAssetId: 'databaseAssetId',
+  status: 'status',
+  lastCheckedAt: 'lastCheckedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type TechnicalEnvironmentScalarFieldEnum =
+  (typeof TechnicalEnvironmentScalarFieldEnum)[keyof typeof TechnicalEnvironmentScalarFieldEnum];
 
 export const CalendarMeetingScalarFieldEnum = {
   id: 'id',

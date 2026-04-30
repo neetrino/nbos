@@ -332,6 +332,21 @@ export type EmailRecipient = Prisma.EmailRecipientModel;
  */
 export type InAppNotification = Prisma.InAppNotificationModel;
 /**
+ * Model ProductTechnicalProfile
+ *
+ */
+export type ProductTechnicalProfile = Prisma.ProductTechnicalProfileModel;
+/**
+ * Model TechnicalAsset
+ *
+ */
+export type TechnicalAsset = Prisma.TechnicalAssetModel;
+/**
+ * Model TechnicalEnvironment
+ *
+ */
+export type TechnicalEnvironment = Prisma.TechnicalEnvironmentModel;
+/**
  * Model CalendarMeeting
  *
  */

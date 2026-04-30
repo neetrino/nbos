@@ -807,6 +807,74 @@ export const EmailRecipientKind = {
 
 export type EmailRecipientKind = (typeof EmailRecipientKind)[keyof typeof EmailRecipientKind];
 
+export const TechnicalHealthStatus = {
+  HEALTHY: 'HEALTHY',
+  WARNING: 'WARNING',
+  CRITICAL: 'CRITICAL',
+  NOT_CONFIGURED: 'NOT_CONFIGURED',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TechnicalHealthStatus =
+  (typeof TechnicalHealthStatus)[keyof typeof TechnicalHealthStatus];
+
+export const TechnicalBackupStatus = {
+  HEALTHY: 'HEALTHY',
+  WARNING: 'WARNING',
+  MISSING: 'MISSING',
+  NOT_REQUIRED: 'NOT_REQUIRED',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TechnicalBackupStatus =
+  (typeof TechnicalBackupStatus)[keyof typeof TechnicalBackupStatus];
+
+export const TechnicalDeployStatus = {
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  ROLLED_BACK: 'ROLLED_BACK',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TechnicalDeployStatus =
+  (typeof TechnicalDeployStatus)[keyof typeof TechnicalDeployStatus];
+
+export const TechnicalAssetType = {
+  DOMAIN: 'DOMAIN',
+  HOSTING: 'HOSTING',
+  REPOSITORY: 'REPOSITORY',
+  DATABASE: 'DATABASE',
+  STORAGE: 'STORAGE',
+  MONITORING: 'MONITORING',
+  ERROR_TRACKING: 'ERROR_TRACKING',
+  EXTERNAL_API: 'EXTERNAL_API',
+  QUEUE: 'QUEUE',
+  OTHER: 'OTHER',
+} as const;
+
+export type TechnicalAssetType = (typeof TechnicalAssetType)[keyof typeof TechnicalAssetType];
+
+export const TechnicalAssetStatus = {
+  ACTIVE: 'ACTIVE',
+  WARNING: 'WARNING',
+  BROKEN: 'BROKEN',
+  DEPRECATED: 'DEPRECATED',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TechnicalAssetStatus = (typeof TechnicalAssetStatus)[keyof typeof TechnicalAssetStatus];
+
+export const TechnicalEnvironmentKind = {
+  PRODUCTION: 'PRODUCTION',
+  STAGING: 'STAGING',
+  DEVELOPMENT: 'DEVELOPMENT',
+  PREVIEW: 'PREVIEW',
+  LEGACY: 'LEGACY',
+} as const;
+
+export type TechnicalEnvironmentKind =
+  (typeof TechnicalEnvironmentKind)[keyof typeof TechnicalEnvironmentKind];
+
 export const CalendarMeetingType = {
   SALES_CALL: 'SALES_CALL',
   OFFER_PRESENTATION: 'OFFER_PRESENTATION',
