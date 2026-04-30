@@ -768,6 +768,17 @@ export const MailProviderType = {
 
 export type MailProviderType = (typeof MailProviderType)[keyof typeof MailProviderType];
 
+export const MailProviderConnectionStatus = {
+  NOT_CONNECTED: 'NOT_CONNECTED',
+  CONNECTED: 'CONNECTED',
+  DEGRADED: 'DEGRADED',
+  NEEDS_RECONNECT: 'NEEDS_RECONNECT',
+  PAUSED: 'PAUSED',
+} as const;
+
+export type MailProviderConnectionStatus =
+  (typeof MailProviderConnectionStatus)[keyof typeof MailProviderConnectionStatus];
+
 export const MailAccountStatus = {
   ACTIVE: 'ACTIVE',
   NEEDS_RECONNECT: 'NEEDS_RECONNECT',
@@ -822,6 +833,15 @@ export const MailDeliveryLogKind = {
 } as const;
 
 export type MailDeliveryLogKind = (typeof MailDeliveryLogKind)[keyof typeof MailDeliveryLogKind];
+
+export const EmailAttachmentDownloadStatus = {
+  PENDING: 'PENDING',
+  READY: 'READY',
+  FAILED: 'FAILED',
+} as const;
+
+export type EmailAttachmentDownloadStatus =
+  (typeof EmailAttachmentDownloadStatus)[keyof typeof EmailAttachmentDownloadStatus];
 
 export const EmailRecipientKind = {
   FROM: 'FROM',

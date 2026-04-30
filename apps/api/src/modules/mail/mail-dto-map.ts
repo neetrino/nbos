@@ -1,6 +1,8 @@
 import type {
+  MailAttachmentRow,
   MailAccountRow,
   MailMessageRow,
+  MailProviderConnectionRow,
   MailRecipientRow,
   MailThreadListRow,
 } from './mail.types';
@@ -15,6 +17,56 @@ export interface MessageWithRecipients {
   readState: string;
   deliveryStatus: string | null;
   recipients: Array<{ kind: string; email: string; displayName: string | null }>;
+  attachments: Array<{
+    id: string;
+    fileAssetId: string;
+    fileName: string;
+    mimeType: string | null;
+    sizeBytes: bigint | null;
+    providerAttachmentId: string | null;
+    isInline: boolean;
+    downloadStatus: string;
+    createdAt: Date;
+  }>;
+}
+
+function toProviderConnectionRow(
+  row: {
+    id: string;
+    providerType: string;
+    status: string;
+    credentialId: string | null;
+    providerAccountId: string | null;
+    username: string | null;
+    imapHost: string | null;
+    imapPort: number | null;
+    smtpHost: string | null;
+    smtpPort: number | null;
+    secureMode: string | null;
+    lastValidatedAt: Date | null;
+    lastErrorAt: Date | null;
+    lastErrorMessage: string | null;
+  } | null,
+): MailProviderConnectionRow | null {
+  if (!row) {
+    return null;
+  }
+  return {
+    id: row.id,
+    providerType: row.providerType,
+    status: row.status,
+    credentialId: row.credentialId,
+    providerAccountId: row.providerAccountId,
+    username: row.username,
+    imapHost: row.imapHost,
+    imapPort: row.imapPort,
+    smtpHost: row.smtpHost,
+    smtpPort: row.smtpPort,
+    secureMode: row.secureMode,
+    lastValidatedAt: row.lastValidatedAt?.toISOString() ?? null,
+    lastErrorAt: row.lastErrorAt?.toISOString() ?? null,
+    lastErrorMessage: row.lastErrorMessage,
+  };
 }
 
 export function toAccountRow(row: {
@@ -25,6 +77,7 @@ export function toAccountRow(row: {
   status: string;
   lastSyncAt: Date | null;
   lastErrorAt: Date | null;
+  providerConnection?: Parameters<typeof toProviderConnectionRow>[0];
 }): MailAccountRow {
   return {
     id: row.id,
@@ -34,6 +87,7 @@ export function toAccountRow(row: {
     status: row.status,
     lastSyncAt: row.lastSyncAt?.toISOString() ?? null,
     lastErrorAt: row.lastErrorAt?.toISOString() ?? null,
+    providerConnection: toProviderConnectionRow(row.providerConnection ?? null),
   };
 }
 
@@ -69,6 +123,20 @@ function toRecipientRow(r: {
   return { kind: r.kind, email: r.email, displayName: r.displayName };
 }
 
+function toAttachmentRow(a: MessageWithRecipients['attachments'][number]): MailAttachmentRow {
+  return {
+    id: a.id,
+    fileAssetId: a.fileAssetId,
+    fileName: a.fileName,
+    mimeType: a.mimeType,
+    sizeBytes: a.sizeBytes?.toString() ?? null,
+    providerAttachmentId: a.providerAttachmentId,
+    isInline: a.isInline,
+    downloadStatus: a.downloadStatus,
+    createdAt: a.createdAt.toISOString(),
+  };
+}
+
 export function toMessageRow(m: MessageWithRecipients): MailMessageRow {
   return {
     id: m.id,
@@ -80,5 +148,6 @@ export function toMessageRow(m: MessageWithRecipients): MailMessageRow {
     readState: m.readState,
     deliveryStatus: m.deliveryStatus ?? null,
     recipients: m.recipients.map(toRecipientRow),
+    attachments: m.attachments.map(toAttachmentRow),
   };
 }

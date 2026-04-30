@@ -28,6 +28,7 @@ export function MailThreadReplyDraftCard({
   const [draftCc, setDraftCc] = useState('');
   const [draftSubject, setDraftSubject] = useState('');
   const [draftBody, setDraftBody] = useState('');
+  const [draftAttachmentIds, setDraftAttachmentIds] = useState('');
   const [draftSaving, setDraftSaving] = useState(false);
   const [draftError, setDraftError] = useState<string | null>(null);
   const draftDefaultsKey = useRef<string>('');
@@ -42,6 +43,7 @@ export function MailThreadReplyDraftCard({
     setDraftCc('');
     setDraftSubject(defaultReplySubjectFromMessages(messages));
     setDraftBody('');
+    setDraftAttachmentIds('');
     setDraftError(null);
   }, [threadId, messages]);
 
@@ -59,11 +61,16 @@ export function MailThreadReplyDraftCard({
     setDraftError(null);
     try {
       const cc = splitEmailList(draftCc);
+      const fileAssetIds = draftAttachmentIds
+        .split(/[,\s]+/)
+        .map((id) => id.trim())
+        .filter(Boolean);
       const d = await mailApi.createOutboundDraft(threadId, {
         to,
         ...(cc.length > 0 ? { cc } : {}),
         subject: draftSubject.trim(),
         bodyText: draftBody,
+        ...(fileAssetIds.length > 0 ? { fileAssetIds } : {}),
       });
       onThreadUpdated(d);
       setDraftBody('');
@@ -72,7 +79,7 @@ export function MailThreadReplyDraftCard({
     } finally {
       setDraftSaving(false);
     }
-  }, [threadId, draftTo, draftCc, draftSubject, draftBody, onThreadUpdated]);
+  }, [threadId, draftTo, draftCc, draftSubject, draftBody, draftAttachmentIds, onThreadUpdated]);
 
   return (
     <Card>
@@ -131,6 +138,20 @@ export function MailThreadReplyDraftCard({
               onChange={(e) => setDraftBody(e.target.value)}
               rows={5}
               className="min-h-24 resize-y"
+            />
+          </div>
+          <div className="flex flex-col gap-1 sm:col-span-2">
+            <label
+              htmlFor="mail-draft-attachments"
+              className="text-muted-foreground text-xs font-medium"
+            >
+              Drive FileAsset IDs (optional, comma-separated)
+            </label>
+            <Input
+              id="mail-draft-attachments"
+              value={draftAttachmentIds}
+              onChange={(e) => setDraftAttachmentIds(e.target.value)}
+              autoComplete="off"
             />
           </div>
         </div>

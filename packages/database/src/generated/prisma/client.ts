@@ -345,6 +345,11 @@ export type MessengerDirectThreadReadState = Prisma.MessengerDirectThreadReadSta
  */
 export type MailAccount = Prisma.MailAccountModel;
 /**
+ * Model MailProviderConnection
+ *
+ */
+export type MailProviderConnection = Prisma.MailProviderConnectionModel;
+/**
  * Model EmailThread
  *
  */
@@ -354,6 +359,11 @@ export type EmailThread = Prisma.EmailThreadModel;
  *
  */
 export type EmailMessage = Prisma.EmailMessageModel;
+/**
+ * Model EmailAttachment
+ *
+ */
+export type EmailAttachment = Prisma.EmailAttachmentModel;
 /**
  * Model MailDeliveryLog
  *

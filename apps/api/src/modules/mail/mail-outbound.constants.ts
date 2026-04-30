@@ -9,3 +9,6 @@ export const MAIL_OUTBOUND_DRAFT_MAX_TO_RECIPIENTS = 50;
 
 /** Max distinct Cc addresses per draft. */
 export const MAIL_OUTBOUND_DRAFT_MAX_CC_RECIPIENTS = 50;
+
+/** Max Drive FileAsset references attached to one outbound draft. */
+export const MAIL_OUTBOUND_DRAFT_MAX_ATTACHMENTS = 10;

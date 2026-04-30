@@ -235,6 +235,10 @@ export type MailAccountWhereInput = {
     Prisma.EmployeeNullableScalarRelationFilter,
     Prisma.EmployeeWhereInput
   > | null;
+  providerConnection?: Prisma.XOR<
+    Prisma.MailProviderConnectionNullableScalarRelationFilter,
+    Prisma.MailProviderConnectionWhereInput
+  > | null;
   threads?: Prisma.EmailThreadListRelationFilter;
   messages?: Prisma.EmailMessageListRelationFilter;
   deliveryLogs?: Prisma.MailDeliveryLogListRelationFilter;
@@ -254,6 +258,7 @@ export type MailAccountOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder;
   owner?: Prisma.EmployeeOrderByWithRelationInput;
   createdBy?: Prisma.EmployeeOrderByWithRelationInput;
+  providerConnection?: Prisma.MailProviderConnectionOrderByWithRelationInput;
   threads?: Prisma.EmailThreadOrderByRelationAggregateInput;
   messages?: Prisma.EmailMessageOrderByRelationAggregateInput;
   deliveryLogs?: Prisma.MailDeliveryLogOrderByRelationAggregateInput;
@@ -282,6 +287,10 @@ export type MailAccountWhereUniqueInput = Prisma.AtLeast<
     createdBy?: Prisma.XOR<
       Prisma.EmployeeNullableScalarRelationFilter,
       Prisma.EmployeeWhereInput
+    > | null;
+    providerConnection?: Prisma.XOR<
+      Prisma.MailProviderConnectionNullableScalarRelationFilter,
+      Prisma.MailProviderConnectionWhereInput
     > | null;
     threads?: Prisma.EmailThreadListRelationFilter;
     messages?: Prisma.EmailMessageListRelationFilter;
@@ -344,6 +353,7 @@ export type MailAccountCreateInput = {
   updatedAt?: Date | string;
   owner?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsOwnedInput;
   createdBy?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsCreatedInput;
+  providerConnection?: Prisma.MailProviderConnectionCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadCreateNestedManyWithoutMailAccountInput;
   messages?: Prisma.EmailMessageCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMailAccountInput;
@@ -361,6 +371,7 @@ export type MailAccountUncheckedCreateInput = {
   createdByEmployeeId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadUncheckedCreateNestedManyWithoutMailAccountInput;
   messages?: Prisma.EmailMessageUncheckedCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMailAccountInput;
@@ -378,6 +389,7 @@ export type MailAccountUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   owner?: Prisma.EmployeeUpdateOneWithoutMailAccountsOwnedNestedInput;
   createdBy?: Prisma.EmployeeUpdateOneWithoutMailAccountsCreatedNestedInput;
+  providerConnection?: Prisma.MailProviderConnectionUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUpdateManyWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMailAccountNestedInput;
@@ -395,6 +407,7 @@ export type MailAccountUncheckedUpdateInput = {
   createdByEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUncheckedUpdateManyWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUncheckedUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMailAccountNestedInput;
@@ -677,6 +690,32 @@ export type EnumMailAccountStatusFieldUpdateOperationsInput = {
   set?: $Enums.MailAccountStatus;
 };
 
+export type MailAccountCreateNestedOneWithoutProviderConnectionInput = {
+  create?: Prisma.XOR<
+    Prisma.MailAccountCreateWithoutProviderConnectionInput,
+    Prisma.MailAccountUncheckedCreateWithoutProviderConnectionInput
+  >;
+  connectOrCreate?: Prisma.MailAccountCreateOrConnectWithoutProviderConnectionInput;
+  connect?: Prisma.MailAccountWhereUniqueInput;
+};
+
+export type MailAccountUpdateOneRequiredWithoutProviderConnectionNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.MailAccountCreateWithoutProviderConnectionInput,
+    Prisma.MailAccountUncheckedCreateWithoutProviderConnectionInput
+  >;
+  connectOrCreate?: Prisma.MailAccountCreateOrConnectWithoutProviderConnectionInput;
+  upsert?: Prisma.MailAccountUpsertWithoutProviderConnectionInput;
+  connect?: Prisma.MailAccountWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.MailAccountUpdateToOneWithWhereWithoutProviderConnectionInput,
+      Prisma.MailAccountUpdateWithoutProviderConnectionInput
+    >,
+    Prisma.MailAccountUncheckedUpdateWithoutProviderConnectionInput
+  >;
+};
+
 export type MailAccountCreateNestedOneWithoutThreadsInput = {
   create?: Prisma.XOR<
     Prisma.MailAccountCreateWithoutThreadsInput,
@@ -766,6 +805,7 @@ export type MailAccountCreateWithoutOwnerInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   createdBy?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsCreatedInput;
+  providerConnection?: Prisma.MailProviderConnectionCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadCreateNestedManyWithoutMailAccountInput;
   messages?: Prisma.EmailMessageCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMailAccountInput;
@@ -782,6 +822,7 @@ export type MailAccountUncheckedCreateWithoutOwnerInput = {
   createdByEmployeeId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadUncheckedCreateNestedManyWithoutMailAccountInput;
   messages?: Prisma.EmailMessageUncheckedCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMailAccountInput;
@@ -811,6 +852,7 @@ export type MailAccountCreateWithoutCreatedByInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   owner?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsOwnedInput;
+  providerConnection?: Prisma.MailProviderConnectionCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadCreateNestedManyWithoutMailAccountInput;
   messages?: Prisma.EmailMessageCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMailAccountInput;
@@ -827,6 +869,7 @@ export type MailAccountUncheckedCreateWithoutCreatedByInput = {
   lastErrorAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadUncheckedCreateNestedManyWithoutMailAccountInput;
   messages?: Prisma.EmailMessageUncheckedCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMailAccountInput;
@@ -918,6 +961,102 @@ export type MailAccountUpdateManyWithWhereWithoutCreatedByInput = {
   >;
 };
 
+export type MailAccountCreateWithoutProviderConnectionInput = {
+  id?: string;
+  emailAddress: string;
+  displayName?: string | null;
+  providerType: $Enums.MailProviderType;
+  status?: $Enums.MailAccountStatus;
+  lastSyncAt?: Date | string | null;
+  lastErrorAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  owner?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsOwnedInput;
+  createdBy?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsCreatedInput;
+  threads?: Prisma.EmailThreadCreateNestedManyWithoutMailAccountInput;
+  messages?: Prisma.EmailMessageCreateNestedManyWithoutMailAccountInput;
+  deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMailAccountInput;
+};
+
+export type MailAccountUncheckedCreateWithoutProviderConnectionInput = {
+  id?: string;
+  ownerEmployeeId?: string | null;
+  emailAddress: string;
+  displayName?: string | null;
+  providerType: $Enums.MailProviderType;
+  status?: $Enums.MailAccountStatus;
+  lastSyncAt?: Date | string | null;
+  lastErrorAt?: Date | string | null;
+  createdByEmployeeId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  threads?: Prisma.EmailThreadUncheckedCreateNestedManyWithoutMailAccountInput;
+  messages?: Prisma.EmailMessageUncheckedCreateNestedManyWithoutMailAccountInput;
+  deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMailAccountInput;
+};
+
+export type MailAccountCreateOrConnectWithoutProviderConnectionInput = {
+  where: Prisma.MailAccountWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.MailAccountCreateWithoutProviderConnectionInput,
+    Prisma.MailAccountUncheckedCreateWithoutProviderConnectionInput
+  >;
+};
+
+export type MailAccountUpsertWithoutProviderConnectionInput = {
+  update: Prisma.XOR<
+    Prisma.MailAccountUpdateWithoutProviderConnectionInput,
+    Prisma.MailAccountUncheckedUpdateWithoutProviderConnectionInput
+  >;
+  create: Prisma.XOR<
+    Prisma.MailAccountCreateWithoutProviderConnectionInput,
+    Prisma.MailAccountUncheckedCreateWithoutProviderConnectionInput
+  >;
+  where?: Prisma.MailAccountWhereInput;
+};
+
+export type MailAccountUpdateToOneWithWhereWithoutProviderConnectionInput = {
+  where?: Prisma.MailAccountWhereInput;
+  data: Prisma.XOR<
+    Prisma.MailAccountUpdateWithoutProviderConnectionInput,
+    Prisma.MailAccountUncheckedUpdateWithoutProviderConnectionInput
+  >;
+};
+
+export type MailAccountUpdateWithoutProviderConnectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  emailAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  providerType?: Prisma.EnumMailProviderTypeFieldUpdateOperationsInput | $Enums.MailProviderType;
+  status?: Prisma.EnumMailAccountStatusFieldUpdateOperationsInput | $Enums.MailAccountStatus;
+  lastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  lastErrorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  owner?: Prisma.EmployeeUpdateOneWithoutMailAccountsOwnedNestedInput;
+  createdBy?: Prisma.EmployeeUpdateOneWithoutMailAccountsCreatedNestedInput;
+  threads?: Prisma.EmailThreadUpdateManyWithoutMailAccountNestedInput;
+  messages?: Prisma.EmailMessageUpdateManyWithoutMailAccountNestedInput;
+  deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMailAccountNestedInput;
+};
+
+export type MailAccountUncheckedUpdateWithoutProviderConnectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  ownerEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  emailAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  providerType?: Prisma.EnumMailProviderTypeFieldUpdateOperationsInput | $Enums.MailProviderType;
+  status?: Prisma.EnumMailAccountStatusFieldUpdateOperationsInput | $Enums.MailAccountStatus;
+  lastSyncAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  lastErrorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdByEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  threads?: Prisma.EmailThreadUncheckedUpdateManyWithoutMailAccountNestedInput;
+  messages?: Prisma.EmailMessageUncheckedUpdateManyWithoutMailAccountNestedInput;
+  deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMailAccountNestedInput;
+};
+
 export type MailAccountCreateWithoutThreadsInput = {
   id?: string;
   emailAddress: string;
@@ -930,6 +1069,7 @@ export type MailAccountCreateWithoutThreadsInput = {
   updatedAt?: Date | string;
   owner?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsOwnedInput;
   createdBy?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsCreatedInput;
+  providerConnection?: Prisma.MailProviderConnectionCreateNestedOneWithoutMailAccountInput;
   messages?: Prisma.EmailMessageCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMailAccountInput;
 };
@@ -946,6 +1086,7 @@ export type MailAccountUncheckedCreateWithoutThreadsInput = {
   createdByEmployeeId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedCreateNestedOneWithoutMailAccountInput;
   messages?: Prisma.EmailMessageUncheckedCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMailAccountInput;
 };
@@ -990,6 +1131,7 @@ export type MailAccountUpdateWithoutThreadsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   owner?: Prisma.EmployeeUpdateOneWithoutMailAccountsOwnedNestedInput;
   createdBy?: Prisma.EmployeeUpdateOneWithoutMailAccountsCreatedNestedInput;
+  providerConnection?: Prisma.MailProviderConnectionUpdateOneWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMailAccountNestedInput;
 };
@@ -1006,6 +1148,7 @@ export type MailAccountUncheckedUpdateWithoutThreadsInput = {
   createdByEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedUpdateOneWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUncheckedUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMailAccountNestedInput;
 };
@@ -1022,6 +1165,7 @@ export type MailAccountCreateWithoutMessagesInput = {
   updatedAt?: Date | string;
   owner?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsOwnedInput;
   createdBy?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsCreatedInput;
+  providerConnection?: Prisma.MailProviderConnectionCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMailAccountInput;
 };
@@ -1038,6 +1182,7 @@ export type MailAccountUncheckedCreateWithoutMessagesInput = {
   createdByEmployeeId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadUncheckedCreateNestedManyWithoutMailAccountInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMailAccountInput;
 };
@@ -1082,6 +1227,7 @@ export type MailAccountUpdateWithoutMessagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   owner?: Prisma.EmployeeUpdateOneWithoutMailAccountsOwnedNestedInput;
   createdBy?: Prisma.EmployeeUpdateOneWithoutMailAccountsCreatedNestedInput;
+  providerConnection?: Prisma.MailProviderConnectionUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMailAccountNestedInput;
 };
@@ -1098,6 +1244,7 @@ export type MailAccountUncheckedUpdateWithoutMessagesInput = {
   createdByEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUncheckedUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMailAccountNestedInput;
 };
@@ -1114,6 +1261,7 @@ export type MailAccountCreateWithoutDeliveryLogsInput = {
   updatedAt?: Date | string;
   owner?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsOwnedInput;
   createdBy?: Prisma.EmployeeCreateNestedOneWithoutMailAccountsCreatedInput;
+  providerConnection?: Prisma.MailProviderConnectionCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadCreateNestedManyWithoutMailAccountInput;
   messages?: Prisma.EmailMessageCreateNestedManyWithoutMailAccountInput;
 };
@@ -1130,6 +1278,7 @@ export type MailAccountUncheckedCreateWithoutDeliveryLogsInput = {
   createdByEmployeeId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedCreateNestedOneWithoutMailAccountInput;
   threads?: Prisma.EmailThreadUncheckedCreateNestedManyWithoutMailAccountInput;
   messages?: Prisma.EmailMessageUncheckedCreateNestedManyWithoutMailAccountInput;
 };
@@ -1174,6 +1323,7 @@ export type MailAccountUpdateWithoutDeliveryLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   owner?: Prisma.EmployeeUpdateOneWithoutMailAccountsOwnedNestedInput;
   createdBy?: Prisma.EmployeeUpdateOneWithoutMailAccountsCreatedNestedInput;
+  providerConnection?: Prisma.MailProviderConnectionUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUpdateManyWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUpdateManyWithoutMailAccountNestedInput;
 };
@@ -1190,6 +1340,7 @@ export type MailAccountUncheckedUpdateWithoutDeliveryLogsInput = {
   createdByEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUncheckedUpdateManyWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUncheckedUpdateManyWithoutMailAccountNestedInput;
 };
@@ -1231,6 +1382,7 @@ export type MailAccountUpdateWithoutOwnerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   createdBy?: Prisma.EmployeeUpdateOneWithoutMailAccountsCreatedNestedInput;
+  providerConnection?: Prisma.MailProviderConnectionUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUpdateManyWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMailAccountNestedInput;
@@ -1247,6 +1399,7 @@ export type MailAccountUncheckedUpdateWithoutOwnerInput = {
   createdByEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUncheckedUpdateManyWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUncheckedUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMailAccountNestedInput;
@@ -1276,6 +1429,7 @@ export type MailAccountUpdateWithoutCreatedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   owner?: Prisma.EmployeeUpdateOneWithoutMailAccountsOwnedNestedInput;
+  providerConnection?: Prisma.MailProviderConnectionUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUpdateManyWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMailAccountNestedInput;
@@ -1292,6 +1446,7 @@ export type MailAccountUncheckedUpdateWithoutCreatedByInput = {
   lastErrorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  providerConnection?: Prisma.MailProviderConnectionUncheckedUpdateOneWithoutMailAccountNestedInput;
   threads?: Prisma.EmailThreadUncheckedUpdateManyWithoutMailAccountNestedInput;
   messages?: Prisma.EmailMessageUncheckedUpdateManyWithoutMailAccountNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMailAccountNestedInput;
@@ -1384,6 +1539,7 @@ export type MailAccountSelect<
     updatedAt?: boolean;
     owner?: boolean | Prisma.MailAccount$ownerArgs<ExtArgs>;
     createdBy?: boolean | Prisma.MailAccount$createdByArgs<ExtArgs>;
+    providerConnection?: boolean | Prisma.MailAccount$providerConnectionArgs<ExtArgs>;
     threads?: boolean | Prisma.MailAccount$threadsArgs<ExtArgs>;
     messages?: boolean | Prisma.MailAccount$messagesArgs<ExtArgs>;
     deliveryLogs?: boolean | Prisma.MailAccount$deliveryLogsArgs<ExtArgs>;
@@ -1469,6 +1625,7 @@ export type MailAccountInclude<
 > = {
   owner?: boolean | Prisma.MailAccount$ownerArgs<ExtArgs>;
   createdBy?: boolean | Prisma.MailAccount$createdByArgs<ExtArgs>;
+  providerConnection?: boolean | Prisma.MailAccount$providerConnectionArgs<ExtArgs>;
   threads?: boolean | Prisma.MailAccount$threadsArgs<ExtArgs>;
   messages?: boolean | Prisma.MailAccount$messagesArgs<ExtArgs>;
   deliveryLogs?: boolean | Prisma.MailAccount$deliveryLogsArgs<ExtArgs>;
@@ -1494,6 +1651,7 @@ export type $MailAccountPayload<
   objects: {
     owner: Prisma.$EmployeePayload<ExtArgs> | null;
     createdBy: Prisma.$EmployeePayload<ExtArgs> | null;
+    providerConnection: Prisma.$MailProviderConnectionPayload<ExtArgs> | null;
     threads: Prisma.$EmailThreadPayload<ExtArgs>[];
     messages: Prisma.$EmailMessagePayload<ExtArgs>[];
     deliveryLogs: Prisma.$MailDeliveryLogPayload<ExtArgs>[];
@@ -2075,6 +2233,19 @@ export interface Prisma__MailAccountClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  providerConnection<T extends Prisma.MailAccount$providerConnectionArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.MailAccount$providerConnectionArgs<ExtArgs>>,
+  ): Prisma.Prisma__MailProviderConnectionClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$MailProviderConnectionPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   threads<T extends Prisma.MailAccount$threadsArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.MailAccount$threadsArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -2624,6 +2795,27 @@ export type MailAccount$createdByArgs<
    */
   include?: Prisma.EmployeeInclude<ExtArgs> | null;
   where?: Prisma.EmployeeWhereInput;
+};
+
+/**
+ * MailAccount.providerConnection
+ */
+export type MailAccount$providerConnectionArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the MailProviderConnection
+   */
+  select?: Prisma.MailProviderConnectionSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the MailProviderConnection
+   */
+  omit?: Prisma.MailProviderConnectionOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MailProviderConnectionInclude<ExtArgs> | null;
+  where?: Prisma.MailProviderConnectionWhereInput;
 };
 
 /**

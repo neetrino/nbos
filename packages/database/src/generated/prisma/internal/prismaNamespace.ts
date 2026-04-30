@@ -435,8 +435,10 @@ export const ModelName = {
   MessengerDirectMessageAttachment: 'MessengerDirectMessageAttachment',
   MessengerDirectThreadReadState: 'MessengerDirectThreadReadState',
   MailAccount: 'MailAccount',
+  MailProviderConnection: 'MailProviderConnection',
   EmailThread: 'EmailThread',
   EmailMessage: 'EmailMessage',
+  EmailAttachment: 'EmailAttachment',
   MailDeliveryLog: 'MailDeliveryLog',
   EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
@@ -531,8 +533,10 @@ export type TypeMap<
       | 'messengerDirectMessageAttachment'
       | 'messengerDirectThreadReadState'
       | 'mailAccount'
+      | 'mailProviderConnection'
       | 'emailThread'
       | 'emailMessage'
+      | 'emailAttachment'
       | 'mailDeliveryLog'
       | 'emailRecipient'
       | 'inAppNotification'
@@ -5046,6 +5050,82 @@ export type TypeMap<
         };
       };
     };
+    MailProviderConnection: {
+      payload: Prisma.$MailProviderConnectionPayload<ExtArgs>;
+      fields: Prisma.MailProviderConnectionFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MailProviderConnectionFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MailProviderConnectionFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>;
+        };
+        findFirst: {
+          args: Prisma.MailProviderConnectionFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MailProviderConnectionFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>;
+        };
+        findMany: {
+          args: Prisma.MailProviderConnectionFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>[];
+        };
+        create: {
+          args: Prisma.MailProviderConnectionCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>;
+        };
+        createMany: {
+          args: Prisma.MailProviderConnectionCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MailProviderConnectionCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>[];
+        };
+        delete: {
+          args: Prisma.MailProviderConnectionDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>;
+        };
+        update: {
+          args: Prisma.MailProviderConnectionUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>;
+        };
+        deleteMany: {
+          args: Prisma.MailProviderConnectionDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MailProviderConnectionUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MailProviderConnectionUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>[];
+        };
+        upsert: {
+          args: Prisma.MailProviderConnectionUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MailProviderConnectionPayload>;
+        };
+        aggregate: {
+          args: Prisma.MailProviderConnectionAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMailProviderConnection>;
+        };
+        groupBy: {
+          args: Prisma.MailProviderConnectionGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MailProviderConnectionGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MailProviderConnectionCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MailProviderConnectionCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     EmailThread: {
       payload: Prisma.$EmailThreadPayload<ExtArgs>;
       fields: Prisma.EmailThreadFieldRefs;
@@ -5192,6 +5272,82 @@ export type TypeMap<
           args: Prisma.EmailMessageCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.EmailMessageCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    EmailAttachment: {
+      payload: Prisma.$EmailAttachmentPayload<ExtArgs>;
+      fields: Prisma.EmailAttachmentFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.EmailAttachmentFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.EmailAttachmentFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>;
+        };
+        findFirst: {
+          args: Prisma.EmailAttachmentFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.EmailAttachmentFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>;
+        };
+        findMany: {
+          args: Prisma.EmailAttachmentFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>[];
+        };
+        create: {
+          args: Prisma.EmailAttachmentCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>;
+        };
+        createMany: {
+          args: Prisma.EmailAttachmentCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.EmailAttachmentCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>[];
+        };
+        delete: {
+          args: Prisma.EmailAttachmentDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>;
+        };
+        update: {
+          args: Prisma.EmailAttachmentUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>;
+        };
+        deleteMany: {
+          args: Prisma.EmailAttachmentDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.EmailAttachmentUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.EmailAttachmentUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>[];
+        };
+        upsert: {
+          args: Prisma.EmailAttachmentUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailAttachmentPayload>;
+        };
+        aggregate: {
+          args: Prisma.EmailAttachmentAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEmailAttachment>;
+        };
+        groupBy: {
+          args: Prisma.EmailAttachmentGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.EmailAttachmentGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.EmailAttachmentCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.EmailAttachmentCountAggregateOutputType>
             | number;
         };
       };
@@ -7372,6 +7528,31 @@ export const MailAccountScalarFieldEnum = {
 export type MailAccountScalarFieldEnum =
   (typeof MailAccountScalarFieldEnum)[keyof typeof MailAccountScalarFieldEnum];
 
+export const MailProviderConnectionScalarFieldEnum = {
+  id: 'id',
+  mailAccountId: 'mailAccountId',
+  providerType: 'providerType',
+  status: 'status',
+  credentialId: 'credentialId',
+  providerAccountId: 'providerAccountId',
+  username: 'username',
+  imapHost: 'imapHost',
+  imapPort: 'imapPort',
+  smtpHost: 'smtpHost',
+  smtpPort: 'smtpPort',
+  secureMode: 'secureMode',
+  grantedScopes: 'grantedScopes',
+  syncCursor: 'syncCursor',
+  lastValidatedAt: 'lastValidatedAt',
+  lastErrorAt: 'lastErrorAt',
+  lastErrorMessage: 'lastErrorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MailProviderConnectionScalarFieldEnum =
+  (typeof MailProviderConnectionScalarFieldEnum)[keyof typeof MailProviderConnectionScalarFieldEnum];
+
 export const EmailThreadScalarFieldEnum = {
   id: 'id',
   mailAccountId: 'mailAccountId',
@@ -7409,6 +7590,22 @@ export const EmailMessageScalarFieldEnum = {
 
 export type EmailMessageScalarFieldEnum =
   (typeof EmailMessageScalarFieldEnum)[keyof typeof EmailMessageScalarFieldEnum];
+
+export const EmailAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileAssetId: 'fileAssetId',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  providerAttachmentId: 'providerAttachmentId',
+  isInline: 'isInline',
+  downloadStatus: 'downloadStatus',
+  createdAt: 'createdAt',
+} as const;
+
+export type EmailAttachmentScalarFieldEnum =
+  (typeof EmailAttachmentScalarFieldEnum)[keyof typeof EmailAttachmentScalarFieldEnum];
 
 export const MailDeliveryLogScalarFieldEnum = {
   id: 'id',
@@ -8942,6 +9139,22 @@ export type ListEnumMailAccountStatusFieldRefInput<$PrismaModel> = FieldRefInput
 >;
 
 /**
+ * Reference to a field of type 'MailProviderConnectionStatus'
+ */
+export type EnumMailProviderConnectionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MailProviderConnectionStatus'
+>;
+
+/**
+ * Reference to a field of type 'MailProviderConnectionStatus[]'
+ */
+export type ListEnumMailProviderConnectionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'MailProviderConnectionStatus[]'
+>;
+
+/**
  * Reference to a field of type 'EmailThreadStatus'
  */
 export type EnumEmailThreadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -9003,6 +9216,22 @@ export type EnumEmailDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputTy
 export type ListEnumEmailDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'EmailDeliveryStatus[]'
+>;
+
+/**
+ * Reference to a field of type 'EmailAttachmentDownloadStatus'
+ */
+export type EnumEmailAttachmentDownloadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'EmailAttachmentDownloadStatus'
+>;
+
+/**
+ * Reference to a field of type 'EmailAttachmentDownloadStatus[]'
+ */
+export type ListEnumEmailAttachmentDownloadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'EmailAttachmentDownloadStatus[]'
 >;
 
 /**
@@ -9418,8 +9647,10 @@ export type GlobalOmitConfig = {
   messengerDirectMessageAttachment?: Prisma.MessengerDirectMessageAttachmentOmit;
   messengerDirectThreadReadState?: Prisma.MessengerDirectThreadReadStateOmit;
   mailAccount?: Prisma.MailAccountOmit;
+  mailProviderConnection?: Prisma.MailProviderConnectionOmit;
   emailThread?: Prisma.EmailThreadOmit;
   emailMessage?: Prisma.EmailMessageOmit;
+  emailAttachment?: Prisma.EmailAttachmentOmit;
   mailDeliveryLog?: Prisma.MailDeliveryLogOmit;
   emailRecipient?: Prisma.EmailRecipientOmit;
   inAppNotification?: Prisma.InAppNotificationOmit;

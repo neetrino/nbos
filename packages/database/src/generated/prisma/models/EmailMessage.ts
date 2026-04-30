@@ -269,6 +269,7 @@ export type EmailMessageWhereInput = {
   mailAccount?: Prisma.XOR<Prisma.MailAccountScalarRelationFilter, Prisma.MailAccountWhereInput>;
   recipients?: Prisma.EmailRecipientListRelationFilter;
   deliveryLogs?: Prisma.MailDeliveryLogListRelationFilter;
+  attachments?: Prisma.EmailAttachmentListRelationFilter;
 };
 
 export type EmailMessageOrderByWithRelationInput = {
@@ -291,6 +292,7 @@ export type EmailMessageOrderByWithRelationInput = {
   mailAccount?: Prisma.MailAccountOrderByWithRelationInput;
   recipients?: Prisma.EmailRecipientOrderByRelationAggregateInput;
   deliveryLogs?: Prisma.MailDeliveryLogOrderByRelationAggregateInput;
+  attachments?: Prisma.EmailAttachmentOrderByRelationAggregateInput;
 };
 
 export type EmailMessageWhereUniqueInput = Prisma.AtLeast<
@@ -324,6 +326,7 @@ export type EmailMessageWhereUniqueInput = Prisma.AtLeast<
     mailAccount?: Prisma.XOR<Prisma.MailAccountScalarRelationFilter, Prisma.MailAccountWhereInput>;
     recipients?: Prisma.EmailRecipientListRelationFilter;
     deliveryLogs?: Prisma.MailDeliveryLogListRelationFilter;
+    attachments?: Prisma.EmailAttachmentListRelationFilter;
   },
   'id'
 >;
@@ -399,6 +402,7 @@ export type EmailMessageCreateInput = {
   mailAccount: Prisma.MailAccountCreateNestedOneWithoutMessagesInput;
   recipients?: Prisma.EmailRecipientCreateNestedManyWithoutMessageInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageUncheckedCreateInput = {
@@ -419,6 +423,7 @@ export type EmailMessageUncheckedCreateInput = {
   updatedAt?: Date | string;
   recipients?: Prisma.EmailRecipientUncheckedCreateNestedManyWithoutMessageInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageUpdateInput = {
@@ -446,6 +451,7 @@ export type EmailMessageUpdateInput = {
   mailAccount?: Prisma.MailAccountUpdateOneRequiredWithoutMessagesNestedInput;
   recipients?: Prisma.EmailRecipientUpdateManyWithoutMessageNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageUncheckedUpdateInput = {
@@ -473,6 +479,7 @@ export type EmailMessageUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   recipients?: Prisma.EmailRecipientUncheckedUpdateManyWithoutMessageNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageCreateManyInput = {
@@ -794,6 +801,32 @@ export type NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput = {
   set?: $Enums.EmailDeliveryStatus | null;
 };
 
+export type EmailMessageCreateNestedOneWithoutAttachmentsInput = {
+  create?: Prisma.XOR<
+    Prisma.EmailMessageCreateWithoutAttachmentsInput,
+    Prisma.EmailMessageUncheckedCreateWithoutAttachmentsInput
+  >;
+  connectOrCreate?: Prisma.EmailMessageCreateOrConnectWithoutAttachmentsInput;
+  connect?: Prisma.EmailMessageWhereUniqueInput;
+};
+
+export type EmailMessageUpdateOneRequiredWithoutAttachmentsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmailMessageCreateWithoutAttachmentsInput,
+    Prisma.EmailMessageUncheckedCreateWithoutAttachmentsInput
+  >;
+  connectOrCreate?: Prisma.EmailMessageCreateOrConnectWithoutAttachmentsInput;
+  upsert?: Prisma.EmailMessageUpsertWithoutAttachmentsInput;
+  connect?: Prisma.EmailMessageWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmailMessageUpdateToOneWithWhereWithoutAttachmentsInput,
+      Prisma.EmailMessageUpdateWithoutAttachmentsInput
+    >,
+    Prisma.EmailMessageUncheckedUpdateWithoutAttachmentsInput
+  >;
+};
+
 export type EmailMessageCreateNestedOneWithoutDeliveryLogsInput = {
   create?: Prisma.XOR<
     Prisma.EmailMessageCreateWithoutDeliveryLogsInput,
@@ -863,6 +896,7 @@ export type EmailMessageCreateWithoutMailAccountInput = {
   thread: Prisma.EmailThreadCreateNestedOneWithoutMessagesInput;
   recipients?: Prisma.EmailRecipientCreateNestedManyWithoutMessageInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageUncheckedCreateWithoutMailAccountInput = {
@@ -882,6 +916,7 @@ export type EmailMessageUncheckedCreateWithoutMailAccountInput = {
   updatedAt?: Date | string;
   recipients?: Prisma.EmailRecipientUncheckedCreateNestedManyWithoutMessageInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageCreateOrConnectWithoutMailAccountInput = {
@@ -968,6 +1003,7 @@ export type EmailMessageCreateWithoutThreadInput = {
   mailAccount: Prisma.MailAccountCreateNestedOneWithoutMessagesInput;
   recipients?: Prisma.EmailRecipientCreateNestedManyWithoutMessageInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageUncheckedCreateWithoutThreadInput = {
@@ -987,6 +1023,7 @@ export type EmailMessageUncheckedCreateWithoutThreadInput = {
   updatedAt?: Date | string;
   recipients?: Prisma.EmailRecipientUncheckedCreateNestedManyWithoutMessageInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageCreateOrConnectWithoutThreadInput = {
@@ -1030,6 +1067,128 @@ export type EmailMessageUpdateManyWithWhereWithoutThreadInput = {
   >;
 };
 
+export type EmailMessageCreateWithoutAttachmentsInput = {
+  id?: string;
+  providerMessageId?: string | null;
+  messageIdHeader?: string | null;
+  direction: $Enums.EmailMessageDirection;
+  subject: string;
+  bodyText?: string | null;
+  bodyHtmlSanitized?: string | null;
+  sentAt?: Date | string | null;
+  receivedAt?: Date | string | null;
+  readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  thread: Prisma.EmailThreadCreateNestedOneWithoutMessagesInput;
+  mailAccount: Prisma.MailAccountCreateNestedOneWithoutMessagesInput;
+  recipients?: Prisma.EmailRecipientCreateNestedManyWithoutMessageInput;
+  deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMessageInput;
+};
+
+export type EmailMessageUncheckedCreateWithoutAttachmentsInput = {
+  id?: string;
+  threadId: string;
+  mailAccountId: string;
+  providerMessageId?: string | null;
+  messageIdHeader?: string | null;
+  direction: $Enums.EmailMessageDirection;
+  subject: string;
+  bodyText?: string | null;
+  bodyHtmlSanitized?: string | null;
+  sentAt?: Date | string | null;
+  receivedAt?: Date | string | null;
+  readState?: $Enums.EmailMessageReadState;
+  deliveryStatus?: $Enums.EmailDeliveryStatus | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  recipients?: Prisma.EmailRecipientUncheckedCreateNestedManyWithoutMessageInput;
+  deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMessageInput;
+};
+
+export type EmailMessageCreateOrConnectWithoutAttachmentsInput = {
+  where: Prisma.EmailMessageWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmailMessageCreateWithoutAttachmentsInput,
+    Prisma.EmailMessageUncheckedCreateWithoutAttachmentsInput
+  >;
+};
+
+export type EmailMessageUpsertWithoutAttachmentsInput = {
+  update: Prisma.XOR<
+    Prisma.EmailMessageUpdateWithoutAttachmentsInput,
+    Prisma.EmailMessageUncheckedUpdateWithoutAttachmentsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmailMessageCreateWithoutAttachmentsInput,
+    Prisma.EmailMessageUncheckedCreateWithoutAttachmentsInput
+  >;
+  where?: Prisma.EmailMessageWhereInput;
+};
+
+export type EmailMessageUpdateToOneWithWhereWithoutAttachmentsInput = {
+  where?: Prisma.EmailMessageWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmailMessageUpdateWithoutAttachmentsInput,
+    Prisma.EmailMessageUncheckedUpdateWithoutAttachmentsInput
+  >;
+};
+
+export type EmailMessageUpdateWithoutAttachmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  providerMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messageIdHeader?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  direction?:
+    | Prisma.EnumEmailMessageDirectionFieldUpdateOperationsInput
+    | $Enums.EmailMessageDirection;
+  subject?: Prisma.StringFieldUpdateOperationsInput | string;
+  bodyText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  bodyHtmlSanitized?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  receivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  readState?:
+    | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
+    | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  thread?: Prisma.EmailThreadUpdateOneRequiredWithoutMessagesNestedInput;
+  mailAccount?: Prisma.MailAccountUpdateOneRequiredWithoutMessagesNestedInput;
+  recipients?: Prisma.EmailRecipientUpdateManyWithoutMessageNestedInput;
+  deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMessageNestedInput;
+};
+
+export type EmailMessageUncheckedUpdateWithoutAttachmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  threadId?: Prisma.StringFieldUpdateOperationsInput | string;
+  mailAccountId?: Prisma.StringFieldUpdateOperationsInput | string;
+  providerMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messageIdHeader?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  direction?:
+    | Prisma.EnumEmailMessageDirectionFieldUpdateOperationsInput
+    | $Enums.EmailMessageDirection;
+  subject?: Prisma.StringFieldUpdateOperationsInput | string;
+  bodyText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  bodyHtmlSanitized?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  receivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  readState?:
+    | Prisma.EnumEmailMessageReadStateFieldUpdateOperationsInput
+    | $Enums.EmailMessageReadState;
+  deliveryStatus?:
+    | Prisma.NullableEnumEmailDeliveryStatusFieldUpdateOperationsInput
+    | $Enums.EmailDeliveryStatus
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recipients?: Prisma.EmailRecipientUncheckedUpdateManyWithoutMessageNestedInput;
+  deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMessageNestedInput;
+};
+
 export type EmailMessageCreateWithoutDeliveryLogsInput = {
   id?: string;
   providerMessageId?: string | null;
@@ -1047,6 +1206,7 @@ export type EmailMessageCreateWithoutDeliveryLogsInput = {
   thread: Prisma.EmailThreadCreateNestedOneWithoutMessagesInput;
   mailAccount: Prisma.MailAccountCreateNestedOneWithoutMessagesInput;
   recipients?: Prisma.EmailRecipientCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageUncheckedCreateWithoutDeliveryLogsInput = {
@@ -1066,6 +1226,7 @@ export type EmailMessageUncheckedCreateWithoutDeliveryLogsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   recipients?: Prisma.EmailRecipientUncheckedCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageCreateOrConnectWithoutDeliveryLogsInput = {
@@ -1120,6 +1281,7 @@ export type EmailMessageUpdateWithoutDeliveryLogsInput = {
   thread?: Prisma.EmailThreadUpdateOneRequiredWithoutMessagesNestedInput;
   mailAccount?: Prisma.MailAccountUpdateOneRequiredWithoutMessagesNestedInput;
   recipients?: Prisma.EmailRecipientUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageUncheckedUpdateWithoutDeliveryLogsInput = {
@@ -1146,6 +1308,7 @@ export type EmailMessageUncheckedUpdateWithoutDeliveryLogsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   recipients?: Prisma.EmailRecipientUncheckedUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageCreateWithoutRecipientsInput = {
@@ -1165,6 +1328,7 @@ export type EmailMessageCreateWithoutRecipientsInput = {
   thread: Prisma.EmailThreadCreateNestedOneWithoutMessagesInput;
   mailAccount: Prisma.MailAccountCreateNestedOneWithoutMessagesInput;
   deliveryLogs?: Prisma.MailDeliveryLogCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageUncheckedCreateWithoutRecipientsInput = {
@@ -1184,6 +1348,7 @@ export type EmailMessageUncheckedCreateWithoutRecipientsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutMessageInput;
+  attachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutMessageInput;
 };
 
 export type EmailMessageCreateOrConnectWithoutRecipientsInput = {
@@ -1238,6 +1403,7 @@ export type EmailMessageUpdateWithoutRecipientsInput = {
   thread?: Prisma.EmailThreadUpdateOneRequiredWithoutMessagesNestedInput;
   mailAccount?: Prisma.MailAccountUpdateOneRequiredWithoutMessagesNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageUncheckedUpdateWithoutRecipientsInput = {
@@ -1264,6 +1430,7 @@ export type EmailMessageUncheckedUpdateWithoutRecipientsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageCreateManyMailAccountInput = {
@@ -1307,6 +1474,7 @@ export type EmailMessageUpdateWithoutMailAccountInput = {
   thread?: Prisma.EmailThreadUpdateOneRequiredWithoutMessagesNestedInput;
   recipients?: Prisma.EmailRecipientUpdateManyWithoutMessageNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageUncheckedUpdateWithoutMailAccountInput = {
@@ -1333,6 +1501,7 @@ export type EmailMessageUncheckedUpdateWithoutMailAccountInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   recipients?: Prisma.EmailRecipientUncheckedUpdateManyWithoutMessageNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageUncheckedUpdateManyWithoutMailAccountInput = {
@@ -1400,6 +1569,7 @@ export type EmailMessageUpdateWithoutThreadInput = {
   mailAccount?: Prisma.MailAccountUpdateOneRequiredWithoutMessagesNestedInput;
   recipients?: Prisma.EmailRecipientUpdateManyWithoutMessageNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageUncheckedUpdateWithoutThreadInput = {
@@ -1426,6 +1596,7 @@ export type EmailMessageUncheckedUpdateWithoutThreadInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   recipients?: Prisma.EmailRecipientUncheckedUpdateManyWithoutMessageNestedInput;
   deliveryLogs?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutMessageNestedInput;
+  attachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutMessageNestedInput;
 };
 
 export type EmailMessageUncheckedUpdateManyWithoutThreadInput = {
@@ -1459,6 +1630,7 @@ export type EmailMessageUncheckedUpdateManyWithoutThreadInput = {
 export type EmailMessageCountOutputType = {
   recipients: number;
   deliveryLogs: number;
+  attachments: number;
 };
 
 export type EmailMessageCountOutputTypeSelect<
@@ -1466,6 +1638,7 @@ export type EmailMessageCountOutputTypeSelect<
 > = {
   recipients?: boolean | EmailMessageCountOutputTypeCountRecipientsArgs;
   deliveryLogs?: boolean | EmailMessageCountOutputTypeCountDeliveryLogsArgs;
+  attachments?: boolean | EmailMessageCountOutputTypeCountAttachmentsArgs;
 };
 
 /**
@@ -1498,6 +1671,15 @@ export type EmailMessageCountOutputTypeCountDeliveryLogsArgs<
   where?: Prisma.MailDeliveryLogWhereInput;
 };
 
+/**
+ * EmailMessageCountOutputType without action
+ */
+export type EmailMessageCountOutputTypeCountAttachmentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.EmailAttachmentWhereInput;
+};
+
 export type EmailMessageSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -1521,6 +1703,7 @@ export type EmailMessageSelect<
     mailAccount?: boolean | Prisma.MailAccountDefaultArgs<ExtArgs>;
     recipients?: boolean | Prisma.EmailMessage$recipientsArgs<ExtArgs>;
     deliveryLogs?: boolean | Prisma.EmailMessage$deliveryLogsArgs<ExtArgs>;
+    attachments?: boolean | Prisma.EmailMessage$attachmentsArgs<ExtArgs>;
     _count?: boolean | Prisma.EmailMessageCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['emailMessage']
@@ -1621,6 +1804,7 @@ export type EmailMessageInclude<
   mailAccount?: boolean | Prisma.MailAccountDefaultArgs<ExtArgs>;
   recipients?: boolean | Prisma.EmailMessage$recipientsArgs<ExtArgs>;
   deliveryLogs?: boolean | Prisma.EmailMessage$deliveryLogsArgs<ExtArgs>;
+  attachments?: boolean | Prisma.EmailMessage$attachmentsArgs<ExtArgs>;
   _count?: boolean | Prisma.EmailMessageCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type EmailMessageIncludeCreateManyAndReturn<
@@ -1645,6 +1829,7 @@ export type $EmailMessagePayload<
     mailAccount: Prisma.$MailAccountPayload<ExtArgs>;
     recipients: Prisma.$EmailRecipientPayload<ExtArgs>[];
     deliveryLogs: Prisma.$MailDeliveryLogPayload<ExtArgs>[];
+    attachments: Prisma.$EmailAttachmentPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -2251,6 +2436,17 @@ export interface Prisma__EmailMessageClient<
       >
     | Null
   >;
+  attachments<T extends Prisma.EmailMessage$attachmentsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.EmailMessage$attachmentsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$EmailAttachmentPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2785,6 +2981,34 @@ export type EmailMessage$deliveryLogsArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.MailDeliveryLogScalarFieldEnum | Prisma.MailDeliveryLogScalarFieldEnum[];
+};
+
+/**
+ * EmailMessage.attachments
+ */
+export type EmailMessage$attachmentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the EmailAttachment
+   */
+  select?: Prisma.EmailAttachmentSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the EmailAttachment
+   */
+  omit?: Prisma.EmailAttachmentOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmailAttachmentInclude<ExtArgs> | null;
+  where?: Prisma.EmailAttachmentWhereInput;
+  orderBy?:
+    | Prisma.EmailAttachmentOrderByWithRelationInput
+    | Prisma.EmailAttachmentOrderByWithRelationInput[];
+  cursor?: Prisma.EmailAttachmentWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.EmailAttachmentScalarFieldEnum | Prisma.EmailAttachmentScalarFieldEnum[];
 };
 
 /**

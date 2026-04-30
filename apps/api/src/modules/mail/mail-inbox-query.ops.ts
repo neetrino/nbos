@@ -32,6 +32,7 @@ export async function listMailAccountsForViewer(
 ): Promise<MailAccountRow[]> {
   const rows = await prisma.mailAccount.findMany({
     where: mailAccountWhereForViewer(employeeId, viewScope),
+    include: { providerConnection: true },
     orderBy: { createdAt: 'desc' },
     take: 50,
   });
@@ -119,7 +120,10 @@ export async function getMailThreadDetailDtoOrNull(
   const messages = await prisma.emailMessage.findMany({
     where: { threadId: params.threadId },
     orderBy: { createdAt: 'asc' },
-    include: { recipients: { orderBy: { createdAt: 'asc' } } },
+    include: {
+      attachments: { orderBy: { createdAt: 'asc' } },
+      recipients: { orderBy: { createdAt: 'asc' } },
+    },
   });
   return {
     mailAccount: toAccountRow(thread.mailAccount),

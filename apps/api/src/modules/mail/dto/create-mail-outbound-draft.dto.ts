@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import {
   MAIL_OUTBOUND_DRAFT_BODY_MAX_LENGTH,
+  MAIL_OUTBOUND_DRAFT_MAX_ATTACHMENTS,
   MAIL_OUTBOUND_DRAFT_MAX_CC_RECIPIENTS,
   MAIL_OUTBOUND_DRAFT_MAX_TO_RECIPIENTS,
   MAIL_OUTBOUND_DRAFT_SUBJECT_MAX_LENGTH,
@@ -48,4 +49,11 @@ export class CreateMailOutboundDraftDto {
   @IsString()
   @MaxLength(MAIL_OUTBOUND_DRAFT_BODY_MAX_LENGTH)
   bodyText!: string;
+
+  @IsOptional()
+  @Transform(({ value }) => trimStringArray(value))
+  @IsArray()
+  @ArrayMaxSize(MAIL_OUTBOUND_DRAFT_MAX_ATTACHMENTS)
+  @IsString({ each: true })
+  fileAssetIds?: string[];
 }

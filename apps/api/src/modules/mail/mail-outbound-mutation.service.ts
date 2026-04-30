@@ -53,6 +53,7 @@ export class MailOutboundMutationService {
       threadId,
       toCount: toList.length,
       ccCount: ccList.length,
+      attachmentCount: dto.fileAssetIds?.length ?? 0,
       subjectPrefix: dto.subject.slice(0, 120),
     };
     await this.auditService.log({

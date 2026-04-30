@@ -16,6 +16,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { MailProviderConnectionBadge } from '@/features/mail/MailProviderConnectionBadge';
 
 const MAIL_INBOX_SEARCH_DEBOUNCE_MS = 350;
 
@@ -223,6 +224,7 @@ export default function MailInboxPage() {
                         {a.status}
                         {a.lastSyncAt ? ` · synced ${new Date(a.lastSyncAt).toLocaleString()}` : ''}
                       </span>
+                      <MailProviderConnectionBadge account={a} />
                       <span className="text-muted-foreground block text-xs">
                         {a.threadCount} threads · {a.unreadThreadCount} unread ·{' '}
                         {a.needsLinkThreadCount} need link

@@ -1108,6 +1108,7 @@ model FileAsset {
   documentAttachments         DocumentAttachment[]
   messengerChannelAttachments MessengerChannelMessageAttachment[]
   messengerDirectAttachments  MessengerDirectMessageAttachment[]
+  emailAttachments            EmailAttachment[]
 
   @@index([status])
   @@index([purpose])
@@ -1574,10 +1575,11 @@ model Credential {
   createdAt             DateTime                  @default(now()) @map("created_at")
   updatedAt             DateTime                  @updatedAt @map("updated_at")
 
-  project              Project?              @relation(fields: [projectId], references: [id])
-  department           Department?           @relation(fields: [departmentId], references: [id])
-  owner                Employee?             @relation("CredentialOwner", fields: [ownerId], references: [id])
-  clientServiceRecords ClientServiceRecord[]
+  project                 Project?                 @relation(fields: [projectId], references: [id])
+  department              Department?              @relation(fields: [departmentId], references: [id])
+  owner                   Employee?                @relation("CredentialOwner", fields: [ownerId], references: [id])
+  clientServiceRecords    ClientServiceRecord[]
+  mailProviderConnections MailProviderConnection[]
 
   @@index([projectId])
   @@index([productId])
@@ -2034,6 +2036,14 @@ enum MailProviderType {
   CORPORATE_IMAP_SMTP
 }
 
+enum MailProviderConnectionStatus {
+  NOT_CONNECTED
+  CONNECTED
+  DEGRADED
+  NEEDS_RECONNECT
+  PAUSED
+}
+
 enum MailAccountStatus {
   ACTIVE
   NEEDS_RECONNECT
@@ -2056,14 +2066,45 @@ model MailAccount {
   createdAt           DateTime          @default(now()) @map("created_at")
   updatedAt           DateTime          @updatedAt @map("updated_at")
 
-  owner        Employee?         @relation("MailAccountOwner", fields: [ownerEmployeeId], references: [id], onDelete: SetNull)
-  createdBy    Employee?         @relation("MailAccountCreatedBy", fields: [createdByEmployeeId], references: [id], onDelete: SetNull)
-  threads      EmailThread[]
-  messages     EmailMessage[]
-  deliveryLogs MailDeliveryLog[]
+  owner              Employee?               @relation("MailAccountOwner", fields: [ownerEmployeeId], references: [id], onDelete: SetNull)
+  createdBy          Employee?               @relation("MailAccountCreatedBy", fields: [createdByEmployeeId], references: [id], onDelete: SetNull)
+  providerConnection MailProviderConnection?
+  threads            EmailThread[]
+  messages           EmailMessage[]
+  deliveryLogs       MailDeliveryLog[]
 
   @@index([ownerEmployeeId])
   @@map("mail_accounts")
+}
+
+model MailProviderConnection {
+  id                String                       @id @default(uuid())
+  mailAccountId     String                       @unique @map("mail_account_id")
+  providerType      MailProviderType             @map("provider_type")
+  status            MailProviderConnectionStatus @default(NOT_CONNECTED)
+  credentialId      String?                      @map("credential_id")
+  providerAccountId String?                      @map("provider_account_id")
+  username          String?
+  imapHost          String?                      @map("imap_host")
+  imapPort          Int?                         @map("imap_port")
+  smtpHost          String?                      @map("smtp_host")
+  smtpPort          Int?                         @map("smtp_port")
+  secureMode        String?                      @map("secure_mode")
+  grantedScopes     Json?                        @map("granted_scopes")
+  syncCursor        String?                      @map("sync_cursor")
+  lastValidatedAt   DateTime?                    @map("last_validated_at")
+  lastErrorAt       DateTime?                    @map("last_error_at")
+  lastErrorMessage  String?                      @map("last_error_message") @db.Text
+  createdAt         DateTime                     @default(now()) @map("created_at")
+  updatedAt         DateTime                     @updatedAt @map("updated_at")
+
+  mailAccount MailAccount @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
+  credential  Credential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
+
+  @@index([providerType])
+  @@index([status])
+  @@index([credentialId])
+  @@map("mail_provider_connections")
 }
 
 enum EmailThreadStatus {
@@ -2118,6 +2159,12 @@ enum MailDeliveryLogKind {
   OUTBOUND_FAILED_RESET_TO_DRAFT
 }
 
+enum EmailAttachmentDownloadStatus {
+  PENDING
+  READY
+  FAILED
+}
+
 model EmailMessage {
   id                String                @id @default(uuid())
   threadId          String                @map("thread_id")
@@ -2139,9 +2186,31 @@ model EmailMessage {
   mailAccount  MailAccount       @relation(fields: [mailAccountId], references: [id], onDelete: Cascade)
   recipients   EmailRecipient[]
   deliveryLogs MailDeliveryLog[]
+  attachments  EmailAttachment[]
 
   @@index([threadId, receivedAt])
   @@map("email_messages")
+}
+
+model EmailAttachment {
+  id                   String                        @id @default(uuid())
+  messageId            String                        @map("message_id")
+  fileAssetId          String                        @map("file_asset_id")
+  fileName             String                        @map("file_name")
+  mimeType             String?                       @map("mime_type")
+  sizeBytes            BigInt?                       @map("size_bytes")
+  providerAttachmentId String?                       @map("provider_attachment_id")
+  isInline             Boolean                       @default(false) @map("is_inline")
+  downloadStatus       EmailAttachmentDownloadStatus @default(READY) @map("download_status")
+  createdAt            DateTime                      @default(now()) @map("created_at")
+
+  message   EmailMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileAsset FileAsset    @relation(fields: [fileAssetId], references: [id], onDelete: Restrict)
+
+  @@index([messageId])
+  @@index([fileAssetId])
+  @@index([downloadStatus])
+  @@map("email_attachments")
 }
 
 model MailDeliveryLog {

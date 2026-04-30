@@ -108,8 +108,10 @@ export const ModelName = {
   MessengerDirectMessageAttachment: 'MessengerDirectMessageAttachment',
   MessengerDirectThreadReadState: 'MessengerDirectThreadReadState',
   MailAccount: 'MailAccount',
+  MailProviderConnection: 'MailProviderConnection',
   EmailThread: 'EmailThread',
   EmailMessage: 'EmailMessage',
+  EmailAttachment: 'EmailAttachment',
   MailDeliveryLog: 'MailDeliveryLog',
   EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
@@ -1217,6 +1219,31 @@ export const MailAccountScalarFieldEnum = {
 export type MailAccountScalarFieldEnum =
   (typeof MailAccountScalarFieldEnum)[keyof typeof MailAccountScalarFieldEnum];
 
+export const MailProviderConnectionScalarFieldEnum = {
+  id: 'id',
+  mailAccountId: 'mailAccountId',
+  providerType: 'providerType',
+  status: 'status',
+  credentialId: 'credentialId',
+  providerAccountId: 'providerAccountId',
+  username: 'username',
+  imapHost: 'imapHost',
+  imapPort: 'imapPort',
+  smtpHost: 'smtpHost',
+  smtpPort: 'smtpPort',
+  secureMode: 'secureMode',
+  grantedScopes: 'grantedScopes',
+  syncCursor: 'syncCursor',
+  lastValidatedAt: 'lastValidatedAt',
+  lastErrorAt: 'lastErrorAt',
+  lastErrorMessage: 'lastErrorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MailProviderConnectionScalarFieldEnum =
+  (typeof MailProviderConnectionScalarFieldEnum)[keyof typeof MailProviderConnectionScalarFieldEnum];
+
 export const EmailThreadScalarFieldEnum = {
   id: 'id',
   mailAccountId: 'mailAccountId',
@@ -1254,6 +1281,22 @@ export const EmailMessageScalarFieldEnum = {
 
 export type EmailMessageScalarFieldEnum =
   (typeof EmailMessageScalarFieldEnum)[keyof typeof EmailMessageScalarFieldEnum];
+
+export const EmailAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileAssetId: 'fileAssetId',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  providerAttachmentId: 'providerAttachmentId',
+  isInline: 'isInline',
+  downloadStatus: 'downloadStatus',
+  createdAt: 'createdAt',
+} as const;
+
+export type EmailAttachmentScalarFieldEnum =
+  (typeof EmailAttachmentScalarFieldEnum)[keyof typeof EmailAttachmentScalarFieldEnum];
 
 export const MailDeliveryLogScalarFieldEnum = {
   id: 'id',

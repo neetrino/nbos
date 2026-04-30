@@ -1,10 +1,26 @@
 'use client';
 
-import { Mail } from 'lucide-react';
+import { Mail, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { MailMessageRow } from '@/lib/api/mail';
 import { MailOutboundDeliveryLogSection } from './MailOutboundDeliveryLogSection';
+
+const BYTES_PER_KIB = 1024;
+
+function formatAttachmentSize(sizeBytes: string | null): string | null {
+  if (!sizeBytes) {
+    return null;
+  }
+  const bytes = Number(sizeBytes);
+  if (!Number.isFinite(bytes)) {
+    return null;
+  }
+  if (bytes < BYTES_PER_KIB) {
+    return `${bytes} B`;
+  }
+  return `${(bytes / BYTES_PER_KIB).toFixed(1)} KiB`;
+}
 
 export interface MailThreadMessagesProps {
   threadId: string;
@@ -56,6 +72,23 @@ export function MailThreadMessages({
               {m.recipients.map((r) => `${r.kind}: ${r.displayName ?? r.email}`).join(' · ')}
             </p>
             <pre className="font-sans text-sm whitespace-pre-wrap">{m.bodyText ?? '—'}</pre>
+            {m.attachments.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {m.attachments.map((attachment) => {
+                  const size = formatAttachmentSize(attachment.sizeBytes);
+                  return (
+                    <span
+                      key={attachment.id}
+                      className="bg-muted inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs"
+                    >
+                      <Paperclip size={12} />
+                      {attachment.fileName}
+                      {size ? ` · ${size}` : ''}
+                    </span>
+                  );
+                })}
+              </div>
+            ) : null}
             {canEdit && m.direction === 'OUTBOUND' && m.deliveryStatus === 'DRAFT' ? (
               <div className="flex flex-wrap gap-2">
                 <Button

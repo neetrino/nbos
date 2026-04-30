@@ -8,6 +8,24 @@ export interface MailAccountRow {
   status: string;
   lastSyncAt: string | null;
   lastErrorAt: string | null;
+  providerConnection: MailProviderConnectionRow | null;
+}
+
+export interface MailProviderConnectionRow {
+  id: string;
+  providerType: string;
+  status: string;
+  credentialId: string | null;
+  providerAccountId: string | null;
+  username: string | null;
+  imapHost: string | null;
+  imapPort: number | null;
+  smtpHost: string | null;
+  smtpPort: number | null;
+  secureMode: string | null;
+  lastValidatedAt: string | null;
+  lastErrorAt: string | null;
+  lastErrorMessage: string | null;
 }
 
 export interface MailAccountHealthSummaryRow extends MailAccountRow {
@@ -58,6 +76,19 @@ export interface MailMessageRow {
   readState: string;
   deliveryStatus: string | null;
   recipients: MailRecipientRow[];
+  attachments: MailAttachmentRow[];
+}
+
+export interface MailAttachmentRow {
+  id: string;
+  fileAssetId: string;
+  fileName: string;
+  mimeType: string | null;
+  sizeBytes: string | null;
+  providerAttachmentId: string | null;
+  isInline: boolean;
+  downloadStatus: string;
+  createdAt: string;
 }
 
 export interface CreateMailOutboundDraftPayload {
@@ -65,6 +96,7 @@ export interface CreateMailOutboundDraftPayload {
   cc?: string[];
   subject: string;
   bodyText: string;
+  fileAssetIds?: string[];
 }
 
 export interface MailThreadDetailDto {

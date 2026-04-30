@@ -6,6 +6,24 @@ export interface MailAccountRow {
   status: string;
   lastSyncAt: string | null;
   lastErrorAt: string | null;
+  providerConnection: MailProviderConnectionRow | null;
+}
+
+export interface MailProviderConnectionRow {
+  id: string;
+  providerType: string;
+  status: string;
+  credentialId: string | null;
+  providerAccountId: string | null;
+  username: string | null;
+  imapHost: string | null;
+  imapPort: number | null;
+  smtpHost: string | null;
+  smtpPort: number | null;
+  secureMode: string | null;
+  lastValidatedAt: string | null;
+  lastErrorAt: string | null;
+  lastErrorMessage: string | null;
 }
 
 /** Thread aggregates per mailbox for health / overview UI (no live provider probe). */
@@ -47,6 +65,18 @@ export interface MailRecipientRow {
   displayName: string | null;
 }
 
+export interface MailAttachmentRow {
+  id: string;
+  fileAssetId: string;
+  fileName: string;
+  mimeType: string | null;
+  sizeBytes: string | null;
+  providerAttachmentId: string | null;
+  isInline: boolean;
+  downloadStatus: string;
+  createdAt: string;
+}
+
 export interface MailMessageRow {
   id: string;
   direction: string;
@@ -58,6 +88,7 @@ export interface MailMessageRow {
   /** Outbound pipeline state; null for inbound / legacy rows. */
   deliveryStatus: string | null;
   recipients: MailRecipientRow[];
+  attachments: MailAttachmentRow[];
 }
 
 export interface MailDeliveryLogRow {
