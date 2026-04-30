@@ -12,6 +12,7 @@ import { FinanceReportsService } from '../finance/reports/reports.service';
 import { MrrSubscriptionRevenueService } from '../finance/reports/mrr-subscription-revenue.service';
 import { PayrollReportService } from '../finance/reports/payroll-report.service';
 import { ProjectPnlService } from '../finance/reports/project-pnl.service';
+import { ReportsQueueService } from './reports-queue.service';
 import { parseReportExportJobInput, parseReportScheduleInput } from './reports-validation';
 import type {
   CreateReportExportJobDto,
@@ -37,6 +38,7 @@ export class ReportsService {
     private readonly mrrSubscriptionRevenueService: MrrSubscriptionRevenueService,
     private readonly payrollReportService: PayrollReportService,
     private readonly projectPnlService: ProjectPnlService,
+    private readonly reportsQueueService?: ReportsQueueService,
   ) {}
 
   async listExportJobs(requestedById: string) {
@@ -125,7 +127,8 @@ export class ReportsService {
       changes: this.buildAuditChanges(job.reportKey, job.format, parsed.filters),
     });
 
-    return this.processExportJob(job.id, requestedById);
+    await this.reportsQueueService?.enqueueExport({ jobId: job.id, actorId: requestedById });
+    return job;
   }
 
   async createSchedule(ownerId: string, input: CreateReportScheduleDto) {

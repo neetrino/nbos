@@ -127,10 +127,11 @@ Shipped foundation:
 - `/reports` export history and CSV export request action over Finance-owned definitions.
 - real CSV writer over Finance-owned aggregate services, stored as Drive/R2 `FileAsset`;
 - failure state and audit event when export writing fails.
+- BullMQ export queue/worker wiring when `REDIS_URL` is configured; HTTP requests no longer write export files inline.
 
 Still needed:
 
-- BullMQ wiring for non-blocking retryable export workers;
+- approved retry/backoff and queue retention policy;
 - XLSX/PDF generators;
 - retry/cancellation flow;
 - source-permission centralization before cross-module exports.

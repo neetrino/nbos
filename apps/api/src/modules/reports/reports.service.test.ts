@@ -5,6 +5,7 @@ import { DriveService } from '../drive/drive.service';
 import type { FinanceReportDefinition } from '../finance/reports/finance-report-definitions';
 import { FinanceReportsService } from '../finance/reports/reports.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import { ReportsQueueService } from './reports-queue.service';
 import { ReportsService } from './reports.service';
 
 function createFinanceReportsService(): Partial<FinanceReportsService> {
@@ -38,6 +39,10 @@ function createDriveService(): Partial<DriveService> {
   };
 }
 
+function createReportsQueueService(): Partial<ReportsQueueService> {
+  return { enqueueExport: vi.fn().mockResolvedValue(true) };
+}
+
 const QUEUED_JOB = {
   id: 'job-1',
   reportKey: 'company-pnl',
@@ -53,6 +58,7 @@ describe('ReportsService', () => {
   let financeReports: ReturnType<typeof createFinanceReportsService>;
   let audit: ReturnType<typeof createAuditService>;
   let drive: ReturnType<typeof createDriveService>;
+  let queue: ReturnType<typeof createReportsQueueService>;
   let service: ReportsService;
 
   beforeEach(() => {
@@ -60,6 +66,7 @@ describe('ReportsService', () => {
     financeReports = createFinanceReportsService();
     audit = createAuditService();
     drive = createDriveService();
+    queue = createReportsQueueService();
     prisma.reportExportJob.create.mockResolvedValue(QUEUED_JOB);
     prisma.reportExportJob.findUnique.mockResolvedValue(QUEUED_JOB);
     prisma.fileAsset.findUnique.mockResolvedValue({ id: 'file-1' });
@@ -78,6 +85,7 @@ describe('ReportsService', () => {
       reportService as never,
       reportService as never,
       reportService as never,
+      queue as never,
     );
   });
 
@@ -101,6 +109,20 @@ describe('ReportsService', () => {
         }),
       }),
     );
+    expect(queue.enqueueExport).toHaveBeenCalledWith({ jobId: 'job-1', actorId: 'employee-1' });
+    expect(drive.createGeneratedFileAsset).toHaveBeenCalledTimes(0);
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityType: 'REPORT_EXPORT_JOB',
+        action: 'report_export.requested',
+        userId: 'employee-1',
+      }),
+    );
+  });
+
+  it('processes a queued CSV export into a Drive file', async () => {
+    await service.processExportJob('job-1', 'employee-1');
+
     expect(drive.createGeneratedFileAsset).toHaveBeenCalledWith(
       expect.objectContaining({
         sourceModule: 'REPORTS',
@@ -108,11 +130,9 @@ describe('ReportsService', () => {
         contentType: 'text/csv; charset=utf-8',
       }),
     );
-    expect(audit.log).toHaveBeenCalledWith(
+    expect(prisma.reportExportJob.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        entityType: 'REPORT_EXPORT_JOB',
-        action: 'report_export.requested',
-        userId: 'employee-1',
+        data: expect.objectContaining({ status: 'COMPLETED', fileAssetId: 'file-1' }),
       }),
     );
   });
