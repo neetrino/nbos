@@ -518,6 +518,26 @@ export const FileUploadSessionStatusEnum = {
 export type FileUploadSessionStatusEnum =
   (typeof FileUploadSessionStatusEnum)[keyof typeof FileUploadSessionStatusEnum];
 
+export const ReportExportJobStatusEnum = {
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type ReportExportJobStatusEnum =
+  (typeof ReportExportJobStatusEnum)[keyof typeof ReportExportJobStatusEnum];
+
+export const ReportExportFormatEnum = {
+  CSV: 'CSV',
+  XLSX: 'XLSX',
+  PDF: 'PDF',
+} as const;
+
+export type ReportExportFormatEnum =
+  (typeof ReportExportFormatEnum)[keyof typeof ReportExportFormatEnum];
+
 export const DocumentTypeEnum = {
   NATIVE: 'NATIVE',
   UPLOADED_FILE: 'UPLOADED_FILE',

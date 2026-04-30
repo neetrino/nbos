@@ -112,9 +112,21 @@ ReportDefinition
 
 ### B5. Export jobs are missing for reports
 
-Статус: `MISSING CODE`
+Статус: `PARTIAL` (2026-04-30)
 
-Нужно добавить async export jobs and Drive file output.
+Shipped foundation:
+
+- `ReportExportJob` model with status, format, filters, requester and Drive `FileAsset` output link;
+- `POST /api/reports/export-jobs` and `GET /api/reports/export-jobs`;
+- audit event when an export job is requested;
+- `/reports` export history and CSV export request action over Finance-owned definitions.
+
+Still needed:
+
+- BullMQ worker to generate real files;
+- actual CSV/XLSX/PDF file generation through Drive/R2;
+- failure retry/cancellation flow;
+- source-permission centralization before cross-module exports.
 
 ### B6. Data quality warnings are missing
 
@@ -137,8 +149,8 @@ Reports must enforce source permissions and cannot bypass module access.
 3. Add cross-module report definition registry.
 4. ~~Add basic reports links to existing module reports.~~ Done for Finance reports (2026-04-30).
 5. Add report period/filter shell.
-6. Add export job model.
-7. Link exports to Drive.
+6. ~~Add export job model.~~ Done foundation (2026-04-30).
+7. ~~Link exports to Drive.~~ Done as `FileAsset` output relation; real writer worker still needed.
 8. Add scheduled reports model.
 9. Add data quality warnings.
 10. Add sensitive report audit.

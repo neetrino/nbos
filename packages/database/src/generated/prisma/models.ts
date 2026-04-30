@@ -37,6 +37,7 @@ export type * from './models/FileVersion';
 export type * from './models/FileLink';
 export type * from './models/FileAuditEvent';
 export type * from './models/FileUploadSession';
+export type * from './models/ReportExportJob';
 export type * from './models/DocumentSection';
 export type * from './models/ExternalDocumentLink';
 export type * from './models/Document';

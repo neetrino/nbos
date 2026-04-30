@@ -167,6 +167,11 @@ export type FileAuditEvent = Prisma.FileAuditEventModel;
  */
 export type FileUploadSession = Prisma.FileUploadSessionModel;
 /**
+ * Model ReportExportJob
+ *
+ */
+export type ReportExportJob = Prisma.ReportExportJobModel;
+/**
  * Model DocumentSection
  *
  */

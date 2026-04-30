@@ -1109,6 +1109,7 @@ model FileAsset {
   messengerChannelAttachments MessengerChannelMessageAttachment[]
   messengerDirectAttachments  MessengerDirectMessageAttachment[]
   emailAttachments            EmailAttachment[]
+  reportExportJobs            ReportExportJob[]
 
   @@index([status])
   @@index([purpose])
@@ -1205,6 +1206,51 @@ model FileUploadSession {
   @@index([createdById])
   @@index([entityType, entityId])
   @@map("file_upload_sessions")
+}
+
+// ─── REPORTS / ANALYTICS EXPORT JOBS ────────────────────────
+
+enum ReportExportJobStatusEnum {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ReportExportFormatEnum {
+  CSV
+  XLSX
+  PDF
+}
+
+model ReportExportJob {
+  id            String                    @id @default(uuid())
+  reportKey     String                    @map("report_key")
+  reportTitle   String                    @map("report_title")
+  ownerModule   String                    @map("owner_module")
+  format        ReportExportFormatEnum
+  status        ReportExportJobStatusEnum @default(QUEUED)
+  requestedById String                    @map("requested_by_id")
+  filters       Json?
+  fileAssetId   String?                   @map("file_asset_id")
+  errorMessage  String?                   @map("error_message")
+  queuedAt      DateTime                  @default(now()) @map("queued_at")
+  startedAt     DateTime?                 @map("started_at")
+  completedAt   DateTime?                 @map("completed_at")
+  failedAt      DateTime?                 @map("failed_at")
+  createdAt     DateTime                  @default(now()) @map("created_at")
+  updatedAt     DateTime                  @updatedAt @map("updated_at")
+
+  requestedBy Employee   @relation(fields: [requestedById], references: [id], onDelete: Restrict)
+  fileAsset   FileAsset? @relation(fields: [fileAssetId], references: [id], onDelete: SetNull)
+
+  @@index([reportKey])
+  @@index([ownerModule])
+  @@index([status, queuedAt])
+  @@index([requestedById])
+  @@index([fileAssetId])
+  @@map("report_export_jobs")
 }
 
 // ─── DOCUMENTS (native knowledge module) ───────────────────
@@ -1860,6 +1906,7 @@ model Employee {
   mailDeliveryLogsActed        MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
   inAppNotificationsReceived   InAppNotification[]
   dashboardPreference          DashboardPreference?
+  reportExportJobsRequested    ReportExportJob[]
 
   @@map("employees")
 }

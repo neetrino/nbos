@@ -405,6 +405,7 @@ export const ModelName = {
   FileLink: 'FileLink',
   FileAuditEvent: 'FileAuditEvent',
   FileUploadSession: 'FileUploadSession',
+  ReportExportJob: 'ReportExportJob',
   DocumentSection: 'DocumentSection',
   ExternalDocumentLink: 'ExternalDocumentLink',
   Document: 'Document',
@@ -504,6 +505,7 @@ export type TypeMap<
       | 'fileLink'
       | 'fileAuditEvent'
       | 'fileUploadSession'
+      | 'reportExportJob'
       | 'documentSection'
       | 'externalDocumentLink'
       | 'document'
@@ -2790,6 +2792,82 @@ export type TypeMap<
           args: Prisma.FileUploadSessionCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.FileUploadSessionCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ReportExportJob: {
+      payload: Prisma.$ReportExportJobPayload<ExtArgs>;
+      fields: Prisma.ReportExportJobFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ReportExportJobFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ReportExportJobFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>;
+        };
+        findFirst: {
+          args: Prisma.ReportExportJobFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ReportExportJobFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>;
+        };
+        findMany: {
+          args: Prisma.ReportExportJobFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>[];
+        };
+        create: {
+          args: Prisma.ReportExportJobCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>;
+        };
+        createMany: {
+          args: Prisma.ReportExportJobCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ReportExportJobCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>[];
+        };
+        delete: {
+          args: Prisma.ReportExportJobDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>;
+        };
+        update: {
+          args: Prisma.ReportExportJobUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ReportExportJobDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ReportExportJobUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ReportExportJobUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>[];
+        };
+        upsert: {
+          args: Prisma.ReportExportJobUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportExportJobPayload>;
+        };
+        aggregate: {
+          args: Prisma.ReportExportJobAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReportExportJob>;
+        };
+        groupBy: {
+          args: Prisma.ReportExportJobGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ReportExportJobGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ReportExportJobCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ReportExportJobCountAggregateOutputType>
             | number;
         };
       };
@@ -7128,6 +7206,28 @@ export const FileUploadSessionScalarFieldEnum = {
 export type FileUploadSessionScalarFieldEnum =
   (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum];
 
+export const ReportExportJobScalarFieldEnum = {
+  id: 'id',
+  reportKey: 'reportKey',
+  reportTitle: 'reportTitle',
+  ownerModule: 'ownerModule',
+  format: 'format',
+  status: 'status',
+  requestedById: 'requestedById',
+  filters: 'filters',
+  fileAssetId: 'fileAssetId',
+  errorMessage: 'errorMessage',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  failedAt: 'failedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ReportExportJobScalarFieldEnum =
+  (typeof ReportExportJobScalarFieldEnum)[keyof typeof ReportExportJobScalarFieldEnum];
+
 export const DocumentSectionScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -8801,6 +8901,38 @@ export type ListEnumFileUploadSessionStatusEnumFieldRefInput<$PrismaModel> = Fie
 >;
 
 /**
+ * Reference to a field of type 'ReportExportFormatEnum'
+ */
+export type EnumReportExportFormatEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ReportExportFormatEnum'
+>;
+
+/**
+ * Reference to a field of type 'ReportExportFormatEnum[]'
+ */
+export type ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ReportExportFormatEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ReportExportJobStatusEnum'
+ */
+export type EnumReportExportJobStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ReportExportJobStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'ReportExportJobStatusEnum[]'
+ */
+export type ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ReportExportJobStatusEnum[]'
+>;
+
+/**
  * Reference to a field of type 'DocumentListScopeEnum'
  */
 export type EnumDocumentListScopeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -9711,6 +9843,7 @@ export type GlobalOmitConfig = {
   fileLink?: Prisma.FileLinkOmit;
   fileAuditEvent?: Prisma.FileAuditEventOmit;
   fileUploadSession?: Prisma.FileUploadSessionOmit;
+  reportExportJob?: Prisma.ReportExportJobOmit;
   documentSection?: Prisma.DocumentSectionOmit;
   externalDocumentLink?: Prisma.ExternalDocumentLinkOmit;
   document?: Prisma.DocumentOmit;

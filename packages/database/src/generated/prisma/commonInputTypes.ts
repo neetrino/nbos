@@ -1703,6 +1703,70 @@ export type EnumFileUploadSessionStatusEnumWithAggregatesFilter<$PrismaModel = n
   _max?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
 };
 
+export type EnumReportExportFormatEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportExportFormatEnum
+    | Prisma.EnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportExportFormatEnum[]
+    | Prisma.ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportExportFormatEnum[]
+    | Prisma.ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumReportExportFormatEnumFilter<$PrismaModel> | $Enums.ReportExportFormatEnum;
+};
+
+export type EnumReportExportJobStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportExportJobStatusEnum
+    | Prisma.EnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportExportJobStatusEnum[]
+    | Prisma.ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportExportJobStatusEnum[]
+    | Prisma.ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>
+    | $Enums.ReportExportJobStatusEnum;
+};
+
+export type EnumReportExportFormatEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportExportFormatEnum
+    | Prisma.EnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportExportFormatEnum[]
+    | Prisma.ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportExportFormatEnum[]
+    | Prisma.ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportExportFormatEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ReportExportFormatEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumReportExportFormatEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumReportExportFormatEnumFilter<$PrismaModel>;
+};
+
+export type EnumReportExportJobStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportExportJobStatusEnum
+    | Prisma.EnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportExportJobStatusEnum[]
+    | Prisma.ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportExportJobStatusEnum[]
+    | Prisma.ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportExportJobStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ReportExportJobStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>;
+};
+
 export type EnumDocumentListScopeEnumFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.DocumentListScopeEnum
@@ -4827,6 +4891,70 @@ export type NestedEnumFileUploadSessionStatusEnumWithAggregatesFilter<$PrismaMod
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumFileUploadSessionStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumReportExportFormatEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportExportFormatEnum
+    | Prisma.EnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportExportFormatEnum[]
+    | Prisma.ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportExportFormatEnum[]
+    | Prisma.ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumReportExportFormatEnumFilter<$PrismaModel> | $Enums.ReportExportFormatEnum;
+};
+
+export type NestedEnumReportExportJobStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportExportJobStatusEnum
+    | Prisma.EnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportExportJobStatusEnum[]
+    | Prisma.ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportExportJobStatusEnum[]
+    | Prisma.ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>
+    | $Enums.ReportExportJobStatusEnum;
+};
+
+export type NestedEnumReportExportFormatEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportExportFormatEnum
+    | Prisma.EnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportExportFormatEnum[]
+    | Prisma.ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportExportFormatEnum[]
+    | Prisma.ListEnumReportExportFormatEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportExportFormatEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ReportExportFormatEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumReportExportFormatEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumReportExportFormatEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumReportExportJobStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportExportJobStatusEnum
+    | Prisma.EnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportExportJobStatusEnum[]
+    | Prisma.ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportExportJobStatusEnum[]
+    | Prisma.ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportExportJobStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ReportExportJobStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumDocumentListScopeEnumFilter<$PrismaModel = never> = {

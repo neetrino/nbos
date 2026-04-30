@@ -7,6 +7,7 @@ import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { financeReportsApi, type FinanceReportDefinition } from '@/lib/api/finance-reports';
+import { reportsApi, type ReportExportJob } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 type ReportCategory = 'all' | 'finance' | 'scheduled' | 'exports';
@@ -29,19 +30,26 @@ function matchesSearch(definition: FinanceReportDefinition, query: string): bool
 
 export default function ReportsPage() {
   const [definitions, setDefinitions] = useState<FinanceReportDefinition[]>([]);
+  const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
   const [category, setCategory] = useState<ReportCategory>('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creatingExportKey, setCreatingExportKey] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
-      const response = await financeReportsApi.getDefinitions();
-      setDefinitions(response.items);
+      const [definitionResponse, jobs] = await Promise.all([
+        financeReportsApi.getDefinitions(),
+        reportsApi.listExportJobs(),
+      ]);
+      setDefinitions(definitionResponse.items);
+      setExportJobs(jobs);
     } catch (caught) {
       setDefinitions([]);
+      setExportJobs([]);
       setError(getApiErrorMessage(caught, 'Reports catalog could not be loaded.'));
     } finally {
       setLoading(false);
@@ -56,6 +64,24 @@ export default function ReportsPage() {
     if (category !== 'all' && category !== 'finance') return [];
     return definitions.filter((definition) => matchesSearch(definition, search));
   }, [category, definitions, search]);
+
+  async function requestExport(definition: FinanceReportDefinition) {
+    setCreatingExportKey(definition.id);
+    setError(null);
+    try {
+      const job = await reportsApi.createExportJob({
+        reportKey: definition.id,
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+      });
+      setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
+      setCategory('exports');
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report export job could not be requested.'));
+    } finally {
+      setCreatingExportKey(null);
+    }
+  }
 
   if (loading) return <LoadingState variant="cards" count={6} />;
 
@@ -115,8 +141,10 @@ export default function ReportsPage() {
         </div>
       </section>
 
-      {category === 'scheduled' || category === 'exports' ? (
-        <HonestMissingState category={category} />
+      {category === 'scheduled' ? (
+        <HonestMissingState />
+      ) : category === 'exports' ? (
+        <ExportHistory jobs={exportJobs} onRefresh={() => void load()} />
       ) : visibleDefinitions.length === 0 ? (
         <div className="border-border bg-card rounded-2xl border p-8 text-center">
           <BarChart3 className="text-muted-foreground mx-auto h-8 w-8" />
@@ -129,7 +157,12 @@ export default function ReportsPage() {
       ) : (
         <section className="grid gap-4 xl:grid-cols-2">
           {visibleDefinitions.map((definition) => (
-            <ReportCatalogCard key={definition.id} definition={definition} />
+            <ReportCatalogCard
+              key={definition.id}
+              definition={definition}
+              exporting={creatingExportKey === definition.id}
+              onExport={() => void requestExport(definition)}
+            />
           ))}
         </section>
       )}
@@ -137,7 +170,15 @@ export default function ReportsPage() {
   );
 }
 
-function ReportCatalogCard({ definition }: { definition: FinanceReportDefinition }) {
+function ReportCatalogCard({
+  definition,
+  exporting,
+  onExport,
+}: {
+  definition: FinanceReportDefinition;
+  exporting: boolean;
+  onExport: () => void;
+}) {
   return (
     <article className="border-border bg-card rounded-2xl border p-5">
       <div className="flex items-start justify-between gap-4">
@@ -158,6 +199,10 @@ function ReportCatalogCard({ definition }: { definition: FinanceReportDefinition
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="secondary" onClick={onExport} disabled={exporting}>
+          <Download className="mr-2 h-4 w-4" />
+          {exporting ? 'Requesting...' : 'Export CSV'}
+        </Button>
         {definition.aggregateEndpoint ? (
           <Link
             href="/finance/reports"
@@ -196,19 +241,66 @@ function CatalogBlock({ title, lines }: { title: string; lines: string[] }) {
   );
 }
 
-function HonestMissingState({ category }: { category: 'scheduled' | 'exports' }) {
-  const isScheduled = category === 'scheduled';
-  const Icon = isScheduled ? CalendarClock : Download;
+function ExportHistory({ jobs, onRefresh }: { jobs: ReportExportJob[]; onRefresh: () => void }) {
+  return (
+    <div className="border-border bg-card rounded-2xl border p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="font-medium">Export history</p>
+          <p className="text-muted-foreground text-sm">
+            Jobs stay queued until a real Drive file is generated and audited.
+          </p>
+        </div>
+        <Button type="button" variant="outline" size="sm" onClick={onRefresh}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Refresh
+        </Button>
+      </div>
+      {jobs.length === 0 ? (
+        <div className="mt-6 rounded-xl border border-dashed p-6 text-center">
+          <Download className="text-muted-foreground mx-auto h-8 w-8" />
+          <p className="mt-3 font-medium">No export jobs yet</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Request an export from a report card. No fake files are created.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-5 space-y-3">
+          {jobs.map((job) => (
+            <div key={job.id} className="rounded-xl border p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium">{job.reportTitle}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {job.ownerModule} · {job.format} · queued{' '}
+                    {new Date(job.queuedAt).toLocaleString()}
+                  </p>
+                </div>
+                <span className="bg-muted rounded-full px-2.5 py-1 text-xs font-medium">
+                  {job.status}
+                </span>
+              </div>
+              {job.fileAsset ? (
+                <p className="text-muted-foreground mt-2 text-sm">
+                  Drive file: {job.fileAsset.displayName}
+                </p>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HonestMissingState() {
   return (
     <div className="border-border bg-card rounded-2xl border p-8 text-center">
-      <Icon className="text-muted-foreground mx-auto h-8 w-8" />
-      <p className="mt-3 font-medium">
-        {isScheduled ? 'Scheduled reports are not wired yet' : 'Report exports are not wired yet'}
-      </p>
+      <CalendarClock className="text-muted-foreground mx-auto h-8 w-8" />
+      <p className="mt-3 font-medium">Scheduled reports are not wired yet</p>
       <p className="text-muted-foreground mx-auto mt-1 max-w-xl text-sm">
-        {isScheduled
-          ? 'The catalog is ready to host scheduled reports, but owner, recipients, next run and failure handling still belong to a later Phase 6 slice.'
-          : 'Exports must create audited Drive files. This screen keeps the state honest until export jobs are implemented.'}
+        The catalog is ready to host scheduled reports, but owner, recipients, next run and failure
+        handling still belong to a later Phase 6 slice.
       </p>
     </div>
   );
