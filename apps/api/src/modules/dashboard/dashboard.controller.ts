@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RequirePermission } from '../../common/decorators';
+import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
+import { UpdateDashboardPreferenceDto } from './dto/update-dashboard-preference.dto';
 import { DashboardService } from './dashboard.service';
 
 @ApiTags('Dashboard')
@@ -16,7 +17,17 @@ export class DashboardController {
     description:
       'Lightweight action-center projection. Dashboard does not own source business data.',
   })
-  getControlCenter() {
-    return this.dashboardService.getControlCenterProjection();
+  getControlCenter(@CurrentUser() user: CurrentUserPayload) {
+    return this.dashboardService.getControlCenterProjection(user.id);
+  }
+
+  @Patch('preferences')
+  @RequirePermission('DASHBOARDS', 'VIEW')
+  @ApiOperation({ summary: 'Update current user dashboard preferences' })
+  updatePreference(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: UpdateDashboardPreferenceDto,
+  ) {
+    return this.dashboardService.updatePreference(user.id, body);
   }
 }

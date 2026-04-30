@@ -2,10 +2,18 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, ArrowUpRight, BarChart3, RefreshCcw } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  BarChart3,
+  EyeOff,
+  RefreshCcw,
+  RotateCcw,
+} from 'lucide-react';
 import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { dashboardApi } from '@/lib/api/dashboard';
 import { usePermission } from '@/lib/permissions';
 import { loadDashboardControlData } from './dashboard-control-data';
 import {
@@ -13,14 +21,15 @@ import {
   PINNED_ACTIONS,
   priorityClass,
   type DashboardData,
+  type DashboardPreference,
   type PinnedAction,
   type PriorityCard,
 } from './dashboard-control-registry';
 
 export function DashboardControlCenter() {
-  const { actions, data, error, fetchDashboard, loading, priorities } = useDashboardControlCenter();
+  const dashboard = useDashboardControlCenter();
 
-  if (loading) return <DashboardLoadingSkeleton />;
+  if (dashboard.loading) return <DashboardLoadingSkeleton />;
 
   return (
     <div className="space-y-6">
@@ -28,16 +37,26 @@ export function DashboardControlCenter() {
         title="Dashboard Control Center"
         description="Pinned actions, priority feed and lightweight widgets for what needs attention now."
       >
-        <Button variant="outline" onClick={() => void fetchDashboard()}>
+        <Button variant="outline" onClick={() => void dashboard.fetchDashboard()}>
           <RefreshCcw size={16} className="mr-2" />
           Refresh
         </Button>
       </PageHeader>
-      {error ? <DashboardError message={error} /> : null}
-      <PinnedActions actions={actions} />
+      {dashboard.error ? <DashboardError message={dashboard.error} /> : null}
+      <PinnedActions
+        actions={dashboard.actions}
+        onHideAction={dashboard.hidePinnedAction}
+        onReset={dashboard.resetPreferences}
+        saving={dashboard.savingPreference}
+      />
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <PriorityFeed priorities={priorities} />
-        <MiniAnalytics data={data} />
+        <PriorityFeed priorities={dashboard.priorities} />
+        <MiniAnalytics
+          data={dashboard.data}
+          hiddenWidgets={dashboard.preference?.hiddenWidgets ?? []}
+          onHideWidget={dashboard.hideWidget}
+          saving={dashboard.savingPreference}
+        />
       </section>
     </div>
   );
@@ -46,13 +65,16 @@ export function DashboardControlCenter() {
 function useDashboardControlCenter() {
   const { can } = usePermission();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [preference, setPreference] = useState<DashboardPreference | null>(null);
   const [priorities, setPriorities] = useState<PriorityCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const actions = useMemo(
-    () => PINNED_ACTIONS.filter((action) => can(action.action, action.module)),
-    [can],
+  const actions = useMemo(() => applyActionPreferences(PINNED_ACTIONS, preference), [preference]);
+  const permittedActions = useMemo(
+    () => actions.filter((action) => can(action.action, action.module)),
+    [actions, can],
   );
+  const preferenceControls = usePreferenceControls(preference, setPreference);
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
@@ -60,6 +82,7 @@ function useDashboardControlCenter() {
     try {
       const projection = await loadDashboardControlData();
       setData(projection.metrics);
+      setPreference(projection.preference);
       setPriorities(projection.priorities);
     } catch (caught) {
       setData(null);
@@ -74,7 +97,62 @@ function useDashboardControlCenter() {
     void fetchDashboard();
   }, [fetchDashboard]);
 
-  return { actions, data, error, fetchDashboard, loading, priorities };
+  return {
+    actions: permittedActions,
+    data,
+    error,
+    fetchDashboard,
+    loading,
+    preference,
+    priorities,
+    ...preferenceControls,
+  };
+}
+
+function usePreferenceControls(
+  preference: DashboardPreference | null,
+  setPreference: (preference: DashboardPreference) => void,
+) {
+  const [savingPreference, setSavingPreference] = useState(false);
+  const savePreference = useCallback(
+    async (payload: Partial<DashboardPreference>) => {
+      setSavingPreference(true);
+      try {
+        setPreference(await dashboardApi.updatePreference(payload));
+      } finally {
+        setSavingPreference(false);
+      }
+    },
+    [setPreference],
+  );
+
+  const hidePinnedAction = useCallback(
+    (key: string) =>
+      savePreference({
+        hiddenPinnedActions: [...(preference?.hiddenPinnedActions ?? []), key],
+      }),
+    [preference, savePreference],
+  );
+
+  const hideWidget = useCallback(
+    (key: string) =>
+      savePreference({
+        hiddenWidgets: [...(preference?.hiddenWidgets ?? []), key],
+      }),
+    [preference, savePreference],
+  );
+
+  const resetPreferences = useCallback(
+    () =>
+      savePreference({
+        hiddenPinnedActions: [],
+        hiddenWidgets: [],
+        compactWidgets: [],
+      }),
+    [savePreference],
+  );
+
+  return { hidePinnedAction, hideWidget, resetPreferences, savingPreference };
 }
 
 function DashboardLoadingSkeleton() {
@@ -98,13 +176,27 @@ function DashboardError({ message }: { message: string }) {
   );
 }
 
-function PinnedActions({ actions }: { actions: PinnedAction[] }) {
+function PinnedActions({
+  actions,
+  onHideAction,
+  onReset,
+  saving,
+}: {
+  actions: PinnedAction[];
+  onHideAction: (key: string) => void;
+  onReset: () => void;
+  saving: boolean;
+}) {
   return (
     <section className="border-border bg-card rounded-2xl border p-5">
       <h2 className="text-lg font-semibold">Pinned actions</h2>
       <p className="text-muted-foreground mt-1 text-sm">
         Creation and frequent work entry points live here, not as a global header button.
       </p>
+      <Button className="mt-3" variant="outline" size="sm" onClick={onReset} disabled={saving}>
+        <RotateCcw className="mr-2 h-4 w-4" />
+        Reset layout
+      </Button>
       {actions.length === 0 ? (
         <p className="text-muted-foreground mt-4 text-sm">
           No pinned actions are available for your current permissions.
@@ -112,7 +204,12 @@ function PinnedActions({ actions }: { actions: PinnedAction[] }) {
       ) : (
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {actions.map((action) => (
-            <PinnedActionCard key={action.href} action={action} />
+            <PinnedActionCard
+              key={action.href}
+              action={action}
+              onHide={() => onHideAction(action.key)}
+              saving={saving}
+            />
           ))}
         </div>
       )}
@@ -120,21 +217,31 @@ function PinnedActions({ actions }: { actions: PinnedAction[] }) {
   );
 }
 
-function PinnedActionCard({ action }: { action: PinnedAction }) {
+function PinnedActionCard({
+  action,
+  onHide,
+  saving,
+}: {
+  action: PinnedAction;
+  onHide: () => void;
+  saving: boolean;
+}) {
   return (
-    <Link
-      href={action.href}
-      className="border-border hover:bg-muted/50 rounded-xl border p-4 transition-colors"
-    >
+    <div className="border-border hover:bg-muted/50 rounded-xl border p-4 transition-colors">
       <div className="flex items-start justify-between gap-3">
-        <div className="bg-primary/10 text-primary rounded-xl p-2.5">
+        <Link href={action.href} className="bg-primary/10 text-primary rounded-xl p-2.5">
           <action.icon size={18} />
-        </div>
-        <ArrowUpRight className="text-muted-foreground h-4 w-4" />
+        </Link>
+        <Button variant="ghost" size="icon" onClick={onHide} disabled={saving}>
+          <EyeOff className="h-4 w-4" />
+        </Button>
       </div>
-      <p className="mt-3 font-medium">{action.label}</p>
+      <Link href={action.href} className="mt-3 flex items-center gap-1 font-medium">
+        {action.label}
+        <ArrowUpRight className="h-3.5 w-3.5" />
+      </Link>
       <p className="text-muted-foreground mt-1 text-sm">{action.description}</p>
-    </Link>
+    </div>
   );
 }
 
@@ -167,7 +274,18 @@ function PriorityFeed({ priorities }: { priorities: PriorityCard[] }) {
   );
 }
 
-function MiniAnalytics({ data }: { data: DashboardData | null }) {
+function MiniAnalytics({
+  data,
+  hiddenWidgets,
+  onHideWidget,
+  saving,
+}: {
+  data: DashboardData | null;
+  hiddenWidgets: string[];
+  onHideWidget: (key: string) => void;
+  saving: boolean;
+}) {
+  const metrics = MINI_METRICS.filter((metric) => !hiddenWidgets.includes(metric.id));
   return (
     <div className="border-border bg-card rounded-2xl border p-5">
       <div className="flex items-center gap-2">
@@ -175,13 +293,15 @@ function MiniAnalytics({ data }: { data: DashboardData | null }) {
         <h2 className="text-lg font-semibold">Mini analytics</h2>
       </div>
       <div className="mt-4 grid gap-3">
-        {MINI_METRICS.map((metric) => (
+        {metrics.map((metric) => (
           <MiniMetric
             key={metric.label}
             icon={metric.icon}
             label={metric.label}
             value={'key' in metric ? (data?.[metric.key] ?? 0) : metric.value}
             href={'href' in metric ? metric.href : undefined}
+            onHide={() => onHideWidget(metric.id)}
+            saving={saving}
           />
         ))}
       </div>
@@ -194,20 +314,50 @@ function MiniMetric({
   label,
   value,
   href,
+  onHide,
+  saving,
 }: {
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   value: number | string;
   href?: string;
+  onHide: () => void;
+  saving: boolean;
 }) {
-  const content = (
+  return (
     <div className="border-border flex items-center justify-between rounded-xl border p-3">
+      {href ? (
+        <Link href={href} className="flex items-center gap-2">
+          <Icon className="text-muted-foreground h-4 w-4" />
+          <span className="text-sm">{label}</span>
+        </Link>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Icon className="text-muted-foreground h-4 w-4" />
+          <span className="text-sm">{label}</span>
+        </div>
+      )}
       <div className="flex items-center gap-2">
-        <Icon className="text-muted-foreground h-4 w-4" />
-        <span className="text-sm">{label}</span>
+        <span className="font-medium">{value}</span>
+        <Button variant="ghost" size="icon" onClick={onHide} disabled={saving}>
+          <EyeOff className="h-4 w-4" />
+        </Button>
       </div>
-      <span className="font-medium">{value}</span>
     </div>
   );
-  return href ? <Link href={href}>{content}</Link> : content;
+}
+
+function applyActionPreferences(
+  actions: PinnedAction[],
+  preference: DashboardPreference | null,
+): PinnedAction[] {
+  const hidden = new Set(preference?.hiddenPinnedActions ?? []);
+  const byKey = new Map<string, PinnedAction>(actions.map((action) => [action.key, action]));
+  const ordered = (preference?.pinnedActionOrder ?? []).flatMap((key) => {
+    const action = byKey.get(key);
+    return action && !hidden.has(action.key) ? [action] : [];
+  });
+  const orderedKeys = new Set(ordered.map((action) => action.key));
+  const rest = actions.filter((action) => !orderedKeys.has(action.key) && !hidden.has(action.key));
+  return [...ordered, ...rest];
 }

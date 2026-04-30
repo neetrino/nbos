@@ -9,9 +9,14 @@ import {
   MessageCircle,
   Plus,
 } from 'lucide-react';
-import type { DashboardMetricProjection, DashboardPriorityProjection } from '@/lib/api/dashboard';
+import type {
+  DashboardMetricProjection,
+  DashboardPreferenceProjection,
+  DashboardPriorityProjection,
+} from '@/lib/api/dashboard';
 
 export interface PinnedAction {
+  key: DashboardPinnedActionKey;
   label: string;
   href: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
@@ -21,10 +26,24 @@ export interface PinnedAction {
 }
 
 export type DashboardData = DashboardMetricProjection;
+export type DashboardPreference = DashboardPreferenceProjection;
+export type DashboardPinnedActionKey =
+  | 'new-lead'
+  | 'new-task'
+  | 'open-invoices'
+  | 'open-calendar'
+  | 'open-messenger'
+  | 'mail-inbox';
+export type DashboardWidgetKey =
+  | 'open-deals'
+  | 'open-tasks'
+  | 'open-support-tickets'
+  | 'detailed-reports';
 export type PriorityCard = DashboardPriorityProjection;
 
 export const PINNED_ACTIONS: PinnedAction[] = [
   {
+    key: 'new-lead',
     label: 'New lead',
     href: '/crm/leads',
     icon: Plus,
@@ -33,6 +52,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Capture an incoming opportunity.',
   },
   {
+    key: 'new-task',
     label: 'New task',
     href: '/tasks',
     icon: CheckSquare,
@@ -41,6 +61,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Create work for yourself or a teammate.',
   },
   {
+    key: 'open-invoices',
     label: 'Open invoices',
     href: '/finance/invoices',
     icon: FileText,
@@ -49,6 +70,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Review pending invoice work.',
   },
   {
+    key: 'open-calendar',
     label: 'Open calendar',
     href: '/calendar',
     icon: Calendar,
@@ -57,6 +79,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'See meetings, personal items and deadlines.',
   },
   {
+    key: 'open-messenger',
     label: 'Open messenger',
     href: '/messenger',
     icon: MessageCircle,
@@ -65,6 +88,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Jump into internal communication.',
   },
   {
+    key: 'mail-inbox',
     label: 'Mail inbox',
     href: '/mail',
     icon: Mail,
@@ -75,10 +99,21 @@ export const PINNED_ACTIONS: PinnedAction[] = [
 ];
 
 export const MINI_METRICS = [
-  { icon: Handshake, label: 'Open deals', key: 'openDeals' },
-  { icon: CheckSquare, label: 'Open tasks', key: 'openTasks' },
-  { icon: Headphones, label: 'Open support tickets', key: 'openTickets' },
-  { icon: FolderKanban, label: 'Detailed reports', value: 'Open catalog', href: '/reports' },
+  { id: 'open-deals', icon: Handshake, label: 'Open deals', key: 'openDeals' },
+  { id: 'open-tasks', icon: CheckSquare, label: 'Open tasks', key: 'openTasks' },
+  {
+    id: 'open-support-tickets',
+    icon: Headphones,
+    label: 'Open support tickets',
+    key: 'openTickets',
+  },
+  {
+    id: 'detailed-reports',
+    icon: FolderKanban,
+    label: 'Detailed reports',
+    value: 'Open catalog',
+    href: '/reports',
+  },
 ] as const;
 
 export function priorityClass(severity: PriorityCard['severity']): string {

@@ -425,6 +425,7 @@ export const ModelName = {
   RolePermission: 'RolePermission',
   Invitation: 'Invitation',
   Employee: 'Employee',
+  DashboardPreference: 'DashboardPreference',
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
@@ -523,6 +524,7 @@ export type TypeMap<
       | 'rolePermission'
       | 'invitation'
       | 'employee'
+      | 'dashboardPreference'
       | 'partner'
       | 'messengerChannel'
       | 'messengerChannelMessage'
@@ -4294,6 +4296,82 @@ export type TypeMap<
         };
       };
     };
+    DashboardPreference: {
+      payload: Prisma.$DashboardPreferencePayload<ExtArgs>;
+      fields: Prisma.DashboardPreferenceFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DashboardPreferenceFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DashboardPreferenceFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>;
+        };
+        findFirst: {
+          args: Prisma.DashboardPreferenceFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DashboardPreferenceFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>;
+        };
+        findMany: {
+          args: Prisma.DashboardPreferenceFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>[];
+        };
+        create: {
+          args: Prisma.DashboardPreferenceCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>;
+        };
+        createMany: {
+          args: Prisma.DashboardPreferenceCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DashboardPreferenceCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>[];
+        };
+        delete: {
+          args: Prisma.DashboardPreferenceDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>;
+        };
+        update: {
+          args: Prisma.DashboardPreferenceUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>;
+        };
+        deleteMany: {
+          args: Prisma.DashboardPreferenceDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DashboardPreferenceUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DashboardPreferenceUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>[];
+        };
+        upsert: {
+          args: Prisma.DashboardPreferenceUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardPreferencePayload>;
+        };
+        aggregate: {
+          args: Prisma.DashboardPreferenceAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDashboardPreference>;
+        };
+        groupBy: {
+          args: Prisma.DashboardPreferenceGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DashboardPreferenceGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DashboardPreferenceCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.DashboardPreferenceCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     Partner: {
       payload: Prisma.$PartnerPayload<ExtArgs>;
       fields: Prisma.PartnerFieldRefs;
@@ -7407,6 +7485,22 @@ export const EmployeeScalarFieldEnum = {
 export type EmployeeScalarFieldEnum =
   (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum];
 
+export const DashboardPreferenceScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  pinnedActionOrder: 'pinnedActionOrder',
+  hiddenPinnedActions: 'hiddenPinnedActions',
+  visibleWidgets: 'visibleWidgets',
+  hiddenWidgets: 'hiddenWidgets',
+  compactWidgets: 'compactWidgets',
+  defaultDashboardMode: 'defaultDashboardMode',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type DashboardPreferenceScalarFieldEnum =
+  (typeof DashboardPreferenceScalarFieldEnum)[keyof typeof DashboardPreferenceScalarFieldEnum];
+
 export const PartnerScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -9637,6 +9731,7 @@ export type GlobalOmitConfig = {
   rolePermission?: Prisma.RolePermissionOmit;
   invitation?: Prisma.InvitationOmit;
   employee?: Prisma.EmployeeOmit;
+  dashboardPreference?: Prisma.DashboardPreferenceOmit;
   partner?: Prisma.PartnerOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;

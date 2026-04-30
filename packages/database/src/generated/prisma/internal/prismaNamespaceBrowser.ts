@@ -98,6 +98,7 @@ export const ModelName = {
   RolePermission: 'RolePermission',
   Invitation: 'Invitation',
   Employee: 'Employee',
+  DashboardPreference: 'DashboardPreference',
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
@@ -1097,6 +1098,22 @@ export const EmployeeScalarFieldEnum = {
 
 export type EmployeeScalarFieldEnum =
   (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum];
+
+export const DashboardPreferenceScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  pinnedActionOrder: 'pinnedActionOrder',
+  hiddenPinnedActions: 'hiddenPinnedActions',
+  visibleWidgets: 'visibleWidgets',
+  hiddenWidgets: 'hiddenWidgets',
+  compactWidgets: 'compactWidgets',
+  defaultDashboardMode: 'defaultDashboardMode',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type DashboardPreferenceScalarFieldEnum =
+  (typeof DashboardPreferenceScalarFieldEnum)[keyof typeof DashboardPreferenceScalarFieldEnum];
 
 export const PartnerScalarFieldEnum = {
   id: 'id',

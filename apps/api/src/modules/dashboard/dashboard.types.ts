@@ -18,8 +18,18 @@ export interface DashboardPriorityProjection {
 export interface DashboardControlCenterProjection {
   metrics: DashboardMetricProjection;
   priorities: DashboardPriorityProjection[];
+  preference: DashboardPreferenceProjection;
   meta: {
     source: 'module-projections';
     generatedAt: string;
   };
+}
+
+export interface DashboardPreferenceProjection {
+  pinnedActionOrder: string[];
+  hiddenPinnedActions: string[];
+  visibleWidgets: string[];
+  hiddenWidgets: string[];
+  compactWidgets: string[];
+  defaultDashboardMode: string;
 }

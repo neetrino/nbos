@@ -295,6 +295,11 @@ export type Invitation = Prisma.InvitationModel;
  */
 export type Employee = Prisma.EmployeeModel;
 /**
+ * Model DashboardPreference
+ *
+ */
+export type DashboardPreference = Prisma.DashboardPreferenceModel;
+/**
  * Model Partner
  *
  */

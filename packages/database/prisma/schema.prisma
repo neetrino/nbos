@@ -1859,8 +1859,26 @@ model Employee {
   mailAccountsCreated          MailAccount[]                       @relation("MailAccountCreatedBy")
   mailDeliveryLogsActed        MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
   inAppNotificationsReceived   InAppNotification[]
+  dashboardPreference          DashboardPreference?
 
   @@map("employees")
+}
+
+model DashboardPreference {
+  id                   String   @id @default(uuid())
+  employeeId           String   @unique @map("employee_id")
+  pinnedActionOrder    String[] @map("pinned_action_order")
+  hiddenPinnedActions  String[] @map("hidden_pinned_actions")
+  visibleWidgets       String[] @map("visible_widgets")
+  hiddenWidgets        String[] @map("hidden_widgets")
+  compactWidgets       String[] @map("compact_widgets")
+  defaultDashboardMode String   @default("control_center") @map("default_dashboard_mode")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("dashboard_preferences")
 }
 
 enum PartnerTypeEnum {

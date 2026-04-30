@@ -74,15 +74,23 @@ Future implementation:
 
 ### B3. Dashboard does not support user preferences
 
-Статус: `MISSING CODE / MISSING UI`
+Статус: `PARTIAL DONE` (2026-04-30)
 
-Нужно добавить:
+Shipped P0:
 
-- pinned actions preferences;
-- visible/hidden widgets;
-- widget order;
-- role default layout;
-- reset to default.
+- `DashboardPreference` per employee;
+- pinned action order / hidden pinned actions;
+- visible / hidden / compact widget arrays;
+- `PATCH /api/dashboard/preferences` with known-key validation;
+- web hide controls for pinned actions and mini widgets;
+- reset layout action.
+
+Remaining:
+
+- drag-and-drop ordering UI;
+- role default layout depth;
+- personal links integration;
+- full widget library UI.
 
 ### B4. Priority Feed is missing
 
@@ -201,7 +209,7 @@ Dashboard не должен падать, если один модуль нед�
 ## D. Implementation order
 
 1. Remove global `Create` from header.
-2. Add DashboardPreference model.
+2. ~~Add DashboardPreference model.~~ Done P0 (2026-04-30): per-employee preferences.
 3. ~~Add Pinned Actions UI.~~ Done P0 (2026-04-30): permission-filtered default actions.
 4. Add default actions by role.
 5. Add PersonalLink support inside Dashboard pinned actions.
