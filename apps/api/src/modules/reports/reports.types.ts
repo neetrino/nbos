@@ -1,4 +1,5 @@
 import type { InputJsonValue } from '@nbos/database';
+import type { ReportScheduleFrequency } from './reports-schedule-recurrence';
 
 export const REPORT_EXPORT_FORMATS = ['CSV', 'XLSX', 'PDF'] as const;
 export const REPORT_EXPORT_OWNER_MODULES = ['FINANCE'] as const;
@@ -16,7 +17,12 @@ export interface CreateReportExportJobDto {
 export interface CreateReportScheduleDto extends CreateReportExportJobDto {
   recipientEmails?: unknown;
   scheduleLabel?: unknown;
-  nextRunAt?: unknown;
+  frequency?: unknown;
+  timezone?: unknown;
+  timeOfDay?: unknown;
+  startDate?: unknown;
+  dayOfWeek?: unknown;
+  dayOfMonth?: unknown;
 }
 
 export interface ParsedReportExportJobInput {
@@ -29,6 +35,12 @@ export interface ParsedReportExportJobInput {
 export interface ParsedReportScheduleInput extends ParsedReportExportJobInput {
   recipientEmails: string[];
   scheduleLabel: string;
+  frequency: ReportScheduleFrequency;
+  timezone: string;
+  timeOfDay: string;
+  startDate: Date;
+  dayOfWeek?: number;
+  dayOfMonth?: number;
   nextRunAt: Date;
 }
 

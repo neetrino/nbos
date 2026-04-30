@@ -7395,6 +7395,12 @@ export const ReportScheduleScalarFieldEnum = {
   recipientEmails: 'recipientEmails',
   scheduleLabel: 'scheduleLabel',
   filters: 'filters',
+  frequency: 'frequency',
+  timezone: 'timezone',
+  timeOfDay: 'timeOfDay',
+  startDate: 'startDate',
+  dayOfWeek: 'dayOfWeek',
+  dayOfMonth: 'dayOfMonth',
   nextRunAt: 'nextRunAt',
   lastRunAt: 'lastRunAt',
   lastExportJobId: 'lastExportJobId',
@@ -9140,6 +9146,22 @@ export type EnumReportScheduleStatusEnumFieldRefInput<$PrismaModel> = FieldRefIn
 export type ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'ReportScheduleStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ReportScheduleFrequencyEnum'
+ */
+export type EnumReportScheduleFrequencyEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ReportScheduleFrequencyEnum'
+>;
+
+/**
+ * Reference to a field of type 'ReportScheduleFrequencyEnum[]'
+ */
+export type ListEnumReportScheduleFrequencyEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ReportScheduleFrequencyEnum[]'
 >;
 
 /**

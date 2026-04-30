@@ -1231,6 +1231,12 @@ enum ReportScheduleStatusEnum {
   ARCHIVED
 }
 
+enum ReportScheduleFrequencyEnum {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
 model ReportExportJob {
   id            String                    @id @default(uuid())
   reportKey     String                    @map("report_key")
@@ -1261,23 +1267,29 @@ model ReportExportJob {
 }
 
 model ReportSchedule {
-  id              String                   @id @default(uuid())
-  reportKey       String                   @map("report_key")
-  reportTitle     String                   @map("report_title")
-  ownerModule     String                   @map("owner_module")
+  id              String                      @id @default(uuid())
+  reportKey       String                      @map("report_key")
+  reportTitle     String                      @map("report_title")
+  ownerModule     String                      @map("owner_module")
   format          ReportExportFormatEnum
-  status          ReportScheduleStatusEnum @default(ACTIVE)
-  ownerId         String                   @map("owner_id")
-  recipientEmails String[]                 @map("recipient_emails")
-  scheduleLabel   String                   @map("schedule_label")
+  status          ReportScheduleStatusEnum    @default(ACTIVE)
+  ownerId         String                      @map("owner_id")
+  recipientEmails String[]                    @map("recipient_emails")
+  scheduleLabel   String                      @map("schedule_label")
   filters         Json?
-  nextRunAt       DateTime                 @map("next_run_at")
-  lastRunAt       DateTime?                @map("last_run_at")
-  lastExportJobId String?                  @map("last_export_job_id")
-  lastFailureAt   DateTime?                @map("last_failure_at")
-  failureReason   String?                  @map("failure_reason")
-  createdAt       DateTime                 @default(now()) @map("created_at")
-  updatedAt       DateTime                 @updatedAt @map("updated_at")
+  frequency       ReportScheduleFrequencyEnum @default(MONTHLY)
+  timezone        String                      @default("Asia/Yerevan")
+  timeOfDay       String                      @default("09:00") @map("time_of_day")
+  startDate       DateTime                    @default(now()) @map("start_date")
+  dayOfWeek       Int?                        @map("day_of_week")
+  dayOfMonth      Int?                        @map("day_of_month")
+  nextRunAt       DateTime                    @map("next_run_at")
+  lastRunAt       DateTime?                   @map("last_run_at")
+  lastExportJobId String?                     @map("last_export_job_id")
+  lastFailureAt   DateTime?                   @map("last_failure_at")
+  failureReason   String?                     @map("failure_reason")
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
 
   owner Employee @relation(fields: [ownerId], references: [id], onDelete: Restrict)
 

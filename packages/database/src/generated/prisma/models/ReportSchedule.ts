@@ -20,8 +20,20 @@ export type ReportScheduleModel =
 
 export type AggregateReportSchedule = {
   _count: ReportScheduleCountAggregateOutputType | null;
+  _avg: ReportScheduleAvgAggregateOutputType | null;
+  _sum: ReportScheduleSumAggregateOutputType | null;
   _min: ReportScheduleMinAggregateOutputType | null;
   _max: ReportScheduleMaxAggregateOutputType | null;
+};
+
+export type ReportScheduleAvgAggregateOutputType = {
+  dayOfWeek: number | null;
+  dayOfMonth: number | null;
+};
+
+export type ReportScheduleSumAggregateOutputType = {
+  dayOfWeek: number | null;
+  dayOfMonth: number | null;
 };
 
 export type ReportScheduleMinAggregateOutputType = {
@@ -33,6 +45,12 @@ export type ReportScheduleMinAggregateOutputType = {
   status: $Enums.ReportScheduleStatusEnum | null;
   ownerId: string | null;
   scheduleLabel: string | null;
+  frequency: $Enums.ReportScheduleFrequencyEnum | null;
+  timezone: string | null;
+  timeOfDay: string | null;
+  startDate: Date | null;
+  dayOfWeek: number | null;
+  dayOfMonth: number | null;
   nextRunAt: Date | null;
   lastRunAt: Date | null;
   lastExportJobId: string | null;
@@ -51,6 +69,12 @@ export type ReportScheduleMaxAggregateOutputType = {
   status: $Enums.ReportScheduleStatusEnum | null;
   ownerId: string | null;
   scheduleLabel: string | null;
+  frequency: $Enums.ReportScheduleFrequencyEnum | null;
+  timezone: string | null;
+  timeOfDay: string | null;
+  startDate: Date | null;
+  dayOfWeek: number | null;
+  dayOfMonth: number | null;
   nextRunAt: Date | null;
   lastRunAt: Date | null;
   lastExportJobId: string | null;
@@ -71,6 +95,12 @@ export type ReportScheduleCountAggregateOutputType = {
   recipientEmails: number;
   scheduleLabel: number;
   filters: number;
+  frequency: number;
+  timezone: number;
+  timeOfDay: number;
+  startDate: number;
+  dayOfWeek: number;
+  dayOfMonth: number;
   nextRunAt: number;
   lastRunAt: number;
   lastExportJobId: number;
@@ -79,6 +109,16 @@ export type ReportScheduleCountAggregateOutputType = {
   createdAt: number;
   updatedAt: number;
   _all: number;
+};
+
+export type ReportScheduleAvgAggregateInputType = {
+  dayOfWeek?: true;
+  dayOfMonth?: true;
+};
+
+export type ReportScheduleSumAggregateInputType = {
+  dayOfWeek?: true;
+  dayOfMonth?: true;
 };
 
 export type ReportScheduleMinAggregateInputType = {
@@ -90,6 +130,12 @@ export type ReportScheduleMinAggregateInputType = {
   status?: true;
   ownerId?: true;
   scheduleLabel?: true;
+  frequency?: true;
+  timezone?: true;
+  timeOfDay?: true;
+  startDate?: true;
+  dayOfWeek?: true;
+  dayOfMonth?: true;
   nextRunAt?: true;
   lastRunAt?: true;
   lastExportJobId?: true;
@@ -108,6 +154,12 @@ export type ReportScheduleMaxAggregateInputType = {
   status?: true;
   ownerId?: true;
   scheduleLabel?: true;
+  frequency?: true;
+  timezone?: true;
+  timeOfDay?: true;
+  startDate?: true;
+  dayOfWeek?: true;
+  dayOfMonth?: true;
   nextRunAt?: true;
   lastRunAt?: true;
   lastExportJobId?: true;
@@ -128,6 +180,12 @@ export type ReportScheduleCountAggregateInputType = {
   recipientEmails?: true;
   scheduleLabel?: true;
   filters?: true;
+  frequency?: true;
+  timezone?: true;
+  timeOfDay?: true;
+  startDate?: true;
+  dayOfWeek?: true;
+  dayOfMonth?: true;
   nextRunAt?: true;
   lastRunAt?: true;
   lastExportJobId?: true;
@@ -180,6 +238,18 @@ export type ReportScheduleAggregateArgs<
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    *
+   * Select which fields to average
+   **/
+  _avg?: ReportScheduleAvgAggregateInputType;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   *
+   * Select which fields to sum
+   **/
+  _sum?: ReportScheduleSumAggregateInputType;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   *
    * Select which fields to find the minimum value
    **/
   _min?: ReportScheduleMinAggregateInputType;
@@ -211,6 +281,8 @@ export type ReportScheduleGroupByArgs<
   take?: number;
   skip?: number;
   _count?: ReportScheduleCountAggregateInputType | true;
+  _avg?: ReportScheduleAvgAggregateInputType;
+  _sum?: ReportScheduleSumAggregateInputType;
   _min?: ReportScheduleMinAggregateInputType;
   _max?: ReportScheduleMaxAggregateInputType;
 };
@@ -226,6 +298,12 @@ export type ReportScheduleGroupByOutputType = {
   recipientEmails: string[];
   scheduleLabel: string;
   filters: runtime.JsonValue | null;
+  frequency: $Enums.ReportScheduleFrequencyEnum;
+  timezone: string;
+  timeOfDay: string;
+  startDate: Date;
+  dayOfWeek: number | null;
+  dayOfMonth: number | null;
   nextRunAt: Date;
   lastRunAt: Date | null;
   lastExportJobId: string | null;
@@ -234,6 +312,8 @@ export type ReportScheduleGroupByOutputType = {
   createdAt: Date;
   updatedAt: Date;
   _count: ReportScheduleCountAggregateOutputType | null;
+  _avg: ReportScheduleAvgAggregateOutputType | null;
+  _sum: ReportScheduleSumAggregateOutputType | null;
   _min: ReportScheduleMinAggregateOutputType | null;
   _max: ReportScheduleMaxAggregateOutputType | null;
 };
@@ -268,6 +348,14 @@ export type ReportScheduleWhereInput = {
   recipientEmails?: Prisma.StringNullableListFilter<'ReportSchedule'>;
   scheduleLabel?: Prisma.StringFilter<'ReportSchedule'> | string;
   filters?: Prisma.JsonNullableFilter<'ReportSchedule'>;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFilter<'ReportSchedule'>
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFilter<'ReportSchedule'> | string;
+  timeOfDay?: Prisma.StringFilter<'ReportSchedule'> | string;
+  startDate?: Prisma.DateTimeFilter<'ReportSchedule'> | Date | string;
+  dayOfWeek?: Prisma.IntNullableFilter<'ReportSchedule'> | number | null;
+  dayOfMonth?: Prisma.IntNullableFilter<'ReportSchedule'> | number | null;
   nextRunAt?: Prisma.DateTimeFilter<'ReportSchedule'> | Date | string;
   lastRunAt?: Prisma.DateTimeNullableFilter<'ReportSchedule'> | Date | string | null;
   lastExportJobId?: Prisma.StringNullableFilter<'ReportSchedule'> | string | null;
@@ -289,6 +377,12 @@ export type ReportScheduleOrderByWithRelationInput = {
   recipientEmails?: Prisma.SortOrder;
   scheduleLabel?: Prisma.SortOrder;
   filters?: Prisma.SortOrderInput | Prisma.SortOrder;
+  frequency?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  timeOfDay?: Prisma.SortOrder;
+  startDate?: Prisma.SortOrder;
+  dayOfWeek?: Prisma.SortOrderInput | Prisma.SortOrder;
+  dayOfMonth?: Prisma.SortOrderInput | Prisma.SortOrder;
   nextRunAt?: Prisma.SortOrder;
   lastRunAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   lastExportJobId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -318,6 +412,14 @@ export type ReportScheduleWhereUniqueInput = Prisma.AtLeast<
     recipientEmails?: Prisma.StringNullableListFilter<'ReportSchedule'>;
     scheduleLabel?: Prisma.StringFilter<'ReportSchedule'> | string;
     filters?: Prisma.JsonNullableFilter<'ReportSchedule'>;
+    frequency?:
+      | Prisma.EnumReportScheduleFrequencyEnumFilter<'ReportSchedule'>
+      | $Enums.ReportScheduleFrequencyEnum;
+    timezone?: Prisma.StringFilter<'ReportSchedule'> | string;
+    timeOfDay?: Prisma.StringFilter<'ReportSchedule'> | string;
+    startDate?: Prisma.DateTimeFilter<'ReportSchedule'> | Date | string;
+    dayOfWeek?: Prisma.IntNullableFilter<'ReportSchedule'> | number | null;
+    dayOfMonth?: Prisma.IntNullableFilter<'ReportSchedule'> | number | null;
     nextRunAt?: Prisma.DateTimeFilter<'ReportSchedule'> | Date | string;
     lastRunAt?: Prisma.DateTimeNullableFilter<'ReportSchedule'> | Date | string | null;
     lastExportJobId?: Prisma.StringNullableFilter<'ReportSchedule'> | string | null;
@@ -341,6 +443,12 @@ export type ReportScheduleOrderByWithAggregationInput = {
   recipientEmails?: Prisma.SortOrder;
   scheduleLabel?: Prisma.SortOrder;
   filters?: Prisma.SortOrderInput | Prisma.SortOrder;
+  frequency?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  timeOfDay?: Prisma.SortOrder;
+  startDate?: Prisma.SortOrder;
+  dayOfWeek?: Prisma.SortOrderInput | Prisma.SortOrder;
+  dayOfMonth?: Prisma.SortOrderInput | Prisma.SortOrder;
   nextRunAt?: Prisma.SortOrder;
   lastRunAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   lastExportJobId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -349,8 +457,10 @@ export type ReportScheduleOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.ReportScheduleCountOrderByAggregateInput;
+  _avg?: Prisma.ReportScheduleAvgOrderByAggregateInput;
   _max?: Prisma.ReportScheduleMaxOrderByAggregateInput;
   _min?: Prisma.ReportScheduleMinOrderByAggregateInput;
+  _sum?: Prisma.ReportScheduleSumOrderByAggregateInput;
 };
 
 export type ReportScheduleScalarWhereWithAggregatesInput = {
@@ -375,6 +485,14 @@ export type ReportScheduleScalarWhereWithAggregatesInput = {
   recipientEmails?: Prisma.StringNullableListFilter<'ReportSchedule'>;
   scheduleLabel?: Prisma.StringWithAggregatesFilter<'ReportSchedule'> | string;
   filters?: Prisma.JsonNullableWithAggregatesFilter<'ReportSchedule'>;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumWithAggregatesFilter<'ReportSchedule'>
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringWithAggregatesFilter<'ReportSchedule'> | string;
+  timeOfDay?: Prisma.StringWithAggregatesFilter<'ReportSchedule'> | string;
+  startDate?: Prisma.DateTimeWithAggregatesFilter<'ReportSchedule'> | Date | string;
+  dayOfWeek?: Prisma.IntNullableWithAggregatesFilter<'ReportSchedule'> | number | null;
+  dayOfMonth?: Prisma.IntNullableWithAggregatesFilter<'ReportSchedule'> | number | null;
   nextRunAt?: Prisma.DateTimeWithAggregatesFilter<'ReportSchedule'> | Date | string;
   lastRunAt?: Prisma.DateTimeNullableWithAggregatesFilter<'ReportSchedule'> | Date | string | null;
   lastExportJobId?: Prisma.StringNullableWithAggregatesFilter<'ReportSchedule'> | string | null;
@@ -398,6 +516,12 @@ export type ReportScheduleCreateInput = {
   recipientEmails?: Prisma.ReportScheduleCreaterecipientEmailsInput | string[];
   scheduleLabel: string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?: $Enums.ReportScheduleFrequencyEnum;
+  timezone?: string;
+  timeOfDay?: string;
+  startDate?: Date | string;
+  dayOfWeek?: number | null;
+  dayOfMonth?: number | null;
   nextRunAt: Date | string;
   lastRunAt?: Date | string | null;
   lastExportJobId?: string | null;
@@ -419,6 +543,12 @@ export type ReportScheduleUncheckedCreateInput = {
   recipientEmails?: Prisma.ReportScheduleCreaterecipientEmailsInput | string[];
   scheduleLabel: string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?: $Enums.ReportScheduleFrequencyEnum;
+  timezone?: string;
+  timeOfDay?: string;
+  startDate?: Date | string;
+  dayOfWeek?: number | null;
+  dayOfMonth?: number | null;
   nextRunAt: Date | string;
   lastRunAt?: Date | string | null;
   lastExportJobId?: string | null;
@@ -442,6 +572,14 @@ export type ReportScheduleUpdateInput = {
   recipientEmails?: Prisma.ReportScheduleUpdaterecipientEmailsInput | string[];
   scheduleLabel?: Prisma.StringFieldUpdateOperationsInput | string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  timeOfDay?: Prisma.StringFieldUpdateOperationsInput | string;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  dayOfWeek?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dayOfMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   nextRunAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   lastExportJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -467,6 +605,14 @@ export type ReportScheduleUncheckedUpdateInput = {
   recipientEmails?: Prisma.ReportScheduleUpdaterecipientEmailsInput | string[];
   scheduleLabel?: Prisma.StringFieldUpdateOperationsInput | string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  timeOfDay?: Prisma.StringFieldUpdateOperationsInput | string;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  dayOfWeek?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dayOfMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   nextRunAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   lastExportJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -487,6 +633,12 @@ export type ReportScheduleCreateManyInput = {
   recipientEmails?: Prisma.ReportScheduleCreaterecipientEmailsInput | string[];
   scheduleLabel: string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?: $Enums.ReportScheduleFrequencyEnum;
+  timezone?: string;
+  timeOfDay?: string;
+  startDate?: Date | string;
+  dayOfWeek?: number | null;
+  dayOfMonth?: number | null;
   nextRunAt: Date | string;
   lastRunAt?: Date | string | null;
   lastExportJobId?: string | null;
@@ -510,6 +662,14 @@ export type ReportScheduleUpdateManyMutationInput = {
   recipientEmails?: Prisma.ReportScheduleUpdaterecipientEmailsInput | string[];
   scheduleLabel?: Prisma.StringFieldUpdateOperationsInput | string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  timeOfDay?: Prisma.StringFieldUpdateOperationsInput | string;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  dayOfWeek?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dayOfMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   nextRunAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   lastExportJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -534,6 +694,14 @@ export type ReportScheduleUncheckedUpdateManyInput = {
   recipientEmails?: Prisma.ReportScheduleUpdaterecipientEmailsInput | string[];
   scheduleLabel?: Prisma.StringFieldUpdateOperationsInput | string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  timeOfDay?: Prisma.StringFieldUpdateOperationsInput | string;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  dayOfWeek?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dayOfMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   nextRunAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   lastExportJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -554,6 +722,12 @@ export type ReportScheduleCountOrderByAggregateInput = {
   recipientEmails?: Prisma.SortOrder;
   scheduleLabel?: Prisma.SortOrder;
   filters?: Prisma.SortOrder;
+  frequency?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  timeOfDay?: Prisma.SortOrder;
+  startDate?: Prisma.SortOrder;
+  dayOfWeek?: Prisma.SortOrder;
+  dayOfMonth?: Prisma.SortOrder;
   nextRunAt?: Prisma.SortOrder;
   lastRunAt?: Prisma.SortOrder;
   lastExportJobId?: Prisma.SortOrder;
@@ -561,6 +735,11 @@ export type ReportScheduleCountOrderByAggregateInput = {
   failureReason?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+};
+
+export type ReportScheduleAvgOrderByAggregateInput = {
+  dayOfWeek?: Prisma.SortOrder;
+  dayOfMonth?: Prisma.SortOrder;
 };
 
 export type ReportScheduleMaxOrderByAggregateInput = {
@@ -572,6 +751,12 @@ export type ReportScheduleMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder;
   ownerId?: Prisma.SortOrder;
   scheduleLabel?: Prisma.SortOrder;
+  frequency?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  timeOfDay?: Prisma.SortOrder;
+  startDate?: Prisma.SortOrder;
+  dayOfWeek?: Prisma.SortOrder;
+  dayOfMonth?: Prisma.SortOrder;
   nextRunAt?: Prisma.SortOrder;
   lastRunAt?: Prisma.SortOrder;
   lastExportJobId?: Prisma.SortOrder;
@@ -590,6 +775,12 @@ export type ReportScheduleMinOrderByAggregateInput = {
   status?: Prisma.SortOrder;
   ownerId?: Prisma.SortOrder;
   scheduleLabel?: Prisma.SortOrder;
+  frequency?: Prisma.SortOrder;
+  timezone?: Prisma.SortOrder;
+  timeOfDay?: Prisma.SortOrder;
+  startDate?: Prisma.SortOrder;
+  dayOfWeek?: Prisma.SortOrder;
+  dayOfMonth?: Prisma.SortOrder;
   nextRunAt?: Prisma.SortOrder;
   lastRunAt?: Prisma.SortOrder;
   lastExportJobId?: Prisma.SortOrder;
@@ -597,6 +788,11 @@ export type ReportScheduleMinOrderByAggregateInput = {
   failureReason?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+};
+
+export type ReportScheduleSumOrderByAggregateInput = {
+  dayOfWeek?: Prisma.SortOrder;
+  dayOfMonth?: Prisma.SortOrder;
 };
 
 export type ReportScheduleListRelationFilter = {
@@ -620,6 +816,18 @@ export type EnumReportScheduleStatusEnumFieldUpdateOperationsInput = {
 export type ReportScheduleUpdaterecipientEmailsInput = {
   set?: string[];
   push?: string | string[];
+};
+
+export type EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ReportScheduleFrequencyEnum;
+};
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null;
+  increment?: number;
+  decrement?: number;
+  multiply?: number;
+  divide?: number;
 };
 
 export type ReportScheduleCreateNestedManyWithoutOwnerInput = {
@@ -718,6 +926,12 @@ export type ReportScheduleCreateWithoutOwnerInput = {
   recipientEmails?: Prisma.ReportScheduleCreaterecipientEmailsInput | string[];
   scheduleLabel: string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?: $Enums.ReportScheduleFrequencyEnum;
+  timezone?: string;
+  timeOfDay?: string;
+  startDate?: Date | string;
+  dayOfWeek?: number | null;
+  dayOfMonth?: number | null;
   nextRunAt: Date | string;
   lastRunAt?: Date | string | null;
   lastExportJobId?: string | null;
@@ -737,6 +951,12 @@ export type ReportScheduleUncheckedCreateWithoutOwnerInput = {
   recipientEmails?: Prisma.ReportScheduleCreaterecipientEmailsInput | string[];
   scheduleLabel: string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?: $Enums.ReportScheduleFrequencyEnum;
+  timezone?: string;
+  timeOfDay?: string;
+  startDate?: Date | string;
+  dayOfWeek?: number | null;
+  dayOfMonth?: number | null;
   nextRunAt: Date | string;
   lastRunAt?: Date | string | null;
   lastExportJobId?: string | null;
@@ -805,6 +1025,14 @@ export type ReportScheduleScalarWhereInput = {
   recipientEmails?: Prisma.StringNullableListFilter<'ReportSchedule'>;
   scheduleLabel?: Prisma.StringFilter<'ReportSchedule'> | string;
   filters?: Prisma.JsonNullableFilter<'ReportSchedule'>;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFilter<'ReportSchedule'>
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFilter<'ReportSchedule'> | string;
+  timeOfDay?: Prisma.StringFilter<'ReportSchedule'> | string;
+  startDate?: Prisma.DateTimeFilter<'ReportSchedule'> | Date | string;
+  dayOfWeek?: Prisma.IntNullableFilter<'ReportSchedule'> | number | null;
+  dayOfMonth?: Prisma.IntNullableFilter<'ReportSchedule'> | number | null;
   nextRunAt?: Prisma.DateTimeFilter<'ReportSchedule'> | Date | string;
   lastRunAt?: Prisma.DateTimeNullableFilter<'ReportSchedule'> | Date | string | null;
   lastExportJobId?: Prisma.StringNullableFilter<'ReportSchedule'> | string | null;
@@ -824,6 +1052,12 @@ export type ReportScheduleCreateManyOwnerInput = {
   recipientEmails?: Prisma.ReportScheduleCreaterecipientEmailsInput | string[];
   scheduleLabel: string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?: $Enums.ReportScheduleFrequencyEnum;
+  timezone?: string;
+  timeOfDay?: string;
+  startDate?: Date | string;
+  dayOfWeek?: number | null;
+  dayOfMonth?: number | null;
   nextRunAt: Date | string;
   lastRunAt?: Date | string | null;
   lastExportJobId?: string | null;
@@ -847,6 +1081,14 @@ export type ReportScheduleUpdateWithoutOwnerInput = {
   recipientEmails?: Prisma.ReportScheduleUpdaterecipientEmailsInput | string[];
   scheduleLabel?: Prisma.StringFieldUpdateOperationsInput | string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  timeOfDay?: Prisma.StringFieldUpdateOperationsInput | string;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  dayOfWeek?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dayOfMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   nextRunAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   lastExportJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -870,6 +1112,14 @@ export type ReportScheduleUncheckedUpdateWithoutOwnerInput = {
   recipientEmails?: Prisma.ReportScheduleUpdaterecipientEmailsInput | string[];
   scheduleLabel?: Prisma.StringFieldUpdateOperationsInput | string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  timeOfDay?: Prisma.StringFieldUpdateOperationsInput | string;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  dayOfWeek?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dayOfMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   nextRunAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   lastExportJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -893,6 +1143,14 @@ export type ReportScheduleUncheckedUpdateManyWithoutOwnerInput = {
   recipientEmails?: Prisma.ReportScheduleUpdaterecipientEmailsInput | string[];
   scheduleLabel?: Prisma.StringFieldUpdateOperationsInput | string;
   filters?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  frequency?:
+    | Prisma.EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput
+    | $Enums.ReportScheduleFrequencyEnum;
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string;
+  timeOfDay?: Prisma.StringFieldUpdateOperationsInput | string;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  dayOfWeek?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dayOfMonth?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   nextRunAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   lastRunAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   lastExportJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -916,6 +1174,12 @@ export type ReportScheduleSelect<
     recipientEmails?: boolean;
     scheduleLabel?: boolean;
     filters?: boolean;
+    frequency?: boolean;
+    timezone?: boolean;
+    timeOfDay?: boolean;
+    startDate?: boolean;
+    dayOfWeek?: boolean;
+    dayOfMonth?: boolean;
     nextRunAt?: boolean;
     lastRunAt?: boolean;
     lastExportJobId?: boolean;
@@ -942,6 +1206,12 @@ export type ReportScheduleSelectCreateManyAndReturn<
     recipientEmails?: boolean;
     scheduleLabel?: boolean;
     filters?: boolean;
+    frequency?: boolean;
+    timezone?: boolean;
+    timeOfDay?: boolean;
+    startDate?: boolean;
+    dayOfWeek?: boolean;
+    dayOfMonth?: boolean;
     nextRunAt?: boolean;
     lastRunAt?: boolean;
     lastExportJobId?: boolean;
@@ -968,6 +1238,12 @@ export type ReportScheduleSelectUpdateManyAndReturn<
     recipientEmails?: boolean;
     scheduleLabel?: boolean;
     filters?: boolean;
+    frequency?: boolean;
+    timezone?: boolean;
+    timeOfDay?: boolean;
+    startDate?: boolean;
+    dayOfWeek?: boolean;
+    dayOfMonth?: boolean;
     nextRunAt?: boolean;
     lastRunAt?: boolean;
     lastExportJobId?: boolean;
@@ -991,6 +1267,12 @@ export type ReportScheduleSelectScalar = {
   recipientEmails?: boolean;
   scheduleLabel?: boolean;
   filters?: boolean;
+  frequency?: boolean;
+  timezone?: boolean;
+  timeOfDay?: boolean;
+  startDate?: boolean;
+  dayOfWeek?: boolean;
+  dayOfMonth?: boolean;
   nextRunAt?: boolean;
   lastRunAt?: boolean;
   lastExportJobId?: boolean;
@@ -1013,6 +1295,12 @@ export type ReportScheduleOmit<
   | 'recipientEmails'
   | 'scheduleLabel'
   | 'filters'
+  | 'frequency'
+  | 'timezone'
+  | 'timeOfDay'
+  | 'startDate'
+  | 'dayOfWeek'
+  | 'dayOfMonth'
   | 'nextRunAt'
   | 'lastRunAt'
   | 'lastExportJobId'
@@ -1057,6 +1345,12 @@ export type $ReportSchedulePayload<
       recipientEmails: string[];
       scheduleLabel: string;
       filters: runtime.JsonValue | null;
+      frequency: $Enums.ReportScheduleFrequencyEnum;
+      timezone: string;
+      timeOfDay: string;
+      startDate: Date;
+      dayOfWeek: number | null;
+      dayOfMonth: number | null;
       nextRunAt: Date;
       lastRunAt: Date | null;
       lastExportJobId: string | null;
@@ -1660,6 +1954,12 @@ export interface ReportScheduleFieldRefs {
   readonly recipientEmails: Prisma.FieldRef<'ReportSchedule', 'String[]'>;
   readonly scheduleLabel: Prisma.FieldRef<'ReportSchedule', 'String'>;
   readonly filters: Prisma.FieldRef<'ReportSchedule', 'Json'>;
+  readonly frequency: Prisma.FieldRef<'ReportSchedule', 'ReportScheduleFrequencyEnum'>;
+  readonly timezone: Prisma.FieldRef<'ReportSchedule', 'String'>;
+  readonly timeOfDay: Prisma.FieldRef<'ReportSchedule', 'String'>;
+  readonly startDate: Prisma.FieldRef<'ReportSchedule', 'DateTime'>;
+  readonly dayOfWeek: Prisma.FieldRef<'ReportSchedule', 'Int'>;
+  readonly dayOfMonth: Prisma.FieldRef<'ReportSchedule', 'Int'>;
   readonly nextRunAt: Prisma.FieldRef<'ReportSchedule', 'DateTime'>;
   readonly lastRunAt: Prisma.FieldRef<'ReportSchedule', 'DateTime'>;
   readonly lastExportJobId: Prisma.FieldRef<'ReportSchedule', 'String'>;

@@ -548,6 +548,15 @@ export const ReportScheduleStatusEnum = {
 export type ReportScheduleStatusEnum =
   (typeof ReportScheduleStatusEnum)[keyof typeof ReportScheduleStatusEnum];
 
+export const ReportScheduleFrequencyEnum = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY',
+} as const;
+
+export type ReportScheduleFrequencyEnum =
+  (typeof ReportScheduleFrequencyEnum)[keyof typeof ReportScheduleFrequencyEnum];
+
 export const DocumentTypeEnum = {
   NATIVE: 'NATIVE',
   UPLOADED_FILE: 'UPLOADED_FILE',

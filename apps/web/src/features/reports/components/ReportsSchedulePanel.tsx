@@ -5,8 +5,19 @@ import { CalendarClock, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { FinanceReportDefinition } from '@/lib/api/finance-reports';
-import { reportsApi, type ReportSchedule } from '@/lib/api/reports';
+import { reportsApi, type ReportSchedule, type ReportScheduleFrequency } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
+
+const DEFAULT_TIMEZONE = 'Asia/Yerevan';
+const WEEKDAYS = [
+  { value: 1, label: 'Monday' },
+  { value: 2, label: 'Tuesday' },
+  { value: 3, label: 'Wednesday' },
+  { value: 4, label: 'Thursday' },
+  { value: 5, label: 'Friday' },
+  { value: 6, label: 'Saturday' },
+  { value: 7, label: 'Sunday' },
+];
 
 interface ReportsSchedulePanelProps {
   definitions: FinanceReportDefinition[];
@@ -25,14 +36,15 @@ export function ReportsSchedulePanel({
   const [reportKey, setReportKey] = useState(defaultReportKey);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [scheduleLabel, setScheduleLabel] = useState('');
-  const [nextRunAt, setNextRunAt] = useState('');
+  const [frequency, setFrequency] = useState<ReportScheduleFrequency>('MONTHLY');
+  const [timeOfDay, setTimeOfDay] = useState('09:00');
+  const [dayOfWeek, setDayOfWeek] = useState(1);
+  const [dayOfMonth, setDayOfMonth] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedReportKey = reportKey || defaultReportKey;
-  const canSubmit = Boolean(
-    selectedReportKey && recipientEmail.trim() && scheduleLabel.trim() && nextRunAt,
-  );
+  const canSubmit = Boolean(selectedReportKey && recipientEmail.trim() && scheduleLabel.trim());
 
   async function createSchedule() {
     if (!canSubmit) return;
@@ -45,12 +57,15 @@ export function ReportsSchedulePanel({
         format: 'CSV',
         recipientEmails: [recipientEmail.trim()],
         scheduleLabel: scheduleLabel.trim(),
-        nextRunAt: new Date(nextRunAt).toISOString(),
+        frequency,
+        timezone: DEFAULT_TIMEZONE,
+        timeOfDay,
+        dayOfWeek: frequency === 'WEEKLY' ? dayOfWeek : undefined,
+        dayOfMonth: frequency === 'MONTHLY' ? dayOfMonth : undefined,
       });
       onSchedulesChange([schedule, ...schedules.filter((item) => item.id !== schedule.id)]);
       setRecipientEmail('');
       setScheduleLabel('');
-      setNextRunAt('');
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Scheduled report could not be created.'));
     } finally {
@@ -69,7 +84,7 @@ export function ReportsSchedulePanel({
         <div>
           <p className="font-medium">Scheduled reports</p>
           <p className="text-muted-foreground text-sm">
-            Store owner, recipients, next run and failure state. Delivery worker is wired later.
+            Store owner, recipients and simple recurrence for report exports.
           </p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={onRefresh}>
@@ -78,7 +93,7 @@ export function ReportsSchedulePanel({
         </Button>
       </div>
 
-      <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_1fr_1fr_180px]">
+      <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
         <select
           value={selectedReportKey}
           onChange={(event) => setReportKey(event.target.value)}
@@ -101,11 +116,54 @@ export function ReportsSchedulePanel({
           onChange={(event) => setScheduleLabel(event.target.value)}
           placeholder="Monthly finance packet"
         />
+      </div>
+
+      <div className="mt-3 grid gap-3 lg:grid-cols-[180px_160px_minmax(0,1fr)]">
+        <select
+          value={frequency}
+          onChange={(event) => setFrequency(event.target.value as ReportScheduleFrequency)}
+          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+        >
+          <option value="DAILY">Daily</option>
+          <option value="WEEKLY">Weekly</option>
+          <option value="MONTHLY">Monthly</option>
+        </select>
         <Input
-          type="datetime-local"
-          value={nextRunAt}
-          onChange={(event) => setNextRunAt(event.target.value)}
+          type="time"
+          value={timeOfDay}
+          onChange={(event) => setTimeOfDay(event.target.value)}
         />
+        {frequency === 'WEEKLY' ? (
+          <select
+            value={dayOfWeek}
+            onChange={(event) => setDayOfWeek(Number(event.target.value))}
+            className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+          >
+            {WEEKDAYS.map((day) => (
+              <option key={day.value} value={day.value}>
+                {day.label}
+              </option>
+            ))}
+          </select>
+        ) : null}
+        {frequency === 'MONTHLY' ? (
+          <div>
+            <select
+              value={dayOfMonth}
+              onChange={(event) => setDayOfMonth(Number(event.target.value))}
+              className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+            >
+              {Array.from({ length: 28 }, (_, index) => index + 1).map((day) => (
+                <option key={day} value={day}>
+                  Day {day}
+                </option>
+              ))}
+            </select>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Monthly report schedules use days 1-28 so February and short months are never skipped.
+            </p>
+          </div>
+        ) : null}
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <Button
@@ -123,7 +181,7 @@ export function ReportsSchedulePanel({
           <CalendarClock className="text-muted-foreground mx-auto h-8 w-8" />
           <p className="mt-3 font-medium">No scheduled reports yet</p>
           <p className="text-muted-foreground mt-1 text-sm">
-            Create a schedule with explicit recipients and next run time. No fake sends are made.
+            Create a schedule with explicit recipients and a daily, weekly or monthly recurrence.
           </p>
         </div>
       ) : (
@@ -147,6 +205,7 @@ function ScheduleRow({ schedule }: { schedule: ReportSchedule }) {
             {schedule.scheduleLabel} · {schedule.format} · next{' '}
             {new Date(schedule.nextRunAt).toLocaleString()}
           </p>
+          <p className="text-muted-foreground mt-1 text-sm">{scheduleSummary(schedule)}</p>
           <p className="text-muted-foreground mt-1 text-sm">
             Recipients: {schedule.recipientEmails.join(', ')}
           </p>
@@ -160,4 +219,14 @@ function ScheduleRow({ schedule }: { schedule: ReportSchedule }) {
       ) : null}
     </div>
   );
+}
+
+function scheduleSummary(schedule: ReportSchedule): string {
+  if (schedule.frequency === 'DAILY')
+    return `Daily at ${schedule.timeOfDay} (${schedule.timezone})`;
+  if (schedule.frequency === 'WEEKLY') {
+    const day = WEEKDAYS.find((item) => item.value === schedule.dayOfWeek)?.label ?? 'selected day';
+    return `Weekly on ${day} at ${schedule.timeOfDay} (${schedule.timezone})`;
+  }
+  return `Monthly on day ${schedule.dayOfMonth ?? 1} at ${schedule.timeOfDay} (${schedule.timezone})`;
 }

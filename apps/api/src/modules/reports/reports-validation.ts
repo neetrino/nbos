@@ -1,6 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import type { InputJsonValue } from '@nbos/database';
 import {
+  assertReportScheduleRecurrence,
+  calculateNextReportScheduleRun,
+  DEFAULT_REPORT_SCHEDULE_TIMEZONE,
+  DEFAULT_REPORT_SCHEDULE_TIME_OF_DAY,
+  REPORT_SCHEDULE_FREQUENCIES,
+} from './reports-schedule-recurrence';
+import {
   REPORT_EXPORT_FORMATS,
   REPORT_EXPORT_OWNER_MODULES,
   type CreateReportScheduleDto,
@@ -29,11 +36,26 @@ export function parseReportExportJobInput(
 export function parseReportScheduleInput(
   input: CreateReportScheduleDto,
 ): ParsedReportScheduleInput {
+  const startDate = parseOptionalDate(input.startDate, 'startDate') ?? new Date();
+  const recurrence = {
+    frequency: parseEnumValue(
+      input.frequency ?? 'MONTHLY',
+      REPORT_SCHEDULE_FREQUENCIES,
+      'frequency',
+    ),
+    timezone: parseOptionalText(input.timezone) ?? DEFAULT_REPORT_SCHEDULE_TIMEZONE,
+    timeOfDay: parseOptionalText(input.timeOfDay) ?? DEFAULT_REPORT_SCHEDULE_TIME_OF_DAY,
+    startDate,
+    dayOfWeek: parseOptionalInteger(input.dayOfWeek),
+    dayOfMonth: parseOptionalInteger(input.dayOfMonth),
+  };
+  assertReportScheduleRecurrence(recurrence);
   return {
     ...parseReportExportJobInput(input),
     recipientEmails: parseRecipientEmails(input.recipientEmails),
     scheduleLabel: parseRequiredText(input.scheduleLabel, 'scheduleLabel'),
-    nextRunAt: parseFutureDate(input.nextRunAt, 'nextRunAt'),
+    ...recurrence,
+    nextRunAt: calculateNextReportScheduleRun(recurrence, new Date()),
   };
 }
 
@@ -42,6 +64,10 @@ function parseRequiredText(value: unknown, field: string): string {
     throw new BadRequestException(`${field} is required.`);
   }
   return value.trim();
+}
+
+function parseOptionalText(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined;
 }
 
 function parseEnumValue<T extends readonly string[]>(
@@ -85,13 +111,19 @@ function parseEmail(value: unknown): string {
   return email;
 }
 
-function parseFutureDate(value: unknown, field: string): Date {
+function parseOptionalDate(value: unknown, field: string): Date | undefined {
+  if (value === undefined) return undefined;
   const raw = parseRequiredText(value, field);
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} must be a valid date.`);
-  if (date.getTime() <= Date.now())
-    throw new BadRequestException(`${field} must be in the future.`);
   return date;
+}
+
+function parseOptionalInteger(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value === 'number' && Number.isInteger(value)) return value;
+  if (typeof value === 'string' && /^-?\d+$/.test(value)) return Number(value);
+  throw new BadRequestException('recurrence numeric fields must be integers.');
 }
 
 function parseFilterValue(value: unknown): string | number | boolean | null {

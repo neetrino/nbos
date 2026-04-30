@@ -148,6 +148,12 @@ export class ReportsService {
         recipientEmails: parsed.recipientEmails,
         scheduleLabel: parsed.scheduleLabel,
         filters: parsed.filters,
+        frequency: parsed.frequency,
+        timezone: parsed.timezone,
+        timeOfDay: parsed.timeOfDay,
+        startDate: parsed.startDate,
+        dayOfWeek: parsed.dayOfWeek,
+        dayOfMonth: parsed.dayOfMonth,
         nextRunAt: parsed.nextRunAt,
       },
     });
@@ -162,6 +168,9 @@ export class ReportsService {
         format: schedule.format,
         recipientCount: schedule.recipientEmails.length,
         scheduleLabel: schedule.scheduleLabel,
+        frequency: schedule.frequency,
+        timeOfDay: schedule.timeOfDay,
+        timezone: schedule.timezone,
         nextRunAt: schedule.nextRunAt.toISOString(),
       },
     });

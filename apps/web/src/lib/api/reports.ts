@@ -4,6 +4,7 @@ import type { FileAsset } from './drive';
 export type ReportExportFormat = 'CSV' | 'XLSX' | 'PDF';
 export type ReportExportJobStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 export type ReportScheduleStatus = 'ACTIVE' | 'PAUSED' | 'FAILED' | 'ARCHIVED';
+export type ReportScheduleFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY';
 export type ReportDataQualitySeverity = 'INFO' | 'WARNING';
 
 export interface ReportExportJob {
@@ -37,6 +38,12 @@ export interface ReportSchedule {
   recipientEmails: string[];
   scheduleLabel: string;
   filters: Record<string, string | number | boolean | null> | null;
+  frequency: ReportScheduleFrequency;
+  timezone: string;
+  timeOfDay: string;
+  startDate: string;
+  dayOfWeek: number | null;
+  dayOfMonth: number | null;
   nextRunAt: string;
   lastRunAt: string | null;
   lastExportJobId: string | null;
@@ -88,7 +95,12 @@ export const reportsApi = {
     format: ReportExportFormat;
     recipientEmails: string[];
     scheduleLabel: string;
-    nextRunAt: string;
+    frequency: ReportScheduleFrequency;
+    timezone?: string;
+    timeOfDay: string;
+    startDate?: string;
+    dayOfWeek?: number;
+    dayOfMonth?: number;
     filters?: Record<string, string | number | boolean | null>;
   }): Promise<ReportSchedule> {
     const resp = await api.post<ReportSchedule>('/api/reports/schedules', data);

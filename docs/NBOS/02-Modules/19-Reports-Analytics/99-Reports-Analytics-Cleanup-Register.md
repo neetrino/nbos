@@ -107,6 +107,8 @@ Shipped model:
 - `GET /api/reports/schedules` and `POST /api/reports/schedules`;
 - `/reports` scheduled tab list/create UI with explicit next run time;
 - schedule creation audit.
+- simple Reports recurrence model: `DAILY`, `WEEKLY`, `MONTHLY`, `timeOfDay`, `timezone`, weekly day and monthly day `1-28`;
+- monthly days are intentionally limited to `1-28` for Reports so February and short months are never skipped.
 
 Still needed:
 
@@ -114,6 +116,8 @@ Still needed:
 - delivery attempts and recipient channel integration;
 - pause/resume/archive endpoints;
 - link last run to real export job execution.
+
+Note: Bitrix-like recurring task templates belong to the Tasks module, not Reports. Reports scheduled exports use the simpler recurrence above.
 
 ### B5. Export jobs are missing for reports
 

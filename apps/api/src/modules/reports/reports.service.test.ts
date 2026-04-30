@@ -148,15 +148,15 @@ describe('ReportsService', () => {
   });
 
   it('creates an audited scheduled report model without sending a fake report', async () => {
-    const nextRunAt = new Date(Date.now() + 86_400_000).toISOString();
-
     await service.createSchedule('employee-1', {
       reportKey: 'company-pnl',
       ownerModule: 'FINANCE',
       format: 'CSV',
       recipientEmails: ['finance@example.com'],
       scheduleLabel: 'Monthly finance packet',
-      nextRunAt,
+      frequency: 'MONTHLY',
+      timeOfDay: '09:00',
+      dayOfMonth: 5,
     });
 
     expect(prisma.reportSchedule.create).toHaveBeenCalledWith(
@@ -169,6 +169,9 @@ describe('ReportsService', () => {
           ownerId: 'employee-1',
           recipientEmails: ['finance@example.com'],
           scheduleLabel: 'Monthly finance packet',
+          frequency: 'MONTHLY',
+          timeOfDay: '09:00',
+          dayOfMonth: 5,
         }),
       }),
     );
