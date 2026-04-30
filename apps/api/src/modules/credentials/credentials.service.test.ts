@@ -62,6 +62,7 @@ describe('CredentialsService', () => {
             password: false,
             apiKey: false,
             envData: false,
+            secureNotes: false,
           },
         }),
       ]);
@@ -69,7 +70,12 @@ describe('CredentialsService', () => {
       expect(prisma.credential.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ archivedAt: null }),
-          select: expect.objectContaining({ password: true, apiKey: true, envData: true }),
+          select: expect.objectContaining({
+            password: true,
+            apiKey: true,
+            envData: true,
+            secureNotes: true,
+          }),
         }),
       );
     });
@@ -149,6 +155,7 @@ describe('CredentialsService', () => {
         password: true,
         apiKey: false,
         envData: false,
+        secureNotes: false,
       });
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -303,6 +310,7 @@ describe('CredentialsService', () => {
         password: true,
         apiKey: true,
         envData: true,
+        secureNotes: false,
       });
       expect(created).not.toHaveProperty('password');
 

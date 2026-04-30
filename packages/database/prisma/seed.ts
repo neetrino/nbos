@@ -11,6 +11,33 @@ async function main() {
 
   console.log('Cleaning existing data...');
   await prisma.auditLog.deleteMany();
+  await prisma.notificationDelivery.deleteMany();
+  await prisma.notificationJob.deleteMany();
+  await prisma.notificationRule.deleteMany();
+  await prisma.notificationEvent.deleteMany();
+  await prisma.inAppNotification.deleteMany();
+  await prisma.personalCalendarEvent.deleteMany();
+  await prisma.calendarMeeting.deleteMany();
+  await prisma.technicalEnvironment.deleteMany();
+  await prisma.technicalAsset.deleteMany();
+  await prisma.productTechnicalProfile.deleteMany();
+  await prisma.savedReportView.deleteMany();
+  await prisma.reportSchedule.deleteMany();
+  await prisma.reportExportJob.deleteMany();
+  await prisma.documentActivityEvent.deleteMany();
+  await prisma.documentTagOnDocument.deleteMany();
+  await prisma.documentAttachment.deleteMany();
+  await prisma.document.deleteMany();
+  await prisma.documentTag.deleteMany();
+  await prisma.externalDocumentLink.deleteMany();
+  await prisma.documentSection.deleteMany();
+  await prisma.fileUploadSession.deleteMany();
+  await prisma.fileAuditEvent.deleteMany();
+  await prisma.fileLink.deleteMany();
+  await prisma.fileVersion.deleteMany();
+  await prisma.fileAsset.deleteMany();
+  await prisma.personalLink.deleteMany();
+  await prisma.dashboardPreference.deleteMany();
   await prisma.taskLink.deleteMany();
   await prisma.taskChecklistItem.deleteMany();
   await prisma.taskChecklist.deleteMany();
@@ -1501,6 +1528,304 @@ async function main() {
     },
   });
   console.log('  ✓ Domains (4)');
+
+  // ── Drive, Documents, Control Layer, Notifications, Calendar ─────
+  const handoffFile = await prisma.fileAsset.create({
+    data: {
+      displayName: 'ACME Website handoff checklist',
+      originalName: 'acme-handoff-checklist.pdf',
+      fileType: 'DOCUMENT',
+      purpose: 'HANDOFF_DOCUMENT',
+      sourceModule: 'DOCUMENTS',
+      ownerId: pm.id,
+      createdById: pm.id,
+      visibility: 'PROJECT_TEAM',
+      confidentiality: 'CONFIDENTIAL',
+      storageProvider: 'EXTERNAL_URL',
+      externalUrl: 'https://example.com/nbos-demo/acme-handoff-checklist.pdf',
+      mimeType: 'application/pdf',
+      sizeBytes: BigInt(128000),
+    },
+  });
+  await prisma.fileVersion.create({
+    data: {
+      fileAssetId: handoffFile.id,
+      versionNumber: 1,
+      uploadedById: pm.id,
+      sizeBytes: BigInt(128000),
+      changeNote: 'Seeded demo handoff file',
+    },
+  });
+  await prisma.fileLink.create({
+    data: {
+      fileAssetId: handoffFile.id,
+      entityType: 'PROJECT',
+      entityId: project1.id,
+      linkType: 'HANDOFF',
+      linkedById: pm.id,
+      isPrimary: true,
+    },
+  });
+  await prisma.fileAuditEvent.create({
+    data: {
+      fileAssetId: handoffFile.id,
+      actorId: pm.id,
+      action: 'seed.created',
+      metadata: { source: 'pre_phase_7_stabilization_seed' },
+    },
+  });
+
+  const docsSection = await prisma.documentSection.create({
+    data: {
+      name: 'Project Delivery',
+      slug: 'project-delivery',
+      description: 'Demo delivery knowledge for smoke testing Documents.',
+      icon: 'folder-kanban',
+      sortOrder: 10,
+      createdById: pm.id,
+      updatedById: pm.id,
+    },
+  });
+  const docsTag = await prisma.documentTag.create({
+    data: { name: 'Handoff', slug: 'handoff', color: 'blue' },
+  });
+  const handoffDoc = await prisma.document.create({
+    data: {
+      title: 'ACME Website Handoff Notes',
+      slug: 'acme-website-handoff-notes',
+      description: 'Published demo document linked to Drive for pre-Phase-7 QA.',
+      sectionId: docsSection.id,
+      status: 'PUBLISHED',
+      ownerId: pm.id,
+      createdById: pm.id,
+      updatedById: pm.id,
+      publishedById: pm.id,
+      publishedAt: new Date('2026-04-20T10:00:00.000Z'),
+      plainText: 'Handoff checklist, production URL, known follow-ups, and support contacts.',
+      contentJson: {
+        blocks: [
+          {
+            type: 'paragraph',
+            text: 'Review production URL, credentials policy, and support SLA.',
+          },
+        ],
+      },
+      visibility: 'PROJECT_TEAM',
+    },
+  });
+  await prisma.documentAttachment.create({
+    data: {
+      documentId: handoffDoc.id,
+      fileAssetId: handoffFile.id,
+      purpose: 'ATTACHMENT',
+      createdById: pm.id,
+    },
+  });
+  await prisma.documentTagOnDocument.create({
+    data: { documentId: handoffDoc.id, tagId: docsTag.id },
+  });
+  await prisma.documentActivityEvent.create({
+    data: {
+      documentId: handoffDoc.id,
+      actorId: pm.id,
+      action: 'seed.published',
+      metadata: { status: 'PUBLISHED' },
+    },
+  });
+  console.log('  ✓ Drive/Documents demo data');
+
+  await prisma.dashboardPreference.create({
+    data: {
+      employeeId: ceo.id,
+      pinnedActionOrder: ['crm.create_lead', 'finance.create_invoice', 'reports.export'],
+      hiddenPinnedActions: [],
+      visibleWidgets: ['control_center', 'finance_snapshot', 'delivery_risk', 'reports'],
+      hiddenWidgets: [],
+      compactWidgets: ['reports'],
+      defaultDashboardMode: 'control_center',
+    },
+  });
+  await prisma.personalLink.create({
+    data: {
+      ownerId: ceo.id,
+      label: 'NBOS Roadmap',
+      url: '/docs/roadmap',
+      placement: ['SIDEBAR', 'DASHBOARD'],
+      sortOrder: 10,
+    },
+  });
+
+  const reportExport = await prisma.reportExportJob.create({
+    data: {
+      reportKey: 'finance.cashflow',
+      reportTitle: 'Finance Cashflow Snapshot',
+      ownerModule: 'FINANCE',
+      format: 'CSV',
+      status: 'COMPLETED',
+      requestedById: ceo.id,
+      filters: { dateFrom: '2026-03-01', dateTo: '2026-04-30' },
+      fileAssetId: handoffFile.id,
+      completedAt: new Date('2026-04-25T09:00:00.000Z'),
+    },
+  });
+  await prisma.reportSchedule.create({
+    data: {
+      reportKey: 'finance.cashflow',
+      reportTitle: 'Finance Cashflow Snapshot',
+      ownerModule: 'FINANCE',
+      format: 'CSV',
+      ownerId: ceo.id,
+      recipientEmails: ['suren@neetrino.com'],
+      scheduleLabel: 'Monthly finance snapshot',
+      filters: { asOf: '2026-04-30' },
+      frequency: 'MONTHLY',
+      timezone: 'Asia/Yerevan',
+      timeOfDay: '09:00',
+      startDate: new Date('2026-04-01T00:00:00.000Z'),
+      dayOfMonth: 1,
+      nextRunAt: new Date('2026-05-01T05:00:00.000Z'),
+      lastRunAt: new Date('2026-04-01T05:00:00.000Z'),
+      lastExportJobId: reportExport.id,
+    },
+  });
+  await prisma.savedReportView.create({
+    data: {
+      reportKey: 'finance.cashflow',
+      reportTitle: 'Finance Cashflow Snapshot',
+      ownerModule: 'FINANCE',
+      name: 'Current month',
+      filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
+      ownerId: ceo.id,
+    },
+  });
+  console.log('  ✓ Dashboard/Reports demo data');
+
+  await prisma.inAppNotification.create({
+    data: {
+      recipientEmployeeId: ceo.id,
+      type: 'report_export.completed',
+      category: 'reports',
+      priority: 'normal',
+      title: 'Report export is ready',
+      body: 'Finance Cashflow Snapshot has been generated and linked to Drive.',
+      link: '/reports',
+      actionLabel: 'Open Reports',
+      entityType: 'ReportExportJob',
+      entityId: reportExport.id,
+    },
+  });
+  const notificationEvent = await prisma.notificationEvent.create({
+    data: {
+      eventType: 'report_export.completed',
+      sourceModule: 'REPORTS',
+      sourceEntityType: 'ReportExportJob',
+      sourceEntityId: reportExport.id,
+      payload: { reportKey: 'finance.cashflow' },
+      idempotencyKey: 'seed-report-export-completed',
+    },
+  });
+  const notificationRule = await prisma.notificationRule.create({
+    data: {
+      code: 'seed-report-export-completed-in-app',
+      eventType: 'report_export.completed',
+      recipientResolver: 'ACTOR',
+      channels: ['IN_APP'],
+    },
+  });
+  const notificationJob = await prisma.notificationJob.create({
+    data: {
+      eventId: notificationEvent.id,
+      ruleId: notificationRule.id,
+      status: 'DELIVERED',
+      dedupeKey: 'seed-report-export-completed-in-app',
+      processedAt: new Date('2026-04-25T09:01:00.000Z'),
+    },
+  });
+  await prisma.notificationDelivery.create({
+    data: {
+      jobId: notificationJob.id,
+      channel: 'IN_APP',
+      recipient: ceo.email,
+      status: 'DELIVERED',
+      provider: 'nbos',
+      deliveredAt: new Date('2026-04-25T09:01:00.000Z'),
+    },
+  });
+
+  await prisma.calendarMeeting.create({
+    data: {
+      title: 'ACME handoff call',
+      startsAt: new Date('2026-04-28T11:00:00.000Z'),
+      endsAt: new Date('2026-04-28T12:00:00.000Z'),
+      meetingType: 'KICKOFF',
+      locationType: 'ONLINE',
+      locationOrLink: 'https://meet.example.com/acme-handoff',
+      agenda: 'Confirm delivery checklist and support handover.',
+      status: 'COMPLETED',
+      internalParticipantIds: [ceo.id, pm.id, dev.id],
+      externalParticipants: [{ name: 'David Abrahamyan', email: contact1.email }],
+      projectId: project1.id,
+      productId: prod1.id,
+      dealId: deal1.id,
+      contactId: contact1.id,
+      createdById: pm.id,
+    },
+  });
+  await prisma.personalCalendarEvent.create({
+    data: {
+      ownerId: ceo.id,
+      title: 'Review Phase 7 stabilization results',
+      startsAt: new Date('2026-05-01T08:00:00.000Z'),
+      endsAt: new Date('2026-05-01T08:30:00.000Z'),
+      notes: 'Owner QA follow-up after automated checks.',
+    },
+  });
+  console.log('  ✓ Notifications/Calendar demo data');
+
+  await prisma.productTechnicalProfile.create({
+    data: {
+      productId: prod1.id,
+      projectId: project1.id,
+      technicalOwnerId: dev.id,
+      productionUrl: 'https://acme.example.com',
+      stagingUrl: 'https://staging-acme.example.com',
+      repositoryUrl: 'https://github.com/neetrino/acme-website',
+      deploymentMethod: 'Vercel preview + production deploy',
+      hostingProvider: 'Vercel',
+      monitoringStatus: 'HEALTHY',
+      backupStatus: 'NOT_REQUIRED',
+      lastDeployAt: new Date('2026-04-24T18:00:00.000Z'),
+      lastDeployStatus: 'SUCCESS',
+      technicalNotes: 'Seeded profile for pre-Phase-7 smoke tests.',
+    },
+  });
+  await prisma.technicalAsset.create({
+    data: {
+      productId: prod1.id,
+      projectId: project1.id,
+      type: 'HOSTING',
+      name: 'ACME Vercel project',
+      provider: 'Vercel',
+      environment: 'PRODUCTION',
+      status: 'ACTIVE',
+      url: 'https://vercel.com/acme',
+      ownerId: dev.id,
+    },
+  });
+  await prisma.technicalEnvironment.create({
+    data: {
+      productId: prod1.id,
+      projectId: project1.id,
+      kind: 'PRODUCTION',
+      name: 'ACME production',
+      url: 'https://acme.example.com',
+      branch: 'main',
+      deploymentTarget: 'Vercel',
+      status: 'HEALTHY',
+      lastCheckedAt: new Date('2026-04-25T10:00:00.000Z'),
+    },
+  });
+  console.log('  ✓ Technical infrastructure demo data');
 
   // ── Audit logs ─────────────────────────────────────────────
   await prisma.auditLog.create({

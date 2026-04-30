@@ -13,13 +13,16 @@ describe('InvoicesService create', () => {
   });
 
   it('generates code INV-YYYY-NNNN', async () => {
-    prisma.invoice.create.mockResolvedValue({
+    const createdInvoice = {
       id: '1',
       code: 'INV-2026-0001',
       amount: 50000,
       payments: [],
       _count: { payments: 0 },
-    });
+    };
+    prisma.invoice.create.mockResolvedValue(createdInvoice);
+    prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
+
     const result = await service.create({
       projectId: 'p1',
       amount: 50000,
@@ -30,14 +33,16 @@ describe('InvoicesService create', () => {
 
   it('inherits tax status from order when orderId is provided', async () => {
     prisma.order.findUnique.mockResolvedValue({ taxStatus: 'TAX_FREE' });
-    prisma.invoice.create.mockResolvedValue({
+    const createdInvoice = {
       id: '2',
       code: 'INV-2026-0002',
       taxStatus: 'TAX_FREE',
       amount: 50000,
       payments: [],
       _count: { payments: 0 },
-    });
+    };
+    prisma.invoice.create.mockResolvedValue(createdInvoice);
+    prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
 
     await service.create({
       orderId: 'ord-1',
