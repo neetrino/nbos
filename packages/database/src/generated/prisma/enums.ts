@@ -538,6 +538,16 @@ export const ReportExportFormatEnum = {
 export type ReportExportFormatEnum =
   (typeof ReportExportFormatEnum)[keyof typeof ReportExportFormatEnum];
 
+export const ReportScheduleStatusEnum = {
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  FAILED: 'FAILED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type ReportScheduleStatusEnum =
+  (typeof ReportScheduleStatusEnum)[keyof typeof ReportScheduleStatusEnum];
+
 export const DocumentTypeEnum = {
   NATIVE: 'NATIVE',
   UPLOADED_FILE: 'UPLOADED_FILE',

@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, BarChart3, CalendarClock, Download, RefreshCw, Search } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Download, RefreshCw, Search } from 'lucide-react';
 import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ReportsSchedulePanel } from '@/features/reports/components/ReportsSchedulePanel';
 import { financeReportsApi, type FinanceReportDefinition } from '@/lib/api/finance-reports';
-import { reportsApi, type ReportExportJob } from '@/lib/api/reports';
+import { reportsApi, type ReportExportJob, type ReportSchedule } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 type ReportCategory = 'all' | 'finance' | 'scheduled' | 'exports';
@@ -31,6 +32,7 @@ function matchesSearch(definition: FinanceReportDefinition, query: string): bool
 export default function ReportsPage() {
   const [definitions, setDefinitions] = useState<FinanceReportDefinition[]>([]);
   const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
+  const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
   const [category, setCategory] = useState<ReportCategory>('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -41,15 +43,18 @@ export default function ReportsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [definitionResponse, jobs] = await Promise.all([
+      const [definitionResponse, jobs, scheduledReports] = await Promise.all([
         financeReportsApi.getDefinitions(),
         reportsApi.listExportJobs(),
+        reportsApi.listSchedules(),
       ]);
       setDefinitions(definitionResponse.items);
       setExportJobs(jobs);
+      setSchedules(scheduledReports);
     } catch (caught) {
       setDefinitions([]);
       setExportJobs([]);
+      setSchedules([]);
       setError(getApiErrorMessage(caught, 'Reports catalog could not be loaded.'));
     } finally {
       setLoading(false);
@@ -142,7 +147,12 @@ export default function ReportsPage() {
       </section>
 
       {category === 'scheduled' ? (
-        <HonestMissingState />
+        <ReportsSchedulePanel
+          definitions={definitions}
+          schedules={schedules}
+          onSchedulesChange={setSchedules}
+          onRefresh={() => void load()}
+        />
       ) : category === 'exports' ? (
         <ExportHistory jobs={exportJobs} onRefresh={() => void load()} />
       ) : visibleDefinitions.length === 0 ? (
@@ -289,19 +299,6 @@ function ExportHistory({ jobs, onRefresh }: { jobs: ReportExportJob[]; onRefresh
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-function HonestMissingState() {
-  return (
-    <div className="border-border bg-card rounded-2xl border p-8 text-center">
-      <CalendarClock className="text-muted-foreground mx-auto h-8 w-8" />
-      <p className="mt-3 font-medium">Scheduled reports are not wired yet</p>
-      <p className="text-muted-foreground mx-auto mt-1 max-w-xl text-sm">
-        The catalog is ready to host scheduled reports, but owner, recipients, next run and failure
-        handling still belong to a later Phase 6 slice.
-      </p>
     </div>
   );
 }

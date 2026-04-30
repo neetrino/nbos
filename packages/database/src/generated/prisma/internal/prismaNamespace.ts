@@ -406,6 +406,7 @@ export const ModelName = {
   FileAuditEvent: 'FileAuditEvent',
   FileUploadSession: 'FileUploadSession',
   ReportExportJob: 'ReportExportJob',
+  ReportSchedule: 'ReportSchedule',
   DocumentSection: 'DocumentSection',
   ExternalDocumentLink: 'ExternalDocumentLink',
   Document: 'Document',
@@ -506,6 +507,7 @@ export type TypeMap<
       | 'fileAuditEvent'
       | 'fileUploadSession'
       | 'reportExportJob'
+      | 'reportSchedule'
       | 'documentSection'
       | 'externalDocumentLink'
       | 'document'
@@ -2868,6 +2870,82 @@ export type TypeMap<
           args: Prisma.ReportExportJobCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.ReportExportJobCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ReportSchedule: {
+      payload: Prisma.$ReportSchedulePayload<ExtArgs>;
+      fields: Prisma.ReportScheduleFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ReportScheduleFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ReportScheduleFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>;
+        };
+        findFirst: {
+          args: Prisma.ReportScheduleFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ReportScheduleFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>;
+        };
+        findMany: {
+          args: Prisma.ReportScheduleFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>[];
+        };
+        create: {
+          args: Prisma.ReportScheduleCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>;
+        };
+        createMany: {
+          args: Prisma.ReportScheduleCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ReportScheduleCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>[];
+        };
+        delete: {
+          args: Prisma.ReportScheduleDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>;
+        };
+        update: {
+          args: Prisma.ReportScheduleUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>;
+        };
+        deleteMany: {
+          args: Prisma.ReportScheduleDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ReportScheduleUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ReportScheduleUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>[];
+        };
+        upsert: {
+          args: Prisma.ReportScheduleUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReportSchedulePayload>;
+        };
+        aggregate: {
+          args: Prisma.ReportScheduleAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReportSchedule>;
+        };
+        groupBy: {
+          args: Prisma.ReportScheduleGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ReportScheduleGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ReportScheduleCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ReportScheduleCountAggregateOutputType>
             | number;
         };
       };
@@ -7228,6 +7306,29 @@ export const ReportExportJobScalarFieldEnum = {
 export type ReportExportJobScalarFieldEnum =
   (typeof ReportExportJobScalarFieldEnum)[keyof typeof ReportExportJobScalarFieldEnum];
 
+export const ReportScheduleScalarFieldEnum = {
+  id: 'id',
+  reportKey: 'reportKey',
+  reportTitle: 'reportTitle',
+  ownerModule: 'ownerModule',
+  format: 'format',
+  status: 'status',
+  ownerId: 'ownerId',
+  recipientEmails: 'recipientEmails',
+  scheduleLabel: 'scheduleLabel',
+  filters: 'filters',
+  nextRunAt: 'nextRunAt',
+  lastRunAt: 'lastRunAt',
+  lastExportJobId: 'lastExportJobId',
+  lastFailureAt: 'lastFailureAt',
+  failureReason: 'failureReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ReportScheduleScalarFieldEnum =
+  (typeof ReportScheduleScalarFieldEnum)[keyof typeof ReportScheduleScalarFieldEnum];
+
 export const DocumentSectionScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -8933,6 +9034,22 @@ export type ListEnumReportExportJobStatusEnumFieldRefInput<$PrismaModel> = Field
 >;
 
 /**
+ * Reference to a field of type 'ReportScheduleStatusEnum'
+ */
+export type EnumReportScheduleStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ReportScheduleStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'ReportScheduleStatusEnum[]'
+ */
+export type ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ReportScheduleStatusEnum[]'
+>;
+
+/**
  * Reference to a field of type 'DocumentListScopeEnum'
  */
 export type EnumDocumentListScopeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -9844,6 +9961,7 @@ export type GlobalOmitConfig = {
   fileAuditEvent?: Prisma.FileAuditEventOmit;
   fileUploadSession?: Prisma.FileUploadSessionOmit;
   reportExportJob?: Prisma.ReportExportJobOmit;
+  reportSchedule?: Prisma.ReportScheduleOmit;
   documentSection?: Prisma.DocumentSectionOmit;
   externalDocumentLink?: Prisma.ExternalDocumentLinkOmit;
   document?: Prisma.DocumentOmit;

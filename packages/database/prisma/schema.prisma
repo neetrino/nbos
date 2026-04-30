@@ -1224,6 +1224,13 @@ enum ReportExportFormatEnum {
   PDF
 }
 
+enum ReportScheduleStatusEnum {
+  ACTIVE
+  PAUSED
+  FAILED
+  ARCHIVED
+}
+
 model ReportExportJob {
   id            String                    @id @default(uuid())
   reportKey     String                    @map("report_key")
@@ -1251,6 +1258,34 @@ model ReportExportJob {
   @@index([requestedById])
   @@index([fileAssetId])
   @@map("report_export_jobs")
+}
+
+model ReportSchedule {
+  id              String                   @id @default(uuid())
+  reportKey       String                   @map("report_key")
+  reportTitle     String                   @map("report_title")
+  ownerModule     String                   @map("owner_module")
+  format          ReportExportFormatEnum
+  status          ReportScheduleStatusEnum @default(ACTIVE)
+  ownerId         String                   @map("owner_id")
+  recipientEmails String[]                 @map("recipient_emails")
+  scheduleLabel   String                   @map("schedule_label")
+  filters         Json?
+  nextRunAt       DateTime                 @map("next_run_at")
+  lastRunAt       DateTime?                @map("last_run_at")
+  lastExportJobId String?                  @map("last_export_job_id")
+  lastFailureAt   DateTime?                @map("last_failure_at")
+  failureReason   String?                  @map("failure_reason")
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+
+  owner Employee @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+
+  @@index([reportKey])
+  @@index([ownerModule])
+  @@index([status, nextRunAt])
+  @@index([ownerId])
+  @@map("report_schedules")
 }
 
 // ─── DOCUMENTS (native knowledge module) ───────────────────
@@ -1907,6 +1942,7 @@ model Employee {
   inAppNotificationsReceived   InAppNotification[]
   dashboardPreference          DashboardPreference?
   reportExportJobsRequested    ReportExportJob[]
+  reportSchedulesOwned         ReportSchedule[]
 
   @@map("employees")
 }

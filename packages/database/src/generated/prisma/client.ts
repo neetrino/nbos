@@ -200,6 +200,11 @@ export type FileUploadSession = Prisma.FileUploadSessionModel;
  */
 export type ReportExportJob = Prisma.ReportExportJobModel;
 /**
+ * Model ReportSchedule
+ *
+ */
+export type ReportSchedule = Prisma.ReportScheduleModel;
+/**
  * Model DocumentSection
  *
  */

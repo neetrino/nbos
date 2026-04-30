@@ -99,16 +99,21 @@ ReportDefinition
 
 ### B4. Scheduled reports are missing
 
-Статус: `MISSING CODE / MISSING UI`
+Статус: `PARTIAL` (2026-04-30)
 
-Нужно добавить:
+Shipped model:
 
-- schedule;
-- recipients;
-- format;
-- next run;
-- last run;
-- failure state.
+- `ReportSchedule` model with owner, recipients, format, explicit schedule label, next run, last run and failure state;
+- `GET /api/reports/schedules` and `POST /api/reports/schedules`;
+- `/reports` scheduled tab list/create UI with explicit next run time;
+- schedule creation audit.
+
+Still needed:
+
+- scheduler/BullMQ runner for due schedules;
+- delivery attempts and recipient channel integration;
+- pause/resume/archive endpoints;
+- link last run to real export job execution.
 
 ### B5. Export jobs are missing for reports
 
@@ -153,7 +158,7 @@ Reports must enforce source permissions and cannot bypass module access.
 5. Add report period/filter shell.
 6. ~~Add export job model.~~ Done foundation (2026-04-30).
 7. ~~Link exports to Drive.~~ Done as `FileAsset` output relation; real writer worker still needed.
-8. Add scheduled reports model.
+8. ~~Add scheduled reports model.~~ Done foundation (2026-04-30); runner still needed.
 9. Add data quality warnings.
 10. Add sensitive report audit.
 11. Add saved report views.

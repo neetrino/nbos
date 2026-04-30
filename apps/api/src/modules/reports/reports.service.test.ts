@@ -123,6 +123,40 @@ describe('ReportsService', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  it('creates an audited scheduled report model without sending a fake report', async () => {
+    const nextRunAt = new Date(Date.now() + 86_400_000).toISOString();
+
+    await service.createSchedule('employee-1', {
+      reportKey: 'company-pnl',
+      ownerModule: 'FINANCE',
+      format: 'CSV',
+      recipientEmails: ['finance@example.com'],
+      scheduleLabel: 'Monthly finance packet',
+      nextRunAt,
+    });
+
+    expect(prisma.reportSchedule.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          reportKey: 'company-pnl',
+          reportTitle: 'Company P&L',
+          ownerModule: 'FINANCE',
+          format: 'CSV',
+          ownerId: 'employee-1',
+          recipientEmails: ['finance@example.com'],
+          scheduleLabel: 'Monthly finance packet',
+        }),
+      }),
+    );
+    expect(drive.createGeneratedFileAsset).toHaveBeenCalledTimes(0);
+    expect(audit.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityType: 'REPORT_SCHEDULE',
+        action: 'report_schedule.created',
+      }),
+    );
+  });
+
   it('does not complete an export job without a real Drive file asset', async () => {
     prisma.fileAsset.findUnique.mockResolvedValueOnce(null);
     await expect(

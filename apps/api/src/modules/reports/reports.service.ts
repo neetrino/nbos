@@ -12,11 +12,13 @@ import { FinanceReportsService } from '../finance/reports/reports.service';
 import { MrrSubscriptionRevenueService } from '../finance/reports/mrr-subscription-revenue.service';
 import { PayrollReportService } from '../finance/reports/payroll-report.service';
 import { ProjectPnlService } from '../finance/reports/project-pnl.service';
-import { parseReportExportJobInput } from './reports-validation';
-import type { CreateReportExportJobDto } from './reports.types';
+import { parseReportExportJobInput, parseReportScheduleInput } from './reports-validation';
+import type { CreateReportExportJobDto, CreateReportScheduleDto } from './reports.types';
 
 const REPORT_EXPORT_AUDIT_ENTITY = 'REPORT_EXPORT_JOB';
 const REPORT_EXPORT_JOB_LIMIT = 25;
+const REPORT_SCHEDULE_AUDIT_ENTITY = 'REPORT_SCHEDULE';
+const REPORT_SCHEDULE_LIMIT = 50;
 
 @Injectable()
 export class ReportsService {
@@ -39,6 +41,14 @@ export class ReportsService {
       include: { fileAsset: true },
       orderBy: { queuedAt: 'desc' },
       take: REPORT_EXPORT_JOB_LIMIT,
+    });
+  }
+
+  async listSchedules(ownerId: string) {
+    return this.prisma.reportSchedule.findMany({
+      where: { ownerId },
+      orderBy: [{ status: 'asc' }, { nextRunAt: 'asc' }],
+      take: REPORT_SCHEDULE_LIMIT,
     });
   }
 
@@ -70,6 +80,44 @@ export class ReportsService {
     });
 
     return this.processExportJob(job.id, requestedById);
+  }
+
+  async createSchedule(ownerId: string, input: CreateReportScheduleDto) {
+    const parsed = parseReportScheduleInput(input);
+    if (parsed.ownerModule !== 'FINANCE') {
+      throw new BadRequestException('Only Finance-owned report schedules are wired in this slice.');
+    }
+
+    const definition = this.financeReportsService.getDefinition(parsed.reportKey);
+    const schedule = await this.prisma.reportSchedule.create({
+      data: {
+        reportKey: definition.id,
+        reportTitle: definition.title,
+        ownerModule: parsed.ownerModule,
+        format: parsed.format,
+        ownerId,
+        recipientEmails: parsed.recipientEmails,
+        scheduleLabel: parsed.scheduleLabel,
+        filters: parsed.filters,
+        nextRunAt: parsed.nextRunAt,
+      },
+    });
+
+    await this.auditService.log({
+      entityType: REPORT_SCHEDULE_AUDIT_ENTITY,
+      entityId: schedule.id,
+      action: 'report_schedule.created',
+      userId: ownerId,
+      changes: {
+        reportKey: schedule.reportKey,
+        format: schedule.format,
+        recipientCount: schedule.recipientEmails.length,
+        scheduleLabel: schedule.scheduleLabel,
+        nextRunAt: schedule.nextRunAt.toISOString(),
+      },
+    });
+
+    return schedule;
   }
 
   async completeExportJobWithDriveFile(jobId: string, fileAssetId: string, actorId: string) {

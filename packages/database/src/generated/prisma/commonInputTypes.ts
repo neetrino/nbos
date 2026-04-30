@@ -1767,6 +1767,39 @@ export type EnumReportExportJobStatusEnumWithAggregatesFilter<$PrismaModel = nev
   _max?: Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>;
 };
 
+export type EnumReportScheduleStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportScheduleStatusEnum
+    | Prisma.EnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportScheduleStatusEnum[]
+    | Prisma.ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportScheduleStatusEnum[]
+    | Prisma.ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportScheduleStatusEnumFilter<$PrismaModel>
+    | $Enums.ReportScheduleStatusEnum;
+};
+
+export type EnumReportScheduleStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportScheduleStatusEnum
+    | Prisma.EnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportScheduleStatusEnum[]
+    | Prisma.ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportScheduleStatusEnum[]
+    | Prisma.ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportScheduleStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ReportScheduleStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumReportScheduleStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumReportScheduleStatusEnumFilter<$PrismaModel>;
+};
+
 export type EnumDocumentListScopeEnumFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.DocumentListScopeEnum
@@ -4955,6 +4988,39 @@ export type NestedEnumReportExportJobStatusEnumWithAggregatesFilter<$PrismaModel
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumReportExportJobStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumReportScheduleStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportScheduleStatusEnum
+    | Prisma.EnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportScheduleStatusEnum[]
+    | Prisma.ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportScheduleStatusEnum[]
+    | Prisma.ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportScheduleStatusEnumFilter<$PrismaModel>
+    | $Enums.ReportScheduleStatusEnum;
+};
+
+export type NestedEnumReportScheduleStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ReportScheduleStatusEnum
+    | Prisma.EnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ReportScheduleStatusEnum[]
+    | Prisma.ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ReportScheduleStatusEnum[]
+    | Prisma.ListEnumReportScheduleStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumReportScheduleStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ReportScheduleStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumReportScheduleStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumReportScheduleStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumDocumentListScopeEnumFilter<$PrismaModel = never> = {

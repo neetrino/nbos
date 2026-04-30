@@ -13,9 +13,21 @@ export interface CreateReportExportJobDto {
   filters?: unknown;
 }
 
+export interface CreateReportScheduleDto extends CreateReportExportJobDto {
+  recipientEmails?: unknown;
+  scheduleLabel?: unknown;
+  nextRunAt?: unknown;
+}
+
 export interface ParsedReportExportJobInput {
   reportKey: string;
   ownerModule: ReportExportOwnerModule;
   format: ReportExportFormat;
   filters?: InputJsonValue;
+}
+
+export interface ParsedReportScheduleInput extends ParsedReportExportJobInput {
+  recipientEmails: string[];
+  scheduleLabel: string;
+  nextRunAt: Date;
 }
