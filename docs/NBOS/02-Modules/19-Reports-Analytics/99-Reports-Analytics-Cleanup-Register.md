@@ -109,13 +109,15 @@ Shipped model:
 - schedule creation audit.
 - simple Reports recurrence model: `DAILY`, `WEEKLY`, `MONTHLY`, `timeOfDay`, `timezone`, weekly day and monthly day `1-28`;
 - monthly days are intentionally limited to `1-28` for Reports so February and short months are never skipped.
+- due schedule runner creates queued `ReportExportJob` records, enqueues them through the Reports export queue and advances `nextRunAt`;
+- `POST /scheduler/report-schedules-due` plus optional in-process cron when `REPORT_SCHEDULES_DUE_CRON_ENABLED=true`.
 
 Still needed:
 
-- scheduler/BullMQ runner for due schedules;
 - delivery attempts and recipient channel integration;
 - pause/resume/archive endpoints;
 - link last run to real export job execution.
+- richer run history beyond `lastRunAt` / `lastExportJobId`.
 
 Note: Bitrix-like recurring task templates belong to the Tasks module, not Reports. Reports scheduled exports use the simpler recurrence above.
 

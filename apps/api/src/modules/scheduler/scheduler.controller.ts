@@ -39,4 +39,15 @@ export class SchedulerController {
   async runExpensePlanAutoDue() {
     return this.schedulerService.runExpensePlanAutoDue();
   }
+
+  @Post('report-schedules-due')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Run due scheduled report exports (external cron)',
+    description:
+      'Creates queued ReportExportJob records for active ReportSchedule rows whose nextRunAt is due. Optional in-process cron when REPORT_SCHEDULES_DUE_CRON_ENABLED=true.',
+  })
+  async runReportSchedulesDue() {
+    return this.schedulerService.runReportSchedulesDue();
+  }
 }
