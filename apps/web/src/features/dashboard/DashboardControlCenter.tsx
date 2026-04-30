@@ -230,7 +230,7 @@ function PinnedActions({
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {actions.map((action) => (
             <PinnedActionCard
-              key={action.href}
+              key={action.key}
               action={action}
               onHide={() => onHideAction(action.key)}
               saving={saving}
