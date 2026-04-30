@@ -4,6 +4,7 @@ import type { FileAsset } from './drive';
 export type ReportExportFormat = 'CSV' | 'XLSX' | 'PDF';
 export type ReportExportJobStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 export type ReportScheduleStatus = 'ACTIVE' | 'PAUSED' | 'FAILED' | 'ARCHIVED';
+export type ReportDataQualitySeverity = 'INFO' | 'WARNING';
 
 export interface ReportExportJob {
   id: string;
@@ -45,6 +46,21 @@ export interface ReportSchedule {
   updatedAt: string;
 }
 
+export interface ReportDataQualityWarning {
+  reportKey: string;
+  reportTitle: string;
+  ownerModule: string;
+  severity: ReportDataQualitySeverity;
+  code: string;
+  message: string;
+  sourceEndpoints: string[];
+}
+
+export interface ReportDataQualityWarningsResponse {
+  items: ReportDataQualityWarning[];
+  meta: { count: number };
+}
+
 export const reportsApi = {
   async listExportJobs(): Promise<ReportExportJob[]> {
     const resp = await api.get<ReportExportJob[]>('/api/reports/export-jobs');
@@ -76,6 +92,13 @@ export const reportsApi = {
     filters?: Record<string, string | number | boolean | null>;
   }): Promise<ReportSchedule> {
     const resp = await api.post<ReportSchedule>('/api/reports/schedules', data);
+    return resp.data;
+  },
+
+  async listDataQualityWarnings(): Promise<ReportDataQualityWarningsResponse> {
+    const resp = await api.get<ReportDataQualityWarningsResponse>(
+      '/api/reports/data-quality-warnings',
+    );
     return resp.data;
   },
 };

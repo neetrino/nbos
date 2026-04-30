@@ -49,4 +49,14 @@ export class ReportsController {
   createSchedule(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateReportScheduleDto) {
     return this.reportsService.createSchedule(user.id, body);
   }
+
+  @Get('data-quality-warnings')
+  @ApiOperation({
+    summary: 'List report data-quality warnings',
+    description:
+      'Read-only warning projection over module-owned report definitions. Reports does not recalculate module formulas.',
+  })
+  listDataQualityWarnings() {
+    return this.reportsService.listDataQualityWarnings();
+  }
 }

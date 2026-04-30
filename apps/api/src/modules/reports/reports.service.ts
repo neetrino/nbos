@@ -13,7 +13,11 @@ import { MrrSubscriptionRevenueService } from '../finance/reports/mrr-subscripti
 import { PayrollReportService } from '../finance/reports/payroll-report.service';
 import { ProjectPnlService } from '../finance/reports/project-pnl.service';
 import { parseReportExportJobInput, parseReportScheduleInput } from './reports-validation';
-import type { CreateReportExportJobDto, CreateReportScheduleDto } from './reports.types';
+import type {
+  CreateReportExportJobDto,
+  CreateReportScheduleDto,
+  ReportDataQualityWarning,
+} from './reports.types';
 
 const REPORT_EXPORT_AUDIT_ENTITY = 'REPORT_EXPORT_JOB';
 const REPORT_EXPORT_JOB_LIMIT = 25;
@@ -50,6 +54,48 @@ export class ReportsService {
       orderBy: [{ status: 'asc' }, { nextRunAt: 'asc' }],
       take: REPORT_SCHEDULE_LIMIT,
     });
+  }
+
+  listDataQualityWarnings(): { items: ReportDataQualityWarning[]; meta: { count: number } } {
+    const definitions = this.financeReportsService.getDefinitions().items;
+    const items = definitions.flatMap((definition) => {
+      const warnings: ReportDataQualityWarning[] = [
+        {
+          reportKey: definition.id,
+          reportTitle: definition.title,
+          ownerModule: 'FINANCE',
+          severity: 'INFO',
+          code: 'MODULE_OWNED_SOURCES',
+          message: 'Finance owns this report formula; Reports exposes source endpoints only.',
+          sourceEndpoints: definition.sourceEndpoints,
+        },
+      ];
+      if (definition.phase6Deferred) {
+        warnings.push({
+          reportKey: definition.id,
+          reportTitle: definition.title,
+          ownerModule: 'FINANCE',
+          severity: 'INFO',
+          code: 'DEFERRED_DEPTH',
+          message: definition.phase6Deferred,
+          sourceEndpoints: definition.sourceEndpoints,
+        });
+      }
+      if (!definition.aggregateEndpoint || definition.v1Status !== 'definition_ready') {
+        warnings.push({
+          reportKey: definition.id,
+          reportTitle: definition.title,
+          ownerModule: 'FINANCE',
+          severity: 'WARNING',
+          code: 'INCOMPLETE_PROJECTION',
+          message:
+            'This report is visible in the catalog but its aggregate projection is incomplete.',
+          sourceEndpoints: definition.sourceEndpoints,
+        });
+      }
+      return warnings;
+    });
+    return { items, meta: { count: items.length } };
   }
 
   async createExportJob(requestedById: string, input: CreateReportExportJobDto) {

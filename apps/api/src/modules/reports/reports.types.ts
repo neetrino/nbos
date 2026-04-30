@@ -31,3 +31,15 @@ export interface ParsedReportScheduleInput extends ParsedReportExportJobInput {
   scheduleLabel: string;
   nextRunAt: Date;
 }
+
+export type ReportDataQualitySeverity = 'INFO' | 'WARNING';
+
+export interface ReportDataQualityWarning {
+  reportKey: string;
+  reportTitle: string;
+  ownerModule: ReportExportOwnerModule;
+  severity: ReportDataQualitySeverity;
+  code: string;
+  message: string;
+  sourceEndpoints: string[];
+}

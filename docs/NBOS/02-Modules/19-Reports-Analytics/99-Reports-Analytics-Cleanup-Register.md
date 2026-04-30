@@ -137,9 +137,18 @@ Still needed:
 
 ### B6. Data quality warnings are missing
 
-Статус: `MISSING UI / MISSING DATA LAYER`
+Статус: `PARTIAL` (2026-04-30)
 
-Reports должны показывать предупреждения о неполных данных.
+Shipped:
+
+- `GET /api/reports/data-quality-warnings`;
+- `/reports` Data quality tab;
+- warning/info projection over Finance-owned report definitions, source endpoints and deferred limitations.
+
+Still needed:
+
+- runtime missing-data warnings from Marketing attribution, cross-module projections and scheduled runs;
+- source-permission-aware warnings when centralized report permissions are added.
 
 ### B7. Report permissions are not centralized
 
@@ -159,7 +168,7 @@ Reports must enforce source permissions and cannot bypass module access.
 6. ~~Add export job model.~~ Done foundation (2026-04-30).
 7. ~~Link exports to Drive.~~ Done as `FileAsset` output relation; real writer worker still needed.
 8. ~~Add scheduled reports model.~~ Done foundation (2026-04-30); runner still needed.
-9. Add data quality warnings.
+9. ~~Add data quality warnings.~~ Done foundation (2026-04-30); cross-module/runtime depth still needed.
 10. Add sensitive report audit.
 11. Add saved report views.
 

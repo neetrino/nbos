@@ -6,18 +6,25 @@ import { ArrowUpRight, BarChart3, Download, RefreshCw, Search } from 'lucide-rea
 import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ReportsDataQualityPanel } from '@/features/reports/components/ReportsDataQualityPanel';
 import { ReportsSchedulePanel } from '@/features/reports/components/ReportsSchedulePanel';
 import { financeReportsApi, type FinanceReportDefinition } from '@/lib/api/finance-reports';
-import { reportsApi, type ReportExportJob, type ReportSchedule } from '@/lib/api/reports';
+import {
+  reportsApi,
+  type ReportDataQualityWarning,
+  type ReportExportJob,
+  type ReportSchedule,
+} from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
-type ReportCategory = 'all' | 'finance' | 'scheduled' | 'exports';
+type ReportCategory = 'all' | 'finance' | 'scheduled' | 'exports' | 'quality';
 
 const REPORT_CATEGORIES: Array<{ id: ReportCategory; label: string }> = [
   { id: 'all', label: 'All reports' },
   { id: 'finance', label: 'Finance' },
   { id: 'scheduled', label: 'Scheduled' },
   { id: 'exports', label: 'Exports' },
+  { id: 'quality', label: 'Data quality' },
 ];
 
 function matchesSearch(definition: FinanceReportDefinition, query: string): boolean {
@@ -33,6 +40,7 @@ export default function ReportsPage() {
   const [definitions, setDefinitions] = useState<FinanceReportDefinition[]>([]);
   const [exportJobs, setExportJobs] = useState<ReportExportJob[]>([]);
   const [schedules, setSchedules] = useState<ReportSchedule[]>([]);
+  const [dataQualityWarnings, setDataQualityWarnings] = useState<ReportDataQualityWarning[]>([]);
   const [category, setCategory] = useState<ReportCategory>('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -43,18 +51,21 @@ export default function ReportsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [definitionResponse, jobs, scheduledReports] = await Promise.all([
+      const [definitionResponse, jobs, scheduledReports, quality] = await Promise.all([
         financeReportsApi.getDefinitions(),
         reportsApi.listExportJobs(),
         reportsApi.listSchedules(),
+        reportsApi.listDataQualityWarnings(),
       ]);
       setDefinitions(definitionResponse.items);
       setExportJobs(jobs);
       setSchedules(scheduledReports);
+      setDataQualityWarnings(quality.items);
     } catch (caught) {
       setDefinitions([]);
       setExportJobs([]);
       setSchedules([]);
+      setDataQualityWarnings([]);
       setError(getApiErrorMessage(caught, 'Reports catalog could not be loaded.'));
     } finally {
       setLoading(false);
@@ -155,6 +166,8 @@ export default function ReportsPage() {
         />
       ) : category === 'exports' ? (
         <ExportHistory jobs={exportJobs} onRefresh={() => void load()} />
+      ) : category === 'quality' ? (
+        <ReportsDataQualityPanel warnings={dataQualityWarnings} onRefresh={() => void load()} />
       ) : visibleDefinitions.length === 0 ? (
         <div className="border-border bg-card rounded-2xl border p-8 text-center">
           <BarChart3 className="text-muted-foreground mx-auto h-8 w-8" />

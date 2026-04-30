@@ -21,6 +21,10 @@ function createFinanceReportsService(): Partial<FinanceReportsService> {
   };
   return {
     getDefinition: vi.fn(() => definition),
+    getDefinitions: vi.fn(() => ({
+      items: [definition],
+      meta: { count: 1, scope: 'test', phase6Boundary: 'test' },
+    })),
   };
 }
 
@@ -154,6 +158,24 @@ describe('ReportsService', () => {
         entityType: 'REPORT_SCHEDULE',
         action: 'report_schedule.created',
       }),
+    );
+  });
+
+  it('exposes data-quality warnings from module-owned report definitions', () => {
+    const result = service.listDataQualityWarnings();
+
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reportKey: 'company-pnl',
+          ownerModule: 'FINANCE',
+          code: 'MODULE_OWNED_SOURCES',
+        }),
+        expect.objectContaining({
+          reportKey: 'company-pnl',
+          code: 'DEFERRED_DEPTH',
+        }),
+      ]),
     );
   });
 
