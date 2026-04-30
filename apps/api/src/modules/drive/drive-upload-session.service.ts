@@ -38,9 +38,10 @@ export class DriveUploadSessionService {
     private readonly r2: DriveR2Client,
   ) {}
 
-  async listDriveLibrary(contextType: string, contextId: string) {
+  async listDriveLibrary(contextType: string | undefined, contextId: string | undefined) {
     const entityType = resolveDriveLibraryEntityType(contextType);
-    return this.listFileAssetsByEntity(entityType, contextId);
+    const entityId = requireText(contextId, 'contextId');
+    return this.listFileAssetsByEntity(entityType, entityId);
   }
 
   async createUploadSession(dto: CreateUploadSessionDto, userId: string) {

@@ -1,18 +1,28 @@
 -- Mail P0: provider connection boundary and Drive-backed email attachments.
 
-CREATE TYPE "MailProviderConnectionStatus" AS ENUM (
-  'NOT_CONNECTED',
-  'CONNECTED',
-  'DEGRADED',
-  'NEEDS_RECONNECT',
-  'PAUSED'
-);
+DO $$
+BEGIN
+  CREATE TYPE "MailProviderConnectionStatus" AS ENUM (
+    'NOT_CONNECTED',
+    'CONNECTED',
+    'DEGRADED',
+    'NEEDS_RECONNECT',
+    'PAUSED'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE "EmailAttachmentDownloadStatus" AS ENUM (
-  'PENDING',
-  'READY',
-  'FAILED'
-);
+DO $$
+BEGIN
+  CREATE TYPE "EmailAttachmentDownloadStatus" AS ENUM (
+    'PENDING',
+    'READY',
+    'FAILED'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE TABLE "mail_provider_connections" (
   "id" TEXT NOT NULL,

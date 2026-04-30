@@ -63,6 +63,15 @@ describe('DriveUploadSessionService', () => {
     );
   });
 
+  it('rejects missing library context without a 500', async () => {
+    await expect(service.listDriveLibrary(undefined, 'doc-uuid')).rejects.toThrow(
+      'Invalid library contextType',
+    );
+    await expect(service.listDriveLibrary('DOCUMENT', undefined)).rejects.toThrow(
+      'contextId is required.',
+    );
+  });
+
   it('creates upload session with key under Drive/uploads/', async () => {
     prisma.fileUploadSession.create.mockResolvedValue({
       id: 'sess-1',

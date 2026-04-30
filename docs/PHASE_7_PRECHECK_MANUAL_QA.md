@@ -4,35 +4,36 @@
 
 ## Stabilization Result
 
-| Area                  | Result                   | Notes                                                                                                                                                                                |
-| --------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Prisma generate       | `PASS`                   | `pnpm --filter @nbos/database generate` completed successfully.                                                                                                                      |
-| Migration target      | `BLOCKED`                | Current `.env.local` points to a remote Neon database, not a local/dev database.                                                                                                     |
-| Migration status      | `BLOCKED`                | Remote DB has migration drift: local migrations after `20260331193000_project_shell_remove_type_pm_seller_deadline` are unapplied, while DB contains migrations not present locally. |
-| Seed workflow         | `BLOCKED UNTIL LOCAL DB` | `packages/database/prisma/seed.ts` is destructive by design (`deleteMany` cleanup). It must not run against the current remote DB.                                                   |
-| Seed coverage         | `IMPROVED`               | Seed now includes P0 smoke data for Drive/Documents, Dashboard/Reports, Notifications, Calendar and Technical Infrastructure.                                                        |
-| Typecheck/lint        | `PASS`                   | Database, API and Web typecheck/lint passed.                                                                                                                                         |
-| Tests                 | `PASS`                   | `pnpm test`: 177 files, 919 tests passed.                                                                                                                                            |
-| Build                 | `PASS`                   | `pnpm build` completed successfully for API and Web.                                                                                                                                 |
-| Formatting            | `PARTIAL`                | Touched files pass Prettier. Repository-wide `format:check` still reports pre-existing drift in archives/generated files and unrelated files.                                        |
-| Runtime browser smoke | `BLOCKED`                | Needs approved local/test DB with migrations and seed applied. No dev server/browser smoke was run against the unsafe remote DB.                                                     |
+| Area                  | Result           | Notes                                                                                                                                            |
+| --------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Prisma generate       | `PASS`           | `pnpm --filter @nbos/database generate` completed successfully.                                                                                  |
+| Migration target      | `SYNCED DEV`     | `.env.local` targets the current Neon dev database used by the running app.                                                                      |
+| Migration status      | `PASS`           | Pending local migrations were applied. Mail provider attachment migration order was corrected before retry.                                      |
+| Seed workflow         | `RBAC ONLY PASS` | `seed-rbac.ts` was run safely. Destructive business seed was not run against the existing database.                                              |
+| Seed coverage         | `IMPROVED`       | Seed now includes P0 smoke data for Drive/Documents, Dashboard/Reports, Notifications, Calendar and Technical Infrastructure.                    |
+| Typecheck/lint        | `PASS`           | Database, API and Web typecheck/lint passed.                                                                                                     |
+| Tests                 | `PASS`           | `pnpm test`: 177 files, 919 tests passed.                                                                                                        |
+| Build                 | `PASS`           | `pnpm build` completed successfully for API and Web.                                                                                             |
+| Formatting            | `PARTIAL`        | Touched files pass Prettier. Repository-wide `format:check` still reports pre-existing drift in archives/generated files and unrelated files.    |
+| Runtime API smoke     | `PASS`           | Owner-token smoke passed for Dashboard, Notifications, Reports, Drive files, Documents, Mail, Tasks and Deals.                                   |
+| Runtime browser smoke | `MANUAL PENDING` | Automation reached sign-in after dev restart; owner browser pass still needs the existing logged-in session or credentials entered by the owner. |
 
 ## Module Verification Matrix
 
-| Module group                                      | Status                                   | Stabilization note                                                                                                                                                                |
-| ------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform/Auth/RBAC/Settings                       | `OK P0`                                  | Navigation/RBAC/admin shell are usable at P0. Entity-level RBAC depth and full Settings metadata remain deferred.                                                                 |
-| CRM and Marketing                                 | `OK P0`                                  | CRM lead/deal gates and Marketing foundation are covered by tests/build. Marketing dashboard/API integrations remain later depth.                                                 |
-| Projects Hub, Products/Extensions, Tasks, Support | `OK P0`                                  | Delivery lifecycle, Work Space, task basics and support bridges have passing tests. Support waiting overlays/SLA depth and recurring Tasks depth remain deferred.                 |
-| Finance, Partners, Client Services, Payroll/Bonus | `OK P0`                                  | Finance core checks pass. Known stale invoice/subscription enum refactors are documented later-depth items, not Phase 7 blockers.                                                 |
-| Documents, Drive, Credentials                     | `OK P0`                                  | Documents/Drive/Credentials tests pass; seed now covers a document + Drive asset + audited file. Advanced Drive permissions/export/cleanup and credential grants remain deferred. |
-| Messenger, Mail, Notifications, Calendar          | `OK P0 / provider integrations deferred` | Internal Messenger, Mail P0, persisted Notifications and Calendar projections are stable. External WAHA/Telegram/email provider jobs remain Phase 7+ work.                        |
-| Technical Infrastructure                          | `OK P0`                                  | Product technical profile/assets/environments exist and are now seeded. Deploy records, monitoring checks and backup policies remain later depth.                                 |
-| Dashboard and Reports                             | `OK P0`                                  | Dashboard Control Center and minimal Reports catalog/export/schedule/saved-view foundation are stable. Deep BI/report permissions/advanced exports remain deferred.               |
+| Module group                                      | Status                                   | Stabilization note                                                                                                                                                |
+| ------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platform/Auth/RBAC/Settings                       | `OK P0`                                  | Navigation/RBAC/admin shell are usable at P0. Entity-level RBAC depth and full Settings metadata remain deferred.                                                 |
+| CRM and Marketing                                 | `OK P0`                                  | CRM lead/deal gates and Marketing foundation are covered by tests/build. Marketing dashboard/API integrations remain later depth.                                 |
+| Projects Hub, Products/Extensions, Tasks, Support | `OK P0`                                  | Delivery lifecycle, Work Space, task basics and support bridges have passing tests. Support waiting overlays/SLA depth and recurring Tasks depth remain deferred. |
+| Finance, Partners, Client Services, Payroll/Bonus | `OK P0`                                  | Finance core checks pass. Known stale invoice/subscription enum refactors are documented later-depth items, not Phase 7 blockers.                                 |
+| Documents, Drive, Credentials                     | `OK P0`                                  | Documents/Drive/Credentials APIs smoke successfully. Drive library now returns a 400 validation error instead of 500 when context query params are missing.       |
+| Messenger, Mail, Notifications, Calendar          | `OK P0 / provider integrations deferred` | Mail tables and owner RBAC are present; Mail/Notifications APIs smoke successfully. External WAHA/Telegram/email provider jobs remain Phase 7+ work.              |
+| Technical Infrastructure                          | `OK P0`                                  | Product technical profile/assets/environments exist and are now seeded. Deploy records, monitoring checks and backup policies remain later depth.                 |
+| Dashboard and Reports                             | `OK P0`                                  | Dashboard Control Center, Notifications and minimal Reports endpoints smoke successfully. Deep BI/report permissions/advanced exports remain deferred.            |
 
 ## Owner Manual QA Checklist
 
-Run this after a safe local/test DB is provided, migrations are applied and seed is executed.
+Run this in the owner browser session after the dev server is running and migrations/RBAC are synced.
 
 1. Sign in as the seeded owner/admin user and confirm the session loads without redirect loops.
 2. Open all top-level sidebar modules: Dashboard, CRM, Marketing, Projects, Tasks, Support, Finance, Documents, Drive, Credentials, Messenger, Mail, Notifications, Calendar, Technical/Project product tabs, Reports and Settings.
@@ -50,6 +51,6 @@ Run this after a safe local/test DB is provided, migrations are applied and seed
 ## Known Deferrals
 
 - No real external providers are connected during this gate: WAHA, Telegram, Google, Meta, bank API and GitHub runtime remain disabled.
-- Full browser smoke is deferred until a local/test DB target is approved.
+- Browser smoke still needs a manual owner-session pass because automation was redirected to sign-in after dev restart.
 - Repository-wide format drift is not fixed in this gate because it includes archives/generated files and unrelated files.
 - Advanced Phase 7 work should still start with `integration-registry-foundation` unless manual QA finds a higher-priority blocker.

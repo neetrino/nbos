@@ -100,8 +100,8 @@ export class DriveController {
   })
   @ApiQuery({ name: 'contextId', required: true })
   async listDriveLibrary(
-    @Query('contextType') contextType: string,
-    @Query('contextId') contextId: string,
+    @Query('contextType') contextType?: string,
+    @Query('contextId') contextId?: string,
   ) {
     return this.driveUploadSessions.listDriveLibrary(contextType, contextId);
   }
