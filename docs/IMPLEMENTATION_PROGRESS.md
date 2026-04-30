@@ -4,12 +4,12 @@
 
 ## Current Focus
 
-| Field         | Value                                   |
-| ------------- | --------------------------------------- |
-| Current phase | **Phase 5 — Collaboration / knowledge** |
-| Current task  | Phase 5 closure — Documents P0          |
-| Status        | Phase 5 closure ready                   |
-| Last updated  | 2026-04-30                              |
+| Field         | Value                       |
+| ------------- | --------------------------- |
+| Current phase | **Phase 6 — Control layer** |
+| Current task  | Reports Catalog P0          |
+| Status        | Phase 6 in progress         |
+| Last updated  | 2026-04-30                  |
 
 ## Phase Snapshot
 
@@ -20,7 +20,7 @@
 | Phase 3 — Finance core              | Done        | 100%     | Client Services runtime + flows done; Finance report definitions v1 and all six aggregates                      |
 | Phase 4 — Delivery ops              | Done        | 100%     | Delivery, Work Space, task blockers and Support runtime bridges closed as foundation                            |
 | Phase 5 — Collaboration / knowledge | Done        | 100%     | Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents P0 closure slices shipped |
-| Phase 6 — Control layer             | Early       | ~35%     | Home dashboard typed API groundwork exists; Reports/Calendar Control Center later                               |
+| Phase 6 — Control layer             | In progress | ~40%     | Reports catalog shell over Finance-owned definitions; Dashboard Control Center and scheduling/export depth next |
 | Phase 7 — Integrations / migration  | Not started | 0%       | WhatsApp, bank/gov, Bitrix migration                                                                            |
 
 ## Phase 3 Full Closure Gate
@@ -82,11 +82,12 @@ Roll-up only. Per-feature detail: **`docs/NBOS/02-Modules/*`**, tests, and **git
 | 2026-04-30    | Messenger                | P0 closure slice: internal messages support Drive `FileAsset` attachments, internal search, explicit Internal/External zone split and honest external adapter placeholder.                                                                                                                              |
 | 2026-04-30    | Mail                     | P0 closure slice: `MailProviderConnection` boundary, credential references, Drive-backed `EmailAttachment` records, attachment-aware draft/detail API and provider state UI.                                                                                                                            |
 | 2026-04-30    | Documents                | P0 closure slice: daily-use polish for create/editor save states, search empty states and attachment UX; existing search/access/Drive attachment paths confirmed and kept as shipped foundation.                                                                                                        |
+| 2026-04-30    | Reports / Analytics      | Phase 6 first slice: `/reports` replaced placeholder with catalog shell that surfaces Finance-owned report definitions, search/category filters and honest scheduled/export empty states.                                                                                                               |
 
 ## Next Action
 
-1. Phase 5 P0 closure is ready for owner review.
-2. Next slice after review: start Phase 6 control layer from roadmap.
+1. Continue Phase 6 control layer per `docs/NBOS/00-Implementation-Roadmap.md`.
+2. Next slice: Dashboard Control Center P0 — pinned actions + priority feed shell without heavy analytics.
 3. Keep Google v2, AI, complex approval workflow, WAHA runtime and credentials secrets out of closure unless explicitly approved.
 
 ## Slice DoD

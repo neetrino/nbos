@@ -55,20 +55,20 @@ Reports = catalog, exports, scheduled reports, snapshots.
 
 ### B1. Reports / Analytics module is missing
 
-Статус: `MISSING MODULE`
+Статус: `DONE` (2026-04-30)
 
-Нужно добавить:
+Runtime route:
 
 ```text
 /reports
 ```
 
-Sections:
+Shipped P0 catalog shell:
 
-- Report Catalog;
-- Scheduled Reports;
-- Export History;
-- Saved Views.
+- Report Catalog over module-owned Finance definitions;
+- search and category filters;
+- scheduled reports honest empty state;
+- export history honest empty state.
 
 ### B2. Sidebar does not include Reports / Analytics
 
@@ -80,9 +80,11 @@ Canonical default: top-level `Reports / Analytics`.
 
 ### B3. Report definitions are missing
 
-Статус: `MISSING CODE`
+Статус: `PARTIAL` (2026-04-30)
 
-Нужно добавить registry:
+Shipped: `/reports` consumes the existing Finance-owned report definition registry and does not copy Finance formulas.
+
+Future registry shape still needed for cross-module reports:
 
 ```text
 ReportDefinition
@@ -130,10 +132,10 @@ Reports must enforce source permissions and cannot bypass module access.
 
 ## C. Implementation order
 
-1. Add Reports / Analytics module route.
-2. Add Report Catalog UI.
-3. Add report definition registry.
-4. Add basic reports links to existing module reports.
+1. ~~Add Reports / Analytics module route.~~ Done (2026-04-30): `/reports`.
+2. ~~Add Report Catalog UI.~~ Done (2026-04-30): Finance definitions catalog shell.
+3. Add cross-module report definition registry.
+4. ~~Add basic reports links to existing module reports.~~ Done for Finance reports (2026-04-30).
 5. Add report period/filter shell.
 6. Add export job model.
 7. Link exports to Drive.
