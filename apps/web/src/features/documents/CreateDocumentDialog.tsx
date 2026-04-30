@@ -73,7 +73,7 @@ export function CreateDocumentDialog({
         <DialogHeader>
           <DialogTitle>Create document</DialogTitle>
           <p className="text-muted-foreground text-sm">
-            Add a title and pick a section. Editor and publish flow come in later slices.
+            Add a title and pick a section. The native editor opens immediately after creation.
           </p>
         </DialogHeader>
         <div className="grid gap-4 py-2">

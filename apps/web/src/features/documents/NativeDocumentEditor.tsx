@@ -20,6 +20,8 @@ import { documentsApi, type DocumentDetail } from '@/lib/api/documents';
 
 export type NativeEditorSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
+const BYTES_PER_MIB = 1024 * 1024;
+
 export interface NativeDocumentEditorProps {
   documentId: string;
   documentStatus: string;
@@ -175,7 +177,7 @@ export function NativeDocumentEditor({
       if (!ed || !canUseDrive) return;
       if (file.size > DOCUMENT_INLINE_IMAGE_MAX_BYTES) {
         setLastError(
-          `Image must be at most ${Math.round(DOCUMENT_INLINE_IMAGE_MAX_BYTES / (1024 * 1024))} MB.`,
+          `Image must be at most ${Math.round(DOCUMENT_INLINE_IMAGE_MAX_BYTES / BYTES_PER_MIB)} MB.`,
         );
         return;
       }
@@ -215,7 +217,7 @@ export function NativeDocumentEditor({
         ? 'Saved'
         : saveStatus === 'error'
           ? 'Save failed'
-          : 'Autosave when idle';
+          : 'Autosaves after you stop typing';
 
   return (
     <div className="border-border bg-card overflow-hidden rounded-lg border">
@@ -250,7 +252,7 @@ export function NativeDocumentEditor({
             variant="secondary"
             className="gap-1"
             onClick={handleManualSave}
-            disabled={imageUploadBusy}
+            disabled={imageUploadBusy || saveStatus === 'saving'}
           >
             <Save size={14} />
             Save

@@ -371,4 +371,4 @@ Each slice should update its cleanup register and progress tracker after impleme
 | `credentials-p0-hardening`     | `DONE` (2026-04-30) | Credential type, criticality, environment/context fields, encrypted secure notes, public notes and rotation metadata             |
 | `messenger-p0-polish`          | `DONE` (2026-04-30) | Internal Drive FileAsset attachments, internal search, Internal/External split and honest external adapter placeholder           |
 | `mail-p0-provider-boundary`    | `DONE` (2026-04-30) | Provider connection boundary, mailbox credential references, Drive-backed EmailAttachment records and attachment-aware draft UI  |
-| `documents-p0-polish`          | `NEXT`              | Daily-use UI polish and confirm search/access after latest Drive changes                                                         |
+| `documents-p0-polish`          | `DONE` (2026-04-30) | Create/editor save-state clarity, search empty states, attachment UX polish and confirmed search/access foundation               |

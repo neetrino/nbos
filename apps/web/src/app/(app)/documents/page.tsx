@@ -140,8 +140,14 @@ export default function DocumentsHomePage() {
               {recent.length === 0 ? (
                 <EmptyState
                   icon={FileText}
-                  title="No documents yet"
-                  description="Create a draft to get started."
+                  title={debouncedSearch ? 'No matching documents' : 'No documents yet'}
+                  description={
+                    debouncedSearch
+                      ? 'Search checks titles, text, sections, tags and linked attachment names.'
+                      : canAdd
+                        ? 'Create a draft to get started.'
+                        : 'Documents will appear here after your team publishes them.'
+                  }
                 />
               ) : (
                 <DocumentsTable rows={recent} />
@@ -153,7 +159,11 @@ export default function DocumentsHomePage() {
                 <EmptyState
                   icon={FileText}
                   title="No drafts"
-                  description="Drafts you create will show here."
+                  description={
+                    canAdd
+                      ? 'Drafts you create will show here.'
+                      : 'You can read documents, but creating drafts is not allowed for your role.'
+                  }
                 />
               ) : (
                 <DocumentsTable rows={drafts} />

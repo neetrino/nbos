@@ -83,7 +83,7 @@ Done:
 /documents/:id
 ```
 
-Still missing: polish, ACL-scoped attachment index depth (later slices). Section default list scope is editable via API + web when role has `MANAGE_SECTIONS`.
+P0 closure update (2026-04-30): daily-use polish shipped for create flow, search empty states, editor save clarity and attachment UX. ACL-scoped attachment index depth remains optional future depth. Section default list scope is editable via API + web when role has `MANAGE_SECTIONS`.
 
 ### B2. Sidebar item is missing
 
@@ -103,7 +103,7 @@ Still missing vs full canon:
 
 ### B4. TipTap editor is missing
 
-Статус: `PARTIAL` — editor, `documentImage` (fileAssetId, no base64), Drive upload + attachments API shipped; polish (paste, callouts) later.
+Статус: `PARTIAL` — editor, `documentImage` (fileAssetId, no base64), Drive upload + attachments API shipped; **2026-04-30:** save-state copy and disabled duplicate-save polish shipped. Paste/callouts remain later.
 
 Need editor with:
 
@@ -119,11 +119,11 @@ Need editor with:
 
 ### B5. Drive/R2 attachment flow is missing
 
-Статус: `PARTIAL` — upload session with `entityType: DOCUMENT` + `DocumentAttachment` rows + preview URL shipped; document-scoped preview (`forDocumentId`) shipped; further Drive matrix polish optional.
+Статус: `PARTIAL` — upload session with `entityType: DOCUMENT` + `DocumentAttachment` rows + preview URL shipped; document-scoped preview (`forDocumentId`) shipped; **2026-04-30:** attachment empty-state/metadata UX polished. Further Drive matrix polish optional.
 
 ### B6. Search is missing
 
-Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `attachment_search_vector` + `ts_rank_cd` / `websearch_to_tsquery`, plus ILIKE on title/description/plain text/section/tags and linked attachment file names; `attachment_search_vector` maintained by DB triggers. Optional `searchSnippet` for list cards. List/detail respect `default_list_scope` / `list_scope_override` intersected with RBAC `DOCUMENTS_VIEW`. Activity tab gated by `DOCUMENTS_VIEW_ACTIVITY` (fallback to `DOCUMENTS_VIEW` on older JWTs).
+Статус: `PARTIAL` — `GET /api/documents?search=` uses `search_vector` + `attachment_search_vector` + `ts_rank_cd` / `websearch_to_tsquery`, plus ILIKE on title/description/plain text/section/tags and linked attachment file names; `attachment_search_vector` maintained by DB triggers. Optional `searchSnippet` for list cards. List/detail respect `default_list_scope` / `list_scope_override` intersected with RBAC `DOCUMENTS_VIEW`. Activity tab gated by `DOCUMENTS_VIEW_ACTIVITY` (fallback to `DOCUMENTS_VIEW` on older JWTs). **2026-04-30:** P0 closure re-confirmed via existing Documents search/access tests.
 
 Need PostgreSQL search over:
 
@@ -179,7 +179,7 @@ Recommended implementation order:
 11. Add document access UI and backend enforcement.
 12. Add activity log.
 13. Add archive/restore flow. **Shipped:** `POST …/archive`, `POST …/restore`, detail UI Restore when `DOCUMENTS` DELETE; activity `restored`.
-14. Add favorites/recent documents.
+14. Add recent documents. **Shipped:** recent updates block; favorites are deferred because no favorite data model is currently needed for P0.
 15. Add Google integration only after first release is stable.
 
 ## D. Non-goals for first release

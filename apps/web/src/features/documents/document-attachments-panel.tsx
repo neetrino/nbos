@@ -10,6 +10,8 @@ import { documentsApi, type DocumentAttachmentItem } from '@/lib/api/documents';
 import { driveApi } from '@/lib/api/drive';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
+const BYTES_PER_KIB = 1024;
+
 export interface DocumentAttachmentsPanelProps {
   documentId: string;
   attachments: DocumentAttachmentItem[];
@@ -82,6 +84,20 @@ export function DocumentAttachmentsPanel({
     }
   };
 
+  const emptyCopy = canEdit
+    ? canUseDrive
+      ? 'No attachments yet. Add files from Drive/R2 when this document needs source material.'
+      : 'No attachments yet. Drive permission is required to add files.'
+    : 'No attachments yet.';
+
+  const formatSize = (sizeBytes: string | number | null): string | null => {
+    if (sizeBytes === null) return null;
+    const bytes = Number(sizeBytes);
+    if (!Number.isFinite(bytes)) return null;
+    if (bytes < BYTES_PER_KIB) return `${bytes} B`;
+    return `${(bytes / BYTES_PER_KIB).toFixed(1)} KiB`;
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -111,42 +127,51 @@ export function DocumentAttachmentsPanel({
       </div>
       {error ? <p className="text-destructive text-xs">{error}</p> : null}
       {attachments.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No attachments yet.</p>
+        <p className="text-muted-foreground text-sm">{emptyCopy}</p>
       ) : (
         <ul className="divide-border divide-y text-sm">
           {attachments.map((row) => (
             <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{row.fileAsset.displayName}</p>
-                <p className="text-muted-foreground text-xs capitalize">
-                  {row.purpose.toLowerCase().replace(/_/g, ' ')}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-1">
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  className="size-8"
-                  aria-label="Open or download"
-                  onClick={() => void handleOpen(row.fileAsset.id)}
-                >
-                  <Download size={16} />
-                </Button>
-                {canEdit ? (
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="ghost"
-                    className="text-destructive size-8"
-                    aria-label="Remove attachment"
-                    disabled={busy}
-                    onClick={() => void handleRemove(row.id)}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                ) : null}
-              </div>
+              {(() => {
+                const sizeLabel = formatSize(row.fileAsset.sizeBytes);
+                return (
+                  <>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{row.fileAsset.displayName}</p>
+                      <p className="text-muted-foreground text-xs capitalize">
+                        {row.purpose.toLowerCase().replace(/_/g, ' ')}
+                        {row.fileAsset.mimeType ? ` · ${row.fileAsset.mimeType}` : ''}
+                        {sizeLabel ? ` · ${sizeLabel}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="ghost"
+                        className="size-8"
+                        aria-label="Open or download"
+                        onClick={() => void handleOpen(row.fileAsset.id)}
+                      >
+                        <Download size={16} />
+                      </Button>
+                      {canEdit ? (
+                        <Button
+                          type="button"
+                          size="icon-sm"
+                          variant="ghost"
+                          className="text-destructive size-8"
+                          aria-label="Remove attachment"
+                          disabled={busy}
+                          onClick={() => void handleRemove(row.id)}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      ) : null}
+                    </div>
+                  </>
+                );
+              })()}
             </li>
           ))}
         </ul>
