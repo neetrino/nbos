@@ -27,6 +27,7 @@ import {
   getApiErrorMessage,
   isBusinessTransitionApiError,
   isStageGateApiError,
+  type ApiFieldError,
 } from '@/lib/api-errors';
 import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 import {
@@ -44,6 +45,8 @@ import { toast } from 'sonner';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
+
+const MARKETING_CHANNELS_REQUIRING_LINK = new Set(['LIST_AM', 'GOOGLE_ADS', 'META_ADS']);
 
 interface PendingLeadTransition {
   id: string;
@@ -104,9 +107,25 @@ export default function LeadsPipelinePage() {
     await fetchLeads();
   };
 
-  const handleStatusChange = async (id: string, status: string) => {
+  const handleStatusChange = async (id: string, status: string, leadOverride?: Lead) => {
     const previousLeads = leads;
     const previousSelected = selectedLead;
+    const currentLead =
+      leadOverride ?? previousLeads.find((lead) => lead.id === id) ?? previousSelected;
+
+    if (currentLead) {
+      const localErrors = getLocalLeadTransitionErrors(currentLead, status);
+      if (localErrors.length > 0) {
+        setTransitionBlocker({
+          item: currentLead,
+          targetStatus: status,
+          targetLabel: getLeadStage(status)?.label ?? status,
+          errors: localErrors,
+          message: `Lead cannot move to ${getLeadStage(status)?.label ?? status}: missing required fields`,
+        });
+        return;
+      }
+    }
 
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
     if (selectedLead?.id === id) {
@@ -222,7 +241,7 @@ export default function LeadsPipelinePage() {
       setLeads((prev) => prev.map((lead) => (lead.id === updated.id ? updated : lead)));
       setSelectedLead((prev) => (prev?.id === updated.id ? updated : prev));
       setTransitionBlocker((current) => (current ? { ...current, item: updated } : current));
-      await handleStatusChange(updated.id, blocker.targetStatus);
+      await handleStatusChange(updated.id, blocker.targetStatus, updated);
       setTransitionBlocker(null);
     } finally {
       setInlineSaving(false);
@@ -459,6 +478,7 @@ export default function LeadsPipelinePage() {
         inlineEditor={
           transitionBlocker ? (
             <LeadTransitionInlineEditor
+              key={`${transitionBlocker.item.id}-${transitionBlocker.targetStatus}`}
               lead={transitionBlocker.item}
               errors={transitionBlocker.errors}
               saving={inlineSaving}
@@ -514,4 +534,54 @@ function normalizeLeadPatch(data: Partial<Lead>): Partial<Lead> {
   if (data.marketingActivityId === null) normalized.marketingActivity = null;
 
   return normalized;
+}
+
+function getLocalLeadTransitionErrors(lead: Lead, targetStatus: string): ApiFieldError[] {
+  const errors: ApiFieldError[] = [];
+
+  if (!requiresAttribution(targetStatus)) return errors;
+
+  errors.push(...getLocalAttributionErrors(lead));
+
+  if (targetStatus === 'SQL') {
+    if (!lead.contactName.trim()) {
+      errors.push({ field: 'contactName', message: 'Contact name is required' });
+    }
+    if (!lead.phone && !lead.email) {
+      errors.push({ field: 'contactMethod', message: 'Phone or email is required' });
+    }
+    if (!lead.assignedTo) {
+      errors.push({ field: 'assignedTo', message: 'Assigned Seller is required to create a Deal' });
+    }
+  }
+
+  return errors;
+}
+
+function getLocalAttributionErrors(lead: Lead): ApiFieldError[] {
+  if (!lead.source) return [{ field: 'source', message: 'From is required' }];
+
+  if ((lead.source === 'MARKETING' || lead.source === 'SALES') && !lead.sourceDetail) {
+    return [{ field: 'sourceDetail', message: 'Where is required for this source' }];
+  }
+  if (lead.source === 'PARTNER' && !lead.sourcePartnerId) {
+    return [{ field: 'sourcePartnerId', message: 'Partner must be selected' }];
+  }
+  if (lead.source === 'CLIENT' && !lead.sourceContactId) {
+    return [{ field: 'sourceContactId', message: 'Client/referral contact must be selected' }];
+  }
+  if (
+    lead.source === 'MARKETING' &&
+    MARKETING_CHANNELS_REQUIRING_LINK.has(lead.sourceDetail ?? '') &&
+    !lead.marketingAccountId &&
+    !lead.marketingActivityId
+  ) {
+    return [{ field: 'whichOne', message: 'Which one is required for this marketing channel' }];
+  }
+
+  return [];
+}
+
+function requiresAttribution(status: string): boolean {
+  return !['NEW', 'SPAM'].includes(status);
 }
