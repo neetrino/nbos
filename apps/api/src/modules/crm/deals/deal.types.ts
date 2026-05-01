@@ -9,7 +9,7 @@ export interface CreateDealDto {
   companyId?: string | null;
   sellerId: string;
   projectId?: string;
-  source?: string;
+  source?: string | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;

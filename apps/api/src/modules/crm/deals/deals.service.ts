@@ -11,7 +11,7 @@ import {
 } from './deal.includes';
 import type { CreateDealDto, DealQueryParams, UpdateDealDto } from './deal.types';
 import { DealWonHandler } from './deal-won.handler';
-import { isDealAttributionLocked } from '@nbos/shared/constants';
+import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
 import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';

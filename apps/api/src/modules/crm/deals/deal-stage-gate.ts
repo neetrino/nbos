@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { DEAL_STAGE_GATE_ORDER } from '@nbos/shared/constants';
+import { DEAL_STAGE_GATE_ORDER } from '@nbos/shared';
 import { validateAttributionGate } from '../attribution-gate';
 
 interface DealForValidation {

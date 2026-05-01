@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { requiresMarketingWhichOneSelection } from '@nbos/shared/constants';
+import { requiresMarketingWhichOneSelection } from '@nbos/shared';
 
 export interface AttributionForValidation {
   source: string | null;
