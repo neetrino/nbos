@@ -4,13 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { SearchField } from '@/components/shared';
 import { employeesApi } from '@/lib/api/employees';
 import { contactsApi } from '@/lib/api/clients';
@@ -69,8 +62,7 @@ export function LeadTransitionInlineEditor({
   const errorFields = useMemo(() => new Set(errors.map((error) => error.field)), [errors]);
   const needsContactMethod = errorFields.has('contactMethod');
   const whereOptions = getWhereOptions(form.source);
-  const showWhereField =
-    errorFields.has('sourceDetail') || (Boolean(form.source) && whereOptions.length > 0);
+  const showWhereField = whereOptions.length > 0;
   const showMarketingAttribution =
     errorFields.has('whichOne') ||
     errorFields.has('marketingAccountId') ||
@@ -118,41 +110,27 @@ export function LeadTransitionInlineEditor({
 
       {(errorFields.has('source') || !form.source) && (
         <Field label="From">
-          <Select
-            value={form.source || undefined}
-            onValueChange={(value) => updateForm('source', value ?? '')}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select source..." />
-            </SelectTrigger>
-            <SelectContent>
-              {LEAD_SOURCES.map((source) => (
-                <SelectItem key={source.value} value={source.value}>
-                  {source.icon} {source.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            value={form.source}
+            placeholder="Select source..."
+            options={LEAD_SOURCES.map((source) => ({
+              value: source.value,
+              label: `${source.icon} ${source.label}`,
+            }))}
+            onChange={(value) => updateForm('source', value)}
+          />
         </Field>
       )}
 
       {showWhereField && (
         <Field label="Where">
-          <Select
-            value={form.sourceDetail || undefined}
-            onValueChange={(value) => updateForm('sourceDetail', value ?? '')}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select channel..." />
-            </SelectTrigger>
-            <SelectContent>
-              {whereOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            key={form.source}
+            value={form.sourceDetail}
+            placeholder="Select channel..."
+            options={whereOptions}
+            onChange={(value) => updateForm('sourceDetail', value)}
+          />
         </Field>
       )}
 
@@ -254,6 +232,33 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <Label>{label}</Label>
       {children}
     </div>
+  );
+}
+
+function NativeSelect({
+  value,
+  placeholder,
+  options,
+  onChange,
+}: {
+  value: string;
+  placeholder: string;
+  options: Array<{ value: string; label: string }>;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 h-8 w-full rounded-lg border px-2.5 py-1 text-sm outline-none focus-visible:ring-3"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
   );
 }
 
