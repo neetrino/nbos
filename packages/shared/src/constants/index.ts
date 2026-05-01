@@ -44,7 +44,13 @@ export const ORDER_STATUSES = ['ACTIVE', 'PARTIALLY_PAID', 'FULLY_PAID', 'CLOSED
 
 export const PAYMENT_TYPES = ['CLASSIC', 'SUBSCRIPTION'] as const;
 
-export const SUBSCRIPTION_STATUSES = ['ACTIVE', 'PAUSED', 'CANCELLED'] as const;
+export const SUBSCRIPTION_STATUSES = [
+  'PENDING',
+  'ACTIVE',
+  'ON_HOLD',
+  'CANCELLED',
+  'COMPLETED',
+] as const;
 
 export const SUBSCRIPTION_TYPES = [
   'MAINTENANCE_ONLY',
@@ -52,6 +58,9 @@ export const SUBSCRIPTION_TYPES = [
   'DEV_ONLY',
   'PARTNER_SERVICE',
 ] as const;
+
+/** Query param value for listing subscriptions with no linked partner (`partnerId IS NULL`). */
+export const SUBSCRIPTION_PARTNER_FILTER_UNLINKED = '__unlinked__' as const;
 
 export const TASK_STATUSES = ['NEW', 'IN_PROGRESS', 'DONE', 'DEFERRED', 'CANCELLED'] as const;
 
@@ -174,6 +183,42 @@ export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
 
 export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT'] as const;
 
+export const MARKETING_CHANNELS = [
+  'SMM',
+  'WEBSITE',
+  'LIST_AM',
+  'GOOGLE_ADS',
+  'META_ADS',
+  'CONTENT',
+  'SEO',
+  'OFFLINE',
+  'OTHER',
+] as const;
+
+export const MARKETING_ACCOUNT_STATUSES = ['ACTIVE', 'PAUSED', 'ARCHIVED'] as const;
+
+export const MARKETING_ACTIVITY_STATUSES = [
+  'IDEA',
+  'PREPARING',
+  'READY',
+  'LAUNCHED',
+  'FINISHED',
+  'ARCHIVED',
+] as const;
+
+export const MARKETING_ACTIVITY_TYPES = [
+  'AD_CAMPAIGN',
+  'SMM_POST',
+  'STORY_REEL',
+  'LIST_AM_PROMOTION',
+  'WEBSITE_LANDING',
+  'SEO_WORK',
+  'OFFLINE_ACTIVITY',
+  'OTHER',
+] as const;
+
+export const MARKETING_ATTRIBUTION_OPTION_TYPES = ['ACCOUNT', 'ACTIVITY', 'ORGANIC'] as const;
+
 export const DEAL_TYPES = ['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE'] as const;
 
 export const EXTENSION_SIZES = ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'] as const;
@@ -191,6 +236,9 @@ export const SLA_DEADLINES = {
   P2: { response: 8, resolve: 48 },
   P3: { response: 24, resolve: 72 },
 } as const;
+
+export * from './crm-attribution';
+export * from './messenger-ws';
 
 export const BONUS_PERCENTAGES = {
   SALES: {

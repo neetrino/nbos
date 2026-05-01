@@ -1,4 +1,30 @@
 import { api } from '../api';
+import type { CreateInvoiceInput } from './finance-create';
+import type { FinanceDateRangeParams, ListData } from './finance-common';
+export type { CreateInvoiceInput } from './finance-create';
+export type {
+  Subscription,
+  SubscriptionCoverageSummary,
+  SubscriptionStats,
+  SubscriptionStatsQueryParams,
+  UpdateSubscriptionPayload,
+} from './subscriptions';
+export { subscriptionsApi } from './subscriptions';
+
+export interface InvoiceListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  type?: string;
+  projectId?: string;
+  subscriptionId?: string;
+  search?: string;
+}
+
+/** Query params for `invoicesApi.getStats` (optional subscription drill-down parity). */
+export interface InvoiceStatsQueryParams extends FinanceDateRangeParams {
+  subscriptionId?: string;
+}
 
 export interface Invoice {
   id: string;
@@ -22,7 +48,15 @@ export interface Invoice {
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   payments: Payment[];
+  paymentCoverage?: InvoicePaymentCoverage;
   _count: { payments: number };
+}
+
+export interface InvoicePaymentCoverage {
+  paidAmount: number;
+  outstandingAmount: number;
+  paymentCount: number;
+  isFullyPaid: boolean;
 }
 
 export interface Payment {
@@ -34,8 +68,17 @@ export interface Payment {
   confirmedBy: string | null;
   notes: string | null;
   createdAt: string;
-  invoice?: { id: string; code: string; projectId: string };
+  invoice?: { id: string; code: string; projectId: string; type?: string };
+  project?: { id: string; name: string } | null;
+  company?: { id: string; name: string } | null;
   confirmer?: { id: string; firstName: string; lastName: string } | null;
+}
+
+export interface PaymentListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  invoiceId?: string;
 }
 
 export interface Order {
@@ -45,27 +88,58 @@ export interface Order {
   type: string;
   paymentType: string;
   totalAmount: string;
+  amount?: string;
+  paidAmount?: number;
   currency: string;
   status: string;
   createdAt: string;
   project: { id: string; code: string; name: string };
+  company?: { id: string; name: string } | null;
+  contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; status: string; amount: string }>;
+  reconciliation?: OrderReconciliation;
+  _count?: { invoices: number };
 }
 
-export interface Subscription {
+export interface OrderReconciliation {
+  orderAmount: number;
+  invoicedAmount: number;
+  paidAmount: number;
+  uninvoicedAmount: number;
+  outstandingAmount: number;
+  invoiceCount: number;
+  isFullyInvoiced: boolean;
+  isFullyPaid: boolean;
+  warnings: OrderReconciliationWarning[];
+}
+
+export interface OrderReconciliationWarning {
+  code: 'NO_INVOICES' | 'UNINVOICED_AMOUNT' | 'OUTSTANDING_AMOUNT';
+  message: string;
+}
+
+/** Query `gap` for `GET /finance/orders` reconciliation drill-down. */
+export type OrderReconciliationListGap = 'uninvoiced' | 'outstanding';
+
+export interface OrderListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  projectId?: string;
+  partnerId?: string;
+  search?: string;
+  gap?: OrderReconciliationListGap;
+}
+
+/** Ledger roll-up from `GET /expenses/:id` (optional on list rows). */
+export type ExpenseLedgerPaymentStatus = 'UNPAID' | 'PARTIAL' | 'PAID';
+
+export interface ExpensePaymentEntry {
   id: string;
-  code: string;
-  projectId: string;
-  type: string;
   amount: string;
-  billingDay: number;
-  taxStatus: string;
-  status: string;
-  startDate: string;
-  endDate: string | null;
+  paymentDate: string;
+  notes: string | null;
   createdAt: string;
-  project: { id: string; code: string; name: string };
-  invoices: Array<{ id: string; code: string; status: string; amount: string }>;
 }
 
 export interface Expense {
@@ -80,18 +154,227 @@ export interface Expense {
   projectId: string | null;
   isPassThrough: boolean;
   taxStatus: string;
+  backlogReason: string | null;
   notes: string | null;
   createdAt: string;
+  /** Set when this expense is linked to a payroll salary line (materialization). */
+  linkedPayrollRun?: {
+    payrollRunId: string;
+    payrollMonth: string;
+    salaryLineId: string;
+  } | null;
+  /** Present when this expense was created from an Expense Plan (Plan→Card). */
+  linkedExpensePlan?: { id: string; name: string } | null;
   project?: { id: string; code: string; name: string } | null;
+  paidAmount?: string;
+  remainingAmount?: string;
+  paymentStatus?: ExpenseLedgerPaymentStatus;
+  payments?: ExpensePaymentEntry[];
 }
 
-interface ListData<T> {
-  items: T[];
-  meta: { total: number; page: number; pageSize: number; totalPages: number };
+export interface ExpenseStats {
+  byCategory: Array<{
+    category: string;
+    _count: number;
+    _sum: { amount: number | null };
+  }>;
+  byStatus: Array<{
+    status: string;
+    _count: number;
+    _sum: { amount: number | null };
+  }>;
+  totalAmount: number | null;
+  paidAmount: number | null;
+  unpaidAmount: number | null;
+}
+
+/** Query params for `expensesApi.getStats` (optional project drill-down parity). */
+export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
+  projectId?: string;
+  /** When set, aggregates match expenses linked to this plan (list parity). */
+  expensePlanId?: string;
+  /** When set, aggregates match the same status scope as the expenses list. */
+  status?: string;
+  /** When true and `status` is omitted: same scope as `GET /expenses?activeBoard=true`. */
+  activeBoard?: boolean;
+}
+
+/** Allowed `sortBy` values for `GET /expenses` (aligned with ExpensesService allowlist). */
+export type ExpenseListSortField = 'createdAt' | 'dueDate' | 'amount' | 'name' | 'status';
+
+export interface ExpenseListParams extends FinanceDateRangeParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  category?: string;
+  status?: string;
+  projectId?: string;
+  /** Filter by linked expense plan (`GET /expenses?expensePlanId=`). */
+  expensePlanId?: string;
+  type?: string;
+  frequency?: string;
+  /** Filter by `ExpenseBacklogReasonEnum` when present (ignored if unknown). */
+  backlogReason?: string;
+  sortBy?: ExpenseListSortField;
+  sortOrder?: 'asc' | 'desc';
+  /**
+   * When true and `status` is omitted: exclude `PAID` and `DELAYED` (board vs closed/backlog), per NBOS.
+   */
+  activeBoard?: boolean;
+}
+
+/** Body for `PUT /expenses/:id` (aligned with ExpensesController). */
+export interface CreateExpensePayload {
+  name: string;
+  type: string;
+  category: string;
+  amount: number;
+  frequency?: string;
+  dueDate?: string | null;
+  status?: string;
+  projectId?: string | null;
+  expensePlanId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: string;
+  backlogReason?: string | null;
+  notes?: string | null;
+}
+
+/** Body for `POST /expenses/:id/payments`. */
+export interface AddExpensePaymentPayload {
+  amount: number;
+  paymentDate: string;
+  notes?: string;
+}
+
+export interface UpdateExpensePayload {
+  name?: string;
+  type?: string;
+  category?: string;
+  amount?: number;
+  frequency?: string;
+  dueDate?: string | null;
+  status?: string;
+  projectId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: string;
+  backlogReason?: string | null;
+  notes?: string | null;
+}
+
+export interface InvoiceStats {
+  total: number;
+  byStatus: Array<{
+    status: string;
+    _count: number;
+    _sum: { amount: number | null };
+  }>;
+  totalRevenue: number | null;
+  outstanding: { count: number; amount: number | null };
+  overdue: { count: number; amount: number | null };
+}
+
+export interface OrderStats {
+  totalOrders: number;
+  totalAmount: number | null;
+  collectedAmount: number | null;
+  outstandingAmount: number;
+  byStatus: Array<{
+    status: string;
+    _count: number;
+    _sum: { totalAmount: number | null };
+  }>;
+}
+
+/** Query params for `ordersApi.getStats` (optional reconciliation drill-down). */
+export interface OrderStatsQueryParams extends FinanceDateRangeParams {
+  gap?: OrderReconciliationListGap;
+  /** With gap: align stats with the orders list. */
+  status?: string;
+  projectId?: string;
+  /** Partner drill-down: stats scoped like `GET /finance/orders?partnerId=`. */
+  partnerId?: string;
+  search?: string;
+}
+
+export interface PaymentStats {
+  totalPayments: number;
+  totalCollected: number | null;
+  thisMonthCollected: number | null;
+}
+
+/** Workspace-wide payroll aggregates from `GET /payroll-runs/stats` (same shape as list stats). */
+export interface FinanceDashboardPayrollRuns {
+  runCount: number;
+  totals: {
+    totalBaseSalary: string;
+    totalBonuses: string;
+    totalAdjustments: string;
+    totalDeductions: string;
+    totalPayable: string;
+    totalPaid: string;
+    totalRemaining: string;
+  };
+  byStatus: Array<{
+    status: string;
+    runCount: number;
+    totalPayable: string;
+    totalPaid: string;
+    totalRemaining: string;
+  }>;
+}
+
+export interface FinanceDashboardSummary {
+  kpis: {
+    totalRevenue: number | null;
+    outstandingAmount: number | null;
+    outstandingCount: number;
+    overdueAmount: number | null;
+    overdueCount: number;
+    monthlyRecurringRevenue: number | null;
+    activeSubscriptions: number;
+  };
+  invoiceStatusItems: Array<{
+    status: string;
+    count: number;
+    amount: number | null;
+  }>;
+  reconciliation: {
+    orderCount: number;
+    orderAmount: number;
+    invoicedAmount: number;
+    paidAmount: number;
+    uninvoicedAmount: number;
+    outstandingAmount: number;
+    fullyInvoicedCount: number;
+    fullyPaidCount: number;
+    warnings: Array<{
+      code: 'UNINVOICED_ORDERS' | 'OUTSTANDING_ORDERS';
+      message: string;
+      count: number;
+    }>;
+  };
+  recentPayments: Array<{
+    id: string;
+    amount: number | null;
+    paymentDate: string;
+    invoice: { id: string; code: string };
+    company: { id: string; name: string } | null;
+    project: { id: string; name: string } | null;
+  }>;
+  upcomingInvoices: Array<{
+    id: string;
+    code: string;
+    amount: number | null;
+    dueDate: string | null;
+    company: { id: string; name: string } | null;
+    projectId: string;
+  }>;
+  payrollRuns: FinanceDashboardPayrollRuns;
 }
 
 export const invoicesApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Invoice>> {
+  async getAll(params?: InvoiceListParams): Promise<ListData<Invoice>> {
     const resp = await api.get<ListData<Invoice>>('/api/finance/invoices', { params });
     return resp.data;
   },
@@ -99,7 +382,7 @@ export const invoicesApi = {
     const resp = await api.get<Invoice>(`/api/finance/invoices/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Invoice> {
+  async create(data: CreateInvoiceInput): Promise<Invoice> {
     const resp = await api.post<Invoice>('/api/finance/invoices', data);
     return resp.data;
   },
@@ -110,14 +393,14 @@ export const invoicesApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/invoices/${id}`);
   },
-  async getStats() {
-    const resp = await api.get('/api/finance/invoices/stats');
+  async getStats(params?: InvoiceStatsQueryParams): Promise<InvoiceStats> {
+    const resp = await api.get<InvoiceStats>('/api/finance/invoices/stats', { params });
     return resp.data;
   },
 };
 
 export const paymentsApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Payment>> {
+  async getAll(params?: PaymentListParams): Promise<ListData<Payment>> {
     const resp = await api.get<ListData<Payment>>('/api/finance/payments', { params });
     return resp.data;
   },
@@ -135,10 +418,14 @@ export const paymentsApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/payments/${id}`);
   },
+  async getStats(params?: FinanceDateRangeParams): Promise<PaymentStats> {
+    const resp = await api.get<PaymentStats>('/api/finance/payments/stats', { params });
+    return resp.data;
+  },
 };
 
 export const ordersApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Order>> {
+  async getAll(params?: OrderListParams): Promise<ListData<Order>> {
     const resp = await api.get<ListData<Order>>('/api/finance/orders', { params });
     return resp.data;
   },
@@ -157,39 +444,14 @@ export const ordersApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/finance/orders/${id}`);
   },
-};
-
-export const subscriptionsApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Subscription>> {
-    const resp = await api.get<ListData<Subscription>>('/api/finance/subscriptions', { params });
-    return resp.data;
-  },
-  async getById(id: string): Promise<Subscription> {
-    const resp = await api.get<Subscription>(`/api/finance/subscriptions/${id}`);
-    return resp.data;
-  },
-  async create(data: Record<string, unknown>): Promise<Subscription> {
-    const resp = await api.post<Subscription>('/api/finance/subscriptions', data);
-    return resp.data;
-  },
-  async update(id: string, data: Record<string, unknown>): Promise<Subscription> {
-    const resp = await api.put<Subscription>(`/api/finance/subscriptions/${id}`, data);
-    return resp.data;
-  },
-  async updateStatus(id: string, status: string): Promise<Subscription> {
-    const resp = await api.patch<Subscription>(`/api/finance/subscriptions/${id}/status`, {
-      status,
-    });
-    return resp.data;
-  },
-  async getStats() {
-    const resp = await api.get('/api/finance/subscriptions/stats');
+  async getStats(params?: OrderStatsQueryParams): Promise<OrderStats> {
+    const resp = await api.get<OrderStats>('/api/finance/orders/stats', { params });
     return resp.data;
   },
 };
 
 export const expensesApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Expense>> {
+  async getAll(params?: ExpenseListParams): Promise<ListData<Expense>> {
     const resp = await api.get<ListData<Expense>>('/api/expenses', { params });
     return resp.data;
   },
@@ -197,19 +459,36 @@ export const expensesApi = {
     const resp = await api.get<Expense>(`/api/expenses/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Expense> {
+  async create(data: CreateExpensePayload): Promise<Expense> {
     const resp = await api.post<Expense>('/api/expenses', data);
     return resp.data;
   },
-  async update(id: string, data: Record<string, unknown>): Promise<Expense> {
+  async update(id: string, data: UpdateExpensePayload): Promise<Expense> {
     const resp = await api.put<Expense>(`/api/expenses/${id}`, data);
     return resp.data;
   },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/expenses/${id}`);
   },
-  async getStats() {
-    const resp = await api.get('/api/expenses/stats');
+  async addPayment(id: string, data: AddExpensePaymentPayload): Promise<Expense> {
+    const resp = await api.post<Expense>(`/api/expenses/${id}/payments`, data);
+    return resp.data;
+  },
+  async deletePayment(expenseId: string, paymentId: string): Promise<Expense> {
+    const resp = await api.delete<Expense>(`/api/expenses/${expenseId}/payments/${paymentId}`);
+    return resp.data;
+  },
+  async getStats(params?: ExpenseStatsQueryParams): Promise<ExpenseStats> {
+    const resp = await api.get<ExpenseStats>('/api/expenses/stats', { params });
+    return resp.data;
+  },
+};
+
+export const financeSummaryApi = {
+  async getDashboard(params?: FinanceDateRangeParams): Promise<FinanceDashboardSummary> {
+    const resp = await api.get<FinanceDashboardSummary>('/api/finance/summary/dashboard', {
+      params,
+    });
     return resp.data;
   },
 };

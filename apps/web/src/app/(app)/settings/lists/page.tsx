@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { List, Pencil, RefreshCcw, Tag, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -21,12 +20,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PageHeader, EmptyState } from '@/components/shared';
+import { PageHeader, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
 const LIST_KEY_LABELS: Record<string, string> = {
   PRODUCT_TYPE: 'Product Type',
 };
+
+const PROTECTED_LIST_KEYS = new Set(['PRODUCT_TYPE']);
 
 function getListKeyLabel(key: string): string {
   return LIST_KEY_LABELS[key] ?? key.replace(/_/g, ' ');
@@ -46,6 +47,7 @@ export function SystemListsPage() {
   const [formActive, setFormActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchKeys = useCallback(async () => {
     setLoadingKeys(true);
@@ -56,8 +58,10 @@ export function SystemListsPage() {
       if (managed.length > 0 && !selectedKey) {
         setSelectedKey(managed[0]!);
       }
+      setLoadError(null);
     } catch {
       setListKeys([]);
+      setLoadError('System lists could not be loaded. Check your access and try again.');
     } finally {
       setLoadingKeys(false);
     }
@@ -74,8 +78,10 @@ export function SystemListsPage() {
         includeInactive,
       });
       setOptions(data);
+      setLoadError(null);
     } catch {
       setOptions([]);
+      setLoadError('System list options could not be loaded. Check your access and try again.');
     } finally {
       setLoadingOptions(false);
     }
@@ -149,7 +155,9 @@ export function SystemListsPage() {
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-muted-foreground text-sm font-medium">List:</span>
           {loadingKeys ? (
-            <Skeleton className="h-9 w-48 rounded-lg" />
+            <div className="w-full max-w-sm">
+              <LoadingState count={1} />
+            </div>
           ) : listKeys.length === 0 ? (
             <span className="text-muted-foreground text-sm">No configurable lists</span>
           ) : (
@@ -186,20 +194,27 @@ export function SystemListsPage() {
           </p>
         </div>
 
-        {selectedKey && (
+        {loadError ? (
+          <ErrorState
+            description={loadError}
+            onRetry={() => {
+              fetchKeys();
+              fetchOptions();
+            }}
+          />
+        ) : selectedKey ? (
           <>
             <div className="border-border border-t pt-3">
               <h3 className="text-foreground mb-2 flex items-center gap-2 text-sm font-medium">
                 <List size={16} />
                 {getListKeyLabel(selectedKey)} — {options.length} options
+                {PROTECTED_LIST_KEYS.has(selectedKey) && (
+                  <StatusBadge label="Protected" variant="amber" />
+                )}
               </h3>
             </div>
             {loadingOptions ? (
-              <div className="space-y-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-10 w-full rounded-lg" />
-                ))}
-              </div>
+              <LoadingState />
             ) : options.length === 0 ? (
               <EmptyState
                 icon={List}
@@ -250,7 +265,7 @@ export function SystemListsPage() {
               </div>
             )}
           </>
-        )}
+        ) : null}
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

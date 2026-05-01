@@ -1,17 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import {
-  RefreshCcw,
-  CreditCard,
-  DollarSign,
-  FileText,
-  FolderKanban,
-  Building2,
-  Calendar,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { CreditCard, DollarSign, FileText, FolderKanban, Calendar } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -20,65 +10,99 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
-import { api } from '@/lib/api';
-
-interface Payment {
-  id: string;
-  amount: string;
-  currency: string;
-  paymentDate: string;
-  paymentMethod: string;
-  createdAt: string;
-  invoice: {
-    id: string;
-    code: string;
-    type: string;
-  } | null;
-  project: { id: string; name: string } | null;
-  company: { id: string; name: string } | null;
-  confirmedBy: { id: string; firstName: string; lastName: string } | null;
-}
+import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  getFinancePeriodParams,
+  type FinancePeriod,
+  formatAmount,
+} from '@/features/finance/constants/finance';
+import { PaymentsPageHeader } from '@/features/finance/components/payments/PaymentsPageHeader';
+import { usePaymentsCsvExport } from '@/features/finance/components/payments/use-payments-csv-export';
+import { usePaymentsScopeStatsCsvExport } from '@/features/finance/components/payments/use-payments-scope-stats-csv-export';
+import { buildPaymentListApiParams } from '@/features/finance/utils/build-payment-list-api-params';
+import { paymentsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import {
+  paymentsApi,
+  type Payment,
+  type PaymentListParams,
+  type PaymentStats,
+} from '@/lib/api/finance';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [stats, setStats] = useState<PaymentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [period, setPeriod] = useState<FinancePeriod>('month');
+
+  const paymentListExportParams: Omit<PaymentListParams, 'page' | 'pageSize'> = useMemo(
+    () => buildPaymentListApiParams({ search, period }),
+    [search, period],
+  );
+
+  const { exportCsvSubmitting, handleExportCsv } = usePaymentsCsvExport(paymentListExportParams);
+
+  const periodParamsForStats = useMemo(() => getFinancePeriodParams(period), [period]);
+
+  const { handleExportScopeStatsCsv } = usePaymentsScopeStatsCsvExport(stats, {
+    period,
+    dateFrom: periodParamsForStats?.dateFrom,
+    dateTo: periodParamsForStats?.dateTo,
+  });
+
+  useFinanceDocumentTitle(paymentsListPageTitle());
 
   const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/finance/payments', {
-        params: { pageSize: 100, search: search || undefined },
-      });
-      setPayments(resp.data.items ?? resp.data ?? []);
-    } catch {
-      /* handled */
+      const periodParams = getFinancePeriodParams(period);
+      const listParams = buildPaymentListApiParams({ search, period });
+      const [data, paymentStats] = await Promise.all([
+        paymentsApi.getAll({
+          ...listParams,
+          pageSize: 100,
+        }),
+        paymentsApi.getStats(periodParams),
+      ]);
+      setPayments(data.items);
+      setStats(paymentStats);
+      setError(null);
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Payments could not be loaded. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, period]);
 
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
 
-  const totalCollected = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-
-  const currentMonth = new Date().getMonth();
-  const thisMonthPayments = payments.filter(
-    (p) => new Date(p.paymentDate).getMonth() === currentMonth,
-  );
-  const thisMonthTotal = thisMonthPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  const totalCollected = Number(stats?.totalCollected ?? 0);
+  const thisMonthTotal = Number(stats?.thisMonthCollected ?? 0);
+  const totalPayments = stats?.totalPayments ?? payments.length;
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Payments" description={`${payments.length} payments`}>
-        <Button variant="outline" size="icon" onClick={fetchPayments}>
-          <RefreshCcw size={16} />
-        </Button>
-      </PageHeader>
+      <PaymentsPageHeader
+        visiblePaymentCount={payments.length}
+        period={period}
+        onPeriodChange={setPeriod}
+        onRefresh={fetchPayments}
+        onExportCsv={handleExportCsv}
+        exportDisabled={loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={loading || !stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
+      />
 
       <div className="grid grid-cols-3 gap-4">
         <div className="border-border bg-card rounded-xl border p-4">
@@ -91,7 +115,7 @@ export default function PaymentsPage() {
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Total Payments</p>
-          <p className="mt-1 text-xl font-bold">{payments.length}</p>
+          <p className="mt-1 text-xl font-bold">{totalPayments}</p>
         </div>
       </div>
 
@@ -106,11 +130,9 @@ export default function PaymentsPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchPayments} />
       ) : payments.length === 0 ? (
         <EmptyState
           icon={CreditCard}
@@ -149,7 +171,9 @@ export default function PaymentsPage() {
                       <div className="flex items-center gap-1.5 text-sm">
                         <FileText size={12} className="text-muted-foreground" />
                         <span>{payment.invoice.code}</span>
-                        <StatusBadge label={payment.invoice.type} variant="blue" />
+                        {payment.invoice.type ? (
+                          <StatusBadge label={payment.invoice.type} variant="blue" />
+                        ) : null}
                       </div>
                     ) : (
                       '—'
@@ -178,8 +202,8 @@ export default function PaymentsPage() {
                     {payment.paymentMethod ?? '—'}
                   </TableCell>
                   <TableCell className="text-xs">
-                    {payment.confirmedBy
-                      ? `${payment.confirmedBy.firstName} ${payment.confirmedBy.lastName}`
+                    {payment.confirmer
+                      ? `${payment.confirmer.firstName} ${payment.confirmer.lastName}`
                       : '—'}
                   </TableCell>
                 </TableRow>

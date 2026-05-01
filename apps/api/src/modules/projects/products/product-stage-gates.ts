@@ -1,0 +1,210 @@
+import { BadRequestException } from '@nestjs/common';
+import { type ProductStatusEnum } from '@nbos/database';
+
+export const PRODUCT_STATUS_ORDER: ProductStatusEnum[] = [
+  'NEW',
+  'CREATING',
+  'DEVELOPMENT',
+  'QA',
+  'TRANSFER',
+  'ON_HOLD',
+  'DONE',
+  'LOST',
+];
+
+export const PRODUCT_ALLOWED_TRANSITIONS: Record<ProductStatusEnum, ProductStatusEnum[]> = {
+  NEW: ['CREATING', 'LOST'],
+  CREATING: ['DEVELOPMENT', 'ON_HOLD', 'LOST'],
+  DEVELOPMENT: ['QA', 'ON_HOLD', 'LOST'],
+  QA: ['TRANSFER', 'DEVELOPMENT', 'ON_HOLD', 'LOST'],
+  TRANSFER: ['DONE', 'ON_HOLD', 'LOST'],
+  ON_HOLD: ['CREATING', 'DEVELOPMENT', 'QA', 'TRANSFER', 'LOST'],
+  DONE: [],
+  LOST: [],
+};
+
+interface ProductForStageGate {
+  status?: string | null;
+  description?: string | null;
+  deadline?: Date | string | null;
+  clientAcceptedAt?: Date | string | null;
+  order?: { id: string; status?: string; invoices?: Array<{ status: string }> } | null;
+  extensions?: Array<{ status: string }>;
+  tasks?: Array<{ status: string }>;
+  tickets?: Array<{ status: string }>;
+}
+
+interface KickoffChecklistItemForGate {
+  key: string;
+  title: string;
+  isRequired: boolean;
+  isChecked: boolean;
+}
+
+export function validateProductTransition(current: ProductStatusEnum, target: ProductStatusEnum) {
+  const allowed = PRODUCT_ALLOWED_TRANSITIONS[current];
+
+  if (!allowed?.includes(target)) {
+    throw new BadRequestException(
+      `Cannot transition from ${current} to ${target}. Allowed: ${allowed?.join(', ') || 'none'}`,
+    );
+  }
+}
+
+export function validateProductStageGate(product: ProductForStageGate, target: ProductStatusEnum) {
+  if (product.status === 'NEW' && target === 'CREATING') {
+    validateProductCreatingGate(product);
+  }
+
+  if (product.status === 'DEVELOPMENT' && target === 'QA') {
+    validateProductQaGate(product);
+  }
+
+  if (product.status === 'QA' && target === 'TRANSFER') {
+    validateProductTransferGate(product);
+  }
+
+  if (target === 'DONE') {
+    validateProductDoneGate(product);
+  }
+}
+
+function validateProductCreatingGate(product: ProductForStageGate) {
+  const missing: string[] = [];
+  if (!product.description?.trim()) missing.push('description');
+  if (!product.deadline) missing.push('deadline');
+  if (!product.order?.id) missing.push('order');
+
+  if (missing.length > 0) {
+    throw new BadRequestException(
+      `Cannot transition to CREATING: missing required fields ${missing.join(', ')}`,
+    );
+  }
+}
+
+function validateProductQaGate(product: ProductForStageGate) {
+  const errors = buildOpenItemError(
+    'tasks',
+    product.tasks ?? [],
+    ['DONE', 'DEFERRED', 'CANCELLED'],
+    'Product QA',
+  );
+
+  if (errors.length === 0) return;
+
+  throw new BadRequestException({
+    statusCode: 400,
+    code: 'STAGE_GATE_VALIDATION',
+    message: 'Cannot move product to QA while execution tasks are still open.',
+    errors,
+  });
+}
+
+function validateProductTransferGate(product: ProductForStageGate) {
+  const errors = buildOpenItemError(
+    'tasks',
+    product.tasks ?? [],
+    ['DONE', 'DEFERRED', 'CANCELLED'],
+    'Product Transfer',
+  );
+
+  if (errors.length === 0) return;
+
+  throw new BadRequestException({
+    statusCode: 400,
+    code: 'STAGE_GATE_VALIDATION',
+    message: 'Cannot move product to Transfer while QA tasks are still open.',
+    errors,
+  });
+}
+
+function validateProductDoneGate(product: ProductForStageGate) {
+  const errors = [
+    ...buildOpenItemError('extensions', product.extensions ?? [], ['DONE', 'LOST'], 'Product Done'),
+    ...buildOpenItemError(
+      'tasks',
+      product.tasks ?? [],
+      ['DONE', 'DEFERRED', 'CANCELLED'],
+      'Product Done',
+    ),
+    ...buildOpenItemError('tickets', product.tickets ?? [], ['RESOLVED', 'CLOSED'], 'Product Done'),
+    ...buildClientAcceptanceError(product),
+    ...buildOpenOrderError(product.order),
+    ...buildUnpaidInvoiceError(product.order?.invoices ?? []),
+  ];
+
+  if (errors.length === 0) return;
+
+  throw new BadRequestException({
+    statusCode: 400,
+    code: 'STAGE_GATE_VALIDATION',
+    message: 'Cannot complete product while delivery items are still open.',
+    errors,
+  });
+}
+
+function buildClientAcceptanceError(product: ProductForStageGate) {
+  if (product.clientAcceptedAt) return [];
+
+  return [
+    {
+      field: 'clientAcceptance',
+      message: 'Client acceptance must be recorded before Product Done.',
+    },
+  ];
+}
+
+function buildOpenOrderError(order: ProductForStageGate['order']) {
+  if (!order?.status || ['FULLY_PAID', 'CLOSED'].includes(order.status)) return [];
+
+  return [
+    {
+      field: 'finance',
+      message: `Order ${order.status} must be fully paid or closed before Product Done.`,
+    },
+  ];
+}
+
+function buildUnpaidInvoiceError(invoices: Array<{ status: string }>) {
+  const unpaidCount = invoices.filter((invoice) => invoice.status !== 'PAID').length;
+  if (unpaidCount === 0) return [];
+
+  return [
+    {
+      field: 'finance',
+      message: `${unpaidCount} invoices still require payment before Product Done.`,
+    },
+  ];
+}
+
+function buildOpenItemError(
+  field: string,
+  items: Array<{ status: string }>,
+  closedStatuses: string[],
+  targetLabel: string,
+) {
+  const openCount = items.filter((item) => !closedStatuses.includes(item.status)).length;
+  if (openCount === 0) return [];
+
+  return [
+    {
+      field,
+      message: `${openCount} ${field} still require completion before ${targetLabel}.`,
+    },
+  ];
+}
+
+export function validateKickoffChecklistGate(items: KickoffChecklistItemForGate[]) {
+  const missing = items.filter((item) => item.isRequired && !item.isChecked);
+
+  if (missing.length === 0) return;
+
+  throw new BadRequestException({
+    code: 'STAGE_GATE_VALIDATION',
+    message: 'PM kickoff checklist must be accepted before Development.',
+    errors: missing.map((item) => ({
+      field: `kickoffChecklist.${item.key}`,
+      message: item.title,
+    })),
+  });
+}

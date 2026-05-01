@@ -1,21 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  RefreshCcw,
-  Handshake,
-  User,
-  Mail,
-  Phone,
-  ArrowDownLeft,
-  ArrowUpRight,
-  FileText,
-  TrendingUp,
-  DollarSign,
-} from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { Plus, Handshake, ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -24,57 +12,79 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import {
   PARTNER_TYPES,
-  PARTNER_LEVELS,
-  AGREEMENT_STATUSES,
+  PARTNER_DIRECTIONS,
   PARTNER_STATUSES,
   getPartnerType,
-  getPartnerLevel,
-  getAgreementStatus,
+  getPartnerDirection,
   getPartnerStatus,
 } from '@/features/partners/constants/partners';
-import { api } from '@/lib/api';
+import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
+import { PartnersPageHeader } from '@/features/partners/components/PartnersPageHeader';
+import { usePartnersCsvExport } from '@/features/partners/components/use-partners-csv-export';
+import { usePartnersScopeStatsCsvExport } from '@/features/partners/components/use-partners-scope-stats-csv-export';
+import { buildPartnerListApiParams } from '@/features/partners/utils/build-partner-list-api-params';
+import {
+  partnersApi,
+  type Partner,
+  type PartnerListParams,
+  type PartnerStats,
+} from '@/lib/api/partners';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
-interface Partner {
-  id: string;
-  companyName: string;
-  contactPerson: string | null;
-  phone: string | null;
-  email: string | null;
-  telegram: string | null;
-  type: string;
-  level: string;
-  agreementStatus: string;
-  defaultPercentage: number;
-  startDate: string | null;
-  status: string;
-  dealsCount: number;
-  totalRevenue: number;
-  totalPaid: number;
-  outstanding: number;
+const PARTNERS_LIST_PAGE_SIZE = 100;
+
+function formatPercent(value: string | number): string {
+  const n = typeof value === 'string' ? parseFloat(value) : value;
+  if (Number.isNaN(n)) return '—';
+  return `${Number.isInteger(n) ? n : n.toFixed(1)}%`;
 }
 
 export default function PartnersPage() {
+  const router = useRouter();
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [stats, setStats] = useState<PartnerStats | null>(null);
+  const [listTotal, setListTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [createOpen, setCreateOpen] = useState(false);
+
+  const partnerListExportParams: Omit<PartnerListParams, 'page' | 'pageSize'> = useMemo(
+    () => buildPartnerListApiParams({ search, filters }),
+    [search, filters],
+  );
+
+  const { exportCsvSubmitting, handleExportCsv } = usePartnersCsvExport(partnerListExportParams);
+
+  const { handleExportScopeStatsCsv } = usePartnersScopeStatsCsvExport(stats);
 
   const fetchPartners = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/partners', {
-        params: {
-          search: search || undefined,
-          type: filters.type && filters.type !== 'all' ? filters.type : undefined,
-          level: filters.level && filters.level !== 'all' ? filters.level : undefined,
-        },
-      });
-      setPartners(resp.data.items ?? resp.data ?? []);
-    } catch {
-      /* handled */
+      const params: PartnerListParams = {
+        page: 1,
+        pageSize: PARTNERS_LIST_PAGE_SIZE,
+        ...buildPartnerListApiParams({ search, filters }),
+      };
+      const [listRes, statsRes] = await Promise.all([
+        partnersApi.getAll(params),
+        partnersApi.getStats(),
+      ]);
+      setPartners(listRes.items);
+      setListTotal(listRes.meta.total);
+      setStats(statsRes);
+      setError(null);
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Partners could not be loaded. Check your connection and try again.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -84,19 +94,16 @@ export default function PartnersPage() {
     fetchPartners();
   }, [fetchPartners]);
 
-  const totalRevenue = partners.reduce((s, p) => s + (p.totalRevenue ?? 0), 0);
-  const totalOutstanding = partners.reduce((s, p) => s + (p.outstanding ?? 0), 0);
-
   const filterConfigs = [
     {
       key: 'type',
-      label: 'Type',
+      label: 'Tier',
       options: PARTNER_TYPES.map((t) => ({ value: t.value, label: t.label })),
     },
     {
-      key: 'level',
-      label: 'Level',
-      options: PARTNER_LEVELS.map((l) => ({ value: l.value, label: l.label })),
+      key: 'direction',
+      label: 'Direction',
+      options: PARTNER_DIRECTIONS.map((d) => ({ value: d.value, label: d.label })),
     },
     {
       key: 'status',
@@ -105,54 +112,50 @@ export default function PartnersPage() {
     },
   ];
 
-  function formatCurrency(n: number) {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'AMD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(n);
-  }
+  const summary = stats ?? {
+    total: 0,
+    totalSubscriptions: 0,
+    avgPayoutPercent: 0,
+  };
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Partners" description={`${partners.length} partners`}>
-        <Button variant="outline" size="icon" onClick={fetchPartners}>
-          <RefreshCcw size={16} />
-        </Button>
-        <Button>
-          <Plus size={16} />
-          Add Partner
-        </Button>
-      </PageHeader>
+      <PartnersPageHeader
+        description={`${listTotal} partner${listTotal === 1 ? '' : 's'}`}
+        onRefresh={fetchPartners}
+        onExportCsv={handleExportCsv}
+        exportDisabled={loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={loading || !stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
+        onAddPartner={() => setCreateOpen(true)}
+      />
 
-      <div className="grid grid-cols-4 gap-4">
+      <CreatePartnerDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={fetchPartners}
+      />
+
+      <div className="grid grid-cols-3 gap-4">
         <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Partners</p>
-          <p className="mt-1 text-xl font-bold">{partners.length}</p>
+          <p className="text-muted-foreground text-xs">Total partners</p>
+          <p className="mt-1 text-xl font-bold">{summary.total}</p>
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Revenue</p>
-          <p className="mt-1 text-xl font-bold">{formatCurrency(totalRevenue)}</p>
+          <p className="text-muted-foreground text-xs">Linked subscriptions</p>
+          <p className="mt-1 text-xl font-bold">{summary.totalSubscriptions}</p>
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Outstanding</p>
-          <p className="mt-1 text-xl font-bold text-amber-500">
-            {formatCurrency(totalOutstanding)}
-          </p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Premium Partners</p>
-          <p className="mt-1 text-xl font-bold">
-            {partners.filter((p) => p.level === 'PREMIUM').length}
-          </p>
+          <p className="text-muted-foreground text-xs">Avg default %</p>
+          <p className="mt-1 text-xl font-bold">{summary.avgPayoutPercent.toFixed(1)}%</p>
         </div>
       </div>
 
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search by name, contact..."
+        searchPlaceholder="Search by name..."
         filters={filterConfigs}
         filterValues={filters}
         onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
@@ -160,18 +163,16 @@ export default function PartnersPage() {
       />
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState count={4} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchPartners} />
       ) : partners.length === 0 ? (
         <EmptyState
           icon={Handshake}
           title="No partners yet"
           description="Start building your partner network"
           action={
-            <Button>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
               <Plus size={16} /> Add First Partner
             </Button>
           }
@@ -182,60 +183,59 @@ export default function PartnersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Partner</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Level</TableHead>
-                <TableHead>Agreement</TableHead>
-                <TableHead>%</TableHead>
-                <TableHead>Deals</TableHead>
-                <TableHead>Revenue</TableHead>
-                <TableHead>Outstanding</TableHead>
+                <TableHead>Tier</TableHead>
+                <TableHead>Direction</TableHead>
+                <TableHead>Default %</TableHead>
+                <TableHead>Orders</TableHead>
+                <TableHead>Subscriptions</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {partners.map((partner) => {
-                const type = getPartnerType(partner.type);
-                const level = getPartnerLevel(partner.level);
-                const agr = getAgreementStatus(partner.agreementStatus);
+                const tier = getPartnerType(partner.type);
+                const dir = getPartnerDirection(partner.direction);
                 const st = getPartnerStatus(partner.status);
+                const orders = partner._count?.orders ?? 0;
+                const subs = partner._count?.subscriptions ?? 0;
                 return (
-                  <TableRow key={partner.id} className="cursor-pointer">
+                  <TableRow
+                    key={partner.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/partners/${partner.id}`)}
+                  >
                     <TableCell>
                       <div>
-                        <p className="font-medium">{partner.companyName}</p>
-                        {partner.contactPerson && (
-                          <p className="text-muted-foreground text-xs">{partner.contactPerson}</p>
-                        )}
+                        <p className="font-medium">{partner.name}</p>
+                        {partner.contact ? (
+                          <p className="text-muted-foreground text-xs">
+                            {partner.contact.firstName} {partner.contact.lastName}
+                          </p>
+                        ) : null}
                       </div>
                     </TableCell>
                     <TableCell>
-                      {type && (
+                      {tier && <StatusBadge label={tier.label} variant={tier.variant} />}
+                    </TableCell>
+                    <TableCell>
+                      {dir && (
                         <div className="flex items-center gap-1">
-                          {partner.type === 'INBOUND' ? (
+                          {partner.direction === 'INBOUND' ? (
                             <ArrowDownLeft size={12} className="text-green-500" />
-                          ) : partner.type === 'OUTBOUND' ? (
+                          ) : partner.direction === 'OUTBOUND' ? (
                             <ArrowUpRight size={12} className="text-blue-500" />
-                          ) : null}
-                          <StatusBadge label={type.label} variant={type.variant} />
+                          ) : (
+                            <ArrowLeftRight size={12} className="text-purple-500" />
+                          )}
+                          <StatusBadge label={dir.label} variant={dir.variant} />
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
-                      {level && <StatusBadge label={level.label} variant={level.variant} />}
+                    <TableCell className="text-sm font-medium tabular-nums">
+                      {formatPercent(partner.defaultPercent)}
                     </TableCell>
-                    <TableCell>
-                      {agr && <StatusBadge label={agr.label} variant={agr.variant} />}
-                    </TableCell>
-                    <TableCell className="text-sm font-medium">
-                      {partner.defaultPercentage}%
-                    </TableCell>
-                    <TableCell className="text-sm">{partner.dealsCount ?? 0}</TableCell>
-                    <TableCell className="text-sm">
-                      {formatCurrency(partner.totalRevenue ?? 0)}
-                    </TableCell>
-                    <TableCell className="text-sm font-medium text-amber-500">
-                      {formatCurrency(partner.outstanding ?? 0)}
-                    </TableCell>
+                    <TableCell className="text-sm tabular-nums">{orders}</TableCell>
+                    <TableCell className="text-sm tabular-nums">{subs}</TableCell>
                     <TableCell>
                       {st && <StatusBadge label={st.label} variant={st.variant} />}
                     </TableCell>

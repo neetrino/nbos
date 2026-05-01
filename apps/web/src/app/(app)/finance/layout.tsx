@@ -2,7 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, ShoppingCart, FileText, CreditCard, RefreshCw, Receipt } from 'lucide-react';
+import {
+  BarChart3,
+  ShoppingCart,
+  FileText,
+  CreditCard,
+  RefreshCw,
+  ServerCog,
+  Receipt,
+  Banknote,
+  Wallet,
+  PieChart,
+  FileChartColumn,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -12,7 +24,12 @@ const TABS = [
   { href: '/finance/invoices', label: 'Invoices', icon: FileText },
   { href: '/finance/payments', label: 'Payments', icon: CreditCard },
   { href: '/finance/subscriptions', label: 'Subscriptions', icon: RefreshCw },
+  { href: '/finance/client-services', label: 'Client services', icon: ServerCog },
   { href: '/finance/expenses', label: 'Expenses', icon: Receipt },
+  { href: '/finance/payroll', label: 'Payroll', icon: Banknote },
+  { href: '/finance/bonus-pools', label: 'Bonus pools', icon: PieChart },
+  { href: '/finance/wallet', label: 'My wallet', icon: Wallet },
+  { href: '/finance/reports', label: 'Reports', icon: FileChartColumn },
 ] as const;
 
 export default function FinanceLayout({ children }: { children: ReactNode }) {

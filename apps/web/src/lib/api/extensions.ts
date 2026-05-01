@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { DeliveryLifecycleProjection } from './projects';
 
 export interface ExtensionEmployee {
   id: string;
@@ -10,23 +11,36 @@ export interface ExtensionEmployee {
 export interface Extension {
   id: string;
   projectId: string;
-  productId: string | null;
+  productId: string;
   name: string;
   size: string;
   status: string;
+  deliveryLifecycle?: DeliveryLifecycleProjection;
   assignedTo: string | null;
   description: string | null;
   createdAt: string;
   updatedAt: string;
   project: { id: string; name: string; code: string };
-  product: { id: string; name: string } | null;
+  product: { id: string; name: string };
   assignee: ExtensionEmployee | null;
+  order?: { id: string; code: string; status: string } | null;
+  readiness?: ExtensionReadinessSummary;
   _count: { tasks: number };
 }
 
 export interface FullExtension extends Extension {
   tasks: ExtensionTaskRef[];
   order: ExtensionOrderRef | null;
+}
+
+export interface ExtensionReadinessSummary {
+  isReadyForDevelopment: boolean;
+  missing: ExtensionReadinessIssue[];
+}
+
+export interface ExtensionReadinessIssue {
+  field: string;
+  message: string;
 }
 
 export interface ExtensionTaskRef {
@@ -60,7 +74,7 @@ interface ListData {
 
 export interface CreateExtensionData {
   projectId: string;
-  productId?: string;
+  productId: string;
   name: string;
   size?: string;
   assignedTo?: string;
@@ -69,10 +83,23 @@ export interface CreateExtensionData {
 
 export interface UpdateExtensionData {
   name?: string;
-  productId?: string | null;
+  productId?: string;
   size?: string;
   assignedTo?: string | null;
   description?: string | null;
+}
+
+export interface PauseDeliveryData {
+  reason: string;
+  onHoldUntil: string;
+}
+
+export interface CancelDeliveryData {
+  reason: string;
+}
+
+export interface MoveDeliveryStageData {
+  stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER';
 }
 
 export const extensionsApi = {
@@ -98,6 +125,31 @@ export const extensionsApi = {
 
   async updateStatus(id: string, status: string): Promise<Extension> {
     const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/status`, { status });
+    return resp.data;
+  },
+
+  async moveStage(id: string, data: MoveDeliveryStageData): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/stage`, data);
+    return resp.data;
+  },
+
+  async pause(id: string, data: PauseDeliveryData): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/pause`, data);
+    return resp.data;
+  },
+
+  async resume(id: string): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/resume`);
+    return resp.data;
+  },
+
+  async cancel(id: string, data: CancelDeliveryData): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/cancel`, data);
+    return resp.data;
+  },
+
+  async complete(id: string): Promise<Extension> {
+    const resp = await api.patch<Extension>(`/api/projects/extensions/${id}/complete`);
     return resp.data;
   },
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
 import { Phone, Mail, User, Calendar, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,8 +11,39 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/shared';
-import { getLeadSource, getLeadStage } from '../constants/leadPipeline';
+import { getLeadSource } from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
+
+const DAY_MS = 1000 * 60 * 60 * 24;
+const CLOCK_REFRESH_MS = 60 * 1000;
+
+let currentTimeSnapshot = Date.now();
+let clockTimerId: number | undefined;
+const clockListeners = new Set<() => void>();
+
+function subscribeToClock(onStoreChange: () => void): () => void {
+  clockListeners.add(onStoreChange);
+
+  if (!clockTimerId) {
+    clockTimerId = window.setInterval(() => {
+      currentTimeSnapshot = Date.now();
+      clockListeners.forEach((listener) => listener());
+    }, CLOCK_REFRESH_MS);
+  }
+
+  return () => {
+    clockListeners.delete(onStoreChange);
+
+    if (clockListeners.size === 0 && clockTimerId) {
+      window.clearInterval(clockTimerId);
+      clockTimerId = undefined;
+    }
+  };
+}
+
+function getCurrentTimeSnapshot(): number {
+  return currentTimeSnapshot;
+}
 
 interface LeadCardProps {
   lead: Lead;
@@ -22,11 +54,13 @@ interface LeadCardProps {
 
 export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: LeadCardProps) {
   const source = getLeadSource(lead.source);
-  const stage = getLeadStage(lead.status);
-
-  const daysSinceCreation = Math.floor(
-    (Date.now() - new Date(lead.createdAt).getTime()) / (1000 * 60 * 60 * 24),
+  const currentTime = useSyncExternalStore(
+    subscribeToClock,
+    getCurrentTimeSnapshot,
+    getCurrentTimeSnapshot,
   );
+
+  const daysSinceCreation = Math.floor((currentTime - new Date(lead.createdAt).getTime()) / DAY_MS);
   const isOverdue = lead.status === 'NEW' && daysSinceCreation >= 1;
 
   return (
@@ -95,7 +129,7 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <StatusBadge label={source?.label ?? lead.source} variant="default" />
+        <StatusBadge label={source?.label ?? 'No source'} variant="default" />
         <div className="flex items-center gap-2">
           {lead.assignee && (
             <div className="bg-accent/20 text-accent flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-bold">

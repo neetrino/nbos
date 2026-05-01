@@ -19,28 +19,63 @@ function createModelMock() {
 }
 
 export function createMockPrisma() {
-  return {
+  const prisma = {
     lead: createModelMock(),
     deal: createModelMock(),
     project: createModelMock(),
+    projectKickoffChecklistItem: createModelMock(),
     contact: createModelMock(),
     company: createModelMock(),
     order: createModelMock(),
     invoice: createModelMock(),
     employee: createModelMock(),
+    employeeDepartment: createModelMock(),
     payment: createModelMock(),
     product: createModelMock(),
     extension: createModelMock(),
     subscription: createModelMock(),
+    workSpace: createModelMock(),
     task: createModelMock(),
+    fileAsset: createModelMock(),
+    fileVersion: createModelMock(),
+    fileLink: createModelMock(),
+    fileAuditEvent: createModelMock(),
+    fileUploadSession: createModelMock(),
+    reportExportJob: createModelMock(),
+    reportSchedule: createModelMock(),
+    savedReportView: createModelMock(),
+    dashboardPreference: createModelMock(),
+    personalLink: createModelMock(),
+    documentSection: createModelMock(),
+    externalDocumentLink: createModelMock(),
+    document: createModelMock(),
+    documentTag: createModelMock(),
+    documentTagOnDocument: createModelMock(),
+    documentAttachment: createModelMock(),
+    documentActivityEvent: createModelMock(),
     supportTicket: createModelMock(),
     expense: createModelMock(),
+    expensePlan: createModelMock(),
+    clientServiceRecord: createModelMock(),
+    expensePayment: createModelMock(),
     bonusEntry: createModelMock(),
+    payrollRun: createModelMock(),
+    salaryLine: createModelMock(),
     credential: createModelMock(),
     auditLog: createModelMock(),
     partner: createModelMock(),
+    marketingAccount: createModelMock(),
+    marketingActivity: createModelMock(),
     $disconnect: vi.fn(),
+    $queryRaw: vi.fn().mockResolvedValue([]),
+    $transaction: vi.fn(),
   };
+
+  prisma.$transaction.mockImplementation(async (fn: (tx: typeof prisma) => Promise<unknown>) =>
+    fn(prisma),
+  );
+
+  return prisma;
 }
 
 export type MockPrisma = ReturnType<typeof createMockPrisma>;

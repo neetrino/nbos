@@ -1,5 +1,4 @@
 import { createPrismaClient } from '../src/client';
-import type { PrismaClient as PrismaClientType } from '../src/generated/prisma/client';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -20,7 +19,9 @@ const MODULES = [
   'SUPPORT_TICKETS',
   'CREDENTIALS',
   'DRIVE',
+  'DOCUMENTS',
   'MESSENGER',
+  'MAIL',
   'CALENDAR',
   'COMPANY',
   'PARTNERS',
@@ -65,7 +66,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: N,
     CREDENTIALS: L,
     DRIVE: L,
+    DOCUMENTS: R,
     MESSENGER: L,
+    MAIL: L,
     CALENDAR: F,
     COMPANY: R,
     PARTNERS: L,
@@ -87,7 +90,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: F,
     CREDENTIALS: ['ALL', 'OWN', 'ALL', 'NONE'],
     DRIVE: F,
+    DOCUMENTS: F,
     MESSENGER: F,
+    MAIL: F,
     CALENDAR: F,
     COMPANY: R,
     PARTNERS: N,
@@ -109,7 +114,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: L,
     CREDENTIALS: L,
     DRIVE: L,
+    DOCUMENTS: F,
     MESSENGER: L,
+    MAIL: L,
     CALENDAR: L,
     COMPANY: R,
     PARTNERS: N,
@@ -131,7 +138,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: N,
     CREDENTIALS: L,
     DRIVE: L,
+    DOCUMENTS: L,
     MESSENGER: L,
+    MAIL: L,
     CALENDAR: L,
     COMPANY: R,
     PARTNERS: N,
@@ -153,7 +162,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: N,
     CREDENTIALS: L,
     DRIVE: L,
+    DOCUMENTS: L,
     MESSENGER: L,
+    MAIL: L,
     CALENDAR: L,
     COMPANY: R,
     PARTNERS: N,
@@ -175,7 +186,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: F,
     CREDENTIALS: L,
     DRIVE: L,
+    DOCUMENTS: L,
     MESSENGER: L,
+    MAIL: L,
     CALENDAR: L,
     COMPANY: R,
     PARTNERS: N,
@@ -197,7 +210,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: L,
     CREDENTIALS: ['ALL', 'ALL', 'ALL', 'OWN'],
     DRIVE: L,
+    DOCUMENTS: F,
     MESSENGER: L,
+    MAIL: L,
     CALENDAR: L,
     COMPANY: R,
     PARTNERS: N,
@@ -219,7 +234,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: N,
     CREDENTIALS: L,
     DRIVE: L,
+    DOCUMENTS: R,
     MESSENGER: N,
+    MAIL: N,
     CALENDAR: F,
     COMPANY: F,
     PARTNERS: F,
@@ -241,7 +258,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: N,
     CREDENTIALS: L,
     DRIVE: L,
+    DOCUMENTS: F,
     MESSENGER: L,
+    MAIL: L,
     CALENDAR: L,
     COMPANY: R,
     PARTNERS: N,
@@ -263,7 +282,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: N,
     CREDENTIALS: L,
     DRIVE: L,
+    DOCUMENTS: F,
     MESSENGER: F,
+    MAIL: F,
     CALENDAR: F,
     COMPANY: R,
     PARTNERS: F,
@@ -285,7 +306,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: F,
     CREDENTIALS: ['ALL', 'ALL', 'ALL', 'NONE'],
     DRIVE: F,
+    DOCUMENTS: F,
     MESSENGER: F,
+    MAIL: F,
     CALENDAR: F,
     COMPANY: R,
     PARTNERS: N,
@@ -307,7 +330,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: N,
     CREDENTIALS: L,
     DRIVE: D,
+    DOCUMENTS: D,
     MESSENGER: D,
+    MAIL: D,
     CALENDAR: F,
     COMPANY: R,
     PARTNERS: N,
@@ -329,7 +354,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     SUPPORT_TICKETS: N,
     CREDENTIALS: ['OWN', 'OWN', 'OWN', 'OWN'],
     DRIVE: N,
+    DOCUMENTS: R,
     MESSENGER: N,
+    MAIL: N,
     CALENDAR: N,
     COMPANY: N,
     PARTNERS: N,
@@ -339,7 +366,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
 };
 
 async function main() {
-  const prisma = createPrismaClient() as InstanceType<PrismaClientType>;
+  const prisma = createPrismaClient();
 
   console.log('Seeding RBAC permissions...');
 
@@ -350,6 +377,16 @@ async function main() {
       permissionRecords.push({ id, module, action });
     }
   }
+  permissionRecords.push({
+    id: 'perm-documents-view-activity',
+    module: 'DOCUMENTS',
+    action: 'VIEW_ACTIVITY',
+  });
+  permissionRecords.push({
+    id: 'perm-documents-manage-sections',
+    module: 'DOCUMENTS',
+    action: 'MANAGE_SECTIONS',
+  });
 
   await prisma.permission.createMany({
     data: permissionRecords,
@@ -366,12 +403,36 @@ async function main() {
   for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
     for (const [module, scopes] of Object.entries(moduleMap)) {
       ACTIONS.forEach((action, idx) => {
-        const scope = scopes[idx];
+        const scope = scopes[idx] ?? 'NONE';
         if (scope === 'NONE') return;
         const permId = `perm-${module.toLowerCase().replace(/_/g, '-')}-${action.toLowerCase()}`;
         rolePermissionData.push({ roleId, permissionId: permId, scope });
       });
     }
+  }
+
+  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+    const docsScopes = moduleMap.DOCUMENTS;
+    if (!docsScopes) continue;
+    const viewScope = docsScopes[0];
+    if (viewScope === 'NONE') continue;
+    rolePermissionData.push({
+      roleId,
+      permissionId: 'perm-documents-view-activity',
+      scope: viewScope,
+    });
+  }
+
+  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+    const docsScopes = moduleMap.DOCUMENTS;
+    if (!docsScopes) continue;
+    const editScope = docsScopes[1];
+    if (editScope === 'NONE') continue;
+    rolePermissionData.push({
+      roleId,
+      permissionId: 'perm-documents-manage-sections',
+      scope: editScope,
+    });
   }
 
   await prisma.rolePermission.deleteMany({});

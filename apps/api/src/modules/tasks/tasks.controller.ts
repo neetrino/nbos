@@ -28,6 +28,8 @@ export class TasksController {
   @ApiQuery({ name: 'priority', required: false })
   @ApiQuery({ name: 'assigneeId', required: false })
   @ApiQuery({ name: 'creatorId', required: false })
+  @ApiQuery({ name: 'workspaceId', required: false })
+  @ApiQuery({ name: 'planningStatus', required: false })
   @ApiQuery({ name: 'entityType', required: false })
   @ApiQuery({ name: 'entityId', required: false })
   @ApiQuery({ name: 'search', required: false })
@@ -38,6 +40,8 @@ export class TasksController {
     @Query('priority') priority?: string,
     @Query('assigneeId') assigneeId?: string,
     @Query('creatorId') creatorId?: string,
+    @Query('workspaceId') workspaceId?: string,
+    @Query('planningStatus') planningStatus?: string,
     @Query('parentId') parentId?: string,
     @Query('hasParent') hasParent?: string,
     @Query('entityType') entityType?: string,
@@ -53,6 +57,8 @@ export class TasksController {
       priority,
       assigneeId,
       creatorId,
+      workspaceId,
+      planningStatus,
       parentId,
       hasParent: hasParent === 'false' ? false : undefined,
       entityType,
@@ -93,6 +99,9 @@ export class TasksController {
       coAssignees?: string[];
       observers?: string[];
       priority?: string;
+      workspaceId?: string;
+      planningStatus?: string;
+      completionRules?: unknown;
       startDate?: string;
       dueDate?: string;
       parentId?: string;
@@ -120,6 +129,10 @@ export class TasksController {
       kanbanStageId?: string | null;
       myPlanStageId?: string | null;
       myPlanSortOrder?: number;
+      workspaceId?: string | null;
+      planningStatus?: string;
+      workspaceSortOrder?: number;
+      completionRules?: unknown;
     },
   ) {
     return this.tasksService.update(id, body);

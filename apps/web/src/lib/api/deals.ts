@@ -18,6 +18,26 @@ export interface DealOrder {
   invoices: DealInvoice[];
 }
 
+export interface DealHandoffReferences {
+  project: { id: string; code: string; name: string } | null;
+  product: { id: string; name: string; productType: string; status?: string | null } | null;
+  subscriptions: Array<{
+    id: string;
+    code: string;
+    type: string;
+    status: string;
+    amount: number | string;
+  }>;
+  maintenanceDeal: {
+    id: string;
+    code: string;
+    name: string | null;
+    status: string;
+    amount: number | string | null;
+    maintenanceStartAt: string | null;
+  } | null;
+}
+
 export interface Deal {
   id: string;
   code: string;
@@ -34,6 +54,8 @@ export interface Deal {
   sourceDetail: string | null;
   sourcePartnerId: string | null;
   sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
   notes: string | null;
   productCategory: string | null;
   productType: string | null;
@@ -42,14 +64,25 @@ export interface Deal {
   pm: { id: string; firstName: string; lastName: string } | null;
   existingProductId: string | null;
   existingProduct: { id: string; name: string; productType: string } | null;
+  offerSentAt: string | null;
+  offerLink: string | null;
+  offerFileUrl: string | null;
+  offerScreenshotUrl: string | null;
+  responseDueAt: string | null;
+  contractSignedAt: string | null;
+  contractFileUrl: string | null;
+  maintenanceStartAt: string | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
   contact: { id: string; firstName: string; lastName: string; email: string | null };
   seller: { id: string; firstName: string; lastName: string };
   orders: DealOrder[];
-  sourcePartner: { id: string; name: string } | null;
+  handoff?: DealHandoffReferences;
+  sourcePartner: { id: string; name: string; defaultPercent?: number | string | null } | null;
   sourceContact: { id: string; firstName: string; lastName: string } | null;
+  marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;
+  marketingActivity: { id: string; title: string; channel: string; status: string } | null;
 }
 
 export interface DealListData {
@@ -62,6 +95,27 @@ export interface DealListData {
   };
 }
 
+/** Row shape from Prisma `groupBy` on deals (serialized JSON). */
+export interface DealStatsByStatusRow {
+  status: string;
+  _count: number;
+  _sum?: { amount: number | null } | null;
+}
+
+export interface DealStatsByTypeRow {
+  type: string;
+  _count: number;
+  _sum?: { amount: number | null } | null;
+}
+
+/** Workspace aggregates from `GET /api/crm/deals/stats`. */
+export interface DealStats {
+  total: number;
+  byStatus: DealStatsByStatusRow[];
+  /** Present when API returns type breakdown (same payload as `DealsService.getStats`). */
+  byType?: DealStatsByTypeRow[];
+}
+
 interface DealQueryParams {
   page?: number;
   pageSize?: number;
@@ -69,6 +123,10 @@ interface DealQueryParams {
   type?: string;
   sellerId?: string;
   search?: string;
+}
+
+interface DealStatusOptions {
+  overrideReason?: string | null;
 }
 
 export const dealsApi = {
@@ -91,12 +149,25 @@ export const dealsApi = {
     paymentType?: string;
     sellerId: string;
     source?: string;
+    sourceDetail?: string;
+    sourcePartnerId?: string;
+    sourceContactId?: string;
+    marketingAccountId?: string;
+    marketingActivityId?: string;
     notes?: string;
     productCategory?: string;
     productType?: string;
     pmId?: string;
     deadline?: string;
     existingProductId?: string;
+    offerSentAt?: string;
+    offerLink?: string;
+    offerFileUrl?: string;
+    offerScreenshotUrl?: string;
+    responseDueAt?: string;
+    contractSignedAt?: string;
+    contractFileUrl?: string;
+    maintenanceStartAt?: string;
   }): Promise<Deal> {
     const resp = await api.post<Deal>('/api/crm/deals', data);
     return resp.data;
@@ -107,8 +178,11 @@ export const dealsApi = {
     return resp.data;
   },
 
-  async updateStatus(id: string, status: string): Promise<Deal> {
-    const resp = await api.patch<Deal>(`/api/crm/deals/${id}/status`, { status });
+  async updateStatus(id: string, status: string, options: DealStatusOptions = {}): Promise<Deal> {
+    const resp = await api.patch<Deal>(`/api/crm/deals/${id}/status`, {
+      status,
+      ...(options.overrideReason && { overrideReason: options.overrideReason }),
+    });
     return resp.data;
   },
 
@@ -116,8 +190,8 @@ export const dealsApi = {
     await api.delete(`/api/crm/deals/${id}`);
   },
 
-  async getStats() {
-    const resp = await api.get('/api/crm/deals/stats');
+  async getStats(): Promise<DealStats> {
+    const resp = await api.get<DealStats>('/api/crm/deals/stats');
     return resp.data;
   },
 };

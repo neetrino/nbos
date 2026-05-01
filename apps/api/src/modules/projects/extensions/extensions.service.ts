@@ -1,24 +1,30 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
   type ExtensionSizeEnum,
   type ExtensionStatusEnum,
+  type DeliveryResolutionEnum,
+  type DeliveryStageEnum,
+  type DeliveryWorkStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-
-const ALLOWED_TRANSITIONS: Record<ExtensionStatusEnum, ExtensionStatusEnum[]> = {
-  NEW: ['DEVELOPMENT', 'LOST'],
-  DEVELOPMENT: ['QA', 'LOST'],
-  QA: ['TRANSFER', 'DEVELOPMENT', 'LOST'],
-  TRANSFER: ['DONE', 'LOST'],
-  DONE: [],
-  LOST: [],
-};
+import {
+  attachExtensionReadiness,
+  validateExtensionStageGate,
+  validateExtensionTransition,
+} from './extension-stage-gates';
+import {
+  buildDeliveryLifecycleWrite,
+  buildDeliveryPauseWrite,
+  buildDeliveryResumeWrite,
+  extensionLegacyStatusForStage,
+  requireDeliveryStage,
+} from '../delivery-lifecycle';
 
 interface CreateExtensionDto {
   projectId: string;
-  productId?: string;
+  productId: string;
   name: string;
   size?: string;
   assignedTo?: string;
@@ -27,10 +33,23 @@ interface CreateExtensionDto {
 
 interface UpdateExtensionDto {
   name?: string;
-  productId?: string | null;
+  productId?: string;
   size?: string;
   assignedTo?: string | null;
   description?: string | null;
+}
+
+interface PauseDeliveryDto {
+  reason: string;
+  onHoldUntil: string;
+}
+
+interface CancelDeliveryDto {
+  reason: string;
+}
+
+interface MoveStageDto {
+  stage: string;
 }
 
 interface ExtensionQueryParams {
@@ -39,6 +58,9 @@ interface ExtensionQueryParams {
   projectId?: string;
   productId?: string;
   status?: string;
+  deliveryStage?: string;
+  deliveryWorkStatus?: string;
+  deliveryResolution?: string;
   size?: string;
   assignedTo?: string;
   search?: string;
@@ -58,6 +80,9 @@ export class ExtensionsService {
       projectId,
       productId,
       status,
+      deliveryStage,
+      deliveryWorkStatus,
+      deliveryResolution,
       size,
       assignedTo,
       search,
@@ -67,6 +92,13 @@ export class ExtensionsService {
     if (projectId) where.projectId = projectId;
     if (productId) where.productId = productId;
     if (status) where.status = status as ExtensionStatusEnum;
+    if (deliveryStage) where.deliveryStage = deliveryStage as DeliveryStageEnum;
+    if (deliveryWorkStatus) {
+      where.deliveryWorkStatus = deliveryWorkStatus as DeliveryWorkStatusEnum;
+    }
+    if (deliveryResolution) {
+      where.deliveryResolution = deliveryResolution as DeliveryResolutionEnum;
+    }
     if (size) where.size = size as ExtensionSizeEnum;
     if (assignedTo) where.assignedTo = assignedTo;
     if (search) {
@@ -91,7 +123,7 @@ export class ExtensionsService {
     ]);
 
     return {
-      items,
+      items: items.map(attachExtensionReadiness),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -118,14 +150,16 @@ export class ExtensionsService {
       },
     });
     if (!extension) throw new NotFoundException(`Extension ${id} not found`);
-    return extension;
+    return attachExtensionReadiness(extension);
   }
 
   async create(data: CreateExtensionDto) {
-    return this.prisma.extension.create({
+    const productId = requireText(data.productId, 'productId');
+    await this.ensureProductBelongsToProject(productId, data.projectId);
+    const extension = await this.prisma.extension.create({
       data: {
         projectId: data.projectId,
-        productId: data.productId,
+        productId,
         name: data.name,
         size: (data.size as ExtensionSizeEnum) ?? 'SMALL',
         assignedTo: data.assignedTo,
@@ -137,15 +171,21 @@ export class ExtensionsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    return attachExtensionReadiness(extension);
   }
 
   async update(id: string, data: UpdateExtensionDto) {
-    await this.findById(id);
-    return this.prisma.extension.update({
+    const current = await this.findById(id);
+    const productId =
+      data.productId !== undefined
+        ? requireText(data.productId ?? undefined, 'productId')
+        : undefined;
+    if (productId) await this.ensureProductBelongsToProject(productId, current.projectId);
+    const extension = await this.prisma.extension.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
-        ...(data.productId !== undefined && { productId: data.productId }),
+        ...(productId !== undefined && { productId }),
         ...(data.size !== undefined && { size: data.size as ExtensionSizeEnum }),
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.description !== undefined && { description: data.description }),
@@ -156,6 +196,7 @@ export class ExtensionsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    return attachExtensionReadiness(extension);
   }
 
   async updateStatus(id: string, newStatus: string) {
@@ -163,21 +204,116 @@ export class ExtensionsService {
     const current = extension.status as ExtensionStatusEnum;
     const target = newStatus as ExtensionStatusEnum;
 
-    const allowed = ALLOWED_TRANSITIONS[current];
-    if (!allowed?.includes(target)) {
-      throw new BadRequestException(
-        `Cannot transition from ${current} to ${target}. Allowed: ${allowed?.join(', ') || 'none'}`,
-      );
-    }
+    validateExtensionTransition(current, target);
+    validateExtensionStageGate(extension, target);
 
-    return this.prisma.extension.update({
+    const updated = await this.prisma.extension.update({
       where: { id },
-      data: { status: target },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
       },
     });
+    return attachExtensionReadiness(updated);
+  }
+
+  async moveStage(id: string, data: MoveStageDto) {
+    const extension = await this.findById(id);
+    this.ensureActiveForStageMove(extension.deliveryLifecycle);
+    const stage = this.parseDeliveryStage(data.stage);
+    const target = extensionLegacyStatusForStage(stage) as ExtensionStatusEnum;
+
+    validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
+    validateExtensionStageGate(extension, target);
+
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
+  async pause(id: string, data: PauseDeliveryDto) {
+    const extension = await this.findById(id);
+    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
+    const reason = requireText(data.reason, 'reason');
+    const onHoldUntil = parseDate(data.onHoldUntil, 'onHoldUntil');
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: buildDeliveryPauseWrite(extension, reason, onHoldUntil),
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
+  async resume(id: string) {
+    const extension = await this.findById(id);
+    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
+    if (extension.deliveryLifecycle.workStatus !== 'ON_HOLD') {
+      throw new BadRequestException('Extension is not on hold');
+    }
+    const nextStatus = extensionLegacyStatusForStage(extension.deliveryLifecycle.stage);
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: { status: nextStatus as ExtensionStatusEnum, ...buildDeliveryResumeWrite(extension) },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
+  async cancel(id: string, data: CancelDeliveryDto) {
+    const extension = await this.findById(id);
+    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
+    const reason = requireText(data.reason, 'reason');
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: {
+        status: 'LOST',
+        ...buildDeliveryLifecycleWrite('LOST', extension),
+        cancellationReason: reason,
+      },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
+  }
+
+  async complete(id: string) {
+    const extension = await this.findById(id);
+    this.ensureActiveForStageMove(extension.deliveryLifecycle);
+    const target = 'DONE' as ExtensionStatusEnum;
+
+    validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
+    validateExtensionStageGate(extension, target);
+
+    const updated = await this.prisma.extension.update({
+      where: { id },
+      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        order: { select: { id: true, code: true, status: true } },
+      },
+    });
+    return attachExtensionReadiness(updated);
   }
 
   async delete(id: string) {
@@ -197,4 +333,50 @@ export class ExtensionsService {
 
     return { total, byStatus, bySize };
   }
+
+  private ensureNotTerminal(resolution: string | null) {
+    if (resolution) {
+      throw new BadRequestException('Terminal delivery item cannot be changed');
+    }
+  }
+
+  private ensureActiveForStageMove(lifecycle: { resolution: string | null; workStatus: string }) {
+    this.ensureNotTerminal(lifecycle.resolution);
+    if (lifecycle.workStatus === 'ON_HOLD') {
+      throw new BadRequestException('Paused extension must be resumed before stage movement');
+    }
+  }
+
+  private parseDeliveryStage(stage: string) {
+    try {
+      return requireDeliveryStage(stage);
+    } catch {
+      throw new BadRequestException(`Invalid delivery stage: ${stage}`);
+    }
+  }
+
+  private async ensureProductBelongsToProject(productId: string, projectId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, projectId: true },
+    });
+
+    if (!product) throw new NotFoundException(`Product ${productId} not found`);
+    if (product.projectId !== projectId) {
+      throw new BadRequestException('Extension product must belong to the same project');
+    }
+  }
+}
+
+function requireText(value: string | undefined, field: string) {
+  const text = value?.trim();
+  if (!text) throw new BadRequestException(`${field} is required`);
+  return text;
+}
+
+function parseDate(value: string | undefined, field: string) {
+  const raw = requireText(value, field);
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} is invalid`);
+  return date;
 }

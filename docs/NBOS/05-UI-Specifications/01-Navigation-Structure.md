@@ -1,303 +1,686 @@
-# Структура навигации платформы
+# Navigation and UI Shell
 
-## 1. Общая концепция
+> NBOS Platform - общий каркас интерфейса: sidebar, header, breadcrumbs, module shell, personal navigation и responsive behavior.
 
-Платформа NBOS использует трёхуровневую систему навигации:
+## Назначение
 
-1. **Основная боковая панель (Sidebar)** — всегда видна слева, обеспечивает доступ ко всем модулям
-2. **Верхняя панель (Top Bar)** — глобальный поиск, уведомления, профиль, быстрые действия
-3. **Хлебные крошки (Breadcrumbs)** — контекстная навигация внутри модулей
+`Navigation / UI Shell` задаёт единый каркас платформы, чтобы все модули NBOS ощущались как одна система.
 
-Навигация адаптируется в зависимости от роли пользователя (RBAC): элементы, к которым у пользователя нет доступа, скрываются из интерфейса полностью.
+Главный принцип:
 
----
-
-## 2. Основная боковая панель (Sidebar)
-
-Боковая панель расположена слева и всегда видна в развёрнутом или свёрнутом состоянии. Каждый элемент первого уровня имеет иконку. Раскрываемые разделы (expandable) показывают подпункты при клике или наведении.
-
-### 2.1. Dashboard (Главная)
-
-- **Иконка:** домик
-- **Путь:** `/dashboard`
-- **Описание:** Персональный дашборд пользователя. Показывает сводку по задачам, уведомления, ключевые метрики в зависимости от роли.
-- **Доступ:** все авторизованные пользователи
-
-### 2.2. CRM (раскрываемый)
-
-- **Иконка:** воронка продаж
-- **Доступ:** CEO, Head of Sales, Seller, Finance Director, Head of Delivery (только просмотр аналитики)
-
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| Leads | `/crm/leads` | Лиды — Kanban-доска и табличный вид |
-| Deals (Pipeline) | `/crm/deals` | Сделки — воронка из 10+ стадий |
-| Sales Analytics | `/crm/analytics` | Аналитика продаж — графики, конверсии, воронка |
-
-### 2.3. Projects (раскрываемый)
-
-- **Иконка:** папка с проектами
-- **Доступ:** CEO, Head of Delivery, PM, Developer, QA, Designer (свои проекты); Seller (свои проекты); Finance Director (финансовые вкладки)
-
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| All Projects | `/projects/all` | Все проекты компании |
-| Development | `/projects/development` | Фильтр: проекты, у которых есть продукты в стадии разработки |
-| Maintenance | `/projects/maintenance` | Фильтр: проекты, у которых есть продукты на поддержке |
-| Closed / Archived | `/projects/archived` | Завершённые и архивные проекты |
-
-> **Важно:** один проект может отображаться одновременно в нескольких вкладках (Development и Maintenance), если у него есть продукты в разных состояниях.
-
-### 2.4. Tasks (раскрываемый)
-
-- **Иконка:** галочка в круге
-- **Доступ:** все сотрудники (My Tasks); PM и Head of Delivery (All Tasks); Board View и Calendar View — все сотрудники
-
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| My Tasks / My Plan | `/tasks/my` | Личные задачи текущего пользователя |
-| All Tasks | `/tasks/all` | Все задачи по всем проектам (PM / Head of Delivery) |
-| Board View | `/tasks/board` | Канбан-доска задач |
-| Calendar View | `/tasks/calendar` | Задачи в виде календаря |
-
-### 2.5. Finance (раскрываемый)
-
-- **Иконка:** валютный знак
-- **Доступ:** CEO, Finance Director — полный доступ; PM — просмотр счетов и расходов по своим проектам; Seller — просмотр своих бонусов
-
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| Invoices | `/finance/invoices` | Счета (Kanban по стадиям) |
-| Payments | `/finance/payments` | Реестр платежей |
-| Subscriptions (Grid) | `/finance/subscriptions` | Подписки — матричный вид (проекты × месяцы) |
-| Expenses (Planned) | `/finance/expenses/planned` | Плановые расходы — сетка по месяцам |
-| Expenses (Current Month) | `/finance/expenses/current` | Расходы текущего месяца — Kanban |
-| Domains | `/finance/domains` | Домены — управление и оплата |
-| Bonus Board | `/finance/bonuses` | Бонусная доска сотрудников |
-| Salary Board | `/finance/salary` | Зарплатная ведомость |
-| P&L Reports | `/finance/pnl` | Отчёты о прибылях и убытках |
-
-### 2.6. Support
-
-- **Иконка:** спасательный круг
-- **Доступ:** PM, Head of Delivery, Support Manager, Developer (назначенные тикеты); CEO, Finance Director (обзорный дашборд)
-
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| Tickets | `/support/tickets` | Тикеты — Kanban-доска |
-| Dashboard | `/support/dashboard` | Обзорная панель поддержки |
-
-### 2.7. Clients (раскрываемый)
-
-- **Иконка:** люди
-- **Доступ:** CEO, Head of Sales, Seller, PM, Head of Delivery, Finance Director
-
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| Companies | `/clients/companies` | Список компаний-клиентов |
-| Contacts | `/clients/contacts` | Контактные лица клиентов |
-
-### 2.8. Partners
-
-- **Иконка:** рукопожатие
-- **Путь:** `/partners`
-- **Описание:** Партнёры (субподрядчики, внешние исполнители)
-- **Доступ:** CEO, Head of Delivery, PM, Finance Director
-
-### 2.9. Messenger (раскрываемый)
-
-- **Иконка:** чат-пузырь
-- **Доступ:** все авторизованные пользователи
-
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| Project Chats | `/messenger/projects` | Чаты по проектам (автоматически создаются) |
-| Client Communication | `/messenger/clients` | Коммуникация с клиентами |
-| Direct Messages | `/messenger/direct` | Личные сообщения между сотрудниками |
-
-### 2.10. Calendar
-
-- **Иконка:** календарь
-- **Путь:** `/calendar`
-- **Описание:** Единый календарь: дедлайны задач, встречи, напоминания об оплатах
-- **Доступ:** все авторизованные пользователи
-
-### 2.11. Drive
-
-- **Иконка:** облако / папка
-- **Путь:** `/drive`
-- **Описание:** Файловое хранилище компании. Структура: по проектам и общие папки
-- **Доступ:** все авторизованные пользователи (с учётом прав на проекты)
-
-### 2.12. My Company (раскрываемый)
-
-- **Иконка:** здание
-- **Доступ:** CEO — полный доступ; Head of Delivery, Head of Sales — просмотр структуры и KPI; все сотрудники — просмотр оргструктуры и SOP
-
-Подпункты:
-| Элемент | Путь | Описание |
-|---------|------|----------|
-| Org Structure | `/company/org` | Организационная структура (иерархия отделов) |
-| Team | `/company/team` | Список сотрудников с профилями |
-| KPI / Scorecard | `/company/kpi` | Ключевые показатели эффективности |
-| SOP & Templates | `/company/sop` | Стандартные процедуры и шаблоны |
-
-### 2.13. Credentials (Password Vault)
-
-- **Иконка:** замок / ключ
-- **Путь:** `/credentials`
-- **Описание:** Хранилище паролей и учётных данных. Организовано по категориям и проектам. Доступ по ролям с аудит-логированием каждого просмотра.
-- **Доступ:** CEO — полный; PM — по своим проектам; Developer — назначенные учётные данные
-
-### 2.14. Settings (Admin)
-
-- **Иконка:** шестерёнка
-- **Путь:** `/settings`
-- **Описание:** Системные настройки платформы
-- **Доступ:** только CEO и назначенные администраторы
-
----
-
-## 3. Верхняя панель (Top Bar)
-
-Верхняя панель фиксирована и всегда видна. Содержит четыре ключевых элемента:
-
-### 3.1. Глобальный поиск (Search)
-
-- **Расположение:** центр или левая часть верхней панели
-- **Поведение:** при фокусе раскрывается в полноэкранное модальное окно поиска
-- **Функционал:** поиск по всем сущностям — проекты, задачи, контакты, компании, счета, тикеты, документы
-- **Результаты:** группируются по типу сущности, показываются мгновенно (typeahead)
-- **Горячая клавиша:** `Cmd/Ctrl + K`
-
-### 3.2. Уведомления (Notifications)
-
-- **Иконка:** колокольчик с бейджем количества непрочитанных
-- **Поведение:** клик открывает выпадающую панель Notification Center
-- **Содержимое:** сгруппировано по категориям — задачи, сделки, счета, тикеты, системные
-- **Действия:** отметить как прочитанное, перейти к сущности, отметить все как прочитанные
-- **Настройки уведомлений:** доступны через профиль пользователя
-
-### 3.3. Профиль пользователя (User Profile Menu)
-
-- **Расположение:** правый край верхней панели
-- **Содержимое выпадающего меню:**
-  - My Profile — профиль пользователя
-  - My Settings — персональные настройки (уведомления, язык, тема)
-  - Logout — выход из системы
-
-### 3.4. Быстрые действия (Quick Actions)
-
-- **Расположение:** рядом с поиском или как FAB-кнопка
-- **Действия:**
-  - `+ New Lead` — быстрое создание лида (модальное окно)
-  - `+ New Task` — быстрое создание задачи (модальное окно с выбором проекта/продукта)
-  - `+ New Invoice` — быстрое создание счёта (модальное окно)
-- **Доступ:** действия показываются только при наличии соответствующих прав
-
----
-
-## 4. Хлебные крошки (Breadcrumbs)
-
-### 4.1. Формат
-
-Хлебные крошки всегда отображаются под верхней панелью и показывают текущее местоположение пользователя в иерархии.
-
-**Примеры:**
-
+```text
+Sidebar = карта платформы.
+Dashboard = персональный пульт управления.
+Header = глобальные действия.
+Module Shell = контекст конкретного модуля.
 ```
-Home > Projects > Project "Brand X" > Product "Website" > Tasks
-Home > CRM > Deals > Deal "Brand X — Website Development"
-Home > Finance > Invoices > Invoice #INV-2025-0042
+
+Навигация адаптируется по RBAC: пользователь видит только те пункты, к которым у него есть доступ.
+
+---
+
+## Основные слои UI Shell
+
+```text
+App Shell
+  Sidebar
+  Header / Topbar
+  Breadcrumbs
+  Module Header
+  Module Tabs / Views
+  Entity Drawer / Modal / Full Page
+  Optional Right Rail
+```
+
+### Sidebar
+
+Главная карта модулей NBOS.
+
+### Header / Topbar
+
+Глобальная верхняя панель для действий, нужных почти на любой странице.
+
+### Breadcrumbs
+
+Контекстная навигация внутри проектов, продуктов, сделок и карточек.
+
+### Module Header
+
+Зона конкретного модуля: title, filters, view switcher, contextual actions.
+
+### Entity Drawer / Modal / Full Page
+
+Единые правила открытия карточек сущностей.
+
+---
+
+## Sidebar canon
+
+Sidebar содержит top-level модули, а не все возможные действия.
+
+Канонический порядок по умолчанию:
+
+```text
+Dashboard
+Reports / Analytics
+CRM
+Marketing
+Project Hub
+Tasks
+Finance
+Support
+Clients
+Partners
+Messenger
+Calendar
+Drive
+Credentials
+My Company
+Settings / Admin
+```
+
+### Dashboard
+
+- Путь: `/dashboard`
+- Назначение: персональный Control Center / пульт управления.
+- Доступ: все авторизованные пользователи.
+
+Dashboard не является analytics-only страницей. Быстрые действия, pinned actions и важные карточки живут здесь.
+
+### Reports / Analytics
+
+Подпункты:
+
+```text
+Reports / Analytics
+  Report Catalog
+  Scheduled Reports
+  Export History
+  Saved Views
+```
+
+Reports / Analytics - read-only слой глубокого анализа:
+
+- отчёты за период;
+- сравнения;
+- drill-down;
+- exports;
+- scheduled reports;
+- data quality warnings.
+
+Правило:
+
+```text
+Dashboard = что требует внимания сейчас.
+Reports = что произошло и что это значит.
+```
+
+### CRM
+
+Подпункты:
+
+```text
+CRM
+  Leads
+  Deals
+  CRM Client Chats
+  Sales Reports / Analytics
+```
+
+CRM отвечает за Lead/Deal pipeline, offers, stage gates и клиентские pre-sale коммуникации.
+`Sales Reports / Analytics` является CRM-owned view и также отображается в `Reports / Analytics` catalog.
+
+### Marketing
+
+Подпункты:
+
+```text
+Marketing
+  Marketing Board
+  Attribution Review
+  Marketing Dashboard / module analytics
+  Marketing Settings
+```
+
+Marketing является рабочим модулем маркетингового отдела:
+
+- планирование и запуск активностей;
+- каналы и аккаунты;
+- связь с Finance expenses;
+- attribution для CRM Lead/Deal;
+- анализ лидов, MQL/SQL/Won и revenue by source.
+
+Marketing и CRM связаны, но не являются одним модулем:
+
+```text
+Marketing creates/tracks demand.
+CRM processes leads/deals.
+```
+
+### Project Hub
+
+Подпункты:
+
+```text
+Project Hub
+  Projects
+  Products / Delivery Board
+  Extensions
+  Closed / Archived
+```
+
+Project Hub - продуктово-центричный центр проектов, продуктов и extensions.
+
+### Tasks
+
+Подпункты:
+
+```text
+Tasks
+  My Tasks
+  All Tasks
+  Work Spaces
+  Templates / Recurring
+```
+
+Work Space является отдельной сущностью внутри task ecosystem, но доступен из Tasks и из Product page.
+
+### Finance
+
+Подпункты:
+
+```text
+Finance
+  Invoices
+  Subscriptions
+  Expense Plans
+  Expense Board
+  Expense Backlog
+  Client Services
+  Domains / Hosting / Licenses
+  Bonus Board
+  Salary Board
+  Partner Payouts
+  Finance Reports / P&L
+```
+
+Finance-owned reports хранят финансовые определения и формулы. Глобальный `Reports / Analytics` показывает эти отчёты в catalog, exports и scheduled reports, но не дублирует finance logic.
+
+### Support
+
+Подпункты:
+
+```text
+Support
+  Tickets
+  Support Reports / Dashboard
+  Knowledge / FAQ later
+```
+
+### Clients
+
+Подпункты:
+
+```text
+Clients
+  Companies
+  Contacts
+  Client Portfolio
+```
+
+Company и Contact имеют разные смыслы, но client profile может собирать связи в одном удобном UI.
+
+### Partners
+
+Подпункты:
+
+```text
+Partners
+  Partner Directory
+  Partner Balance / Payouts
+  Partner Agreements
+  Partner Portal v2
+```
+
+### Messenger
+
+Messenger должен разделять internal и external коммуникации.
+
+```text
+Messenger
+  Internal
+  External
+  Favorites / Collections
+```
+
+Internal и External нельзя смешивать в одном рабочем списке без явного visual boundary.
+
+### Calendar
+
+Пока calendar top-level показывает только важные слои:
+
+```text
+Calendar
+  Meet
+  Delivery Deadlines
+  Personal
+```
+
+Finance calendar живёт внутри Finance.
+
+### Drive
+
+Подпункты:
+
+```text
+Drive
+  Library
+  Projects
+  Shared
+  Storage / Cleanup
+```
+
+Drive работает через logical links к сущностям и physical storage metadata.
+
+### Credentials
+
+Подпункты:
+
+```text
+Credentials
+  Vault
+  My Access
+  Reviews
+  Audit
+```
+
+### My Company
+
+`Team` не должен быть top-level пунктом.
+
+```text
+My Company
+  Org Structure
+  Team
+  Departments
+  Roles & Seats
+  Compensation
+  KPI / Scorecard
+  SOP & Templates
+```
+
+Default page: `Org Structure`.
+
+### Settings / Admin
+
+Settings - системная админка платформы.
+
+```text
+Settings / Admin
+  General
+  System Lists
+  Permissions / RBAC
+  Module Settings
+  Integrations
+  Security
+  Feature Flags
+  Audit Log
+```
+
+Settings не содержит:
+
+- My Account;
+- Departments;
+- Team;
+- Compensation;
+- KPI / Bonus policies;
+- SOP.
+
+---
+
+## Personal Navigation
+
+NBOS должен позволять пользователю сделать sidebar удобным для своей работы, но не разрушать карту платформы.
+
+### 1. Reorder sidebar modules
+
+Пользователь может менять порядок доступных top-level пунктов sidebar для себя.
+
+Пример:
+
+- Seller поднимает `CRM`;
+- PM поднимает `Project Hub` и `Tasks`;
+- Finance поднимает `Finance`;
+- Owner оставляет company-wide порядок.
+
+Это personal preference, не глобальная настройка.
+
+### 2. Hide rarely used modules
+
+Пользователь может скрыть редко используемые доступные пункты.
+
+Скрытые пункты не исчезают из системы. Они попадают в:
+
+```text
+More / Hidden
+```
+
+Оттуда пользователь может вернуть пункт обратно.
+
+Важно: если у пользователя нет permission, пункт не появляется даже в hidden list.
+
+### 3. My Links / Personal Links
+
+Пользователь может создать личные ссылки.
+
+Ссылка может вести:
+
+- на внутреннюю страницу NBOS;
+- на внешний URL;
+- на документ;
+- на external service;
+- на часто используемый канал/страницу.
+
+Примеры:
+
+- YouTube channel;
+- Google Sheet;
+- external analytics;
+- client admin panel;
+- internal NBOS filtered board.
+
+Поля personal link:
+
+```text
+PersonalLink
+  title
+  url
+  icon
+  color
+  open_in_new_tab
+  show_in_sidebar
+  show_in_dashboard
+```
+
+### 4. Security for external links
+
+Для внешних ссылок:
+
+- показывать external badge;
+- открывать по умолчанию в новой вкладке;
+- валидировать URL;
+- запрещать dangerous protocols;
+- audit не обязателен для личной ссылки, но admin policy может ограничивать external links.
+
+### 5. Shared model with Dashboard
+
+Personal Links должны быть доступны и в Dashboard pinned actions.
+
+```text
+PersonalLink -> Sidebar My Links
+PersonalLink -> Dashboard Pinned Actions
+```
+
+Это не два разных механизма, а один источник personal navigation.
+
+---
+
+## Header / Topbar canon
+
+Header должен быть лёгким и глобальным.
+
+Содержит:
+
+- global search / quick switcher;
+- notifications;
+- messenger shortcut, если включено;
+- user profile / My Account;
+- session menu.
+
+Header не содержит постоянную глобальную кнопку `Create`.
+
+Причина: создание почти всегда контекстное. `New Lead`, `New Task`, `New Invoice`, `New Ticket`, `New Expense`, `New Credential` имеют разные права, поля и процессы.
+
+Правильные места для create actions:
+
+- Dashboard pinned actions;
+- module header;
+- entity context;
+- command palette later.
+
+---
+
+## Global Search / Quick Switcher
+
+Global search должен открываться из header или sidebar search.
+
+Ищет по:
+
+- Projects;
+- Products;
+- Deals;
+- Leads;
+- Tasks;
+- Tickets;
+- Companies;
+- Contacts;
+- Invoices;
+- Subscriptions;
+- Drive files;
+- Credentials metadata, но не secret values.
+
+Hotkey:
+
+```text
+Cmd/Ctrl + K
+```
+
+В будущем search может стать command palette:
+
+```text
+Open Invoice
+Create Task
+Go to Product
+Open My Links
+```
+
+---
+
+## Module Shell
+
+Каждый модуль должен иметь единый каркас.
+
+```text
+Module Page
+  Module Header
+  Tabs / Section Navigation
+  Filters
+  View Switcher
+  Context Actions
+  Main Content
+```
+
+### Module Header
+
+Содержит:
+
+- title;
+- short description/status;
+- contextual create button;
+- secondary actions;
+- filters/search if they apply to whole module.
+
+### Tabs / Section Navigation
+
+Используется внутри модуля или entity page.
+
+Пример Product:
+
+```text
+Overview
+Work Space
+Tasks
+Files
+Credentials
+Support
+Finance
+Technical
+Audit
+```
+
+### View Switcher
+
+Если модуль поддерживает разные отображения:
+
+- Board;
+- List;
+- Grid;
+- Calendar;
+- Matrix;
+- Timeline.
+
+Последний выбранный вид сохраняется как user preference.
+
+---
+
+## Entity opening rules
+
+### Drawer
+
+Использовать для быстрых карточек:
+
+- task;
+- deal quick view;
+- invoice quick view;
+- ticket quick view;
+- contact quick view.
+
+### Modal
+
+Использовать для коротких действий:
+
+- confirm;
+- small create form;
+- approve/reject;
+- stage gate missing fields.
+
+### Full page
+
+Использовать для сложных сущностей:
+
+- Project;
+- Product;
+- Work Space;
+- Client profile;
+- Employee profile;
+- Credentials vault item details, если нужен безопасный full context.
+
+Правило:
+
+```text
+Quick inspect -> drawer.
+Short action -> modal.
+Deep work -> full page.
+```
+
+---
+
+## Breadcrumbs
+
+Breadcrumbs показывают путь в сложной иерархии.
+
+Примеры:
+
+```text
+Home > Project Hub > Marco.am > Website > Work Space
+Home > CRM > Deals > Deal #123
+Home > Finance > Invoices > Invoice #INV-2026-0042
 Home > Support > Tickets > Ticket #TKT-1205
 ```
 
-### 4.2. Поведение
-
-- Каждый элемент кликабелен и ведёт на соответствующую страницу
-- Последний элемент (текущая страница) — не кликабелен, выделен жирным
-- При глубокой вложенности средние элементы сворачиваются в `...` с выпадающим списком
+При глубокой вложенности middle items можно сворачивать в `...`.
 
 ---
 
-## 5. Контекстно-зависимая навигация
+## Right Rail
 
-### 5.1. Внутри проекта
+Right rail пока не обязательный MVP-элемент.
 
-Когда пользователь находится внутри проекта, интерфейс адаптируется:
+В будущем он может содержать:
 
-- **Заголовок страницы:** отображает имя проекта, клиента, тип и статус
-- **Вторичная навигация (табы):** под заголовком появляется панель вкладок проекта:
-  `Overview | Products | Extensions | Orders | Finance | Subscription | Tasks | Support | Credentials | Drive | Domains | Chat | Audit`
-- Активная вкладка подсвечена
-- Боковая панель остаётся видимой, но подсвечивается раздел Projects
+- messenger quick access;
+- notifications;
+- recent items;
+- pinned links;
+- active call/chat;
+- AI assistant later.
 
-### 5.2. Внутри модуля
+Правило для MVP:
 
-Когда пользователь находится в модуле (например, Finance → Invoices):
+```text
+Do not force right rail until it solves a real workflow.
+```
 
-- **Заголовок модуля:** название модуля и текущего раздела
-- **Фильтры:** под заголовком располагается панель фильтров, релевантных данному разделу
-- **Переключатель вида:** Kanban / List / Grid (в зависимости от раздела)
-- Боковая панель подсвечивает текущий модуль и подпункт
-
----
-
-## 6. Матрица доступа к навигации (RBAC)
-
-| Раздел навигации | CEO | Finance Dir | Head of Sales | Seller      | Head of Delivery | PM       | Developer    | QA           | Designer | Support Mgr |
-| ---------------- | --- | ----------- | ------------- | ----------- | ---------------- | -------- | ------------ | ------------ | -------- | ----------- |
-| Dashboard        | ✅  | ✅          | ✅            | ✅          | ✅               | ✅       | ✅           | ✅           | ✅       | ✅          |
-| CRM → Leads      | ✅  | ❌          | ✅            | ✅          | ❌               | ❌       | ❌           | ❌           | ❌       | ❌          |
-| CRM → Deals      | ✅  | ✅(view)    | ✅            | ✅          | ✅(view)         | ❌       | ❌           | ❌           | ❌       | ❌          |
-| CRM → Analytics  | ✅  | ✅          | ✅            | ✅(own)     | ✅(view)         | ❌       | ❌           | ❌           | ❌       | ❌          |
-| Projects         | ✅  | ✅(fin)     | ✅(own)       | ✅(own)     | ✅               | ✅(own)  | ✅(own)      | ✅(own)      | ✅(own)  | ❌          |
-| Tasks            | ✅  | ❌          | ❌            | ❌          | ✅               | ✅       | ✅(own)      | ✅(own)      | ✅(own)  | ❌          |
-| Finance          | ✅  | ✅          | ❌            | ❌(bonuses) | ❌               | ✅(view) | ❌           | ❌           | ❌       | ❌          |
-| Support          | ✅  | ❌          | ❌            | ❌          | ✅               | ✅       | ✅(assigned) | ✅(assigned) | ❌       | ✅          |
-| Clients          | ✅  | ✅          | ✅            | ✅          | ✅               | ✅       | ❌           | ❌           | ❌       | ❌          |
-| Partners         | ✅  | ✅          | ❌            | ❌          | ✅               | ✅       | ❌           | ❌           | ❌       | ❌          |
-| Messenger        | ✅  | ✅          | ✅            | ✅          | ✅               | ✅       | ✅           | ✅           | ✅       | ✅          |
-| Calendar         | ✅  | ✅          | ✅            | ✅          | ✅               | ✅       | ✅           | ✅           | ✅       | ✅          |
-| Drive            | ✅  | ✅          | ✅            | ✅          | ✅               | ✅       | ✅           | ✅           | ✅       | ✅          |
-| My Company       | ✅  | ✅(view)    | ✅(view)      | ✅(view)    | ✅(view)         | ✅(view) | ✅(view)     | ✅(view)     | ✅(view) | ✅(view)    |
-| Credentials      | ✅  | ❌          | ❌            | ❌          | ✅               | ✅(own)  | ✅(assigned) | ❌           | ❌       | ❌          |
-| Settings         | ✅  | ❌          | ❌            | ❌          | ❌               | ❌       | ❌           | ❌           | ❌       | ❌          |
-
-**Легенда:** ✅ — полный доступ, ✅(view) — только просмотр, ✅(own) — только свои данные, ✅(assigned) — только назначенные, ✅(fin) — только финансовые вкладки, ❌ — нет доступа
+Если right rail появится, он не должен дублировать sidebar и Dashboard pinned actions.
 
 ---
 
-## 7. Адаптивное поведение
+## Mobile / Tablet behavior
 
-### 7.1. Свёрнутая боковая панель
+### Desktop
 
-- Боковая панель может быть свёрнута в иконочный режим (только иконки без текста)
-- При наведении на иконку — появляется tooltip с названием раздела
-- При клике на раскрываемый раздел — появляется flyout-меню с подпунктами
+- sidebar visible;
+- header visible;
+- module shell full;
+- drawers available.
 
-### 7.2. Мобильная версия (планируется)
+### Tablet
 
-- Боковая панель скрыта, доступна через hamburger-меню
-- Верхняя панель упрощена: поиск через иконку, уведомления остаются
-- Хлебные крошки сокращены до текущего и родительского уровня
+- sidebar collapsible;
+- module tabs horizontally scrollable;
+- filters can collapse.
+
+### Mobile
+
+- sidebar behind hamburger;
+- header simplified;
+- search icon only;
+- breadcrumbs shortened;
+- primary actions move into module action menu;
+- dashboard pinned actions become horizontal scroll or grid.
 
 ---
 
-## 8. Навигационные состояния
+## RBAC and visibility
 
-| Состояние         | Визуальное отображение                                 |
-| ----------------- | ------------------------------------------------------ |
-| Активный раздел   | Подсветка фона + выделенный текст в боковой панели     |
-| Активный подпункт | Отступ + индикатор слева                               |
-| Hover             | Лёгкая подсветка фона                                  |
-| Бейдж-уведомление | Красный кружок с числом (на Tasks, Support, Messenger) |
-| Раскрытый раздел  | Стрелка вниз, подпункты видны                          |
-| Свёрнутый раздел  | Стрелка вправо, подпункты скрыты                       |
+Navigation visibility uses:
+
+- permission role;
+- entity scope;
+- feature flags;
+- module availability;
+- personal hide preferences.
+
+Priority:
+
+```text
+No permission -> never show.
+Feature disabled -> never show.
+User hidden -> show in More / Hidden.
+User pinned/personal -> show in selected area.
+```
+
+---
+
+## Runtime cleanup notes
+
+Current runtime should be aligned:
+
+- remove top-level `Team`;
+- add `My Company` top-level item;
+- move Team/Departments under `My Company`;
+- remove `My Account` from Settings navigation;
+- remove `Departments` from Settings navigation;
+- remove global `Create` button from Topbar;
+- add Dashboard pinned actions later;
+- add Personal Navigation preferences later.

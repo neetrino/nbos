@@ -20,6 +20,7 @@ describe('BillingService', () => {
           code: 'SUB-2026-0001',
           projectId: 'proj-1',
           amount: 5000,
+          taxStatus: 'TAX_FREE',
           billingDay: 15,
           status: 'ACTIVE',
           project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test' },
@@ -39,6 +40,7 @@ describe('BillingService', () => {
             subscriptionId: 'sub-1',
             projectId: 'proj-1',
             amount: 5000,
+            taxStatus: 'TAX_FREE',
             type: 'SUBSCRIPTION',
           }),
         }),
@@ -89,6 +91,31 @@ describe('BillingService', () => {
       expect(result.generatedInvoices).toBe(1);
       expect(result.errors.length).toBe(1);
       expect(result.errors[0]).toContain('SUB-1');
+    });
+
+    it('uses the target billing date year when generating invoice codes', async () => {
+      const targetDate = new Date(2025, 11, 15);
+      prisma.subscription.findMany.mockResolvedValue([
+        {
+          id: 'sub-legacy',
+          code: 'SUB-2025-0008',
+          projectId: 'proj-1',
+          amount: 7500,
+          taxStatus: 'TAX',
+          billingDay: 15,
+          status: 'ACTIVE',
+          project: { id: 'proj-1', code: 'P-2025-0001', name: 'Legacy' },
+        },
+      ]);
+      prisma.invoice.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+      prisma.invoice.create.mockResolvedValue({ id: 'inv-legacy', code: 'INV-2025-0001' });
+
+      await service.runMonthlyBilling(targetDate);
+
+      expect(prisma.invoice.findFirst).toHaveBeenLastCalledWith({
+        where: { code: { startsWith: 'INV-2025-' } },
+        orderBy: { code: 'desc' },
+      });
     });
   });
 

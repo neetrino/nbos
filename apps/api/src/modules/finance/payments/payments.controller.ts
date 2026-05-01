@@ -38,6 +38,12 @@ export class PaymentsController {
     });
   }
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Get payment statistics' })
+  async getStats(@Query('dateFrom') dateFrom?: string, @Query('dateTo') dateTo?: string) {
+    return this.paymentsService.getStats({ dateFrom, dateTo });
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get payment by ID' })
   async findOne(@Param('id') id: string) {

@@ -32,6 +32,11 @@ export type Company = Prisma.CompanyModel;
  */
 export type Project = Prisma.ProjectModel;
 /**
+ * Model ProjectKickoffChecklistItem
+ *
+ */
+export type ProjectKickoffChecklistItem = Prisma.ProjectKickoffChecklistItemModel;
+/**
  * Model Product
  *
  */
@@ -41,6 +46,16 @@ export type Product = Prisma.ProductModel;
  *
  */
 export type Extension = Prisma.ExtensionModel;
+/**
+ * Model MarketingAccount
+ *
+ */
+export type MarketingAccount = Prisma.MarketingAccountModel;
+/**
+ * Model MarketingActivity
+ *
+ */
+export type MarketingActivity = Prisma.MarketingActivityModel;
 /**
  * Model Lead
  *
@@ -72,15 +87,40 @@ export type Payment = Prisma.PaymentModel;
  */
 export type Subscription = Prisma.SubscriptionModel;
 /**
+ * Model ExpensePlan
+ *
+ */
+export type ExpensePlan = Prisma.ExpensePlanModel;
+/**
  * Model Expense
  *
  */
 export type Expense = Prisma.ExpenseModel;
 /**
+ * Model ExpensePayment
+ *
+ */
+export type ExpensePayment = Prisma.ExpensePaymentModel;
+/**
  * Model BonusEntry
  *
  */
 export type BonusEntry = Prisma.BonusEntryModel;
+/**
+ * Model PayrollRun
+ *
+ */
+export type PayrollRun = Prisma.PayrollRunModel;
+/**
+ * Model SalaryLine
+ *
+ */
+export type SalaryLine = Prisma.SalaryLineModel;
+/**
+ * Model WorkSpace
+ *
+ */
+export type WorkSpace = Prisma.WorkSpaceModel;
 /**
  * Model Task
  *
@@ -101,6 +141,81 @@ export type TaskChecklist = Prisma.TaskChecklistModel;
  *
  */
 export type TaskChecklistItem = Prisma.TaskChecklistItemModel;
+/**
+ * Model FileAsset
+ *
+ */
+export type FileAsset = Prisma.FileAssetModel;
+/**
+ * Model FileVersion
+ *
+ */
+export type FileVersion = Prisma.FileVersionModel;
+/**
+ * Model FileLink
+ *
+ */
+export type FileLink = Prisma.FileLinkModel;
+/**
+ * Model FileAuditEvent
+ *
+ */
+export type FileAuditEvent = Prisma.FileAuditEventModel;
+/**
+ * Model FileUploadSession
+ *
+ */
+export type FileUploadSession = Prisma.FileUploadSessionModel;
+/**
+ * Model ReportExportJob
+ *
+ */
+export type ReportExportJob = Prisma.ReportExportJobModel;
+/**
+ * Model ReportSchedule
+ *
+ */
+export type ReportSchedule = Prisma.ReportScheduleModel;
+/**
+ * Model SavedReportView
+ *
+ */
+export type SavedReportView = Prisma.SavedReportViewModel;
+/**
+ * Model DocumentSection
+ *
+ */
+export type DocumentSection = Prisma.DocumentSectionModel;
+/**
+ * Model ExternalDocumentLink
+ *
+ */
+export type ExternalDocumentLink = Prisma.ExternalDocumentLinkModel;
+/**
+ * Model Document
+ *
+ */
+export type Document = Prisma.DocumentModel;
+/**
+ * Model DocumentTag
+ *
+ */
+export type DocumentTag = Prisma.DocumentTagModel;
+/**
+ * Model DocumentTagOnDocument
+ *
+ */
+export type DocumentTagOnDocument = Prisma.DocumentTagOnDocumentModel;
+/**
+ * Model DocumentAttachment
+ *
+ */
+export type DocumentAttachment = Prisma.DocumentAttachmentModel;
+/**
+ * Model DocumentActivityEvent
+ *
+ */
+export type DocumentActivityEvent = Prisma.DocumentActivityEventModel;
 /**
  * Model TaskBoardStage
  *
@@ -126,6 +241,11 @@ export type Credential = Prisma.CredentialModel;
  *
  */
 export type Domain = Prisma.DomainModel;
+/**
+ * Model ClientServiceRecord
+ *
+ */
+export type ClientServiceRecord = Prisma.ClientServiceRecordModel;
 /**
  * Model Department
  *
@@ -162,10 +282,145 @@ export type Invitation = Prisma.InvitationModel;
  */
 export type Employee = Prisma.EmployeeModel;
 /**
+ * Model DashboardPreference
+ *
+ */
+export type DashboardPreference = Prisma.DashboardPreferenceModel;
+/**
+ * Model PersonalLink
+ *
+ */
+export type PersonalLink = Prisma.PersonalLinkModel;
+/**
  * Model Partner
  *
  */
 export type Partner = Prisma.PartnerModel;
+/**
+ * Model MessengerChannel
+ *
+ */
+export type MessengerChannel = Prisma.MessengerChannelModel;
+/**
+ * Model MessengerChannelMessage
+ *
+ */
+export type MessengerChannelMessage = Prisma.MessengerChannelMessageModel;
+/**
+ * Model MessengerChannelMessageAttachment
+ *
+ */
+export type MessengerChannelMessageAttachment = Prisma.MessengerChannelMessageAttachmentModel;
+/**
+ * Model MessengerChannelReadState
+ *
+ */
+export type MessengerChannelReadState = Prisma.MessengerChannelReadStateModel;
+/**
+ * Model MessengerDirectThread
+ *
+ */
+export type MessengerDirectThread = Prisma.MessengerDirectThreadModel;
+/**
+ * Model MessengerDirectMessage
+ *
+ */
+export type MessengerDirectMessage = Prisma.MessengerDirectMessageModel;
+/**
+ * Model MessengerDirectMessageAttachment
+ *
+ */
+export type MessengerDirectMessageAttachment = Prisma.MessengerDirectMessageAttachmentModel;
+/**
+ * Model MessengerDirectThreadReadState
+ *
+ */
+export type MessengerDirectThreadReadState = Prisma.MessengerDirectThreadReadStateModel;
+/**
+ * Model MailAccount
+ *
+ */
+export type MailAccount = Prisma.MailAccountModel;
+/**
+ * Model MailProviderConnection
+ *
+ */
+export type MailProviderConnection = Prisma.MailProviderConnectionModel;
+/**
+ * Model EmailThread
+ *
+ */
+export type EmailThread = Prisma.EmailThreadModel;
+/**
+ * Model EmailMessage
+ *
+ */
+export type EmailMessage = Prisma.EmailMessageModel;
+/**
+ * Model EmailAttachment
+ *
+ */
+export type EmailAttachment = Prisma.EmailAttachmentModel;
+/**
+ * Model MailDeliveryLog
+ *
+ */
+export type MailDeliveryLog = Prisma.MailDeliveryLogModel;
+/**
+ * Model EmailRecipient
+ *
+ */
+export type EmailRecipient = Prisma.EmailRecipientModel;
+/**
+ * Model InAppNotification
+ *
+ */
+export type InAppNotification = Prisma.InAppNotificationModel;
+/**
+ * Model NotificationEvent
+ *
+ */
+export type NotificationEvent = Prisma.NotificationEventModel;
+/**
+ * Model NotificationRule
+ *
+ */
+export type NotificationRule = Prisma.NotificationRuleModel;
+/**
+ * Model NotificationJob
+ *
+ */
+export type NotificationJob = Prisma.NotificationJobModel;
+/**
+ * Model NotificationDelivery
+ *
+ */
+export type NotificationDelivery = Prisma.NotificationDeliveryModel;
+/**
+ * Model ProductTechnicalProfile
+ *
+ */
+export type ProductTechnicalProfile = Prisma.ProductTechnicalProfileModel;
+/**
+ * Model TechnicalAsset
+ *
+ */
+export type TechnicalAsset = Prisma.TechnicalAssetModel;
+/**
+ * Model TechnicalEnvironment
+ *
+ */
+export type TechnicalEnvironment = Prisma.TechnicalEnvironmentModel;
+/**
+ * Model CalendarMeeting
+ *
+ */
+export type CalendarMeeting = Prisma.CalendarMeetingModel;
+/**
+ * Model PersonalCalendarEvent
+ *
+ */
+export type PersonalCalendarEvent = Prisma.PersonalCalendarEventModel;
 /**
  * Model AuditLog
  *

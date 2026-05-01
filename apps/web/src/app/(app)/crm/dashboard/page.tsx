@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   UserPlus,
   TrendingUp,
@@ -9,15 +9,18 @@ import {
   ArrowUpRight,
   Trophy,
   CheckCircle2,
+  TableProperties,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import { PageHeader } from '@/components/shared';
 import { leadsApi, type LeadStats } from '@/lib/api/leads';
-import { dealsApi } from '@/lib/api/deals';
+import { dealsApi, type DealStats } from '@/lib/api/deals';
+import { useCrmDashboardScopeStatsCsvExport } from '@/features/crm/hooks/use-crm-dashboard-scope-stats-csv-export';
 import { LEAD_SOURCES, getLeadStage } from '@/features/crm/constants/leadPipeline';
-import { getDealStage, formatAmount, DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
+import { formatAmount, DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
 
 interface KpiData {
   label: string;
@@ -29,12 +32,16 @@ interface KpiData {
 
 export default function CrmDashboardPage() {
   const [leadStats, setLeadStats] = useState<LeadStats | null>(null);
-  const [dealStats, setDealStats] = useState<{
-    total: number;
-    byStatus: Array<{ status: string; _count: number }>;
-    totalAmount: number;
-  } | null>(null);
+  const [dealStats, setDealStats] = useState<DealStats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { handleExportScopeStatsCsv } = useCrmDashboardScopeStatsCsvExport(leadStats, dealStats);
+
+  const dealPipelineAmount = useMemo(() => {
+    if (!dealStats) return null;
+    const sum = dealStats.byStatus.reduce((acc, row) => acc + Number(row._sum?.amount ?? 0), 0);
+    return Number.isFinite(sum) && sum !== 0 ? sum : null;
+  }, [dealStats]);
 
   useEffect(() => {
     const load = async () => {
@@ -71,7 +78,7 @@ export default function CrmDashboardPage() {
       label: 'Active Deals',
       value:
         dealStats?.byStatus
-          .filter((s) => s.status !== 'FAILED' && s.status !== 'WON')
+          ?.filter((s) => s.status !== 'FAILED' && s.status !== 'WON')
           .reduce((sum, s) => sum + s._count, 0)
           .toString() ?? '—',
       change: `${dealStats?.byStatus.find((s) => s.status === 'WON')?._count ?? 0} won`,
@@ -80,7 +87,7 @@ export default function CrmDashboardPage() {
     },
     {
       label: 'Pipeline Value',
-      value: formatAmount(dealStats?.totalAmount ?? null),
+      value: formatAmount(dealPipelineAmount),
       change: `${dealStats?.total ?? 0} total deals`,
       icon: DollarSign,
       iconClass: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
@@ -89,7 +96,19 @@ export default function CrmDashboardPage() {
 
   return (
     <div className="min-h-0 flex-1 space-y-6 overflow-y-auto">
-      <PageHeader title="Sales Overview" description="Leads, deals, and conversion analytics" />
+      <PageHeader title="Sales Overview" description="Leads, deals, and conversion analytics">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          disabled={loading || !leadStats || !dealStats}
+          onClick={() => handleExportScopeStatsCsv()}
+          aria-label="Export CRM dashboard scope statistics as CSV"
+          title="UTF-8 CSV from GET /api/crm/leads/stats and GET /api/crm/deals/stats (workspace-wide; see scope_note)"
+        >
+          <TableProperties size={16} aria-hidden />
+        </Button>
+      </PageHeader>
 
       {loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -261,7 +280,7 @@ export default function CrmDashboardPage() {
                     <div className="bg-secondary/50 rounded-lg p-4 text-center">
                       <p className="text-muted-foreground text-xs">Pipeline Value</p>
                       <p className="text-accent mt-1 text-lg font-bold">
-                        {formatAmount(dealStats?.totalAmount ?? null)}
+                        {formatAmount(dealPipelineAmount)}
                       </p>
                     </div>
                   </div>

@@ -5,7 +5,7 @@ import { Shield, Plus, Save, Users } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
 import {
   Select,
   SelectContent,
@@ -77,6 +77,7 @@ export default function RolesPage() {
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [loadingPermissions, setLoadingPermissions] = useState(true);
   const [loadingRole, setLoadingRole] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createName, setCreateName] = useState('');
@@ -89,8 +90,9 @@ export default function RolesPage() {
     try {
       const data = await api.get<RoleItem[]>('/api/roles').then((r) => r.data);
       setRoles(Array.isArray(data) ? data : []);
+      setLoadError(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load roles');
+      setLoadError(err instanceof Error ? err.message : 'Failed to load roles');
       setRoles([]);
     } finally {
       setLoadingRoles(false);
@@ -102,8 +104,9 @@ export default function RolesPage() {
     try {
       const data = await api.get<Permission[]>('/api/permissions').then((r) => r.data);
       setAllPermissions(Array.isArray(data) ? data : []);
+      setLoadError(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load permissions');
+      setLoadError(err instanceof Error ? err.message : 'Failed to load permissions');
       setAllPermissions([]);
     } finally {
       setLoadingPermissions(false);
@@ -116,6 +119,7 @@ export default function RolesPage() {
       try {
         const data = await api.get<RoleWithPermissions>(`/api/roles/${id}`).then((r) => r.data);
         setSelectedRole(data);
+        setLoadError(null);
 
         const scopes: Record<string, Scope> = {};
         for (const rp of data.permissions ?? []) {
@@ -128,7 +132,7 @@ export default function RolesPage() {
         }
         setMatrixScopes(scopes);
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to load role');
+        setLoadError(err instanceof Error ? err.message : 'Failed to load role');
         setSelectedRole(null);
       } finally {
         setLoadingRole(false);
@@ -250,8 +254,22 @@ export default function RolesPage() {
           <Shield size={16} />
           Roles
         </h3>
-        {loadingRoles ? (
-          <div className="text-muted-foreground text-sm">Loading roles...</div>
+        {loadError ? (
+          <ErrorState
+            description={loadError}
+            onRetry={() => {
+              fetchRoles();
+              fetchPermissions();
+            }}
+          />
+        ) : loadingRoles ? (
+          <LoadingState count={3} />
+        ) : roles.length === 0 ? (
+          <EmptyState
+            icon={Shield}
+            title="No roles configured"
+            description="Create a role before editing permissions."
+          />
         ) : (
           <Table>
             <TableHeader>
@@ -307,9 +325,9 @@ export default function RolesPage() {
           </div>
 
           {loadingRole ? (
-            <div className="text-muted-foreground text-sm">Loading permissions...</div>
+            <LoadingState count={4} />
           ) : loadingPermissions ? (
-            <div className="text-muted-foreground text-sm">Loading permission matrix...</div>
+            <LoadingState count={4} />
           ) : (
             <div className="overflow-x-auto">
               <Table>

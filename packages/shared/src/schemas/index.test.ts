@@ -160,5 +160,12 @@ describe('Schemas', () => {
       const result = updateDealSchema.parse({ paymentType: 'SUBSCRIPTION' });
       expect(result.paymentType).toBe('SUBSCRIPTION');
     });
+
+    it('accepts maintenance planned start date', () => {
+      const result = updateDealSchema.parse({
+        maintenanceStartAt: '2026-05-15T00:00:00.000Z',
+      });
+      expect(result.maintenanceStartAt).toBe('2026-05-15T00:00:00.000Z');
+    });
   });
 });

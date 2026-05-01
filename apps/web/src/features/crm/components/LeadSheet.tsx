@@ -10,7 +10,6 @@ import {
   MessageSquare,
   ArrowRight,
   Trash2,
-  Globe,
   Link2,
   LayoutGrid,
   History,
@@ -30,9 +29,11 @@ import {
   MARKETING_CHANNELS,
   getLeadSource,
 } from '../constants/leadPipeline';
+import { isLeadAttributionLocked } from '@nbos/shared/constants';
 import type { Lead } from '@/lib/api/leads';
 import { partnersApi } from '@/lib/api/partners';
 import { contactsApi } from '@/lib/api/clients';
+import { marketingApi } from '@/lib/api/marketing';
 import { useCallback } from 'react';
 
 const TABS = [
@@ -78,10 +79,14 @@ export function LeadSheet({
   const source = getLeadSource(lead.source);
   const leadTitle = lead.name || lead.code;
 
-  const saveField = async (field: string, value: string) => {
+  const saveField = async (field: string, value: string | null) => {
     const payload: Record<string, unknown> = {};
     payload[field] = value || null;
     await onUpdate(lead.id, payload as Partial<Lead>);
+  };
+
+  const saveFields = async (fields: Record<string, string | null>) => {
+    await onUpdate(lead.id, fields as Partial<Lead>);
   };
 
   const startEditingName = () => {
@@ -183,6 +188,7 @@ export function LeadSheet({
                 lead={lead}
                 source={source}
                 saveField={saveField}
+                saveFields={saveFields}
                 onConvertToDeal={onConvertToDeal}
                 isTerminal={isTerminal}
               />
@@ -231,16 +237,15 @@ export function LeadSheet({
 interface LeadGeneralContentProps {
   lead: Lead;
   source: ReturnType<typeof getLeadSource>;
-  saveField: (field: string, value: string) => Promise<void>;
+  saveField: (field: string, value: string | null) => Promise<void>;
+  saveFields: (fields: Record<string, string | null>) => Promise<void>;
   onConvertToDeal?: (lead: Lead) => void;
   isTerminal: boolean;
 }
 
-function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps) {
+function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneralContentProps) {
   const saveMultipleFields = async (fields: Record<string, string | null>) => {
-    for (const [key, val] of Object.entries(fields)) {
-      await saveField(key, val ?? '');
-    }
+    await saveFields(fields);
   };
 
   const searchPartners = useCallback(async (query: string) => {
@@ -257,6 +262,21 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
     }));
   }, []);
 
+  const searchAttributionOptions = useCallback(
+    async (query: string) => {
+      if (!lead.sourceDetail) return [];
+      const options = await marketingApi.getAttributionOptions(lead.sourceDetail);
+      return options
+        .filter((option) => option.label.toLowerCase().includes(query.toLowerCase()))
+        .map((option) => ({
+          value: `${option.type}:${option.id}`,
+          label: option.label,
+          subtitle: option.subtitle ?? option.type,
+        }));
+    },
+    [lead.sourceDetail],
+  );
+
   const whereOptions = (() => {
     if (lead.source === 'SALES')
       return SALES_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
@@ -264,6 +284,8 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
       return MARKETING_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
     return [];
   })();
+
+  const attributionLocked = isLeadAttributionLocked(lead.status);
 
   return (
     <div className="space-y-8">
@@ -349,15 +371,19 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               label: s.label,
               icon: <span>{s.icon}</span>,
             }))}
+            placeholder="Select source..."
             icon={<Megaphone size={12} />}
             onSave={async (v) => {
               await saveMultipleFields({
-                source: v as string,
+                source: v,
                 sourceDetail: null,
                 sourcePartnerId: null,
                 sourceContactId: null,
+                marketingAccountId: null,
+                marketingActivityId: null,
               });
             }}
+            clearable={!attributionLocked}
           />
 
           {(lead.source === 'SALES' || lead.source === 'MARKETING') && (
@@ -376,7 +402,51 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               options={whereOptions}
               placeholder="Select channel..."
               icon={<ExternalLink size={12} />}
-              onSave={(v) => saveField('sourceDetail', v)}
+              onSave={async (v) => {
+                await saveMultipleFields({
+                  sourceDetail: v,
+                  marketingAccountId: null,
+                  marketingActivityId: null,
+                });
+              }}
+              clearable={!attributionLocked}
+            />
+          )}
+
+          {lead.source === 'MARKETING' && lead.sourceDetail && (
+            <SearchField
+              label="Which one"
+              value={
+                lead.marketingAccount
+                  ? lead.marketingAccount.name
+                  : (lead.marketingActivity?.title ?? null)
+              }
+              displayValue={
+                lead.marketingAccount || lead.marketingActivity ? (
+                  <span className="text-foreground text-sm font-medium">
+                    {lead.marketingAccount?.name ?? lead.marketingActivity?.title}
+                  </span>
+                ) : undefined
+              }
+              placeholder="Search accounts or activities..."
+              icon={<ExternalLink size={12} />}
+              onSearch={searchAttributionOptions}
+              onSave={async (v) => {
+                const [type, id] = v.split(':');
+                await saveMultipleFields({
+                  marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
+                  marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
+                });
+              }}
+              onClear={
+                attributionLocked
+                  ? undefined
+                  : () =>
+                      saveMultipleFields({
+                        marketingAccountId: null,
+                        marketingActivityId: null,
+                      })
+              }
             />
           )}
 
@@ -397,6 +467,7 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               onSave={async (v) => {
                 await saveField('sourcePartnerId', v);
               }}
+              onClear={attributionLocked ? undefined : () => saveField('sourcePartnerId', null)}
             />
           )}
 
@@ -421,6 +492,7 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               onSave={async (v) => {
                 await saveField('sourceContactId', v);
               }}
+              onClear={attributionLocked ? undefined : () => saveField('sourceContactId', null)}
             />
           )}
         </div>

@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -6,12 +6,25 @@ import {
   type InvoiceStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  getLatestPaymentDate,
+  resolveBaseInvoiceStatus,
+  sumAmounts,
+} from '../finance-status.utils';
+import { attachInvoicePaymentCoverage } from './invoice-payment-coverage';
+import {
+  buildDateRange,
+  getInvoiceStats,
+  resolveInvoiceTaxStatus,
+  syncInvoiceOrderStatus,
+} from './invoice-service-helpers';
 
 interface CreateInvoiceDto {
   orderId?: string;
   subscriptionId?: string;
   projectId: string;
   companyId?: string;
+  clientServiceRecordId?: string;
   amount: number;
   type: string;
   dueDate?: string;
@@ -21,8 +34,18 @@ interface InvoiceQueryParams {
   page?: number;
   pageSize?: number;
   status?: string;
+  type?: string;
   projectId?: string;
+  subscriptionId?: string;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+interface InvoiceStatsParams {
+  dateFrom?: string;
+  dateTo?: string;
+  subscriptionId?: string;
 }
 
 @Injectable()
@@ -30,13 +53,30 @@ export class InvoicesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: InvoiceQueryParams) {
-    const { page = 1, pageSize = 20, status, projectId, search } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      status,
+      type,
+      projectId,
+      subscriptionId,
+      search,
+      dateFrom,
+      dateTo,
+    } = params;
     const where: Prisma.InvoiceWhereInput = {};
 
     if (status) where.status = status as InvoiceStatusEnum;
+    if (type) where.type = type as InvoiceTypeEnum;
     if (projectId) where.projectId = projectId;
+    if (subscriptionId) where.subscriptionId = subscriptionId;
     if (search) {
       where.code = { contains: search, mode: 'insensitive' };
+    }
+
+    const createdAt = buildDateRange(dateFrom, dateTo);
+    if (createdAt) {
+      where.createdAt = createdAt;
     }
 
     const [items, total] = await Promise.all([
@@ -56,7 +96,7 @@ export class InvoicesService {
     ]);
 
     return {
-      items,
+      items: items.map(attachInvoicePaymentCoverage),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -72,47 +112,82 @@ export class InvoicesService {
       },
     });
     if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
-    return invoice;
+    return attachInvoicePaymentCoverage(invoice);
   }
 
   async create(data: CreateInvoiceDto) {
+    this.assertCreateInvoiceInput(data);
     const code = await this.generateCode();
-    return this.prisma.invoice.create({
+    const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
+
+    const invoice = await this.prisma.invoice.create({
       data: {
         code,
         orderId: data.orderId,
         subscriptionId: data.subscriptionId,
         projectId: data.projectId,
         companyId: data.companyId,
+        clientServiceRecordId: data.clientServiceRecordId,
         amount: data.amount,
+        taxStatus,
         type: data.type as InvoiceTypeEnum,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
       },
-      include: {
-        order: { select: { id: true, code: true } },
-        company: { select: { id: true, name: true } },
-      },
     });
+    return this.findById(invoice.id);
   }
 
   async updateStatus(id: string, status: string) {
-    const invoice = await this.findById(id);
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        orderId: true,
+        amount: true,
+        dueDate: true,
+        status: true,
+        payments: {
+          select: {
+            amount: true,
+            paymentDate: true,
+          },
+        },
+      },
+    });
+    if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
+
+    const amount = Number(invoice.amount);
+    const paid = sumAmounts(invoice.payments);
+    const derivedStatus = resolveBaseInvoiceStatus({
+      amount,
+      paid,
+      dueDate: invoice.dueDate,
+    });
+
+    this.assertManualStatusTransitionAllowed(status as InvoiceStatusEnum, derivedStatus);
+
     const updateData: Prisma.InvoiceUpdateInput = {
       status: status as InvoiceStatusEnum,
     };
     if (status === 'PAID') {
-      updateData.paidDate = new Date();
+      updateData.paidDate = getLatestPaymentDate(invoice.payments);
+    } else {
+      updateData.paidDate = null;
     }
-    const updated = await this.prisma.invoice.update({
+    await this.prisma.invoice.update({
       where: { id },
       data: updateData,
     });
+
+    if (invoice.orderId) {
+      await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
+    }
 
     if (status === 'PAID' && invoice.orderId) {
       await this.checkAndPromoteDeal(invoice.orderId);
     }
 
-    return updated;
+    return this.findById(id);
   }
 
   private async checkAndPromoteDeal(orderId: string) {
@@ -145,20 +220,35 @@ export class InvoicesService {
     return this.prisma.invoice.delete({ where: { id } });
   }
 
-  async getStats() {
-    const [total, byStatus, totalRevenue] = await Promise.all([
-      this.prisma.invoice.count(),
-      this.prisma.invoice.groupBy({
-        by: ['status'],
-        _count: true,
-        _sum: { amount: true },
-      }),
-      this.prisma.invoice.aggregate({
-        where: { status: 'PAID' },
-        _sum: { amount: true },
-      }),
-    ]);
-    return { total, byStatus, totalRevenue: totalRevenue._sum.amount };
+  private assertManualStatusTransitionAllowed(
+    requestedStatus: InvoiceStatusEnum,
+    derivedStatus: InvoiceStatusEnum,
+  ) {
+    if (requestedStatus === 'PAID' && derivedStatus !== 'PAID') {
+      throw new BadRequestException('Cannot mark invoice as paid before payments fully cover it');
+    }
+
+    if (derivedStatus === 'PAID' && requestedStatus !== 'PAID') {
+      throw new BadRequestException('Fully paid invoices must stay in PAID status');
+    }
+  }
+
+  private assertCreateInvoiceInput(data: CreateInvoiceDto) {
+    if (!data.projectId?.trim()) {
+      throw new BadRequestException('projectId is required to create an invoice');
+    }
+
+    if (!data.type?.trim()) {
+      throw new BadRequestException('type is required to create an invoice');
+    }
+
+    if (!Number.isFinite(data.amount) || data.amount <= 0) {
+      throw new BadRequestException('Invoice amount must be greater than zero');
+    }
+  }
+
+  async getStats(params: InvoiceStatsParams = {}) {
+    return getInvoiceStats(this.prisma, params);
   }
 
   private async generateCode(): Promise<string> {

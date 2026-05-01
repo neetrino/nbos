@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { Decimal } from '@nbos/database';
 import { BonusService } from './bonus.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
@@ -58,6 +59,32 @@ describe('BonusService', () => {
     it('returns stats', async () => {
       const stats = await service.getStats();
       expect(stats).toHaveProperty('byStatus');
+    });
+  });
+
+  describe('getProjectPools', () => {
+    it('returns empty when no bonus rows', async () => {
+      prisma.bonusEntry.groupBy.mockResolvedValue([]);
+      const rows = await service.getProjectPools();
+      expect(rows).toEqual([]);
+      expect(prisma.project.findMany).not.toHaveBeenCalled();
+    });
+
+    it('folds groupBy rows with project metadata', async () => {
+      prisma.bonusEntry.groupBy.mockResolvedValue([
+        { projectId: 'p1', status: 'ACTIVE', _sum: { amount: new Decimal('100') }, _count: 2 },
+        { projectId: 'p1', status: 'PAID', _sum: { amount: new Decimal('50') }, _count: 1 },
+      ]);
+      prisma.project.findMany.mockResolvedValue([{ id: 'p1', code: 'PR-1', name: 'Alpha' }]);
+      const rows = await service.getProjectPools();
+      expect(rows).toHaveLength(1);
+      expect(rows[0].projectCode).toBe('PR-1');
+      expect(rows[0].sumPaidAmount).toBe('50.00');
+      expect(rows[0].sumPipelineAmount).toBe('100.00');
+      expect(prisma.project.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ['p1'] } },
+        select: { id: true, code: true, name: true },
+      });
     });
   });
 });

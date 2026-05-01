@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,9 @@ import {
   PRODUCT_TYPES_BY_CATEGORY,
   PAYMENT_TYPES,
 } from '../constants/dealPipeline';
+import { LEAD_SOURCES, MARKETING_CHANNELS } from '../constants/leadPipeline';
 import { dealsApi } from '@/lib/api/deals';
+import { marketingApi, type AttributionOption } from '@/lib/api/marketing';
 
 interface CreateDealDialogProps {
   open: boolean;
@@ -53,8 +55,11 @@ export function CreateDealDialog({
     productCategory: '',
     productType: '',
     amount: '',
-    paymentType: 'SPLIT_50_50',
+    paymentType: 'CLASSIC',
     sellerId: '',
+    source: 'MARKETING',
+    sourceDetail: '',
+    attributionOption: '',
     notes: '',
   });
 
@@ -70,6 +75,22 @@ export function CreateDealDialog({
   })();
 
   const canSubmit = form.contactId && form.type && form.sellerId;
+  const [attributionOptions, setAttributionOptions] = useState<AttributionOption[]>([]);
+
+  useEffect(() => {
+    if (form.source !== 'MARKETING' || !form.sourceDetail) {
+      setAttributionOptions([]);
+      return;
+    }
+    marketingApi
+      .getAttributionOptions(form.sourceDetail)
+      .then(setAttributionOptions)
+      .catch(() => setAttributionOptions([]));
+  }, [form.source, form.sourceDetail]);
+
+  const selectedAttribution = attributionOptions.find(
+    (option) => `${option.type}:${option.id}` === form.attributionOption,
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +105,12 @@ export function CreateDealDialog({
         amount: form.amount ? Number(form.amount) : undefined,
         paymentType: form.paymentType || undefined,
         sellerId: form.sellerId,
+        source: form.source,
+        sourceDetail: form.sourceDetail || undefined,
+        marketingAccountId:
+          selectedAttribution?.type === 'ACCOUNT' ? selectedAttribution.id : undefined,
+        marketingActivityId:
+          selectedAttribution?.type === 'ACTIVITY' ? selectedAttribution.id : undefined,
         notes: form.notes || undefined,
         productCategory: form.productCategory || undefined,
         productType: form.productType || undefined,
@@ -230,6 +257,76 @@ export function CreateDealDialog({
               onChange={(e) => setForm({ ...form, sellerId: e.target.value })}
               placeholder="Seller employee ID"
             />
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label>From</Label>
+              <Select
+                value={form.source}
+                onValueChange={(v) =>
+                  setForm({
+                    ...form,
+                    source: v as string,
+                    sourceDetail: '',
+                    attributionOption: '',
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEAD_SOURCES.map((source) => (
+                    <SelectItem key={source.value} value={source.value}>
+                      {source.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Where</Label>
+              <Select
+                value={form.sourceDetail || undefined}
+                onValueChange={(v) =>
+                  setForm({ ...form, sourceDetail: v as string, attributionOption: '' })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MARKETING_CHANNELS.map((channel) => (
+                    <SelectItem key={channel.value} value={channel.value}>
+                      {channel.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Which one</Label>
+              <Select
+                value={form.attributionOption || undefined}
+                onValueChange={(v) => setForm({ ...form, attributionOption: v as string })}
+                disabled={form.source !== 'MARKETING' || !form.sourceDetail}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Optional" />
+                </SelectTrigger>
+                <SelectContent>
+                  {attributionOptions.map((option) => (
+                    <SelectItem
+                      key={`${option.type}:${option.id}`}
+                      value={`${option.type}:${option.id}`}
+                    >
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>

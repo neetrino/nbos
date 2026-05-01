@@ -1,0 +1,36 @@
+import { describe, expect, it } from 'vitest';
+import {
+  payrollRunRemainingMajorUnits,
+  payrollRunRemainingString2dp,
+  sumMoneyStringsMajorUnits,
+  sumPayrollRunsRemainingMajorUnits,
+} from './payroll-run-remaining-from-strings';
+
+describe('payrollRunRemainingFromStrings', () => {
+  it('returns positive remaining', () => {
+    expect(payrollRunRemainingString2dp('100.00', '40.00')).toBe('60.00');
+    expect(payrollRunRemainingMajorUnits('100.00', '40.00')).toBe(60);
+  });
+
+  it('returns negative remaining when paid exceeds payable', () => {
+    expect(payrollRunRemainingString2dp('10.00', '25.00')).toBe('-15.00');
+  });
+
+  it('treats non-finite inputs as zero', () => {
+    expect(payrollRunRemainingString2dp('x', '10.00')).toBe('-10.00');
+  });
+
+  it('sums remaining across run rows in cent space', () => {
+    expect(
+      sumPayrollRunsRemainingMajorUnits([
+        { totalPayable: '100.00', totalPaid: '40.00' },
+        { totalPayable: '10.00', totalPaid: '25.00' },
+      ]),
+    ).toBe(45);
+  });
+
+  it('sums money strings for column roll-ups', () => {
+    expect(sumMoneyStringsMajorUnits(['10.00', '0.50'])).toBe(10.5);
+    expect(sumMoneyStringsMajorUnits([])).toBe(0);
+  });
+});

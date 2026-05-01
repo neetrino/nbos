@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -12,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
+import { parseOrderReconciliationListGap } from './order-reconciliation-list-filter';
 
 @ApiTags('Finance / Orders')
 @ApiBearerAuth()
@@ -26,13 +28,53 @@ export class OrdersController {
     @Query('pageSize') pageSize?: string,
     @Query('status') status?: string,
     @Query('projectId') projectId?: string,
+    @Query('partnerId') partnerId?: string,
     @Query('search') search?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('gap') gap?: string,
   ) {
+    const reconciliationGap = parseOrderReconciliationListGap(gap);
+    if (gap !== undefined && reconciliationGap === null) {
+      throw new BadRequestException('gap must be uninvoiced or outstanding');
+    }
+
     return this.ordersService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       status,
       projectId,
+      partnerId,
+      search,
+      dateFrom,
+      dateTo,
+      reconciliationGap: reconciliationGap ?? undefined,
+    });
+  }
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Get order statistics' })
+  async getStats(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('gap') gap?: string,
+    @Query('status') status?: string,
+    @Query('projectId') projectId?: string,
+    @Query('partnerId') partnerId?: string,
+    @Query('search') search?: string,
+  ) {
+    const reconciliationGap = parseOrderReconciliationListGap(gap);
+    if (gap !== undefined && reconciliationGap === null) {
+      throw new BadRequestException('gap must be uninvoiced or outstanding');
+    }
+
+    return this.ordersService.getStats({
+      dateFrom,
+      dateTo,
+      reconciliationGap: reconciliationGap ?? undefined,
+      status,
+      projectId,
+      partnerId,
       search,
     });
   }

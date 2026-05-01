@@ -13,7 +13,6 @@ import {
   Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableHeader,
@@ -22,7 +21,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   EMPLOYEE_LEVELS,
   EMPLOYEE_STATUSES,
@@ -32,8 +38,7 @@ import {
 import { PermissionGate } from '@/lib/permissions';
 import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDialog';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
-import type { Employee, RoleItem } from '@/lib/api/employees';
-import { api } from '@/lib/api';
+import { employeesApi, rolesApi, type Employee, type RoleItem } from '@/lib/api/employees';
 
 type ViewMode = 'list' | 'grid';
 
@@ -41,6 +46,7 @@ export default function TeamPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('grid');
@@ -51,19 +57,18 @@ export default function TeamPage() {
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/api/employees', {
-        params: {
-          pageSize: 100,
-          search: search || undefined,
-          roleId: filters.role && filters.role !== 'all' ? filters.role : undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-          departmentId:
-            filters.department && filters.department !== 'all' ? filters.department : undefined,
-        },
+      const { items } = await employeesApi.getAll({
+        pageSize: 100,
+        search: search || undefined,
+        roleId: filters.role && filters.role !== 'all' ? filters.role : undefined,
+        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        departmentId:
+          filters.department && filters.department !== 'all' ? filters.department : undefined,
       });
-      setEmployees(resp.data.items ?? resp.data ?? []);
+      setEmployees(items);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Employees could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -74,9 +79,9 @@ export default function TeamPage() {
   }, [fetchEmployees]);
 
   useEffect(() => {
-    api
-      .get('/api/roles')
-      .then((r) => setRoles(r.data ?? []))
+    rolesApi
+      .getAll()
+      .then((r) => setRoles(r ?? []))
       .catch(() => {});
   }, []);
 
@@ -172,11 +177,9 @@ export default function TeamPage() {
       />
 
       {loading ? (
-        <div className="grid grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full rounded-xl" />
-          ))}
-        </div>
+        <LoadingState variant="cards" count={6} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchEmployees} />
       ) : employees.length === 0 ? (
         <EmptyState
           icon={Users2}

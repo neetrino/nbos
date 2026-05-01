@@ -43,8 +43,11 @@ export type ExpenseMinAggregateOutputType = {
   dueDate: Date | null;
   status: $Enums.ExpenseStatusEnum | null;
   projectId: string | null;
+  expensePlanId: string | null;
+  clientServiceRecordId: string | null;
   isPassThrough: boolean | null;
   taxStatus: $Enums.TaxStatus | null;
+  backlogReason: $Enums.ExpenseBacklogReasonEnum | null;
   notes: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -60,8 +63,11 @@ export type ExpenseMaxAggregateOutputType = {
   dueDate: Date | null;
   status: $Enums.ExpenseStatusEnum | null;
   projectId: string | null;
+  expensePlanId: string | null;
+  clientServiceRecordId: string | null;
   isPassThrough: boolean | null;
   taxStatus: $Enums.TaxStatus | null;
+  backlogReason: $Enums.ExpenseBacklogReasonEnum | null;
   notes: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -77,8 +83,11 @@ export type ExpenseCountAggregateOutputType = {
   dueDate: number;
   status: number;
   projectId: number;
+  expensePlanId: number;
+  clientServiceRecordId: number;
   isPassThrough: number;
   taxStatus: number;
+  backlogReason: number;
   notes: number;
   createdAt: number;
   updatedAt: number;
@@ -103,8 +112,11 @@ export type ExpenseMinAggregateInputType = {
   dueDate?: true;
   status?: true;
   projectId?: true;
+  expensePlanId?: true;
+  clientServiceRecordId?: true;
   isPassThrough?: true;
   taxStatus?: true;
+  backlogReason?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -120,8 +132,11 @@ export type ExpenseMaxAggregateInputType = {
   dueDate?: true;
   status?: true;
   projectId?: true;
+  expensePlanId?: true;
+  clientServiceRecordId?: true;
   isPassThrough?: true;
   taxStatus?: true;
+  backlogReason?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -137,8 +152,11 @@ export type ExpenseCountAggregateInputType = {
   dueDate?: true;
   status?: true;
   projectId?: true;
+  expensePlanId?: true;
+  clientServiceRecordId?: true;
   isPassThrough?: true;
   taxStatus?: true;
+  backlogReason?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -242,8 +260,11 @@ export type ExpenseGroupByOutputType = {
   dueDate: Date | null;
   status: $Enums.ExpenseStatusEnum;
   projectId: string | null;
+  expensePlanId: string | null;
+  clientServiceRecordId: string | null;
   isPassThrough: boolean;
   taxStatus: $Enums.TaxStatus;
+  backlogReason: $Enums.ExpenseBacklogReasonEnum | null;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -284,12 +305,31 @@ export type ExpenseWhereInput = {
   dueDate?: Prisma.DateTimeNullableFilter<'Expense'> | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFilter<'Expense'> | $Enums.ExpenseStatusEnum;
   projectId?: Prisma.StringNullableFilter<'Expense'> | string | null;
+  expensePlanId?: Prisma.StringNullableFilter<'Expense'> | string | null;
+  clientServiceRecordId?: Prisma.StringNullableFilter<'Expense'> | string | null;
   isPassThrough?: Prisma.BoolFilter<'Expense'> | boolean;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Expense'> | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.EnumExpenseBacklogReasonEnumNullableFilter<'Expense'>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.StringNullableFilter<'Expense'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
   project?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null;
+  expensePlan?: Prisma.XOR<
+    Prisma.ExpensePlanNullableScalarRelationFilter,
+    Prisma.ExpensePlanWhereInput
+  > | null;
+  clientServiceRecord?: Prisma.XOR<
+    Prisma.ClientServiceRecordNullableScalarRelationFilter,
+    Prisma.ClientServiceRecordWhereInput
+  > | null;
+  expensePayments?: Prisma.ExpensePaymentListRelationFilter;
+  salaryLine?: Prisma.XOR<
+    Prisma.SalaryLineNullableScalarRelationFilter,
+    Prisma.SalaryLineWhereInput
+  > | null;
 };
 
 export type ExpenseOrderByWithRelationInput = {
@@ -302,12 +342,19 @@ export type ExpenseOrderByWithRelationInput = {
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   status?: Prisma.SortOrder;
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  expensePlanId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  clientServiceRecordId?: Prisma.SortOrderInput | Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   project?: Prisma.ProjectOrderByWithRelationInput;
+  expensePlan?: Prisma.ExpensePlanOrderByWithRelationInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordOrderByWithRelationInput;
+  expensePayments?: Prisma.ExpensePaymentOrderByRelationAggregateInput;
+  salaryLine?: Prisma.SalaryLineOrderByWithRelationInput;
 };
 
 export type ExpenseWhereUniqueInput = Prisma.AtLeast<
@@ -329,14 +376,33 @@ export type ExpenseWhereUniqueInput = Prisma.AtLeast<
     dueDate?: Prisma.DateTimeNullableFilter<'Expense'> | Date | string | null;
     status?: Prisma.EnumExpenseStatusEnumFilter<'Expense'> | $Enums.ExpenseStatusEnum;
     projectId?: Prisma.StringNullableFilter<'Expense'> | string | null;
+    expensePlanId?: Prisma.StringNullableFilter<'Expense'> | string | null;
+    clientServiceRecordId?: Prisma.StringNullableFilter<'Expense'> | string | null;
     isPassThrough?: Prisma.BoolFilter<'Expense'> | boolean;
     taxStatus?: Prisma.EnumTaxStatusFilter<'Expense'> | $Enums.TaxStatus;
+    backlogReason?:
+      | Prisma.EnumExpenseBacklogReasonEnumNullableFilter<'Expense'>
+      | $Enums.ExpenseBacklogReasonEnum
+      | null;
     notes?: Prisma.StringNullableFilter<'Expense'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
     project?: Prisma.XOR<
       Prisma.ProjectNullableScalarRelationFilter,
       Prisma.ProjectWhereInput
+    > | null;
+    expensePlan?: Prisma.XOR<
+      Prisma.ExpensePlanNullableScalarRelationFilter,
+      Prisma.ExpensePlanWhereInput
+    > | null;
+    clientServiceRecord?: Prisma.XOR<
+      Prisma.ClientServiceRecordNullableScalarRelationFilter,
+      Prisma.ClientServiceRecordWhereInput
+    > | null;
+    expensePayments?: Prisma.ExpensePaymentListRelationFilter;
+    salaryLine?: Prisma.XOR<
+      Prisma.SalaryLineNullableScalarRelationFilter,
+      Prisma.SalaryLineWhereInput
     > | null;
   },
   'id'
@@ -352,8 +418,11 @@ export type ExpenseOrderByWithAggregationInput = {
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   status?: Prisma.SortOrder;
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  expensePlanId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  clientServiceRecordId?: Prisma.SortOrderInput | Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -388,8 +457,14 @@ export type ExpenseScalarWhereWithAggregatesInput = {
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Expense'> | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumWithAggregatesFilter<'Expense'> | $Enums.ExpenseStatusEnum;
   projectId?: Prisma.StringNullableWithAggregatesFilter<'Expense'> | string | null;
+  expensePlanId?: Prisma.StringNullableWithAggregatesFilter<'Expense'> | string | null;
+  clientServiceRecordId?: Prisma.StringNullableWithAggregatesFilter<'Expense'> | string | null;
   isPassThrough?: Prisma.BoolWithAggregatesFilter<'Expense'> | boolean;
   taxStatus?: Prisma.EnumTaxStatusWithAggregatesFilter<'Expense'> | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.EnumExpenseBacklogReasonEnumNullableWithAggregatesFilter<'Expense'>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.StringNullableWithAggregatesFilter<'Expense'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Expense'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Expense'> | Date | string;
@@ -406,10 +481,15 @@ export type ExpenseCreateInput = {
   status?: $Enums.ExpenseStatusEnum;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project?: Prisma.ProjectCreateNestedOneWithoutExpensesInput;
+  expensePlan?: Prisma.ExpensePlanCreateNestedOneWithoutExpensesInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutExpensesInput;
+  expensePayments?: Prisma.ExpensePaymentCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineCreateNestedOneWithoutExpenseInput;
 };
 
 export type ExpenseUncheckedCreateInput = {
@@ -422,11 +502,16 @@ export type ExpenseUncheckedCreateInput = {
   dueDate?: Date | string | null;
   status?: $Enums.ExpenseStatusEnum;
   projectId?: string | null;
+  expensePlanId?: string | null;
+  clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineUncheckedCreateNestedOneWithoutExpenseInput;
 };
 
 export type ExpenseUpdateInput = {
@@ -445,10 +530,18 @@ export type ExpenseUpdateInput = {
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneWithoutExpensesNestedInput;
+  expensePlan?: Prisma.ExpensePlanUpdateOneWithoutExpensesNestedInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutExpensesNestedInput;
+  expensePayments?: Prisma.ExpensePaymentUpdateManyWithoutExpenseNestedInput;
+  salaryLine?: Prisma.SalaryLineUpdateOneWithoutExpenseNestedInput;
 };
 
 export type ExpenseUncheckedUpdateInput = {
@@ -466,11 +559,19 @@ export type ExpenseUncheckedUpdateInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedUpdateManyWithoutExpenseNestedInput;
+  salaryLine?: Prisma.SalaryLineUncheckedUpdateOneWithoutExpenseNestedInput;
 };
 
 export type ExpenseCreateManyInput = {
@@ -483,8 +584,11 @@ export type ExpenseCreateManyInput = {
   dueDate?: Date | string | null;
   status?: $Enums.ExpenseStatusEnum;
   projectId?: string | null;
+  expensePlanId?: string | null;
+  clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -506,6 +610,10 @@ export type ExpenseUpdateManyMutationInput = {
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -526,8 +634,14 @@ export type ExpenseUncheckedUpdateManyInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -553,8 +667,11 @@ export type ExpenseCountOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
+  expensePlanId?: Prisma.SortOrder;
+  clientServiceRecordId?: Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -574,8 +691,11 @@ export type ExpenseMaxOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
+  expensePlanId?: Prisma.SortOrder;
+  clientServiceRecordId?: Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -591,8 +711,11 @@ export type ExpenseMinOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
+  expensePlanId?: Prisma.SortOrder;
+  clientServiceRecordId?: Prisma.SortOrder;
   isPassThrough?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
+  backlogReason?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -600,6 +723,16 @@ export type ExpenseMinOrderByAggregateInput = {
 
 export type ExpenseSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
+};
+
+export type ExpenseScalarRelationFilter = {
+  is?: Prisma.ExpenseWhereInput;
+  isNot?: Prisma.ExpenseWhereInput;
+};
+
+export type ExpenseNullableScalarRelationFilter = {
+  is?: Prisma.ExpenseWhereInput | null;
+  isNot?: Prisma.ExpenseWhereInput | null;
 };
 
 export type ExpenseCreateNestedManyWithoutProjectInput = {
@@ -688,20 +821,242 @@ export type ExpenseUncheckedUpdateManyWithoutProjectNestedInput = {
   deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
 };
 
+export type ExpenseCreateNestedManyWithoutExpensePlanInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutExpensePlanInput,
+        Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput
+      >
+    | Prisma.ExpenseCreateWithoutExpensePlanInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutExpensePlanInput
+    | Prisma.ExpenseCreateOrConnectWithoutExpensePlanInput[];
+  createMany?: Prisma.ExpenseCreateManyExpensePlanInputEnvelope;
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+};
+
+export type ExpenseUncheckedCreateNestedManyWithoutExpensePlanInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutExpensePlanInput,
+        Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput
+      >
+    | Prisma.ExpenseCreateWithoutExpensePlanInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutExpensePlanInput
+    | Prisma.ExpenseCreateOrConnectWithoutExpensePlanInput[];
+  createMany?: Prisma.ExpenseCreateManyExpensePlanInputEnvelope;
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+};
+
+export type ExpenseUpdateManyWithoutExpensePlanNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutExpensePlanInput,
+        Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput
+      >
+    | Prisma.ExpenseCreateWithoutExpensePlanInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutExpensePlanInput
+    | Prisma.ExpenseCreateOrConnectWithoutExpensePlanInput[];
+  upsert?:
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutExpensePlanInput
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutExpensePlanInput[];
+  createMany?: Prisma.ExpenseCreateManyExpensePlanInputEnvelope;
+  set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  update?:
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutExpensePlanInput
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutExpensePlanInput[];
+  updateMany?:
+    | Prisma.ExpenseUpdateManyWithWhereWithoutExpensePlanInput
+    | Prisma.ExpenseUpdateManyWithWhereWithoutExpensePlanInput[];
+  deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
+};
+
+export type ExpenseUncheckedUpdateManyWithoutExpensePlanNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutExpensePlanInput,
+        Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput
+      >
+    | Prisma.ExpenseCreateWithoutExpensePlanInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutExpensePlanInput
+    | Prisma.ExpenseCreateOrConnectWithoutExpensePlanInput[];
+  upsert?:
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutExpensePlanInput
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutExpensePlanInput[];
+  createMany?: Prisma.ExpenseCreateManyExpensePlanInputEnvelope;
+  set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  update?:
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutExpensePlanInput
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutExpensePlanInput[];
+  updateMany?:
+    | Prisma.ExpenseUpdateManyWithWhereWithoutExpensePlanInput
+    | Prisma.ExpenseUpdateManyWithWhereWithoutExpensePlanInput[];
+  deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
+};
+
 export type EnumExpenseTypeEnumFieldUpdateOperationsInput = {
   set?: $Enums.ExpenseTypeEnum;
 };
 
-export type EnumExpenseCategoryEnumFieldUpdateOperationsInput = {
-  set?: $Enums.ExpenseCategoryEnum;
-};
-
-export type EnumExpenseFrequencyFieldUpdateOperationsInput = {
-  set?: $Enums.ExpenseFrequency;
-};
-
 export type EnumExpenseStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.ExpenseStatusEnum;
+};
+
+export type NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ExpenseBacklogReasonEnum | null;
+};
+
+export type ExpenseCreateNestedOneWithoutExpensePaymentsInput = {
+  create?: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutExpensePaymentsInput,
+    Prisma.ExpenseUncheckedCreateWithoutExpensePaymentsInput
+  >;
+  connectOrCreate?: Prisma.ExpenseCreateOrConnectWithoutExpensePaymentsInput;
+  connect?: Prisma.ExpenseWhereUniqueInput;
+};
+
+export type ExpenseUpdateOneRequiredWithoutExpensePaymentsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutExpensePaymentsInput,
+    Prisma.ExpenseUncheckedCreateWithoutExpensePaymentsInput
+  >;
+  connectOrCreate?: Prisma.ExpenseCreateOrConnectWithoutExpensePaymentsInput;
+  upsert?: Prisma.ExpenseUpsertWithoutExpensePaymentsInput;
+  connect?: Prisma.ExpenseWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ExpenseUpdateToOneWithWhereWithoutExpensePaymentsInput,
+      Prisma.ExpenseUpdateWithoutExpensePaymentsInput
+    >,
+    Prisma.ExpenseUncheckedUpdateWithoutExpensePaymentsInput
+  >;
+};
+
+export type ExpenseCreateNestedOneWithoutSalaryLineInput = {
+  create?: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutSalaryLineInput,
+    Prisma.ExpenseUncheckedCreateWithoutSalaryLineInput
+  >;
+  connectOrCreate?: Prisma.ExpenseCreateOrConnectWithoutSalaryLineInput;
+  connect?: Prisma.ExpenseWhereUniqueInput;
+};
+
+export type ExpenseUpdateOneWithoutSalaryLineNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutSalaryLineInput,
+    Prisma.ExpenseUncheckedCreateWithoutSalaryLineInput
+  >;
+  connectOrCreate?: Prisma.ExpenseCreateOrConnectWithoutSalaryLineInput;
+  upsert?: Prisma.ExpenseUpsertWithoutSalaryLineInput;
+  disconnect?: Prisma.ExpenseWhereInput | boolean;
+  delete?: Prisma.ExpenseWhereInput | boolean;
+  connect?: Prisma.ExpenseWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ExpenseUpdateToOneWithWhereWithoutSalaryLineInput,
+      Prisma.ExpenseUpdateWithoutSalaryLineInput
+    >,
+    Prisma.ExpenseUncheckedUpdateWithoutSalaryLineInput
+  >;
+};
+
+export type ExpenseCreateNestedManyWithoutClientServiceRecordInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
+      >
+    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
+  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+};
+
+export type ExpenseUncheckedCreateNestedManyWithoutClientServiceRecordInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
+      >
+    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
+  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+};
+
+export type ExpenseUpdateManyWithoutClientServiceRecordNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
+      >
+    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
+  upsert?:
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput[];
+  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
+  set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  update?:
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput[];
+  updateMany?:
+    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput[];
+  deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
+};
+
+export type ExpenseUncheckedUpdateManyWithoutClientServiceRecordNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
+      >
+    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
+  upsert?:
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput[];
+  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
+  set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  update?:
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput[];
+  updateMany?:
+    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput[];
+  deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
 };
 
 export type ExpenseCreateWithoutProjectInput = {
@@ -715,9 +1070,14 @@ export type ExpenseCreateWithoutProjectInput = {
   status?: $Enums.ExpenseStatusEnum;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  expensePlan?: Prisma.ExpensePlanCreateNestedOneWithoutExpensesInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutExpensesInput;
+  expensePayments?: Prisma.ExpensePaymentCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineCreateNestedOneWithoutExpenseInput;
 };
 
 export type ExpenseUncheckedCreateWithoutProjectInput = {
@@ -729,11 +1089,16 @@ export type ExpenseUncheckedCreateWithoutProjectInput = {
   frequency?: $Enums.ExpenseFrequency;
   dueDate?: Date | string | null;
   status?: $Enums.ExpenseStatusEnum;
+  expensePlanId?: string | null;
+  clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineUncheckedCreateNestedOneWithoutExpenseInput;
 };
 
 export type ExpenseCreateOrConnectWithoutProjectInput = {
@@ -795,11 +1160,441 @@ export type ExpenseScalarWhereInput = {
   dueDate?: Prisma.DateTimeNullableFilter<'Expense'> | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFilter<'Expense'> | $Enums.ExpenseStatusEnum;
   projectId?: Prisma.StringNullableFilter<'Expense'> | string | null;
+  expensePlanId?: Prisma.StringNullableFilter<'Expense'> | string | null;
+  clientServiceRecordId?: Prisma.StringNullableFilter<'Expense'> | string | null;
   isPassThrough?: Prisma.BoolFilter<'Expense'> | boolean;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Expense'> | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.EnumExpenseBacklogReasonEnumNullableFilter<'Expense'>
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.StringNullableFilter<'Expense'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Expense'> | Date | string;
+};
+
+export type ExpenseCreateWithoutExpensePlanInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project?: Prisma.ProjectCreateNestedOneWithoutExpensesInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutExpensesInput;
+  expensePayments?: Prisma.ExpensePaymentCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineCreateNestedOneWithoutExpenseInput;
+};
+
+export type ExpenseUncheckedCreateWithoutExpensePlanInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  projectId?: string | null;
+  clientServiceRecordId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineUncheckedCreateNestedOneWithoutExpenseInput;
+};
+
+export type ExpenseCreateOrConnectWithoutExpensePlanInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutExpensePlanInput,
+    Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput
+  >;
+};
+
+export type ExpenseCreateManyExpensePlanInputEnvelope = {
+  data: Prisma.ExpenseCreateManyExpensePlanInput | Prisma.ExpenseCreateManyExpensePlanInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ExpenseUpsertWithWhereUniqueWithoutExpensePlanInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutExpensePlanInput,
+    Prisma.ExpenseUncheckedUpdateWithoutExpensePlanInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutExpensePlanInput,
+    Prisma.ExpenseUncheckedCreateWithoutExpensePlanInput
+  >;
+};
+
+export type ExpenseUpdateWithWhereUniqueWithoutExpensePlanInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutExpensePlanInput,
+    Prisma.ExpenseUncheckedUpdateWithoutExpensePlanInput
+  >;
+};
+
+export type ExpenseUpdateManyWithWhereWithoutExpensePlanInput = {
+  where: Prisma.ExpenseScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExpenseUpdateManyMutationInput,
+    Prisma.ExpenseUncheckedUpdateManyWithoutExpensePlanInput
+  >;
+};
+
+export type ExpenseCreateWithoutExpensePaymentsInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project?: Prisma.ProjectCreateNestedOneWithoutExpensesInput;
+  expensePlan?: Prisma.ExpensePlanCreateNestedOneWithoutExpensesInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutExpensesInput;
+  salaryLine?: Prisma.SalaryLineCreateNestedOneWithoutExpenseInput;
+};
+
+export type ExpenseUncheckedCreateWithoutExpensePaymentsInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  projectId?: string | null;
+  expensePlanId?: string | null;
+  clientServiceRecordId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  salaryLine?: Prisma.SalaryLineUncheckedCreateNestedOneWithoutExpenseInput;
+};
+
+export type ExpenseCreateOrConnectWithoutExpensePaymentsInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutExpensePaymentsInput,
+    Prisma.ExpenseUncheckedCreateWithoutExpensePaymentsInput
+  >;
+};
+
+export type ExpenseUpsertWithoutExpensePaymentsInput = {
+  update: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutExpensePaymentsInput,
+    Prisma.ExpenseUncheckedUpdateWithoutExpensePaymentsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutExpensePaymentsInput,
+    Prisma.ExpenseUncheckedCreateWithoutExpensePaymentsInput
+  >;
+  where?: Prisma.ExpenseWhereInput;
+};
+
+export type ExpenseUpdateToOneWithWhereWithoutExpensePaymentsInput = {
+  where?: Prisma.ExpenseWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutExpensePaymentsInput,
+    Prisma.ExpenseUncheckedUpdateWithoutExpensePaymentsInput
+  >;
+};
+
+export type ExpenseUpdateWithoutExpensePaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneWithoutExpensesNestedInput;
+  expensePlan?: Prisma.ExpensePlanUpdateOneWithoutExpensesNestedInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutExpensesNestedInput;
+  salaryLine?: Prisma.SalaryLineUpdateOneWithoutExpenseNestedInput;
+};
+
+export type ExpenseUncheckedUpdateWithoutExpensePaymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  salaryLine?: Prisma.SalaryLineUncheckedUpdateOneWithoutExpenseNestedInput;
+};
+
+export type ExpenseCreateWithoutSalaryLineInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project?: Prisma.ProjectCreateNestedOneWithoutExpensesInput;
+  expensePlan?: Prisma.ExpensePlanCreateNestedOneWithoutExpensesInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutExpensesInput;
+  expensePayments?: Prisma.ExpensePaymentCreateNestedManyWithoutExpenseInput;
+};
+
+export type ExpenseUncheckedCreateWithoutSalaryLineInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  projectId?: string | null;
+  expensePlanId?: string | null;
+  clientServiceRecordId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedCreateNestedManyWithoutExpenseInput;
+};
+
+export type ExpenseCreateOrConnectWithoutSalaryLineInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutSalaryLineInput,
+    Prisma.ExpenseUncheckedCreateWithoutSalaryLineInput
+  >;
+};
+
+export type ExpenseUpsertWithoutSalaryLineInput = {
+  update: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutSalaryLineInput,
+    Prisma.ExpenseUncheckedUpdateWithoutSalaryLineInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutSalaryLineInput,
+    Prisma.ExpenseUncheckedCreateWithoutSalaryLineInput
+  >;
+  where?: Prisma.ExpenseWhereInput;
+};
+
+export type ExpenseUpdateToOneWithWhereWithoutSalaryLineInput = {
+  where?: Prisma.ExpenseWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutSalaryLineInput,
+    Prisma.ExpenseUncheckedUpdateWithoutSalaryLineInput
+  >;
+};
+
+export type ExpenseUpdateWithoutSalaryLineInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneWithoutExpensesNestedInput;
+  expensePlan?: Prisma.ExpensePlanUpdateOneWithoutExpensesNestedInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutExpensesNestedInput;
+  expensePayments?: Prisma.ExpensePaymentUpdateManyWithoutExpenseNestedInput;
+};
+
+export type ExpenseUncheckedUpdateWithoutSalaryLineInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedUpdateManyWithoutExpenseNestedInput;
+};
+
+export type ExpenseCreateWithoutClientServiceRecordInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project?: Prisma.ProjectCreateNestedOneWithoutExpensesInput;
+  expensePlan?: Prisma.ExpensePlanCreateNestedOneWithoutExpensesInput;
+  expensePayments?: Prisma.ExpensePaymentCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineCreateNestedOneWithoutExpenseInput;
+};
+
+export type ExpenseUncheckedCreateWithoutClientServiceRecordInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  projectId?: string | null;
+  expensePlanId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineUncheckedCreateNestedOneWithoutExpenseInput;
+};
+
+export type ExpenseCreateOrConnectWithoutClientServiceRecordInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+    Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
+  >;
+};
+
+export type ExpenseCreateManyClientServiceRecordInputEnvelope = {
+  data:
+    | Prisma.ExpenseCreateManyClientServiceRecordInput
+    | Prisma.ExpenseCreateManyClientServiceRecordInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutClientServiceRecordInput,
+    Prisma.ExpenseUncheckedUpdateWithoutClientServiceRecordInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+    Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
+  >;
+};
+
+export type ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutClientServiceRecordInput,
+    Prisma.ExpenseUncheckedUpdateWithoutClientServiceRecordInput
+  >;
+};
+
+export type ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput = {
+  where: Prisma.ExpenseScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExpenseUpdateManyMutationInput,
+    Prisma.ExpenseUncheckedUpdateManyWithoutClientServiceRecordInput
+  >;
 };
 
 export type ExpenseCreateManyProjectInput = {
@@ -811,8 +1606,11 @@ export type ExpenseCreateManyProjectInput = {
   frequency?: $Enums.ExpenseFrequency;
   dueDate?: Date | string | null;
   status?: $Enums.ExpenseStatusEnum;
+  expensePlanId?: string | null;
+  clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -834,9 +1632,17 @@ export type ExpenseUpdateWithoutProjectInput = {
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  expensePlan?: Prisma.ExpensePlanUpdateOneWithoutExpensesNestedInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutExpensesNestedInput;
+  expensePayments?: Prisma.ExpensePaymentUpdateManyWithoutExpenseNestedInput;
+  salaryLine?: Prisma.SalaryLineUpdateOneWithoutExpenseNestedInput;
 };
 
 export type ExpenseUncheckedUpdateWithoutProjectInput = {
@@ -853,11 +1659,19 @@ export type ExpenseUncheckedUpdateWithoutProjectInput = {
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedUpdateManyWithoutExpenseNestedInput;
+  salaryLine?: Prisma.SalaryLineUncheckedUpdateOneWithoutExpenseNestedInput;
 };
 
 export type ExpenseUncheckedUpdateManyWithoutProjectInput = {
@@ -874,11 +1688,260 @@ export type ExpenseUncheckedUpdateManyWithoutProjectInput = {
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ExpenseCreateManyExpensePlanInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  projectId?: string | null;
+  clientServiceRecordId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ExpenseUpdateWithoutExpensePlanInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneWithoutExpensesNestedInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutExpensesNestedInput;
+  expensePayments?: Prisma.ExpensePaymentUpdateManyWithoutExpenseNestedInput;
+  salaryLine?: Prisma.SalaryLineUpdateOneWithoutExpenseNestedInput;
+};
+
+export type ExpenseUncheckedUpdateWithoutExpensePlanInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedUpdateManyWithoutExpenseNestedInput;
+  salaryLine?: Prisma.SalaryLineUncheckedUpdateOneWithoutExpenseNestedInput;
+};
+
+export type ExpenseUncheckedUpdateManyWithoutExpensePlanInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ExpenseCreateManyClientServiceRecordInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  projectId?: string | null;
+  expensePlanId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ExpenseUpdateWithoutClientServiceRecordInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneWithoutExpensesNestedInput;
+  expensePlan?: Prisma.ExpensePlanUpdateOneWithoutExpensesNestedInput;
+  expensePayments?: Prisma.ExpensePaymentUpdateManyWithoutExpenseNestedInput;
+  salaryLine?: Prisma.SalaryLineUpdateOneWithoutExpenseNestedInput;
+};
+
+export type ExpenseUncheckedUpdateWithoutClientServiceRecordInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedUpdateManyWithoutExpenseNestedInput;
+  salaryLine?: Prisma.SalaryLineUncheckedUpdateOneWithoutExpenseNestedInput;
+};
+
+export type ExpenseUncheckedUpdateManyWithoutClientServiceRecordInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
+  category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  backlogReason?:
+    | Prisma.NullableEnumExpenseBacklogReasonEnumFieldUpdateOperationsInput
+    | $Enums.ExpenseBacklogReasonEnum
+    | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+/**
+ * Count Type ExpenseCountOutputType
+ */
+
+export type ExpenseCountOutputType = {
+  expensePayments: number;
+};
+
+export type ExpenseCountOutputTypeSelect<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  expensePayments?: boolean | ExpenseCountOutputTypeCountExpensePaymentsArgs;
+};
+
+/**
+ * ExpenseCountOutputType without action
+ */
+export type ExpenseCountOutputTypeDefaultArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ExpenseCountOutputType
+   */
+  select?: Prisma.ExpenseCountOutputTypeSelect<ExtArgs> | null;
+};
+
+/**
+ * ExpenseCountOutputType without action
+ */
+export type ExpenseCountOutputTypeCountExpensePaymentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ExpensePaymentWhereInput;
 };
 
 export type ExpenseSelect<
@@ -894,12 +1957,20 @@ export type ExpenseSelect<
     dueDate?: boolean;
     status?: boolean;
     projectId?: boolean;
+    expensePlanId?: boolean;
+    clientServiceRecordId?: boolean;
     isPassThrough?: boolean;
     taxStatus?: boolean;
+    backlogReason?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.Expense$projectArgs<ExtArgs>;
+    expensePlan?: boolean | Prisma.Expense$expensePlanArgs<ExtArgs>;
+    clientServiceRecord?: boolean | Prisma.Expense$clientServiceRecordArgs<ExtArgs>;
+    expensePayments?: boolean | Prisma.Expense$expensePaymentsArgs<ExtArgs>;
+    salaryLine?: boolean | Prisma.Expense$salaryLineArgs<ExtArgs>;
+    _count?: boolean | Prisma.ExpenseCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['expense']
 >;
@@ -917,12 +1988,17 @@ export type ExpenseSelectCreateManyAndReturn<
     dueDate?: boolean;
     status?: boolean;
     projectId?: boolean;
+    expensePlanId?: boolean;
+    clientServiceRecordId?: boolean;
     isPassThrough?: boolean;
     taxStatus?: boolean;
+    backlogReason?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.Expense$projectArgs<ExtArgs>;
+    expensePlan?: boolean | Prisma.Expense$expensePlanArgs<ExtArgs>;
+    clientServiceRecord?: boolean | Prisma.Expense$clientServiceRecordArgs<ExtArgs>;
   },
   ExtArgs['result']['expense']
 >;
@@ -940,12 +2016,17 @@ export type ExpenseSelectUpdateManyAndReturn<
     dueDate?: boolean;
     status?: boolean;
     projectId?: boolean;
+    expensePlanId?: boolean;
+    clientServiceRecordId?: boolean;
     isPassThrough?: boolean;
     taxStatus?: boolean;
+    backlogReason?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.Expense$projectArgs<ExtArgs>;
+    expensePlan?: boolean | Prisma.Expense$expensePlanArgs<ExtArgs>;
+    clientServiceRecord?: boolean | Prisma.Expense$clientServiceRecordArgs<ExtArgs>;
   },
   ExtArgs['result']['expense']
 >;
@@ -960,8 +2041,11 @@ export type ExpenseSelectScalar = {
   dueDate?: boolean;
   status?: boolean;
   projectId?: boolean;
+  expensePlanId?: boolean;
+  clientServiceRecordId?: boolean;
   isPassThrough?: boolean;
   taxStatus?: boolean;
+  backlogReason?: boolean;
   notes?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
@@ -979,8 +2063,11 @@ export type ExpenseOmit<
   | 'dueDate'
   | 'status'
   | 'projectId'
+  | 'expensePlanId'
+  | 'clientServiceRecordId'
   | 'isPassThrough'
   | 'taxStatus'
+  | 'backlogReason'
   | 'notes'
   | 'createdAt'
   | 'updatedAt',
@@ -990,16 +2077,25 @@ export type ExpenseInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.Expense$projectArgs<ExtArgs>;
+  expensePlan?: boolean | Prisma.Expense$expensePlanArgs<ExtArgs>;
+  clientServiceRecord?: boolean | Prisma.Expense$clientServiceRecordArgs<ExtArgs>;
+  expensePayments?: boolean | Prisma.Expense$expensePaymentsArgs<ExtArgs>;
+  salaryLine?: boolean | Prisma.Expense$salaryLineArgs<ExtArgs>;
+  _count?: boolean | Prisma.ExpenseCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type ExpenseIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.Expense$projectArgs<ExtArgs>;
+  expensePlan?: boolean | Prisma.Expense$expensePlanArgs<ExtArgs>;
+  clientServiceRecord?: boolean | Prisma.Expense$clientServiceRecordArgs<ExtArgs>;
 };
 export type ExpenseIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.Expense$projectArgs<ExtArgs>;
+  expensePlan?: boolean | Prisma.Expense$expensePlanArgs<ExtArgs>;
+  clientServiceRecord?: boolean | Prisma.Expense$clientServiceRecordArgs<ExtArgs>;
 };
 
 export type $ExpensePayload<
@@ -1008,6 +2104,10 @@ export type $ExpensePayload<
   name: 'Expense';
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs> | null;
+    expensePlan: Prisma.$ExpensePlanPayload<ExtArgs> | null;
+    clientServiceRecord: Prisma.$ClientServiceRecordPayload<ExtArgs> | null;
+    expensePayments: Prisma.$ExpensePaymentPayload<ExtArgs>[];
+    salaryLine: Prisma.$SalaryLinePayload<ExtArgs> | null;
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1020,8 +2120,11 @@ export type $ExpensePayload<
       dueDate: Date | null;
       status: $Enums.ExpenseStatusEnum;
       projectId: string | null;
+      expensePlanId: string | null;
+      clientServiceRecordId: string | null;
       isPassThrough: boolean;
       taxStatus: $Enums.TaxStatus;
+      backlogReason: $Enums.ExpenseBacklogReasonEnum | null;
       notes: string | null;
       createdAt: Date;
       updatedAt: Date;
@@ -1553,6 +2656,56 @@ export interface Prisma__ExpenseClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  expensePlan<T extends Prisma.Expense$expensePlanArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Expense$expensePlanArgs<ExtArgs>>,
+  ): Prisma.Prisma__ExpensePlanClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$ExpensePlanPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  clientServiceRecord<T extends Prisma.Expense$clientServiceRecordArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Expense$clientServiceRecordArgs<ExtArgs>>,
+  ): Prisma.Prisma__ClientServiceRecordClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$ClientServiceRecordPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  expensePayments<T extends Prisma.Expense$expensePaymentsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Expense$expensePaymentsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ExpensePaymentPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  salaryLine<T extends Prisma.Expense$salaryLineArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Expense$salaryLineArgs<ExtArgs>>,
+  ): Prisma.Prisma__SalaryLineClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$SalaryLinePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1593,8 +2746,11 @@ export interface ExpenseFieldRefs {
   readonly dueDate: Prisma.FieldRef<'Expense', 'DateTime'>;
   readonly status: Prisma.FieldRef<'Expense', 'ExpenseStatusEnum'>;
   readonly projectId: Prisma.FieldRef<'Expense', 'String'>;
+  readonly expensePlanId: Prisma.FieldRef<'Expense', 'String'>;
+  readonly clientServiceRecordId: Prisma.FieldRef<'Expense', 'String'>;
   readonly isPassThrough: Prisma.FieldRef<'Expense', 'Boolean'>;
   readonly taxStatus: Prisma.FieldRef<'Expense', 'TaxStatus'>;
+  readonly backlogReason: Prisma.FieldRef<'Expense', 'ExpenseBacklogReasonEnum'>;
   readonly notes: Prisma.FieldRef<'Expense', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Expense', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Expense', 'DateTime'>;
@@ -2039,6 +3195,97 @@ export type Expense$projectArgs<
    */
   include?: Prisma.ProjectInclude<ExtArgs> | null;
   where?: Prisma.ProjectWhereInput;
+};
+
+/**
+ * Expense.expensePlan
+ */
+export type Expense$expensePlanArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ExpensePlan
+   */
+  select?: Prisma.ExpensePlanSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ExpensePlan
+   */
+  omit?: Prisma.ExpensePlanOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExpensePlanInclude<ExtArgs> | null;
+  where?: Prisma.ExpensePlanWhereInput;
+};
+
+/**
+ * Expense.clientServiceRecord
+ */
+export type Expense$clientServiceRecordArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ClientServiceRecord
+   */
+  select?: Prisma.ClientServiceRecordSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ClientServiceRecord
+   */
+  omit?: Prisma.ClientServiceRecordOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClientServiceRecordInclude<ExtArgs> | null;
+  where?: Prisma.ClientServiceRecordWhereInput;
+};
+
+/**
+ * Expense.expensePayments
+ */
+export type Expense$expensePaymentsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ExpensePayment
+   */
+  select?: Prisma.ExpensePaymentSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ExpensePayment
+   */
+  omit?: Prisma.ExpensePaymentOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExpensePaymentInclude<ExtArgs> | null;
+  where?: Prisma.ExpensePaymentWhereInput;
+  orderBy?:
+    | Prisma.ExpensePaymentOrderByWithRelationInput
+    | Prisma.ExpensePaymentOrderByWithRelationInput[];
+  cursor?: Prisma.ExpensePaymentWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.ExpensePaymentScalarFieldEnum | Prisma.ExpensePaymentScalarFieldEnum[];
+};
+
+/**
+ * Expense.salaryLine
+ */
+export type Expense$salaryLineArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the SalaryLine
+   */
+  select?: Prisma.SalaryLineSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the SalaryLine
+   */
+  omit?: Prisma.SalaryLineOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SalaryLineInclude<ExtArgs> | null;
+  where?: Prisma.SalaryLineWhereInput;
 };
 
 /**

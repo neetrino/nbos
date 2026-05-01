@@ -22,12 +22,16 @@
 На странице **Product** размещаются вкладки, привязанные к **этому** продукту, например:
 
 - Overview
-- Tasks & Support
+- Work Space
+- Support
 - Credentials
+- Files / Drive Library
 - Finance
 - (остальные по модулю — по тем же правилам привязки к Product)
 
-**Правило:** задачи, тикеты, финансы по продукту, пароли, относящиеся к этой линии — в контексте **Product**, если иное явно не задано (например, общие пароли компании — по правилам Vault).
+**Правило:** задачи, тикеты, файлы, финансы по продукту, пароли, относящиеся к этой линии — в контексте **Product**, если иное явно не задано (например, общие пароли компании — по правилам Vault).
+
+Вкладка `Files / Drive Library` показывает Product Library: approved offer, handoff docs, design, development docs, QA evidence, delivery files, support files and selected finance documents according to Drive permissions.
 
 ---
 
@@ -43,7 +47,7 @@
 
 ## 4. Зачем отдельный Product
 
-Каждый Product — **отдельный элемент** с собственным Order, Creating, задачами и т.д. Это согласовано с моделью данных и сценариями Deal / Extension / Maintenance.
+Каждый Product — **отдельный элемент** с собственным Order, starting/delivery lifecycle, задачами и т.д. Это согласовано с моделью данных и сценариями Deal / Extension / Maintenance.
 
 ---
 

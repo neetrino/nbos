@@ -21,6 +21,11 @@ describe('LeadConversionService', () => {
     contactName: 'John Doe',
     status: 'SQL',
     source: 'MARKETING',
+    sourceDetail: 'LIST_AM',
+    sourcePartnerId: null,
+    sourceContactId: null,
+    marketingAccountId: 'account-1',
+    marketingActivityId: null,
     phone: '+37499123456',
     email: 'john@example.com',
     contactId: null,
@@ -110,5 +115,65 @@ describe('LeadConversionService', () => {
         data: expect.objectContaining({ code: 'D-2026-0043' }),
       }),
     );
+  });
+
+  it('copies full attribution block to deal', async () => {
+    prisma.lead.findUnique.mockResolvedValue({ ...baseLead, contactId: 'c1' });
+    prisma.deal.findFirst.mockResolvedValue(null);
+    prisma.deal.create.mockImplementation(({ data }) => Promise.resolve({ id: 'd-1', ...data }));
+
+    await service.convertToDeal('lead-1', convertDto);
+
+    expect(prisma.deal.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          source: 'MARKETING',
+          sourceDetail: 'LIST_AM',
+          marketingAccountId: 'account-1',
+        }),
+      }),
+    );
+  });
+
+  it('qualifies MQL lead as SQL and creates the initial deal from the assigned seller', async () => {
+    prisma.lead.findUnique.mockResolvedValue({
+      ...baseLead,
+      status: 'MQL',
+      assignedTo: 'seller-1',
+      contactId: 'c1',
+    });
+    prisma.deal.findFirst.mockResolvedValue(null);
+    prisma.deal.create.mockImplementation(({ data }) => Promise.resolve({ id: 'd-1', ...data }));
+
+    await service.qualifyLeadAsSql('lead-1');
+
+    expect(prisma.deal.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          type: 'PRODUCT',
+          paymentType: 'CLASSIC',
+          sellerId: 'seller-1',
+        }),
+      }),
+    );
+    expect(prisma.lead.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'lead-1' },
+        data: expect.objectContaining({ status: 'SQL' }),
+      }),
+    );
+  });
+
+  it('blocks SQL qualification without contact method or assigned seller', async () => {
+    prisma.lead.findUnique.mockResolvedValue({
+      ...baseLead,
+      status: 'MQL',
+      phone: null,
+      email: null,
+      assignedTo: null,
+    });
+
+    await expect(service.qualifyLeadAsSql('lead-1')).rejects.toThrow(BadRequestException);
+    expect(prisma.deal.create).not.toHaveBeenCalled();
   });
 });

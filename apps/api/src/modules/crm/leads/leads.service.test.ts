@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { LeadsService } from './leads.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('LeadsService', () => {
   let service: LeadsService;
@@ -70,16 +70,24 @@ describe('LeadsService', () => {
       prisma.lead.create.mockResolvedValue({
         id: '1',
         code: 'L-2026-0001',
-        contactName: 'John',
-        source: 'WEBSITE',
+        name: 'Website redesign',
+        contactName: '',
+        source: null,
       });
 
       const result = await service.create({
-        contactName: 'John',
-        source: 'WEBSITE',
+        name: 'Website redesign',
       });
 
       expect(prisma.lead.create).toHaveBeenCalled();
+      expect(prisma.lead.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            contactName: '',
+            source: undefined,
+          }),
+        }),
+      );
       expect(result.code).toBe('L-2026-0001');
     });
 
@@ -87,7 +95,7 @@ describe('LeadsService', () => {
       prisma.lead.findFirst.mockResolvedValue({ code: 'L-2026-0005' });
       prisma.lead.create.mockImplementation(({ data }) => Promise.resolve({ id: '2', ...data }));
 
-      await service.create({ contactName: 'Jane', source: 'MARKETING' });
+      await service.create({ name: 'Jane lead' });
 
       const createCall = prisma.lead.create.mock.calls[0][0];
       expect(createCall.data.code).toBe('L-2026-0006');
@@ -96,11 +104,62 @@ describe('LeadsService', () => {
 
   describe('update', () => {
     it('updates lead when found', async () => {
-      prisma.lead.findUnique.mockResolvedValue({ id: '1' });
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'NEW',
+        source: null,
+        sourceDetail: null,
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
       prisma.lead.update.mockResolvedValue({ id: '1', contactName: 'Updated' });
 
       const result = await service.update('1', { contactName: 'Updated' });
       expect(result.contactName).toBe('Updated');
+    });
+
+    it('rejects clearing attribution on a locked stage', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'MQL',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+
+      await expect(service.update('1', { source: null, sourceDetail: null })).rejects.toSatisfy(
+        (err: unknown) =>
+          err instanceof BadRequestException &&
+          (err.getResponse() as { code?: string }).code === 'ATTRIBUTION_IMMUTABLE',
+      );
+      expect(prisma.lead.update).not.toHaveBeenCalled();
+    });
+
+    it('allows replacing attribution on a locked stage when still valid', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'MQL',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+      prisma.lead.update.mockResolvedValue({
+        id: '1',
+        status: 'MQL',
+        source: 'SALES',
+        sourceDetail: 'COLD_EMAIL',
+      });
+
+      const result = await service.update('1', { sourceDetail: 'COLD_EMAIL' });
+      expect(result.sourceDetail).toBe('COLD_EMAIL');
     });
 
     it('throws NotFoundException when not found', async () => {
@@ -124,11 +183,91 @@ describe('LeadsService', () => {
 
   describe('updateStatus', () => {
     it('updates status', async () => {
-      prisma.lead.findUnique.mockResolvedValue({ id: '1' });
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
       prisma.lead.update.mockResolvedValue({ id: '1', status: 'MQL' });
 
       const result = await service.updateStatus('1', 'MQL');
       expect(result.status).toBe('MQL');
+    });
+
+    it('blocks meaningful movement without attribution', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        source: 'MARKETING',
+        sourceDetail: null,
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+
+      await expect(service.updateStatus('1', 'MQL')).rejects.toThrow(BadRequestException);
+    });
+
+    it('allows restoring spam lead to an active stage without attribution when target is NEW', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'SPAM',
+        source: 'PARTNER',
+        sourceDetail: null,
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+      prisma.lead.update.mockResolvedValue({ id: '1', status: 'NEW' });
+
+      const result = await service.updateStatus('1', 'NEW');
+
+      expect(result.status).toBe('NEW');
+    });
+
+    it('blocks moving a won lead back to an active stage', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'SQL',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+
+      await expect(service.updateStatus('1', 'MQL')).rejects.toMatchObject({
+        response: {
+          code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        },
+      });
+      expect(prisma.lead.update).not.toHaveBeenCalled();
+    });
+
+    it('blocks direct spam to won movement', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'SPAM',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+
+      await expect(service.updateStatus('1', 'SQL')).rejects.toMatchObject({
+        response: {
+          code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        },
+      });
+      expect(prisma.lead.update).not.toHaveBeenCalled();
     });
   });
 

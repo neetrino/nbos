@@ -8,6 +8,19 @@ export interface EmployeeRef {
   role?: string;
 }
 
+export interface DeliveryLifecycleProjection {
+  entityKind: 'PRODUCT' | 'EXTENSION';
+  legacyStatus: string | null;
+  stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER' | null;
+  workStatus: 'ACTIVE' | 'ON_HOLD';
+  resolution: 'DONE' | 'CANCELLED' | null;
+  onHoldReason: string | null;
+  onHoldUntil: string | null;
+  cancellationReason: string | null;
+  isActive: boolean;
+  isTerminal: boolean;
+}
+
 export interface Project {
   id: string;
   code: string;
@@ -18,7 +31,35 @@ export interface Project {
   updatedAt: string;
   company: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string };
-  _count: { orders: number };
+  _count: { orders: number; products?: number; extensions?: number };
+}
+
+export interface ProjectProductSummary {
+  id: string;
+  name: string;
+  status: string;
+  productCategory: string;
+  productType: string;
+  deadline: string | null;
+  pm: EmployeeRef | null;
+  deliveryLifecycle?: DeliveryLifecycleProjection;
+  _count: {
+    extensions: number;
+    tasks: number;
+    tickets: number;
+  };
+}
+
+export interface ProjectExtensionSummary {
+  id: string;
+  name: string;
+  status: string;
+  size: string;
+  productId: string;
+  assignee: EmployeeRef | null;
+  product: { id: string; name: string; productType: string; status: string };
+  deliveryLifecycle?: DeliveryLifecycleProjection;
+  _count: { tasks: number };
 }
 
 export interface ProjectOrder {
@@ -114,7 +155,51 @@ export interface ProjectAuditLog {
   createdAt: string;
 }
 
+export interface ProjectIntakeSummary {
+  primaryProduct: {
+    id: string;
+    name: string;
+    status: string;
+    deadline: string | null;
+    pm: EmployeeRef | null;
+    deliveryLifecycle?: DeliveryLifecycleProjection;
+  } | null;
+  hasProduct: boolean;
+  hasPm: boolean;
+  hasDeadline: boolean;
+  hasPaidInvoice: boolean;
+  hasSubscriptionContext: boolean;
+  hasCredentials: boolean;
+  productCount: number;
+  extensionCount: number;
+  openTaskCount: number;
+  credentialCount: number;
+  subscriptionStatuses: string[];
+}
+
+export interface ProjectKickoffChecklistItem {
+  id: string;
+  projectId: string;
+  key: string;
+  title: string;
+  isRequired: boolean;
+  isChecked: boolean;
+  note: string | null;
+  checkedAt: string | null;
+  checkedById: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateKickoffChecklistItemInput {
+  isChecked?: boolean;
+  note?: string | null;
+}
+
 export interface FullProject extends Project {
+  products: ProjectProductSummary[];
+  extensions: ProjectExtensionSummary[];
   orders: ProjectOrder[];
   tickets: ProjectTicket[];
   credentials: ProjectCredential[];
@@ -122,7 +207,11 @@ export interface FullProject extends Project {
   domains: ProjectDomain[];
   expenses: ProjectExpense[];
   auditLogs: ProjectAuditLog[];
+  intake?: ProjectIntakeSummary;
+  kickoffChecklist?: ProjectKickoffChecklistItem[];
   _count: {
+    products: number;
+    extensions: number;
     orders: number;
     tickets: number;
     credentials: number;
@@ -135,7 +224,17 @@ export interface ProjectListData {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+/** Workspace-wide counts from `GET /api/projects/stats`. */
+export interface ProjectWorkspaceStats {
+  total: number;
+}
+
 export const projectsApi = {
+  async getStats(): Promise<ProjectWorkspaceStats> {
+    const resp = await api.get<ProjectWorkspaceStats>('/api/projects/stats');
+    return resp.data;
+  },
+
   async getAll(params?: Record<string, unknown>): Promise<ProjectListData> {
     const resp = await api.get<ProjectListData>('/api/projects', { params });
     return resp.data;
@@ -153,6 +252,18 @@ export const projectsApi = {
 
   async update(id: string, data: Record<string, unknown>): Promise<Project> {
     const resp = await api.put<Project>(`/api/projects/${id}`, data);
+    return resp.data;
+  },
+
+  async updateKickoffChecklistItem(
+    projectId: string,
+    itemId: string,
+    data: UpdateKickoffChecklistItemInput,
+  ): Promise<ProjectKickoffChecklistItem> {
+    const resp = await api.put<ProjectKickoffChecklistItem>(
+      `/api/projects/${projectId}/kickoff-checklist/${itemId}`,
+      data,
+    );
     return resp.data;
   },
 

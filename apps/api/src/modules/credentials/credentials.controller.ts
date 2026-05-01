@@ -7,12 +7,10 @@ import {
   Body,
   Param,
   Query,
-  Req,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CredentialsService } from './credentials.service';
 
@@ -32,6 +30,11 @@ export class CredentialsController {
   @ApiQuery({ name: 'accessLevel', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'tab', required: false, enum: ['all', 'personal', 'department', 'secret'] })
+  @ApiQuery({
+    name: 'includeArchived',
+    required: false,
+    description: 'List archived credentials only',
+  })
   async findAll(
     @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
@@ -41,7 +44,10 @@ export class CredentialsController {
     @Query('accessLevel') accessLevel?: string,
     @Query('search') search?: string,
     @Query('tab') tab?: string,
+    @Query('includeArchived') includeArchived?: string,
   ) {
+    const archivedFlag =
+      includeArchived === '1' || includeArchived === 'true' || includeArchived === 'yes';
     return this.credentialsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
@@ -52,14 +58,65 @@ export class CredentialsController {
       tab: (tab as 'all' | 'personal' | 'department' | 'secret') || undefined,
       employeeId: user.id,
       departmentIds: user.departmentIds,
+      includeArchived: archivedFlag,
     });
   }
 
   @Get(':id')
   @RequirePermission('CREDENTIALS', 'VIEW')
-  @ApiOperation({ summary: 'Get credential by ID with decrypted fields (audit logged)' })
+  @ApiOperation({
+    summary: 'Get credential metadata (secrets omitted; use secrets/reveal or secrets/copy)',
+  })
   async findOne(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    return this.credentialsService.findById(id, user.id);
+    return this.credentialsService.findById(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
+  @Post(':id/secrets/reveal')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reveal one encrypted secret field (audited as secret_revealed)' })
+  async revealSecret(
+    @Param('id') id: string,
+    @Body() body: { field: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.revealSecretField(id, body.field, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
+  @Post(':id/secrets/copy')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Return one decrypted secret for client clipboard (audited as secret_copied)',
+  })
+  async copySecret(
+    @Param('id') id: string,
+    @Body() body: { field: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.copySecretField(id, body.field, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
+  @Post(':id/open-url')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Record audited open of stored http(s) URL; returns URL for client navigation',
+  })
+  async openUrl(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.recordUrlOpened(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
   }
 
   @Post()
@@ -69,8 +126,14 @@ export class CredentialsController {
     @Body()
     body: {
       projectId?: string;
+      productId?: string;
+      domainId?: string;
+      clientServiceRecordId?: string;
       departmentId?: string;
       category: string;
+      credentialType?: string;
+      criticality?: string;
+      environment?: string;
       provider?: string;
       name: string;
       url?: string;
@@ -80,6 +143,11 @@ export class CredentialsController {
       envData?: string;
       phone?: string;
       notes?: string;
+      publicNotes?: string;
+      secureNotes?: string;
+      lastRotatedAt?: string;
+      nextRotationAt?: string;
+      rotationOwnerId?: string;
       accessLevel?: string;
       allowedEmployees?: string[];
     },
@@ -96,8 +164,14 @@ export class CredentialsController {
     @Body()
     body: {
       projectId?: string;
+      productId?: string;
+      domainId?: string;
+      clientServiceRecordId?: string;
       departmentId?: string;
       category?: string;
+      credentialType?: string;
+      criticality?: string;
+      environment?: string;
       provider?: string;
       name?: string;
       url?: string;
@@ -107,19 +181,54 @@ export class CredentialsController {
       envData?: string;
       phone?: string;
       notes?: string;
+      publicNotes?: string;
+      secureNotes?: string;
+      lastRotatedAt?: string | null;
+      nextRotationAt?: string | null;
+      rotationOwnerId?: string | null;
       accessLevel?: string;
       allowedEmployees?: string[];
     },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.update(id, body, user.id);
+    return this.credentialsService.update(id, body, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
+  @Delete(':id/permanent')
+  @RequirePermission('CREDENTIALS', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Permanently delete an archived credential (cannot be undone)',
+  })
+  async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.credentialsService.permanentlyDelete(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
   }
 
   @Delete(':id')
   @RequirePermission('CREDENTIALS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete credential' })
+  @ApiOperation({ summary: 'Archive credential (soft delete)' })
   async remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    await this.credentialsService.delete(id, user.id);
+    await this.credentialsService.archive(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
+  }
+
+  @Post(':id/restore')
+  @RequirePermission('CREDENTIALS', 'EDIT')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Restore archived credential' })
+  async restore(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    await this.credentialsService.restore(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds ?? [],
+    });
   }
 }

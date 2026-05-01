@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PartnersService } from './partners.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
@@ -52,6 +52,34 @@ describe('PartnersService', () => {
         }),
       );
     });
+
+    it('should filter by direction', async () => {
+      prisma.partner.findMany.mockResolvedValue([]);
+      prisma.partner.count.mockResolvedValue(0);
+
+      await service.findAll({ direction: 'OUTBOUND' });
+
+      expect(prisma.partner.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ direction: 'OUTBOUND' }),
+        }),
+      );
+    });
+
+    it('should include contact summary for list rows', async () => {
+      prisma.partner.findMany.mockResolvedValue([]);
+      prisma.partner.count.mockResolvedValue(0);
+
+      await service.findAll({});
+
+      expect(prisma.partner.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            contact: { select: { id: true, firstName: true, lastName: true } },
+          }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {
@@ -84,6 +112,15 @@ describe('PartnersService', () => {
         }),
       );
     });
+
+    it('should reject defaultPercent out of range', async () => {
+      await expect(service.create({ name: 'x', defaultPercent: 101 })).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.create({ name: 'x', defaultPercent: Number.NaN })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
   describe('update', () => {
@@ -105,6 +142,13 @@ describe('PartnersService', () => {
     it('should throw NotFoundException for missing partner', async () => {
       prisma.partner.findUnique.mockResolvedValue(null);
       await expect(service.update('missing', { name: 'x' })).rejects.toThrow(NotFoundException);
+    });
+
+    it('should reject invalid defaultPercent on update', async () => {
+      prisma.partner.findUnique.mockResolvedValue({ id: '1' });
+      await expect(service.update('1', { defaultPercent: -1 })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

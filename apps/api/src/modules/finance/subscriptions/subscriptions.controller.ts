@@ -14,22 +14,34 @@ export class SubscriptionsController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
+    @Query('partnerId') partnerId?: string,
     @Query('status') status?: string,
     @Query('type') type?: string,
+    @Query('search') search?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ) {
     return this.subscriptionsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
+      partnerId,
       status,
       type,
+      search,
+      dateFrom,
+      dateTo,
     });
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get subscription statistics' })
-  async getStats() {
-    return this.subscriptionsService.getStats();
+  async getStats(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('partnerId') partnerId?: string,
+  ) {
+    return this.subscriptionsService.getStats({ dateFrom, dateTo, partnerId });
   }
 
   @Get(':id')
@@ -68,7 +80,7 @@ export class SubscriptionsController {
       taxStatus?: string;
       startDate?: string;
       endDate?: string;
-      partnerId?: string;
+      partnerId?: string | null;
     },
   ) {
     return this.subscriptionsService.update(id, body);

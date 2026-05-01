@@ -14,15 +14,24 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { SupportModule } from './modules/support/support.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { BonusModule } from './modules/bonus/bonus.module';
+import { PayrollRunsModule } from './modules/payroll-runs/payroll-runs.module';
+import { ClientServicesModule } from './modules/client-services/client-services.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
 import { DriveModule } from './modules/drive/drive.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { AutomationModule } from './modules/automation/automation.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MessengerModule } from './modules/messenger/messenger.module';
+import { MailModule } from './modules/mail/mail.module';
 import { PartnersModule } from './modules/partners/partners.module';
+import { MarketingModule } from './modules/marketing/marketing.module';
 import { SystemListsModule } from './modules/system-lists/system-lists.module';
+import { TechnicalModule } from './modules/technical/technical.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
@@ -52,14 +61,23 @@ import { PermissionGuard } from './common/guards/permission.guard';
     SupportModule,
     ExpensesModule,
     BonusModule,
+    PayrollRunsModule,
+    ClientServicesModule,
     AuditModule,
     CredentialsModule,
     DriveModule,
+    DocumentsModule,
     NotificationModule,
     AutomationModule,
+    CalendarModule,
+    DashboardModule,
+    ReportsModule,
     SchedulerModule,
     PartnersModule,
+    MarketingModule,
     MessengerModule,
+    MailModule,
+    TechnicalModule,
     SystemListsModule,
     RolesModule,
     DepartmentsModule,

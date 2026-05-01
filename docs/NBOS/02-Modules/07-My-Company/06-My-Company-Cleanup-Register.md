@@ -1,0 +1,246 @@
+# My Company Cleanup Register
+
+> NBOS My Company - что нужно привести к новому канону после обсуждения org, team, KPI, compensation и bonus policy.
+
+## Назначение
+
+Этот файл фиксирует расхождения между текущей реализацией / старыми документами и новым каноном `My Company`.
+
+Новый канон:
+
+- `My Company` является top-level модулем для оргструктуры, сотрудников, ролей, KPI, compensation и SOP;
+- `Team` является подпунктом `My Company`, а не отдельным top-level пунктом sidebar;
+- `My Account` открывается из header user menu, а не из Settings;
+- `Settings` содержит системную админку, а не бизнес-структуру компании;
+- `Compensation Profile` хранит условия оплаты сотрудника с историей версий;
+- `Bonus Policy` и `KPI Policy` универсальны для всех отделов, ролей, уровней и сотрудников;
+- `Policy Templates` живут в коде, а UI настраивает безопасные параметры;
+- employee overrides требуют reason, effective date и audit;
+- SOP разделяет `SOP Document`, `Process Template`, `Process Run`, `Task Blueprint`, `Automation Rule`;
+- `Department -> Seat -> Seat Assignment -> Employee` является основной моделью оргструктуры;
+- Org Structure UI должен быть canvas с карточками отделов, zoom/search/collapse и drawer деталей;
+- Finance использует policies из My Company, но не придумывает роли и мотивацию сам.
+
+---
+
+## A. Already aligned / Уже совпадает с каноном
+
+### A1. Docs already define My Company as a module
+
+Статус: `OK DOCS`
+
+Документы уже содержат `My Company` как модуль:
+
+- [01-Org-Structure.md](./01-Org-Structure.md)
+- [02-Team-Employees.md](./02-Team-Employees.md)
+- [03-RBAC-Permissions.md](./03-RBAC-Permissions.md)
+- [04-KPI-Scorecard.md](./04-KPI-Scorecard.md)
+- [05-SOP-Templates.md](./05-SOP-Templates.md)
+- [07-Compensation-and-Policies.md](./07-Compensation-and-Policies.md)
+
+### A2. Navigation canon already includes My Company
+
+Статус: `OK DOCS`
+
+[01-Navigation-Structure.md](../../05-UI-Specifications/01-Navigation-Structure.md) now treats `My Company` as a sidebar module and `Team` as its child.
+
+---
+
+## B. Runtime / UI stale
+
+### B1. Sidebar currently shows Team as top-level item
+
+Статус: `DONE IN UI SHELL SLICE`
+
+Current UI shows `Team` directly in the sidebar. It should move under:
+
+```text
+My Company -> Team
+```
+
+Future implementation:
+
+- add `My Company` top-level sidebar item;
+- move `Team` under `My Company`;
+- add `Org Structure`, `Compensation`, `KPI / Scorecard`, `Roles & Seats`, `Departments`, `SOP`;
+- make `Org Structure` the default My Company page;
+- implement org chart canvas with department cards, lines, zoom, search, collapse/expand and detail drawer;
+- hide items by RBAC.
+
+Runtime now has `My Company` top-level sidebar navigation and `Team` lives under it. Org chart, seats, compensation, KPI and SOP remain dedicated follow-up slices.
+
+### B2. My Account currently appears inside Settings
+
+Статус: `DONE IN UI SHELL SLICE`
+
+`My Account` is a personal profile screen and should open from the header user menu.
+
+Future implementation:
+
+- remove `My Account` from Settings navigation;
+- open account from header user dropdown;
+- keep profile, notifications and security under account area.
+
+### B3. Settings mixes system configuration with business structure
+
+Статус: `SHELL CLEANUP DONE / BUSINESS MODEL PENDING`
+
+Settings should contain system administration only:
+
+- General;
+- System Lists;
+- Permissions / technical RBAC;
+- Integrations;
+- Audit Log.
+
+Business objects should move to `My Company`:
+
+- departments;
+- seats / business roles;
+- levels;
+- employees;
+- compensation profiles;
+- KPI policies;
+- bonus policies.
+
+Runtime Settings landing now focuses on system admin, and My Company owns the business structure entry points.
+
+---
+
+## C. Runtime missing
+
+### C1. Compensation Profile is not the source of truth yet
+
+Статус: `MISSING CODE`
+
+Employee currently may still contain simple salary fields. New canon requires:
+
+- versioned `Compensation Profile`;
+- base salary;
+- payout schedule;
+- active bonus policy;
+- active KPI policy;
+- effective dates;
+- archive old versions instead of overwriting.
+- validation before payroll run.
+
+### C2. Bonus Policy is not implemented as universal policy layer
+
+Статус: `MISSING CODE`
+
+New canon requires `Bonus Policy` for all roles, not only Seller.
+
+Policy must support:
+
+- department defaults;
+- seat/position defaults;
+- level defaults;
+- employee-specific override;
+- product category / product type for delivery roles;
+- lead source / deal type / payment type for sales;
+- effective dates and audit.
+- policy templates;
+- employee overrides with reason;
+- preview affected employees before policy changes.
+
+### C3. KPI Policy is not implemented as universal policy layer
+
+Статус: `MISSING CODE`
+
+New canon requires:
+
+- KPI templates by role/department;
+- KPI policies by department, seat, level and employee;
+- KPI plans by period;
+- KPI results;
+- KPI gate results for payroll;
+- optional manual adjustments with reason.
+- KPI policy templates;
+- KPI gate preview;
+- validation that metric weights sum to 100%.
+
+### C4. Business roles and system permissions need separation
+
+Статус: `FOUNDATION VISIBLE / DEEP MODEL PENDING`
+
+`Role` can mean two different things:
+
+- business role / seat: Seller, PM, Developer, Head of Sales;
+- system permission role: Admin, Finance Admin, Viewer.
+
+Future implementation must separate:
+
+- `Seat / Position` in My Company;
+- `Permission Role` in Settings / RBAC.
+
+Phase 1 runtime now makes this boundary explicit in the My Company foundation dashboard and Settings/RBAC navigation. The actual `Seat` / `Seat Assignment` persistence model remains a later My Company implementation slice.
+
+### C5. Department / Seat / Assignment runtime model is missing
+
+Статус: `FOUNDATION VISIBLE / MISSING SEAT MODEL`
+
+New canon requires:
+
+- `Department`;
+- `Seat`;
+- `Seat Assignment`;
+- support for multiple active assignments per employee;
+- primary assignment;
+- allocation percent;
+- vacant seats;
+- temporary assignments;
+- assignment history.
+
+Current runtime/UI may still treat `role` and `department` as simple employee fields. This must be refactored so employee profile derives primary role/department from seat assignments.
+
+Phase 1 runtime now surfaces current departments, assignment coverage and permission roles from existing data so missing seat data is visible instead of hidden behind a placeholder.
+
+### C6. Compensation UI is missing
+
+Статус: `MISSING UI`
+
+New canon requires:
+
+- Compensation dashboard;
+- Compensation Profiles view;
+- Bonus Policies view;
+- KPI Policies view;
+- Employee policy drawer;
+- policy audit view;
+- validation warnings.
+
+### C7. SOP runtime model is missing
+
+Статус: `MISSING CODE`
+
+New canon requires:
+
+- `SOP Document`;
+- `Process Template`;
+- `Process Run`;
+- process steps;
+- linked tasks / checklists / approvals;
+- owner seat;
+- department binding;
+- review date;
+- version history;
+- change requests.
+
+Current docs/processes may still treat SOP as static markdown or mix it with task templates. Runtime must separate SOP Library from Task Blueprints and Automation Rules.
+
+---
+
+## D. Recommended implementation order
+
+1. Add `My Company` sidebar and move `Team` under it.
+2. Remove `My Account` from Settings and open it from header user menu.
+3. Add org chart canvas as default My Company screen.
+4. Add `Department`, `Seat`, `Seat Assignment`.
+5. Split business roles/seats from technical permission roles.
+6. Add versioned `Compensation Profile`.
+7. Add `Bonus Policy` and `KPI Policy` templates and active policies.
+8. Add Compensation dashboard and policy management views.
+9. Add SOP Library, Process Templates and Process Runs.
+10. Connect onboarding/offboarding/monthly close to Tasks via process runs.
+11. Connect policies to Finance payroll and bonus release.
+12. Add KPI dashboards and employee wallet projections.

@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { DealsService } from './deals.service';
 
 @ApiTags('CRM / Deals')
@@ -78,7 +79,20 @@ export class DealsController {
       sellerId: string;
       projectId?: string;
       source?: string;
+      sourceDetail?: string | null;
+      sourcePartnerId?: string | null;
+      sourceContactId?: string | null;
+      marketingAccountId?: string | null;
+      marketingActivityId?: string | null;
       notes?: string;
+      offerSentAt?: string | null;
+      offerLink?: string | null;
+      offerFileUrl?: string | null;
+      offerScreenshotUrl?: string | null;
+      responseDueAt?: string | null;
+      contractSignedAt?: string | null;
+      contractFileUrl?: string | null;
+      maintenanceStartAt?: string | null;
     },
   ) {
     return this.dealsService.create(body);
@@ -103,7 +117,17 @@ export class DealsController {
       sourceDetail?: string | null;
       sourcePartnerId?: string | null;
       sourceContactId?: string | null;
+      marketingAccountId?: string | null;
+      marketingActivityId?: string | null;
       notes?: string;
+      offerSentAt?: string | null;
+      offerLink?: string | null;
+      offerFileUrl?: string | null;
+      offerScreenshotUrl?: string | null;
+      responseDueAt?: string | null;
+      contractSignedAt?: string | null;
+      contractFileUrl?: string | null;
+      maintenanceStartAt?: string | null;
     },
   ) {
     return this.dealsService.update(id, body);
@@ -111,8 +135,16 @@ export class DealsController {
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update deal status (pipeline move)' })
-  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    return this.dealsService.updateStatus(id, body.status);
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() body: { status: string; overrideReason?: string | null },
+    @CurrentUser() user?: CurrentUserPayload,
+  ) {
+    return this.dealsService.updateStatus(id, body.status, {
+      reason: body.overrideReason,
+      actorId: user?.id,
+      actorRoleLevel: user?.roleLevel,
+    });
   }
 
   @Delete(':id')

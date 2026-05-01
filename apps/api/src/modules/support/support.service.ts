@@ -1,12 +1,16 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
+  type TaskPriorityEnum,
+  type PaymentTypeEnum,
+  type SupportCoverageEnum,
   type TicketStatusEnum,
   type TicketPriorityEnum,
   type TicketCategoryEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { buildSupportSlaProjection } from './support-sla';
 
 const SLA_DEADLINES: Record<string, { responseHours: number; resolveHours: number }> = {
   P1: { responseHours: 4, resolveHours: 24 },
@@ -14,11 +18,43 @@ const SLA_DEADLINES: Record<string, { responseHours: number; resolveHours: numbe
   P3: { responseHours: 24, resolveHours: 72 },
 };
 
+const SUPPORT_TICKET_ENTITY_TYPE = 'SUPPORT_TICKET';
+const PROJECT_ENTITY_TYPE = 'PROJECT';
+const PRODUCT_ENTITY_TYPE = 'PRODUCT';
+
+const TICKET_PRIORITY_TO_TASK_PRIORITY: Record<TicketPriorityEnum, TaskPriorityEnum> = {
+  P1: 'CRITICAL',
+  P2: 'HIGH',
+  P3: 'NORMAL',
+};
+
+const SUPPORT_TICKET_INCLUDE = {
+  project: { select: { id: true, code: true, name: true } },
+  product: { select: { id: true, name: true, status: true } },
+  extensionDeal: { select: { id: true, code: true, name: true, status: true, amount: true } },
+  contact: { select: { id: true, firstName: true, lastName: true, phone: true, email: true } },
+  assignee: { select: { id: true, firstName: true, lastName: true } },
+} satisfies Prisma.SupportTicketInclude;
+
+const SUPPORT_TASK_INCLUDE = {
+  creator: { select: { id: true, firstName: true, lastName: true } },
+  assignee: { select: { id: true, firstName: true, lastName: true } },
+  links: true,
+  checklists: { include: { items: { orderBy: { sortOrder: 'asc' as const } } } },
+  subtasks: {
+    select: { id: true, code: true, title: true, status: true, assigneeId: true },
+    orderBy: { createdAt: 'asc' as const },
+  },
+  _count: { select: { subtasks: true, checklists: true } },
+} satisfies Prisma.TaskInclude;
+
 interface CreateTicketDto {
   title: string;
   projectId: string;
   category: string;
   description?: string;
+  productId?: string;
+  coverageDecision?: string | null;
   contactId?: string;
   priority?: string;
   billable?: boolean;
@@ -29,8 +65,10 @@ interface UpdateTicketDto {
   title?: string;
   description?: string;
   projectId?: string;
+  productId?: string | null;
   contactId?: string;
   category?: string;
+  coverageDecision?: string | null;
   priority?: string;
   billable?: boolean;
   assignedTo?: string;
@@ -40,6 +78,8 @@ interface TicketQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  productId?: string;
+  coverageDecision?: string;
   status?: string;
   priority?: string;
   category?: string;
@@ -47,6 +87,22 @@ interface TicketQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+}
+
+interface CreateTicketTaskDto {
+  creatorId: string;
+  title?: string;
+  description?: string;
+  dueDate?: string | null;
+}
+
+interface CreateExtensionDealDto {
+  sellerId: string;
+  contactId?: string;
+  amount?: number;
+  paymentType?: string;
+  name?: string;
+  notes?: string;
 }
 
 @Injectable()
@@ -58,25 +114,32 @@ export class SupportService {
       page = 1,
       pageSize = 20,
       projectId,
+      productId,
       status,
       priority,
       category,
+      coverageDecision,
       assignedTo,
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = params;
 
-    const where = this.buildWhere({ projectId, status, priority, category, assignedTo, search });
+    const where = this.buildWhere({
+      projectId,
+      productId,
+      status,
+      priority,
+      category,
+      coverageDecision,
+      assignedTo,
+      search,
+    });
 
     const [items, total] = await Promise.all([
       this.prisma.supportTicket.findMany({
         where,
-        include: {
-          project: { select: { id: true, code: true, name: true } },
-          contact: { select: { id: true, firstName: true, lastName: true } },
-          assignee: { select: { id: true, firstName: true, lastName: true } },
-        },
+        include: SUPPORT_TICKET_INCLUDE,
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -85,7 +148,7 @@ export class SupportService {
     ]);
 
     return {
-      items,
+      items: items.map((ticket) => this.attachSla(ticket)),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -93,16 +156,11 @@ export class SupportService {
   async findById(id: string) {
     const ticket = await this.prisma.supportTicket.findUnique({
       where: { id },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        contact: {
-          select: { id: true, firstName: true, lastName: true, phone: true, email: true },
-        },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-      },
+      include: SUPPORT_TICKET_INCLUDE,
     });
     if (!ticket) throw new NotFoundException(`Support ticket ${id} not found`);
-    return ticket;
+    const executionTasks = await this.findExecutionTasks(id);
+    return { ...this.attachSla(ticket), executionTasks };
   }
 
   async create(data: CreateTicketDto) {
@@ -110,12 +168,14 @@ export class SupportService {
     const priority = (data.priority as TicketPriorityEnum) ?? 'P3';
     const sla = this.calculateSlaDeadlines(priority);
 
-    return this.prisma.supportTicket.create({
+    const ticket = await this.prisma.supportTicket.create({
       data: {
         code,
         title: data.title,
         projectId: data.projectId,
+        productId: data.productId,
         category: data.category as TicketCategoryEnum,
+        coverageDecision: data.coverageDecision as SupportCoverageEnum | undefined,
         description: data.description,
         contactId: data.contactId,
         priority,
@@ -124,12 +184,9 @@ export class SupportService {
         slaResponseDeadline: sla.responseDeadline,
         slaResolveDeadline: sla.resolveDeadline,
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        contact: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-      },
+      include: SUPPORT_TICKET_INCLUDE,
     });
+    return this.attachSla(ticket);
   }
 
   async update(id: string, data: UpdateTicketDto) {
@@ -139,10 +196,18 @@ export class SupportService {
       ...(data.title && { title: data.title }),
       ...(data.description !== undefined && { description: data.description }),
       ...(data.projectId && { project: { connect: { id: data.projectId } } }),
+      ...(data.productId !== undefined && {
+        product: data.productId ? { connect: { id: data.productId } } : { disconnect: true },
+      }),
       ...(data.contactId !== undefined && {
         contact: data.contactId ? { connect: { id: data.contactId } } : { disconnect: true },
       }),
       ...(data.category && { category: data.category as TicketCategoryEnum }),
+      ...(data.coverageDecision !== undefined && {
+        coverageDecision: data.coverageDecision
+          ? (data.coverageDecision as SupportCoverageEnum)
+          : null,
+      }),
       ...(data.billable !== undefined && { billable: data.billable }),
       ...(data.assignedTo !== undefined && {
         assignee: data.assignedTo ? { connect: { id: data.assignedTo } } : { disconnect: true },
@@ -156,23 +221,86 @@ export class SupportService {
       updateData.slaResolveDeadline = sla.resolveDeadline;
     }
 
-    return this.prisma.supportTicket.update({
+    const ticket = await this.prisma.supportTicket.update({
       where: { id },
       data: updateData,
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        contact: { select: { id: true, firstName: true, lastName: true } },
-        assignee: { select: { id: true, firstName: true, lastName: true } },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    return this.attachSla(ticket);
+  }
+
+  async createExecutionTask(id: string, data: CreateTicketTaskDto) {
+    const ticket = await this.findTicketForTaskBridge(id);
+    if (['RESOLVED', 'CLOSED'].includes(ticket.status)) {
+      throw new BadRequestException('Resolved or closed support tickets cannot create tasks.');
+    }
+
+    const workspaceId = await this.findProductWorkspaceId(ticket.productId);
+    return this.prisma.task.create({
+      data: {
+        code: await this.generateTaskCode(),
+        title: this.buildExecutionTaskTitle(ticket, data.title),
+        creatorId: data.creatorId,
+        description: data.description ?? this.buildExecutionTaskDescription(ticket),
+        assigneeId: ticket.assignedTo,
+        priority: TICKET_PRIORITY_TO_TASK_PRIORITY[ticket.priority],
+        dueDate: data.dueDate ? new Date(data.dueDate) : ticket.slaResolveDeadline,
+        workspaceId,
+        ...(workspaceId && { planningStatus: 'BACKLOG' }),
+        links: { createMany: { data: this.buildTaskLinks(ticket) } },
+      },
+      include: SUPPORT_TASK_INCLUDE,
+    });
+  }
+
+  async createExtensionDeal(id: string, data: CreateExtensionDealDto) {
+    const ticket = await this.findTicketForChangeControl(id);
+    if (ticket.extensionDealId) {
+      return this.findExtensionDealOrThrow(ticket.extensionDealId);
+    }
+
+    const contactId = data.contactId ?? ticket.contactId;
+    if (!contactId) {
+      throw new BadRequestException('Contact is required to create an Extension Deal.');
+    }
+
+    const deal = await this.prisma.deal.create({
+      data: {
+        code: await this.generateDealCode(),
+        name: this.buildExtensionDealName(ticket, data.name),
+        contactId,
+        projectId: ticket.projectId,
+        type: 'EXTENSION',
+        amount: data.amount,
+        paymentType: (data.paymentType as PaymentTypeEnum) ?? 'CLASSIC',
+        taxStatus: 'TAX',
+        sellerId: data.sellerId,
+        source: 'CLIENT',
+        sourceDetail: `Support ticket ${ticket.code}`,
+        notes: this.buildExtensionDealNotes(ticket, data.notes),
+        existingProductId: ticket.productId,
       },
     });
+
+    await this.prisma.supportTicket.update({
+      where: { id },
+      data: {
+        extensionDealId: deal.id,
+        status: ticket.status === 'NEW' ? 'TRIAGED' : ticket.status,
+      },
+    });
+
+    return deal;
   }
 
   async updateStatus(id: string, status: string) {
     await this.findById(id);
-    return this.prisma.supportTicket.update({
+    const ticket = await this.prisma.supportTicket.update({
       where: { id },
       data: { status: status as TicketStatusEnum },
+      include: SUPPORT_TICKET_INCLUDE,
     });
+    return this.attachSla(ticket);
   }
 
   async delete(id: string) {
@@ -181,12 +309,13 @@ export class SupportService {
   }
 
   async getStats() {
-    const [byStatus, byPriority, byCategory] = await Promise.all([
+    const [byStatus, byPriority, byCategory, byCoverage] = await Promise.all([
       this.prisma.supportTicket.groupBy({ by: ['status'], _count: true }),
       this.prisma.supportTicket.groupBy({ by: ['priority'], _count: true }),
       this.prisma.supportTicket.groupBy({ by: ['category'], _count: true }),
+      this.prisma.supportTicket.groupBy({ by: ['coverageDecision'], _count: true }),
     ]);
-    return { byStatus, byPriority, byCategory };
+    return { byStatus, byPriority, byCategory, byCoverage };
   }
 
   private calculateSlaDeadlines(priority: string) {
@@ -203,9 +332,13 @@ export class SupportService {
   ): Prisma.SupportTicketWhereInput {
     const where: Prisma.SupportTicketWhereInput = {};
     if (filters.projectId) where.projectId = filters.projectId;
+    if (filters.productId) where.productId = filters.productId;
     if (filters.status) where.status = filters.status as TicketStatusEnum;
     if (filters.priority) where.priority = filters.priority as TicketPriorityEnum;
     if (filters.category) where.category = filters.category as TicketCategoryEnum;
+    if (filters.coverageDecision) {
+      where.coverageDecision = filters.coverageDecision as SupportCoverageEnum;
+    }
     if (filters.assignedTo) where.assignedTo = filters.assignedTo;
     if (filters.search) {
       where.OR = [
@@ -216,6 +349,12 @@ export class SupportService {
     return where;
   }
 
+  private attachSla<
+    T extends { status: string; slaResponseDeadline: Date | null; slaResolveDeadline: Date | null },
+  >(ticket: T) {
+    return { ...ticket, slaState: buildSupportSlaProjection(ticket) };
+  }
+
   private async generateCode(): Promise<string> {
     const year = new Date().getFullYear();
     const last = await this.prisma.supportTicket.findFirst({
@@ -224,5 +363,118 @@ export class SupportService {
     });
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `TKT-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private async generateTaskCode(): Promise<string> {
+    const year = new Date().getFullYear();
+    const last = await this.prisma.task.findFirst({
+      where: { code: { startsWith: `T-${year}-` } },
+      orderBy: { code: 'desc' },
+    });
+    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
+    return `T-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private async findExecutionTasks(ticketId: string) {
+    return this.prisma.task.findMany({
+      where: { links: { some: { entityType: SUPPORT_TICKET_ENTITY_TYPE, entityId: ticketId } } },
+      include: SUPPORT_TASK_INCLUDE,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  private async findTicketForTaskBridge(id: string) {
+    const ticket = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    if (!ticket) throw new NotFoundException(`Support ticket ${id} not found`);
+    return ticket;
+  }
+
+  private async findTicketForChangeControl(id: string) {
+    const ticket = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    if (!ticket) throw new NotFoundException(`Support ticket ${id} not found`);
+    if (ticket.category !== 'CHANGE_REQUEST') {
+      throw new BadRequestException('Only CHANGE_REQUEST tickets can create Extension Deals.');
+    }
+    if (!ticket.productId) {
+      throw new BadRequestException('Product context is required to create an Extension Deal.');
+    }
+    if (['RESOLVED', 'CLOSED'].includes(ticket.status)) {
+      throw new BadRequestException('Resolved or closed support tickets cannot create deals.');
+    }
+    return ticket;
+  }
+
+  private async findExtensionDealOrThrow(dealId: string) {
+    const deal = await this.prisma.deal.findUnique({
+      where: { id: dealId },
+    });
+    if (!deal) throw new NotFoundException(`Extension Deal ${dealId} not found`);
+    return deal;
+  }
+
+  private async findProductWorkspaceId(productId: string | null) {
+    if (!productId) return undefined;
+    const workspace = await this.prisma.workSpace.findUnique({
+      where: { productId },
+      select: { id: true },
+    });
+    return workspace?.id;
+  }
+
+  private buildTaskLinks(ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>) {
+    return [
+      { entityType: SUPPORT_TICKET_ENTITY_TYPE, entityId: ticket.id },
+      { entityType: PROJECT_ENTITY_TYPE, entityId: ticket.projectId },
+      ...(ticket.productId
+        ? [{ entityType: PRODUCT_ENTITY_TYPE, entityId: ticket.productId }]
+        : []),
+    ];
+  }
+
+  private buildExecutionTaskTitle(
+    ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>,
+    title?: string,
+  ) {
+    const trimmed = title?.trim();
+    return trimmed || `[${ticket.code}] ${ticket.title}`;
+  }
+
+  private buildExecutionTaskDescription(
+    ticket: Awaited<ReturnType<SupportService['findTicketForTaskBridge']>>,
+  ) {
+    return `Support ticket: ${ticket.code}\n${ticket.description ?? ''}`.trim();
+  }
+
+  private async generateDealCode(): Promise<string> {
+    const year = new Date().getFullYear();
+    const last = await this.prisma.deal.findFirst({
+      where: { code: { startsWith: `D-${year}-` } },
+      orderBy: { code: 'desc' },
+    });
+    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
+    return `D-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private buildExtensionDealName(
+    ticket: Awaited<ReturnType<SupportService['findTicketForChangeControl']>>,
+    name?: string,
+  ) {
+    const trimmed = name?.trim();
+    return trimmed || `[${ticket.code}] ${ticket.title}`;
+  }
+
+  private buildExtensionDealNotes(
+    ticket: Awaited<ReturnType<SupportService['findTicketForChangeControl']>>,
+    notes?: string,
+  ) {
+    return [notes?.trim(), `Support ticket: ${ticket.code}`, ticket.description]
+      .filter(Boolean)
+      .join('\n\n');
   }
 }

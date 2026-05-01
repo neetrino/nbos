@@ -7,10 +7,20 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import { productsApi, type Product } from '@/lib/api/products';
 import {
-  getProductStatus,
+  formatDeliveryLifecycleLabel,
+  getDeliveryLifecycleVariant,
   getProductType,
-  PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
+
+const PRODUCT_LIFECYCLE_FILTERS = [
+  { value: 'STARTING', label: 'Starting' },
+  { value: 'DEVELOPMENT', label: 'Development' },
+  { value: 'QA', label: 'QA' },
+  { value: 'TRANSFER', label: 'Transfer' },
+  { value: 'ON_HOLD', label: 'On Hold' },
+  { value: 'DONE', label: 'Done' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+] as const;
 
 interface ProductsTabProps {
   projectId: string;
@@ -29,7 +39,6 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
       const data = await productsApi.getAll({
         projectId,
         pageSize: 50,
-        ...(statusFilter ? { status: statusFilter } : {}),
       });
       setProducts(data.items);
     } catch {
@@ -37,13 +46,17 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
     } finally {
       setLoading(false);
     }
-  }, [projectId, statusFilter]);
+  }, [projectId]);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  const byStatus = (status: string) => products.filter((p) => p.status === status).length;
+  const visibleProducts = statusFilter
+    ? products.filter((product) => getProductLifecycleFilterValue(product) === statusFilter)
+    : products;
+  const byLifecycle = (value: string) =>
+    products.filter((product) => getProductLifecycleFilterValue(product) === value).length;
 
   if (loading) {
     return (
@@ -65,7 +78,7 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
             >
               All
             </Button>
-            {PRODUCT_STATUSES.filter((s) => byStatus(s.value) > 0).map((s) => (
+            {PRODUCT_LIFECYCLE_FILTERS.filter((s) => byLifecycle(s.value) > 0).map((s) => (
               <Button
                 key={s.value}
                 variant={statusFilter === s.value ? 'secondary' : 'ghost'}
@@ -73,7 +86,7 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
                 onClick={() => setStatusFilter(s.value)}
                 className="h-7 text-xs"
               >
-                {s.label} ({byStatus(s.value)})
+                {s.label} ({byLifecycle(s.value)})
               </Button>
             ))}
           </div>
@@ -84,10 +97,10 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
         </Button>
       </div>
 
-      {products.length === 0 ? (
+      {visibleProducts.length === 0 ? (
         <div className="text-muted-foreground py-12 text-center">
           <Package size={40} className="mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No products in this project yet.</p>
+          <p className="text-sm">No products match this delivery filter.</p>
           <Button variant="outline" size="sm" onClick={onCreateClick} className="mt-3 gap-1.5">
             <Plus size={14} />
             Create First Product
@@ -95,8 +108,7 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => {
-            const st = getProductStatus(product.status);
+          {visibleProducts.map((product) => {
             const pt = getProductType(product.productType);
             return (
               <div
@@ -109,7 +121,12 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
                     <h4 className="truncate text-sm font-semibold">{product.name}</h4>
                     {pt && <span className="text-muted-foreground text-xs">{pt.label}</span>}
                   </div>
-                  {st && <StatusBadge label={st.label} variant={st.variant} />}
+                  {product.deliveryLifecycle && (
+                    <StatusBadge
+                      label={formatDeliveryLifecycleLabel(product.deliveryLifecycle)}
+                      variant={getDeliveryLifecycleVariant(product.deliveryLifecycle)}
+                    />
+                  )}
                 </div>
 
                 <div className="mt-3 space-y-1.5">
@@ -147,4 +164,12 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
       )}
     </div>
   );
+}
+
+function getProductLifecycleFilterValue(product: Product) {
+  const lifecycle = product.deliveryLifecycle;
+  if (!lifecycle) return product.status;
+  if (lifecycle.resolution) return lifecycle.resolution;
+  if (lifecycle.workStatus === 'ON_HOLD') return 'ON_HOLD';
+  return lifecycle.stage ?? product.status;
 }

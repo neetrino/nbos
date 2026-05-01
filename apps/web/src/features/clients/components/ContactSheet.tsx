@@ -25,13 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { EntitySheet, StatusBadge } from '@/components/shared';
-import {
-  CONTACT_ROLES,
-  PREFERRED_CHANNELS,
-  LANGUAGES,
-  CONTACT_SOURCES,
-  getContactRole,
-} from '../constants/clients';
+import { CONTACT_ROLES, PREFERRED_CHANNELS, getContactRole } from '../constants/clients';
 import type { Contact } from '@/lib/api/clients';
 
 interface ContactSheetProps {

@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { Eye, EyeOff, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
+import { credentialsApi } from '@/lib/api/credentials';
 import type { ProjectCredential } from '@/lib/api/projects';
+import { toast } from 'sonner';
 
 interface CredentialsTabProps {
   credentials: ProjectCredential[];
@@ -85,12 +87,28 @@ export function CredentialsTab({ credentials }: CredentialsTabProps) {
               <div className="flex items-center gap-2">
                 {access && <StatusBadge label={access.label} variant={access.variant} />}
                 {cred.url && (
-                  <a href={cred.url} target="_blank" rel="noopener noreferrer">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="h-7 w-7"
+                    title="Open URL (audited)"
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          const { url } = await credentialsApi.recordUrlOpened(cred.id);
+                          window.open(url, '_blank', 'noopener,noreferrer');
+                        } catch {
+                          toast.error('Could not open URL');
+                        }
+                      })();
+                    }}
+                  >
                     <ExternalLink
                       size={14}
                       className="text-muted-foreground hover:text-foreground"
                     />
-                  </a>
+                  </Button>
                 )}
               </div>
             </div>

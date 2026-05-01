@@ -13,6 +13,25 @@ export const TICKET_PRIORITIES = [
   { value: 'P3', label: 'P3 Normal', variant: 'blue' as StatusVariant },
 ] as const;
 
+export const TICKET_COVERAGE_DECISIONS = [
+  {
+    value: 'COVERED_BY_MAINTENANCE',
+    label: 'Maintenance',
+    variant: 'green' as StatusVariant,
+  },
+  { value: 'FREE_GOODWILL', label: 'Goodwill', variant: 'blue' as StatusVariant },
+  { value: 'BILLABLE_SMALL_WORK', label: 'Billable small work', variant: 'amber' as StatusVariant },
+  { value: 'EXTENSION_REQUIRED', label: 'Extension required', variant: 'purple' as StatusVariant },
+  { value: 'NOT_COVERED_REJECTED', label: 'Rejected', variant: 'red' as StatusVariant },
+] as const;
+
+export const TICKET_SLA_STATES = [
+  { value: 'ON_TRACK', label: 'On track', variant: 'green' as StatusVariant },
+  { value: 'AT_RISK', label: 'At risk', variant: 'amber' as StatusVariant },
+  { value: 'BREACHED', label: 'Breached', variant: 'red' as StatusVariant },
+  { value: 'CLOSED', label: 'Closed', variant: 'gray' as StatusVariant },
+] as const;
+
 export const TICKET_STATUSES = [
   { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
   {
@@ -48,6 +67,15 @@ export function getTicketCategory(value: string) {
 
 export function getTicketPriority(value: string) {
   return TICKET_PRIORITIES.find((p) => p.value === value);
+}
+
+export function getTicketCoverage(value: string | null) {
+  if (!value) return undefined;
+  return TICKET_COVERAGE_DECISIONS.find((c) => c.value === value);
+}
+
+export function getTicketSlaState(value: string) {
+  return TICKET_SLA_STATES.find((state) => state.value === value);
 }
 
 export function getTicketStatus(value: string) {

@@ -1,82 +1,81 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  RefreshCcw,
-  RefreshCw,
-  DollarSign,
-  FolderKanban,
-  Calendar,
-  Building2,
-} from 'lucide-react';
+import { Suspense, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { FilterBar, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
-import {
-  SUBSCRIPTION_TYPES,
-  SUBSCRIPTION_STATUSES,
-  getSubscriptionType,
-  getSubscriptionStatus,
-  formatAmount,
-} from '@/features/finance/constants/finance';
-import { api } from '@/lib/api';
+import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/constants/finance';
+import { subscriptionsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-partner-drilldown';
+import { usePartnerFilterOptions } from '@/features/finance/hooks/usePartnerFilterOptions';
+import { SubscriptionsPageContent } from '@/features/finance/components/subscriptions/SubscriptionsPageContent';
+import { SubscriptionsPageHeader } from '@/features/finance/components/subscriptions/SubscriptionsPageHeader';
+import { SubscriptionStatsCards } from '@/features/finance/components/subscriptions/SubscriptionStatsCards';
+import { useSubscriptionsCsvExport } from '@/features/finance/components/subscriptions/use-subscriptions-csv-export';
+import { useSubscriptionsScopeStatsCsvExport } from '@/features/finance/components/subscriptions/use-subscriptions-scope-stats-csv-export';
+import { useSubscriptionsPageState } from '@/features/finance/components/subscriptions/useSubscriptionsPageState';
+import { buildSubscriptionPageQueries } from '@/features/finance/utils/build-subscription-page-queries';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 
-interface Subscription {
-  id: string;
-  type: string;
-  status: string;
-  amount: string;
-  currency: string;
-  billingDay: number;
-  startDate: string;
-  endDate: string | null;
-  taxStatus: string;
-  project: { id: string; name: string } | null;
-  company: { id: string; name: string } | null;
-  contact: { id: string; firstName: string; lastName: string } | null;
-  createdAt: string;
-}
+function SubscriptionsPageInner() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const partnerIdFromUrl = searchParams.get(PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY);
 
-export default function SubscriptionsPage() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const page = useSubscriptionsPageState({ partnerIdFromUrl });
+  const { exportCsvSubmitting, handleExportCsv } = useSubscriptionsCsvExport(
+    page.subscriptionListExportParams,
+  );
+  const { partnerFilterOptions, partnerOptionsLoadError, clearPartnerOptionsLoadError } =
+    usePartnerFilterOptions();
 
-  const fetchSubscriptions = useCallback(async () => {
-    setLoading(true);
-    try {
-      const resp = await api.get('/api/finance/subscriptions', {
-        params: {
-          pageSize: 100,
-          search: search || undefined,
-          type: filters.type && filters.type !== 'all' ? filters.type : undefined,
-          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-        },
-      });
-      setSubscriptions(resp.data.items ?? resp.data ?? []);
-    } catch {
-      /* handled */
-    } finally {
-      setLoading(false);
+  const subscriptionStatsQueryParams = useMemo(() => {
+    return buildSubscriptionPageQueries(
+      {
+        filters: page.filters,
+        search: page.search,
+        partnerIdFromUrl: partnerIdFromUrl?.trim() || null,
+      },
+      page.period,
+    ).statsParams;
+  }, [page.filters, page.period, page.search, partnerIdFromUrl]);
+
+  const { handleExportScopeStatsCsv } = useSubscriptionsScopeStatsCsvExport(page.stats, {
+    period: page.period,
+    statsQuery: subscriptionStatsQueryParams,
+  });
+
+  useFinanceDocumentTitle(subscriptionsListPageTitle(Boolean(partnerIdFromUrl?.trim())));
+
+  const totalMRR = Number(page.stats?.monthlyRevenue ?? 0);
+  const activeCount = page.subscriptions.filter(
+    (subscription) => subscription.status === 'ACTIVE',
+  ).length;
+  const activeSubscriptions = page.stats?.activeSubscriptions ?? activeCount;
+
+  const clearPartnerDrilldown = () => {
+    router.replace(pathname ?? '/finance/subscriptions');
+    page.setFilters((prev) => {
+      const next = { ...prev };
+      delete next.partner;
+      return next;
+    });
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    if (partnerIdFromUrl && key === 'partner') {
+      router.replace(pathname ?? '/finance/subscriptions');
     }
-  }, [search, filters]);
+    page.setFilters((prev) => ({ ...prev, [key]: value }));
+  };
 
-  useEffect(() => {
-    fetchSubscriptions();
-  }, [fetchSubscriptions]);
-
-  const activeSubs = subscriptions.filter((s) => s.status === 'ACTIVE');
-  const totalMRR = activeSubs.reduce((sum, s) => sum + parseFloat(s.amount), 0);
+  const handleClearFilters = () => {
+    if (partnerIdFromUrl) {
+      router.replace(pathname ?? '/finance/subscriptions');
+    }
+    page.setFilters({});
+  };
 
   const filterConfigs = [
     {
@@ -89,217 +88,87 @@ export default function SubscriptionsPage() {
       label: 'Status',
       options: SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
     },
+    ...(partnerFilterOptions.length > 0
+      ? [
+          {
+            key: 'partner',
+            label: 'Partner',
+            options: partnerFilterOptions,
+          },
+        ]
+      : []),
   ];
-
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const date = new Date(new Date().getFullYear(), i);
-    return {
-      key: i,
-      label: date.toLocaleString('en-US', { month: 'short' }),
-    };
-  });
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Subscriptions"
-        description={`${activeSubs.length} active, MRR ${formatAmount(totalMRR)}`}
-      >
-        <Button variant="outline" size="icon" onClick={fetchSubscriptions}>
-          <RefreshCcw size={16} />
-        </Button>
-        <Button>
-          <Plus size={16} />
-          New Subscription
-        </Button>
-      </PageHeader>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Monthly Recurring Revenue</p>
-          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(totalMRR)}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Active Subscriptions</p>
-          <p className="mt-1 text-xl font-bold">{activeSubs.length}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Subscriptions</p>
-          <p className="mt-1 text-xl font-bold">{subscriptions.length}</p>
-        </div>
-      </div>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by project or company..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
+      <SubscriptionsPageHeader
+        activeSubscriptions={activeSubscriptions}
+        totalMRR={totalMRR}
+        period={page.period}
+        onPeriodChange={page.setPeriod}
+        onRefresh={page.fetchSubscriptions}
+        onExportCsv={handleExportCsv}
+        exportDisabled={page.loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={page.loading || !page.stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
       />
 
-      {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
-      ) : subscriptions.length === 0 ? (
-        <EmptyState
-          icon={RefreshCw}
-          title="No subscriptions yet"
-          description="Set up recurring billing for your clients"
-          action={
-            <Button>
-              <Plus size={16} />
-              Create First Subscription
-            </Button>
-          }
-        />
-      ) : (
-        <>
-          {activeSubs.length > 0 && (
-            <div className="border-border overflow-x-auto rounded-xl border">
-              <table className="w-full text-xs">
-                <thead className="bg-secondary/50">
-                  <tr>
-                    <th className="bg-secondary/50 text-muted-foreground sticky left-0 px-3 py-2 text-left font-medium">
-                      Project
-                    </th>
-                    {months.map((m) => (
-                      <th
-                        key={m.key}
-                        className="text-muted-foreground px-3 py-2 text-center font-medium"
-                      >
-                        {m.label}
-                      </th>
-                    ))}
-                    <th className="text-muted-foreground px-3 py-2 text-right font-medium">
-                      Annual
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-border divide-y">
-                  {activeSubs.map((sub) => {
-                    const amount = parseFloat(sub.amount);
-                    const startMonth = new Date(sub.startDate).getMonth();
-                    return (
-                      <tr key={sub.id} className="hover:bg-secondary/30">
-                        <td className="bg-card sticky left-0 px-3 py-2 font-medium">
-                          <div>
-                            <p>{sub.project?.name ?? 'N/A'}</p>
-                            <p className="text-muted-foreground text-[10px]">
-                              {formatAmount(amount)}/mo
-                            </p>
-                          </div>
-                        </td>
-                        {months.map((m) => {
-                          const isActive = m.key >= startMonth;
-                          const isPast = m.key < new Date().getMonth();
-                          return (
-                            <td key={m.key} className="px-3 py-2 text-center">
-                              {isActive ? (
-                                <span
-                                  className={`inline-block rounded px-2 py-0.5 text-[10px] font-medium ${
-                                    isPast
-                                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                  }`}
-                                >
-                                  {formatAmount(amount)}
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground">—</span>
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td className="px-3 py-2 text-right font-bold">
-                          {formatAmount(amount * (12 - startMonth))}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  <tr className="bg-secondary/30 font-bold">
-                    <td className="bg-secondary/30 sticky left-0 px-3 py-2">Total</td>
-                    {months.map((m) => {
-                      const monthTotal = activeSubs.reduce((sum, sub) => {
-                        const startMonth = new Date(sub.startDate).getMonth();
-                        return m.key >= startMonth ? sum + parseFloat(sub.amount) : sum;
-                      }, 0);
-                      return (
-                        <td key={m.key} className="px-3 py-2 text-center">
-                          {monthTotal > 0 ? formatAmount(monthTotal) : '—'}
-                        </td>
-                      );
-                    })}
-                    <td className="px-3 py-2 text-right">{formatAmount(totalMRR * 12)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          )}
+      <SubscriptionStatsCards subscriptions={page.subscriptions} stats={page.stats} />
 
-          <div className="border-border overflow-hidden rounded-xl border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Amount/mo</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Billing Day</TableHead>
-                  <TableHead>Start Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {subscriptions.map((sub) => {
-                  const subType = getSubscriptionType(sub.type);
-                  const subStatus = getSubscriptionStatus(sub.status);
-                  return (
-                    <TableRow key={sub.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <FolderKanban size={14} className="text-muted-foreground" />
-                          <span className="font-medium">{sub.project?.name ?? 'N/A'}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {sub.company?.name ?? '—'}
-                      </TableCell>
-                      <TableCell>
-                        {subType && <StatusBadge label={subType.label} variant={subType.variant} />}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className="flex items-center justify-end gap-1 font-semibold">
-                          <DollarSign size={12} className="text-accent" />
-                          {formatAmount(parseFloat(sub.amount))}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {subStatus && (
-                          <StatusBadge label={subStatus.label} variant={subStatus.variant} />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <div className="flex items-center gap-1">
-                          <Calendar size={12} className="text-muted-foreground" />
-                          {sub.billingDay}th
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-xs">
-                        {new Date(sub.startDate).toLocaleDateString()}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </>
-      )}
+      {partnerIdFromUrl ? (
+        <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
+          <p className="text-foreground max-w-prose">
+            Showing subscriptions linked to this partner (server filter).
+          </p>
+          <Button variant="outline" size="sm" type="button" onClick={clearPartnerDrilldown}>
+            Clear filter
+          </Button>
+        </div>
+      ) : null}
+
+      <FilterBar
+        search={page.search}
+        onSearchChange={page.setSearch}
+        searchPlaceholder="Search by project or company..."
+        filters={filterConfigs}
+        filterValues={page.filtersForBar}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+      />
+
+      {partnerOptionsLoadError ? (
+        <ListMutationErrorBanner
+          message={partnerOptionsLoadError}
+          onDismiss={clearPartnerOptionsLoadError}
+          dismissAriaLabel="Dismiss partner load error"
+          dismissText="Dismiss"
+        />
+      ) : null}
+
+      <SubscriptionsPageContent
+        subscriptions={page.subscriptions}
+        loading={page.loading}
+        error={page.error}
+        mutationError={page.mutationError}
+        onDismissMutationError={page.clearMutationError}
+        activatingId={page.activatingId}
+        cancellingId={page.cancellingId}
+        holdingId={page.holdingId}
+        onRetry={page.fetchSubscriptions}
+        onActivate={page.handleActivate}
+        onCancel={page.handleCancel}
+        onHold={page.handleHold}
+        onPartnerLinked={page.handlePartnerLinked}
+      />
     </div>
+  );
+}
+
+export default function SubscriptionsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <SubscriptionsPageInner />
+    </Suspense>
   );
 }

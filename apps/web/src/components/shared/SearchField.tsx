@@ -21,6 +21,7 @@ interface SearchFieldProps {
   icon?: ReactNode;
   onSave: (value: string, label: string) => Promise<void> | void;
   onSearch: (query: string) => Promise<SearchOption[]>;
+  onClear?: () => Promise<void> | void;
   onNew?: () => void;
   newLabel?: string;
   newBadge?: ReactNode;
@@ -35,6 +36,7 @@ export function SearchField({
   icon,
   onSave,
   onSearch,
+  onClear,
   onNew,
   newLabel = 'Create new',
   newBadge,
@@ -99,6 +101,18 @@ export function SearchField({
     }
   };
 
+  const handleClear = async () => {
+    if (!onClear) return;
+    setSaving(true);
+    setOpen(false);
+    setQuery('');
+    try {
+      await onClear();
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -143,14 +157,19 @@ export function SearchField({
             />
             {query && (
               <button
+                type="button"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
                 onClick={() => {
                   setQuery('');
                   doSearch('');
                   inputRef.current?.focus();
                 }}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
               >
-                <X size={13} />
+                <X size={16} />
               </button>
             )}
           </div>
@@ -220,10 +239,30 @@ export function SearchField({
                     <span className="text-muted-foreground">{placeholder ?? 'Not set'}</span>
                   ))}
               </div>
-              <Pencil
-                size={12}
-                className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
-              />
+              <div className="flex items-center gap-1">
+                {onClear && hasValue && (
+                  <button
+                    type="button"
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleClear();
+                    }}
+                    disabled={saving}
+                    className="text-muted-foreground/0 hover:bg-destructive/10 hover:text-destructive group-hover:text-muted-foreground/60 flex size-7 items-center justify-center rounded-md transition-colors"
+                    aria-label={`Clear ${label}`}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+                <Pencil
+                  size={16}
+                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
+                />
+              </div>
             </div>
           </div>
           {newBadge}

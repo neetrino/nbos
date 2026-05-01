@@ -1,4 +1,12 @@
 import { api } from '../api';
+import type { ListData } from './finance-common';
+
+/** Resolved contact when `partner.contactId` points to a row in `contacts`. */
+export interface PartnerContactSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
 
 export interface Partner {
   id: string;
@@ -9,16 +17,45 @@ export interface Partner {
   status: string;
   contactId: string | null;
   createdAt: string;
+  contact?: PartnerContactSummary | null;
   _count?: { orders: number; subscriptions: number };
 }
 
-interface ListData<T> {
-  items: T[];
-  meta: { total: number; page: number; pageSize: number; totalPages: number };
+export interface PartnerStats {
+  total: number;
+  totalSubscriptions: number;
+  avgPayoutPercent: number;
+}
+
+export interface PartnerListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  status?: string;
+  type?: string;
+  direction?: string;
+}
+
+export interface CreatePartnerPayload {
+  name: string;
+  type?: string;
+  direction?: string;
+  defaultPercent?: number;
+  status?: string;
+  contactId?: string;
+}
+
+export interface UpdatePartnerPayload {
+  name?: string;
+  type?: string;
+  direction?: string;
+  defaultPercent?: number;
+  status?: string;
+  contactId?: string | null;
 }
 
 export const partnersApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Partner>> {
+  async getAll(params?: PartnerListParams): Promise<ListData<Partner>> {
     const resp = await api.get<ListData<Partner>>('/api/partners', { params });
     return resp.data;
   },
@@ -26,19 +63,19 @@ export const partnersApi = {
     const resp = await api.get<Partner>(`/api/partners/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Partner> {
+  async create(data: CreatePartnerPayload): Promise<Partner> {
     const resp = await api.post<Partner>('/api/partners', data);
     return resp.data;
   },
-  async update(id: string, data: Record<string, unknown>): Promise<Partner> {
+  async update(id: string, data: UpdatePartnerPayload): Promise<Partner> {
     const resp = await api.put<Partner>(`/api/partners/${id}`, data);
     return resp.data;
   },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/partners/${id}`);
   },
-  async getStats() {
-    const resp = await api.get('/api/partners/stats');
+  async getStats(): Promise<PartnerStats> {
+    const resp = await api.get<PartnerStats>('/api/partners/stats');
     return resp.data;
   },
 };

@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
+import { toApiError } from './api-errors';
 
 export interface ApiResponse<T> {
   data: T;
@@ -19,12 +21,19 @@ export function setAuthTokenGetter(getter: () => Promise<string | null>) {
   _getToken = getter;
 }
 
+async function resolveAuthToken(): Promise<string | null> {
+  const configuredToken = await _getToken?.();
+  if (configuredToken) return configuredToken;
+  if (typeof window === 'undefined') return null;
+
+  const session = await getSession();
+  return session?.accessToken || null;
+}
+
 api.interceptors.request.use(async (config) => {
-  if (_getToken) {
-    const token = await _getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  const token = await resolveAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -38,8 +47,7 @@ api.interceptors.response.use(
   },
   (error) => {
     if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.message ?? error.message;
-      return Promise.reject(new Error(message));
+      return Promise.reject(toApiError(error.response?.data, error.message));
     }
     return Promise.reject(error);
   },

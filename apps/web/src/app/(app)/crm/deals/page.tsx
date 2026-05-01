@@ -3,26 +3,37 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCcw, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   PageHeader,
   FilterBar,
   KanbanBoard,
   EmptyState,
+  ErrorState,
+  LoadingState,
   StatusBadge,
   type KanbanColumn,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
 import { DealSheet } from '@/features/crm/components/DealSheet';
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
+import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
+import {
+  TransitionBlockerDialog,
+  type TransitionBlockerState,
+} from '@/features/crm/components/TransitionBlockerDialog';
 import {
   DEAL_STAGES,
   DEAL_TYPES,
-  PAYMENT_TYPES,
   getDealStage,
   formatAmount,
 } from '@/features/crm/constants/dealPipeline';
 import { dealsApi, type Deal } from '@/lib/api/deals';
+import {
+  getApiErrorMessage,
+  isBusinessTransitionApiError,
+  isStageGateApiError,
+} from '@/lib/api-errors';
+import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 import {
   Table,
   TableHeader,
@@ -31,18 +42,34 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
+import { toast } from 'sonner';
 
 type ViewMode = 'kanban' | 'list';
+type ConfirmVariant = 'success' | 'danger';
+
+interface PendingDealTransition {
+  id: string;
+  status: string;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  variant: ConfirmVariant;
+}
 
 export default function DealsPipelinePage() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('kanban');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [transitionBlocker, setTransitionBlocker] = useState<TransitionBlockerState<Deal> | null>(
+    null,
+  );
+  const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
@@ -54,8 +81,9 @@ export default function DealsPipelinePage() {
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
       });
       setDeals(data.items);
+      setError(null);
     } catch {
-      /* handled by API layer */
+      setError('Deals could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -75,26 +103,121 @@ export default function DealsPipelinePage() {
     }
 
     try {
-      await dealsApi.updateStatus(id, status);
-    } catch {
+      const updated = await dealsApi.updateStatus(id, status);
+      setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
+      setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
+    } catch (err) {
       setDeals(previousDeals);
       if (selectedDeal?.id === id) {
         setSelectedDeal(previousSelected);
       }
+      if (isStageGateApiError(err)) {
+        const blockedDeal = previousDeals.find((deal) => deal.id === id) ?? previousSelected;
+        if (blockedDeal) {
+          setTransitionBlocker({
+            item: blockedDeal,
+            targetStatus: status,
+            targetLabel: getDealStage(status)?.label ?? status,
+            errors: err.errors,
+            message: err.message,
+          });
+          return;
+        }
+      }
+      if (isBusinessTransitionApiError(err)) {
+        toast.error(getApiErrorMessage(err, 'Deal stage change is not available.'));
+        return;
+      }
+      setError(err instanceof Error ? err.message : 'Deal stage change was blocked.');
     }
+  };
+
+  const requestStatusChange = async (id: string, status: string) => {
+    const deal = deals.find((item) => item.id === id) ?? selectedDeal;
+    if (!deal || deal.status === status) return;
+
+    if (deal.status === 'WON') {
+      toast.error('Deal Won is closed and cannot be moved back.');
+      return;
+    }
+
+    if (status === 'WON') {
+      setPendingTransition({
+        id,
+        status,
+        title: 'Mark Deal as Won?',
+        description:
+          'This can create or update downstream Order, Project and Finance records after backend gates pass.',
+        confirmLabel: 'Mark as Won',
+        variant: 'success',
+      });
+      return;
+    }
+
+    if (status === 'FAILED') {
+      setPendingTransition({
+        id,
+        status,
+        title: 'Mark Deal as Failed?',
+        description:
+          'This will close the Deal as failed. Confirm only if the sales opportunity is over.',
+        confirmLabel: 'Mark as Failed',
+        variant: 'danger',
+      });
+      return;
+    }
+
+    await handleStatusChange(id, status);
+  };
+
+  const handleOpenBlockedDeal = () => {
+    if (!transitionBlocker) return;
+    const currentDeal = deals.find((deal) => deal.id === transitionBlocker.item.id);
+    setSelectedDeal(currentDeal ?? transitionBlocker.item);
+    setSheetOpen(true);
+  };
+
+  const blockerActions = transitionBlocker
+    ? resolveBlockerDirectActions({ context: 'crm', errors: transitionBlocker.errors }).map(
+        (action) => ({
+          key: action.key,
+          label: action.label,
+          onClick: handleOpenBlockedDeal,
+        }),
+      )
+    : [];
+
+  const handleRetryBlockedMove = async () => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+    await handleStatusChange(blocker.item.id, blocker.targetStatus);
+    setTransitionBlocker((current) => (current === blocker ? null : current));
+  };
+
+  const handleOverrideBlockedMove = async (reason: string) => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+    const updated = await dealsApi.updateStatus(blocker.item.id, blocker.targetStatus, {
+      overrideReason: reason,
+    });
+    setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
+    setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
+    setTransitionBlocker(null);
+    await fetchDeals();
   };
 
   const handleUpdate = async (id: string, data: Partial<Deal>) => {
     const previousDeals = deals;
     const previousSelected = selectedDeal;
+    const optimisticData = normalizeDealPatch(data);
 
-    setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...data } : d)));
-    setSelectedDeal((prev) => (prev?.id === id ? { ...prev, ...data } : prev));
+    setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...optimisticData } : d)));
+    setSelectedDeal((prev) => (prev?.id === id ? { ...prev, ...optimisticData } : prev));
 
     try {
       const updated = await dealsApi.update(id, data);
-      setDeals((prev) => prev.map((d) => (d.id === id ? { ...updated, ...data } : d)));
-      setSelectedDeal((prev) => (prev?.id === id ? { ...updated, ...data } : prev));
+      setDeals((prev) => prev.map((d) => (d.id === id ? updated : d)));
+      setSelectedDeal((prev) => (prev?.id === id ? updated : prev));
     } catch {
       setDeals(previousDeals);
       setSelectedDeal(previousSelected);
@@ -120,8 +243,21 @@ export default function DealsPipelinePage() {
     setSheetOpen(true);
   };
 
+  const handleOpenDealById = async (id: string) => {
+    const existingDeal = deals.find((deal) => deal.id === id);
+    setSelectedDeal(existingDeal ?? null);
+    setSheetOpen(true);
+    const fullDeal = await dealsApi.getById(id);
+    setSelectedDeal(fullDeal);
+    setDeals((prev) => {
+      const hasDeal = prev.some((deal) => deal.id === fullDeal.id);
+      if (!hasDeal) return [fullDeal, ...prev];
+      return prev.map((deal) => (deal.id === fullDeal.id ? fullDeal : deal));
+    });
+  };
+
   const handleMove = (itemId: string, _from: string, toColumn: string) => {
-    handleStatusChange(itemId, toColumn);
+    requestStatusChange(itemId, toColumn);
   };
 
   const kanbanColumns: KanbanColumn<Deal>[] = DEAL_STAGES.map((stage) => ({
@@ -195,11 +331,9 @@ export default function DealsPipelinePage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 w-full rounded-xl" />
-          ))}
-        </div>
+        <LoadingState variant="cards" count={3} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchDeals} />
       ) : deals.length === 0 ? (
         <EmptyState
           icon={Handshake}
@@ -217,7 +351,11 @@ export default function DealsPipelinePage() {
           <KanbanBoard
             columns={kanbanColumns}
             renderCard={(deal) => (
-              <DealCard deal={deal} onClick={handleCardClick} onStatusChange={handleStatusChange} />
+              <DealCard
+                deal={deal}
+                onClick={handleCardClick}
+                onStatusChange={requestStatusChange}
+              />
             )}
             getItemId={(deal) => deal.id}
             onMove={handleMove}
@@ -295,10 +433,73 @@ export default function DealsPipelinePage() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         onUpdate={handleUpdate}
-        onStatusChange={handleStatusChange}
+        onStatusChange={requestStatusChange}
         onDelete={handleDelete}
         onRefresh={fetchDeals}
+        onOpenDeal={handleOpenDealById}
+      />
+
+      <TransitionBlockerDialog
+        open={Boolean(transitionBlocker)}
+        blocker={transitionBlocker}
+        entityLabel="Deal"
+        itemLabel={transitionBlocker?.item.name ?? transitionBlocker?.item.code ?? ''}
+        onOpenChange={(open) => {
+          if (!open) setTransitionBlocker(null);
+        }}
+        onOpenDetails={handleOpenBlockedDeal}
+        onRetry={handleRetryBlockedMove}
+        directActions={blockerActions}
+        onOverride={handleOverrideBlockedMove}
+      />
+
+      <StageTransitionConfirmDialog
+        open={Boolean(pendingTransition)}
+        title={pendingTransition?.title ?? ''}
+        description={pendingTransition?.description ?? ''}
+        confirmLabel={pendingTransition?.confirmLabel ?? 'Confirm'}
+        variant={pendingTransition?.variant ?? 'success'}
+        onOpenChange={(open) => {
+          if (!open) setPendingTransition(null);
+        }}
+        onConfirm={() => {
+          const transition = pendingTransition;
+          if (!transition) return;
+          setPendingTransition(null);
+          handleStatusChange(transition.id, transition.status);
+        }}
       />
     </div>
   );
+}
+
+function normalizeDealPatch(data: Partial<Deal>): Partial<Deal> {
+  const normalized: Partial<Deal> = { ...data };
+
+  if (data.source === null) {
+    normalized.sourceDetail = null;
+    normalized.sourcePartnerId = null;
+    normalized.sourcePartner = null;
+    normalized.sourceContactId = null;
+    normalized.sourceContact = null;
+    normalized.marketingAccountId = null;
+    normalized.marketingAccount = null;
+    normalized.marketingActivityId = null;
+    normalized.marketingActivity = null;
+  }
+  if (data.sourceDetail === null) {
+    normalized.marketingAccountId = null;
+    normalized.marketingAccount = null;
+    normalized.marketingActivityId = null;
+    normalized.marketingActivity = null;
+  }
+  if (data.sourcePartnerId === null) normalized.sourcePartner = null;
+  if (data.sourceContactId === null) normalized.sourceContact = null;
+  if (data.marketingAccountId === null) normalized.marketingAccount = null;
+  if (data.marketingActivityId === null) normalized.marketingActivity = null;
+  if (data.projectId === null) normalized.handoff = undefined;
+  if (data.companyId === null) normalized.company = null;
+  if (data.existingProductId === null) normalized.existingProduct = null;
+
+  return normalized;
 }

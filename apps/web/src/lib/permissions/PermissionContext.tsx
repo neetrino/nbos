@@ -25,7 +25,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const prevUserIdRef = useRef<string | undefined>();
+  const prevUserIdRef = useRef<string | undefined>(undefined);
 
   const accessToken = session?.accessToken ?? null;
   const userId = session?.user?.id;
@@ -66,7 +66,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [userId, status]);
+  }, [me, userId, status]);
 
   const permissions = me?.permissions ?? {};
 

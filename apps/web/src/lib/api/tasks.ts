@@ -34,10 +34,14 @@ export interface Task {
   startDate: string | null;
   dueDate: string | null;
   completedAt: string | null;
+  completionRules: TaskCompletionRule[] | null;
   parentId: string | null;
+  workspaceId: string | null;
+  planningStatus: string;
   kanbanStageId: string | null;
   myPlanStageId: string | null;
   myPlanSortOrder: number;
+  workspaceSortOrder: number;
   chatId: string | null;
   isRecurring: boolean;
   coAssignees: string[];
@@ -59,6 +63,21 @@ export interface Task {
   _count: { subtasks: number; checklists: number };
 }
 
+export type TaskCompletionRuleType =
+  | 'requires_checklist_complete'
+  | 'requires_subtasks_complete'
+  | 'requires_review'
+  | 'requires_attachment'
+  | 'requires_creator_approval'
+  | 'requires_specific_field'
+  | 'requires_linked_entity_condition';
+
+export interface TaskCompletionRule {
+  type: TaskCompletionRuleType;
+  enabled?: boolean;
+  label?: string;
+}
+
 export interface TaskBoardStage {
   id: string;
   ownerId: string | null;
@@ -67,6 +86,31 @@ export interface TaskBoardStage {
   color: string;
   sortOrder: number;
   isDefault: boolean;
+}
+
+export interface WorkSpace {
+  id: string;
+  projectId: string | null;
+  productId: string | null;
+  extensionId: string | null;
+  name: string;
+  type: 'PRODUCT_DELIVERY' | 'EXTENSION_DELIVERY' | 'STANDALONE_OPERATIONAL';
+  scrumEnabled: boolean;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  project?: { id: string; code: string; name: string } | null;
+  product?: { id: string; name: string; status: string } | null;
+  extension?: { id: string; name: string; status: string } | null;
+  tasks?: Task[];
+  _count?: { tasks: number };
+}
+
+interface WorkSpaceQueryParams {
+  projectId?: string;
+  productId?: string;
+  extensionId?: string;
+  type?: WorkSpace['type'];
 }
 
 interface ListData<T> {
@@ -81,6 +125,8 @@ interface TaskQueryParams {
   priority?: string;
   assigneeId?: string;
   creatorId?: string;
+  workspaceId?: string;
+  planningStatus?: string;
   entityType?: string;
   entityId?: string;
   parentId?: string;
@@ -88,6 +134,12 @@ interface TaskQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+}
+
+/** Workspace aggregates from `GET /api/tasks/stats` (Prisma `groupBy`). */
+export interface TaskStats {
+  byStatus: Array<{ status: string; _count: number }>;
+  byPriority: Array<{ priority: string; _count: number }>;
 }
 
 export const tasksApi = {
@@ -111,6 +163,9 @@ export const tasksApi = {
     coAssignees?: string[];
     observers?: string[];
     priority?: string;
+    workspaceId?: string;
+    planningStatus?: string;
+    completionRules?: TaskCompletionRule[];
     startDate?: string;
     dueDate?: string;
     parentId?: string;
@@ -142,8 +197,45 @@ export const tasksApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/tasks/${id}`);
   },
-  async getStats() {
-    const resp = await api.get('/api/tasks/stats');
+  async getStats(): Promise<TaskStats> {
+    const resp = await api.get<TaskStats>('/api/tasks/stats');
+    return resp.data;
+  },
+
+  // Work Spaces
+  async getWorkSpaces(params?: WorkSpaceQueryParams): Promise<WorkSpace[]> {
+    const resp = await api.get<WorkSpace[]>('/api/tasks/work-spaces', { params });
+    return resp.data;
+  },
+  async getWorkSpaceById(id: string): Promise<WorkSpace> {
+    const resp = await api.get<WorkSpace>(`/api/tasks/work-spaces/${id}`);
+    return resp.data;
+  },
+  async createWorkSpace(data: {
+    name: string;
+    type: Exclude<WorkSpace['type'], 'EXTENSION_DELIVERY'>;
+    projectId?: string;
+    productId?: string;
+    extensionId?: string;
+    scrumEnabled?: boolean;
+    description?: string;
+  }): Promise<WorkSpace> {
+    const resp = await api.post<WorkSpace>('/api/tasks/work-spaces', data);
+    return resp.data;
+  },
+  async ensureProductWorkSpace(productId: string): Promise<WorkSpace> {
+    const resp = await api.post<WorkSpace>(`/api/tasks/work-spaces/product/${productId}/ensure`);
+    return resp.data;
+  },
+  async ensureExtensionWorkSpace(extensionId: string): Promise<WorkSpace> {
+    // Extension work uses the parent Product Work Space; this endpoint returns that space.
+    const resp = await api.post<WorkSpace>(
+      `/api/tasks/work-spaces/extension/${extensionId}/ensure`,
+    );
+    return resp.data;
+  },
+  async updateWorkSpace(id: string, data: Record<string, unknown>): Promise<WorkSpace> {
+    const resp = await api.patch<WorkSpace>(`/api/tasks/work-spaces/${id}`, data);
     return resp.data;
   },
 

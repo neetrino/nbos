@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Plus,
   RefreshCcw,
@@ -13,19 +14,22 @@ import {
   Play,
   CheckCircle2,
   RotateCcw,
+  TableProperties,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   PageHeader,
   FilterBar,
   KanbanBoard,
   EmptyState,
+  ErrorState,
+  LoadingState,
   type KanbanColumn,
 } from '@/components/shared';
 import { TASK_STATUSES, TASK_PRIORITIES, getTaskPriority } from '@/features/tasks/constants/tasks';
-import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
+import { tasksApi, type Task, type TaskBoardStage, type TaskStats } from '@/lib/api/tasks';
+import { useTasksScopeStatsCsvExport } from '@/features/tasks/use-tasks-scope-stats-csv-export';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 
@@ -217,7 +221,9 @@ function TaskMiniCard({
 /* ─── Main page ─── */
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [stats, setStats] = useState<TaskStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [boardView, setBoardView] = useState<BoardView>('kanban');
@@ -231,6 +237,8 @@ export default function TasksPage() {
 
   const CURRENT_USER_ID = 'current-user';
 
+  const { handleExportScopeStatsCsv } = useTasksScopeStatsCsvExport(stats);
+
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
@@ -242,8 +250,15 @@ export default function TasksPage() {
         hasParent: false,
       });
       setTasks(resp.items);
+      setError(null);
+      try {
+        setStats(await tasksApi.getStats());
+      } catch {
+        setStats(null);
+      }
     } catch {
-      /* handled */
+      setError('Tasks could not be loaded. Check your connection and try again.');
+      setStats(null);
     } finally {
       setLoading(false);
     }
@@ -388,7 +403,7 @@ export default function TasksPage() {
   };
 
   /* ─── My Plan stage management ─── */
-  const handleAddMyPlanStage = async (title: string, color: string, _afterKey?: string) => {
+  const handleAddMyPlanStage = async (title: string, color: string) => {
     try {
       const stage = await tasksApi.createStage({
         boardType: 'MY_PLAN',
@@ -564,8 +579,23 @@ export default function TasksPage() {
     <div className="flex h-full flex-col gap-5">
       <div className="shrink-0">
         <PageHeader title="Tasks" description={`${tasks.length} tasks`}>
-          <Button variant="outline" size="icon" onClick={fetchTasks}>
+          <Button variant="outline" size="icon" onClick={fetchTasks} aria-label="Refresh tasks">
             <RefreshCcw size={16} />
+          </Button>
+          <Link href="/work-spaces" className={buttonVariants({ variant: 'outline' })}>
+            <FolderKanban size={16} />
+            Work Spaces
+          </Link>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || !stats}
+            onClick={() => handleExportScopeStatsCsv()}
+            aria-label="Export task scope statistics as CSV"
+            title="UTF-8 CSV snapshot from GET /api/tasks/stats (workspace-wide; list filters not applied—see scope_note row)"
+          >
+            <TableProperties size={16} aria-hidden />
           </Button>
           <div className="border-border bg-muted/50 flex rounded-lg border p-0.5">
             <button
@@ -628,11 +658,9 @@ export default function TasksPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
+        <LoadingState />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchTasks} />
       ) : tasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}

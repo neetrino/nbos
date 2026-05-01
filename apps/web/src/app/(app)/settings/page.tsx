@@ -1,84 +1,88 @@
 'use client';
 
 import Link from 'next/link';
-import { Building2, UserCircle2 } from 'lucide-react';
+import {
+  Cable,
+  ClipboardList,
+  ListChecks,
+  ShieldCheck,
+  SlidersHorizontal,
+  ToggleLeft,
+} from 'lucide-react';
+import { PageHeader } from '@/components/shared';
 
-function InputField({
-  label,
-  value,
-  onChange,
-  type = 'text',
-  disabled = false,
-}: {
-  label: string;
-  value: string;
-  onChange?: (value: string) => void;
-  type?: string;
-  disabled?: boolean;
-}) {
-  return (
-    <div>
-      <label className="text-foreground mb-1.5 block text-sm font-medium">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-        readOnly={!onChange}
-        disabled={disabled}
-        className="border-border bg-secondary/30 text-foreground w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#E5A84B]/40 disabled:opacity-50"
-      />
-    </div>
-  );
-}
-
-function CompanyTab() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <InputField label="Company Name" value="NBOS LLC" />
-        <InputField label="Tax ID" value="02612345" />
-        <div className="sm:col-span-2">
-          <InputField label="Address" value="Yerevan, Armenia, Tumanyan 8" />
-        </div>
-        <InputField label="Country" value="Armenia" />
-        <InputField label="City" value="Yerevan" />
-      </div>
-      <button className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90">
-        Save Changes
-      </button>
-    </div>
-  );
-}
+const SETTINGS_SECTIONS = [
+  {
+    title: 'System Lists',
+    href: '/settings/lists',
+    description: 'Safe system-owned labels and display order.',
+    icon: ListChecks,
+  },
+  {
+    title: 'Permissions / RBAC',
+    href: '/settings/roles',
+    description: 'Technical permission roles and access scopes.',
+    icon: ShieldCheck,
+  },
+  {
+    title: 'Module Settings',
+    href: '/settings/module-settings',
+    description: 'Safe module defaults, not business-rule builders.',
+    icon: SlidersHorizontal,
+  },
+  {
+    title: 'Integrations',
+    href: '/settings/integrations',
+    description: 'Provider registry, status, and secret references.',
+    icon: Cable,
+  },
+  {
+    title: 'Security',
+    href: '/settings/security',
+    description: 'Session, 2FA, password, and vault defaults.',
+    icon: ShieldCheck,
+  },
+  {
+    title: 'Feature Flags',
+    href: '/settings/feature-flags',
+    description: 'Controlled feature availability by environment and role.',
+    icon: ToggleLeft,
+  },
+  {
+    title: 'Audit Log',
+    href: '/settings/audit-log',
+    description: 'Read-only trail for risky admin changes.',
+    icon: ClipboardList,
+  },
+] as const;
 
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-foreground text-2xl font-semibold">Settings</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Manage organization and workspace settings.
-        </p>
-      </div>
+      <PageHeader
+        title="Settings / Admin"
+        description="System administration for platform configuration, technical permissions, integrations, security, feature flags, and audit."
+      />
 
-      <div className="bg-card border-border flex flex-wrap items-center gap-2 rounded-xl border p-3">
-        <Link
-          href="/my-account"
-          className="hover:bg-secondary inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
-        >
-          <UserCircle2 size={16} />
-          <span>My Account</span>
-        </Link>
-        <span className="text-muted-foreground text-xs">
-          Personal profile, security, and notifications moved here for all users.
-        </span>
-      </div>
-
-      <div className="border-border bg-card rounded-2xl border p-6">
-        <div className="mb-6 flex items-center gap-2">
-          <Building2 size={18} className="text-muted-foreground" />
-          <h2 className="text-foreground text-base font-semibold">Company</h2>
-        </div>
-        <CompanyTab />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {SETTINGS_SECTIONS.map((section) => {
+          const Icon = section.icon;
+          return (
+            <Link
+              key={section.href}
+              href={section.href}
+              className="border-border bg-card hover:bg-muted/40 rounded-2xl border p-5 transition-colors"
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <div className="bg-secondary text-muted-foreground flex size-10 items-center justify-center rounded-xl">
+                  <Icon size={18} />
+                </div>
+                <h2 className="text-foreground text-base font-semibold">{section.title}</h2>
+              </div>
+              <p className="text-muted-foreground text-sm">{section.description}</p>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

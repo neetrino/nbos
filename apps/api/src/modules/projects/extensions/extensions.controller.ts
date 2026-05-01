@@ -10,9 +10,14 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ExtensionsService } from './extensions.service';
+import {
+  GENERIC_STATUS_DEPRECATION_DESCRIPTION,
+  GENERIC_STATUS_DEPRECATION_HEADER,
+} from '../delivery-status-deprecation';
 
 @ApiTags('Extensions')
 @ApiBearerAuth()
@@ -27,6 +32,9 @@ export class ExtensionsController {
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'deliveryStage', required: false })
+  @ApiQuery({ name: 'deliveryWorkStatus', required: false })
+  @ApiQuery({ name: 'deliveryResolution', required: false })
   @ApiQuery({ name: 'size', required: false })
   @ApiQuery({ name: 'assignedTo', required: false })
   @ApiQuery({ name: 'search', required: false })
@@ -36,6 +44,9 @@ export class ExtensionsController {
     @Query('projectId') projectId?: string,
     @Query('productId') productId?: string,
     @Query('status') status?: string,
+    @Query('deliveryStage') deliveryStage?: string,
+    @Query('deliveryWorkStatus') deliveryWorkStatus?: string,
+    @Query('deliveryResolution') deliveryResolution?: string,
     @Query('size') size?: string,
     @Query('assignedTo') assignedTo?: string,
     @Query('search') search?: string,
@@ -46,6 +57,9 @@ export class ExtensionsController {
       projectId,
       productId,
       status,
+      deliveryStage,
+      deliveryWorkStatus,
+      deliveryResolution,
       size,
       assignedTo,
       search,
@@ -71,7 +85,7 @@ export class ExtensionsController {
     @Body()
     body: {
       projectId: string;
-      productId?: string;
+      productId: string;
       name: string;
       size?: string;
       assignedTo?: string;
@@ -88,7 +102,7 @@ export class ExtensionsController {
     @Body()
     body: {
       name?: string;
-      productId?: string | null;
+      productId?: string;
       size?: string;
       assignedTo?: string | null;
       description?: string | null;
@@ -98,9 +112,44 @@ export class ExtensionsController {
   }
 
   @Patch(':id/status')
-  @ApiOperation({ summary: 'Update extension status (stage gate validation)' })
+  @Header('Deprecation', GENERIC_STATUS_DEPRECATION_HEADER)
+  @ApiOperation({
+    summary: 'Update extension status (deprecated compatibility path)',
+    description: GENERIC_STATUS_DEPRECATION_DESCRIPTION,
+    deprecated: true,
+  })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.extensionsService.updateStatus(id, body.status);
+  }
+
+  @Patch(':id/stage')
+  @ApiOperation({ summary: 'Move extension to a canonical delivery stage' })
+  async moveStage(@Param('id') id: string, @Body() body: { stage: string }) {
+    return this.extensionsService.moveStage(id, body);
+  }
+
+  @Patch(':id/pause')
+  @ApiOperation({ summary: 'Pause extension delivery with reason and resume date' })
+  async pause(@Param('id') id: string, @Body() body: { reason: string; onHoldUntil: string }) {
+    return this.extensionsService.pause(id, body);
+  }
+
+  @Patch(':id/resume')
+  @ApiOperation({ summary: 'Resume paused extension delivery' })
+  async resume(@Param('id') id: string) {
+    return this.extensionsService.resume(id);
+  }
+
+  @Patch(':id/cancel')
+  @ApiOperation({ summary: 'Cancel extension delivery with reason' })
+  async cancel(@Param('id') id: string, @Body() body: { reason: string }) {
+    return this.extensionsService.cancel(id, body);
+  }
+
+  @Patch(':id/complete')
+  @ApiOperation({ summary: 'Complete extension delivery' })
+  async complete(@Param('id') id: string) {
+    return this.extensionsService.complete(id);
   }
 
   @Delete(':id')

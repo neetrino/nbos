@@ -101,9 +101,12 @@ export function KanbanBoard<T>({
     }
     prevItemsRef.current = currentMap;
     if (movedIds.size > 0) {
-      setRecentlyMoved(movedIds);
-      const t = setTimeout(() => setRecentlyMoved(new Set()), 350);
-      return () => clearTimeout(t);
+      const showTimer = window.setTimeout(() => setRecentlyMoved(movedIds), 0);
+      const clearTimer = window.setTimeout(() => setRecentlyMoved(new Set()), 350);
+      return () => {
+        window.clearTimeout(showTimer);
+        window.clearTimeout(clearTimer);
+      };
     }
   }, [columns, getItemId]);
 
@@ -130,7 +133,7 @@ export function KanbanBoard<T>({
   const startAdd = (afterKey: string) => {
     setAddingAfter(afterKey);
     setNewTitle('');
-    setNewColor(COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)] ?? '#3B82F6');
+    setNewColor(COLOR_PALETTE[columns.length % COLOR_PALETTE.length] ?? '#3B82F6');
     setShowAddPicker(false);
   };
   const confirmAdd = () => {

@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
+  Pencil,
+  Trash2,
+  RotateCcw,
   RefreshCcw,
   KeyRound,
   Eye,
@@ -35,6 +38,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -45,20 +49,31 @@ import {
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
 import {
   CREDENTIAL_CATEGORIES,
+  CREDENTIAL_CRITICALITIES,
+  CREDENTIAL_TYPES,
   ACCESS_LEVELS,
   getAccessLevel,
+  getCredentialCriticality,
 } from '@/features/credentials/constants/credentials';
+import { CredentialDetailDialog } from '@/features/credentials/components/CredentialDetailDialog';
+import { EditCredentialDialog } from '@/features/credentials/components/EditCredentialDialog';
+import { DeleteCredentialDialog } from '@/features/credentials/components/DeleteCredentialDialog';
+import { PermanentDeleteCredentialDialog } from '@/features/credentials/components/PermanentDeleteCredentialDialog';
 import { credentialsApi } from '@/lib/api/credentials';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { PermissionGate } from '@/lib/permissions';
 import { toast } from 'sonner';
 
 type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
+type VaultListScope = 'active' | 'archived';
 
 interface CredentialListItem {
   id: string;
   name: string;
   category: string;
+  credentialType: string;
+  criticality: string;
+  environment: string | null;
   provider: string | null;
   url: string | null;
   login: string | null;
@@ -69,6 +84,13 @@ interface CredentialListItem {
   department: { id: string; name: string } | null;
   owner: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
+  nextRotationAt?: string | null;
+  secretsPresent?: {
+    password: boolean;
+    apiKey: boolean;
+    envData: boolean;
+    secureNotes: boolean;
+  };
 }
 
 const TAB_CONFIG: { value: CredentialTab; label: string; icon: React.ReactNode }[] = [
@@ -86,6 +108,13 @@ export default function CredentialsPage() {
   const [visibleLogins, setVisibleLogins] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<CredentialTab>('all');
   const [createOpen, setCreateOpen] = useState(false);
+  const [detailCredentialId, setDetailCredentialId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [editCredentialId, setEditCredentialId] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [purgeTarget, setPurgeTarget] = useState<{ id: string; name: string } | null>(null);
+  const [vaultListScope, setVaultListScope] = useState<VaultListScope>('active');
 
   const fetchCredentials = useCallback(async () => {
     setLoading(true);
@@ -97,6 +126,7 @@ export default function CredentialsPage() {
         accessLevel:
           filters.accessLevel && filters.accessLevel !== 'all' ? filters.accessLevel : undefined,
         tab: activeTab,
+        includeArchived: vaultListScope === 'archived',
       });
       setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
     } catch {
@@ -104,7 +134,7 @@ export default function CredentialsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters, activeTab]);
+  }, [search, filters, activeTab, vaultListScope]);
 
   useEffect(() => {
     fetchCredentials();
@@ -140,11 +170,29 @@ export default function CredentialsPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Credentials Vault" description={`${credentials.length} credentials`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant={vaultListScope === 'active' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setVaultListScope('active')}
+          >
+            Active
+          </Button>
+          <Button
+            type="button"
+            variant={vaultListScope === 'archived' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setVaultListScope('archived')}
+          >
+            Archived
+          </Button>
+        </div>
         <Button variant="outline" size="icon" onClick={fetchCredentials}>
           <RefreshCcw size={16} />
         </Button>
         <PermissionGate module="CREDENTIALS" action="ADD">
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button onClick={() => setCreateOpen(true)} disabled={vaultListScope === 'archived'}>
             <Plus size={16} />
             New Credential
           </Button>
@@ -178,10 +226,22 @@ export default function CredentialsPage() {
             <CredentialTable
               credentials={credentials}
               loading={loading}
+              listScope={vaultListScope}
               visibleLogins={visibleLogins}
               onToggleLogin={toggleLogin}
               onCopy={copyToClipboard}
               onCreateOpen={() => setCreateOpen(true)}
+              onOpenVault={(id) => {
+                setDetailCredentialId(id);
+                setDetailOpen(true);
+              }}
+              onOpenEdit={(id) => {
+                setEditCredentialId(id);
+                setEditOpen(true);
+              }}
+              onRequestDelete={(id, name) => setDeleteTarget({ id, name })}
+              onRequestPurge={(id, name) => setPurgeTarget({ id, name })}
+              onRestored={fetchCredentials}
             />
           </TabsContent>
         ))}
@@ -192,6 +252,45 @@ export default function CredentialsPage() {
         onOpenChange={setCreateOpen}
         onCreated={fetchCredentials}
       />
+
+      <CredentialDetailDialog
+        credentialId={detailCredentialId}
+        open={detailOpen}
+        onOpenChange={(open) => {
+          setDetailOpen(open);
+          if (!open) setDetailCredentialId(null);
+        }}
+      />
+
+      <EditCredentialDialog
+        credentialId={editCredentialId}
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open);
+          if (!open) setEditCredentialId(null);
+        }}
+        onSaved={fetchCredentials}
+      />
+
+      <DeleteCredentialDialog
+        credentialId={deleteTarget?.id ?? null}
+        credentialName={deleteTarget?.name ?? null}
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        onDeleted={fetchCredentials}
+      />
+
+      <PermanentDeleteCredentialDialog
+        credentialId={purgeTarget?.id ?? null}
+        credentialName={purgeTarget?.name ?? null}
+        open={purgeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setPurgeTarget(null);
+        }}
+        onDeleted={fetchCredentials}
+      />
     </div>
   );
 }
@@ -199,18 +298,31 @@ export default function CredentialsPage() {
 function CredentialTable({
   credentials,
   loading,
+  listScope,
   visibleLogins,
   onToggleLogin,
   onCopy,
   onCreateOpen,
+  onOpenVault,
+  onOpenEdit,
+  onRequestDelete,
+  onRequestPurge,
+  onRestored,
 }: {
   credentials: CredentialListItem[];
   loading: boolean;
+  listScope: VaultListScope;
   visibleLogins: Set<string>;
   onToggleLogin: (id: string) => void;
   onCopy: (text: string) => void;
   onCreateOpen: () => void;
+  onOpenVault: (id: string) => void;
+  onOpenEdit: (id: string) => void;
+  onRequestDelete: (id: string, name: string) => void;
+  onRequestPurge: (id: string, name: string) => void;
+  onRestored: () => void;
 }) {
+  const isArchivedList = listScope === 'archived';
   if (loading) {
     return (
       <div className="space-y-2">
@@ -245,17 +357,23 @@ function CredentialTable({
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Category</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Risk</TableHead>
             <TableHead>Provider</TableHead>
             <TableHead>Login</TableHead>
             <TableHead>Access</TableHead>
             <TableHead>Owner</TableHead>
             <TableHead>Project</TableHead>
+            <TableHead>Rotation</TableHead>
             <TableHead>URL</TableHead>
+            <TableHead className="w-28 text-center">Actions</TableHead>
+            <TableHead className="w-24 text-right">Vault</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {credentials.map((cred) => {
             const access = getAccessLevel(cred.accessLevel);
+            const criticality = getCredentialCriticality(cred.criticality);
             const isVisible = visibleLogins.has(cred.id);
             return (
               <TableRow key={cred.id}>
@@ -266,8 +384,19 @@ function CredentialTable({
                   </div>
                 </TableCell>
                 <TableCell className="text-xs">{cred.category}</TableCell>
+                <TableCell className="text-muted-foreground text-xs">
+                  {cred.credentialType.replaceAll('_', ' ')}
+                </TableCell>
+                <TableCell>
+                  {criticality && (
+                    <StatusBadge label={criticality.label} variant={criticality.variant} />
+                  )}
+                </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {cred.provider ?? '—'}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-xs">
+                  {cred.nextRotationAt ? new Date(cred.nextRotationAt).toLocaleDateString() : '—'}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1.5">
@@ -322,19 +451,123 @@ function CredentialTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  {cred.url ? (
-                    <a
-                      href={cred.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent flex items-center gap-1 text-xs hover:underline"
-                      onClick={(e) => e.stopPropagation()}
+                  {cred.url && !isArchivedList ? (
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="text-accent h-auto gap-1 p-0 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void (async () => {
+                          try {
+                            const { url } = await credentialsApi.recordUrlOpened(cred.id);
+                            window.open(url, '_blank', 'noopener,noreferrer');
+                          } catch {
+                            toast.error('Could not open URL');
+                          }
+                        })();
+                      }}
                     >
                       <ExternalLink size={10} />
                       Open
-                    </a>
+                    </Button>
+                  ) : cred.url && isArchivedList ? (
+                    <span className="text-muted-foreground text-xs break-all">{cred.url}</span>
                   ) : (
                     '—'
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  {isArchivedList ? (
+                    <div className="flex flex-wrap items-center justify-center gap-1.5">
+                      <PermissionGate module="CREDENTIALS" action="EDIT">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void (async () => {
+                              try {
+                                await credentialsApi.restore(cred.id);
+                                toast.success('Credential restored');
+                                onRestored();
+                              } catch {
+                                toast.error('Could not restore');
+                              }
+                            })();
+                          }}
+                        >
+                          <RotateCcw size={12} />
+                          Restore
+                        </Button>
+                      </PermissionGate>
+                      <PermissionGate module="CREDENTIALS" action="DELETE">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive border-destructive/40 hover:bg-destructive/10 h-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRequestPurge(cred.id, cred.name);
+                          }}
+                        >
+                          Erase
+                        </Button>
+                      </PermissionGate>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-0.5">
+                      <PermissionGate module="CREDENTIALS" action="EDIT">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Edit credential"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenEdit(cred.id);
+                          }}
+                        >
+                          <Pencil size={12} />
+                        </Button>
+                      </PermissionGate>
+                      <PermissionGate module="CREDENTIALS" action="DELETE">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          title="Archive credential"
+                          className="text-destructive hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRequestDelete(cred.id, cred.name);
+                          }}
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      </PermissionGate>
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  {!isArchivedList && (
+                    <PermissionGate module="CREDENTIALS" action="VIEW">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        title="Open vault detail"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenVault(cred.id);
+                        }}
+                      >
+                        <Shield size={12} />
+                      </Button>
+                    </PermissionGate>
                   )}
                 </TableCell>
               </TableRow>
@@ -357,12 +590,19 @@ function CreateCredentialDialog({
 }) {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('SERVICE');
+  const [credentialType, setCredentialType] = useState('LOGIN_PASSWORD');
+  const [criticality, setCriticality] = useState('MEDIUM');
+  const [environment, setEnvironment] = useState('');
   const [provider, setProvider] = useState('');
   const [url, setUrl] = useState('');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [envData, setEnvData] = useState('');
   const [accessLevel, setAccessLevel] = useState('PROJECT_TEAM');
-  const [notes, setNotes] = useState('');
+  const [publicNotes, setPublicNotes] = useState('');
+  const [secureNotes, setSecureNotes] = useState('');
+  const [nextRotationAt, setNextRotationAt] = useState('');
   const [saving, setSaving] = useState(false);
 
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -384,12 +624,19 @@ function CreateCredentialDialog({
       await credentialsApi.create({
         name: name.trim(),
         category,
+        credentialType,
+        criticality,
+        environment: environment.trim() || undefined,
         provider: provider.trim() || undefined,
         url: url.trim() || undefined,
         login: login.trim() || undefined,
         password: password.trim() || undefined,
+        apiKey: apiKey.trim() || undefined,
+        envData: envData.trim() || undefined,
         accessLevel,
-        notes: notes.trim() || undefined,
+        publicNotes: publicNotes.trim() || undefined,
+        secureNotes: secureNotes.trim() || undefined,
+        nextRotationAt: nextRotationAt || undefined,
         allowedEmployees: accessLevel === 'SECRET' ? allowedEmployees : undefined,
       });
       toast.success('Credential created');
@@ -406,12 +653,19 @@ function CreateCredentialDialog({
   const resetForm = () => {
     setName('');
     setCategory('SERVICE');
+    setCredentialType('LOGIN_PASSWORD');
+    setCriticality('MEDIUM');
+    setEnvironment('');
     setProvider('');
     setUrl('');
     setLogin('');
     setPassword('');
+    setApiKey('');
+    setEnvData('');
     setAccessLevel('PROJECT_TEAM');
-    setNotes('');
+    setPublicNotes('');
+    setSecureNotes('');
+    setNextRotationAt('');
     setAllowedEmployees([]);
   };
 
@@ -471,6 +725,39 @@ function CreateCredentialDialog({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label>Credential Type</Label>
+              <Select value={credentialType} onValueChange={(v) => setCredentialType(v ?? '')}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CREDENTIAL_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label>Criticality</Label>
+              <Select value={criticality} onValueChange={(v) => setCriticality(v ?? '')}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CREDENTIAL_CRITICALITIES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="grid gap-2">
             <Label htmlFor="cred-provider">Provider</Label>
             <Input
@@ -479,6 +766,27 @@ function CreateCredentialDialog({
               onChange={(e) => setProvider(e.target.value)}
               placeholder="e.g. AWS, Vercel"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="cred-environment">Environment</Label>
+              <Input
+                id="cred-environment"
+                value={environment}
+                onChange={(e) => setEnvironment(e.target.value)}
+                placeholder="Production, Staging..."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="cred-next-rotation">Next rotation</Label>
+              <Input
+                id="cred-next-rotation"
+                type="date"
+                value={nextRotationAt}
+                onChange={(e) => setNextRotationAt(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="grid gap-2">
@@ -514,12 +822,48 @@ function CreateCredentialDialog({
           </div>
 
           <div className="grid gap-2">
+            <Label htmlFor="cred-apikey">API key</Label>
+            <Input
+              id="cred-apikey"
+              type="password"
+              autoComplete="off"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Optional — stored encrypted"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="cred-env">Environment data</Label>
+            <Textarea
+              id="cred-env"
+              autoComplete="off"
+              value={envData}
+              onChange={(e) => setEnvData(e.target.value)}
+              placeholder="Optional KEY=value lines — stored encrypted"
+              className="font-mono text-xs"
+            />
+          </div>
+
+          <div className="grid gap-2">
             <Label htmlFor="cred-notes">Notes</Label>
             <Input
               id="cred-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Additional info..."
+              value={publicNotes}
+              onChange={(e) => setPublicNotes(e.target.value)}
+              placeholder="Public non-secret notes..."
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="cred-secure-notes">Secure notes</Label>
+            <Textarea
+              id="cred-secure-notes"
+              autoComplete="off"
+              value={secureNotes}
+              onChange={(e) => setSecureNotes(e.target.value)}
+              placeholder="Encrypted notes, recovery codes, private key notes..."
+              className="font-mono text-xs"
             />
           </div>
 

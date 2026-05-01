@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ProjectsService } from './projects.service';
+import { ProjectKickoffChecklistService } from './project-kickoff-checklist.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
 
@@ -9,7 +10,10 @@ describe('ProjectsService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ProjectsService(prisma as never);
+    service = new ProjectsService(
+      prisma as never,
+      new ProjectKickoffChecklistService(prisma as never),
+    );
   });
 
   describe('findAll', () => {
@@ -23,6 +27,85 @@ describe('ProjectsService', () => {
   describe('findById', () => {
     it('throws NotFoundException', async () => {
       await expect(service.findById('missing')).rejects.toThrow(NotFoundException);
+    });
+
+    it('returns project with product-centric relations for overview consistency', async () => {
+      prisma.project.findUnique.mockResolvedValue({
+        id: 'proj-1',
+        code: 'P-2026-0001',
+        products: [
+          {
+            id: 'prod-1',
+            name: 'Website',
+            status: 'DEVELOPMENT',
+            deadline: new Date('2026-05-10T00:00:00.000Z'),
+            pm: { id: 'pm-1', firstName: 'Project', lastName: 'Manager' },
+            _count: { extensions: 1, tasks: 3, tickets: 2 },
+          },
+        ],
+        extensions: [
+          {
+            id: 'ext-1',
+            name: 'Checkout improvements',
+            status: 'QA',
+            product: { id: 'prod-1', name: 'Website', productType: 'COMPANY_WEBSITE' },
+            _count: { tasks: 2 },
+          },
+        ],
+        orders: [
+          {
+            id: 'order-1',
+            invoices: [{ id: 'invoice-1', status: 'PAID', paidDate: new Date('2026-04-28') }],
+          },
+        ],
+        subscriptions: [{ id: 'sub-1', status: 'ACTIVE' }],
+        credentials: [{ id: 'cred-1' }],
+        _count: {
+          products: 1,
+          extensions: 1,
+          orders: 0,
+          tickets: 0,
+          credentials: 0,
+          expenses: 0,
+        },
+      });
+
+      const result = await service.findById('proj-1');
+
+      expect(result.products).toHaveLength(1);
+      expect(result.extensions).toHaveLength(1);
+      expect(result.products[0].deliveryLifecycle).toMatchObject({
+        entityKind: 'PRODUCT',
+        stage: 'DEVELOPMENT',
+      });
+      expect(result.extensions[0].deliveryLifecycle).toMatchObject({
+        entityKind: 'EXTENSION',
+        stage: 'QA',
+      });
+      expect(result.intake).toMatchObject({
+        hasProduct: true,
+        hasPm: true,
+        hasDeadline: true,
+        hasPaidInvoice: true,
+        hasSubscriptionContext: true,
+        hasCredentials: true,
+        openTaskCount: 5,
+        credentialCount: 1,
+      });
+      expect(result.intake.primaryProduct?.deliveryLifecycle).toMatchObject({
+        entityKind: 'PRODUCT',
+        stage: 'DEVELOPMENT',
+      });
+      expect(result.kickoffChecklist).toEqual([]);
+      expect(result._count).toMatchObject({ products: 1, extensions: 1 });
+      expect(prisma.project.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            products: expect.any(Object),
+            extensions: expect.any(Object),
+          }),
+        }),
+      );
     });
   });
 

@@ -36,6 +36,7 @@ export class BillingService {
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
+        partner: { select: { id: true } },
       },
     });
 
@@ -59,7 +60,7 @@ export class BillingService {
           continue;
         }
 
-        const code = await this.generateInvoiceCode();
+        const code = await this.generateInvoiceCode(now);
         const dueDate = new Date(now.getFullYear(), now.getMonth(), day + 14);
 
         await this.prisma.invoice.create({
@@ -68,6 +69,7 @@ export class BillingService {
             subscriptionId: sub.id,
             projectId: sub.projectId,
             amount: sub.amount,
+            taxStatus: sub.taxStatus,
             type: 'SUBSCRIPTION' as Prisma.InvoiceCreateInput['type'],
             dueDate,
           },
@@ -136,8 +138,8 @@ export class BillingService {
     return { generated };
   }
 
-  private async generateInvoiceCode(): Promise<string> {
-    const year = new Date().getFullYear();
+  private async generateInvoiceCode(targetDate: Date): Promise<string> {
+    const year = targetDate.getFullYear();
     const prefix = `INV-${year}-`;
     const last = await this.prisma.invoice.findFirst({
       where: { code: { startsWith: prefix } },

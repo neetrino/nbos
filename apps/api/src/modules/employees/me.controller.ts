@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { PrismaClient } from '@nbos/database';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { PRISMA_TOKEN } from '../../database.module';
+import { EmployeeWalletService } from './employee-wallet.service';
 
 interface UpdateProfileBody {
   phone?: string;
@@ -15,7 +16,23 @@ interface UpdateProfileBody {
 @ApiBearerAuth()
 @Controller('me')
 export class MeController {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly employeeWalletService: EmployeeWalletService,
+  ) {}
+
+  @Get('wallet')
+  @ApiOperation({
+    summary: 'Read-only employee wallet (base pay, bonus pipeline, payroll salary lines)',
+    description:
+      'Salary history rows include payrollRunId for linking to Finance payroll run detail.',
+  })
+  async getWallet(@CurrentUser() user: CurrentUserPayload) {
+    if (!user?.id) {
+      throw new NotFoundException('Employee record not found for this user');
+    }
+    return this.employeeWalletService.getWallet(user.id);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Get current employee profile with role, permissions, and departments' })

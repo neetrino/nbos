@@ -1,264 +1,96 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useCallback } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { LoadingState } from '@/components/shared';
 import {
-  Plus,
-  RefreshCcw,
-  Receipt,
-  DollarSign,
-  FolderKanban,
-  LayoutGrid,
-  List,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+  EXPENSE_LIST_SORT_BY_QUERY,
+  EXPENSE_LIST_SORT_ORDER_QUERY,
+  parseExpenseListSortByParam,
+  parseExpenseListSortOrderParam,
+  setExpenseListSortParams,
+} from '@/features/finance/constants/expenses-list-query';
+import { expensesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge, KanbanBoard } from '@/components/shared';
-import {
-  EXPENSE_CATEGORIES,
-  EXPENSE_STAGES,
-  getExpenseStage,
-  formatAmount,
-} from '@/features/finance/constants/finance';
-import { api } from '@/lib/api';
+  EXPENSE_PLAN_DRILLDOWN_QUERY,
+  PROJECT_EXPENSES_DRILLDOWN_QUERY,
+} from '@/features/finance/constants/project-expenses-drilldown';
+import type { ExpenseListSortField } from '@/lib/api/finance';
+import { ExpensesPageContent } from '@/features/finance/components/expenses/ExpensesPageContent';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 
-interface Expense {
-  id: string;
-  name: string;
-  type: string;
-  category: string;
-  amount: string;
-  currency: string;
-  status: string;
-  dueDate: string | null;
-  paidDate: string | null;
-  createdAt: string;
-  description: string | null;
-  project: { id: string; name: string } | null;
-}
+function ExpensesPageInner() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
+  const expensePlanIdFromUrl = searchParams.get(EXPENSE_PLAN_DRILLDOWN_QUERY);
 
-type ViewMode = 'kanban' | 'list';
+  useFinanceDocumentTitle(expensesListPageTitle(Boolean(projectIdFromUrl?.trim())));
 
-export default function ExpensesPage() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setView] = useState<ViewMode>('list');
+  const replaceExpensesUrl = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      const next = new URLSearchParams(searchParams.toString());
+      mutate(next);
+      const q = next.toString();
+      router.replace(q ? `${pathname}?${q}` : (pathname ?? '/finance/expenses'));
+    },
+    [pathname, router, searchParams],
+  );
 
-  const fetchExpenses = useCallback(async () => {
-    setLoading(true);
-    try {
-      const resp = await api.get('/api/expenses', {
-        params: {
-          pageSize: 100,
-          search: search || undefined,
-          category: filters.category && filters.category !== 'all' ? filters.category : undefined,
-        },
+  const sortBy = parseExpenseListSortByParam(searchParams.get(EXPENSE_LIST_SORT_BY_QUERY));
+  const sortOrder = parseExpenseListSortOrderParam(searchParams.get(EXPENSE_LIST_SORT_ORDER_QUERY));
+
+  const clearProjectFilter = useCallback(() => {
+    replaceExpensesUrl((params) => {
+      params.delete(PROJECT_EXPENSES_DRILLDOWN_QUERY);
+    });
+  }, [replaceExpensesUrl]);
+
+  const onSortByChange = useCallback(
+    (value: ExpenseListSortField) => {
+      replaceExpensesUrl((params) => {
+        const order = parseExpenseListSortOrderParam(params.get(EXPENSE_LIST_SORT_ORDER_QUERY));
+        setExpenseListSortParams(params, value, order);
       });
-      setExpenses(resp.data.items ?? resp.data ?? []);
-    } catch {
-      /* handled */
-    } finally {
-      setLoading(false);
-    }
-  }, [search, filters]);
-
-  useEffect(() => {
-    fetchExpenses();
-  }, [fetchExpenses]);
-
-  const totalExpenses = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-  const paidExpenses = expenses
-    .filter((e) => e.status === 'PAID')
-    .reduce((sum, e) => sum + parseFloat(e.amount), 0);
-
-  const filterConfigs = [
-    {
-      key: 'category',
-      label: 'Category',
-      options: EXPENSE_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
     },
-    {
-      key: 'status',
-      label: 'Status',
-      options: EXPENSE_STAGES.map((s) => ({ value: s.value, label: s.label })),
+    [replaceExpensesUrl],
+  );
+
+  const onSortOrderChange = useCallback(
+    (value: 'asc' | 'desc') => {
+      replaceExpensesUrl((params) => {
+        const field = parseExpenseListSortByParam(params.get(EXPENSE_LIST_SORT_BY_QUERY));
+        setExpenseListSortParams(params, field, value);
+      });
     },
-  ];
-
-  const STAGE_COLORS: Record<string, string> = {
-    THIS_MONTH: 'bg-blue-500',
-    PAY_NOW: 'bg-orange-500',
-    DELAYED: 'bg-amber-500',
-    ON_HOLD: 'bg-gray-400',
-    PAID: 'bg-green-500',
-  };
-
-  const kanbanColumns = EXPENSE_STAGES.filter((s) =>
-    ['THIS_MONTH', 'PAY_NOW', 'DELAYED', 'ON_HOLD', 'PAID'].includes(s.value),
-  ).map((stage) => ({
-    key: stage.value,
-    label: stage.label,
-    color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
-    items: expenses.filter((e) => e.status === stage.value),
-  }));
+    [replaceExpensesUrl],
+  );
 
   return (
-    <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Expenses" description={`${expenses.length} total`}>
-        <Button variant="outline" size="icon" onClick={fetchExpenses}>
-          <RefreshCcw size={16} />
-        </Button>
-        <div className="border-border flex rounded-lg border">
-          <Button
-            variant={view === 'list' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('list')}
-            className="rounded-r-none"
-          >
-            <List size={14} />
-          </Button>
-          <Button
-            variant={view === 'kanban' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('kanban')}
-            className="rounded-l-none"
-          >
-            <LayoutGrid size={14} />
-          </Button>
-        </div>
-        <Button>
-          <Plus size={16} />
-          New Expense
-        </Button>
-      </PageHeader>
+    <ExpensesPageContent
+      projectIdFromUrl={projectIdFromUrl}
+      expensePlanIdFromUrl={expensePlanIdFromUrl}
+      onClearProjectFilter={clearProjectFilter}
+      replaceExpensesUrl={replaceExpensesUrl}
+      sortBy={sortBy}
+      sortOrder={sortOrder}
+      onSortByChange={onSortByChange}
+      onSortOrderChange={onSortOrderChange}
+    />
+  );
+}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Expenses</p>
-          <p className="mt-1 text-xl font-bold">{formatAmount(totalExpenses)}</p>
+export default function ExpensesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full flex-col gap-5">
+          <LoadingState />
         </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Paid</p>
-          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(paidExpenses)}</p>
-        </div>
-      </div>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search expenses..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
-      />
-
-      {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
-      ) : expenses.length === 0 ? (
-        <EmptyState
-          icon={Receipt}
-          title="No expenses yet"
-          description="Track company expenses here"
-          action={
-            <Button>
-              <Plus size={16} />
-              Add First Expense
-            </Button>
-          }
-        />
-      ) : view === 'kanban' ? (
-        <KanbanBoard
-          columns={kanbanColumns}
-          getItemId={(e: Expense) => e.id}
-          renderCard={(expense: Expense) => (
-            <div className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">{expense.category}</span>
-                <StatusBadge
-                  label={expense.type}
-                  variant={expense.type === 'PLANNED' ? 'blue' : 'orange'}
-                />
-              </div>
-              <p className="text-sm font-medium">{expense.name}</p>
-              <p className="text-sm font-bold">{formatAmount(parseFloat(expense.amount))}</p>
-              {expense.project && (
-                <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                  <FolderKanban size={10} />
-                  {expense.project.name}
-                </div>
-              )}
-            </div>
-          )}
-        />
-      ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Expense</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Due Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenses.map((expense) => {
-                const stage = getExpenseStage(expense.status);
-                return (
-                  <TableRow key={expense.id}>
-                    <TableCell>
-                      <p className="font-medium">{expense.name}</p>
-                      {expense.description && (
-                        <p className="text-muted-foreground max-w-[200px] truncate text-xs">
-                          {expense.description}
-                        </p>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-xs">{expense.category}</TableCell>
-                    <TableCell>
-                      <StatusBadge
-                        label={expense.type}
-                        variant={expense.type === 'PLANNED' ? 'blue' : 'orange'}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span className="flex items-center justify-end gap-1 font-semibold">
-                        <DollarSign size={12} className="text-accent" />
-                        {formatAmount(parseFloat(expense.amount))}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {stage && <StatusBadge label={stage.label} variant={stage.variant} />}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {expense.project?.name ?? '—'}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {expense.dueDate ? new Date(expense.dueDate).toLocaleDateString() : '—'}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </div>
+      }
+    >
+      <ExpensesPageInner />
+    </Suspense>
   );
 }

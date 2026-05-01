@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { DepartmentsService } from './departments.service';
-import { RequirePermission } from '../../common/decorators';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 
 @ApiTags('Departments')
 @ApiBearerAuth()
@@ -25,6 +25,7 @@ export class DepartmentsController {
   @RequirePermission('COMPANY', 'ADD')
   @ApiOperation({ summary: 'Create department' })
   create(
+    @CurrentUser() user: CurrentUserPayload,
     @Body()
     body: {
       name: string;
@@ -34,12 +35,14 @@ export class DepartmentsController {
       sortOrder?: number;
     },
   ) {
-    return this.departmentsService.create(body);
+    return this.departmentsService.create(body, user.id);
   }
 
   @Put(':id')
+  @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'Update department' })
   update(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
     @Body()
     body: {
@@ -50,12 +53,13 @@ export class DepartmentsController {
       sortOrder?: number;
     },
   ) {
-    return this.departmentsService.update(id, body);
+    return this.departmentsService.update(id, body, user.id);
   }
 
   @Delete(':id')
+  @RequirePermission('COMPANY', 'DELETE')
   @ApiOperation({ summary: 'Delete department' })
-  remove(@Param('id') id: string) {
-    return this.departmentsService.remove(id);
+  remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.departmentsService.remove(id, user.id);
   }
 }

@@ -25,18 +25,22 @@ export class SupportController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'priority', required: false })
   @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'coverageDecision', required: false })
   @ApiQuery({ name: 'assignedTo', required: false })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
     @Query('status') status?: string,
     @Query('priority') priority?: string,
     @Query('category') category?: string,
+    @Query('coverageDecision') coverageDecision?: string,
     @Query('assignedTo') assignedTo?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
@@ -46,9 +50,11 @@ export class SupportController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
+      productId,
       status,
       priority,
       category,
+      coverageDecision,
       assignedTo,
       search,
       sortBy,
@@ -77,6 +83,8 @@ export class SupportController {
       projectId: string;
       category: string;
       description?: string;
+      productId?: string;
+      coverageDecision?: string | null;
       contactId?: string;
       priority?: string;
       billable?: boolean;
@@ -95,8 +103,10 @@ export class SupportController {
       title?: string;
       description?: string;
       projectId?: string;
+      productId?: string | null;
       contactId?: string;
       category?: string;
+      coverageDecision?: string | null;
       priority?: string;
       billable?: boolean;
       assignedTo?: string;
@@ -109,6 +119,38 @@ export class SupportController {
   @ApiOperation({ summary: 'Update support ticket status' })
   async updateStatus(@Param('id') id: string, @Body('status') status: string) {
     return this.supportService.updateStatus(id, status);
+  }
+
+  @Post(':id/actions/create-task')
+  @ApiOperation({ summary: 'Create linked execution task for support ticket' })
+  async createExecutionTask(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      creatorId: string;
+      title?: string;
+      description?: string;
+      dueDate?: string | null;
+    },
+  ) {
+    return this.supportService.createExecutionTask(id, body);
+  }
+
+  @Post(':id/actions/create-extension-deal')
+  @ApiOperation({ summary: 'Create linked Extension Deal for change request ticket' })
+  async createExtensionDeal(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      sellerId: string;
+      contactId?: string;
+      amount?: number;
+      paymentType?: string;
+      name?: string;
+      notes?: string;
+    },
+  ) {
+    return this.supportService.createExtensionDeal(id, body);
   }
 
   @Delete(':id')

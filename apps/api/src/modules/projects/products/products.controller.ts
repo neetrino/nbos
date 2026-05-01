@@ -10,9 +10,14 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Header,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
+import {
+  GENERIC_STATUS_DEPRECATION_DESCRIPTION,
+  GENERIC_STATUS_DEPRECATION_HEADER,
+} from '../delivery-status-deprecation';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -26,6 +31,9 @@ export class ProductsController {
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'deliveryStage', required: false })
+  @ApiQuery({ name: 'deliveryWorkStatus', required: false })
+  @ApiQuery({ name: 'deliveryResolution', required: false })
   @ApiQuery({ name: 'productCategory', required: false })
   @ApiQuery({ name: 'productType', required: false })
   @ApiQuery({ name: 'pmId', required: false })
@@ -35,6 +43,9 @@ export class ProductsController {
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
     @Query('status') status?: string,
+    @Query('deliveryStage') deliveryStage?: string,
+    @Query('deliveryWorkStatus') deliveryWorkStatus?: string,
+    @Query('deliveryResolution') deliveryResolution?: string,
     @Query('productCategory') productCategory?: string,
     @Query('productType') productType?: string,
     @Query('pmId') pmId?: string,
@@ -45,6 +56,9 @@ export class ProductsController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
       status,
+      deliveryStage,
+      deliveryWorkStatus,
+      deliveryResolution,
       productCategory,
       productType,
       pmId,
@@ -102,9 +116,53 @@ export class ProductsController {
   }
 
   @Patch(':id/status')
-  @ApiOperation({ summary: 'Update product status (stage gate validation)' })
+  @Header('Deprecation', GENERIC_STATUS_DEPRECATION_HEADER)
+  @ApiOperation({
+    summary: 'Update product status (deprecated compatibility path)',
+    description: GENERIC_STATUS_DEPRECATION_DESCRIPTION,
+    deprecated: true,
+  })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.productsService.updateStatus(id, body.status);
+  }
+
+  @Patch(':id/stage')
+  @ApiOperation({ summary: 'Move product to a canonical delivery stage' })
+  async moveStage(@Param('id') id: string, @Body() body: { stage: string }) {
+    return this.productsService.moveStage(id, body);
+  }
+
+  @Patch(':id/pause')
+  @ApiOperation({ summary: 'Pause product delivery with reason and resume date' })
+  async pause(@Param('id') id: string, @Body() body: { reason: string; onHoldUntil: string }) {
+    return this.productsService.pause(id, body);
+  }
+
+  @Patch(':id/resume')
+  @ApiOperation({ summary: 'Resume paused product delivery' })
+  async resume(@Param('id') id: string) {
+    return this.productsService.resume(id);
+  }
+
+  @Patch(':id/cancel')
+  @ApiOperation({ summary: 'Cancel product delivery with reason' })
+  async cancel(@Param('id') id: string, @Body() body: { reason: string }) {
+    return this.productsService.cancel(id, body);
+  }
+
+  @Patch(':id/complete')
+  @ApiOperation({ summary: 'Complete product delivery' })
+  async complete(@Param('id') id: string) {
+    return this.productsService.complete(id);
+  }
+
+  @Patch(':id/acceptance')
+  @ApiOperation({ summary: 'Record client acceptance for product delivery' })
+  async confirmAcceptance(
+    @Param('id') id: string,
+    @Body() body: { acceptedBy?: string; note?: string },
+  ) {
+    return this.productsService.confirmAcceptance(id, body);
   }
 
   @Delete(':id')

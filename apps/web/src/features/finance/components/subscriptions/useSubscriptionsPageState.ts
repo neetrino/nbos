@@ -1,0 +1,322 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import {
+  buildSubscriptionListApiParams,
+  buildSubscriptionListQuery,
+} from '@/features/finance/utils/build-subscription-list-query';
+import {
+  buildSubscriptionPageQueries,
+  fetchSubscriptionPageStats,
+} from '@/features/finance/utils/build-subscription-page-queries';
+import {
+  applyOptimisticSubscriptionStats,
+  replaceSubscription,
+} from '@/features/finance/utils/subscription-list-optimistic-stats';
+import { getApiErrorMessage } from '@/lib/api-errors';
+import { subscriptionsApi, type Subscription, type SubscriptionStats } from '@/lib/api/finance';
+import type { SubscriptionListParams } from '@/lib/api/subscriptions';
+
+interface UseSubscriptionsPageStateOptions {
+  partnerIdFromUrl?: string | null;
+}
+
+export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOptions) {
+  const partnerIdFromUrl = options?.partnerIdFromUrl?.trim() || null;
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [stats, setStats] = useState<SubscriptionStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const [search, setSearch] = useInitialSearch();
+  const [activatingId, setActivatingId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [holdingId, setHoldingId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [period, setPeriod] = useState<FinancePeriod>('month');
+
+  const subscriptionListExportParams: Omit<SubscriptionListParams, 'page' | 'pageSize'> = useMemo(
+    () =>
+      buildSubscriptionListApiParams(
+        { search, filters, partnerIdFromUrl },
+        getFinancePeriodParams(period),
+      ),
+    [search, filters, partnerIdFromUrl, period],
+  );
+
+  const filtersForBar = useMemo(() => {
+    const pid = partnerIdFromUrl?.trim();
+    if (!pid) return filters;
+    const current = filters.partner;
+    if (current && current !== 'all') return filters;
+    return { ...filters, partner: pid };
+  }, [filters, partnerIdFromUrl]);
+
+  const statsPartnerScope = useMemo(
+    () => buildSubscriptionListQuery({ filters, search, partnerIdFromUrl }).partnerId,
+    [filters, search, partnerIdFromUrl],
+  );
+
+  const clearMutationError = useCallback(() => {
+    setMutationError(null);
+  }, []);
+
+  const fetchSubscriptions = useSubscriptionFetch({
+    search,
+    filters,
+    partnerIdFromUrl,
+    period,
+    setSubscriptions,
+    setStats,
+    setLoading,
+    setError,
+    setMutationError,
+  });
+
+  const handleActivate = useSubscriptionActivation(
+    setSubscriptions,
+    setStats,
+    setMutationError,
+    setActivatingId,
+    statsPartnerScope,
+  );
+
+  const handleCancel = useSubscriptionCancellation(
+    setSubscriptions,
+    setStats,
+    setMutationError,
+    setCancellingId,
+    statsPartnerScope,
+  );
+
+  const handleHold = useSubscriptionHold(
+    setSubscriptions,
+    setStats,
+    setMutationError,
+    setHoldingId,
+    statsPartnerScope,
+  );
+
+  const handlePartnerLinked = useCallback(
+    (updated: Subscription) => {
+      setSubscriptions((current) => replaceSubscription(current, updated));
+      setError(null);
+      setMutationError(null);
+      void fetchSubscriptionPageStats({ filters, search, partnerIdFromUrl, period })
+        .then(setStats)
+        .catch((caught) =>
+          setMutationError(
+            getApiErrorMessage(
+              caught,
+              'Could not refresh subscription stats. Use Refresh or try again.',
+            ),
+          ),
+        );
+    },
+    [filters, partnerIdFromUrl, period, search, setSubscriptions, setMutationError, setStats],
+  );
+
+  useEffect(() => {
+    fetchSubscriptions();
+  }, [fetchSubscriptions]);
+
+  return {
+    subscriptions,
+    stats,
+    loading,
+    error,
+    mutationError,
+    clearMutationError,
+    search,
+    setSearch,
+    activatingId,
+    cancellingId,
+    holdingId,
+    filters,
+    filtersForBar,
+    setFilters,
+    period,
+    setPeriod,
+    fetchSubscriptions,
+    handleActivate,
+    handleCancel,
+    handleHold,
+    handlePartnerLinked,
+    subscriptionListExportParams,
+  };
+}
+
+function useInitialSearch() {
+  return useState(() => {
+    if (typeof window === 'undefined') return '';
+    return new URLSearchParams(window.location.search).get('search') ?? '';
+  });
+}
+
+function useSubscriptionFetch({
+  search,
+  filters,
+  partnerIdFromUrl,
+  period,
+  setSubscriptions,
+  setStats,
+  setLoading,
+  setError,
+  setMutationError,
+}: {
+  search: string;
+  filters: Record<string, string>;
+  partnerIdFromUrl: string | null;
+  period: FinancePeriod;
+  setSubscriptions: (subscriptions: Subscription[]) => void;
+  setStats: (stats: SubscriptionStats) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  setMutationError: (message: string | null) => void;
+}) {
+  return useCallback(async () => {
+    setLoading(true);
+    try {
+      const { listQuery, statsParams } = buildSubscriptionPageQueries(
+        { filters, search, partnerIdFromUrl },
+        period,
+      );
+      const [data, subscriptionStats] = await Promise.all([
+        subscriptionsApi.getAll(listQuery),
+        subscriptionsApi.getStats(statsParams),
+      ]);
+      setSubscriptions(data.items);
+      setStats(subscriptionStats);
+      setError(null);
+      setMutationError(null);
+    } catch (caught) {
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Subscriptions could not be loaded. Check your connection and try again.',
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    filters,
+    partnerIdFromUrl,
+    period,
+    search,
+    setError,
+    setLoading,
+    setMutationError,
+    setStats,
+    setSubscriptions,
+  ]);
+}
+
+function useSubscriptionActivation(
+  setSubscriptions: (updater: (current: Subscription[]) => Subscription[]) => void,
+  setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
+  setMutationError: (message: string | null) => void,
+  setActivatingId: (id: string | null) => void,
+  statsPartnerScope: string | undefined,
+) {
+  return useCallback(
+    async (subscription: Subscription) => {
+      setActivatingId(subscription.id);
+      try {
+        const updated = await subscriptionsApi.updateStatus(subscription.id, 'ACTIVE');
+        setSubscriptions((current) => replaceSubscription(current, updated));
+        setStats((current) =>
+          applyOptimisticSubscriptionStats(
+            current,
+            subscription,
+            statsPartnerScope,
+            subscription.status,
+            'ACTIVE',
+            Number(updated.amount),
+          ),
+        );
+        setMutationError(null);
+      } catch (caught) {
+        setMutationError(
+          getApiErrorMessage(caught, 'Subscription could not be activated or resumed. Try again.'),
+        );
+      } finally {
+        setActivatingId(null);
+      }
+    },
+    [setActivatingId, setMutationError, setStats, setSubscriptions, statsPartnerScope],
+  );
+}
+
+function useSubscriptionCancellation(
+  setSubscriptions: (updater: (current: Subscription[]) => Subscription[]) => void,
+  setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
+  setMutationError: (message: string | null) => void,
+  setCancellingId: (id: string | null) => void,
+  statsPartnerScope: string | undefined,
+) {
+  return useCallback(
+    async (subscription: Subscription) => {
+      setCancellingId(subscription.id);
+      try {
+        const updated = await subscriptionsApi.updateStatus(subscription.id, 'CANCELLED');
+        setSubscriptions((current) => replaceSubscription(current, updated));
+        setStats((current) =>
+          applyOptimisticSubscriptionStats(
+            current,
+            subscription,
+            statsPartnerScope,
+            subscription.status,
+            'CANCELLED',
+            Number(subscription.amount),
+          ),
+        );
+        setMutationError(null);
+      } catch (caught) {
+        setMutationError(
+          getApiErrorMessage(caught, 'Subscription could not be cancelled. Try again.'),
+        );
+        throw new Error('subscription_cancel_failed');
+      } finally {
+        setCancellingId(null);
+      }
+    },
+    [setCancellingId, setMutationError, setStats, setSubscriptions, statsPartnerScope],
+  );
+}
+
+function useSubscriptionHold(
+  setSubscriptions: (updater: (current: Subscription[]) => Subscription[]) => void,
+  setStats: (updater: (current: SubscriptionStats | null) => SubscriptionStats | null) => void,
+  setMutationError: (message: string | null) => void,
+  setHoldingId: (id: string | null) => void,
+  statsPartnerScope: string | undefined,
+) {
+  return useCallback(
+    async (subscription: Subscription) => {
+      setHoldingId(subscription.id);
+      try {
+        const updated = await subscriptionsApi.updateStatus(subscription.id, 'ON_HOLD');
+        setSubscriptions((current) => replaceSubscription(current, updated));
+        setStats((current) =>
+          applyOptimisticSubscriptionStats(
+            current,
+            subscription,
+            statsPartnerScope,
+            'ACTIVE',
+            'ON_HOLD',
+            Number(subscription.amount),
+          ),
+        );
+        setMutationError(null);
+      } catch (caught) {
+        setMutationError(
+          getApiErrorMessage(caught, 'Subscription could not be put on hold. Try again.'),
+        );
+        throw new Error('subscription_hold_failed');
+      } finally {
+        setHoldingId(null);
+      }
+    },
+    [setMutationError, setHoldingId, setStats, setSubscriptions, statsPartnerScope],
+  );
+}

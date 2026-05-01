@@ -1,13 +1,26 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  assertAttributionUpdateAllowed,
+  type AttributionForValidation,
+  validateAttributionGate,
+} from '../attribution-gate';
+
+const ACTIVE_LEAD_STATUSES = new Set(['NEW', 'DIDNT_GET_THROUGH', 'CONTACT_ESTABLISHED', 'MQL']);
+const CLOSED_LEAD_STATUSES = new Set(['SPAM', 'SQL']);
 
 interface CreateLeadDto {
-  name?: string;
-  contactName: string;
+  name: string;
+  contactName?: string;
   phone?: string;
   email?: string;
-  source: string;
+  source?: string | null;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
+  marketingAccountId?: string | null;
+  marketingActivityId?: string | null;
   assignedTo?: string;
   notes?: string;
 }
@@ -17,10 +30,12 @@ interface UpdateLeadDto {
   contactName?: string;
   phone?: string;
   email?: string;
-  source?: string;
+  source?: string | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
+  marketingAccountId?: string | null;
+  marketingActivityId?: string | null;
   status?: string;
   assignedTo?: string;
   notes?: string;
@@ -59,7 +74,7 @@ export class LeadsService {
       where.status = status as Prisma.EnumLeadStatusEnumFilter['equals'];
     }
     if (source) {
-      where.source = source as Prisma.EnumLeadSourceEnumFilter['equals'];
+      where.source = source as Prisma.EnumLeadSourceEnumNullableFilter['equals'];
     }
     if (assignedTo) {
       where.assignedTo = assignedTo;
@@ -80,6 +95,8 @@ export class LeadsService {
           assignee: { select: { id: true, firstName: true, lastName: true } },
           sourcePartner: { select: { id: true, name: true } },
           sourceContact: { select: { id: true, firstName: true, lastName: true } },
+          marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+          marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
           deal: { select: { id: true, code: true, status: true } },
         },
         orderBy: { [sortBy]: sortOrder },
@@ -107,6 +124,8 @@ export class LeadsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
         contact: true,
         deal: true,
       },
@@ -119,25 +138,46 @@ export class LeadsService {
 
   async create(data: CreateLeadDto) {
     const code = await this.generateCode();
+    const createData: Prisma.LeadUncheckedCreateInput = {
+      code,
+      name: data.name,
+      contactName: data.contactName ?? '',
+      phone: data.phone,
+      email: data.email,
+      source: data.source ? (data.source as Prisma.LeadUncheckedCreateInput['source']) : undefined,
+      sourceDetail: data.sourceDetail,
+      sourcePartnerId: data.sourcePartnerId,
+      sourceContactId: data.sourceContactId,
+      marketingAccountId: data.marketingAccountId,
+      marketingActivityId: data.marketingActivityId,
+      assignedTo: data.assignedTo,
+      notes: data.notes,
+    };
+
     return this.prisma.lead.create({
-      data: {
-        code,
-        name: data.name,
-        contactName: data.contactName,
-        phone: data.phone,
-        email: data.email,
-        source: data.source as Prisma.LeadCreateInput['source'],
-        assignedTo: data.assignedTo,
-        notes: data.notes,
-      },
+      data: createData,
       include: {
         assignee: { select: { id: true, firstName: true, lastName: true } },
+        sourcePartner: { select: { id: true, name: true } },
+        sourceContact: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
+        deal: { select: { id: true, code: true, status: true } },
       },
     });
   }
 
   async update(id: string, data: UpdateLeadDto) {
-    await this.findById(id);
+    const existing = await this.findById(id);
+    const nextStatus = data.status ?? existing.status;
+    const attributionLocked = this.requiresAttribution(nextStatus);
+    const attributionPatch = buildLeadAttributionPatch(data);
+    assertAttributionUpdateAllowed({
+      context: 'Lead',
+      before: pickLeadAttribution(existing),
+      patch: attributionPatch,
+      locked: attributionLocked,
+    });
 
     return this.prisma.lead.update({
       where: { id },
@@ -146,10 +186,18 @@ export class LeadsService {
         ...(data.contactName && { contactName: data.contactName }),
         ...(data.phone !== undefined && { phone: data.phone }),
         ...(data.email !== undefined && { email: data.email }),
-        ...(data.source && { source: data.source as Prisma.LeadUpdateInput['source'] }),
+        ...(data.source !== undefined && {
+          source: data.source ? (data.source as Prisma.LeadUpdateInput['source']) : null,
+        }),
         ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
         ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
         ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
+        ...(data.marketingAccountId !== undefined && {
+          marketingAccountId: data.marketingAccountId,
+        }),
+        ...(data.marketingActivityId !== undefined && {
+          marketingActivityId: data.marketingActivityId,
+        }),
         ...(data.status && { status: data.status as Prisma.LeadUpdateInput['status'] }),
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.notes !== undefined && { notes: data.notes }),
@@ -158,6 +206,8 @@ export class LeadsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
         sourcePartner: { select: { id: true, name: true } },
         sourceContact: { select: { id: true, firstName: true, lastName: true } },
+        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
+        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
         deal: { select: { id: true, code: true, status: true } },
       },
     });
@@ -169,6 +219,11 @@ export class LeadsService {
   }
 
   async updateStatus(id: string, status: string) {
+    const lead = await this.findById(id);
+    this.assertStatusTransitionAllowed(lead.status, status);
+    if (this.requiresAttribution(status)) {
+      validateAttributionGate(lead, 'Lead', status);
+    }
     return this.update(id, { status });
   }
 
@@ -199,4 +254,70 @@ export class LeadsService {
 
     return `L-${year}-${String(nextNum).padStart(4, '0')}`;
   }
+
+  private requiresAttribution(status: string): boolean {
+    return !['NEW', 'SPAM'].includes(status);
+  }
+
+  private assertStatusTransitionAllowed(currentStatus: string, targetStatus: string): void {
+    if (currentStatus === targetStatus) return;
+
+    if (currentStatus === 'SQL') {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        message: 'Lead Won is a closed outcome and cannot be moved back.',
+        errors: [{ field: 'status', message: 'Create a new Lead if this was closed by mistake.' }],
+      });
+    }
+
+    if (currentStatus === 'SPAM' && !ACTIVE_LEAD_STATUSES.has(targetStatus)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        message: 'Spam leads can only be restored to an active Lead stage.',
+        errors: [{ field: 'status', message: 'Restore to New or another active stage first.' }],
+      });
+    }
+
+    if (!ACTIVE_LEAD_STATUSES.has(targetStatus) && !CLOSED_LEAD_STATUSES.has(targetStatus)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        message: `Unsupported Lead status: ${targetStatus}`,
+        errors: [{ field: 'status', message: 'Choose a valid Lead stage.' }],
+      });
+    }
+  }
+}
+
+function pickLeadAttribution(lead: {
+  source: string | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
+}): AttributionForValidation {
+  return {
+    source: lead.source,
+    sourceDetail: lead.sourceDetail,
+    sourcePartnerId: lead.sourcePartnerId,
+    sourceContactId: lead.sourceContactId,
+    marketingAccountId: lead.marketingAccountId,
+    marketingActivityId: lead.marketingActivityId,
+  };
+}
+
+function buildLeadAttributionPatch(data: UpdateLeadDto): Partial<AttributionForValidation> {
+  const patch: Partial<AttributionForValidation> = {};
+  if (data.source !== undefined) patch.source = data.source;
+  if (data.sourceDetail !== undefined) patch.sourceDetail = data.sourceDetail;
+  if (data.sourcePartnerId !== undefined) patch.sourcePartnerId = data.sourcePartnerId;
+  if (data.sourceContactId !== undefined) patch.sourceContactId = data.sourceContactId;
+  if (data.marketingAccountId !== undefined) patch.marketingAccountId = data.marketingAccountId;
+  if (data.marketingActivityId !== undefined) {
+    patch.marketingActivityId = data.marketingActivityId;
+  }
+  return patch;
 }

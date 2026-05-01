@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
+  BarChart3,
   LayoutDashboard,
   Users,
   Users2,
@@ -17,10 +18,13 @@ import {
   MessageCircle,
   Calendar,
   HardDrive,
+  FileText,
+  Mail,
   KeyRound,
   Settings,
   ChevronLeft,
   Search,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
@@ -29,21 +33,68 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  permission?: { module: string; action: string };
-  children?: { label: string; href: string }[];
+  permission?: PermissionRequirement;
+  children?: NavChildItem[];
+}
+
+interface NavChildItem {
+  label: string;
+  href: string;
+  permission?: PermissionRequirement;
+}
+
+interface VisibleNavItem extends NavItem {
+  children?: NavChildItem[];
+}
+
+interface PermissionRequirement {
+  module: string;
+  action: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
+  {
+    label: 'Reports / Analytics',
+    href: '/reports',
+    icon: <BarChart3 size={20} />,
+    permission: { module: 'DASHBOARDS', action: 'VIEW' },
+  },
   {
     label: 'CRM',
     href: '/crm',
     icon: <Users size={20} />,
     permission: { module: 'CRM_LEADS', action: 'VIEW' },
     children: [
-      { label: 'Dashboard', href: '/crm/dashboard' },
-      { label: 'Leads', href: '/crm/leads' },
-      { label: 'Deals', href: '/crm/deals' },
+      {
+        label: 'Dashboard',
+        href: '/crm/dashboard',
+        permission: { module: 'CRM_LEADS', action: 'VIEW' },
+      },
+      { label: 'Leads', href: '/crm/leads', permission: { module: 'CRM_LEADS', action: 'VIEW' } },
+      { label: 'Deals', href: '/crm/deals', permission: { module: 'CRM_DEALS', action: 'VIEW' } },
+      {
+        label: 'CRM Client Chats',
+        href: '/messenger?scope=crm',
+        permission: { module: 'MESSENGER', action: 'VIEW' },
+      },
+      {
+        label: 'Sales Reports / Analytics',
+        href: '/reports?module=crm',
+        permission: { module: 'CRM_DEALS', action: 'VIEW' },
+      },
+    ],
+  },
+  {
+    label: 'Marketing',
+    href: '/marketing',
+    icon: <Megaphone size={20} />,
+    permission: { module: 'CRM_LEADS', action: 'VIEW' },
+    children: [
+      { label: 'Marketing Board', href: '/marketing' },
+      { label: 'Attribution Review', href: '/marketing/attribution' },
+      { label: 'Marketing Dashboard', href: '/marketing/dashboard' },
+      { label: 'Marketing Settings', href: '/marketing/settings' },
     ],
   },
   {
@@ -59,17 +110,82 @@ const NAV_ITEMS: NavItem[] = [
     permission: { module: 'TASKS', action: 'VIEW' },
   },
   {
+    label: 'Work Spaces',
+    href: '/work-spaces',
+    icon: <FolderKanban size={20} />,
+    permission: { module: 'TASKS', action: 'VIEW' },
+  },
+  {
     label: 'Finance',
     href: '/finance',
     icon: <DollarSign size={20} />,
     permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
     children: [
-      { label: 'Dashboard', href: '/finance/dashboard' },
-      { label: 'Invoices', href: '/finance/invoices' },
-      { label: 'Payments', href: '/finance/payments' },
-      { label: 'Subscriptions', href: '/finance/subscriptions' },
-      { label: 'Expenses', href: '/finance/expenses' },
-      { label: 'Orders', href: '/finance/orders' },
+      {
+        label: 'Dashboard',
+        href: '/finance/dashboard',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
+        label: 'Invoices',
+        href: '/finance/invoices',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
+        label: 'Payments',
+        href: '/finance/payments',
+        permission: { module: 'FINANCE_PAYMENTS', action: 'VIEW' },
+      },
+      {
+        label: 'Subscriptions',
+        href: '/finance/subscriptions',
+        permission: { module: 'FINANCE_SUBSCRIPTIONS', action: 'VIEW' },
+      },
+      {
+        label: 'Client services',
+        href: '/finance/client-services',
+        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
+      },
+      {
+        label: 'Expenses',
+        href: '/finance/expenses',
+        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
+      },
+      {
+        label: 'Expense plans',
+        href: '/finance/expenses/plans',
+        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
+      },
+      {
+        label: 'Bonus board',
+        href: '/bonus',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
+        label: 'Bonus pools',
+        href: '/finance/bonus-pools',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
+        label: 'Payroll',
+        href: '/finance/payroll',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
+        label: 'My wallet',
+        href: '/finance/wallet',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
+        label: 'Orders',
+        href: '/finance/orders',
+        permission: { module: 'ORDERS', action: 'VIEW' },
+      },
+      {
+        label: 'Reports',
+        href: '/finance/reports',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
     ],
   },
   {
@@ -94,10 +210,47 @@ const NAV_ITEMS: NavItem[] = [
     permission: { module: 'PARTNERS', action: 'VIEW' },
   },
   {
-    label: 'Team',
-    href: '/team',
+    label: 'My Company',
+    href: '/my-company',
     icon: <Users2 size={20} />,
     permission: { module: 'COMPANY', action: 'VIEW' },
+    children: [
+      {
+        label: 'Org Structure',
+        href: '/my-company',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'Team',
+        href: '/my-company/team',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'Departments',
+        href: '/my-company/departments',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'Roles & Seats',
+        href: '/my-company/roles-seats',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'Compensation',
+        href: '/my-company/compensation',
+        permission: { module: 'FINANCE_SALARY', action: 'VIEW' },
+      },
+      {
+        label: 'KPI / Scorecard',
+        href: '/my-company/kpi',
+        permission: { module: 'DASHBOARDS', action: 'VIEW' },
+      },
+      {
+        label: 'SOP & Templates',
+        href: '/my-company/sop',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+    ],
   },
   {
     label: 'Messenger',
@@ -118,21 +271,64 @@ const NAV_ITEMS: NavItem[] = [
     permission: { module: 'DRIVE', action: 'VIEW' },
   },
   {
+    label: 'Documents',
+    href: '/documents',
+    icon: <FileText size={20} />,
+    permission: { module: 'DOCUMENTS', action: 'VIEW' },
+  },
+  {
+    label: 'Mail',
+    href: '/mail',
+    icon: <Mail size={20} />,
+    permission: { module: 'MAIL', action: 'VIEW' },
+  },
+  {
     label: 'Credentials',
     href: '/credentials',
     icon: <KeyRound size={20} />,
     permission: { module: 'CREDENTIALS', action: 'VIEW' },
   },
   {
-    label: 'Settings',
+    label: 'Settings / Admin',
     href: '/settings',
     icon: <Settings size={20} />,
     children: [
-      { label: 'My Account', href: '/my-account' },
-      { label: 'General', href: '/settings' },
-      { label: 'Lists', href: '/settings/lists' },
-      { label: 'Roles', href: '/settings/roles' },
-      { label: 'Departments', href: '/settings/departments' },
+      { label: 'General', href: '/settings', permission: { module: 'COMPANY', action: 'EDIT' } },
+      {
+        label: 'System Lists',
+        href: '/settings/lists',
+        permission: { module: 'COMPANY', action: 'EDIT' },
+      },
+      {
+        label: 'Permissions / RBAC',
+        href: '/settings/roles',
+        permission: { module: 'COMPANY', action: 'ADD' },
+      },
+      {
+        label: 'Module Settings',
+        href: '/settings/module-settings',
+        permission: { module: 'COMPANY', action: 'EDIT' },
+      },
+      {
+        label: 'Integrations',
+        href: '/settings/integrations',
+        permission: { module: 'COMPANY', action: 'EDIT' },
+      },
+      {
+        label: 'Security',
+        href: '/settings/security',
+        permission: { module: 'COMPANY', action: 'EDIT' },
+      },
+      {
+        label: 'Feature Flags',
+        href: '/settings/feature-flags',
+        permission: { module: 'COMPANY', action: 'EDIT' },
+      },
+      {
+        label: 'Audit Log',
+        href: '/settings/audit-log',
+        permission: { module: 'AUDIT_LOGS', action: 'VIEW' },
+      },
     ],
   },
 ];
@@ -146,8 +342,42 @@ function isChildRouteActive(pathname: string, childHref: string): boolean {
   return pathname === path || pathname.startsWith(`${path}/`);
 }
 
-function getFirstChildHref(item: NavItem): string {
+function getFirstChildHref(item: VisibleNavItem): string {
   return item.children?.[0]?.href ?? item.href;
+}
+
+function hasPermission(
+  permission: PermissionRequirement | undefined,
+  can: (action: string, module: string) => boolean,
+): boolean {
+  if (!permission) return true;
+  return can(permission.action, permission.module);
+}
+
+function getVisibleNavItems(
+  can: (action: string, module: string) => boolean,
+  isLoading: boolean,
+): VisibleNavItem[] {
+  if (isLoading) return NAV_ITEMS;
+
+  return NAV_ITEMS.reduce<VisibleNavItem[]>((items, item) => {
+    const visibleChildren = item.children?.filter((child) => hasPermission(child.permission, can));
+    const itemAllowed = hasPermission(item.permission, can);
+    const hasVisibleChildren = visibleChildren !== undefined && visibleChildren.length > 0;
+    const hasChildrenWithoutOwnPermission =
+      item.children !== undefined && item.permission === undefined;
+
+    if (!itemAllowed && !hasVisibleChildren) {
+      return items;
+    }
+
+    if (hasChildrenWithoutOwnPermission && !hasVisibleChildren) {
+      return items;
+    }
+
+    items.push({ ...item, children: hasVisibleChildren ? visibleChildren : undefined });
+    return items;
+  }, []);
 }
 
 export function Sidebar() {
@@ -155,29 +385,24 @@ export function Sidebar() {
   const { can, isLoading: permsLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
   /** At most one section with children is expanded (accordion). */
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [manualExpandedSection, setManualExpandedSection] = useState<string | null>(null);
 
-  const visibleItems = permsLoading
-    ? NAV_ITEMS
-    : NAV_ITEMS.filter((item) => {
-        if (!item.permission) return true;
-        return can(item.permission.action, item.permission.module);
-      });
+  const visibleItems = getVisibleNavItems(can, permsLoading);
 
-  useEffect(() => {
-    const match = NAV_ITEMS.find(
+  const activeSection =
+    visibleItems.find(
       (item) =>
         item.children && item.children.some((child) => isChildRouteActive(pathname, child.href)),
-    );
-    setExpandedSection(match?.label ?? null);
-  }, [pathname]);
+    )?.label ?? null;
+
+  const expandedSection = manualExpandedSection ?? activeSection;
 
   const toggleExpanded = (label: string) => {
-    setExpandedSection((current) => (current === label ? null : label));
+    setManualExpandedSection((current) => (current === label ? null : label));
   };
 
   const expandOnly = (label: string) => {
-    setExpandedSection(label);
+    setManualExpandedSection(label);
   };
 
   const isActive = (href: string) => pathname.startsWith(href);
@@ -220,7 +445,9 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-3">
         <ul className="space-y-1">
           {visibleItems.map((item) => {
-            const active = isActive(item.href);
+            const childPathActive =
+              item.children?.some((child) => isChildRouteActive(pathname, child.href)) ?? false;
+            const active = childPathActive || isActive(item.href);
             const expanded = expandedSection === item.label;
             const firstChildHref = getFirstChildHref(item);
 

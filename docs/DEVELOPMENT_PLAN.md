@@ -2,22 +2,29 @@
 
 **Project:** NBOS Platform  
 **Project size:** C (monorepo: `apps/*`, `packages/*`)  
-**Document role:** single source of truth for roadmap + progress + next actions  
-**Updated:** 2026-04-22  
+**Document role:** implementation progress tracker and factual codebase state
+**Updated:** 2026-04-27
 **Status:** active
+
+> Canonical implementation sequence now lives in `docs/NBOS/00-Implementation-Roadmap.md`.
+> This file tracks factual progress and execution notes. If this file conflicts with the NBOS roadmap or module canon, the NBOS canon wins.
 
 ---
 
 ## 1) Why this document exists
 
-This file replaces fragmented planning status across multiple files.  
-From now on, planning, progress, and execution sequence live here only.
+This file replaces fragmented progress status across multiple files.
+It should be used as a progress tracker, not as the business/process canon.
 
 Linked context:
 
 - Product and module canon: `docs/NBOS/00-Documentation-Hub.md`
+- Canon implementation roadmap: `docs/NBOS/00-Implementation-Roadmap.md`
 - Architecture baseline: `docs/01-ARCHITECTURE.md`
 - Stack and operational constraints: `docs/TECH_CARD.md`
+- Delivery matrix: `docs/execution/01-module-delivery-matrix.md`
+- Performance governance: `docs/execution/02-performance-governance.md`
+- Two-week kickoff tracker: `docs/execution/03-two-week-kickoff.md`
 
 ---
 
@@ -62,9 +69,10 @@ The real state is **post-MVP with broad module coverage**, and work should move 
 
 ## 3) Documentation consolidation decision
 
-### 3.1 Canonical planning policy
+### 3.1 Planning policy
 
-- This file is the only active planning/progress file.
+- `docs/NBOS/00-Implementation-Roadmap.md` is the source of truth for implementation sequence.
+- This file is the active progress tracker.
 - Older planning/progress artifacts are archived.
 - If a phase is completed, update this file immediately.
 
@@ -109,7 +117,7 @@ Rules:
 - Each module closes with explicit exit criteria and docs update in this file.
 - Sequence respects business criticality and dependency chain.
 
-### M1 - CRM -> Product/Order transition integrity (current)
+### ✅ M1 - CRM -> Product/Order transition integrity (done)
 
 Scope:
 
@@ -123,7 +131,14 @@ Exit criteria:
 - Auto-created or linked entities are deterministic and auditable.
 - Negative-path tests for stage gate failures are present.
 
-### M2 - Projects Hub domain consistency
+Current status:
+
+- `updateStatus` idempotency added for repeated status updates.
+- `DealWonHandler` paths are covered by focused tests (PRODUCT and EXTENSION).
+- Stage gate validation tests pass for cumulative and type-specific requirements.
+- Cross-module `Deal -> Order -> Invoice` regression checks are now covered and green.
+
+### ✅ M2 - Projects Hub domain consistency (done)
 
 Scope:
 
@@ -136,7 +151,15 @@ Exit criteria:
 - Product-centric workflow has no ambiguous ownership or status contradictions.
 - Project overview metrics are derivable from real source entities only.
 
-### M3 - Finance core correctness
+Current status:
+
+- `ProjectsService.findById` returns product-centric project snapshot with `products` and `extensions`.
+- Product stage gates now enforce required linked entities for `NEW -> CREATING`.
+- Extension stage gates now enforce required linked entities for `NEW -> DEVELOPMENT`.
+- Task linkage by `PRODUCT` and `EXTENSION` is regression-covered in API tests.
+- Project detail UI consumes the unified project snapshot for products/extensions instead of split sources.
+
+### ✅ M3 - Finance core correctness (done)
 
 Scope:
 
@@ -149,6 +172,56 @@ Exit criteria:
 - Financial status machine is deterministic.
 - Scheduled billing and payment side effects are idempotent.
 - Key finance dashboards show consistent aggregates vs API data.
+
+Current status:
+
+- `PaymentsService` now prevents zero-amount payments, duplicate full-payment writes, and overpayment beyond invoice balance.
+- `Payment -> Invoice -> Order` synchronization now distinguishes active partial payment from full payment:
+  - invoice remains `WAITING` before due date when not fully covered
+  - invoice moves to `DELAYED` after due date when still not fully covered
+  - order moves to `PARTIALLY_PAID` on any confirmed collected amount, not only on fully paid invoices
+- `InvoicesService.create` now inherits `taxStatus` from `Order`, `Subscription`, or fallback `Company`.
+- `BillingService.runMonthlyBilling` now propagates subscription `taxStatus` to generated invoices and uses the billing target date year when generating invoice codes.
+- Focused finance regression tests were added for partial/full payment sync, overpayment rejection, invoice tax inheritance, and billing idempotency/year-bound code generation.
+- Finance API response shaping is aligned with finance UI aggregates:
+  - `OrdersService` derives `paidAmount` from actual invoice payments instead of relying on client-side phantom fields
+  - order reads now expose project-linked `company` and `contact` for finance screens
+  - payment reads now expose derived `project`, `company`, and confirmer context from linked invoice/order/subscription data
+- Finance dashboard no longer depends on mock fixtures:
+  - finance overview KPIs now derive from live `invoice`, `payment`, and `subscription` API reads
+  - recent payments and upcoming invoice deadlines now reflect real finance entities instead of demo data
+- Finance aggregate contracts are formalized for dashboard reads:
+  - `InvoicesService.getStats()` now exposes explicit `outstanding` and `overdue` totals
+  - finance dashboard KPI rendering is shifting from list-endpoint recalculation toward stats-endpoint reads
+- Finance web pages are normalized onto shared typed API contracts:
+  - `orders`, `payments`, and `subscriptions` pages now reuse shared finance API types instead of maintaining page-local response shapes
+  - recurring billing search is now wired end-to-end for subscriptions instead of being a dead UI filter
+- Finance dashboard summary contract now exists as a dedicated backend read model:
+  - `GET /finance/summary/dashboard` centralizes KPI, invoice-status, recent-payment, and upcoming-deadline data
+  - web dashboard no longer composes multiple finance requests just to render a single summary screen
+- Orders and payments list summaries are backend-owned stats contracts:
+  - `GET /finance/orders/stats` now exposes total, collected, outstanding, and status aggregates for order views
+  - `GET /finance/payments/stats` now exposes total collected, current-month collected, and payment count for payment views
+  - finance list pages no longer calculate top-card totals purely from the currently loaded page slice
+- Invoice and subscription overview cards are normalized to backend stats:
+  - invoices page now uses invoice stats for total invoiced / collected / overdue cards
+  - subscriptions page now uses subscription stats for active count and MRR instead of deriving everything from the loaded page slice
+- Finance reporting contracts are period-aware:
+  - finance stats endpoints now accept optional `dateFrom/dateTo` filters
+  - finance dashboard summary endpoint now supports bounded reporting periods and the web dashboard exposes period presets
+  - active subscription metrics are evaluated against the selected reporting end date instead of only "now"
+- Final finance reconciliation gaps are now closed:
+  - invoice manual `PAID` transitions are rejected until actual payments fully cover the invoice
+  - invoice `paidDate` now resolves from the latest linked payment date instead of the sync execution time
+  - invoice list `type` filtering is now wired end-to-end between web filters and backend reads
+- Finance list reads are now aligning rows with reporting periods, not just top-card summaries:
+  - invoice, order, and subscription list endpoints now accept optional `dateFrom/dateTo` filters on backend reads
+  - finance list pages now share the same `Month / Quarter / Year / All` presets for both row queries and summary cards
+  - dashboard and list-period logic now reuse a single typed finance period helper instead of duplicating date-range mapping in each screen
+- Expenses reporting is now aligned with the rest of finance:
+  - expenses list and stats endpoints now support optional `dateFrom/dateTo` filters
+  - expenses page now uses shared typed API contracts and backend-owned total/paid aggregates instead of local list recalculation
+  - expenses screen now exposes the same reporting-period presets as dashboard, invoices, orders, payments, and subscriptions
 
 ### M4 - Tasks and Support operational flow
 
@@ -206,23 +279,73 @@ Exit criteria:
 
 ## 6) Priority backlog (next 2-4 weeks)
 
-1. Close M1 entirely (CRM transition integrity and stage gates).
-2. Execute M2 and M3 in sequence (Projects Hub consistency, Finance correctness).
-3. Add focused regression tests for cross-module trigger chains:
+1. Start M4 (Tasks and Support operational flow).
+2. Continue focused regression tests for cross-module trigger chains:
    - Deal -> Order/Project/Product
    - Invoice/Payment -> Order and downstream effects
    - Product -> task automation
-4. Normalize docs where they still reflect old phase assumptions.
+3. Normalize docs where they still reflect old phase assumptions.
 
 ---
 
 ## 7) Progress log (new format)
+
+### 2026-04-23
+
+- Continued canonical documentation normalization before next implementation cycle.
+- Expanded CRM documentation with stricter stage-gate business rules:
+  - marketing attribution block is now treated as mandatory for Lead/Deal progression
+  - offer proof is documented as `file / link / messenger screenshot` rather than link-only
+  - `MAINTENANCE` deal behavior is clarified as a linked commercial flow around an existing product
+  - `deadline` semantics are clarified per deal type, including planned maintenance start for maintenance deals
+- Clarified CRM -> Finance subscription boundary:
+  - `PRODUCT + Subscription` now documents first paid invoice as first paid subscription month
+  - `MAINTENANCE` now documents `Pending` subscription creation without confirmed start date
+  - subscription lifecycle statuses now include `Pending`, `On Hold`, and `Completed`
 
 ### 2026-04-22
 
 - Re-baselined roadmap from "init/MVP pending" to actual "broad modules implemented".
 - Consolidated plan/progress into one canonical file.
 - Set module-by-module execution order with clear exit criteria.
+- Added delivery execution artifacts under `docs/execution/`:
+  - module delivery matrix
+  - performance-first governance policy
+  - two-week kickoff tracker
+- Stabilized CRM transition behavior:
+  - prevented duplicate side effects on repeated `WON` status updates
+  - added `DealWonHandler` unit tests for PRODUCT and EXTENSION flows
+- Closed M1 CRM -> Product/Order integrity:
+  - added regression tests for `Deal -> Order -> Invoice` chain visibility in CRM reads
+  - verified invoice-driven deal promotion only happens when all linked invoices are paid and covered
+  - verified incomplete invoice chains do not falsely promote deals
+- Closed M2 Projects Hub domain consistency:
+  - unified project detail snapshot around `products` and `extensions`
+  - validated required linked-entity stage gates for product/extension transitions
+  - verified task linkage behavior for product/extension entity views
+  - aligned project detail UI to derive product/extension metrics from project source data
+- Strengthened finance transition coverage:
+  - added tests for partial/full payment synchronization outcomes
+- Started M3 Finance core correctness:
+  - made `Payment -> Invoice -> Order` synchronization deterministic for partial, delayed, and full-payment paths
+  - blocked overpayment and repeated full-payment writes in `PaymentsService`
+  - enforced invoice `taxStatus` inheritance from finance source entities
+  - aligned monthly billing invoice generation with subscription tax status and target billing year
+  - aligned finance API order/payment payloads with UI aggregate needs to reduce dashboard/list drift
+  - replaced finance dashboard mock data with live finance aggregates on the web app
+  - expanded invoice stats contracts for cleaner dashboard aggregate reads
+  - normalized finance web pages onto shared typed contracts and removed dead subscription search behavior
+  - introduced a dedicated finance dashboard summary endpoint to reduce client-side aggregation drift
+  - moved order/payment page summary cards onto backend stats endpoints instead of client-side list recalculation
+  - moved invoice/subscription summary cards onto backend stats contracts for consistency with the rest of finance UI
+  - added period-aware finance reporting filters to stats/summary contracts and wired them into dashboard reads
+- Closed M3 Finance core correctness:
+  - aligned payment stats month bucket with selected reporting period bounds to avoid card/list drift
+  - verified finance state transitions remain deterministic for partial, delayed, and full-payment paths
+  - verified scheduled billing side effects remain idempotent via monthly duplicate prevention tests
+  - confirmed dashboard/list aggregate reads are backend-owned and period-consistent across invoices/orders/payments/subscriptions/expenses
+  - closed invoice/payment reconciliation gaps by blocking unpaid manual `PAID` transitions and deriving `paidDate` from the latest actual payment
+  - wired invoice `type` filtering end-to-end so finance list controls match backend query behavior
 
 ---
 
@@ -243,4 +366,4 @@ For each module cycle:
 
 ## 9) Current next action
 
-**Start M1:** CRM -> Product/Order transition integrity (list-driven behavior completion).
+**Start M4:** validate Tasks and Support operational flow (automation triggers, SLA, and counter consistency).

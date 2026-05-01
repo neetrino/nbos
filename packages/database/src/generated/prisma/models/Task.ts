@@ -27,10 +27,12 @@ export type AggregateTask = {
 
 export type TaskAvgAggregateOutputType = {
   myPlanSortOrder: number | null;
+  workspaceSortOrder: number | null;
 };
 
 export type TaskSumAggregateOutputType = {
   myPlanSortOrder: number | null;
+  workspaceSortOrder: number | null;
 };
 
 export type TaskMinAggregateOutputType = {
@@ -40,9 +42,11 @@ export type TaskMinAggregateOutputType = {
   description: string | null;
   productId: string | null;
   extensionId: string | null;
+  workspaceId: string | null;
   creatorId: string | null;
   assigneeId: string | null;
   status: $Enums.TaskStatusEnum | null;
+  planningStatus: $Enums.TaskPlanningStatusEnum | null;
   priority: $Enums.TaskPriorityEnum | null;
   startDate: Date | null;
   dueDate: Date | null;
@@ -51,6 +55,7 @@ export type TaskMinAggregateOutputType = {
   kanbanStageId: string | null;
   myPlanStageId: string | null;
   myPlanSortOrder: number | null;
+  workspaceSortOrder: number | null;
   chatId: string | null;
   isRecurring: boolean | null;
   templateTaskId: string | null;
@@ -65,9 +70,11 @@ export type TaskMaxAggregateOutputType = {
   description: string | null;
   productId: string | null;
   extensionId: string | null;
+  workspaceId: string | null;
   creatorId: string | null;
   assigneeId: string | null;
   status: $Enums.TaskStatusEnum | null;
+  planningStatus: $Enums.TaskPlanningStatusEnum | null;
   priority: $Enums.TaskPriorityEnum | null;
   startDate: Date | null;
   dueDate: Date | null;
@@ -76,6 +83,7 @@ export type TaskMaxAggregateOutputType = {
   kanbanStageId: string | null;
   myPlanStageId: string | null;
   myPlanSortOrder: number | null;
+  workspaceSortOrder: number | null;
   chatId: string | null;
   isRecurring: boolean | null;
   templateTaskId: string | null;
@@ -90,19 +98,23 @@ export type TaskCountAggregateOutputType = {
   description: number;
   productId: number;
   extensionId: number;
+  workspaceId: number;
   creatorId: number;
   assigneeId: number;
   coAssignees: number;
   observers: number;
   status: number;
+  planningStatus: number;
   priority: number;
   startDate: number;
   dueDate: number;
   completedAt: number;
+  completionRules: number;
   parentId: number;
   kanbanStageId: number;
   myPlanStageId: number;
   myPlanSortOrder: number;
+  workspaceSortOrder: number;
   chatId: number;
   isRecurring: number;
   templateTaskId: number;
@@ -113,10 +125,12 @@ export type TaskCountAggregateOutputType = {
 
 export type TaskAvgAggregateInputType = {
   myPlanSortOrder?: true;
+  workspaceSortOrder?: true;
 };
 
 export type TaskSumAggregateInputType = {
   myPlanSortOrder?: true;
+  workspaceSortOrder?: true;
 };
 
 export type TaskMinAggregateInputType = {
@@ -126,9 +140,11 @@ export type TaskMinAggregateInputType = {
   description?: true;
   productId?: true;
   extensionId?: true;
+  workspaceId?: true;
   creatorId?: true;
   assigneeId?: true;
   status?: true;
+  planningStatus?: true;
   priority?: true;
   startDate?: true;
   dueDate?: true;
@@ -137,6 +153,7 @@ export type TaskMinAggregateInputType = {
   kanbanStageId?: true;
   myPlanStageId?: true;
   myPlanSortOrder?: true;
+  workspaceSortOrder?: true;
   chatId?: true;
   isRecurring?: true;
   templateTaskId?: true;
@@ -151,9 +168,11 @@ export type TaskMaxAggregateInputType = {
   description?: true;
   productId?: true;
   extensionId?: true;
+  workspaceId?: true;
   creatorId?: true;
   assigneeId?: true;
   status?: true;
+  planningStatus?: true;
   priority?: true;
   startDate?: true;
   dueDate?: true;
@@ -162,6 +181,7 @@ export type TaskMaxAggregateInputType = {
   kanbanStageId?: true;
   myPlanStageId?: true;
   myPlanSortOrder?: true;
+  workspaceSortOrder?: true;
   chatId?: true;
   isRecurring?: true;
   templateTaskId?: true;
@@ -176,19 +196,23 @@ export type TaskCountAggregateInputType = {
   description?: true;
   productId?: true;
   extensionId?: true;
+  workspaceId?: true;
   creatorId?: true;
   assigneeId?: true;
   coAssignees?: true;
   observers?: true;
   status?: true;
+  planningStatus?: true;
   priority?: true;
   startDate?: true;
   dueDate?: true;
   completedAt?: true;
+  completionRules?: true;
   parentId?: true;
   kanbanStageId?: true;
   myPlanStageId?: true;
   myPlanSortOrder?: true;
+  workspaceSortOrder?: true;
   chatId?: true;
   isRecurring?: true;
   templateTaskId?: true;
@@ -291,19 +315,23 @@ export type TaskGroupByOutputType = {
   description: string | null;
   productId: string | null;
   extensionId: string | null;
+  workspaceId: string | null;
   creatorId: string;
   assigneeId: string | null;
   coAssignees: string[];
   observers: string[];
   status: $Enums.TaskStatusEnum;
+  planningStatus: $Enums.TaskPlanningStatusEnum;
   priority: $Enums.TaskPriorityEnum;
   startDate: Date | null;
   dueDate: Date | null;
   completedAt: Date | null;
+  completionRules: runtime.JsonValue | null;
   parentId: string | null;
   kanbanStageId: string | null;
   myPlanStageId: string | null;
   myPlanSortOrder: number;
+  workspaceSortOrder: number;
   chatId: string | null;
   isRecurring: boolean;
   templateTaskId: string | null;
@@ -338,19 +366,23 @@ export type TaskWhereInput = {
   description?: Prisma.StringNullableFilter<'Task'> | string | null;
   productId?: Prisma.StringNullableFilter<'Task'> | string | null;
   extensionId?: Prisma.StringNullableFilter<'Task'> | string | null;
+  workspaceId?: Prisma.StringNullableFilter<'Task'> | string | null;
   creatorId?: Prisma.StringFilter<'Task'> | string;
   assigneeId?: Prisma.StringNullableFilter<'Task'> | string | null;
   coAssignees?: Prisma.StringNullableListFilter<'Task'>;
   observers?: Prisma.StringNullableListFilter<'Task'>;
   status?: Prisma.EnumTaskStatusEnumFilter<'Task'> | $Enums.TaskStatusEnum;
+  planningStatus?: Prisma.EnumTaskPlanningStatusEnumFilter<'Task'> | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFilter<'Task'> | $Enums.TaskPriorityEnum;
   startDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
   dueDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
   completedAt?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
+  completionRules?: Prisma.JsonNullableFilter<'Task'>;
   parentId?: Prisma.StringNullableFilter<'Task'> | string | null;
   kanbanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
   myPlanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
   myPlanSortOrder?: Prisma.IntFilter<'Task'> | number;
+  workspaceSortOrder?: Prisma.IntFilter<'Task'> | number;
   chatId?: Prisma.StringNullableFilter<'Task'> | string | null;
   isRecurring?: Prisma.BoolFilter<'Task'> | boolean;
   templateTaskId?: Prisma.StringNullableFilter<'Task'> | string | null;
@@ -360,6 +392,10 @@ export type TaskWhereInput = {
   extension?: Prisma.XOR<
     Prisma.ExtensionNullableScalarRelationFilter,
     Prisma.ExtensionWhereInput
+  > | null;
+  workspace?: Prisma.XOR<
+    Prisma.WorkSpaceNullableScalarRelationFilter,
+    Prisma.WorkSpaceWhereInput
   > | null;
   creator?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
   assignee?: Prisma.XOR<
@@ -379,19 +415,23 @@ export type TaskOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   productId?: Prisma.SortOrderInput | Prisma.SortOrder;
   extensionId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  workspaceId?: Prisma.SortOrderInput | Prisma.SortOrder;
   creatorId?: Prisma.SortOrder;
   assigneeId?: Prisma.SortOrderInput | Prisma.SortOrder;
   coAssignees?: Prisma.SortOrder;
   observers?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  planningStatus?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   startDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  completionRules?: Prisma.SortOrderInput | Prisma.SortOrder;
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder;
   kanbanStageId?: Prisma.SortOrderInput | Prisma.SortOrder;
   myPlanStageId?: Prisma.SortOrderInput | Prisma.SortOrder;
   myPlanSortOrder?: Prisma.SortOrder;
+  workspaceSortOrder?: Prisma.SortOrder;
   chatId?: Prisma.SortOrderInput | Prisma.SortOrder;
   isRecurring?: Prisma.SortOrder;
   templateTaskId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -399,6 +439,7 @@ export type TaskOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder;
   product?: Prisma.ProductOrderByWithRelationInput;
   extension?: Prisma.ExtensionOrderByWithRelationInput;
+  workspace?: Prisma.WorkSpaceOrderByWithRelationInput;
   creator?: Prisma.EmployeeOrderByWithRelationInput;
   assignee?: Prisma.EmployeeOrderByWithRelationInput;
   parent?: Prisma.TaskOrderByWithRelationInput;
@@ -419,19 +460,25 @@ export type TaskWhereUniqueInput = Prisma.AtLeast<
     description?: Prisma.StringNullableFilter<'Task'> | string | null;
     productId?: Prisma.StringNullableFilter<'Task'> | string | null;
     extensionId?: Prisma.StringNullableFilter<'Task'> | string | null;
+    workspaceId?: Prisma.StringNullableFilter<'Task'> | string | null;
     creatorId?: Prisma.StringFilter<'Task'> | string;
     assigneeId?: Prisma.StringNullableFilter<'Task'> | string | null;
     coAssignees?: Prisma.StringNullableListFilter<'Task'>;
     observers?: Prisma.StringNullableListFilter<'Task'>;
     status?: Prisma.EnumTaskStatusEnumFilter<'Task'> | $Enums.TaskStatusEnum;
+    planningStatus?:
+      | Prisma.EnumTaskPlanningStatusEnumFilter<'Task'>
+      | $Enums.TaskPlanningStatusEnum;
     priority?: Prisma.EnumTaskPriorityEnumFilter<'Task'> | $Enums.TaskPriorityEnum;
     startDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
     dueDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
     completedAt?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
+    completionRules?: Prisma.JsonNullableFilter<'Task'>;
     parentId?: Prisma.StringNullableFilter<'Task'> | string | null;
     kanbanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
     myPlanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
     myPlanSortOrder?: Prisma.IntFilter<'Task'> | number;
+    workspaceSortOrder?: Prisma.IntFilter<'Task'> | number;
     isRecurring?: Prisma.BoolFilter<'Task'> | boolean;
     templateTaskId?: Prisma.StringNullableFilter<'Task'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Task'> | Date | string;
@@ -443,6 +490,10 @@ export type TaskWhereUniqueInput = Prisma.AtLeast<
     extension?: Prisma.XOR<
       Prisma.ExtensionNullableScalarRelationFilter,
       Prisma.ExtensionWhereInput
+    > | null;
+    workspace?: Prisma.XOR<
+      Prisma.WorkSpaceNullableScalarRelationFilter,
+      Prisma.WorkSpaceWhereInput
     > | null;
     creator?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
     assignee?: Prisma.XOR<
@@ -464,19 +515,23 @@ export type TaskOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   productId?: Prisma.SortOrderInput | Prisma.SortOrder;
   extensionId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  workspaceId?: Prisma.SortOrderInput | Prisma.SortOrder;
   creatorId?: Prisma.SortOrder;
   assigneeId?: Prisma.SortOrderInput | Prisma.SortOrder;
   coAssignees?: Prisma.SortOrder;
   observers?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  planningStatus?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   startDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  completionRules?: Prisma.SortOrderInput | Prisma.SortOrder;
   parentId?: Prisma.SortOrderInput | Prisma.SortOrder;
   kanbanStageId?: Prisma.SortOrderInput | Prisma.SortOrder;
   myPlanStageId?: Prisma.SortOrderInput | Prisma.SortOrder;
   myPlanSortOrder?: Prisma.SortOrder;
+  workspaceSortOrder?: Prisma.SortOrder;
   chatId?: Prisma.SortOrderInput | Prisma.SortOrder;
   isRecurring?: Prisma.SortOrder;
   templateTaskId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -499,19 +554,25 @@ export type TaskScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   productId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   extensionId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
+  workspaceId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   creatorId?: Prisma.StringWithAggregatesFilter<'Task'> | string;
   assigneeId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   coAssignees?: Prisma.StringNullableListFilter<'Task'>;
   observers?: Prisma.StringNullableListFilter<'Task'>;
   status?: Prisma.EnumTaskStatusEnumWithAggregatesFilter<'Task'> | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumWithAggregatesFilter<'Task'>
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumWithAggregatesFilter<'Task'> | $Enums.TaskPriorityEnum;
   startDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null;
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null;
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null;
+  completionRules?: Prisma.JsonNullableWithAggregatesFilter<'Task'>;
   parentId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   kanbanStageId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   myPlanStageId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   myPlanSortOrder?: Prisma.IntWithAggregatesFilter<'Task'> | number;
+  workspaceSortOrder?: Prisma.IntWithAggregatesFilter<'Task'> | number;
   chatId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
   isRecurring?: Prisma.BoolWithAggregatesFilter<'Task'> | boolean;
   templateTaskId?: Prisma.StringNullableWithAggregatesFilter<'Task'> | string | null;
@@ -527,13 +588,16 @@ export type TaskCreateInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -541,6 +605,7 @@ export type TaskCreateInput = {
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
   parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
@@ -556,19 +621,23 @@ export type TaskUncheckedCreateInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -587,13 +656,18 @@ export type TaskUpdateInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -601,6 +675,7 @@ export type TaskUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
   extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
   parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
@@ -616,19 +691,25 @@ export type TaskUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -646,19 +727,23 @@ export type TaskCreateManyInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -674,13 +759,18 @@ export type TaskUpdateManyMutationInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -695,19 +785,25 @@ export type TaskUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -745,19 +841,23 @@ export type TaskCountOrderByAggregateInput = {
   description?: Prisma.SortOrder;
   productId?: Prisma.SortOrder;
   extensionId?: Prisma.SortOrder;
+  workspaceId?: Prisma.SortOrder;
   creatorId?: Prisma.SortOrder;
   assigneeId?: Prisma.SortOrder;
   coAssignees?: Prisma.SortOrder;
   observers?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  planningStatus?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   startDate?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
   completedAt?: Prisma.SortOrder;
+  completionRules?: Prisma.SortOrder;
   parentId?: Prisma.SortOrder;
   kanbanStageId?: Prisma.SortOrder;
   myPlanStageId?: Prisma.SortOrder;
   myPlanSortOrder?: Prisma.SortOrder;
+  workspaceSortOrder?: Prisma.SortOrder;
   chatId?: Prisma.SortOrder;
   isRecurring?: Prisma.SortOrder;
   templateTaskId?: Prisma.SortOrder;
@@ -767,6 +867,7 @@ export type TaskCountOrderByAggregateInput = {
 
 export type TaskAvgOrderByAggregateInput = {
   myPlanSortOrder?: Prisma.SortOrder;
+  workspaceSortOrder?: Prisma.SortOrder;
 };
 
 export type TaskMaxOrderByAggregateInput = {
@@ -776,9 +877,11 @@ export type TaskMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder;
   productId?: Prisma.SortOrder;
   extensionId?: Prisma.SortOrder;
+  workspaceId?: Prisma.SortOrder;
   creatorId?: Prisma.SortOrder;
   assigneeId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  planningStatus?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   startDate?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
@@ -787,6 +890,7 @@ export type TaskMaxOrderByAggregateInput = {
   kanbanStageId?: Prisma.SortOrder;
   myPlanStageId?: Prisma.SortOrder;
   myPlanSortOrder?: Prisma.SortOrder;
+  workspaceSortOrder?: Prisma.SortOrder;
   chatId?: Prisma.SortOrder;
   isRecurring?: Prisma.SortOrder;
   templateTaskId?: Prisma.SortOrder;
@@ -801,9 +905,11 @@ export type TaskMinOrderByAggregateInput = {
   description?: Prisma.SortOrder;
   productId?: Prisma.SortOrder;
   extensionId?: Prisma.SortOrder;
+  workspaceId?: Prisma.SortOrder;
   creatorId?: Prisma.SortOrder;
   assigneeId?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  planningStatus?: Prisma.SortOrder;
   priority?: Prisma.SortOrder;
   startDate?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
@@ -812,6 +918,7 @@ export type TaskMinOrderByAggregateInput = {
   kanbanStageId?: Prisma.SortOrder;
   myPlanStageId?: Prisma.SortOrder;
   myPlanSortOrder?: Prisma.SortOrder;
+  workspaceSortOrder?: Prisma.SortOrder;
   chatId?: Prisma.SortOrder;
   isRecurring?: Prisma.SortOrder;
   templateTaskId?: Prisma.SortOrder;
@@ -821,6 +928,7 @@ export type TaskMinOrderByAggregateInput = {
 
 export type TaskSumOrderByAggregateInput = {
   myPlanSortOrder?: Prisma.SortOrder;
+  workspaceSortOrder?: Prisma.SortOrder;
 };
 
 export type TaskScalarRelationFilter = {
@@ -1000,6 +1108,92 @@ export type TaskUncheckedUpdateManyWithoutExtensionNestedInput = {
   deleteMany?: Prisma.TaskScalarWhereInput | Prisma.TaskScalarWhereInput[];
 };
 
+export type TaskCreateNestedManyWithoutWorkspaceInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.TaskCreateWithoutWorkspaceInput,
+        Prisma.TaskUncheckedCreateWithoutWorkspaceInput
+      >
+    | Prisma.TaskCreateWithoutWorkspaceInput[]
+    | Prisma.TaskUncheckedCreateWithoutWorkspaceInput[];
+  connectOrCreate?:
+    | Prisma.TaskCreateOrConnectWithoutWorkspaceInput
+    | Prisma.TaskCreateOrConnectWithoutWorkspaceInput[];
+  createMany?: Prisma.TaskCreateManyWorkspaceInputEnvelope;
+  connect?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+};
+
+export type TaskUncheckedCreateNestedManyWithoutWorkspaceInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.TaskCreateWithoutWorkspaceInput,
+        Prisma.TaskUncheckedCreateWithoutWorkspaceInput
+      >
+    | Prisma.TaskCreateWithoutWorkspaceInput[]
+    | Prisma.TaskUncheckedCreateWithoutWorkspaceInput[];
+  connectOrCreate?:
+    | Prisma.TaskCreateOrConnectWithoutWorkspaceInput
+    | Prisma.TaskCreateOrConnectWithoutWorkspaceInput[];
+  createMany?: Prisma.TaskCreateManyWorkspaceInputEnvelope;
+  connect?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+};
+
+export type TaskUpdateManyWithoutWorkspaceNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.TaskCreateWithoutWorkspaceInput,
+        Prisma.TaskUncheckedCreateWithoutWorkspaceInput
+      >
+    | Prisma.TaskCreateWithoutWorkspaceInput[]
+    | Prisma.TaskUncheckedCreateWithoutWorkspaceInput[];
+  connectOrCreate?:
+    | Prisma.TaskCreateOrConnectWithoutWorkspaceInput
+    | Prisma.TaskCreateOrConnectWithoutWorkspaceInput[];
+  upsert?:
+    | Prisma.TaskUpsertWithWhereUniqueWithoutWorkspaceInput
+    | Prisma.TaskUpsertWithWhereUniqueWithoutWorkspaceInput[];
+  createMany?: Prisma.TaskCreateManyWorkspaceInputEnvelope;
+  set?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+  disconnect?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+  delete?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+  connect?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+  update?:
+    | Prisma.TaskUpdateWithWhereUniqueWithoutWorkspaceInput
+    | Prisma.TaskUpdateWithWhereUniqueWithoutWorkspaceInput[];
+  updateMany?:
+    | Prisma.TaskUpdateManyWithWhereWithoutWorkspaceInput
+    | Prisma.TaskUpdateManyWithWhereWithoutWorkspaceInput[];
+  deleteMany?: Prisma.TaskScalarWhereInput | Prisma.TaskScalarWhereInput[];
+};
+
+export type TaskUncheckedUpdateManyWithoutWorkspaceNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.TaskCreateWithoutWorkspaceInput,
+        Prisma.TaskUncheckedCreateWithoutWorkspaceInput
+      >
+    | Prisma.TaskCreateWithoutWorkspaceInput[]
+    | Prisma.TaskUncheckedCreateWithoutWorkspaceInput[];
+  connectOrCreate?:
+    | Prisma.TaskCreateOrConnectWithoutWorkspaceInput
+    | Prisma.TaskCreateOrConnectWithoutWorkspaceInput[];
+  upsert?:
+    | Prisma.TaskUpsertWithWhereUniqueWithoutWorkspaceInput
+    | Prisma.TaskUpsertWithWhereUniqueWithoutWorkspaceInput[];
+  createMany?: Prisma.TaskCreateManyWorkspaceInputEnvelope;
+  set?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+  disconnect?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+  delete?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+  connect?: Prisma.TaskWhereUniqueInput | Prisma.TaskWhereUniqueInput[];
+  update?:
+    | Prisma.TaskUpdateWithWhereUniqueWithoutWorkspaceInput
+    | Prisma.TaskUpdateWithWhereUniqueWithoutWorkspaceInput[];
+  updateMany?:
+    | Prisma.TaskUpdateManyWithWhereWithoutWorkspaceInput
+    | Prisma.TaskUpdateManyWithWhereWithoutWorkspaceInput[];
+  deleteMany?: Prisma.TaskScalarWhereInput | Prisma.TaskScalarWhereInput[];
+};
+
 export type TaskCreatecoAssigneesInput = {
   set: string[];
 };
@@ -1053,6 +1247,10 @@ export type TaskUpdateobserversInput = {
 
 export type EnumTaskStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.TaskStatusEnum;
+};
+
+export type EnumTaskPlanningStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.TaskPlanningStatusEnum;
 };
 
 export type EnumTaskPriorityEnumFieldUpdateOperationsInput = {
@@ -1360,19 +1558,23 @@ export type TaskCreateWithoutProductInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
   parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
@@ -1387,19 +1589,23 @@ export type TaskUncheckedCreateWithoutProductInput = {
   title: string;
   description?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1461,19 +1667,23 @@ export type TaskScalarWhereInput = {
   description?: Prisma.StringNullableFilter<'Task'> | string | null;
   productId?: Prisma.StringNullableFilter<'Task'> | string | null;
   extensionId?: Prisma.StringNullableFilter<'Task'> | string | null;
+  workspaceId?: Prisma.StringNullableFilter<'Task'> | string | null;
   creatorId?: Prisma.StringFilter<'Task'> | string;
   assigneeId?: Prisma.StringNullableFilter<'Task'> | string | null;
   coAssignees?: Prisma.StringNullableListFilter<'Task'>;
   observers?: Prisma.StringNullableListFilter<'Task'>;
   status?: Prisma.EnumTaskStatusEnumFilter<'Task'> | $Enums.TaskStatusEnum;
+  planningStatus?: Prisma.EnumTaskPlanningStatusEnumFilter<'Task'> | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFilter<'Task'> | $Enums.TaskPriorityEnum;
   startDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
   dueDate?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
   completedAt?: Prisma.DateTimeNullableFilter<'Task'> | Date | string | null;
+  completionRules?: Prisma.JsonNullableFilter<'Task'>;
   parentId?: Prisma.StringNullableFilter<'Task'> | string | null;
   kanbanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
   myPlanStageId?: Prisma.StringNullableFilter<'Task'> | string | null;
   myPlanSortOrder?: Prisma.IntFilter<'Task'> | number;
+  workspaceSortOrder?: Prisma.IntFilter<'Task'> | number;
   chatId?: Prisma.StringNullableFilter<'Task'> | string | null;
   isRecurring?: Prisma.BoolFilter<'Task'> | boolean;
   templateTaskId?: Prisma.StringNullableFilter<'Task'> | string | null;
@@ -1489,19 +1699,23 @@ export type TaskCreateWithoutExtensionInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
   parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
@@ -1516,19 +1730,23 @@ export type TaskUncheckedCreateWithoutExtensionInput = {
   title: string;
   description?: string | null;
   productId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1580,6 +1798,113 @@ export type TaskUpdateManyWithWhereWithoutExtensionInput = {
   >;
 };
 
+export type TaskCreateWithoutWorkspaceInput = {
+  id?: string;
+  code: string;
+  title: string;
+  description?: string | null;
+  coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
+  observers?: Prisma.TaskCreateobserversInput | string[];
+  status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
+  priority?: $Enums.TaskPriorityEnum;
+  startDate?: Date | string | null;
+  dueDate?: Date | string | null;
+  completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  kanbanStageId?: string | null;
+  myPlanStageId?: string | null;
+  myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
+  chatId?: string | null;
+  isRecurring?: boolean;
+  templateTaskId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
+  extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
+  parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
+  subtasks?: Prisma.TaskCreateNestedManyWithoutParentInput;
+  links?: Prisma.TaskLinkCreateNestedManyWithoutTaskInput;
+  checklists?: Prisma.TaskChecklistCreateNestedManyWithoutTaskInput;
+};
+
+export type TaskUncheckedCreateWithoutWorkspaceInput = {
+  id?: string;
+  code: string;
+  title: string;
+  description?: string | null;
+  productId?: string | null;
+  extensionId?: string | null;
+  creatorId: string;
+  assigneeId?: string | null;
+  coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
+  observers?: Prisma.TaskCreateobserversInput | string[];
+  status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
+  priority?: $Enums.TaskPriorityEnum;
+  startDate?: Date | string | null;
+  dueDate?: Date | string | null;
+  completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  parentId?: string | null;
+  kanbanStageId?: string | null;
+  myPlanStageId?: string | null;
+  myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
+  chatId?: string | null;
+  isRecurring?: boolean;
+  templateTaskId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  subtasks?: Prisma.TaskUncheckedCreateNestedManyWithoutParentInput;
+  links?: Prisma.TaskLinkUncheckedCreateNestedManyWithoutTaskInput;
+  checklists?: Prisma.TaskChecklistUncheckedCreateNestedManyWithoutTaskInput;
+};
+
+export type TaskCreateOrConnectWithoutWorkspaceInput = {
+  where: Prisma.TaskWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.TaskCreateWithoutWorkspaceInput,
+    Prisma.TaskUncheckedCreateWithoutWorkspaceInput
+  >;
+};
+
+export type TaskCreateManyWorkspaceInputEnvelope = {
+  data: Prisma.TaskCreateManyWorkspaceInput | Prisma.TaskCreateManyWorkspaceInput[];
+  skipDuplicates?: boolean;
+};
+
+export type TaskUpsertWithWhereUniqueWithoutWorkspaceInput = {
+  where: Prisma.TaskWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.TaskUpdateWithoutWorkspaceInput,
+    Prisma.TaskUncheckedUpdateWithoutWorkspaceInput
+  >;
+  create: Prisma.XOR<
+    Prisma.TaskCreateWithoutWorkspaceInput,
+    Prisma.TaskUncheckedCreateWithoutWorkspaceInput
+  >;
+};
+
+export type TaskUpdateWithWhereUniqueWithoutWorkspaceInput = {
+  where: Prisma.TaskWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.TaskUpdateWithoutWorkspaceInput,
+    Prisma.TaskUncheckedUpdateWithoutWorkspaceInput
+  >;
+};
+
+export type TaskUpdateManyWithWhereWithoutWorkspaceInput = {
+  where: Prisma.TaskScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.TaskUpdateManyMutationInput,
+    Prisma.TaskUncheckedUpdateManyWithoutWorkspaceInput
+  >;
+};
+
 export type TaskCreateWithoutSubtasksInput = {
   id?: string;
   code: string;
@@ -1588,13 +1913,16 @@ export type TaskCreateWithoutSubtasksInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1602,6 +1930,7 @@ export type TaskCreateWithoutSubtasksInput = {
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
   parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
@@ -1616,19 +1945,23 @@ export type TaskUncheckedCreateWithoutSubtasksInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1654,13 +1987,16 @@ export type TaskCreateWithoutParentInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1668,6 +2004,7 @@ export type TaskCreateWithoutParentInput = {
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
   subtasks?: Prisma.TaskCreateNestedManyWithoutParentInput;
@@ -1682,18 +2019,22 @@ export type TaskUncheckedCreateWithoutParentInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1745,13 +2086,18 @@ export type TaskUpdateWithoutSubtasksInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1759,6 +2105,7 @@ export type TaskUpdateWithoutSubtasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
   extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
   parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
@@ -1773,19 +2120,25 @@ export type TaskUncheckedUpdateWithoutSubtasksInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1831,13 +2184,16 @@ export type TaskCreateWithoutLinksInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1845,6 +2201,7 @@ export type TaskCreateWithoutLinksInput = {
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
   parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
@@ -1859,19 +2216,23 @@ export type TaskUncheckedCreateWithoutLinksInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1914,13 +2275,18 @@ export type TaskUpdateWithoutLinksInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1928,6 +2294,7 @@ export type TaskUpdateWithoutLinksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
   extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
   parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
@@ -1942,19 +2309,25 @@ export type TaskUncheckedUpdateWithoutLinksInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1972,13 +2345,16 @@ export type TaskCreateWithoutChecklistsInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -1986,6 +2362,7 @@ export type TaskCreateWithoutChecklistsInput = {
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
   parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
@@ -2000,19 +2377,23 @@ export type TaskUncheckedCreateWithoutChecklistsInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2058,13 +2439,18 @@ export type TaskUpdateWithoutChecklistsInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2072,6 +2458,7 @@ export type TaskUpdateWithoutChecklistsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
   extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
   parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
@@ -2086,19 +2473,25 @@ export type TaskUncheckedUpdateWithoutChecklistsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2116,13 +2509,16 @@ export type TaskCreateWithoutCreatorInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2130,6 +2526,7 @@ export type TaskCreateWithoutCreatorInput = {
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutTasksAssignedInput;
   parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
   subtasks?: Prisma.TaskCreateNestedManyWithoutParentInput;
@@ -2144,18 +2541,22 @@ export type TaskUncheckedCreateWithoutCreatorInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2187,13 +2588,16 @@ export type TaskCreateWithoutAssigneeInput = {
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2201,6 +2605,7 @@ export type TaskCreateWithoutAssigneeInput = {
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTasksInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutTasksInput;
+  workspace?: Prisma.WorkSpaceCreateNestedOneWithoutTasksInput;
   creator: Prisma.EmployeeCreateNestedOneWithoutTasksCreatedInput;
   parent?: Prisma.TaskCreateNestedOneWithoutSubtasksInput;
   subtasks?: Prisma.TaskCreateNestedManyWithoutParentInput;
@@ -2215,18 +2620,22 @@ export type TaskUncheckedCreateWithoutAssigneeInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2312,19 +2721,23 @@ export type TaskCreateManyProductInput = {
   title: string;
   description?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2340,19 +2753,25 @@ export type TaskUpdateWithoutProductInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
   parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
@@ -2367,19 +2786,25 @@ export type TaskUncheckedUpdateWithoutProductInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2396,19 +2821,25 @@ export type TaskUncheckedUpdateManyWithoutProductInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2422,19 +2853,23 @@ export type TaskCreateManyExtensionInput = {
   title: string;
   description?: string | null;
   productId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2450,19 +2885,25 @@ export type TaskUpdateWithoutExtensionInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
   parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
@@ -2477,19 +2918,25 @@ export type TaskUncheckedUpdateWithoutExtensionInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2506,19 +2953,157 @@ export type TaskUncheckedUpdateManyWithoutExtensionInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type TaskCreateManyWorkspaceInput = {
+  id?: string;
+  code: string;
+  title: string;
+  description?: string | null;
+  productId?: string | null;
+  extensionId?: string | null;
+  creatorId: string;
+  assigneeId?: string | null;
+  coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
+  observers?: Prisma.TaskCreateobserversInput | string[];
+  status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
+  priority?: $Enums.TaskPriorityEnum;
+  startDate?: Date | string | null;
+  dueDate?: Date | string | null;
+  completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  parentId?: string | null;
+  kanbanStageId?: string | null;
+  myPlanStageId?: string | null;
+  myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
+  chatId?: string | null;
+  isRecurring?: boolean;
+  templateTaskId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type TaskUpdateWithoutWorkspaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
+  observers?: Prisma.TaskUpdateobserversInput | string[];
+  status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
+  priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
+  extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
+  assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
+  parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
+  subtasks?: Prisma.TaskUpdateManyWithoutParentNestedInput;
+  links?: Prisma.TaskLinkUpdateManyWithoutTaskNestedInput;
+  checklists?: Prisma.TaskChecklistUpdateManyWithoutTaskNestedInput;
+};
+
+export type TaskUncheckedUpdateWithoutWorkspaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
+  observers?: Prisma.TaskUpdateobserversInput | string[];
+  status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
+  priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  subtasks?: Prisma.TaskUncheckedUpdateManyWithoutParentNestedInput;
+  links?: Prisma.TaskLinkUncheckedUpdateManyWithoutTaskNestedInput;
+  checklists?: Prisma.TaskChecklistUncheckedUpdateManyWithoutTaskNestedInput;
+};
+
+export type TaskUncheckedUpdateManyWithoutWorkspaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
+  observers?: Prisma.TaskUpdateobserversInput | string[];
+  status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
+  priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2533,18 +3118,22 @@ export type TaskCreateManyParentInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2560,13 +3149,18 @@ export type TaskUpdateWithoutParentInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2574,6 +3168,7 @@ export type TaskUpdateWithoutParentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
   extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
   subtasks?: Prisma.TaskUpdateManyWithoutParentNestedInput;
@@ -2588,18 +3183,24 @@ export type TaskUncheckedUpdateWithoutParentInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2617,18 +3218,24 @@ export type TaskUncheckedUpdateManyWithoutParentInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2643,18 +3250,22 @@ export type TaskCreateManyCreatorInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   assigneeId?: string | null;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2669,18 +3280,22 @@ export type TaskCreateManyAssigneeInput = {
   description?: string | null;
   productId?: string | null;
   extensionId?: string | null;
+  workspaceId?: string | null;
   creatorId: string;
   coAssignees?: Prisma.TaskCreatecoAssigneesInput | string[];
   observers?: Prisma.TaskCreateobserversInput | string[];
   status?: $Enums.TaskStatusEnum;
+  planningStatus?: $Enums.TaskPlanningStatusEnum;
   priority?: $Enums.TaskPriorityEnum;
   startDate?: Date | string | null;
   dueDate?: Date | string | null;
   completedAt?: Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: string | null;
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceSortOrder?: number;
   chatId?: string | null;
   isRecurring?: boolean;
   templateTaskId?: string | null;
@@ -2696,13 +3311,18 @@ export type TaskUpdateWithoutCreatorInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2710,6 +3330,7 @@ export type TaskUpdateWithoutCreatorInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
   extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutTasksAssignedNestedInput;
   parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
   subtasks?: Prisma.TaskUpdateManyWithoutParentNestedInput;
@@ -2724,18 +3345,24 @@ export type TaskUncheckedUpdateWithoutCreatorInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2753,18 +3380,24 @@ export type TaskUncheckedUpdateManyWithoutCreatorInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2780,13 +3413,18 @@ export type TaskUpdateWithoutAssigneeInput = {
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2794,6 +3432,7 @@ export type TaskUpdateWithoutAssigneeInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTasksNestedInput;
   extension?: Prisma.ExtensionUpdateOneWithoutTasksNestedInput;
+  workspace?: Prisma.WorkSpaceUpdateOneWithoutTasksNestedInput;
   creator?: Prisma.EmployeeUpdateOneRequiredWithoutTasksCreatedNestedInput;
   parent?: Prisma.TaskUpdateOneWithoutSubtasksNestedInput;
   subtasks?: Prisma.TaskUpdateManyWithoutParentNestedInput;
@@ -2808,18 +3447,24 @@ export type TaskUncheckedUpdateWithoutAssigneeInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2837,18 +3482,24 @@ export type TaskUncheckedUpdateManyWithoutAssigneeInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  workspaceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string;
   coAssignees?: Prisma.TaskUpdatecoAssigneesInput | string[];
   observers?: Prisma.TaskUpdateobserversInput | string[];
   status?: Prisma.EnumTaskStatusEnumFieldUpdateOperationsInput | $Enums.TaskStatusEnum;
+  planningStatus?:
+    | Prisma.EnumTaskPlanningStatusEnumFieldUpdateOperationsInput
+    | $Enums.TaskPlanningStatusEnum;
   priority?: Prisma.EnumTaskPriorityEnumFieldUpdateOperationsInput | $Enums.TaskPriorityEnum;
   startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  completionRules?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   kanbanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanStageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   myPlanSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  workspaceSortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
   chatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isRecurring?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   templateTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2923,19 +3574,23 @@ export type TaskSelect<
     description?: boolean;
     productId?: boolean;
     extensionId?: boolean;
+    workspaceId?: boolean;
     creatorId?: boolean;
     assigneeId?: boolean;
     coAssignees?: boolean;
     observers?: boolean;
     status?: boolean;
+    planningStatus?: boolean;
     priority?: boolean;
     startDate?: boolean;
     dueDate?: boolean;
     completedAt?: boolean;
+    completionRules?: boolean;
     parentId?: boolean;
     kanbanStageId?: boolean;
     myPlanStageId?: boolean;
     myPlanSortOrder?: boolean;
+    workspaceSortOrder?: boolean;
     chatId?: boolean;
     isRecurring?: boolean;
     templateTaskId?: boolean;
@@ -2943,6 +3598,7 @@ export type TaskSelect<
     updatedAt?: boolean;
     product?: boolean | Prisma.Task$productArgs<ExtArgs>;
     extension?: boolean | Prisma.Task$extensionArgs<ExtArgs>;
+    workspace?: boolean | Prisma.Task$workspaceArgs<ExtArgs>;
     creator?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Task$assigneeArgs<ExtArgs>;
     parent?: boolean | Prisma.Task$parentArgs<ExtArgs>;
@@ -2964,19 +3620,23 @@ export type TaskSelectCreateManyAndReturn<
     description?: boolean;
     productId?: boolean;
     extensionId?: boolean;
+    workspaceId?: boolean;
     creatorId?: boolean;
     assigneeId?: boolean;
     coAssignees?: boolean;
     observers?: boolean;
     status?: boolean;
+    planningStatus?: boolean;
     priority?: boolean;
     startDate?: boolean;
     dueDate?: boolean;
     completedAt?: boolean;
+    completionRules?: boolean;
     parentId?: boolean;
     kanbanStageId?: boolean;
     myPlanStageId?: boolean;
     myPlanSortOrder?: boolean;
+    workspaceSortOrder?: boolean;
     chatId?: boolean;
     isRecurring?: boolean;
     templateTaskId?: boolean;
@@ -2984,6 +3644,7 @@ export type TaskSelectCreateManyAndReturn<
     updatedAt?: boolean;
     product?: boolean | Prisma.Task$productArgs<ExtArgs>;
     extension?: boolean | Prisma.Task$extensionArgs<ExtArgs>;
+    workspace?: boolean | Prisma.Task$workspaceArgs<ExtArgs>;
     creator?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Task$assigneeArgs<ExtArgs>;
     parent?: boolean | Prisma.Task$parentArgs<ExtArgs>;
@@ -3001,19 +3662,23 @@ export type TaskSelectUpdateManyAndReturn<
     description?: boolean;
     productId?: boolean;
     extensionId?: boolean;
+    workspaceId?: boolean;
     creatorId?: boolean;
     assigneeId?: boolean;
     coAssignees?: boolean;
     observers?: boolean;
     status?: boolean;
+    planningStatus?: boolean;
     priority?: boolean;
     startDate?: boolean;
     dueDate?: boolean;
     completedAt?: boolean;
+    completionRules?: boolean;
     parentId?: boolean;
     kanbanStageId?: boolean;
     myPlanStageId?: boolean;
     myPlanSortOrder?: boolean;
+    workspaceSortOrder?: boolean;
     chatId?: boolean;
     isRecurring?: boolean;
     templateTaskId?: boolean;
@@ -3021,6 +3686,7 @@ export type TaskSelectUpdateManyAndReturn<
     updatedAt?: boolean;
     product?: boolean | Prisma.Task$productArgs<ExtArgs>;
     extension?: boolean | Prisma.Task$extensionArgs<ExtArgs>;
+    workspace?: boolean | Prisma.Task$workspaceArgs<ExtArgs>;
     creator?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Task$assigneeArgs<ExtArgs>;
     parent?: boolean | Prisma.Task$parentArgs<ExtArgs>;
@@ -3035,19 +3701,23 @@ export type TaskSelectScalar = {
   description?: boolean;
   productId?: boolean;
   extensionId?: boolean;
+  workspaceId?: boolean;
   creatorId?: boolean;
   assigneeId?: boolean;
   coAssignees?: boolean;
   observers?: boolean;
   status?: boolean;
+  planningStatus?: boolean;
   priority?: boolean;
   startDate?: boolean;
   dueDate?: boolean;
   completedAt?: boolean;
+  completionRules?: boolean;
   parentId?: boolean;
   kanbanStageId?: boolean;
   myPlanStageId?: boolean;
   myPlanSortOrder?: boolean;
+  workspaceSortOrder?: boolean;
   chatId?: boolean;
   isRecurring?: boolean;
   templateTaskId?: boolean;
@@ -3064,19 +3734,23 @@ export type TaskOmit<
   | 'description'
   | 'productId'
   | 'extensionId'
+  | 'workspaceId'
   | 'creatorId'
   | 'assigneeId'
   | 'coAssignees'
   | 'observers'
   | 'status'
+  | 'planningStatus'
   | 'priority'
   | 'startDate'
   | 'dueDate'
   | 'completedAt'
+  | 'completionRules'
   | 'parentId'
   | 'kanbanStageId'
   | 'myPlanStageId'
   | 'myPlanSortOrder'
+  | 'workspaceSortOrder'
   | 'chatId'
   | 'isRecurring'
   | 'templateTaskId'
@@ -3089,6 +3763,7 @@ export type TaskInclude<
 > = {
   product?: boolean | Prisma.Task$productArgs<ExtArgs>;
   extension?: boolean | Prisma.Task$extensionArgs<ExtArgs>;
+  workspace?: boolean | Prisma.Task$workspaceArgs<ExtArgs>;
   creator?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Task$assigneeArgs<ExtArgs>;
   parent?: boolean | Prisma.Task$parentArgs<ExtArgs>;
@@ -3102,6 +3777,7 @@ export type TaskIncludeCreateManyAndReturn<
 > = {
   product?: boolean | Prisma.Task$productArgs<ExtArgs>;
   extension?: boolean | Prisma.Task$extensionArgs<ExtArgs>;
+  workspace?: boolean | Prisma.Task$workspaceArgs<ExtArgs>;
   creator?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Task$assigneeArgs<ExtArgs>;
   parent?: boolean | Prisma.Task$parentArgs<ExtArgs>;
@@ -3111,6 +3787,7 @@ export type TaskIncludeUpdateManyAndReturn<
 > = {
   product?: boolean | Prisma.Task$productArgs<ExtArgs>;
   extension?: boolean | Prisma.Task$extensionArgs<ExtArgs>;
+  workspace?: boolean | Prisma.Task$workspaceArgs<ExtArgs>;
   creator?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Task$assigneeArgs<ExtArgs>;
   parent?: boolean | Prisma.Task$parentArgs<ExtArgs>;
@@ -3123,6 +3800,7 @@ export type $TaskPayload<
   objects: {
     product: Prisma.$ProductPayload<ExtArgs> | null;
     extension: Prisma.$ExtensionPayload<ExtArgs> | null;
+    workspace: Prisma.$WorkSpacePayload<ExtArgs> | null;
     creator: Prisma.$EmployeePayload<ExtArgs>;
     assignee: Prisma.$EmployeePayload<ExtArgs> | null;
     parent: Prisma.$TaskPayload<ExtArgs> | null;
@@ -3138,19 +3816,23 @@ export type $TaskPayload<
       description: string | null;
       productId: string | null;
       extensionId: string | null;
+      workspaceId: string | null;
       creatorId: string;
       assigneeId: string | null;
       coAssignees: string[];
       observers: string[];
       status: $Enums.TaskStatusEnum;
+      planningStatus: $Enums.TaskPlanningStatusEnum;
       priority: $Enums.TaskPriorityEnum;
       startDate: Date | null;
       dueDate: Date | null;
       completedAt: Date | null;
+      completionRules: runtime.JsonValue | null;
       parentId: string | null;
       kanbanStageId: string | null;
       myPlanStageId: string | null;
       myPlanSortOrder: number;
+      workspaceSortOrder: number;
       chatId: string | null;
       isRecurring: boolean;
       templateTaskId: string | null;
@@ -3692,6 +4374,19 @@ export interface Prisma__TaskClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  workspace<T extends Prisma.Task$workspaceArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Task$workspaceArgs<ExtArgs>>,
+  ): Prisma.Prisma__WorkSpaceClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$WorkSpacePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   creator<T extends Prisma.EmployeeDefaultArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.EmployeeDefaultArgs<ExtArgs>>,
   ): Prisma.Prisma__EmployeeClient<
@@ -3797,19 +4492,23 @@ export interface TaskFieldRefs {
   readonly description: Prisma.FieldRef<'Task', 'String'>;
   readonly productId: Prisma.FieldRef<'Task', 'String'>;
   readonly extensionId: Prisma.FieldRef<'Task', 'String'>;
+  readonly workspaceId: Prisma.FieldRef<'Task', 'String'>;
   readonly creatorId: Prisma.FieldRef<'Task', 'String'>;
   readonly assigneeId: Prisma.FieldRef<'Task', 'String'>;
   readonly coAssignees: Prisma.FieldRef<'Task', 'String[]'>;
   readonly observers: Prisma.FieldRef<'Task', 'String[]'>;
   readonly status: Prisma.FieldRef<'Task', 'TaskStatusEnum'>;
+  readonly planningStatus: Prisma.FieldRef<'Task', 'TaskPlanningStatusEnum'>;
   readonly priority: Prisma.FieldRef<'Task', 'TaskPriorityEnum'>;
   readonly startDate: Prisma.FieldRef<'Task', 'DateTime'>;
   readonly dueDate: Prisma.FieldRef<'Task', 'DateTime'>;
   readonly completedAt: Prisma.FieldRef<'Task', 'DateTime'>;
+  readonly completionRules: Prisma.FieldRef<'Task', 'Json'>;
   readonly parentId: Prisma.FieldRef<'Task', 'String'>;
   readonly kanbanStageId: Prisma.FieldRef<'Task', 'String'>;
   readonly myPlanStageId: Prisma.FieldRef<'Task', 'String'>;
   readonly myPlanSortOrder: Prisma.FieldRef<'Task', 'Int'>;
+  readonly workspaceSortOrder: Prisma.FieldRef<'Task', 'Int'>;
   readonly chatId: Prisma.FieldRef<'Task', 'String'>;
   readonly isRecurring: Prisma.FieldRef<'Task', 'Boolean'>;
   readonly templateTaskId: Prisma.FieldRef<'Task', 'String'>;
@@ -4277,6 +4976,27 @@ export type Task$extensionArgs<
    */
   include?: Prisma.ExtensionInclude<ExtArgs> | null;
   where?: Prisma.ExtensionWhereInput;
+};
+
+/**
+ * Task.workspace
+ */
+export type Task$workspaceArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the WorkSpace
+   */
+  select?: Prisma.WorkSpaceSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the WorkSpace
+   */
+  omit?: Prisma.WorkSpaceOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkSpaceInclude<ExtArgs> | null;
+  where?: Prisma.WorkSpaceWhereInput;
 };
 
 /**

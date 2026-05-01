@@ -2,22 +2,38 @@
 
 ## Общая концепция
 
-Подписка (Subscription) — это регулярный ежемесячный платёж от клиента. Подписки обеспечивают предсказуемый доход (MRR — Monthly Recurring Revenue) и являются ключевым элементом бизнес-модели Neetrino.
+`Subscription / Подписка` — это долгоживущая договорённость о регулярных деньгах.
 
-```
-Subscription → auto-generate Invoice (monthly) → Payment → MRR
+Сама подписка хранит:
+
+- правила биллинга;
+- базовую месячную сумму;
+- дату старта биллинга;
+- статус;
+- тип и частоту оплаты.
+
+А конкретные деньги за конкретные месяцы живут уже в `Invoice Card`.
+
+```text
+Subscription
+    ->
+Invoice Card(s) for covered period
+    ->
+Payment
+    ->
+MRR / revenue control
 ```
 
 ---
 
 ## Типы подписок
 
-| Тип | Описание | Когда начинается |
-|-----|----------|-----------------|
-| **Maintenance Only** | Техническое обслуживание | После сдачи проекта клиенту |
-| **Development + Maintenance** | Разработка по подписочной модели + обслуживание | С момента начала разработки |
-| **Development Only** | Оплата разработки ежемесячными платежами | С момента начала разработки |
-| **Partner Service** | Партнёр платит Neetrino за переданного клиента | После сдачи проекта партнёру |
+| Тип                           | Описание                                        | Когда начинается             |
+| ----------------------------- | ----------------------------------------------- | ---------------------------- |
+| **Maintenance Only**          | Техническое обслуживание                        | После сдачи проекта клиенту  |
+| **Development + Maintenance** | Разработка по подписочной модели + обслуживание | С момента начала разработки  |
+| **Development Only**          | Оплата разработки ежемесячными платежами        | С момента начала разработки  |
+| **Partner Service**           | Партнёр платит Neetrino за переданного клиента  | После сдачи проекта партнёру |
 
 ### Development + Maintenance: жизненный цикл
 
@@ -26,16 +42,17 @@ Subscription → auto-generate Invoice (monthly) → Payment → MRR
 ```
 Месяцы 1-3: Фаза разработки
   └─ Клиент платит 100,000/мес (Development + Maintenance)
-  └─ Партнёру не платим (внутренние затраты на разработку)
+  └─ Если проект партнёрский, Partner Accrual создаётся только от реально полученных платежей и по правилам Partners
 
 Месяц 4+: Фаза обслуживания
   └─ Development-часть завершена
   └─ Добавляется Maintenance: 80,000/мес
   └─ Итого: 180,000/мес (если dev-подписка сохраняется) или 80,000/мес (если только maintenance)
-  └─ Партнёру начинаем платить % ежемесячно (если партнёрский заказ)
+  └─ Partner payout для subscription идёт через Partner Accrual / Balance / payout_rule конкретной subscription-связи
 ```
 
 Сумма подписки может меняться со временем:
+
 - После завершения разработки — переход на другой тариф
 - Согласованное повышение цены с клиентом
 - Добавление новых услуг
@@ -45,22 +62,138 @@ Subscription → auto-generate Invoice (monthly) → Payment → MRR
 
 ## Поля подписки
 
-| Поле | Описание |
-|------|----------|
-| `subscription_id` | Уникальный идентификатор |
-| `project` | Проект, к которому привязана подписка |
-| `company` | Компания-плательщик |
-| `contact` | Контактное лицо |
-| `type` | Тип подписки (Maintenance / Dev+Maint / Dev Only / Partner Service) |
-| `amount` | Текущая сумма ежемесячного платежа |
-| `currency` | Валюта |
-| `billing_day` | День месяца для выставления счёта (5, 15, 20 и т.д.) |
-| `start_date` | Дата начала подписки |
-| `end_date` | Дата окончания (null = бессрочная) |
-| `tax_status` | Tax / Tax-Free |
-| `status` | Active / Paused / Cancelled |
-| `partner` | Партнёр (если Partner Service) |
-| `amount_history` | История изменений суммы |
+| Поле                    | Описание                                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `subscription_id`       | Уникальный идентификатор                                                                             |
+| `project`               | Проект, к которому привязана подписка                                                                |
+| `product`               | Продукт, если подписка относится к конкретному продукту                                              |
+| `company`               | Компания-плательщик                                                                                  |
+| `contact`               | Контактное лицо                                                                                      |
+| `type`                  | Тип подписки (Maintenance / Dev+Maint / Dev Only / Partner Service)                                  |
+| `base_monthly_amount`   | Базовая сумма за 1 месяц                                                                             |
+| `currency`              | Валюта                                                                                               |
+| `billing_start_date`    | Дата старта биллинга                                                                                 |
+| `billing_frequency`     | Monthly / Yearly / Custom                                                                            |
+| `billing_day`           | День месяца для выставления карточек, если применяется месячная логика                               |
+| `end_date`              | Дата окончания (null = бессрочная)                                                                   |
+| `tax_status`            | Tax / Free                                                                                           |
+| `notifications_enabled` | Разрешены ли автоматические уведомления по карточкам оплат                                           |
+| `status`                | Pending / Active / On Hold / Cancelled / Completed                                                   |
+| `partner`               | Партнёр: для Partner Service как плательщик; для referral subscription как источник partner accruals |
+| `amount_history`        | История изменений месячной базы                                                                      |
+
+### Что означает `base_monthly_amount`
+
+Это базовая стоимость **одного месяца** подписки.
+
+Примеры:
+
+- если клиент платит ежемесячно `10 000`, то `base_monthly_amount = 10 000`;
+- если клиент платит ежегодно за те же `12` месяцев, то `base_monthly_amount` всё равно остаётся `10 000`;
+- тогда годовая карточка оплаты создаётся на `120 000` и покрывает `12` месяцев сразу.
+
+То есть:
+
+- подписка продолжает жить по месяцам;
+- одна карточка оплаты может покрывать один, двенадцать или другое число месяцев.
+
+---
+
+## CRM entry paths into Subscription Board
+
+Subscriptions enter the board through two distinct business routes.
+
+### Route A: `Deal Type = PRODUCT` + `Payment Type = Subscription`
+
+Flow:
+
+1. Seller creates first invoice in CRM.
+2. Finance confirms the first payment.
+3. Deal moves to `Deal Won`.
+4. Order / Project / Product are created.
+5. Subscription record is created immediately as `Active`.
+
+Important rules:
+
+- the first paid invoice is not only the project start confirmation;
+- it is also the **first paid month of the subscription**;
+- the month of that first invoice must be visible as paid in Subscription Board;
+- the next payment is due after the already paid coverage period ends.
+
+Example:
+
+- first invoice paid on `15 March`
+- March is shown as paid in the subscription row
+- next billing cycle is `15 April`
+
+### Route B: `Deal Type = MAINTENANCE`
+
+Flow:
+
+1. Maintenance deal reaches `Deal Won`.
+2. Subscription record is created immediately in `Pending`.
+3. `billing_start_date` may already be filled as a planning date, but billing is not active yet.
+4. Finance later confirms / edits `billing_start_date` and activates billing.
+
+Important rules:
+
+- invoice is not required before maintenance `Deal Won` by default;
+- CRM may pass the expected billing start date;
+- while status is `Pending`, this date is still editable and does not yet generate billing.
+
+---
+
+## Payment frequency and multi-month coverage
+
+У подписки должна быть поддержка не только ежемесячной, но и другой частоты оплаты.
+
+### Частота оплаты
+
+| Значение  | Смысл                                        |
+| --------- | -------------------------------------------- |
+| `Monthly` | обычная ежемесячная оплата                   |
+| `Yearly`  | одна оплата сразу за 12 месяцев              |
+| `Custom`  | произвольная предоплата на несколько месяцев |
+
+### Главный принцип
+
+Подписка всё равно живёт **по месяцам**, даже если клиент платит сразу за несколько месяцев.
+
+То есть:
+
+- одна карточка оплаты может покрывать `1`, `4`, `12` и другое число месяцев;
+- в `Subscription Grid` всё равно должны быть отмечены именно конкретные закрытые месяцы;
+- следующая карточка оплаты должна создаваться только после окончания уже оплаченного покрытия.
+
+### Пример: yearly subscription
+
+- `base_monthly_amount = 10 000`
+- `billing_frequency = Yearly`
+- система создаёт одну `Invoice Card` на `120 000`
+- в карточке фиксируется, что покрыты `12` месяцев
+- в grid эти 12 месяцев отображаются как оплаченные
+- следующая карточка появится только после окончания этих 12 месяцев
+
+### Пример: custom prepayment
+
+- `base_monthly_amount = 10 000`
+- клиент платит `40 000`
+- одна карточка оплаты покрывает `4` месяца
+- в grid 4 месяца отмечаются как `Paid`
+- следующая карточка появится на 5-й месяц
+
+### Что должна хранить Invoice Card для подписки
+
+Для карточек оплат, созданных из подписки, нужно уметь хранить:
+
+- `coverage_start_month`
+- `coverage_month_count`
+
+Именно это позволяет:
+
+- показать на grid, какие месяцы уже закрыты;
+- не создавать новые карточки раньше времени;
+- поддержать yearly и custom prepayment без поломки месячной модели.
 
 ---
 
@@ -91,13 +224,14 @@ Subscription → auto-generate Invoice (monthly) → Payment → MRR
 
 ### Цветовая кодировка ячеек
 
-| Цвет | Статус | Описание |
-|------|--------|----------|
-| 🟢 Зелёный | Paid | Счёт оплачен |
-| 🔴 Красный | Unpaid / Overdue | Счёт не оплачен, срок прошёл |
-| 🟡 Жёлтый | Pending | Счёт выставлен, ожидает оплаты |
-| ⬜ Пустой | N/A | Подписка ещё не началась или не применяется к этому месяцу |
-| 🔵 Синий | Forecast | Будущие месяцы (прогноз) |
+| Цвет                 | Статус               | Описание                                                   |
+| -------------------- | -------------------- | ---------------------------------------------------------- |
+| 🟣 Фиолетовый контур | Subscription Pending | Подписка создана, но billing ещё не запущен                |
+| 🟢 Зелёный           | Paid                 | Счёт оплачен                                               |
+| 🔴 Красный           | Unpaid / Overdue     | Счёт не оплачен, срок прошёл                               |
+| 🟡 Жёлтый            | Pending              | Счёт выставлен, ожидает оплаты                             |
+| ⬜ Пустой            | N/A                  | Подписка ещё не началась или не применяется к этому месяцу |
+| 🔵 Синий             | Forecast             | Будущие месяцы (прогноз)                                   |
 
 ### Взаимодействие с сеткой
 
@@ -108,40 +242,42 @@ Subscription → auto-generate Invoice (monthly) → Payment → MRR
 
 ### Summary Row (итоговые показатели)
 
-| Метрика | Описание |
-|---------|----------|
-| **Total MRR** | Суммарный ежемесячный повторяющийся доход (все активные подписки) |
-| **Paid this month** | Сумма оплаченных подписок текущего месяца |
-| **Unpaid this month** | Сумма неоплаченных подписок текущего месяца |
-| **Active subscriptions** | Количество активных подписок |
-| **New this month** | Новые подписки, начавшиеся в этом месяце |
-| **Churned this month** | Подписки, отменённые в этом месяце |
+| Метрика                  | Описание                                                          |
+| ------------------------ | ----------------------------------------------------------------- |
+| **Total MRR**            | Суммарный ежемесячный повторяющийся доход (все активные подписки) |
+| **Paid this month**      | Сумма оплаченных подписок текущего месяца                         |
+| **Unpaid this month**    | Сумма неоплаченных подписок текущего месяца                       |
+| **Active subscriptions** | Количество активных подписок                                      |
+| **New this month**       | Новые подписки, начавшиеся в этом месяце                          |
+| **Churned this month**   | Подписки, отменённые в этом месяце                                |
 
 ---
 
 ## Автоматизация биллинга
 
-### Авто-генерация счетов
+### Авто-генерация карточек оплат
 
 ```
 Каждый день система проверяет:
-  └─ Есть ли подписки с billing_day = сегодня?
-     └─ Да → Для каждой активной подписки:
-        ├─ Создать Invoice (тип: Subscription)
-        ├─ Сумма = текущий amount подписки
-        ├─ Tax status = из подписки
-        ├─ Due date = billing_day + payment_terms (например, +15 дней)
-        └─ Invoice попадает на доску в стадию "New"
+  └─ Есть ли активные подписки, у которых пора создать новую карточку оплаты?
+     └─ Да → Для каждой такой подписки:
+        ├─ определить, закончился ли уже оплаченный coverage period
+        ├─ создать Invoice Card
+        ├─ сумма = base_monthly_amount × количество покрываемых месяцев
+        ├─ tax_status = из подписки
+        ├─ notifications_enabled = из подписки
+        └─ карточка попадает на доску `Invoices` в статус `New`
 ```
 
-### Изменение суммы подписки
+### Изменение месячной базы подписки
 
-При изменении суммы:
+При изменении `base_monthly_amount`:
+
 1. Указывается новая сумма
 2. Указывается месяц начала действия новой суммы
 3. Предыдущая сумма сохраняется в `amount_history`
-4. Все будущие авто-генерируемые счета используют новую сумму
-5. В сетке отображается корректная сумма для каждого месяца
+4. Все будущие карточки оплат используют новую месячную базу
+5. В сетке отображается корректная сумма для соответствующих месяцев
 
 ---
 
@@ -158,15 +294,39 @@ Subscription → auto-generate Invoice (monthly) → Payment → MRR
 ```
 
 Особенности:
+
 - Подписка создаётся на проект (бренд клиента)
 - Плательщик = партнёр (не клиент)
 - Сумма = договорённый % или фиксированная сумма
 - Отображается в общей сетке подписок
 - Счета генерируются автоматически как обычная подписка
 
+Важно: `Partner Service` — это outbound-доход Neetrino, когда партнёр платит нам. Это не Partner Payout.
+
+Если же подписка клиента пришла от inbound-партнёра, Subscription остаётся клиентской подпиской, а партнёрские начисления создаются в Partners после каждого реально полученного платежа:
+
+```
+Client Subscription Invoice Paid
+  -> Partner Accrual
+  -> Partner Balance
+  -> payout_rule конкретной subscription-связи
+  -> Payout Batch
+  -> Expense Card
+```
+
 ---
 
 ## Отмена и Churn
+
+### Статусы подписки
+
+| Статус        | Смысл                                                                              |
+| ------------- | ---------------------------------------------------------------------------------- |
+| **Pending**   | Подписка создана, billing_start_date можно менять, активный биллинг ещё не запущен |
+| **Active**    | Подписка активна и участвует в регулярном биллинге                                 |
+| **On Hold**   | Биллинг и обслуживание временно остановлены                                        |
+| **Cancelled** | Подписка прекращена досрочно                                                       |
+| **Completed** | Подписка завершилась штатно и больше не должна генерировать новые invoice          |
 
 ### Процесс отмены
 
@@ -178,19 +338,19 @@ Subscription → auto-generate Invoice (monthly) → Payment → MRR
 
 ### Пауза подписки
 
-- Статус **Paused** — временная остановка
-- Счета не генерируются в период паузы
+- Статус **On Hold** — временная остановка
+- Новые карточки оплат не генерируются в период паузы
 - В сетке отображается особым цветом (серый)
 - При возобновлении — статус возвращается в Active
 
 ### Churn-метрики
 
-| Метрика | Формула |
-|---------|---------|
+| Метрика                | Формула                                                |
+| ---------------------- | ------------------------------------------------------ |
 | **Monthly Churn Rate** | Отменённые подписки / Активные на начало месяца × 100% |
-| **Revenue Churn** | Потерянный MRR / MRR на начало месяца × 100% |
-| **Net MRR Change** | New MRR + Expansion MRR − Churned MRR |
-| **Retention Rate** | 100% − Churn Rate |
+| **Revenue Churn**      | Потерянный MRR / MRR на начало месяца × 100%           |
+| **Net MRR Change**     | New MRR + Expansion MRR − Churned MRR                  |
+| **Retention Rate**     | 100% − Churn Rate                                      |
 
 ---
 
@@ -199,7 +359,7 @@ Subscription → auto-generate Invoice (monthly) → Payment → MRR
 ### Фильтры Subscription Grid
 
 - **По типу**: Maintenance / Dev+Maint / Dev Only / Partner
-- **По статусу**: Active / Paused / Cancelled
+- **По статусу**: Pending / Active / On Hold / Cancelled / Completed
 - **По проекту**: выбор конкретного проекта
 - **По клиенту (компании)**: все подписки одного клиента
 - **По году**: переключение между годами
@@ -208,8 +368,9 @@ Subscription → auto-generate Invoice (monthly) → Payment → MRR
 ### Альтернативные виды
 
 Помимо Grid View, подписки доступны в виде:
+
 - **Список (List View)** — табличное представление со всеми полями
-- **Kanban** — по статусам (Active / Paused / Cancelled)
+- **Kanban** — по статусам (Pending / Active / On Hold / Cancelled / Completed)
 - **Timeline** — хронологическая шкала подписок
 
 ---
@@ -222,14 +383,15 @@ Project ──→ Subscription(s) ──→ Invoice(s) ──→ Payment(s)
                 ├──→ Subscription Grid View
                 ├──→ MRR Reports
                 ├──→ Churn Reports
-                └──→ Partner Payout (если Partner Service)
+                ├──→ Partner Service Revenue (если outbound Partner Service)
+                └──→ Partner Accrual (если inbound referral subscription)
 ```
 
-| Сущность | Связь |
-|----------|-------|
-| Project | Одна подписка = один проект. У проекта может быть несколько подписок разного типа |
-| Invoice | Каждый месяц из подписки создаётся Invoice |
-| Payment | При оплате Invoice обновляется статус ячейки в Grid |
-| Partner | Для Partner Service — связь с партнёром для расчёта выплат |
-| Company P&L | Subscription revenue входит в доходную часть P&L |
-| Project P&L | Subscription revenue входит в доход проекта |
+| Сущность     | Связь                                                                                                   |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
+| Project      | Одна подписка = один проект. У проекта может быть несколько подписок разного типа                       |
+| Invoice Card | Из подписки создаются карточки оплат с покрытием одного или нескольких месяцев                          |
+| Payment      | При оплате карточки обновляется покрытие месяцев в Grid                                                 |
+| Partner      | Для Partner Service — плательщик outbound-дохода; для referral subscription — источник partner accruals |
+| Company P&L  | Subscription revenue входит в доходную часть P&L                                                        |
+| Project P&L  | Subscription revenue входит в доход проекта                                                             |

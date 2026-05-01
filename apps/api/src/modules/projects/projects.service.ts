@@ -1,6 +1,16 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  ProjectKickoffChecklistService,
+  type UpdateKickoffChecklistItemDto,
+} from './project-kickoff-checklist.service';
+import { projectDetailInclude } from './project.includes';
+import { buildProjectIntake } from './project-intake';
+import {
+  attachExtensionDeliveryLifecycle,
+  attachProductDeliveryLifecycle,
+} from './delivery-lifecycle';
 
 interface CreateProjectDto {
   name: string;
@@ -28,7 +38,10 @@ interface ProjectQueryParams {
 
 @Injectable()
 export class ProjectsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly kickoffChecklist: ProjectKickoffChecklistService,
+  ) {}
 
   async findAll(params: ProjectQueryParams) {
     const {
@@ -73,72 +86,16 @@ export class ProjectsService {
   async findById(id: string) {
     const project = await this.prisma.project.findUnique({
       where: { id },
-      include: {
-        company: true,
-        contact: true,
-        orders: {
-          include: {
-            invoices: {
-              select: {
-                id: true,
-                code: true,
-                status: true,
-                amount: true,
-                type: true,
-                dueDate: true,
-                paidDate: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        tickets: {
-          include: {
-            assignee: { select: { id: true, firstName: true, lastName: true } },
-            contact: { select: { id: true, firstName: true, lastName: true } },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        credentials: {
-          orderBy: { createdAt: 'desc' },
-        },
-        subscriptions: {
-          include: {
-            invoices: {
-              select: {
-                id: true,
-                code: true,
-                status: true,
-                amount: true,
-                dueDate: true,
-                paidDate: true,
-              },
-            },
-          },
-          orderBy: { startDate: 'desc' },
-        },
-        domains: {
-          orderBy: { expiryDate: 'asc' },
-        },
-        expenses: {
-          orderBy: { createdAt: 'desc' },
-        },
-        auditLogs: {
-          orderBy: { createdAt: 'desc' },
-          take: 20,
-        },
-        _count: {
-          select: {
-            orders: true,
-            tickets: true,
-            credentials: true,
-            expenses: true,
-          },
-        },
-      },
+      include: projectDetailInclude,
     });
     if (!project) throw new NotFoundException(`Project ${id} not found`);
-    return project;
+    const kickoffChecklist = await this.kickoffChecklist.ensureForProject(id);
+    const deliveryProject = attachProjectDeliveryLifecycles(project);
+    return { ...deliveryProject, intake: buildProjectIntake(deliveryProject), kickoffChecklist };
+  }
+
+  updateKickoffChecklistItem(id: string, itemId: string, data: UpdateKickoffChecklistItemDto) {
+    return this.kickoffChecklist.updateItem(id, itemId, data);
   }
 
   async create(data: CreateProjectDto) {
@@ -195,4 +152,24 @@ export class ProjectsService {
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `P-${year}-${String(nextNum).padStart(4, '0')}`;
   }
+}
+
+interface ProjectDeliveryCarrier {
+  status?: string | null;
+  deliveryStage?: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER' | null;
+  deliveryWorkStatus?: 'ACTIVE' | 'ON_HOLD' | null;
+  deliveryResolution?: 'DONE' | 'CANCELLED' | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+}
+
+function attachProjectDeliveryLifecycles<
+  T extends { products?: ProjectDeliveryCarrier[]; extensions?: ProjectDeliveryCarrier[] },
+>(project: T) {
+  return {
+    ...project,
+    products: project.products?.map((product) => attachProductDeliveryLifecycle(product)),
+    extensions: project.extensions?.map((extension) => attachExtensionDeliveryLifecycle(extension)),
+  };
 }

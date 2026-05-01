@@ -30,7 +30,14 @@ export type ExtensionMinAggregateOutputType = {
   name: string | null;
   size: $Enums.ExtensionSizeEnum | null;
   status: $Enums.ExtensionStatusEnum | null;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus: $Enums.DeliveryWorkStatusEnum | null;
+  deliveryResolution: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason: string | null;
+  onHoldUntil: Date | null;
+  cancellationReason: string | null;
   assignedTo: string | null;
+  deadline: Date | null;
   description: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -43,7 +50,14 @@ export type ExtensionMaxAggregateOutputType = {
   name: string | null;
   size: $Enums.ExtensionSizeEnum | null;
   status: $Enums.ExtensionStatusEnum | null;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus: $Enums.DeliveryWorkStatusEnum | null;
+  deliveryResolution: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason: string | null;
+  onHoldUntil: Date | null;
+  cancellationReason: string | null;
   assignedTo: string | null;
+  deadline: Date | null;
   description: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -56,7 +70,14 @@ export type ExtensionCountAggregateOutputType = {
   name: number;
   size: number;
   status: number;
+  deliveryStage: number;
+  deliveryWorkStatus: number;
+  deliveryResolution: number;
+  onHoldReason: number;
+  onHoldUntil: number;
+  cancellationReason: number;
   assignedTo: number;
+  deadline: number;
   description: number;
   createdAt: number;
   updatedAt: number;
@@ -70,7 +91,14 @@ export type ExtensionMinAggregateInputType = {
   name?: true;
   size?: true;
   status?: true;
+  deliveryStage?: true;
+  deliveryWorkStatus?: true;
+  deliveryResolution?: true;
+  onHoldReason?: true;
+  onHoldUntil?: true;
+  cancellationReason?: true;
   assignedTo?: true;
+  deadline?: true;
   description?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -83,7 +111,14 @@ export type ExtensionMaxAggregateInputType = {
   name?: true;
   size?: true;
   status?: true;
+  deliveryStage?: true;
+  deliveryWorkStatus?: true;
+  deliveryResolution?: true;
+  onHoldReason?: true;
+  onHoldUntil?: true;
+  cancellationReason?: true;
   assignedTo?: true;
+  deadline?: true;
   description?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -96,7 +131,14 @@ export type ExtensionCountAggregateInputType = {
   name?: true;
   size?: true;
   status?: true;
+  deliveryStage?: true;
+  deliveryWorkStatus?: true;
+  deliveryResolution?: true;
+  onHoldReason?: true;
+  onHoldUntil?: true;
+  cancellationReason?: true;
   assignedTo?: true;
+  deadline?: true;
   description?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -181,11 +223,18 @@ export type ExtensionGroupByArgs<
 export type ExtensionGroupByOutputType = {
   id: string;
   projectId: string;
-  productId: string | null;
+  productId: string;
   name: string;
   size: $Enums.ExtensionSizeEnum;
   status: $Enums.ExtensionStatusEnum;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason: string | null;
+  onHoldUntil: Date | null;
+  cancellationReason: string | null;
   assignedTo: string | null;
+  deadline: Date | null;
   description: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -212,32 +261,58 @@ export type ExtensionWhereInput = {
   NOT?: Prisma.ExtensionWhereInput | Prisma.ExtensionWhereInput[];
   id?: Prisma.StringFilter<'Extension'> | string;
   projectId?: Prisma.StringFilter<'Extension'> | string;
-  productId?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  productId?: Prisma.StringFilter<'Extension'> | string;
   name?: Prisma.StringFilter<'Extension'> | string;
   size?: Prisma.EnumExtensionSizeEnumFilter<'Extension'> | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFilter<'Extension'> | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableFilter<'Extension'>
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFilter<'Extension'>
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.EnumDeliveryResolutionEnumNullableFilter<'Extension'>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  onHoldUntil?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
+  cancellationReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
   assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
-  product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null;
+  product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
   assignee?: Prisma.XOR<
     Prisma.EmployeeNullableScalarRelationFilter,
     Prisma.EmployeeWhereInput
   > | null;
   order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null;
   tasks?: Prisma.TaskListRelationFilter;
+  workSpace?: Prisma.XOR<
+    Prisma.WorkSpaceNullableScalarRelationFilter,
+    Prisma.WorkSpaceWhereInput
+  > | null;
 };
 
 export type ExtensionOrderByWithRelationInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
-  productId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  productId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   size?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrderInput | Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrderInput | Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrderInput | Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
+  deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -246,6 +321,7 @@ export type ExtensionOrderByWithRelationInput = {
   assignee?: Prisma.EmployeeOrderByWithRelationInput;
   order?: Prisma.OrderOrderByWithRelationInput;
   tasks?: Prisma.TaskOrderByRelationAggregateInput;
+  workSpace?: Prisma.WorkSpaceOrderByWithRelationInput;
 };
 
 export type ExtensionWhereUniqueInput = Prisma.AtLeast<
@@ -255,25 +331,41 @@ export type ExtensionWhereUniqueInput = Prisma.AtLeast<
     OR?: Prisma.ExtensionWhereInput[];
     NOT?: Prisma.ExtensionWhereInput | Prisma.ExtensionWhereInput[];
     projectId?: Prisma.StringFilter<'Extension'> | string;
-    productId?: Prisma.StringNullableFilter<'Extension'> | string | null;
+    productId?: Prisma.StringFilter<'Extension'> | string;
     name?: Prisma.StringFilter<'Extension'> | string;
     size?: Prisma.EnumExtensionSizeEnumFilter<'Extension'> | $Enums.ExtensionSizeEnum;
     status?: Prisma.EnumExtensionStatusEnumFilter<'Extension'> | $Enums.ExtensionStatusEnum;
+    deliveryStage?:
+      | Prisma.EnumDeliveryStageEnumNullableFilter<'Extension'>
+      | $Enums.DeliveryStageEnum
+      | null;
+    deliveryWorkStatus?:
+      | Prisma.EnumDeliveryWorkStatusEnumFilter<'Extension'>
+      | $Enums.DeliveryWorkStatusEnum;
+    deliveryResolution?:
+      | Prisma.EnumDeliveryResolutionEnumNullableFilter<'Extension'>
+      | $Enums.DeliveryResolutionEnum
+      | null;
+    onHoldReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
+    onHoldUntil?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
+    cancellationReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
     assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
+    deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Extension'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
-    product?: Prisma.XOR<
-      Prisma.ProductNullableScalarRelationFilter,
-      Prisma.ProductWhereInput
-    > | null;
+    product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
     assignee?: Prisma.XOR<
       Prisma.EmployeeNullableScalarRelationFilter,
       Prisma.EmployeeWhereInput
     > | null;
     order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null;
     tasks?: Prisma.TaskListRelationFilter;
+    workSpace?: Prisma.XOR<
+      Prisma.WorkSpaceNullableScalarRelationFilter,
+      Prisma.WorkSpaceWhereInput
+    > | null;
   },
   'id'
 >;
@@ -281,11 +373,18 @@ export type ExtensionWhereUniqueInput = Prisma.AtLeast<
 export type ExtensionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
-  productId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  productId?: Prisma.SortOrder;
   name?: Prisma.SortOrder;
   size?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrderInput | Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrderInput | Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrderInput | Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
+  deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -304,13 +403,28 @@ export type ExtensionScalarWhereWithAggregatesInput = {
     | Prisma.ExtensionScalarWhereWithAggregatesInput[];
   id?: Prisma.StringWithAggregatesFilter<'Extension'> | string;
   projectId?: Prisma.StringWithAggregatesFilter<'Extension'> | string;
-  productId?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
+  productId?: Prisma.StringWithAggregatesFilter<'Extension'> | string;
   name?: Prisma.StringWithAggregatesFilter<'Extension'> | string;
   size?: Prisma.EnumExtensionSizeEnumWithAggregatesFilter<'Extension'> | $Enums.ExtensionSizeEnum;
   status?:
     | Prisma.EnumExtensionStatusEnumWithAggregatesFilter<'Extension'>
     | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableWithAggregatesFilter<'Extension'>
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumWithAggregatesFilter<'Extension'>
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.EnumDeliveryResolutionEnumNullableWithAggregatesFilter<'Extension'>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
+  onHoldUntil?: Prisma.DateTimeNullableWithAggregatesFilter<'Extension'> | Date | string | null;
+  cancellationReason?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
   assignedTo?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
+  deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Extension'> | Date | string;
@@ -321,29 +435,45 @@ export type ExtensionCreateInput = {
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUpdateInput = {
@@ -351,39 +481,78 @@ export type ExtensionUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionCreateManyInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -394,6 +563,21 @@ export type ExtensionUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -402,11 +586,26 @@ export type ExtensionUpdateManyMutationInput = {
 export type ExtensionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -429,7 +628,14 @@ export type ExtensionCountOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   size?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
+  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -442,7 +648,14 @@ export type ExtensionMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   size?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
+  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -455,7 +668,14 @@ export type ExtensionMinOrderByAggregateInput = {
   name?: Prisma.SortOrder;
   size?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
+  deliveryWorkStatus?: Prisma.SortOrder;
+  deliveryResolution?: Prisma.SortOrder;
+  onHoldReason?: Prisma.SortOrder;
+  onHoldUntil?: Prisma.SortOrder;
+  cancellationReason?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
+  deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -674,6 +894,34 @@ export type ExtensionUpdateOneWithoutOrderNestedInput = {
   >;
 };
 
+export type ExtensionCreateNestedOneWithoutWorkSpaceInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedCreateWithoutWorkSpaceInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutWorkSpaceInput;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+};
+
+export type ExtensionUpdateOneWithoutWorkSpaceNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedCreateWithoutWorkSpaceInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutWorkSpaceInput;
+  upsert?: Prisma.ExtensionUpsertWithoutWorkSpaceInput;
+  disconnect?: Prisma.ExtensionWhereInput | boolean;
+  delete?: Prisma.ExtensionWhereInput | boolean;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ExtensionUpdateToOneWithWhereWithoutWorkSpaceInput,
+      Prisma.ExtensionUpdateWithoutWorkSpaceInput
+    >,
+    Prisma.ExtensionUncheckedUpdateWithoutWorkSpaceInput
+  >;
+};
+
 export type ExtensionCreateNestedOneWithoutTasksInput = {
   create?: Prisma.XOR<
     Prisma.ExtensionCreateWithoutTasksInput,
@@ -793,27 +1041,43 @@ export type ExtensionCreateWithoutProjectInput = {
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutProjectInput = {
   id?: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutProjectInput = {
@@ -863,11 +1127,26 @@ export type ExtensionScalarWhereInput = {
   NOT?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
   id?: Prisma.StringFilter<'Extension'> | string;
   projectId?: Prisma.StringFilter<'Extension'> | string;
-  productId?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  productId?: Prisma.StringFilter<'Extension'> | string;
   name?: Prisma.StringFilter<'Extension'> | string;
   size?: Prisma.EnumExtensionSizeEnumFilter<'Extension'> | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFilter<'Extension'> | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableFilter<'Extension'>
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFilter<'Extension'>
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.EnumDeliveryResolutionEnumNullableFilter<'Extension'>
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  onHoldUntil?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
+  cancellationReason?: Prisma.StringNullableFilter<'Extension'> | string | null;
   assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
@@ -878,6 +1157,13 @@ export type ExtensionCreateWithoutProductInput = {
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -885,6 +1171,7 @@ export type ExtensionCreateWithoutProductInput = {
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutProductInput = {
@@ -893,12 +1180,20 @@ export type ExtensionUncheckedCreateWithoutProductInput = {
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutProductInput = {
@@ -947,27 +1242,43 @@ export type ExtensionCreateWithoutOrderInput = {
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutOrderInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutOrderInput = {
@@ -1003,26 +1314,190 @@ export type ExtensionUpdateWithoutOrderInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
+};
+
+export type ExtensionCreateWithoutWorkSpaceInput = {
+  id?: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+};
+
+export type ExtensionUncheckedCreateWithoutWorkSpaceInput = {
+  id?: string;
+  projectId: string;
+  productId: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  assignedTo?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+};
+
+export type ExtensionCreateOrConnectWithoutWorkSpaceInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedCreateWithoutWorkSpaceInput
+  >;
+};
+
+export type ExtensionUpsertWithoutWorkSpaceInput = {
+  update: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedUpdateWithoutWorkSpaceInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedCreateWithoutWorkSpaceInput
+  >;
+  where?: Prisma.ExtensionWhereInput;
+};
+
+export type ExtensionUpdateToOneWithWhereWithoutWorkSpaceInput = {
+  where?: Prisma.ExtensionWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutWorkSpaceInput,
+    Prisma.ExtensionUncheckedUpdateWithoutWorkSpaceInput
+  >;
+};
+
+export type ExtensionUpdateWithoutWorkSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
+  assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+};
+
+export type ExtensionUncheckedUpdateWithoutWorkSpaceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
 };
 
@@ -1031,27 +1506,43 @@ export type ExtensionCreateWithoutTasksInput = {
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutTasksInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutTasksInput = {
@@ -1087,27 +1578,59 @@ export type ExtensionUpdateWithoutTasksInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutTasksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionCreateWithoutAssigneeInput = {
@@ -1115,27 +1638,43 @@ export type ExtensionCreateWithoutAssigneeInput = {
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionUncheckedCreateWithoutAssigneeInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
 export type ExtensionCreateOrConnectWithoutAssigneeInput = {
@@ -1181,11 +1720,18 @@ export type ExtensionUpdateManyWithWhereWithoutAssigneeInput = {
 
 export type ExtensionCreateManyProjectInput = {
   id?: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1196,36 +1742,83 @@ export type ExtensionUpdateWithoutProjectInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1237,7 +1830,14 @@ export type ExtensionCreateManyProductInput = {
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
   assignedTo?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1248,6 +1848,21 @@ export type ExtensionUpdateWithoutProductInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1255,6 +1870,7 @@ export type ExtensionUpdateWithoutProductInput = {
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutProductInput = {
@@ -1263,12 +1879,28 @@ export type ExtensionUncheckedUpdateWithoutProductInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateManyWithoutProductInput = {
@@ -1277,7 +1909,22 @@ export type ExtensionUncheckedUpdateManyWithoutProductInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1286,10 +1933,17 @@ export type ExtensionUncheckedUpdateManyWithoutProductInput = {
 export type ExtensionCreateManyAssigneeInput = {
   id?: string;
   projectId: string;
-  productId?: string | null;
+  productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
   status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1300,36 +1954,83 @@ export type ExtensionUpdateWithoutAssigneeInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
 export type ExtensionUncheckedUpdateManyWithoutAssigneeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
   status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1380,15 +2081,23 @@ export type ExtensionSelect<
     name?: boolean;
     size?: boolean;
     status?: boolean;
+    deliveryStage?: boolean;
+    deliveryWorkStatus?: boolean;
+    deliveryResolution?: boolean;
+    onHoldReason?: boolean;
+    onHoldUntil?: boolean;
+    cancellationReason?: boolean;
     assignedTo?: boolean;
+    deadline?: boolean;
     description?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-    product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+    product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
     order?: boolean | Prisma.Extension$orderArgs<ExtArgs>;
     tasks?: boolean | Prisma.Extension$tasksArgs<ExtArgs>;
+    workSpace?: boolean | Prisma.Extension$workSpaceArgs<ExtArgs>;
     _count?: boolean | Prisma.ExtensionCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['extension']
@@ -1404,12 +2113,19 @@ export type ExtensionSelectCreateManyAndReturn<
     name?: boolean;
     size?: boolean;
     status?: boolean;
+    deliveryStage?: boolean;
+    deliveryWorkStatus?: boolean;
+    deliveryResolution?: boolean;
+    onHoldReason?: boolean;
+    onHoldUntil?: boolean;
+    cancellationReason?: boolean;
     assignedTo?: boolean;
+    deadline?: boolean;
     description?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-    product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+    product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
   },
   ExtArgs['result']['extension']
@@ -1425,12 +2141,19 @@ export type ExtensionSelectUpdateManyAndReturn<
     name?: boolean;
     size?: boolean;
     status?: boolean;
+    deliveryStage?: boolean;
+    deliveryWorkStatus?: boolean;
+    deliveryResolution?: boolean;
+    onHoldReason?: boolean;
+    onHoldUntil?: boolean;
+    cancellationReason?: boolean;
     assignedTo?: boolean;
+    deadline?: boolean;
     description?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-    product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+    product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
   },
   ExtArgs['result']['extension']
@@ -1443,7 +2166,14 @@ export type ExtensionSelectScalar = {
   name?: boolean;
   size?: boolean;
   status?: boolean;
+  deliveryStage?: boolean;
+  deliveryWorkStatus?: boolean;
+  deliveryResolution?: boolean;
+  onHoldReason?: boolean;
+  onHoldUntil?: boolean;
+  cancellationReason?: boolean;
   assignedTo?: boolean;
+  deadline?: boolean;
   description?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
@@ -1458,7 +2188,14 @@ export type ExtensionOmit<
   | 'name'
   | 'size'
   | 'status'
+  | 'deliveryStage'
+  | 'deliveryWorkStatus'
+  | 'deliveryResolution'
+  | 'onHoldReason'
+  | 'onHoldUntil'
+  | 'cancellationReason'
   | 'assignedTo'
+  | 'deadline'
   | 'description'
   | 'createdAt'
   | 'updatedAt',
@@ -1468,24 +2205,25 @@ export type ExtensionInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-  product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
   order?: boolean | Prisma.Extension$orderArgs<ExtArgs>;
   tasks?: boolean | Prisma.Extension$tasksArgs<ExtArgs>;
+  workSpace?: boolean | Prisma.Extension$workSpaceArgs<ExtArgs>;
   _count?: boolean | Prisma.ExtensionCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type ExtensionIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-  product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
 };
 export type ExtensionIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
-  product?: boolean | Prisma.Extension$productArgs<ExtArgs>;
+  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
 };
 
@@ -1495,20 +2233,28 @@ export type $ExtensionPayload<
   name: 'Extension';
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>;
-    product: Prisma.$ProductPayload<ExtArgs> | null;
+    product: Prisma.$ProductPayload<ExtArgs>;
     assignee: Prisma.$EmployeePayload<ExtArgs> | null;
     order: Prisma.$OrderPayload<ExtArgs> | null;
     tasks: Prisma.$TaskPayload<ExtArgs>[];
+    workSpace: Prisma.$WorkSpacePayload<ExtArgs> | null;
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
       id: string;
       projectId: string;
-      productId: string | null;
+      productId: string;
       name: string;
       size: $Enums.ExtensionSizeEnum;
       status: $Enums.ExtensionStatusEnum;
+      deliveryStage: $Enums.DeliveryStageEnum | null;
+      deliveryWorkStatus: $Enums.DeliveryWorkStatusEnum;
+      deliveryResolution: $Enums.DeliveryResolutionEnum | null;
+      onHoldReason: string | null;
+      onHoldUntil: Date | null;
+      cancellationReason: string | null;
       assignedTo: string | null;
+      deadline: Date | null;
       description: string | null;
       createdAt: Date;
       updatedAt: Date;
@@ -2064,16 +2810,17 @@ export interface Prisma__ExtensionClient<
     ExtArgs,
     GlobalOmitOptions
   >;
-  product<T extends Prisma.Extension$productArgs<ExtArgs> = {}>(
-    args?: Prisma.Subset<T, Prisma.Extension$productArgs<ExtArgs>>,
+  product<T extends Prisma.ProductDefaultArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.ProductDefaultArgs<ExtArgs>>,
   ): Prisma.Prisma__ProductClient<
-    runtime.Types.Result.GetResult<
-      Prisma.$ProductPayload<ExtArgs>,
-      T,
-      'findUniqueOrThrow',
-      GlobalOmitOptions
-    > | null,
-    null,
+    | runtime.Types.Result.GetResult<
+        Prisma.$ProductPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >
+    | Null,
+    Null,
     ExtArgs,
     GlobalOmitOptions
   >;
@@ -2108,6 +2855,19 @@ export interface Prisma__ExtensionClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
     | Null
+  >;
+  workSpace<T extends Prisma.Extension$workSpaceArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Extension$workSpaceArgs<ExtArgs>>,
+  ): Prisma.Prisma__WorkSpaceClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$WorkSpacePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
   >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2146,7 +2906,14 @@ export interface ExtensionFieldRefs {
   readonly name: Prisma.FieldRef<'Extension', 'String'>;
   readonly size: Prisma.FieldRef<'Extension', 'ExtensionSizeEnum'>;
   readonly status: Prisma.FieldRef<'Extension', 'ExtensionStatusEnum'>;
+  readonly deliveryStage: Prisma.FieldRef<'Extension', 'DeliveryStageEnum'>;
+  readonly deliveryWorkStatus: Prisma.FieldRef<'Extension', 'DeliveryWorkStatusEnum'>;
+  readonly deliveryResolution: Prisma.FieldRef<'Extension', 'DeliveryResolutionEnum'>;
+  readonly onHoldReason: Prisma.FieldRef<'Extension', 'String'>;
+  readonly onHoldUntil: Prisma.FieldRef<'Extension', 'DateTime'>;
+  readonly cancellationReason: Prisma.FieldRef<'Extension', 'String'>;
   readonly assignedTo: Prisma.FieldRef<'Extension', 'String'>;
+  readonly deadline: Prisma.FieldRef<'Extension', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Extension', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Extension', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Extension', 'DateTime'>;
@@ -2579,27 +3346,6 @@ export type ExtensionDeleteManyArgs<
 };
 
 /**
- * Extension.product
- */
-export type Extension$productArgs<
-  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-  /**
-   * Select specific fields to fetch from the Product
-   */
-  select?: Prisma.ProductSelect<ExtArgs> | null;
-  /**
-   * Omit specific fields from the Product
-   */
-  omit?: Prisma.ProductOmit<ExtArgs> | null;
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ProductInclude<ExtArgs> | null;
-  where?: Prisma.ProductWhereInput;
-};
-
-/**
  * Extension.assignee
  */
 export type Extension$assigneeArgs<
@@ -2665,6 +3411,27 @@ export type Extension$tasksArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.TaskScalarFieldEnum | Prisma.TaskScalarFieldEnum[];
+};
+
+/**
+ * Extension.workSpace
+ */
+export type Extension$workSpaceArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the WorkSpace
+   */
+  select?: Prisma.WorkSpaceSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the WorkSpace
+   */
+  omit?: Prisma.WorkSpaceOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkSpaceInclude<ExtArgs> | null;
+  where?: Prisma.WorkSpaceWhereInput;
 };
 
 /**

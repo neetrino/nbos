@@ -73,11 +73,16 @@ export class LeadsController {
   async create(
     @Body()
     body: {
-      name?: string;
-      contactName: string;
+      name: string;
+      contactName?: string;
       phone?: string;
       email?: string;
-      source: string;
+      source?: string | null;
+      sourceDetail?: string | null;
+      sourcePartnerId?: string | null;
+      sourceContactId?: string | null;
+      marketingAccountId?: string | null;
+      marketingActivityId?: string | null;
       assignedTo?: string;
       notes?: string;
     },
@@ -95,7 +100,12 @@ export class LeadsController {
       contactName?: string;
       phone?: string;
       email?: string;
-      source?: string;
+      source?: string | null;
+      sourceDetail?: string | null;
+      sourcePartnerId?: string | null;
+      sourceContactId?: string | null;
+      marketingAccountId?: string | null;
+      marketingActivityId?: string | null;
       status?: string;
       assignedTo?: string;
       notes?: string;
@@ -107,6 +117,11 @@ export class LeadsController {
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update lead status' })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
+    if (body.status === 'SQL') {
+      await this.leadConversionService.qualifyLeadAsSql(id);
+      return this.leadsService.findById(id);
+    }
+
     return this.leadsService.updateStatus(id, body.status);
   }
 

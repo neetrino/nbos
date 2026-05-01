@@ -1,330 +1,113 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  RefreshCcw,
-  FileText,
-  DollarSign,
-  Calendar,
-  Building2,
-  LayoutGrid,
-  List,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
-import {
-  PageHeader,
-  FilterBar,
-  EmptyState,
-  StatusBadge,
-  KanbanBoard,
-  type KanbanColumn,
-} from '@/components/shared';
+import { Suspense, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { LoadingState } from '@/components/shared';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
-import {
-  INVOICE_TYPES,
-  INVOICE_STAGES,
-  getInvoiceStage,
-  formatAmount,
-} from '@/features/finance/constants/finance';
-import { invoicesApi, type Invoice } from '@/lib/api/finance';
+import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
+import { InvoiceFilters } from '@/features/finance/components/invoices/InvoiceFilters';
+import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
+import { InvoicesPageHeader } from '@/features/finance/components/invoices/InvoicesPageHeader';
+import { InvoiceStatsCards } from '@/features/finance/components/invoices/InvoiceStatsCards';
+import { useInvoicesCsvExport } from '@/features/finance/components/invoices/use-invoices-csv-export';
+import { useInvoicesScopeStatsCsvExport } from '@/features/finance/components/invoices/use-invoices-scope-stats-csv-export';
+import { useInvoicesPageState } from '@/features/finance/components/invoices/useInvoicesPageState';
+import { invoicesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
+import { getFinancePeriodParams } from '@/features/finance/constants/finance';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { Button } from '@/components/ui/button';
 
-type ViewMode = 'kanban' | 'list';
+function InvoicesPageInner() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const subscriptionIdFromUrl = searchParams.get(SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY);
 
-export default function InvoicesPage() {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setView] = useState<ViewMode>('kanban');
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const state = useInvoicesPageState({ subscriptionIdFromUrl });
+  const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
+    state.invoiceListExportParams,
+  );
 
-  const fetchInvoices = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await invoicesApi.getAll({
-        pageSize: 200,
-        search: search || undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-        type: filters.type && filters.type !== 'all' ? filters.type : undefined,
-      });
-      setInvoices(data.items);
-    } catch {
-      /* handled */
-    } finally {
-      setLoading(false);
-    }
-  }, [search, filters]);
+  const periodParams = useMemo(() => getFinancePeriodParams(state.period), [state.period]);
 
-  useEffect(() => {
-    fetchInvoices();
-  }, [fetchInvoices]);
+  const { handleExportScopeStatsCsv } = useInvoicesScopeStatsCsvExport(state.stats, {
+    period: state.period,
+    dateFrom: periodParams?.dateFrom,
+    dateTo: periodParams?.dateTo,
+    subscriptionId: subscriptionIdFromUrl?.trim() || undefined,
+  });
 
-  const handleClick = (invoice: Invoice) => {
-    setSelectedInvoice(invoice);
-    setSheetOpen(true);
+  useFinanceDocumentTitle(invoicesListPageTitle(Boolean(subscriptionIdFromUrl?.trim())));
+
+  const clearSubscriptionDrilldown = () => {
+    router.replace(pathname);
   };
-
-  const handleStatusChange = async (id: string, status: string) => {
-    const previousInvoices = invoices;
-
-    setInvoices((prev) => prev.map((inv) => (inv.id === id ? { ...inv, status } : inv)));
-
-    try {
-      await invoicesApi.updateStatus(id, status);
-    } catch {
-      setInvoices(previousInvoices);
-    }
-  };
-
-  const handleMove = (itemId: string, _from: string, toColumn: string) => {
-    handleStatusChange(itemId, toColumn);
-  };
-
-  const totalAmount = invoices.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
-  const paidAmount = invoices
-    .filter((inv) => inv.status === 'PAID')
-    .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
-  const overdueAmount = invoices
-    .filter((inv) => inv.status === 'DELAYED')
-    .reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
-
-  const filterConfigs = [
-    {
-      key: 'status',
-      label: 'Status',
-      options: INVOICE_STAGES.map((s) => ({ value: s.value, label: s.label })),
-    },
-    {
-      key: 'type',
-      label: 'Type',
-      options: INVOICE_TYPES.map((t) => ({ value: t.value, label: t.label })),
-    },
-  ];
-
-  const STAGE_COLORS: Record<string, string> = {
-    THIS_MONTH: 'bg-blue-500',
-    CREATE_INVOICE: 'bg-indigo-500',
-    WAITING: 'bg-purple-500',
-    DELAYED: 'bg-orange-500',
-    ON_HOLD: 'bg-gray-400',
-    FAIL: 'bg-red-500',
-    PAID: 'bg-green-500',
-  };
-
-  const kanbanColumns = INVOICE_STAGES.map((stage) => ({
-    key: stage.value,
-    label: stage.label,
-    color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
-    items: invoices.filter((inv) => inv.status === stage.value),
-  }));
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Invoices" description={`${invoices.length} total`}>
-        <Button variant="outline" size="icon" onClick={fetchInvoices}>
-          <RefreshCcw size={16} />
-        </Button>
-        <div className="border-border flex rounded-lg border">
-          <Button
-            variant={view === 'kanban' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('kanban')}
-            className="rounded-r-none"
-          >
-            <LayoutGrid size={14} />
+      <InvoicesPageHeader
+        invoiceCount={state.invoices.length}
+        period={state.period}
+        view={state.view}
+        onPeriodChange={state.setPeriod}
+        onViewChange={state.setView}
+        onRefresh={state.fetchInvoices}
+        onExportCsv={handleExportCsv}
+        exportDisabled={state.loading || exportCsvSubmitting}
+        exportInProgress={exportCsvSubmitting}
+        statsExportDisabled={state.loading || !state.stats}
+        onExportScopeStatsCsv={handleExportScopeStatsCsv}
+      />
+      <InvoiceStatsCards stats={state.stats} />
+      {subscriptionIdFromUrl ? (
+        <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
+          <p className="text-foreground max-w-prose">
+            Showing invoices linked to this subscription (server filter).
+          </p>
+          <Button variant="outline" size="sm" type="button" onClick={clearSubscriptionDrilldown}>
+            Clear filter
           </Button>
-          <Button
-            variant={view === 'list' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('list')}
-            className="rounded-l-none"
-          >
-            <List size={14} />
-          </Button>
         </div>
-      </PageHeader>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Invoiced</p>
-          <p className="mt-1 text-xl font-bold">{formatAmount(totalAmount)}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Collected</p>
-          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(paidAmount)}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Overdue</p>
-          <p className="mt-1 text-xl font-bold text-red-500">{formatAmount(overdueAmount)}</p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
-          <FilterBar
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search by invoice number, company..."
-            filters={filterConfigs}
-            filterValues={filters}
-            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-            onClearFilters={() => setFilters({})}
-          />
-        </div>
-        <Button className="shrink-0">
-          <Plus size={16} />
-          New Invoice
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
-      ) : invoices.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          title="No invoices yet"
-          description="Create your first invoice to start tracking payments"
-          action={
-            <Button>
-              <Plus size={16} />
-              Create First Invoice
-            </Button>
-          }
-        />
-      ) : view === 'kanban' ? (
-        <div className="min-h-0 flex-1">
-          <KanbanBoard
-            columns={kanbanColumns}
-            getItemId={(inv: Invoice) => inv.id}
-            onMove={handleMove}
-            columnWidth={270}
-            emptyMessage="No invoices"
-            renderColumnHeader={(column: KanbanColumn<Invoice>) => {
-              const columnTotal = column.items.reduce(
-                (sum, inv) => sum + parseFloat(inv.amount),
-                0,
-              );
-              return (
-                <p className="text-foreground text-lg font-bold tabular-nums">
-                  {formatAmount(columnTotal)}
-                </p>
-              );
-            }}
-            renderCard={(invoice: Invoice) => (
-              <div
-                className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
-                onClick={() => handleClick(invoice)}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-xs font-medium">{invoice.code}</span>
-                  {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
-                </div>
-                <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
-                {invoice.company && (
-                  <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                    <Building2 size={10} />
-                    {invoice.company.name}
-                  </div>
-                )}
-                {invoice.dueDate && (
-                  <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                    <Calendar size={10} />
-                    {new Date(invoice.dueDate).toLocaleDateString()}
-                  </div>
-                )}
-              </div>
-            )}
-          />
-        </div>
-      ) : (
-        <div className="border-border overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Invoice</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Tax</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Paid Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((invoice) => {
-                const stage = getInvoiceStage(invoice.status);
-                const isOverdue =
-                  invoice.dueDate &&
-                  new Date(invoice.dueDate) < new Date() &&
-                  invoice.status !== 'PAID';
-                return (
-                  <TableRow
-                    key={invoice.id}
-                    className="cursor-pointer"
-                    onClick={() => handleClick(invoice)}
-                  >
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{invoice.code}</p>
-                        {invoice.order && (
-                          <p className="text-muted-foreground text-xs">
-                            Order: {invoice.order.code}
-                          </p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {invoice.company?.name ?? '—'}
-                    </TableCell>
-                    <TableCell className="text-xs">{invoice.type}</TableCell>
-                    <TableCell className="text-right">
-                      <span className="flex items-center justify-end gap-1 font-semibold">
-                        <DollarSign size={12} className="text-accent" />
-                        {formatAmount(parseFloat(invoice.amount))}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {stage && <StatusBadge label={stage.label} variant={stage.variant} />}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge
-                        label={invoice.taxStatus === 'TAX' ? 'Tax' : 'Free'}
-                        variant={invoice.taxStatus === 'TAX' ? 'green' : 'gray'}
-                      />
-                    </TableCell>
-                    <TableCell
-                      className={`text-xs ${isOverdue ? 'font-medium text-red-500' : 'text-muted-foreground'}`}
-                    >
-                      {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '—'}
-                    </TableCell>
-                    <TableCell className="text-xs text-green-600">
-                      {invoice.paidDate ? new Date(invoice.paidDate).toLocaleDateString() : '—'}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-
-      <InvoiceSheet invoice={selectedInvoice} open={sheetOpen} onOpenChange={setSheetOpen} />
+      ) : null}
+      <InvoiceFilters
+        search={state.search}
+        filters={state.filters}
+        onSearchChange={state.setSearch}
+        onFilterChange={state.setFilters}
+        onCreateInvoice={() => state.setCreateOpen(true)}
+      />
+      <InvoicesPageContent
+        invoices={state.invoices}
+        loading={state.loading}
+        error={state.error}
+        mutationError={state.mutationError}
+        onDismissMutationError={state.clearMutationError}
+        view={state.view}
+        onRetry={state.fetchInvoices}
+        onInvoiceClick={state.handleInvoiceClick}
+        onMove={(itemId, _from, toColumn) => state.handleStatusChange(itemId, toColumn)}
+      />
+      <InvoiceSheet
+        invoice={state.selectedInvoice}
+        open={state.sheetOpen}
+        onOpenChange={state.setSheetOpen}
+        onPaymentRecorded={state.handlePaymentRecorded}
+      />
+      <CreateInvoiceDialog
+        open={state.createOpen}
+        onOpenChange={state.setCreateOpen}
+        onCreated={state.handleInvoiceCreated}
+        subscriptionId={subscriptionIdFromUrl}
+      />
     </div>
+  );
+}
+
+export default function InvoicesPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <InvoicesPageInner />
+    </Suspense>
   );
 }

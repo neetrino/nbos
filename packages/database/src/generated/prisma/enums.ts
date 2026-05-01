@@ -76,6 +76,31 @@ export const ProductStatusEnum = {
 
 export type ProductStatusEnum = (typeof ProductStatusEnum)[keyof typeof ProductStatusEnum];
 
+export const DeliveryStageEnum = {
+  STARTING: 'STARTING',
+  DEVELOPMENT: 'DEVELOPMENT',
+  QA: 'QA',
+  TRANSFER: 'TRANSFER',
+} as const;
+
+export type DeliveryStageEnum = (typeof DeliveryStageEnum)[keyof typeof DeliveryStageEnum];
+
+export const DeliveryWorkStatusEnum = {
+  ACTIVE: 'ACTIVE',
+  ON_HOLD: 'ON_HOLD',
+} as const;
+
+export type DeliveryWorkStatusEnum =
+  (typeof DeliveryWorkStatusEnum)[keyof typeof DeliveryWorkStatusEnum];
+
+export const DeliveryResolutionEnum = {
+  DONE: 'DONE',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type DeliveryResolutionEnum =
+  (typeof DeliveryResolutionEnum)[keyof typeof DeliveryResolutionEnum];
+
 export const ExtensionSizeEnum = {
   MICRO: 'MICRO',
   SMALL: 'SMALL',
@@ -115,6 +140,55 @@ export const LeadSourceEnum = {
 } as const;
 
 export type LeadSourceEnum = (typeof LeadSourceEnum)[keyof typeof LeadSourceEnum];
+
+export const MarketingChannelEnum = {
+  SMM: 'SMM',
+  WEBSITE: 'WEBSITE',
+  LIST_AM: 'LIST_AM',
+  GOOGLE_ADS: 'GOOGLE_ADS',
+  META_ADS: 'META_ADS',
+  CONTENT: 'CONTENT',
+  SEO: 'SEO',
+  OFFLINE: 'OFFLINE',
+  OTHER: 'OTHER',
+} as const;
+
+export type MarketingChannelEnum = (typeof MarketingChannelEnum)[keyof typeof MarketingChannelEnum];
+
+export const MarketingAccountStatusEnum = {
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type MarketingAccountStatusEnum =
+  (typeof MarketingAccountStatusEnum)[keyof typeof MarketingAccountStatusEnum];
+
+export const MarketingActivityStatusEnum = {
+  IDEA: 'IDEA',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  LAUNCHED: 'LAUNCHED',
+  FINISHED: 'FINISHED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type MarketingActivityStatusEnum =
+  (typeof MarketingActivityStatusEnum)[keyof typeof MarketingActivityStatusEnum];
+
+export const MarketingActivityTypeEnum = {
+  AD_CAMPAIGN: 'AD_CAMPAIGN',
+  SMM_POST: 'SMM_POST',
+  STORY_REEL: 'STORY_REEL',
+  LIST_AM_PROMOTION: 'LIST_AM_PROMOTION',
+  WEBSITE_LANDING: 'WEBSITE_LANDING',
+  SEO_WORK: 'SEO_WORK',
+  OFFLINE_ACTIVITY: 'OFFLINE_ACTIVITY',
+  OTHER: 'OTHER',
+} as const;
+
+export type MarketingActivityTypeEnum =
+  (typeof MarketingActivityTypeEnum)[keyof typeof MarketingActivityTypeEnum];
 
 export const DealStatusEnum = {
   START_CONVERSATION: 'START_CONVERSATION',
@@ -196,9 +270,11 @@ export const SubscriptionTypeEnum = {
 export type SubscriptionTypeEnum = (typeof SubscriptionTypeEnum)[keyof typeof SubscriptionTypeEnum];
 
 export const SubscriptionStatusEnum = {
+  PENDING: 'PENDING',
   ACTIVE: 'ACTIVE',
-  PAUSED: 'PAUSED',
+  ON_HOLD: 'ON_HOLD',
   CANCELLED: 'CANCELLED',
+  COMPLETED: 'COMPLETED',
 } as const;
 
 export type SubscriptionStatusEnum =
@@ -246,6 +322,17 @@ export const ExpenseStatusEnum = {
 
 export type ExpenseStatusEnum = (typeof ExpenseStatusEnum)[keyof typeof ExpenseStatusEnum];
 
+export const ExpenseBacklogReasonEnum = {
+  DEBT_PAY_LATER: 'DEBT_PAY_LATER',
+  WAITING_DECISION: 'WAITING_DECISION',
+  WAITING_CLIENT: 'WAITING_CLIENT',
+  WAITING_PROVIDER: 'WAITING_PROVIDER',
+  OTHER: 'OTHER',
+} as const;
+
+export type ExpenseBacklogReasonEnum =
+  (typeof ExpenseBacklogReasonEnum)[keyof typeof ExpenseBacklogReasonEnum];
+
 export const BonusTypeEnum = {
   SALES: 'SALES',
   DELIVERY: 'DELIVERY',
@@ -269,6 +356,26 @@ export const BonusStatusEnum = {
 
 export type BonusStatusEnum = (typeof BonusStatusEnum)[keyof typeof BonusStatusEnum];
 
+export const PayrollRunStatusEnum = {
+  DRAFT: 'DRAFT',
+  REVIEW: 'REVIEW',
+  APPROVED: 'APPROVED',
+  PAYING: 'PAYING',
+  CLOSED: 'CLOSED',
+} as const;
+
+export type PayrollRunStatusEnum = (typeof PayrollRunStatusEnum)[keyof typeof PayrollRunStatusEnum];
+
+export const SalaryLineStatusEnum = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  PARTIALLY_PAID: 'PARTIALLY_PAID',
+  PAID: 'PAID',
+  HELD: 'HELD',
+} as const;
+
+export type SalaryLineStatusEnum = (typeof SalaryLineStatusEnum)[keyof typeof SalaryLineStatusEnum];
+
 export const TaskStatusEnum = {
   NEW: 'NEW',
   IN_PROGRESS: 'IN_PROGRESS',
@@ -287,6 +394,225 @@ export const TaskPriorityEnum = {
 } as const;
 
 export type TaskPriorityEnum = (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum];
+
+export const WorkSpaceTypeEnum = {
+  PRODUCT_DELIVERY: 'PRODUCT_DELIVERY',
+  EXTENSION_DELIVERY: 'EXTENSION_DELIVERY',
+  STANDALONE_OPERATIONAL: 'STANDALONE_OPERATIONAL',
+} as const;
+
+export type WorkSpaceTypeEnum = (typeof WorkSpaceTypeEnum)[keyof typeof WorkSpaceTypeEnum];
+
+export const TaskPlanningStatusEnum = {
+  UNPLANNED: 'UNPLANNED',
+  BACKLOG: 'BACKLOG',
+  FUTURE_SPRINT: 'FUTURE_SPRINT',
+  ACTIVE_SPRINT: 'ACTIVE_SPRINT',
+} as const;
+
+export type TaskPlanningStatusEnum =
+  (typeof TaskPlanningStatusEnum)[keyof typeof TaskPlanningStatusEnum];
+
+export const FileAssetTypeEnum = {
+  DOCUMENT: 'DOCUMENT',
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  ARCHIVE: 'ARCHIVE',
+  CODE: 'CODE',
+  SPREADSHEET: 'SPREADSHEET',
+  LINK: 'LINK',
+  OTHER: 'OTHER',
+} as const;
+
+export type FileAssetTypeEnum = (typeof FileAssetTypeEnum)[keyof typeof FileAssetTypeEnum];
+
+export const FilePurposeEnum = {
+  OFFER_DRAFT: 'OFFER_DRAFT',
+  OFFER_SENT: 'OFFER_SENT',
+  OFFER_APPROVED: 'OFFER_APPROVED',
+  MESSENGER_PROOF: 'MESSENGER_PROOF',
+  CONTRACT: 'CONTRACT',
+  HANDOFF_DOCUMENT: 'HANDOFF_DOCUMENT',
+  DESIGN_ASSET: 'DESIGN_ASSET',
+  DELIVERY_FILE: 'DELIVERY_FILE',
+  INVOICE_REQUEST_PROOF: 'INVOICE_REQUEST_PROOF',
+  PAYMENT_PROOF: 'PAYMENT_PROOF',
+  EXPENSE_PROOF: 'EXPENSE_PROOF',
+  PARTNER_AGREEMENT: 'PARTNER_AGREEMENT',
+  SUPPORT_EVIDENCE: 'SUPPORT_EVIDENCE',
+  TASK_ATTACHMENT: 'TASK_ATTACHMENT',
+  WORKSPACE_ARTIFACT: 'WORKSPACE_ARTIFACT',
+  SOP_DOCUMENT: 'SOP_DOCUMENT',
+  TRAINING_MATERIAL: 'TRAINING_MATERIAL',
+  MEETING_RECORDING: 'MEETING_RECORDING',
+  CALL_RECORDING: 'CALL_RECORDING',
+  OTHER: 'OTHER',
+} as const;
+
+export type FilePurposeEnum = (typeof FilePurposeEnum)[keyof typeof FilePurposeEnum];
+
+export const FileAssetStatusEnum = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  APPROVED: 'APPROVED',
+  ARCHIVED: 'ARCHIVED',
+  DELETED: 'DELETED',
+} as const;
+
+export type FileAssetStatusEnum = (typeof FileAssetStatusEnum)[keyof typeof FileAssetStatusEnum];
+
+export const FileVisibilityEnum = {
+  INTERNAL: 'INTERNAL',
+  PROJECT_TEAM: 'PROJECT_TEAM',
+  RESTRICTED: 'RESTRICTED',
+  CLIENT_VISIBLE: 'CLIENT_VISIBLE',
+  PARTNER_VISIBLE: 'PARTNER_VISIBLE',
+  PERSONAL: 'PERSONAL',
+} as const;
+
+export type FileVisibilityEnum = (typeof FileVisibilityEnum)[keyof typeof FileVisibilityEnum];
+
+export const FileConfidentialityEnum = {
+  PUBLIC_INTERNAL: 'PUBLIC_INTERNAL',
+  CONFIDENTIAL: 'CONFIDENTIAL',
+  FINANCE_SENSITIVE: 'FINANCE_SENSITIVE',
+  LEGAL_SENSITIVE: 'LEGAL_SENSITIVE',
+  SECRET_ADJACENT: 'SECRET_ADJACENT',
+} as const;
+
+export type FileConfidentialityEnum =
+  (typeof FileConfidentialityEnum)[keyof typeof FileConfidentialityEnum];
+
+export const FileStorageProviderEnum = {
+  R2: 'R2',
+  EXTERNAL_URL: 'EXTERNAL_URL',
+  GOOGLE_DRIVE: 'GOOGLE_DRIVE',
+} as const;
+
+export type FileStorageProviderEnum =
+  (typeof FileStorageProviderEnum)[keyof typeof FileStorageProviderEnum];
+
+export const FileLinkTypeEnum = {
+  ATTACHMENT: 'ATTACHMENT',
+  APPROVED_DOCUMENT: 'APPROVED_DOCUMENT',
+  PROOF: 'PROOF',
+  SOURCE_MATERIAL: 'SOURCE_MATERIAL',
+  FINAL_DELIVERY: 'FINAL_DELIVERY',
+  HANDOFF: 'HANDOFF',
+  SUPPORT_EVIDENCE: 'SUPPORT_EVIDENCE',
+  TASK_ATTACHMENT: 'TASK_ATTACHMENT',
+  WORKSPACE_ARTIFACT: 'WORKSPACE_ARTIFACT',
+  OTHER: 'OTHER',
+} as const;
+
+export type FileLinkTypeEnum = (typeof FileLinkTypeEnum)[keyof typeof FileLinkTypeEnum];
+
+export const FileUploadSessionStatusEnum = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED',
+} as const;
+
+export type FileUploadSessionStatusEnum =
+  (typeof FileUploadSessionStatusEnum)[keyof typeof FileUploadSessionStatusEnum];
+
+export const ReportExportJobStatusEnum = {
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type ReportExportJobStatusEnum =
+  (typeof ReportExportJobStatusEnum)[keyof typeof ReportExportJobStatusEnum];
+
+export const ReportExportFormatEnum = {
+  CSV: 'CSV',
+  XLSX: 'XLSX',
+  PDF: 'PDF',
+} as const;
+
+export type ReportExportFormatEnum =
+  (typeof ReportExportFormatEnum)[keyof typeof ReportExportFormatEnum];
+
+export const ReportScheduleStatusEnum = {
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  FAILED: 'FAILED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type ReportScheduleStatusEnum =
+  (typeof ReportScheduleStatusEnum)[keyof typeof ReportScheduleStatusEnum];
+
+export const ReportScheduleFrequencyEnum = {
+  DAILY: 'DAILY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY',
+} as const;
+
+export type ReportScheduleFrequencyEnum =
+  (typeof ReportScheduleFrequencyEnum)[keyof typeof ReportScheduleFrequencyEnum];
+
+export const DocumentTypeEnum = {
+  NATIVE: 'NATIVE',
+  UPLOADED_FILE: 'UPLOADED_FILE',
+  EXTERNAL_LINK: 'EXTERNAL_LINK',
+  GOOGLE_DOC: 'GOOGLE_DOC',
+  GOOGLE_SHEET: 'GOOGLE_SHEET',
+} as const;
+
+export type DocumentTypeEnum = (typeof DocumentTypeEnum)[keyof typeof DocumentTypeEnum];
+
+export const DocumentStatusEnum = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type DocumentStatusEnum = (typeof DocumentStatusEnum)[keyof typeof DocumentStatusEnum];
+
+export const DocumentContentStorageEnum = {
+  DB: 'DB',
+  R2: 'R2',
+  EXTERNAL: 'EXTERNAL',
+} as const;
+
+export type DocumentContentStorageEnum =
+  (typeof DocumentContentStorageEnum)[keyof typeof DocumentContentStorageEnum];
+
+export const ExternalLinkProviderEnum = {
+  MANUAL_URL: 'MANUAL_URL',
+  GOOGLE_DOCS: 'GOOGLE_DOCS',
+  GOOGLE_SHEETS: 'GOOGLE_SHEETS',
+  GOOGLE_DRIVE: 'GOOGLE_DRIVE',
+} as const;
+
+export type ExternalLinkProviderEnum =
+  (typeof ExternalLinkProviderEnum)[keyof typeof ExternalLinkProviderEnum];
+
+export const DocumentAttachmentPurposeEnum = {
+  INLINE_IMAGE: 'INLINE_IMAGE',
+  ATTACHMENT: 'ATTACHMENT',
+  COVER: 'COVER',
+  SOURCE_FILE: 'SOURCE_FILE',
+  EXPORT: 'EXPORT',
+} as const;
+
+export type DocumentAttachmentPurposeEnum =
+  (typeof DocumentAttachmentPurposeEnum)[keyof typeof DocumentAttachmentPurposeEnum];
+
+export const DocumentListScopeEnum = {
+  ALL: 'ALL',
+  OWN: 'OWN',
+  DEPARTMENT: 'DEPARTMENT',
+} as const;
+
+export type DocumentListScopeEnum =
+  (typeof DocumentListScopeEnum)[keyof typeof DocumentListScopeEnum];
 
 export const TicketCategoryEnum = {
   INCIDENT: 'INCIDENT',
@@ -317,6 +643,16 @@ export const TicketStatusEnum = {
 
 export type TicketStatusEnum = (typeof TicketStatusEnum)[keyof typeof TicketStatusEnum];
 
+export const SupportCoverageEnum = {
+  COVERED_BY_MAINTENANCE: 'COVERED_BY_MAINTENANCE',
+  FREE_GOODWILL: 'FREE_GOODWILL',
+  BILLABLE_SMALL_WORK: 'BILLABLE_SMALL_WORK',
+  EXTENSION_REQUIRED: 'EXTENSION_REQUIRED',
+  NOT_COVERED_REJECTED: 'NOT_COVERED_REJECTED',
+} as const;
+
+export type SupportCoverageEnum = (typeof SupportCoverageEnum)[keyof typeof SupportCoverageEnum];
+
 export const CredentialCategoryEnum = {
   ADMIN: 'ADMIN',
   DOMAIN: 'DOMAIN',
@@ -343,6 +679,32 @@ export const CredentialAccessLevelEnum = {
 export type CredentialAccessLevelEnum =
   (typeof CredentialAccessLevelEnum)[keyof typeof CredentialAccessLevelEnum];
 
+export const CredentialTypeEnum = {
+  LOGIN_PASSWORD: 'LOGIN_PASSWORD',
+  API_KEY: 'API_KEY',
+  DATABASE: 'DATABASE',
+  SSH_PRIVATE_KEY: 'SSH_PRIVATE_KEY',
+  ENV_BUNDLE: 'ENV_BUNDLE',
+  DOMAIN_REGISTRAR: 'DOMAIN_REGISTRAR',
+  HOSTING_SERVER: 'HOSTING_SERVER',
+  APP_STORE_ACCOUNT: 'APP_STORE_ACCOUNT',
+  MAIL_SMTP: 'MAIL_SMTP',
+  RECOVERY_CODES: 'RECOVERY_CODES',
+  OTHER_SECRET: 'OTHER_SECRET',
+} as const;
+
+export type CredentialTypeEnum = (typeof CredentialTypeEnum)[keyof typeof CredentialTypeEnum];
+
+export const CredentialCriticalityEnum = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL',
+} as const;
+
+export type CredentialCriticalityEnum =
+  (typeof CredentialCriticalityEnum)[keyof typeof CredentialCriticalityEnum];
+
 export const DomainStatusEnum = {
   ACTIVE: 'ACTIVE',
   EXPIRING_SOON: 'EXPIRING_SOON',
@@ -351,6 +713,43 @@ export const DomainStatusEnum = {
 } as const;
 
 export type DomainStatusEnum = (typeof DomainStatusEnum)[keyof typeof DomainStatusEnum];
+
+export const ClientServiceType = {
+  DOMAIN: 'DOMAIN',
+  HOSTING: 'HOSTING',
+  SERVICE: 'SERVICE',
+  ACCOUNT: 'ACCOUNT',
+  LICENSE: 'LICENSE',
+} as const;
+
+export type ClientServiceType = (typeof ClientServiceType)[keyof typeof ClientServiceType];
+
+export const ClientServiceStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  EXPIRING_SOON: 'EXPIRING_SOON',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type ClientServiceStatus = (typeof ClientServiceStatus)[keyof typeof ClientServiceStatus];
+
+export const ClientServiceBillingModel = {
+  CLIENT_PAID: 'CLIENT_PAID',
+  COMPANY_PAID: 'COMPANY_PAID',
+} as const;
+
+export type ClientServiceBillingModel =
+  (typeof ClientServiceBillingModel)[keyof typeof ClientServiceBillingModel];
+
+export const ClientServicePricingModel = {
+  FIXED: 'FIXED',
+  USAGE_BASED: 'USAGE_BASED',
+} as const;
+
+export type ClientServicePricingModel =
+  (typeof ClientServicePricingModel)[keyof typeof ClientServicePricingModel];
 
 export const EmployeeLevelEnum = {
   JUNIOR: 'JUNIOR',
@@ -392,3 +791,239 @@ export const PartnerStatusEnum = {
 } as const;
 
 export type PartnerStatusEnum = (typeof PartnerStatusEnum)[keyof typeof PartnerStatusEnum];
+
+export const MessengerChannelType = {
+  PROJECT: 'PROJECT',
+  GENERAL: 'GENERAL',
+  ANNOUNCEMENT: 'ANNOUNCEMENT',
+} as const;
+
+export type MessengerChannelType = (typeof MessengerChannelType)[keyof typeof MessengerChannelType];
+
+export const MailProviderType = {
+  GMAIL: 'GMAIL',
+  CORPORATE_IMAP_SMTP: 'CORPORATE_IMAP_SMTP',
+} as const;
+
+export type MailProviderType = (typeof MailProviderType)[keyof typeof MailProviderType];
+
+export const MailProviderConnectionStatus = {
+  NOT_CONNECTED: 'NOT_CONNECTED',
+  CONNECTED: 'CONNECTED',
+  DEGRADED: 'DEGRADED',
+  NEEDS_RECONNECT: 'NEEDS_RECONNECT',
+  PAUSED: 'PAUSED',
+} as const;
+
+export type MailProviderConnectionStatus =
+  (typeof MailProviderConnectionStatus)[keyof typeof MailProviderConnectionStatus];
+
+export const MailAccountStatus = {
+  ACTIVE: 'ACTIVE',
+  NEEDS_RECONNECT: 'NEEDS_RECONNECT',
+  PAUSED: 'PAUSED',
+  DISABLED: 'DISABLED',
+  SYNCING: 'SYNCING',
+  DEGRADED: 'DEGRADED',
+} as const;
+
+export type MailAccountStatus = (typeof MailAccountStatus)[keyof typeof MailAccountStatus];
+
+export const EmailThreadStatus = {
+  OPEN: 'OPEN',
+  ARCHIVED: 'ARCHIVED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export type EmailThreadStatus = (typeof EmailThreadStatus)[keyof typeof EmailThreadStatus];
+
+export const EmailMessageDirection = {
+  INBOUND: 'INBOUND',
+  OUTBOUND: 'OUTBOUND',
+} as const;
+
+export type EmailMessageDirection =
+  (typeof EmailMessageDirection)[keyof typeof EmailMessageDirection];
+
+export const EmailMessageReadState = {
+  UNREAD: 'UNREAD',
+  READ: 'READ',
+} as const;
+
+export type EmailMessageReadState =
+  (typeof EmailMessageReadState)[keyof typeof EmailMessageReadState];
+
+export const EmailDeliveryStatus = {
+  DRAFT: 'DRAFT',
+  QUEUED: 'QUEUED',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type EmailDeliveryStatus = (typeof EmailDeliveryStatus)[keyof typeof EmailDeliveryStatus];
+
+export const MailDeliveryLogKind = {
+  OUTBOUND_DRAFT_SAVED: 'OUTBOUND_DRAFT_SAVED',
+  OUTBOUND_QUEUED: 'OUTBOUND_QUEUED',
+  OUTBOUND_SEND_STUB_FAILED: 'OUTBOUND_SEND_STUB_FAILED',
+  OUTBOUND_SEND_CANCELLED: 'OUTBOUND_SEND_CANCELLED',
+  OUTBOUND_FAILED_RESET_TO_DRAFT: 'OUTBOUND_FAILED_RESET_TO_DRAFT',
+} as const;
+
+export type MailDeliveryLogKind = (typeof MailDeliveryLogKind)[keyof typeof MailDeliveryLogKind];
+
+export const EmailAttachmentDownloadStatus = {
+  PENDING: 'PENDING',
+  READY: 'READY',
+  FAILED: 'FAILED',
+} as const;
+
+export type EmailAttachmentDownloadStatus =
+  (typeof EmailAttachmentDownloadStatus)[keyof typeof EmailAttachmentDownloadStatus];
+
+export const EmailRecipientKind = {
+  FROM: 'FROM',
+  TO: 'TO',
+  CC: 'CC',
+  BCC: 'BCC',
+  REPLY_TO: 'REPLY_TO',
+} as const;
+
+export type EmailRecipientKind = (typeof EmailRecipientKind)[keyof typeof EmailRecipientKind];
+
+export const NotificationJobStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type NotificationJobStatus =
+  (typeof NotificationJobStatus)[keyof typeof NotificationJobStatus];
+
+export const NotificationDeliveryChannel = {
+  IN_APP: 'IN_APP',
+  TELEGRAM: 'TELEGRAM',
+  WHATSAPP: 'WHATSAPP',
+  EMAIL: 'EMAIL',
+} as const;
+
+export type NotificationDeliveryChannel =
+  (typeof NotificationDeliveryChannel)[keyof typeof NotificationDeliveryChannel];
+
+export const NotificationDeliveryStatus = {
+  PENDING: 'PENDING',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED',
+  SKIPPED: 'SKIPPED',
+} as const;
+
+export type NotificationDeliveryStatus =
+  (typeof NotificationDeliveryStatus)[keyof typeof NotificationDeliveryStatus];
+
+export const TechnicalHealthStatus = {
+  HEALTHY: 'HEALTHY',
+  WARNING: 'WARNING',
+  CRITICAL: 'CRITICAL',
+  NOT_CONFIGURED: 'NOT_CONFIGURED',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TechnicalHealthStatus =
+  (typeof TechnicalHealthStatus)[keyof typeof TechnicalHealthStatus];
+
+export const TechnicalBackupStatus = {
+  HEALTHY: 'HEALTHY',
+  WARNING: 'WARNING',
+  MISSING: 'MISSING',
+  NOT_REQUIRED: 'NOT_REQUIRED',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TechnicalBackupStatus =
+  (typeof TechnicalBackupStatus)[keyof typeof TechnicalBackupStatus];
+
+export const TechnicalDeployStatus = {
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  ROLLED_BACK: 'ROLLED_BACK',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TechnicalDeployStatus =
+  (typeof TechnicalDeployStatus)[keyof typeof TechnicalDeployStatus];
+
+export const TechnicalAssetType = {
+  DOMAIN: 'DOMAIN',
+  HOSTING: 'HOSTING',
+  REPOSITORY: 'REPOSITORY',
+  DATABASE: 'DATABASE',
+  STORAGE: 'STORAGE',
+  MONITORING: 'MONITORING',
+  ERROR_TRACKING: 'ERROR_TRACKING',
+  EXTERNAL_API: 'EXTERNAL_API',
+  QUEUE: 'QUEUE',
+  OTHER: 'OTHER',
+} as const;
+
+export type TechnicalAssetType = (typeof TechnicalAssetType)[keyof typeof TechnicalAssetType];
+
+export const TechnicalAssetStatus = {
+  ACTIVE: 'ACTIVE',
+  WARNING: 'WARNING',
+  BROKEN: 'BROKEN',
+  DEPRECATED: 'DEPRECATED',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TechnicalAssetStatus = (typeof TechnicalAssetStatus)[keyof typeof TechnicalAssetStatus];
+
+export const TechnicalEnvironmentKind = {
+  PRODUCTION: 'PRODUCTION',
+  STAGING: 'STAGING',
+  DEVELOPMENT: 'DEVELOPMENT',
+  PREVIEW: 'PREVIEW',
+  LEGACY: 'LEGACY',
+} as const;
+
+export type TechnicalEnvironmentKind =
+  (typeof TechnicalEnvironmentKind)[keyof typeof TechnicalEnvironmentKind];
+
+export const CalendarMeetingType = {
+  SALES_CALL: 'SALES_CALL',
+  OFFER_PRESENTATION: 'OFFER_PRESENTATION',
+  DEMO: 'DEMO',
+  KICKOFF: 'KICKOFF',
+  SUPPORT_CALL: 'SUPPORT_CALL',
+  MAINTENANCE_CALL: 'MAINTENANCE_CALL',
+  OTHER: 'OTHER',
+} as const;
+
+export type CalendarMeetingType = (typeof CalendarMeetingType)[keyof typeof CalendarMeetingType];
+
+export const CalendarLocationType = {
+  ONLINE: 'ONLINE',
+  OFFLINE: 'OFFLINE',
+} as const;
+
+export type CalendarLocationType = (typeof CalendarLocationType)[keyof typeof CalendarLocationType];
+
+export const CalendarMeetingStatus = {
+  SCHEDULED: 'SCHEDULED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW',
+} as const;
+
+export type CalendarMeetingStatus =
+  (typeof CalendarMeetingStatus)[keyof typeof CalendarMeetingStatus];
+
+export const PersonalCalendarEventStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PersonalCalendarEventStatus =
+  (typeof PersonalCalendarEventStatus)[keyof typeof PersonalCalendarEventStatus];

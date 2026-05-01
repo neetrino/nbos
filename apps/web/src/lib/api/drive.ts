@@ -15,7 +15,227 @@ export interface DriveFolderNode {
   files: DriveFileEntry[];
 }
 
+export interface FileAsset {
+  id: string;
+  displayName: string;
+  originalName: string | null;
+  fileType: string;
+  purpose: string | null;
+  sourceModule: string | null;
+  status: string;
+  visibility: string;
+  confidentiality: string;
+  storageProvider: string;
+  storageKey: string | null;
+  externalUrl: string | null;
+  mimeType: string | null;
+  sizeBytes: number | string | null;
+  checksum: string | null;
+  createdAt: string;
+  updatedAt: string;
+  versions: FileVersion[];
+  links: FileLink[];
+  auditEvents?: FileAuditEvent[];
+}
+
+export interface FileVersion {
+  id: string;
+  fileAssetId: string;
+  versionNumber: number;
+  storageKey: string | null;
+  uploadedById: string | null;
+  uploadedAt: string;
+  changeNote: string | null;
+  sizeBytes: number | string | null;
+  checksum: string | null;
+  isCurrent: boolean;
+}
+
+export interface FileLink {
+  id: string;
+  fileAssetId: string;
+  entityType: string;
+  entityId: string;
+  linkType: string;
+  purposeOverride: string | null;
+  isPrimary: boolean;
+  linkedById: string | null;
+  linkedAt: string;
+  unlinkedAt: string | null;
+}
+
+export interface FileAuditEvent {
+  id: string;
+  fileAssetId: string;
+  actorId: string | null;
+  action: string;
+  metadata: unknown;
+  createdAt: string;
+}
+
 export const driveApi = {
+  async listFileAssets(params?: {
+    entityType?: string;
+    entityId?: string;
+    purpose?: string;
+    status?: string;
+    sourceModule?: string;
+    search?: string;
+  }): Promise<FileAsset[]> {
+    const resp = await api.get<FileAsset[]>('/api/drive/files', { params });
+    return resp.data;
+  },
+
+  async listDriveLibrary(contextType: string, contextId: string): Promise<FileAsset[]> {
+    const resp = await api.get<FileAsset[]>('/api/drive/library', {
+      params: { contextType, contextId },
+    });
+    return resp.data;
+  },
+
+  async createUploadSession(data: {
+    fileName: string;
+    contentType: string;
+    entityType: string;
+    entityId: string;
+    displayName?: string;
+    purpose?: string;
+    sourceModule?: string;
+    visibility?: string;
+    confidentiality?: string;
+    linkType?: string;
+  }): Promise<{
+    sessionId: string;
+    uploadUrl: string;
+    storageKey: string;
+    expiresAt: string;
+    publicUrl: string;
+  }> {
+    const resp = await api.post('/api/drive/upload-sessions', data);
+    return resp.data;
+  },
+
+  async completeUploadSession(
+    sessionId: string,
+    data?: { sizeBytes?: number; checksum?: string },
+  ): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/upload-sessions/' + encodeURIComponent(sessionId) + '/complete',
+      data ?? {},
+    );
+    return resp.data;
+  },
+
+  async failUploadSession(sessionId: string, reason?: string): Promise<void> {
+    await api.post('/api/drive/upload-sessions/' + encodeURIComponent(sessionId) + '/fail', {
+      reason,
+    });
+  },
+
+  async getFileAsset(id: string): Promise<FileAsset> {
+    const resp = await api.get<FileAsset>('/api/drive/files/' + encodeURIComponent(id));
+    return resp.data;
+  },
+
+  async getFileAssetPreviewUrl(
+    id: string,
+    params?: { forDocumentId?: string },
+  ): Promise<{ url: string; mimeType: string | null }> {
+    const resp = await api.get<{ url: string; mimeType: string | null }>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/preview-url',
+      {
+        params:
+          params?.forDocumentId !== undefined && params.forDocumentId !== ''
+            ? { forDocumentId: params.forDocumentId }
+            : undefined,
+      },
+    );
+    return resp.data;
+  },
+
+  async createVersionUploadUrl(
+    id: string,
+    data: { fileName: string; contentType: string },
+  ): Promise<{ uploadUrl: string; storageKey: string; expiresInSeconds: number }> {
+    const resp = await api.post<{
+      uploadUrl: string;
+      storageKey: string;
+      expiresInSeconds: number;
+    }>('/api/drive/files/' + encodeURIComponent(id) + '/version-upload-url', data);
+    return resp.data;
+  },
+
+  async completeFileVersion(
+    id: string,
+    data: { storageKey: string; sizeBytes?: number; checksum?: string; changeNote?: string },
+  ): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/versions',
+      data,
+    );
+    return resp.data;
+  },
+
+  async createFileAsset(data: {
+    displayName: string;
+    originalName?: string;
+    fileType?: string;
+    purpose?: string;
+    sourceModule?: string;
+    ownerId?: string;
+    createdById?: string;
+    visibility?: string;
+    confidentiality?: string;
+    storageKey?: string;
+    externalUrl?: string;
+    mimeType?: string;
+    sizeBytes?: number;
+    checksum?: string;
+    link?: {
+      entityType: string;
+      entityId: string;
+      linkType?: string;
+      purposeOverride?: string;
+      isPrimary?: boolean;
+      linkedById?: string;
+    };
+  }): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>('/api/drive/files', data);
+    return resp.data;
+  },
+
+  async linkFileAsset(
+    id: string,
+    data: {
+      entityType: string;
+      entityId: string;
+      linkType?: string;
+      purposeOverride?: string;
+      isPrimary?: boolean;
+      linkedById?: string;
+    },
+  ): Promise<FileLink> {
+    const resp = await api.post<FileLink>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/links',
+      data,
+    );
+    return resp.data;
+  },
+
+  async unlinkFileAsset(id: string, linkId: string): Promise<void> {
+    await api.delete(
+      '/api/drive/files/' + encodeURIComponent(id) + '/links/' + encodeURIComponent(linkId),
+    );
+  },
+
+  async archiveFileAsset(id: string, actorId?: string): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/archive',
+      { actorId },
+    );
+    return resp.data;
+  },
+
   async listFiles(projectId: string, prefix?: string): Promise<DriveFileEntry[]> {
     const resp = await api.get<DriveFileEntry[]>('/api/drive/' + encodeURIComponent(projectId), {
       params: prefix ? { prefix } : undefined,

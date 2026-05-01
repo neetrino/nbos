@@ -21,7 +21,13 @@ Other `.mdc` files apply by **globs** and task. If a rule seems missing, check t
 
 ## Each task
 
-Understand the ask → inspect existing code → propose for large/risky changes → implement after agreement → keep docs in sync when behavior changes.
+Understand the ask → inspect existing code → align with `docs/NBOS` + roadmap → implement → keep docs in sync when behavior changes.
+
+**Product canon:** `docs/NBOS` is the source of truth for product behavior. Implement modules from the relevant `docs/NBOS/02-Modules/*` canon first, then reconcile with existing code; do not invent behavior from current code alone.
+
+**Pace when the user delegates roadmap work** (e.g. *continue per plan / professionally*, Russian equivalents): treat that as **approval to ship substantive cohesive work**—including larger vertical slices (e.g. expense Plan·Card, multi-file API + web) when they **match documented behavior** in `docs/NBOS` and `docs/NBOS/00-Implementation-Roadmap.md`. Default is **not** polish-only micro-iterations. Split work for **reviewability** (coherent commits/PRs), not artificial throttle.
+
+**Before large or schema-affecting slices:** re-read the relevant **module canon** and `docs/NBOS/00-Technical-Decisions-By-Module.md` **twice**; resolve ambiguities from Hub + roadmap. User delegation means **trust to execute**—the safeguard is **document fidelity**, not chat ping-pong for slice size.
 
 ## Never
 
@@ -36,7 +42,7 @@ Understand the ask → inspect existing code → propose for large/risky changes
 - **SQL:** no string-concatenated user input; parameterized / prepared only.
 - **eval** and similar — never.
 - **CORS/CSRF off** without explicit approval.
-- **Architecture / deps / public API** changes without agreement or strong rationale.
+- **Ad hoc** architecture, dependency, or public API changes **outside** documented roadmap/module scope (NBOS canon + roadmap = scope agreement).
 - **Remove tests** or **ignore lint** to “pass” CI.
 
 ## Always
@@ -62,9 +68,11 @@ Understand the ask → inspect existing code → propose for large/risky changes
 
 **Autonomous:** naming, internal file layout, small refactors (&lt;50 lines), obvious bugfixes, formatting.
 
-**Requires approval:** architecture, stack/libraries, folder layout, DB schema, removing/renaming public API, business-logic changes.
+**Requires chat stop / explicit confirmation:** stack or library **swaps**, **greenfield** folder layout, **contradictions between NBOS docs** with no resolution path, **secrets/credentials** you do not have.
 
-**Proposal format:** context → options with pros/cons → recommendation → wait for confirmation.
+**Doc-aligned (no extra approval for “bigness” alone):** **DB schema**, migrations, public API extensions, and business-logic changes that **implement** `docs/NBOS` module canon and the implementation roadmap—when the user has asked to continue professionally per plan. Use the **proposal format** only when docs are silent, conflicting, or the change is **exploratory** (not canon-backed).
+
+**Proposal format (when needed):** context → options with pros/cons → recommendation → wait for confirmation.
 
 ## Secrets and credentials
 
@@ -100,4 +108,4 @@ Full DoD/PR/release checklists: [`docs/reference/Check/Quality/project-quality-c
 
 Platform how-tos: `docs/reference/platforms/`.
 
-**Version:** 3.0 · **Date:** 2026-04-02
+**Version:** 3.1 · **Date:** 2026-04-29

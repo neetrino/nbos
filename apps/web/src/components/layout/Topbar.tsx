@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Bell, ChevronDown, LogOut, Plus, UserCircle2 } from 'lucide-react';
+import { ChevronDown, LogOut, UserCircle2 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { usePermission } from '@/lib/permissions';
 import {
@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { NotificationDropdown } from '@/components/layout/NotificationDropdown';
 
 export function Topbar() {
   const router = useRouter();
@@ -30,17 +31,7 @@ export function Topbar() {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        {/* Quick Add */}
-        <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors">
-          <Plus size={16} />
-          <span className="hidden sm:inline">Create</span>
-        </button>
-
-        {/* Notifications */}
-        <button className="text-muted-foreground hover:bg-secondary hover:text-foreground relative rounded-lg p-2 transition-colors">
-          <Bell size={20} />
-          <span className="bg-accent absolute top-1.5 right-1.5 h-2 w-2 rounded-full" />
-        </button>
+        <NotificationDropdown />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="hover:bg-secondary flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors">

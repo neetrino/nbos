@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { DeliveryLifecycleProjection } from './projects';
 
 export interface ProductEmployee {
   id: string;
@@ -14,10 +15,14 @@ export interface Product {
   productCategory: string;
   productType: string;
   status: string;
+  deliveryLifecycle?: DeliveryLifecycleProjection;
   pmId: string | null;
   deadline: string | null;
   description: string | null;
   checklistTemplateId: string | null;
+  clientAcceptedAt: string | null;
+  clientAcceptedBy: string | null;
+  clientAcceptanceNote: string | null;
   createdAt: string;
   updatedAt: string;
   project: { id: string; name: string; code: string };
@@ -30,6 +35,35 @@ export interface FullProduct extends Product {
   tasks: ProductTaskRef[];
   tickets: ProductTicketRef[];
   order: ProductOrderRef | null;
+  doneReadiness?: ProductDoneReadiness;
+}
+
+export interface ProductDoneReadiness {
+  canCompleteWithRuntimeData: boolean;
+  blockers: ProductDoneReadinessItem[];
+  warnings: ProductDoneReadinessItem[];
+  missingRuntimeSignals: ProductDoneReadinessItem[];
+  summary: {
+    approvedOfferFilePresent: boolean;
+    clientAccepted: boolean;
+    contractFilePresent: boolean;
+    credentialCount: number;
+    deliveryFileRuntimeAvailable: boolean;
+    domainCount: number;
+    expiringDomainCount: number;
+    expiredDomainCount: number;
+    handoffCredentialCount: number;
+    openExtensionCount: number;
+    openTaskCount: number;
+    openTicketCount: number;
+    unpaidInvoiceCount: number;
+  };
+}
+
+export interface ProductDoneReadinessItem {
+  code: string;
+  label: string;
+  message: string;
 }
 
 export interface ProductExtensionRef {
@@ -102,6 +136,24 @@ export interface UpdateProductData {
   checklistTemplateId?: string | null;
 }
 
+export interface PauseDeliveryData {
+  reason: string;
+  onHoldUntil: string;
+}
+
+export interface CancelDeliveryData {
+  reason: string;
+}
+
+export interface MoveDeliveryStageData {
+  stage: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER';
+}
+
+export interface ConfirmAcceptanceData {
+  acceptedBy?: string;
+  note?: string;
+}
+
 export const productsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData> {
     const resp = await api.get<ListData>('/api/projects/products', { params });
@@ -125,6 +177,36 @@ export const productsApi = {
 
   async updateStatus(id: string, status: string): Promise<Product> {
     const resp = await api.patch<Product>(`/api/projects/products/${id}/status`, { status });
+    return resp.data;
+  },
+
+  async moveStage(id: string, data: MoveDeliveryStageData): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/stage`, data);
+    return resp.data;
+  },
+
+  async pause(id: string, data: PauseDeliveryData): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/pause`, data);
+    return resp.data;
+  },
+
+  async resume(id: string): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/resume`);
+    return resp.data;
+  },
+
+  async cancel(id: string, data: CancelDeliveryData): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/cancel`, data);
+    return resp.data;
+  },
+
+  async complete(id: string): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/complete`);
+    return resp.data;
+  },
+
+  async confirmAcceptance(id: string, data: ConfirmAcceptanceData): Promise<Product> {
+    const resp = await api.patch<Product>(`/api/projects/products/${id}/acceptance`, data);
     return resp.data;
   },
 

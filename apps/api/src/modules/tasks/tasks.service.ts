@@ -1,11 +1,13 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
+  type InputJsonValue,
   type TaskStatusEnum,
   type TaskPriorityEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './task-completion-rules';
 
 interface CreateTaskDto {
   title: string;
@@ -15,6 +17,9 @@ interface CreateTaskDto {
   coAssignees?: string[];
   observers?: string[];
   priority?: string;
+  workspaceId?: string;
+  planningStatus?: string;
+  completionRules?: unknown;
   startDate?: string;
   dueDate?: string;
   parentId?: string;
@@ -34,6 +39,10 @@ interface UpdateTaskDto {
   kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
+  workspaceId?: string | null;
+  planningStatus?: string;
+  workspaceSortOrder?: number;
+  completionRules?: unknown;
 }
 
 interface TaskQueryParams {
@@ -43,6 +52,8 @@ interface TaskQueryParams {
   priority?: string;
   assigneeId?: string;
   creatorId?: string;
+  workspaceId?: string;
+  planningStatus?: string;
   parentId?: string;
   hasParent?: boolean;
   entityType?: string;
@@ -90,6 +101,10 @@ export class TasksService {
     if (priority) where.priority = priority as TaskPriorityEnum;
     if (assigneeId) where.assigneeId = assigneeId;
     if (creatorId) where.creatorId = creatorId;
+    if (params.workspaceId) where.workspaceId = params.workspaceId;
+    if (params.planningStatus) {
+      where.planningStatus = params.planningStatus as Prisma.TaskWhereInput['planningStatus'];
+    }
     if (parentId) where.parentId = parentId;
     if (hasParent === false) where.parentId = null;
     if (entityType && entityId) {
@@ -151,6 +166,13 @@ export class TasksService {
         coAssignees: data.coAssignees ?? [],
         observers: data.observers ?? [],
         priority: (data.priority as TaskPriorityEnum) ?? 'NORMAL',
+        workspaceId: data.workspaceId,
+        ...(data.planningStatus && {
+          planningStatus: data.planningStatus as Prisma.TaskCreateInput['planningStatus'],
+        }),
+        ...(data.completionRules !== undefined && {
+          completionRules: this.parseCompletionRules(data.completionRules),
+        }),
         startDate: data.startDate ? new Date(data.startDate) : undefined,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
         parentId: data.parentId,
@@ -191,6 +213,16 @@ export class TasksService {
         ...(data.kanbanStageId !== undefined && { kanbanStageId: data.kanbanStageId }),
         ...(data.myPlanStageId !== undefined && { myPlanStageId: data.myPlanStageId }),
         ...(data.myPlanSortOrder !== undefined && { myPlanSortOrder: data.myPlanSortOrder }),
+        ...(data.workspaceId !== undefined && { workspaceId: data.workspaceId }),
+        ...(data.planningStatus !== undefined && {
+          planningStatus: data.planningStatus as Prisma.TaskUpdateInput['planningStatus'],
+        }),
+        ...(data.workspaceSortOrder !== undefined && {
+          workspaceSortOrder: data.workspaceSortOrder,
+        }),
+        ...(data.completionRules !== undefined && {
+          completionRules: this.parseCompletionRules(data.completionRules),
+        }),
       },
       include: TASK_INCLUDE,
     });
@@ -211,7 +243,14 @@ export class TasksService {
 
   /** Завершить задачу */
   async complete(id: string) {
-    await this.findById(id);
+    const task = await this.findById(id);
+    const blockers = buildTaskCompletionBlockers(task);
+    if (blockers.length > 0) {
+      throw new BadRequestException({
+        message: 'Task completion blocked.',
+        blockers,
+      });
+    }
     return this.prisma.task.update({
       where: { id },
       data: {
@@ -304,6 +343,16 @@ export class TasksService {
 
   async deleteChecklist(checklistId: string) {
     return this.prisma.taskChecklist.delete({ where: { id: checklistId } });
+  }
+
+  private parseCompletionRules(input: unknown): InputJsonValue | undefined {
+    if (input === null) return undefined;
+    try {
+      return normalizeTaskCompletionRules(input) as unknown as InputJsonValue;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid completionRules.';
+      throw new BadRequestException(message);
+    }
   }
 
   // ─── STATS ───────────────────────────────────────────────

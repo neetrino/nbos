@@ -13,7 +13,6 @@ import {
   Archive,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
@@ -23,7 +22,7 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState } from '@/components/shared';
+import { PageHeader, FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
 import { projectsApi, type Project } from '@/lib/api/projects';
 
@@ -33,6 +32,7 @@ export default function ProjectsPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [view, setView] = useState<ViewMode>('grid');
   const [activeTab, setActiveTab] = useState('all');
@@ -47,8 +47,9 @@ export default function ProjectsPage() {
         ...(activeTab === 'archived' ? { isArchived: true } : {}),
       });
       setProjects(data.items);
+      setError(null);
     } catch {
-      /* handled */
+      setError('Projects could not be loaded. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -113,11 +114,9 @@ export default function ProjectsPage() {
       />
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-48 rounded-xl" />
-          ))}
-        </div>
+        <LoadingState variant="cards" count={6} />
+      ) : error ? (
+        <ErrorState description={error} onRetry={fetchProjects} />
       ) : projects.length === 0 ? (
         <EmptyState
           icon={FolderKanban}
