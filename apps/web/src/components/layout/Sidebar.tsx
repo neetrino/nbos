@@ -113,7 +113,7 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Work Spaces',
     href: '/work-spaces',
     icon: <FolderKanban size={20} />,
-    permission: { module: 'WORK_SPACES', action: 'VIEW' },
+    permission: { module: 'TASKS', action: 'VIEW' },
   },
   {
     label: 'Finance',

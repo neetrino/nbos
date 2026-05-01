@@ -10,7 +10,7 @@ export class WorkSpacesController {
   constructor(private readonly workSpacesService: WorkSpacesService) {}
 
   @Get()
-  @RequirePermission('WORK_SPACES', 'VIEW')
+  @RequirePermission('TASKS', 'VIEW')
   @ApiOperation({ summary: 'List Work Spaces' })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'productId', required: false })
@@ -26,14 +26,14 @@ export class WorkSpacesController {
   }
 
   @Get(':id')
-  @RequirePermission('WORK_SPACES', 'VIEW')
+  @RequirePermission('TASKS', 'VIEW')
   @ApiOperation({ summary: 'Get Work Space by ID' })
   async findOne(@Param('id') id: string) {
     return this.workSpacesService.findById(id);
   }
 
   @Post()
-  @RequirePermission('WORK_SPACES', 'ADD')
+  @RequirePermission('TASKS', 'ADD')
   @ApiOperation({ summary: 'Create Work Space' })
   async create(
     @Body()
@@ -51,21 +51,21 @@ export class WorkSpacesController {
   }
 
   @Post('product/:productId/ensure')
-  @RequirePermission('WORK_SPACES', 'ADD')
+  @RequirePermission('TASKS', 'ADD')
   @ApiOperation({ summary: 'Ensure connected Product Work Space exists' })
   async ensureProductWorkSpace(@Param('productId') productId: string) {
     return this.workSpacesService.ensureForProduct(productId);
   }
 
   @Post('extension/:extensionId/ensure')
-  @RequirePermission('WORK_SPACES', 'ADD')
+  @RequirePermission('TASKS', 'ADD')
   @ApiOperation({ summary: 'Ensure parent Product Work Space exists for Extension' })
   async ensureExtensionWorkSpace(@Param('extensionId') extensionId: string) {
     return this.workSpacesService.ensureForExtension(extensionId);
   }
 
   @Patch(':id')
-  @RequirePermission('WORK_SPACES', 'EDIT')
+  @RequirePermission('TASKS', 'EDIT')
   @ApiOperation({ summary: 'Update Work Space metadata' })
   async update(
     @Param('id') id: string,

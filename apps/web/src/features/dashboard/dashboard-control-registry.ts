@@ -86,7 +86,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     label: 'My Work Spaces',
     href: '/work-spaces',
     icon: FolderKanban,
-    module: 'WORK_SPACES',
+    module: 'TASKS',
     action: 'VIEW',
     description: 'Jump into active delivery spaces.',
   },
