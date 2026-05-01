@@ -12,6 +12,10 @@ import { marketingApi } from '@/lib/api/marketing';
 import type { Lead } from '@/lib/api/leads';
 import type { ApiFieldError } from '@/lib/api-errors';
 import { LEAD_SOURCES, MARKETING_CHANNELS, SALES_CHANNELS } from '../constants/leadPipeline';
+import {
+  isLeadAttributionLocked,
+  requiresMarketingWhichOneSelection,
+} from '@nbos/shared/constants';
 
 type LeadInlinePayload = Pick<
   Lead,
@@ -29,9 +33,11 @@ type LeadInlinePayload = Pick<
 
 interface LeadTransitionInlineEditorProps {
   lead: Lead;
+  targetStatus: string;
   errors: ApiFieldError[];
   saving: boolean;
-  onSubmit: (data: Partial<LeadInlinePayload>) => Promise<void>;
+  onSaveOnly: (data: Partial<LeadInlinePayload>) => Promise<void>;
+  onSaveAndMove: (data: Partial<LeadInlinePayload>) => Promise<void>;
 }
 
 interface FormState {
@@ -49,38 +55,56 @@ interface FormState {
 
 export function LeadTransitionInlineEditor({
   lead,
+  targetStatus,
   errors,
   saving,
-  onSubmit,
+  onSaveOnly,
+  onSaveAndMove,
 }: LeadTransitionInlineEditorProps) {
   const [form, setForm] = useState<FormState>(() => getInitialForm(lead));
   const [touchedRequiredFields, setTouchedRequiredFields] = useState<Set<string>>(new Set());
 
   const errorFields = useMemo(() => new Set(errors.map((error) => error.field)), [errors]);
+  const needsAttributionForMove = isLeadAttributionLocked(targetStatus);
   const needsContactMethod = errorFields.has('contactMethod');
   const whereOptions = getWhereOptions(form.source);
   const showWhereField = whereOptions.length > 0;
-  const showMarketingAttribution =
-    errorFields.has('whichOne') ||
-    errorFields.has('marketingAccountId') ||
-    Boolean(form.sourceDetail);
+  const showFromField =
+    needsAttributionForMove || errorFields.has('source') || Boolean(!form.source);
+  const showWhereForMove =
+    showWhereField && (needsAttributionForMove || errorFields.has('sourceDetail'));
+  const showPartnerField =
+    form.source === 'PARTNER' && (needsAttributionForMove || errorFields.has('sourcePartnerId'));
+  const showClientField =
+    form.source === 'CLIENT' && (needsAttributionForMove || errorFields.has('sourceContactId'));
+  const showWhichOneField =
+    form.source === 'MARKETING' &&
+    Boolean(form.sourceDetail) &&
+    (requiresMarketingWhichOneSelection(form.source, form.sourceDetail) ||
+      errorFields.has('whichOne') ||
+      errorFields.has('marketingAccountId'));
 
   const updateForm = (field: keyof FormState, value: string) => {
     setForm((current) => normalizeFormUpdate(current, field, value));
   };
 
-  const submit = async () => {
-    const missing = getMissingFields(form, errors);
+  const runSubmit = async (mode: 'save' | 'move') => {
+    const missing = getMissingFields(form, errors, targetStatus);
     if (missing.length > 0) {
       setTouchedRequiredFields(new Set(missing));
       return;
     }
-    await onSubmit(buildChangedPayload(lead, form));
+    const payload = buildChangedPayload(lead, form);
+    if (mode === 'save') {
+      await onSaveOnly(payload);
+    } else {
+      await onSaveAndMove(payload);
+    }
   };
 
   return (
     <div className="space-y-3">
-      {errorFields.has('contactName') && (
+      {targetStatus === 'SQL' || errorFields.has('contactName') ? (
         <Field label="Contact name" invalid={touchedRequiredFields.has('contactName')}>
           <Input
             value={form.contactName}
@@ -88,9 +112,9 @@ export function LeadTransitionInlineEditor({
             placeholder="Client contact name"
           />
         </Field>
-      )}
+      ) : null}
 
-      {needsContactMethod && (
+      {(targetStatus === 'SQL' || needsContactMethod) && (
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Phone" invalid={touchedRequiredFields.has('contactMethod')}>
             <Input
@@ -110,7 +134,7 @@ export function LeadTransitionInlineEditor({
         </div>
       )}
 
-      {(errorFields.has('source') || !form.source) && (
+      {showFromField && (
         <Field label="From" invalid={touchedRequiredFields.has('source')}>
           <NativeSelect
             value={form.source}
@@ -124,7 +148,7 @@ export function LeadTransitionInlineEditor({
         </Field>
       )}
 
-      {showWhereField && (
+      {showWhereForMove && (
         <Field label="Where" invalid={touchedRequiredFields.has('sourceDetail')}>
           <NativeSelect
             key={form.source}
@@ -136,7 +160,7 @@ export function LeadTransitionInlineEditor({
         </Field>
       )}
 
-      {(errorFields.has('sourcePartnerId') || form.source === 'PARTNER') && (
+      {showPartnerField && (
         <Field invalid={touchedRequiredFields.has('sourcePartnerId')}>
           <SearchField
             label="Partner"
@@ -156,7 +180,7 @@ export function LeadTransitionInlineEditor({
         </Field>
       )}
 
-      {(errorFields.has('sourceContactId') || form.source === 'CLIENT') && (
+      {showClientField && (
         <Field invalid={touchedRequiredFields.has('sourceContactId')}>
           <SearchField
             label="Referral contact"
@@ -180,7 +204,7 @@ export function LeadTransitionInlineEditor({
         </Field>
       )}
 
-      {form.source === 'MARKETING' && showMarketingAttribution && (
+      {showWhichOneField && (
         <Field invalid={touchedRequiredFields.has('whichOne')}>
           <SearchField
             label="Which one"
@@ -207,7 +231,7 @@ export function LeadTransitionInlineEditor({
         </Field>
       )}
 
-      {errorFields.has('assignedTo') && (
+      {targetStatus === 'SQL' || errorFields.has('assignedTo') ? (
         <Field invalid={touchedRequiredFields.has('assignedTo')}>
           <SearchField
             label="Assigned seller"
@@ -227,11 +251,27 @@ export function LeadTransitionInlineEditor({
             }}
           />
         </Field>
-      )}
+      ) : null}
 
-      <Button type="button" className="w-full" disabled={saving} onClick={submit}>
-        Save and move
-      </Button>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          disabled={saving}
+          onClick={() => runSubmit('save')}
+        >
+          Save
+        </Button>
+        <Button
+          type="button"
+          className="w-full"
+          disabled={saving}
+          onClick={() => runSubmit('move')}
+        >
+          Save and move
+        </Button>
+      </div>
     </div>
   );
 }
@@ -330,15 +370,50 @@ function normalizeFormUpdate(current: FormState, field: keyof FormState, value: 
   return next;
 }
 
-function getMissingFields(form: FormState, errors: ApiFieldError[]): string[] {
+function buildRequiredFieldSet(
+  form: FormState,
+  errors: ApiFieldError[],
+  targetStatus: string,
+): Set<string> {
   const required = new Set(errors.map((error) => error.field));
+  if (!isLeadAttributionLocked(targetStatus)) {
+    return required;
+  }
+
+  required.add('source');
+  if (form.source === 'SALES' || form.source === 'MARKETING') {
+    required.add('sourceDetail');
+  }
+  if (form.source === 'PARTNER') {
+    required.add('sourcePartnerId');
+  }
+  if (form.source === 'CLIENT') {
+    required.add('sourceContactId');
+  }
+  if (requiresMarketingWhichOneSelection(form.source, form.sourceDetail)) {
+    required.add('whichOne');
+  }
+  if (targetStatus === 'SQL') {
+    required.add('contactName');
+    required.add('contactMethod');
+    required.add('assignedTo');
+  }
+  return required;
+}
+
+function getMissingFields(
+  form: FormState,
+  errors: ApiFieldError[],
+  targetStatus: string,
+): string[] {
+  const required = buildRequiredFieldSet(form, errors, targetStatus);
   const missing: string[] = [];
 
   if (required.has('contactName') && !form.contactName.trim()) missing.push('contactName');
   if (required.has('contactMethod') && !form.phone.trim() && !form.email.trim()) {
     missing.push('contactMethod');
   }
-  if ((required.has('source') || required.has('sourceDetail')) && !form.source) {
+  if (required.has('source') && !form.source) {
     missing.push('source');
   }
   if (required.has('sourceDetail') && !form.sourceDetail) missing.push('sourceDetail');

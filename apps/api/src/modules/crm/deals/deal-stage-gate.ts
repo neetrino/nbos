@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { DEAL_STAGE_GATE_ORDER } from '@nbos/shared/constants';
 import { validateAttributionGate } from '../attribution-gate';
 
 interface DealForValidation {
@@ -33,17 +34,6 @@ interface ValidationError {
   message: string;
 }
 
-const STAGE_ORDER = [
-  'START_CONVERSATION',
-  'DISCUSS_NEEDS',
-  'MEETING',
-  'CAN_WE_DO_IT',
-  'SEND_OFFER',
-  'GET_ANSWER',
-  'DEPOSIT_AND_CONTRACT',
-  'WON',
-] as const;
-
 /**
  * Валидация обязательных полей при переходе Deal на определённую стадию.
  * Выбрасывает BadRequestException со списком отсутствующих полей.
@@ -51,7 +41,9 @@ const STAGE_ORDER = [
 export function validateDealStageGate(deal: DealForValidation, targetStatus: string) {
   if (targetStatus === 'FAILED') return;
 
-  const targetIdx = STAGE_ORDER.indexOf(targetStatus as (typeof STAGE_ORDER)[number]);
+  const targetIdx = DEAL_STAGE_GATE_ORDER.indexOf(
+    targetStatus as (typeof DEAL_STAGE_GATE_ORDER)[number],
+  );
   if (targetIdx < 0) return;
 
   const errors: ValidationError[] = [];
@@ -63,7 +55,7 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
   const hasInvoice = deal.orders?.some((order) => (order.invoices?.length ?? 0) > 0) ?? false;
 
   const reachesStage = (stage: string) =>
-    targetIdx >= STAGE_ORDER.indexOf(stage as (typeof STAGE_ORDER)[number]);
+    targetIdx >= DEAL_STAGE_GATE_ORDER.indexOf(stage as (typeof DEAL_STAGE_GATE_ORDER)[number]);
 
   if (reachesStage('DISCUSS_NEEDS')) {
     validateAttributionGate(deal, 'Deal', targetStatus);

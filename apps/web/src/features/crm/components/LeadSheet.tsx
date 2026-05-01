@@ -29,6 +29,7 @@ import {
   MARKETING_CHANNELS,
   getLeadSource,
 } from '../constants/leadPipeline';
+import { isLeadAttributionLocked } from '@nbos/shared/constants';
 import type { Lead } from '@/lib/api/leads';
 import { partnersApi } from '@/lib/api/partners';
 import { contactsApi } from '@/lib/api/clients';
@@ -284,6 +285,8 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
     return [];
   })();
 
+  const attributionLocked = isLeadAttributionLocked(lead.status);
+
   return (
     <div className="space-y-8">
       {/* Contact Information */}
@@ -380,7 +383,7 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
                 marketingActivityId: null,
               });
             }}
-            clearable
+            clearable={!attributionLocked}
           />
 
           {(lead.source === 'SALES' || lead.source === 'MARKETING') && (
@@ -406,7 +409,7 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
                   marketingActivityId: null,
                 });
               }}
-              clearable
+              clearable={!attributionLocked}
             />
           )}
 
@@ -435,11 +438,14 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
                   marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
                 });
               }}
-              onClear={() =>
-                saveMultipleFields({
-                  marketingAccountId: null,
-                  marketingActivityId: null,
-                })
+              onClear={
+                attributionLocked
+                  ? undefined
+                  : () =>
+                      saveMultipleFields({
+                        marketingAccountId: null,
+                        marketingActivityId: null,
+                      })
               }
             />
           )}
@@ -461,7 +467,7 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
               onSave={async (v) => {
                 await saveField('sourcePartnerId', v);
               }}
-              onClear={() => saveField('sourcePartnerId', null)}
+              onClear={attributionLocked ? undefined : () => saveField('sourcePartnerId', null)}
             />
           )}
 
@@ -486,7 +492,7 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
               onSave={async (v) => {
                 await saveField('sourceContactId', v);
               }}
-              onClear={() => saveField('sourceContactId', null)}
+              onClear={attributionLocked ? undefined : () => saveField('sourceContactId', null)}
             />
           )}
         </div>

@@ -93,7 +93,7 @@ export function TransitionBlockerDialog<TItem>({
             {inlineOnly
               ? `Fill the fields below to move ${entityLabel.toLowerCase()} to ${
                   blocker?.targetLabel ?? 'the target stage'
-                }.`
+                }. Use Save to store changes without moving, or Save and move to continue.`
               : `${entityLabel} ${itemLabel} cannot move to ${
                   blocker?.targetLabel ?? 'the target stage'
                 } until the required details are complete.`}

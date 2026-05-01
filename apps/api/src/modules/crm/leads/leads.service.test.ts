@@ -104,11 +104,62 @@ describe('LeadsService', () => {
 
   describe('update', () => {
     it('updates lead when found', async () => {
-      prisma.lead.findUnique.mockResolvedValue({ id: '1' });
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'NEW',
+        source: null,
+        sourceDetail: null,
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
       prisma.lead.update.mockResolvedValue({ id: '1', contactName: 'Updated' });
 
       const result = await service.update('1', { contactName: 'Updated' });
       expect(result.contactName).toBe('Updated');
+    });
+
+    it('rejects clearing attribution on a locked stage', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'MQL',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+
+      await expect(service.update('1', { source: null, sourceDetail: null })).rejects.toSatisfy(
+        (err: unknown) =>
+          err instanceof BadRequestException &&
+          (err.getResponse() as { code?: string }).code === 'ATTRIBUTION_IMMUTABLE',
+      );
+      expect(prisma.lead.update).not.toHaveBeenCalled();
+    });
+
+    it('allows replacing attribution on a locked stage when still valid', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'MQL',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+      prisma.lead.update.mockResolvedValue({
+        id: '1',
+        status: 'MQL',
+        source: 'SALES',
+        sourceDetail: 'COLD_EMAIL',
+      });
+
+      const result = await service.update('1', { sourceDetail: 'COLD_EMAIL' });
+      expect(result.sourceDetail).toBe('COLD_EMAIL');
     });
 
     it('throws NotFoundException when not found', async () => {

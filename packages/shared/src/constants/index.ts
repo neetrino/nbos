@@ -237,6 +237,7 @@ export const SLA_DEADLINES = {
   P3: { response: 24, resolve: 72 },
 } as const;
 
+export * from './crm-attribution';
 export * from './messenger-ws';
 
 export const BONUS_PERCENTAGES = {

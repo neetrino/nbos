@@ -49,6 +49,19 @@ describe('api error helpers', () => {
     expect(isStageGateApiError(error)).toBe(true);
   });
 
+  it('classifies ATTRIBUTION_IMMUTABLE as stage gate errors for inline forms', () => {
+    const error = toApiError(
+      {
+        statusCode: 400,
+        code: 'ATTRIBUTION_IMMUTABLE',
+        message: 'Lead update would leave required attribution incomplete',
+        errors: [{ field: 'source', message: 'From is required' }],
+      },
+      'Request failed',
+    );
+    expect(isStageGateApiError(error)).toBe(true);
+  });
+
   it('keeps generic API errors outside the stage gate flow', () => {
     const error = toApiError({ message: 'Unauthorized' }, 'Request failed');
 

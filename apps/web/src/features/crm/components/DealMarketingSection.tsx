@@ -4,6 +4,7 @@ import { Building2, ExternalLink, Megaphone, User } from 'lucide-react';
 import { InlineField, SearchField } from '@/components/shared';
 import type { Deal } from '@/lib/api/deals';
 import { LEAD_SOURCES, MARKETING_CHANNELS, SALES_CHANNELS } from '../constants/leadPipeline';
+import { isDealAttributionLocked } from '@nbos/shared/constants';
 import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
 
 interface DealMarketingSectionProps {
@@ -26,6 +27,7 @@ export function DealMarketingSection({
   const sourceLabel =
     LEAD_SOURCES.find((source) => source.value === deal.source)?.label ?? deal.source;
   const whereOptions = getWhereOptions(deal.source);
+  const attributionLocked = isDealAttributionLocked(deal.status);
 
   return (
     <section className="rounded-2xl border border-stone-100 bg-gradient-to-br from-violet-50/40 to-white p-5 dark:border-stone-800 dark:from-violet-950/10 dark:to-transparent">
@@ -56,7 +58,7 @@ export function DealMarketingSection({
               marketingActivityId: null,
             })
           }
-          clearable
+          clearable={!attributionLocked}
         />
 
         {(deal.source === 'SALES' || deal.source === 'MARKETING') && (
@@ -82,7 +84,7 @@ export function DealMarketingSection({
                 marketingActivityId: null,
               })
             }
-            clearable
+            clearable={!attributionLocked}
           />
         )}
 
@@ -105,11 +107,14 @@ export function DealMarketingSection({
             icon={<ExternalLink size={12} />}
             onSearch={searchAttributionOptions}
             onSave={(value) => saveMarketingAttribution(value, saveMultipleFields)}
-            onClear={() =>
-              saveMultipleFields({
-                marketingAccountId: null,
-                marketingActivityId: null,
-              })
+            onClear={
+              attributionLocked
+                ? undefined
+                : () =>
+                    saveMultipleFields({
+                      marketingAccountId: null,
+                      marketingActivityId: null,
+                    })
             }
           />
         )}
@@ -129,7 +134,7 @@ export function DealMarketingSection({
             icon={<Building2 size={12} />}
             onSearch={searchPartners}
             onSave={(value) => saveField('sourcePartnerId', value)}
-            onClear={() => saveField('sourcePartnerId', null)}
+            onClear={attributionLocked ? undefined : () => saveField('sourcePartnerId', null)}
           />
         )}
 
@@ -152,7 +157,7 @@ export function DealMarketingSection({
             icon={<User size={12} />}
             onSearch={searchContacts}
             onSave={(value) => saveField('sourceContactId', value)}
-            onClear={() => saveField('sourceContactId', null)}
+            onClear={attributionLocked ? undefined : () => saveField('sourceContactId', null)}
           />
         )}
       </div>

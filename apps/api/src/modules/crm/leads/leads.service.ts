@@ -1,7 +1,11 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { validateAttributionGate } from '../attribution-gate';
+import {
+  assertAttributionUpdateAllowed,
+  type AttributionForValidation,
+  validateAttributionGate,
+} from '../attribution-gate';
 
 const ACTIVE_LEAD_STATUSES = new Set(['NEW', 'DIDNT_GET_THROUGH', 'CONTACT_ESTABLISHED', 'MQL']);
 const CLOSED_LEAD_STATUSES = new Set(['SPAM', 'SQL']);
@@ -164,7 +168,16 @@ export class LeadsService {
   }
 
   async update(id: string, data: UpdateLeadDto) {
-    await this.findById(id);
+    const existing = await this.findById(id);
+    const nextStatus = data.status ?? existing.status;
+    const attributionLocked = this.requiresAttribution(nextStatus);
+    const attributionPatch = buildLeadAttributionPatch(data);
+    assertAttributionUpdateAllowed({
+      context: 'Lead',
+      before: pickLeadAttribution(existing),
+      patch: attributionPatch,
+      locked: attributionLocked,
+    });
 
     return this.prisma.lead.update({
       where: { id },
@@ -276,4 +289,35 @@ export class LeadsService {
       });
     }
   }
+}
+
+function pickLeadAttribution(lead: {
+  source: string | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
+}): AttributionForValidation {
+  return {
+    source: lead.source,
+    sourceDetail: lead.sourceDetail,
+    sourcePartnerId: lead.sourcePartnerId,
+    sourceContactId: lead.sourceContactId,
+    marketingAccountId: lead.marketingAccountId,
+    marketingActivityId: lead.marketingActivityId,
+  };
+}
+
+function buildLeadAttributionPatch(data: UpdateLeadDto): Partial<AttributionForValidation> {
+  const patch: Partial<AttributionForValidation> = {};
+  if (data.source !== undefined) patch.source = data.source;
+  if (data.sourceDetail !== undefined) patch.sourceDetail = data.sourceDetail;
+  if (data.sourcePartnerId !== undefined) patch.sourcePartnerId = data.sourcePartnerId;
+  if (data.sourceContactId !== undefined) patch.sourceContactId = data.sourceContactId;
+  if (data.marketingAccountId !== undefined) patch.marketingAccountId = data.marketingAccountId;
+  if (data.marketingActivityId !== undefined) {
+    patch.marketingActivityId = data.marketingActivityId;
+  }
+  return patch;
 }

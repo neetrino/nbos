@@ -42,11 +42,13 @@ import { StatusBadge } from '@/components/shared';
 import { getLeadStage, getLeadSource } from '@/features/crm/constants/leadPipeline';
 import { Users } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  isLeadAttributionLocked,
+  requiresMarketingWhichOneSelection,
+} from '@nbos/shared/constants';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
-
-const MARKETING_CHANNELS_REQUIRING_LINK = new Set(['LIST_AM', 'GOOGLE_ADS', 'META_ADS']);
 
 interface PendingLeadTransition {
   id: string;
@@ -72,6 +74,7 @@ export default function LeadsPipelinePage() {
   );
   const [pendingTransition, setPendingTransition] = useState<PendingLeadTransition | null>(null);
   const [inlineSaving, setInlineSaving] = useState(false);
+  const [blockerEditorRevision, setBlockerEditorRevision] = useState(0);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -231,6 +234,42 @@ export default function LeadsPipelinePage() {
     setTransitionBlocker((current) => (current === blocker ? null : current));
   };
 
+  const handleSaveBlockedLeadOnly = async (data: Partial<Lead>) => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+
+    if (Object.keys(data).length === 0) {
+      toast.info('No changes to save.');
+      return;
+    }
+
+    setInlineSaving(true);
+    try {
+      const updated = await leadsApi.update(blocker.item.id, data);
+      setLeads((prev) => prev.map((lead) => (lead.id === updated.id ? updated : lead)));
+      setSelectedLead((prev) => (prev?.id === updated.id ? updated : prev));
+      const nextErrors = getLocalLeadTransitionErrors(updated, blocker.targetStatus);
+      setTransitionBlocker((current) =>
+        current && current.item.id === updated.id
+          ? { ...current, item: updated, errors: nextErrors }
+          : current,
+      );
+      setBlockerEditorRevision((n) => n + 1);
+      if (nextErrors.length === 0) {
+        toast.success('Lead saved. You can move the card when ready.');
+      }
+    } catch (err) {
+      if (isStageGateApiError(err)) {
+        setTransitionBlocker((current) => (current ? { ...current, errors: err.errors } : current));
+        toast.error(getApiErrorMessage(err, 'Could not save lead.'));
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : 'Could not save lead.');
+    } finally {
+      setInlineSaving(false);
+    }
+  };
+
   const handleSaveBlockedLeadAndMove = async (data: Partial<Lead>) => {
     const blocker = transitionBlocker;
     if (!blocker) return;
@@ -243,6 +282,13 @@ export default function LeadsPipelinePage() {
       setTransitionBlocker((current) => (current ? { ...current, item: updated } : current));
       await handleStatusChange(updated.id, blocker.targetStatus, updated);
       setTransitionBlocker(null);
+    } catch (err) {
+      if (isStageGateApiError(err)) {
+        setTransitionBlocker((current) => (current ? { ...current, errors: err.errors } : current));
+        toast.error(getApiErrorMessage(err, 'Could not save lead.'));
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : 'Lead update failed.');
     } finally {
       setInlineSaving(false);
     }
@@ -478,11 +524,13 @@ export default function LeadsPipelinePage() {
         inlineEditor={
           transitionBlocker ? (
             <LeadTransitionInlineEditor
-              key={`${transitionBlocker.item.id}-${transitionBlocker.targetStatus}`}
+              key={`${transitionBlocker.item.id}-${transitionBlocker.targetStatus}-${blockerEditorRevision}`}
               lead={transitionBlocker.item}
+              targetStatus={transitionBlocker.targetStatus}
               errors={transitionBlocker.errors}
               saving={inlineSaving}
-              onSubmit={handleSaveBlockedLeadAndMove}
+              onSaveOnly={handleSaveBlockedLeadOnly}
+              onSaveAndMove={handleSaveBlockedLeadAndMove}
             />
           ) : null
         }
@@ -571,8 +619,7 @@ function getLocalAttributionErrors(lead: Lead): ApiFieldError[] {
     return [{ field: 'sourceContactId', message: 'Client/referral contact must be selected' }];
   }
   if (
-    lead.source === 'MARKETING' &&
-    MARKETING_CHANNELS_REQUIRING_LINK.has(lead.sourceDetail ?? '') &&
+    requiresMarketingWhichOneSelection(lead.source, lead.sourceDetail) &&
     !lead.marketingAccountId &&
     !lead.marketingActivityId
   ) {
@@ -583,5 +630,5 @@ function getLocalAttributionErrors(lead: Lead): ApiFieldError[] {
 }
 
 function requiresAttribution(status: string): boolean {
-  return !['NEW', 'SPAM'].includes(status);
+  return isLeadAttributionLocked(status);
 }

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DealsService } from './deals.service';
 import { DealWonHandler } from './deal-won.handler';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { AuditService } from '../../audit/audit.service';
 
 describe('DealsService', () => {
@@ -177,6 +177,62 @@ describe('DealsService', () => {
       });
 
       expect(result.code).toBe('D-2026-0001');
+    });
+  });
+
+  describe('update', () => {
+    it('updates deal on locked stage when attribution unchanged', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'DISCUSS_NEEDS',
+        type: 'EXTENSION',
+        projectId: null,
+        existingProduct: null,
+        ...attribution,
+        name: 'Old',
+      });
+      prisma.deal.update.mockResolvedValue({ id: '1', name: 'New', status: 'DISCUSS_NEEDS' });
+
+      const result = await service.update('1', { name: 'New' });
+      expect(result.name).toBe('New');
+    });
+
+    it('rejects clearing source when deal attribution is locked', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'MEETING',
+        type: 'EXTENSION',
+        projectId: null,
+        existingProduct: null,
+        ...attribution,
+      });
+
+      await expect(service.update('1', { source: null })).rejects.toSatisfy(
+        (err: unknown) =>
+          err instanceof BadRequestException &&
+          (err.getResponse() as { code?: string }).code === 'ATTRIBUTION_IMMUTABLE',
+      );
+      expect(prisma.deal.update).not.toHaveBeenCalled();
+    });
+
+    it('allows clearing source on START_CONVERSATION', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'START_CONVERSATION',
+        type: 'EXTENSION',
+        projectId: null,
+        existingProduct: null,
+        ...attribution,
+      });
+      prisma.deal.update.mockResolvedValue({
+        id: '1',
+        status: 'START_CONVERSATION',
+        source: null,
+        sourceDetail: null,
+      });
+
+      const result = await service.update('1', { source: null, sourceDetail: null });
+      expect(result.source).toBeNull();
     });
   });
 

@@ -11,6 +11,8 @@ import {
 } from './deal.includes';
 import type { CreateDealDto, DealQueryParams, UpdateDealDto } from './deal.types';
 import { DealWonHandler } from './deal-won.handler';
+import { isDealAttributionLocked } from '@nbos/shared/constants';
+import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
 import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
 
@@ -133,7 +135,16 @@ export class DealsService {
   }
 
   async update(id: string, data: UpdateDealDto) {
-    await this.findById(id);
+    const existing = await this.findById(id);
+    const nextStatus = data.status ?? existing.status;
+    const attributionLocked = isDealAttributionLocked(nextStatus);
+    const attributionPatch = buildDealAttributionPatch(data);
+    assertAttributionUpdateAllowed({
+      context: 'Deal',
+      before: pickDealAttribution(existing),
+      patch: attributionPatch,
+      locked: attributionLocked,
+    });
 
     const deal = await this.prisma.deal.update({
       where: { id },
@@ -294,4 +305,35 @@ export class DealsService {
   ) {
     return attachDealHandoffReferences(this.prisma, deal);
   }
+}
+
+function pickDealAttribution(deal: {
+  source: string | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
+}): AttributionForValidation {
+  return {
+    source: deal.source,
+    sourceDetail: deal.sourceDetail,
+    sourcePartnerId: deal.sourcePartnerId,
+    sourceContactId: deal.sourceContactId,
+    marketingAccountId: deal.marketingAccountId,
+    marketingActivityId: deal.marketingActivityId,
+  };
+}
+
+function buildDealAttributionPatch(data: UpdateDealDto): Partial<AttributionForValidation> {
+  const patch: Partial<AttributionForValidation> = {};
+  if (data.source !== undefined) patch.source = data.source ?? null;
+  if (data.sourceDetail !== undefined) patch.sourceDetail = data.sourceDetail;
+  if (data.sourcePartnerId !== undefined) patch.sourcePartnerId = data.sourcePartnerId;
+  if (data.sourceContactId !== undefined) patch.sourceContactId = data.sourceContactId;
+  if (data.marketingAccountId !== undefined) patch.marketingAccountId = data.marketingAccountId;
+  if (data.marketingActivityId !== undefined) {
+    patch.marketingActivityId = data.marketingActivityId;
+  }
+  return patch;
 }
