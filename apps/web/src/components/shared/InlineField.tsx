@@ -90,10 +90,10 @@ export function InlineField({
   const handleClear = async () => {
     if (!onSave) return;
     setSaving(true);
+    setEditing(false);
+    setEditValue('');
     try {
       await onSave(null);
-      setEditing(false);
-      setEditValue('');
     } finally {
       setSaving(false);
     }
@@ -159,12 +159,16 @@ export function InlineField({
               {clearable && (
                 <button
                   type="button"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
                   onClick={handleClear}
                   disabled={saving}
-                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md p-1.5 transition-colors"
+                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-8 items-center justify-center rounded-md transition-colors"
                   aria-label={`Clear ${label}`}
                 >
-                  <X size={14} />
+                  <X size={16} />
                 </button>
               )}
             </>
@@ -203,15 +207,15 @@ export function InlineField({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="rounded-md p-1.5 text-emerald-600 transition-colors hover:bg-emerald-500/10"
+                className="flex size-8 items-center justify-center rounded-md text-emerald-600 transition-colors hover:bg-emerald-500/10"
               >
-                <Check size={14} />
+                <Check size={16} />
               </button>
               <button
                 onClick={handleCancel}
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md p-1.5 transition-colors"
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-8 items-center justify-center rounded-md transition-colors"
               >
-                <X size={14} />
+                <X size={16} />
               </button>
             </div>
           )}
@@ -242,20 +246,24 @@ export function InlineField({
                 {clearable && displayStr && (
                   <button
                     type="button"
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }}
                     onClick={(event) => {
                       event.stopPropagation();
                       handleClear();
                     }}
                     disabled={saving}
-                    className="text-muted-foreground/0 hover:text-destructive group-hover:text-muted-foreground/60 transition-colors"
+                    className="text-muted-foreground/0 hover:bg-destructive/10 hover:text-destructive group-hover:text-muted-foreground/60 flex size-7 items-center justify-center rounded-md transition-colors"
                     aria-label={`Clear ${label}`}
                   >
-                    <X size={12} />
+                    <X size={16} />
                   </button>
                 )}
                 <Pencil
-                  size={12}
-                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
+                  size={16}
+                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 rounded-md transition-all"
                 />
               </div>
             )}

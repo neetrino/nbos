@@ -92,6 +92,18 @@ export default function LeadsPipelinePage() {
     fetchLeads();
   }, [fetchLeads]);
 
+  const handleLeadCreated = async (lead: Lead, options?: { openFull?: boolean }) => {
+    setLeads((prev) => [lead, ...prev.filter((item) => item.id !== lead.id)]);
+    setError(null);
+
+    if (options?.openFull) {
+      setSelectedLead(lead);
+      setSheetOpen(true);
+    }
+
+    await fetchLeads();
+  };
+
   const handleStatusChange = async (id: string, status: string) => {
     const previousLeads = leads;
     const previousSelected = selectedLead;
@@ -220,14 +232,15 @@ export default function LeadsPipelinePage() {
   const handleUpdate = async (id: string, data: Partial<Lead>) => {
     const previousLeads = leads;
     const previousSelected = selectedLead;
+    const optimisticData = normalizeLeadPatch(data);
 
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, ...data } : l)));
-    setSelectedLead((prev) => (prev?.id === id ? { ...prev, ...data } : prev));
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, ...optimisticData } : l)));
+    setSelectedLead((prev) => (prev?.id === id ? { ...prev, ...optimisticData } : prev));
 
     try {
       const updated = await leadsApi.update(id, data);
-      setLeads((prev) => prev.map((l) => (l.id === id ? { ...updated, ...data } : l)));
-      setSelectedLead((prev) => (prev?.id === id ? { ...updated, ...data } : prev));
+      setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
+      setSelectedLead((prev) => (prev?.id === id ? updated : prev));
     } catch {
       setLeads(previousLeads);
       setSelectedLead(previousSelected);
@@ -416,7 +429,11 @@ export default function LeadsPipelinePage() {
         </div>
       )}
 
-      <CreateLeadDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchLeads} />
+      <CreateLeadDialog
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        onCreated={handleLeadCreated}
+      />
 
       <LeadSheet
         lead={selectedLead}
@@ -469,4 +486,32 @@ export default function LeadsPipelinePage() {
       />
     </div>
   );
+}
+
+function normalizeLeadPatch(data: Partial<Lead>): Partial<Lead> {
+  const normalized: Partial<Lead> = { ...data };
+
+  if (data.source === null) {
+    normalized.sourceDetail = null;
+    normalized.sourcePartnerId = null;
+    normalized.sourcePartner = null;
+    normalized.sourceContactId = null;
+    normalized.sourceContact = null;
+    normalized.marketingAccountId = null;
+    normalized.marketingAccount = null;
+    normalized.marketingActivityId = null;
+    normalized.marketingActivity = null;
+  }
+  if (data.sourceDetail === null) {
+    normalized.marketingAccountId = null;
+    normalized.marketingAccount = null;
+    normalized.marketingActivityId = null;
+    normalized.marketingActivity = null;
+  }
+  if (data.sourcePartnerId === null) normalized.sourcePartner = null;
+  if (data.sourceContactId === null) normalized.sourceContact = null;
+  if (data.marketingAccountId === null) normalized.marketingAccount = null;
+  if (data.marketingActivityId === null) normalized.marketingActivity = null;
+
+  return normalized;
 }

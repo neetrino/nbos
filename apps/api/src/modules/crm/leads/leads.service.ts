@@ -134,26 +134,31 @@ export class LeadsService {
 
   async create(data: CreateLeadDto) {
     const code = await this.generateCode();
+    const createData: Prisma.LeadUncheckedCreateInput = {
+      code,
+      name: data.name,
+      contactName: data.contactName ?? '',
+      phone: data.phone,
+      email: data.email,
+      source: data.source ? (data.source as Prisma.LeadUncheckedCreateInput['source']) : undefined,
+      sourceDetail: data.sourceDetail,
+      sourcePartnerId: data.sourcePartnerId,
+      sourceContactId: data.sourceContactId,
+      marketingAccountId: data.marketingAccountId,
+      marketingActivityId: data.marketingActivityId,
+      assignedTo: data.assignedTo,
+      notes: data.notes,
+    };
+
     return this.prisma.lead.create({
-      data: {
-        code,
-        name: data.name,
-        contactName: data.contactName ?? '',
-        phone: data.phone,
-        email: data.email,
-        source: data.source ? (data.source as Prisma.LeadCreateInput['source']) : undefined,
-        sourceDetail: data.sourceDetail,
-        sourcePartnerId: data.sourcePartnerId,
-        sourceContactId: data.sourceContactId,
-        marketingAccountId: data.marketingAccountId,
-        marketingActivityId: data.marketingActivityId,
-        assignedTo: data.assignedTo,
-        notes: data.notes,
-      },
+      data: createData,
       include: {
         assignee: { select: { id: true, firstName: true, lastName: true } },
+        sourcePartner: { select: { id: true, name: true } },
+        sourceContact: { select: { id: true, firstName: true, lastName: true } },
         marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
         marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
+        deal: { select: { id: true, code: true, status: true } },
       },
     });
   }

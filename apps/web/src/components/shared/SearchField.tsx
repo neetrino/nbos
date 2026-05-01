@@ -104,12 +104,12 @@ export function SearchField({
   const handleClear = async () => {
     if (!onClear) return;
     setSaving(true);
+    setOpen(false);
+    setQuery('');
     try {
       await onClear();
     } finally {
       setSaving(false);
-      setOpen(false);
-      setQuery('');
     }
   };
 
@@ -157,14 +157,19 @@ export function SearchField({
             />
             {query && (
               <button
+                type="button"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
                 onClick={() => {
                   setQuery('');
                   doSearch('');
                   inputRef.current?.focus();
                 }}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
               >
-                <X size={13} />
+                <X size={16} />
               </button>
             )}
           </div>
@@ -238,19 +243,23 @@ export function SearchField({
                 {onClear && hasValue && (
                   <button
                     type="button"
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }}
                     onClick={(event) => {
                       event.stopPropagation();
                       handleClear();
                     }}
                     disabled={saving}
-                    className="text-muted-foreground/0 hover:text-destructive group-hover:text-muted-foreground/60 transition-colors"
+                    className="text-muted-foreground/0 hover:bg-destructive/10 hover:text-destructive group-hover:text-muted-foreground/60 flex size-7 items-center justify-center rounded-md transition-colors"
                     aria-label={`Clear ${label}`}
                   >
-                    <X size={12} />
+                    <X size={16} />
                   </button>
                 )}
                 <Pencil
-                  size={12}
+                  size={16}
                   className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
                 />
               </div>

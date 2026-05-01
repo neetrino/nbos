@@ -209,14 +209,15 @@ export default function DealsPipelinePage() {
   const handleUpdate = async (id: string, data: Partial<Deal>) => {
     const previousDeals = deals;
     const previousSelected = selectedDeal;
+    const optimisticData = normalizeDealPatch(data);
 
-    setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...data } : d)));
-    setSelectedDeal((prev) => (prev?.id === id ? { ...prev, ...data } : prev));
+    setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, ...optimisticData } : d)));
+    setSelectedDeal((prev) => (prev?.id === id ? { ...prev, ...optimisticData } : prev));
 
     try {
       const updated = await dealsApi.update(id, data);
-      setDeals((prev) => prev.map((d) => (d.id === id ? { ...updated, ...data } : d)));
-      setSelectedDeal((prev) => (prev?.id === id ? { ...updated, ...data } : prev));
+      setDeals((prev) => prev.map((d) => (d.id === id ? updated : d)));
+      setSelectedDeal((prev) => (prev?.id === id ? updated : prev));
     } catch {
       setDeals(previousDeals);
       setSelectedDeal(previousSelected);
@@ -470,4 +471,35 @@ export default function DealsPipelinePage() {
       />
     </div>
   );
+}
+
+function normalizeDealPatch(data: Partial<Deal>): Partial<Deal> {
+  const normalized: Partial<Deal> = { ...data };
+
+  if (data.source === null) {
+    normalized.sourceDetail = null;
+    normalized.sourcePartnerId = null;
+    normalized.sourcePartner = null;
+    normalized.sourceContactId = null;
+    normalized.sourceContact = null;
+    normalized.marketingAccountId = null;
+    normalized.marketingAccount = null;
+    normalized.marketingActivityId = null;
+    normalized.marketingActivity = null;
+  }
+  if (data.sourceDetail === null) {
+    normalized.marketingAccountId = null;
+    normalized.marketingAccount = null;
+    normalized.marketingActivityId = null;
+    normalized.marketingActivity = null;
+  }
+  if (data.sourcePartnerId === null) normalized.sourcePartner = null;
+  if (data.sourceContactId === null) normalized.sourceContact = null;
+  if (data.marketingAccountId === null) normalized.marketingAccount = null;
+  if (data.marketingActivityId === null) normalized.marketingActivity = null;
+  if (data.projectId === null) normalized.handoff = undefined;
+  if (data.companyId === null) normalized.company = null;
+  if (data.existingProductId === null) normalized.existingProduct = null;
+
+  return normalized;
 }

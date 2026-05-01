@@ -11,12 +11,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { leadsApi } from '@/lib/api/leads';
+import { leadsApi, type Lead } from '@/lib/api/leads';
 
 interface CreateLeadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated: (lead: Lead, options?: { openFull?: boolean }) => Promise<void> | void;
 }
 
 export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDialogProps) {
@@ -33,20 +33,24 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const createLead = async (openFull: boolean) => {
     if (!canSubmit) return;
     setLoading(true);
     try {
-      await leadsApi.create({
+      const lead = await leadsApi.create({
         name: form.name.trim(),
       });
-      onCreated();
+      await onCreated(lead, { openFull });
       onOpenChange(false);
       reset();
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await createLead(false);
   };
 
   return (
@@ -70,6 +74,14 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={loading || !canSubmit}
+              onClick={() => createLead(true)}
+            >
+              Full
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
               {loading ? 'Creating...' : 'Create Lead'}
