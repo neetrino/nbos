@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { RequirePermission } from '../../common/decorators';
 import { WorkSpacesService } from './work-spaces.service';
 
 @ApiTags('Work Spaces')
@@ -9,6 +10,7 @@ export class WorkSpacesController {
   constructor(private readonly workSpacesService: WorkSpacesService) {}
 
   @Get()
+  @RequirePermission('WORK_SPACES', 'VIEW')
   @ApiOperation({ summary: 'List Work Spaces' })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'productId', required: false })
@@ -24,12 +26,14 @@ export class WorkSpacesController {
   }
 
   @Get(':id')
+  @RequirePermission('WORK_SPACES', 'VIEW')
   @ApiOperation({ summary: 'Get Work Space by ID' })
   async findOne(@Param('id') id: string) {
     return this.workSpacesService.findById(id);
   }
 
   @Post()
+  @RequirePermission('WORK_SPACES', 'ADD')
   @ApiOperation({ summary: 'Create Work Space' })
   async create(
     @Body()
@@ -47,18 +51,21 @@ export class WorkSpacesController {
   }
 
   @Post('product/:productId/ensure')
+  @RequirePermission('WORK_SPACES', 'ADD')
   @ApiOperation({ summary: 'Ensure connected Product Work Space exists' })
   async ensureProductWorkSpace(@Param('productId') productId: string) {
     return this.workSpacesService.ensureForProduct(productId);
   }
 
   @Post('extension/:extensionId/ensure')
-  @ApiOperation({ summary: 'Ensure connected Extension Work Space exists' })
+  @RequirePermission('WORK_SPACES', 'ADD')
+  @ApiOperation({ summary: 'Ensure parent Product Work Space exists for Extension' })
   async ensureExtensionWorkSpace(@Param('extensionId') extensionId: string) {
     return this.workSpacesService.ensureForExtension(extensionId);
   }
 
   @Patch(':id')
+  @RequirePermission('WORK_SPACES', 'EDIT')
   @ApiOperation({ summary: 'Update Work Space metadata' })
   async update(
     @Param('id') id: string,

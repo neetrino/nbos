@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Plus,
   RefreshCcw,
@@ -16,7 +17,7 @@ import {
   TableProperties,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   PageHeader,
   FilterBar,
@@ -581,6 +582,10 @@ export default function TasksPage() {
           <Button variant="outline" size="icon" onClick={fetchTasks} aria-label="Refresh tasks">
             <RefreshCcw size={16} />
           </Button>
+          <Link href="/work-spaces" className={buttonVariants({ variant: 'outline' })}>
+            <FolderKanban size={16} />
+            Work Spaces
+          </Link>
           <Button
             type="button"
             variant="outline"

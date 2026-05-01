@@ -1007,16 +1007,16 @@ Contact (человек)
 
 `Work Space` — planning-сущность модуля `Tasks`. Она не заменяет задачу, а организует задачи в backlog, sprint, kanban и другие рабочие виды.
 
-| Поле                | Тип      | Описание                                                          |
-| ------------------- | -------- | ----------------------------------------------------------------- |
-| id                  | UUID     | Уникальный идентификатор                                          |
-| title               | String   | Название рабочего пространства                                    |
-| type                | Enum     | PRODUCT_DELIVERY, EXTENSION_DELIVERY, STANDALONE_OPERATIONAL, ... |
-| mode                | Enum     | KANBAN_ONLY, SCRUM_ENABLED                                        |
-| context_entity_type | Enum     | С какой сущностью связан workspace                                |
-| context_entity_id   | UUID     | Идентификатор связанной сущности                                  |
-| settings_json       | JSON     | Настройки интерфейса, views, правил и ограничений                 |
-| created_at          | DateTime | Дата создания                                                     |
+| Поле                | Тип      | Описание                                          |
+| ------------------- | -------- | ------------------------------------------------- |
+| id                  | UUID     | Уникальный идентификатор                          |
+| title               | String   | Название рабочего пространства                    |
+| type                | Enum     | PRODUCT_DELIVERY, STANDALONE_OPERATIONAL, ...     |
+| mode                | Enum     | KANBAN_ONLY, SCRUM_ENABLED                        |
+| context_entity_type | Enum     | С какой сущностью связан workspace                |
+| context_entity_id   | UUID     | Идентификатор связанной сущности                  |
+| settings_json       | JSON     | Настройки интерфейса, views, правил и ограничений |
+| created_at          | DateTime | Дата создания                                     |
 
 ### 2.21. Sprint
 

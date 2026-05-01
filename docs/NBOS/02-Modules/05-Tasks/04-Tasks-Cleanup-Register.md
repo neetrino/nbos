@@ -257,13 +257,13 @@
 Runtime now has the first Work Space foundation:
 
 - `WorkSpace` schema entity exists;
-- Product and Extension can have one connected Work Space;
+- Product has one connected Work Space; Extension tasks use the parent Product Work Space;
 - task records can link to a Work Space through `workspace_id`;
 - task planning state is separate from workflow status through `planning_status`;
 - API exposes Work Space list/detail/create/update and ensure endpoints for Product/Extension;
 - web API types can call those endpoints;
 - Product detail now exposes Work Space context in the former Tasks tab;
-- Delivery Board context links can ensure connected Product/Extension Work Spaces before opening the Product Work Space view.
+- Delivery Board context links can ensure the connected Product Work Space before opening it from Product or Extension cards.
 
 Remaining depth:
 

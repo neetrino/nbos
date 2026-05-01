@@ -25,6 +25,33 @@ describe('WorkSpacesService', () => {
     );
   });
 
+  it('excludes legacy Extension Work Spaces from default listing', async () => {
+    await service.findAll({});
+
+    expect(prisma.workSpace.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          type: { not: 'EXTENSION_DELIVERY' },
+        }),
+      }),
+    );
+  });
+
+  it('maps extension list queries to the parent Product Work Space', async () => {
+    prisma.extension.findUnique.mockResolvedValue({ productId: 'prod-1' });
+
+    await service.findAll({ extensionId: 'ext-1' });
+
+    expect(prisma.workSpace.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          productId: 'prod-1',
+          type: { not: 'EXTENSION_DELIVERY' },
+        }),
+      }),
+    );
+  });
+
   it('creates standalone operational Work Space', async () => {
     prisma.workSpace.create.mockResolvedValue({ id: 'ws-1', type: 'STANDALONE_OPERATIONAL' });
 
@@ -39,6 +66,53 @@ describe('WorkSpacesService', () => {
         data: expect.objectContaining({ name: 'Internal Ops' }),
       }),
     );
+  });
+
+  it('trims standalone Work Space name before create', async () => {
+    prisma.workSpace.create.mockResolvedValue({ id: 'ws-1', name: 'Finance Ops' });
+
+    await service.create({
+      name: '  Finance Ops  ',
+      type: 'STANDALONE_OPERATIONAL',
+    });
+
+    expect(prisma.workSpace.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'Finance Ops' }),
+      }),
+    );
+  });
+
+  it('rejects blank standalone Work Space name', async () => {
+    await expect(service.create({ name: '  ', type: 'STANDALONE_OPERATIONAL' })).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('rejects standalone Work Space with Product context', async () => {
+    await expect(
+      service.create({
+        name: 'Invalid standalone',
+        type: 'STANDALONE_OPERATIONAL',
+        productId: 'prod-1',
+      }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('rejects invalid Work Space type', async () => {
+    await expect(service.create({ name: 'Unknown', type: 'FINANCE' })).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('rejects manual Extension Work Space creation', async () => {
+    await expect(
+      service.create({
+        name: 'Extension board',
+        type: 'EXTENSION_DELIVERY',
+        extensionId: 'ext-1',
+      }),
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('rejects Product Work Space without productId', async () => {
@@ -70,28 +144,78 @@ describe('WorkSpacesService', () => {
     );
   });
 
+  it('returns existing connected Product Work Space', async () => {
+    prisma.workSpace.findUnique.mockResolvedValue({ id: 'ws-existing', productId: 'prod-1' });
+
+    const result = await service.ensureForProduct('prod-1');
+
+    expect(result.id).toBe('ws-existing');
+    expect(prisma.product.findUnique).not.toHaveBeenCalled();
+    expect(prisma.workSpace.create).not.toHaveBeenCalled();
+  });
+
   it('throws when ensuring missing Product Work Space', async () => {
     await expect(service.ensureForProduct('missing')).rejects.toThrow(NotFoundException);
   });
 
-  it('ensures connected Extension Work Space', async () => {
+  it('ensures an Extension uses its Product Work Space', async () => {
     prisma.extension.findUnique.mockResolvedValue({
       id: 'ext-1',
-      projectId: 'proj-1',
-      name: 'Checkout update',
+      productId: 'prod-1',
     });
-    prisma.workSpace.create.mockResolvedValue({ id: 'ws-1', extensionId: 'ext-1' });
+    prisma.product.findUnique.mockResolvedValue({
+      id: 'prod-1',
+      projectId: 'proj-1',
+      name: 'Website',
+    });
+    prisma.workSpace.create.mockResolvedValue({ id: 'ws-1', productId: 'prod-1' });
 
     const result = await service.ensureForExtension('ext-1');
 
-    expect(result.extensionId).toBe('ext-1');
+    expect(result.productId).toBe('prod-1');
     expect(prisma.workSpace.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           projectId: 'proj-1',
-          extensionId: 'ext-1',
-          type: 'EXTENSION_DELIVERY',
+          productId: 'prod-1',
+          type: 'PRODUCT_DELIVERY',
+          scrumEnabled: true,
         }),
+      }),
+    );
+  });
+
+  it('returns existing Product Work Space when ensuring an Extension', async () => {
+    prisma.extension.findUnique.mockResolvedValue({
+      id: 'ext-1',
+      productId: 'prod-1',
+    });
+    prisma.workSpace.findUnique.mockResolvedValue({ id: 'ws-existing', productId: 'prod-1' });
+
+    const result = await service.ensureForExtension('ext-1');
+
+    expect(result.id).toBe('ws-existing');
+    expect(prisma.workSpace.create).not.toHaveBeenCalled();
+  });
+
+  it('updates metadata only', async () => {
+    prisma.workSpace.findUnique.mockResolvedValue({ id: 'ws-1', name: 'Old' });
+    prisma.workSpace.update.mockResolvedValue({ id: 'ws-1', name: 'New' });
+
+    const result = await service.update('ws-1', {
+      name: ' New ',
+      scrumEnabled: true,
+      description: 'Updated',
+    });
+
+    expect(result.name).toBe('New');
+    expect(prisma.workSpace.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          name: 'New',
+          scrumEnabled: true,
+          description: 'Updated',
+        },
       }),
     );
   });

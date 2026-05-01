@@ -30,6 +30,8 @@ interface QuickCreateTaskDialogProps {
   defaultLink?: { entityType: string; entityId: string };
   /** Prefill due date when opening from a column (e.g. Deadline view) */
   defaultDueDate?: string | null;
+  defaultWorkspaceId?: string;
+  defaultPlanningStatus?: string;
   onCreated?: (task: Task) => void;
   onOpenFull?: () => void;
 }
@@ -40,6 +42,8 @@ export function QuickCreateTaskDialog({
   creatorId,
   defaultLink,
   defaultDueDate,
+  defaultWorkspaceId,
+  defaultPlanningStatus,
   onCreated,
   onOpenFull,
 }: QuickCreateTaskDialogProps) {
@@ -73,6 +77,8 @@ export function QuickCreateTaskDialog({
         assigneeId: assigneeId || undefined,
         priority,
         dueDate: dueDate || undefined,
+        workspaceId: defaultWorkspaceId,
+        planningStatus: defaultPlanningStatus,
         links: defaultLink ? [defaultLink] : undefined,
       });
       onCreated?.(task);

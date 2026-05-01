@@ -27,11 +27,11 @@
 Примеры:
 
 - `Product Work Space`
-- `Extension Work Space`
 - в будущем `Finance Work Space`
 - в будущем `Marketing Work Space`
 
 Для `Product` connected workspace обязателен и создаётся как часть продуктового рабочего контура.
+`Extension` не имеет отдельного Work Space: доработка является дополнительным элементом продукта, поэтому её задачи попадают в `Product Work Space` родительского продукта.
 
 ### 2.2. Standalone Work Space
 
@@ -57,7 +57,6 @@
 Базовые workspace types:
 
 - `PRODUCT_DELIVERY`
-- `EXTENSION_DELIVERY`
 - `STANDALONE_OPERATIONAL`
 
 В будущем:
@@ -207,7 +206,7 @@ PM-oriented вид по срокам, зависимостям и critical path.
 | Контекст             | Что открывается                                     |
 | -------------------- | --------------------------------------------------- |
 | `Product`            | connected `Work Space` продукта                     |
-| `Extension`          | connected `Work Space` доработки                    |
+| `Extension`          | `Product Work Space` родительского продукта         |
 | `Project`            | агрегированный просмотр задач и work spaces проекта |
 | top-level `Tasks`    | глобальные списки и personal views                  |
 | standalone workspace | самостоятельное operational пространство            |

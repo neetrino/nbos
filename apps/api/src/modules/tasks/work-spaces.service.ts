@@ -40,8 +40,16 @@ export class WorkSpacesService {
     const where: Prisma.WorkSpaceWhereInput = {};
     if (params.projectId) where.projectId = params.projectId;
     if (params.productId) where.productId = params.productId;
-    if (params.extensionId) where.extensionId = params.extensionId;
+    if (params.extensionId) {
+      const extension = await this.prisma.extension.findUnique({
+        where: { id: params.extensionId },
+        select: { productId: true },
+      });
+      if (!extension) throw new NotFoundException(`Extension ${params.extensionId} not found`);
+      where.productId = extension.productId;
+    }
     if (params.type) where.type = parseWorkSpaceType(params.type);
+    if (!params.type) where.type = { not: 'EXTENSION_DELIVERY' };
 
     return this.prisma.workSpace.findMany({
       where,
@@ -105,27 +113,12 @@ export class WorkSpacesService {
   }
 
   async ensureForExtension(extensionId: string) {
-    const existing = await this.prisma.workSpace.findUnique({
-      where: { extensionId },
-      include: WORK_SPACE_INCLUDE,
-    });
-    if (existing) return existing;
-
     const extension = await this.prisma.extension.findUnique({
       where: { id: extensionId },
-      select: { id: true, projectId: true, name: true },
+      select: { id: true, productId: true },
     });
     if (!extension) throw new NotFoundException(`Extension ${extensionId} not found`);
-
-    return this.prisma.workSpace.create({
-      data: {
-        projectId: extension.projectId,
-        extensionId: extension.id,
-        name: `${extension.name} Work Space`,
-        type: 'EXTENSION_DELIVERY',
-      },
-      include: WORK_SPACE_INCLUDE,
-    });
+    return this.ensureForProduct(extension.productId);
   }
 
   async update(id: string, data: UpdateWorkSpaceDto) {
@@ -143,7 +136,7 @@ export class WorkSpacesService {
 }
 
 function parseWorkSpaceType(type: string): WorkSpaceTypeEnum {
-  if (['PRODUCT_DELIVERY', 'EXTENSION_DELIVERY', 'STANDALONE_OPERATIONAL'].includes(type)) {
+  if (['PRODUCT_DELIVERY', 'STANDALONE_OPERATIONAL'].includes(type)) {
     return type as WorkSpaceTypeEnum;
   }
   throw new BadRequestException(`Invalid Work Space type: ${type}`);
@@ -153,8 +146,11 @@ function validateContext(type: WorkSpaceTypeEnum, data: CreateWorkSpaceDto) {
   if (type === 'PRODUCT_DELIVERY' && !data.productId) {
     throw new BadRequestException('Product Work Space requires productId');
   }
-  if (type === 'EXTENSION_DELIVERY' && !data.extensionId) {
-    throw new BadRequestException('Extension Work Space requires extensionId');
+  if (type === 'PRODUCT_DELIVERY' && data.extensionId) {
+    throw new BadRequestException('Product Work Space cannot be linked to extensionId');
+  }
+  if (type === 'STANDALONE_OPERATIONAL' && (data.productId || data.extensionId)) {
+    throw new BadRequestException('Standalone Work Space cannot be linked to Product or Extension');
   }
 }
 

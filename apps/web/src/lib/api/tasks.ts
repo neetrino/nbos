@@ -213,7 +213,7 @@ export const tasksApi = {
   },
   async createWorkSpace(data: {
     name: string;
-    type: WorkSpace['type'];
+    type: Exclude<WorkSpace['type'], 'EXTENSION_DELIVERY'>;
     projectId?: string;
     productId?: string;
     extensionId?: string;
@@ -228,6 +228,7 @@ export const tasksApi = {
     return resp.data;
   },
   async ensureExtensionWorkSpace(extensionId: string): Promise<WorkSpace> {
+    // Extension work uses the parent Product Work Space; this endpoint returns that space.
     const resp = await api.post<WorkSpace>(
       `/api/tasks/work-spaces/extension/${extensionId}/ensure`,
     );

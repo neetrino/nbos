@@ -79,8 +79,8 @@ function ExtensionContextLinks({
     <>
       <ContextLink
         icon={ListChecks}
-        label={`${item.extension._count.tasks} Work Space`}
-        onClick={() => openExtensionWorkSpace(item.extension.id, productId, onOpenProductTab)}
+        label={`${item.extension._count.tasks} Product Work Space`}
+        onClick={() => openProductWorkSpace(productId, onOpenProductTab)}
       />
       <ContextLink
         icon={Puzzle}
@@ -91,12 +91,11 @@ function ExtensionContextLinks({
   );
 }
 
-function openExtensionWorkSpace(
-  extensionId: string,
+function openProductWorkSpace(
   productId: string,
   onOpenProductTab: (productId: string, tab: ProductBoardTab) => void,
 ) {
-  void tasksApi.ensureExtensionWorkSpace(extensionId).finally(() => {
+  void tasksApi.ensureProductWorkSpace(productId).finally(() => {
     onOpenProductTab(productId, 'tasks');
   });
 }

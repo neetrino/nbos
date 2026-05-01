@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import { Layers3 } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 
@@ -26,6 +28,14 @@ export function ProductWorkSpaceHeader({ workspace, tasks }: ProductWorkSpaceHea
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          {workspace && (
+            <Link
+              href={`/work-spaces/${workspace.id}`}
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              Open full Work Space
+            </Link>
+          )}
           <StatusBadge
             label={workspace?.scrumEnabled ? 'Scrum-enabled' : 'Kanban'}
             variant={workspace?.scrumEnabled ? 'blue' : 'default'}
