@@ -1,14 +1,39 @@
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
-import { PrismaClient, DealTypeEnum, PaymentTypeEnum } from '@nbos/database';
+import { PrismaClient, DealTypeEnum, PaymentTypeEnum, LeadSourceEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { LeadsService } from './leads.service';
 import { validateAttributionGate } from '../attribution-gate';
 
 interface ConvertLeadDto {
-  dealType: string;
+  dealType?: string;
   amount?: number;
   paymentType?: string;
-  sellerId: string;
+  sellerId?: string;
+}
+
+interface LeadForConversion {
+  id: string;
+  contactName: string;
+  status: string;
+  source: string | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
+  phone: string | null;
+  email: string | null;
+  contactId: string | null;
+  assignedTo?: string | null;
+  deal?: { id: string } | null;
+}
+
+const DEFAULT_LEAD_DEAL_TYPE = 'PRODUCT';
+const DEFAULT_LEAD_PAYMENT_TYPE = 'CLASSIC';
+
+interface ConversionFieldError {
+  field: string;
+  message: string;
 }
 
 @Injectable()
@@ -31,6 +56,52 @@ export class LeadConversionService {
     if (lead.deal) {
       throw new BadRequestException('Lead already has an associated deal');
     }
+
+    return this.createDealFromLead(lead, data, false);
+  }
+
+  async qualifyLeadAsSql(leadId: string) {
+    const lead = await this.leadsService.findById(leadId);
+
+    validateAttributionGate(lead, 'Lead', 'SQL');
+
+    if (lead.deal) {
+      if (lead.status !== 'SQL') {
+        await this.prisma.lead.update({
+          where: { id: leadId },
+          data: { status: 'SQL' },
+        });
+      }
+      return lead.deal;
+    }
+
+    return this.createDealFromLead(
+      lead,
+      {
+        dealType: DEFAULT_LEAD_DEAL_TYPE,
+        paymentType: DEFAULT_LEAD_PAYMENT_TYPE,
+        sellerId: lead.assignedTo ?? undefined,
+      },
+      true,
+    );
+  }
+
+  private async createDealFromLead(
+    lead: LeadForConversion,
+    data: ConvertLeadDto,
+    markLeadAsSql: boolean,
+  ) {
+    const sellerId = data.sellerId ?? lead.assignedTo ?? undefined;
+    const errors = getLeadConversionErrors(lead, sellerId);
+    if (errors.length > 0) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'STAGE_GATE_VALIDATION',
+        message: 'Lead cannot move to SQL: missing conversion fields',
+        errors,
+      });
+    }
+    const confirmedSellerId = sellerId as string;
 
     const year = new Date().getFullYear();
     const lastDeal = await this.prisma.deal.findFirst({
@@ -59,11 +130,11 @@ export class LeadConversionService {
         code: dealCode,
         leadId: lead.id,
         contactId,
-        type: data.dealType as DealTypeEnum,
+        type: (data.dealType ?? DEFAULT_LEAD_DEAL_TYPE) as DealTypeEnum,
         amount: data.amount,
         paymentType: data.paymentType ? (data.paymentType as PaymentTypeEnum) : undefined,
-        sellerId: data.sellerId,
-        source: lead.source,
+        sellerId: confirmedSellerId,
+        source: lead.source ? (lead.source as LeadSourceEnum) : undefined,
         sourceDetail: lead.sourceDetail,
         sourcePartnerId: lead.sourcePartnerId,
         sourceContactId: lead.sourceContactId,
@@ -77,10 +148,32 @@ export class LeadConversionService {
     });
 
     await this.prisma.lead.update({
-      where: { id: leadId },
-      data: { contactId },
+      where: { id: lead.id },
+      data: {
+        contactId,
+        ...(markLeadAsSql && { status: 'SQL' }),
+      },
     });
 
     return deal;
   }
+}
+
+function getLeadConversionErrors(
+  lead: LeadForConversion,
+  sellerId: string | undefined,
+): ConversionFieldError[] {
+  const errors: ConversionFieldError[] = [];
+
+  if (!lead.contactName.trim()) {
+    errors.push({ field: 'contactName', message: 'Contact name is required' });
+  }
+  if (!lead.phone && !lead.email) {
+    errors.push({ field: 'contactMethod', message: 'Phone or email is required' });
+  }
+  if (!sellerId) {
+    errors.push({ field: 'assignedTo', message: 'Assigned Seller is required to create a Deal' });
+  }
+
+  return errors;
 }

@@ -21,6 +21,28 @@ describe('api error helpers', () => {
     expect(isStageGateApiError(error)).toBe(true);
   });
 
+  it('unwraps nested Nest bad request payloads', () => {
+    const error = toApiError(
+      {
+        statusCode: 400,
+        message: {
+          statusCode: 400,
+          code: 'ATTRIBUTION_GATE_VALIDATION',
+          message: 'Lead cannot move to SQL: missing attribution fields',
+          errors: [{ field: 'sourcePartnerId', message: 'Partner must be selected' }],
+        },
+        error: 'Bad Request',
+      },
+      'Request failed',
+    );
+
+    expect(error.message).toBe('Lead cannot move to SQL: missing attribution fields');
+    expect(error.errors).toEqual([
+      { field: 'sourcePartnerId', message: 'Partner must be selected' },
+    ]);
+    expect(isStageGateApiError(error)).toBe(true);
+  });
+
   it('keeps generic API errors outside the stage gate flow', () => {
     const error = toApiError({ message: 'Unauthorized' }, 'Request failed');
 

@@ -83,7 +83,11 @@ export default function LeadsPipelinePage() {
     }
 
     try {
-      await leadsApi.updateStatus(id, status);
+      const updatedLead = await leadsApi.updateStatus(id, status);
+      setLeads((prev) => prev.map((lead) => (lead.id === id ? updatedLead : lead)));
+      if (selectedLead?.id === id) {
+        setSelectedLead(updatedLead);
+      }
     } catch (err) {
       setLeads(previousLeads);
       if (selectedLead?.id === id) {

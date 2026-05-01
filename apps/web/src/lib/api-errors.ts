@@ -55,23 +55,21 @@ export function getApiErrorMessage(caught: unknown, fallback: string): string {
 
 function parsePayload(payload: unknown): ApiErrorPayload {
   if (!isRecord(payload)) return {};
+  const structuredMessage = isRecord(payload.message) ? parsePayload(payload.message) : {};
+  const directMessage = typeof payload.message === 'string' ? payload.message : undefined;
+
   return {
-    statusCode: typeof payload.statusCode === 'number' ? payload.statusCode : undefined,
-    code: typeof payload.code === 'string' ? payload.code : undefined,
-    message: parseMessage(payload.message),
-    errors: parseFieldErrors(payload.errors),
+    statusCode:
+      typeof payload.statusCode === 'number' ? payload.statusCode : structuredMessage.statusCode,
+    code: typeof payload.code === 'string' ? payload.code : structuredMessage.code,
+    message: directMessage ?? structuredMessage.message,
+    errors: parseFieldErrors(payload.errors) ?? structuredMessage.errors,
     details: payload,
   };
 }
 
-function parseMessage(message: unknown): ApiErrorPayload['message'] {
-  if (typeof message === 'string') return message;
-  if (isRecord(message)) return message;
-  return undefined;
-}
-
-function parseFieldErrors(errors: unknown): ApiFieldError[] {
-  if (!Array.isArray(errors)) return [];
+function parseFieldErrors(errors: unknown): ApiFieldError[] | undefined {
+  if (!Array.isArray(errors)) return undefined;
   return errors.filter(isFieldError);
 }
 

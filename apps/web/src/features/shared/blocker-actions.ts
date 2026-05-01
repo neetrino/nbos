@@ -14,9 +14,18 @@ interface ResolveBlockerActionsArgs {
 const CRM_ACTION_RULES = [
   {
     key: 'attribution',
-    label: 'Open attribution fields',
+    label: 'Open required Lead fields',
     target: 'details',
-    fields: ['source', 'sourceDetail', 'sourcePartnerId', 'sourceContactId', 'whichOne'],
+    fields: [
+      'contactName',
+      'contactMethod',
+      'source',
+      'sourceDetail',
+      'sourcePartnerId',
+      'sourceContactId',
+      'whichOne',
+      'assignedTo',
+    ],
   },
   {
     key: 'offer',

@@ -117,6 +117,11 @@ export class LeadsController {
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update lead status' })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
+    if (body.status === 'SQL') {
+      await this.leadConversionService.qualifyLeadAsSql(id);
+      return this.leadsService.findById(id);
+    }
+
     return this.leadsService.updateStatus(id, body.status);
   }
 
