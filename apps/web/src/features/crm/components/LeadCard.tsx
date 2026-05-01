@@ -17,13 +17,32 @@ import type { Lead } from '@/lib/api/leads';
 const DAY_MS = 1000 * 60 * 60 * 24;
 const CLOCK_REFRESH_MS = 60 * 1000;
 
+let currentTimeSnapshot = Date.now();
+let clockTimerId: number | undefined;
+const clockListeners = new Set<() => void>();
+
 function subscribeToClock(onStoreChange: () => void): () => void {
-  const timerId = window.setInterval(onStoreChange, CLOCK_REFRESH_MS);
-  return () => window.clearInterval(timerId);
+  clockListeners.add(onStoreChange);
+
+  if (!clockTimerId) {
+    clockTimerId = window.setInterval(() => {
+      currentTimeSnapshot = Date.now();
+      clockListeners.forEach((listener) => listener());
+    }, CLOCK_REFRESH_MS);
+  }
+
+  return () => {
+    clockListeners.delete(onStoreChange);
+
+    if (clockListeners.size === 0 && clockTimerId) {
+      window.clearInterval(clockTimerId);
+      clockTimerId = undefined;
+    }
+  };
 }
 
 function getCurrentTimeSnapshot(): number {
-  return Date.now();
+  return currentTimeSnapshot;
 }
 
 interface LeadCardProps {
