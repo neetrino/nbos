@@ -18,7 +18,7 @@ import { partnersApi } from '@/lib/api/partners';
 import { marketingApi } from '@/lib/api/marketing';
 import type { Lead } from '@/lib/api/leads';
 import type { ApiFieldError } from '@/lib/api-errors';
-import { LEAD_SOURCES } from '../constants/leadPipeline';
+import { LEAD_SOURCES, MARKETING_CHANNELS, SALES_CHANNELS } from '../constants/leadPipeline';
 
 type LeadInlinePayload = Pick<
   Lead,
@@ -68,9 +68,16 @@ export function LeadTransitionInlineEditor({
 
   const errorFields = useMemo(() => new Set(errors.map((error) => error.field)), [errors]);
   const needsContactMethod = errorFields.has('contactMethod');
+  const whereOptions = getWhereOptions(form.source);
+  const showWhereField =
+    errorFields.has('sourceDetail') || (Boolean(form.source) && whereOptions.length > 0);
+  const showMarketingAttribution =
+    errorFields.has('whichOne') ||
+    errorFields.has('marketingAccountId') ||
+    Boolean(form.sourceDetail);
 
   const updateForm = (field: keyof FormState, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => normalizeFormUpdate(current, field, value));
   };
 
   const submit = async () => {
@@ -109,7 +116,7 @@ export function LeadTransitionInlineEditor({
         </div>
       )}
 
-      {errorFields.has('source') && (
+      {(errorFields.has('source') || !form.source) && (
         <Field label="From">
           <Select
             value={form.source || undefined}
@@ -129,17 +136,27 @@ export function LeadTransitionInlineEditor({
         </Field>
       )}
 
-      {errorFields.has('sourceDetail') && (
+      {showWhereField && (
         <Field label="Where">
-          <Input
-            value={form.sourceDetail}
-            onChange={(event) => updateForm('sourceDetail', event.target.value)}
-            placeholder="Campaign, page, call context..."
-          />
+          <Select
+            value={form.sourceDetail || undefined}
+            onValueChange={(value) => updateForm('sourceDetail', value ?? '')}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select channel..." />
+            </SelectTrigger>
+            <SelectContent>
+              {whereOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
       )}
 
-      {errorFields.has('sourcePartnerId') && (
+      {(errorFields.has('sourcePartnerId') || form.source === 'PARTNER') && (
         <SearchField
           label="Partner"
           value={form.sourcePartnerId}
@@ -157,7 +174,7 @@ export function LeadTransitionInlineEditor({
         />
       )}
 
-      {errorFields.has('sourceContactId') && (
+      {(errorFields.has('sourceContactId') || form.source === 'CLIENT') && (
         <SearchField
           label="Referral contact"
           value={form.sourceContactId}
@@ -179,38 +196,27 @@ export function LeadTransitionInlineEditor({
         />
       )}
 
-      {errorFields.has('marketingAccountId') && (
+      {form.source === 'MARKETING' && showMarketingAttribution && (
         <SearchField
-          label="Marketing account"
-          value={form.marketingAccountId}
-          displayValue={lead.marketingAccount?.name ?? undefined}
-          placeholder="Select account"
-          onSave={(value) => updateForm('marketingAccountId', value)}
-          onSearch={async (query) => {
-            const accounts = await marketingApi.getAccounts({ search: query || undefined });
-            return accounts.map((account) => ({
-              value: account.id,
-              label: account.name,
-              subtitle: account.channel,
-            }));
+          label="Which one"
+          value={form.marketingAccountId || form.marketingActivityId}
+          displayValue={lead.marketingAccount?.name ?? lead.marketingActivity?.title ?? undefined}
+          placeholder="Search accounts or activities..."
+          onSave={(value) => {
+            const [type, id] = value.split(':');
+            updateForm('marketingAccountId', type === 'ACCOUNT' ? (id ?? '') : '');
+            updateForm('marketingActivityId', type === 'ACTIVITY' ? (id ?? '') : '');
           }}
-        />
-      )}
-
-      {errorFields.has('marketingActivityId') && (
-        <SearchField
-          label="Marketing activity"
-          value={form.marketingActivityId}
-          displayValue={lead.marketingActivity?.title ?? undefined}
-          placeholder="Select activity"
-          onSave={(value) => updateForm('marketingActivityId', value)}
           onSearch={async (query) => {
-            const activities = await marketingApi.getActivities({ search: query || undefined });
-            return activities.map((activity) => ({
-              value: activity.id,
-              label: activity.title,
-              subtitle: activity.channel,
-            }));
+            if (!form.sourceDetail) return [];
+            const options = await marketingApi.getAttributionOptions(form.sourceDetail);
+            return options
+              .filter((option) => option.label.toLowerCase().includes(query.toLowerCase()))
+              .map((option) => ({
+                value: `${option.type}:${option.id}`,
+                label: option.label,
+                subtitle: option.subtitle,
+              }));
           }}
         />
       )}
@@ -264,6 +270,40 @@ function getInitialForm(lead: Lead): FormState {
     marketingActivityId: lead.marketingActivityId ?? '',
     assignedTo: lead.assignedTo ?? '',
   };
+}
+
+function getWhereOptions(source: string) {
+  if (source === 'SALES') {
+    return SALES_CHANNELS.map((channel) => ({ value: channel.value, label: channel.label }));
+  }
+  if (source === 'MARKETING') {
+    return MARKETING_CHANNELS.map((channel) => ({ value: channel.value, label: channel.label }));
+  }
+  return [];
+}
+
+function normalizeFormUpdate(current: FormState, field: keyof FormState, value: string): FormState {
+  const next = { ...current, [field]: value };
+
+  if (field === 'source') {
+    next.sourceDetail = '';
+    next.sourcePartnerId = '';
+    next.sourceContactId = '';
+    next.marketingAccountId = '';
+    next.marketingActivityId = '';
+  }
+  if (field === 'sourceDetail') {
+    next.marketingAccountId = '';
+    next.marketingActivityId = '';
+  }
+  if (field === 'marketingAccountId' && value) {
+    next.marketingActivityId = '';
+  }
+  if (field === 'marketingActivityId' && value) {
+    next.marketingAccountId = '';
+  }
+
+  return next;
 }
 
 function buildChangedPayload(lead: Lead, form: FormState): Partial<LeadInlinePayload> {
