@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError, getApiErrorMessage, isStageGateApiError, toApiError } from './api-errors';
+import {
+  ApiError,
+  getApiErrorMessage,
+  isBusinessTransitionApiError,
+  isStageGateApiError,
+  toApiError,
+} from './api-errors';
 
 describe('api error helpers', () => {
   it('preserves structured stage gate errors', () => {
@@ -48,6 +54,21 @@ describe('api error helpers', () => {
 
     expect(error.message).toBe('Unauthorized');
     expect(error.errors).toEqual([]);
+    expect(isStageGateApiError(error)).toBe(false);
+  });
+
+  it('classifies business transition errors outside stage gate flow', () => {
+    const error = toApiError(
+      {
+        statusCode: 400,
+        code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        message: 'Won cannot be moved back.',
+        errors: [{ field: 'status', message: 'Closed outcome' }],
+      },
+      'Request failed',
+    );
+
+    expect(isBusinessTransitionApiError(error)).toBe(true);
     expect(isStageGateApiError(error)).toBe(false);
   });
 

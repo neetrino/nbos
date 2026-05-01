@@ -152,6 +152,64 @@ describe('LeadsService', () => {
 
       await expect(service.updateStatus('1', 'MQL')).rejects.toThrow(BadRequestException);
     });
+
+    it('allows restoring spam lead to an active stage without attribution when target is NEW', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'SPAM',
+        source: 'PARTNER',
+        sourceDetail: null,
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+      prisma.lead.update.mockResolvedValue({ id: '1', status: 'NEW' });
+
+      const result = await service.updateStatus('1', 'NEW');
+
+      expect(result.status).toBe('NEW');
+    });
+
+    it('blocks moving a won lead back to an active stage', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'SQL',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+
+      await expect(service.updateStatus('1', 'MQL')).rejects.toMatchObject({
+        response: {
+          code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        },
+      });
+      expect(prisma.lead.update).not.toHaveBeenCalled();
+    });
+
+    it('blocks direct spam to won movement', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'SPAM',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+
+      await expect(service.updateStatus('1', 'SQL')).rejects.toMatchObject({
+        response: {
+          code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        },
+      });
+      expect(prisma.lead.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('getStats', () => {

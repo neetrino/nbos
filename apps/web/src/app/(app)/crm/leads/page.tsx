@@ -15,13 +15,19 @@ import {
 import { LeadCard } from '@/features/crm/components/LeadCard';
 import { LeadSheet } from '@/features/crm/components/LeadSheet';
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
+import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
+import { LeadTransitionInlineEditor } from '@/features/crm/components/LeadTransitionInlineEditor';
 import {
   TransitionBlockerDialog,
   type TransitionBlockerState,
 } from '@/features/crm/components/TransitionBlockerDialog';
 import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
 import { leadsApi, type Lead } from '@/lib/api/leads';
-import { isStageGateApiError } from '@/lib/api-errors';
+import {
+  getApiErrorMessage,
+  isBusinessTransitionApiError,
+  isStageGateApiError,
+} from '@/lib/api-errors';
 import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 import {
   Table,
@@ -34,8 +40,19 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { getLeadStage, getLeadSource } from '@/features/crm/constants/leadPipeline';
 import { Users } from 'lucide-react';
+import { toast } from 'sonner';
 
 type ViewMode = 'kanban' | 'list';
+type ConfirmVariant = 'success' | 'danger';
+
+interface PendingLeadTransition {
+  id: string;
+  status: string;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  variant: ConfirmVariant;
+}
 
 export default function LeadsPipelinePage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -50,6 +67,8 @@ export default function LeadsPipelinePage() {
   const [transitionBlocker, setTransitionBlocker] = useState<TransitionBlockerState<Lead> | null>(
     null,
   );
+  const [pendingTransition, setPendingTransition] = useState<PendingLeadTransition | null>(null);
+  const [inlineSaving, setInlineSaving] = useState(false);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -106,8 +125,55 @@ export default function LeadsPipelinePage() {
           return;
         }
       }
+      if (isBusinessTransitionApiError(err)) {
+        toast.error(getApiErrorMessage(err, 'Lead stage change is not available.'));
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Lead stage change was blocked.');
     }
+  };
+
+  const requestStatusChange = async (id: string, status: string) => {
+    const lead = leads.find((item) => item.id === id) ?? selectedLead;
+    if (!lead || lead.status === status) return;
+
+    if (lead.status === 'SQL') {
+      toast.error('Lead Won is closed. Create a new Lead if this was closed by mistake.');
+      return;
+    }
+
+    if (lead.status === 'SPAM' && status === 'SQL') {
+      toast.error('Restore the Lead to an active stage before qualifying it as Lead Won.');
+      return;
+    }
+
+    if (status === 'SPAM') {
+      setPendingTransition({
+        id,
+        status,
+        title: 'Mark Lead as Spam?',
+        description:
+          'This will close the Lead as spam. You can restore it later if it was moved by mistake.',
+        confirmLabel: 'Mark as Spam',
+        variant: 'danger',
+      });
+      return;
+    }
+
+    if (status === 'SQL') {
+      setPendingTransition({
+        id,
+        status,
+        title: 'Qualify Lead as Won?',
+        description:
+          'This will close the Lead as a qualified Lead and create a Deal when required fields pass validation.',
+        confirmLabel: 'Qualify Lead',
+        variant: 'success',
+      });
+      return;
+    }
+
+    await handleStatusChange(id, status);
   };
 
   const handleOpenBlockedLead = () => {
@@ -132,6 +198,23 @@ export default function LeadsPipelinePage() {
     if (!blocker) return;
     await handleStatusChange(blocker.item.id, blocker.targetStatus);
     setTransitionBlocker((current) => (current === blocker ? null : current));
+  };
+
+  const handleSaveBlockedLeadAndMove = async (data: Partial<Lead>) => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+
+    setInlineSaving(true);
+    try {
+      const updated = await leadsApi.update(blocker.item.id, data);
+      setLeads((prev) => prev.map((lead) => (lead.id === updated.id ? updated : lead)));
+      setSelectedLead((prev) => (prev?.id === updated.id ? updated : prev));
+      setTransitionBlocker((current) => (current ? { ...current, item: updated } : current));
+      await handleStatusChange(updated.id, blocker.targetStatus);
+      setTransitionBlocker(null);
+    } finally {
+      setInlineSaving(false);
+    }
   };
 
   const handleUpdate = async (id: string, data: Partial<Lead>) => {
@@ -171,7 +254,7 @@ export default function LeadsPipelinePage() {
   };
 
   const handleMove = (itemId: string, _from: string, toColumn: string) => {
-    handleStatusChange(itemId, toColumn);
+    requestStatusChange(itemId, toColumn);
   };
 
   const kanbanColumns: KanbanColumn<Lead>[] = LEAD_STAGES.map((stage) => ({
@@ -265,7 +348,11 @@ export default function LeadsPipelinePage() {
           <KanbanBoard
             columns={kanbanColumns}
             renderCard={(lead) => (
-              <LeadCard lead={lead} onClick={handleCardClick} onStatusChange={handleStatusChange} />
+              <LeadCard
+                lead={lead}
+                onClick={handleCardClick}
+                onStatusChange={requestStatusChange}
+              />
             )}
             getItemId={(lead) => lead.id}
             onMove={handleMove}
@@ -336,7 +423,7 @@ export default function LeadsPipelinePage() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         onUpdate={handleUpdate}
-        onStatusChange={handleStatusChange}
+        onStatusChange={requestStatusChange}
         onDelete={handleDelete}
       />
 
@@ -351,6 +438,33 @@ export default function LeadsPipelinePage() {
         onOpenDetails={handleOpenBlockedLead}
         onRetry={handleRetryBlockedMove}
         directActions={blockerActions}
+        inlineEditor={
+          transitionBlocker ? (
+            <LeadTransitionInlineEditor
+              lead={transitionBlocker.item}
+              errors={transitionBlocker.errors}
+              saving={inlineSaving}
+              onSubmit={handleSaveBlockedLeadAndMove}
+            />
+          ) : null
+        }
+      />
+
+      <StageTransitionConfirmDialog
+        open={Boolean(pendingTransition)}
+        title={pendingTransition?.title ?? ''}
+        description={pendingTransition?.description ?? ''}
+        confirmLabel={pendingTransition?.confirmLabel ?? 'Confirm'}
+        variant={pendingTransition?.variant ?? 'success'}
+        onOpenChange={(open) => {
+          if (!open) setPendingTransition(null);
+        }}
+        onConfirm={() => {
+          const transition = pendingTransition;
+          if (!transition) return;
+          setPendingTransition(null);
+          handleStatusChange(transition.id, transition.status);
+        }}
       />
     </div>
   );

@@ -220,6 +220,39 @@ describe('DealsService', () => {
       expect(wonHandler.handle).not.toHaveBeenCalled();
     });
 
+    it('blocks moving a won deal back to an active stage', async () => {
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'WON',
+        type: 'PRODUCT',
+        amount: 5000,
+        paymentType: 'CLASSIC',
+        taxStatus: 'TAX',
+        companyId: 'company-1',
+        productCategory: 'CODE',
+        productType: 'COMPANY_WEBSITE',
+        pmId: 'pm-1',
+        deadline: new Date(),
+        existingProductId: null,
+        offerSentAt: new Date(),
+        offerLink: 'https://example.com/offer',
+        offerFileUrl: null,
+        offerScreenshotUrl: null,
+        responseDueAt: new Date(),
+        contractSignedAt: new Date(),
+        contractFileUrl: null,
+        ...attribution,
+      });
+
+      await expect(service.updateStatus('1', 'MEETING')).rejects.toMatchObject({
+        response: {
+          code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        },
+      });
+      expect(prisma.deal.update).not.toHaveBeenCalled();
+      expect(wonHandler.handle).not.toHaveBeenCalled();
+    });
+
     it('updates deal status for early stage (no gate)', async () => {
       prisma.deal.findUnique.mockResolvedValue({
         id: '1',

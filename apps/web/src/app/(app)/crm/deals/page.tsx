@@ -16,6 +16,7 @@ import {
 import { DealCard } from '@/features/crm/components/DealCard';
 import { DealSheet } from '@/features/crm/components/DealSheet';
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
+import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import {
   TransitionBlockerDialog,
   type TransitionBlockerState,
@@ -27,7 +28,11 @@ import {
   formatAmount,
 } from '@/features/crm/constants/dealPipeline';
 import { dealsApi, type Deal } from '@/lib/api/deals';
-import { isStageGateApiError } from '@/lib/api-errors';
+import {
+  getApiErrorMessage,
+  isBusinessTransitionApiError,
+  isStageGateApiError,
+} from '@/lib/api-errors';
 import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
 import {
   Table,
@@ -37,8 +42,19 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
+import { toast } from 'sonner';
 
 type ViewMode = 'kanban' | 'list';
+type ConfirmVariant = 'success' | 'danger';
+
+interface PendingDealTransition {
+  id: string;
+  status: string;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  variant: ConfirmVariant;
+}
 
 export default function DealsPipelinePage() {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -53,6 +69,7 @@ export default function DealsPipelinePage() {
   const [transitionBlocker, setTransitionBlocker] = useState<TransitionBlockerState<Deal> | null>(
     null,
   );
+  const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
@@ -107,8 +124,50 @@ export default function DealsPipelinePage() {
           return;
         }
       }
+      if (isBusinessTransitionApiError(err)) {
+        toast.error(getApiErrorMessage(err, 'Deal stage change is not available.'));
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Deal stage change was blocked.');
     }
+  };
+
+  const requestStatusChange = async (id: string, status: string) => {
+    const deal = deals.find((item) => item.id === id) ?? selectedDeal;
+    if (!deal || deal.status === status) return;
+
+    if (deal.status === 'WON') {
+      toast.error('Deal Won is closed and cannot be moved back.');
+      return;
+    }
+
+    if (status === 'WON') {
+      setPendingTransition({
+        id,
+        status,
+        title: 'Mark Deal as Won?',
+        description:
+          'This can create or update downstream Order, Project and Finance records after backend gates pass.',
+        confirmLabel: 'Mark as Won',
+        variant: 'success',
+      });
+      return;
+    }
+
+    if (status === 'FAILED') {
+      setPendingTransition({
+        id,
+        status,
+        title: 'Mark Deal as Failed?',
+        description:
+          'This will close the Deal as failed. Confirm only if the sales opportunity is over.',
+        confirmLabel: 'Mark as Failed',
+        variant: 'danger',
+      });
+      return;
+    }
+
+    await handleStatusChange(id, status);
   };
 
   const handleOpenBlockedDeal = () => {
@@ -197,7 +256,7 @@ export default function DealsPipelinePage() {
   };
 
   const handleMove = (itemId: string, _from: string, toColumn: string) => {
-    handleStatusChange(itemId, toColumn);
+    requestStatusChange(itemId, toColumn);
   };
 
   const kanbanColumns: KanbanColumn<Deal>[] = DEAL_STAGES.map((stage) => ({
@@ -291,7 +350,11 @@ export default function DealsPipelinePage() {
           <KanbanBoard
             columns={kanbanColumns}
             renderCard={(deal) => (
-              <DealCard deal={deal} onClick={handleCardClick} onStatusChange={handleStatusChange} />
+              <DealCard
+                deal={deal}
+                onClick={handleCardClick}
+                onStatusChange={requestStatusChange}
+              />
             )}
             getItemId={(deal) => deal.id}
             onMove={handleMove}
@@ -369,7 +432,7 @@ export default function DealsPipelinePage() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         onUpdate={handleUpdate}
-        onStatusChange={handleStatusChange}
+        onStatusChange={requestStatusChange}
         onDelete={handleDelete}
         onRefresh={fetchDeals}
         onOpenDeal={handleOpenDealById}
@@ -387,6 +450,23 @@ export default function DealsPipelinePage() {
         onRetry={handleRetryBlockedMove}
         directActions={blockerActions}
         onOverride={handleOverrideBlockedMove}
+      />
+
+      <StageTransitionConfirmDialog
+        open={Boolean(pendingTransition)}
+        title={pendingTransition?.title ?? ''}
+        description={pendingTransition?.description ?? ''}
+        confirmLabel={pendingTransition?.confirmLabel ?? 'Confirm'}
+        variant={pendingTransition?.variant ?? 'success'}
+        onOpenChange={(open) => {
+          if (!open) setPendingTransition(null);
+        }}
+        onConfirm={() => {
+          const transition = pendingTransition;
+          if (!transition) return;
+          setPendingTransition(null);
+          handleStatusChange(transition.id, transition.status);
+        }}
       />
     </div>
   );

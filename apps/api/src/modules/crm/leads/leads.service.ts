@@ -1,7 +1,10 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { validateAttributionGate } from '../attribution-gate';
+
+const ACTIVE_LEAD_STATUSES = new Set(['NEW', 'DIDNT_GET_THROUGH', 'CONTACT_ESTABLISHED', 'MQL']);
+const CLOSED_LEAD_STATUSES = new Set(['SPAM', 'SQL']);
 
 interface CreateLeadDto {
   name?: string;
@@ -197,6 +200,7 @@ export class LeadsService {
 
   async updateStatus(id: string, status: string) {
     const lead = await this.findById(id);
+    this.assertStatusTransitionAllowed(lead.status, status);
     if (this.requiresAttribution(status)) {
       validateAttributionGate(lead, 'Lead', status);
     }
@@ -233,5 +237,36 @@ export class LeadsService {
 
   private requiresAttribution(status: string): boolean {
     return !['NEW', 'SPAM'].includes(status);
+  }
+
+  private assertStatusTransitionAllowed(currentStatus: string, targetStatus: string): void {
+    if (currentStatus === targetStatus) return;
+
+    if (currentStatus === 'SQL') {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        message: 'Lead Won is a closed outcome and cannot be moved back.',
+        errors: [{ field: 'status', message: 'Create a new Lead if this was closed by mistake.' }],
+      });
+    }
+
+    if (currentStatus === 'SPAM' && !ACTIVE_LEAD_STATUSES.has(targetStatus)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        message: 'Spam leads can only be restored to an active Lead stage.',
+        errors: [{ field: 'status', message: 'Restore to New or another active stage first.' }],
+      });
+    }
+
+    if (!ACTIVE_LEAD_STATUSES.has(targetStatus) && !CLOSED_LEAD_STATUSES.has(targetStatus)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        message: `Unsupported Lead status: ${targetStatus}`,
+        errors: [{ field: 'status', message: 'Choose a valid Lead stage.' }],
+      });
+    }
   }
 }

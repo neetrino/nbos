@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { AlertTriangle, ExternalLink, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,6 +40,7 @@ interface TransitionBlockerDialogProps<TItem> {
   businessActionLabel?: string;
   onBusinessAction?: () => void;
   onOverride?: (reason: string) => Promise<void>;
+  inlineEditor?: ReactNode;
 }
 
 const ACTION_BLOCKER_FIELDS = new Set(['invoice', 'payment', 'contract', 'override']);
@@ -56,6 +57,7 @@ export function TransitionBlockerDialog<TItem>({
   businessActionLabel,
   onBusinessAction,
   onOverride,
+  inlineEditor,
 }: TransitionBlockerDialogProps<TItem>) {
   const [overrideReason, setOverrideReason] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
@@ -135,6 +137,15 @@ export function TransitionBlockerDialog<TItem>({
                 <p className="text-muted-foreground text-xs">
                   Override does not mark invoices paid. Finance still owns payment confirmation.
                 </p>
+              </section>
+            )}
+
+            {inlineEditor && (
+              <section className="space-y-2">
+                <h4 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                  Complete in this popup
+                </h4>
+                {inlineEditor}
               </section>
             )}
 

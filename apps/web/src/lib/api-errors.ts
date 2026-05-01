@@ -48,6 +48,10 @@ export function isStageGateApiError(error: unknown): error is ApiError {
   );
 }
 
+export function isBusinessTransitionApiError(error: unknown): error is ApiError {
+  return error instanceof ApiError && error.code === 'BUSINESS_TRANSITION_UNAVAILABLE';
+}
+
 /** User-visible message from axios-wrapped `ApiError`; otherwise `fallback` (e.g. generic connection copy). */
 export function getApiErrorMessage(caught: unknown, fallback: string): string {
   return caught instanceof ApiError ? caught.message : fallback;

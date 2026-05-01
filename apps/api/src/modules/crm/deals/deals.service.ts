@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
@@ -200,6 +200,7 @@ export class DealsService {
     if (current.status === status) {
       return current;
     }
+    this.assertStatusTransitionAllowed(current.status, status);
 
     validateDealStageGate(current, status);
     if (status === 'WON') {
@@ -228,6 +229,22 @@ export class DealsService {
     }
 
     return deal;
+  }
+
+  private assertStatusTransitionAllowed(currentStatus: string, targetStatus: string): void {
+    if (currentStatus === 'WON' && targetStatus !== 'WON') {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'BUSINESS_TRANSITION_UNAVAILABLE',
+        message: 'Deal Won is a closed outcome and cannot be moved back.',
+        errors: [
+          {
+            field: 'status',
+            message: 'Won deals may have Orders, Projects and Finance records attached.',
+          },
+        ],
+      });
+    }
   }
 
   async delete(id: string) {
