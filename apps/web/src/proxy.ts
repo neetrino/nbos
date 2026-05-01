@@ -8,7 +8,7 @@ function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
-export default auth((req: NextRequest & { auth: unknown }) => {
+export const proxy = auth((req: NextRequest & { auth: unknown }) => {
   const { pathname } = req.nextUrl;
 
   if (isPublicPath(pathname)) {
