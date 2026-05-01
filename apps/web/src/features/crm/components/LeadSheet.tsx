@@ -84,6 +84,10 @@ export function LeadSheet({
     await onUpdate(lead.id, payload as Partial<Lead>);
   };
 
+  const saveFields = async (fields: Record<string, string | null>) => {
+    await onUpdate(lead.id, fields as Partial<Lead>);
+  };
+
   const startEditingName = () => {
     setNameValue(lead.name ?? '');
     setEditingName(true);
@@ -183,6 +187,7 @@ export function LeadSheet({
                 lead={lead}
                 source={source}
                 saveField={saveField}
+                saveFields={saveFields}
                 onConvertToDeal={onConvertToDeal}
                 isTerminal={isTerminal}
               />
@@ -232,15 +237,14 @@ interface LeadGeneralContentProps {
   lead: Lead;
   source: ReturnType<typeof getLeadSource>;
   saveField: (field: string, value: string | null) => Promise<void>;
+  saveFields: (fields: Record<string, string | null>) => Promise<void>;
   onConvertToDeal?: (lead: Lead) => void;
   isTerminal: boolean;
 }
 
-function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps) {
+function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneralContentProps) {
   const saveMultipleFields = async (fields: Record<string, string | null>) => {
-    for (const [key, val] of Object.entries(fields)) {
-      await saveField(key, val);
-    }
+    await saveFields(fields);
   };
 
   const searchPartners = useCallback(async (query: string) => {
