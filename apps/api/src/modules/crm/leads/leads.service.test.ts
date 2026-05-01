@@ -70,16 +70,24 @@ describe('LeadsService', () => {
       prisma.lead.create.mockResolvedValue({
         id: '1',
         code: 'L-2026-0001',
-        contactName: 'John',
-        source: 'WEBSITE',
+        name: 'Website redesign',
+        contactName: '',
+        source: null,
       });
 
       const result = await service.create({
-        contactName: 'John',
-        source: 'WEBSITE',
+        name: 'Website redesign',
       });
 
       expect(prisma.lead.create).toHaveBeenCalled();
+      expect(prisma.lead.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            contactName: '',
+            source: undefined,
+          }),
+        }),
+      );
       expect(result.code).toBe('L-2026-0001');
     });
 
@@ -87,7 +95,7 @@ describe('LeadsService', () => {
       prisma.lead.findFirst.mockResolvedValue({ code: 'L-2026-0005' });
       prisma.lead.create.mockImplementation(({ data }) => Promise.resolve({ id: '2', ...data }));
 
-      await service.create({ contactName: 'Jane', source: 'MARKETING' });
+      await service.create({ name: 'Jane lead' });
 
       const createCall = prisma.lead.create.mock.calls[0][0];
       expect(createCall.data.code).toBe('L-2026-0006');

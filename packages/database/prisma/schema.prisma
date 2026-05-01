@@ -391,7 +391,7 @@ model Lead {
   contactName         String         @map("contact_name")
   phone               String?
   email               String?
-  source              LeadSourceEnum
+  source              LeadSourceEnum?
   sourceDetail        String?        @map("source_detail")
   sourcePartnerId     String?        @map("source_partner_id")
   sourceContactId     String?        @map("source_contact_id")

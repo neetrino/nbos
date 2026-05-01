@@ -29,10 +29,11 @@ interface InlineFieldProps {
   options?: SelectOption[];
   placeholder?: string;
   editable?: boolean;
-  onSave?: (value: string) => Promise<void> | void;
+  onSave?: (value: string | null) => Promise<void> | void;
   icon?: ReactNode;
   suffix?: string;
   className?: string;
+  clearable?: boolean;
 }
 
 export function InlineField({
@@ -47,6 +48,7 @@ export function InlineField({
   icon,
   suffix,
   className,
+  clearable = false,
 }: InlineFieldProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -85,6 +87,18 @@ export function InlineField({
     setEditValue(String(value ?? ''));
   };
 
+  const handleClear = async () => {
+    if (!onSave) return;
+    setSaving(true);
+    try {
+      await onSave(null);
+      setEditing(false);
+      setEditValue('');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && type !== 'textarea') {
       e.preventDefault();
@@ -107,40 +121,53 @@ export function InlineField({
       {editing ? (
         <div className="flex items-start gap-1.5">
           {type === 'select' && options ? (
-            <Select
-              open={selectOpen}
-              onOpenChange={(open) => {
-                setSelectOpen(open);
-                if (!open) setEditing(false);
-              }}
-              value={editValue || undefined}
-              onValueChange={(v) => {
-                if (v === null) return;
-                setEditValue(v);
-                setSelectOpen(false);
-                if (onSave) {
-                  setSaving(true);
-                  Promise.resolve(onSave(v)).then(() => {
-                    setEditing(false);
-                    setSaving(false);
-                  });
-                }
-              }}
-            >
-              <SelectTrigger className="h-8 w-full text-sm">
-                <SelectValue placeholder={placeholder ?? 'Select...'} />
-              </SelectTrigger>
-              <SelectContent>
-                {options.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    <span className="flex items-center gap-2">
-                      {opt.icon}
-                      {opt.label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <>
+              <Select
+                open={selectOpen}
+                onOpenChange={(open) => {
+                  setSelectOpen(open);
+                  if (!open) setEditing(false);
+                }}
+                value={editValue || undefined}
+                onValueChange={(v) => {
+                  if (v === null) return;
+                  setEditValue(v);
+                  setSelectOpen(false);
+                  if (onSave) {
+                    setSaving(true);
+                    Promise.resolve(onSave(v)).then(() => {
+                      setEditing(false);
+                      setSaving(false);
+                    });
+                  }
+                }}
+              >
+                <SelectTrigger className="h-8 w-full text-sm">
+                  <SelectValue placeholder={placeholder ?? 'Select...'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <span className="flex items-center gap-2">
+                        {opt.icon}
+                        {opt.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {clearable && (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  disabled={saving}
+                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md p-1.5 transition-colors"
+                  aria-label={`Clear ${label}`}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </>
           ) : type === 'textarea' ? (
             <Textarea
               ref={inputRef as React.Ref<HTMLTextAreaElement>}
@@ -211,10 +238,26 @@ export function InlineField({
               )}
             </div>
             {editable && onSave && (
-              <Pencil
-                size={12}
-                className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
-              />
+              <div className="flex items-center gap-1">
+                {clearable && displayStr && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleClear();
+                    }}
+                    disabled={saving}
+                    className="text-muted-foreground/0 hover:text-destructive group-hover:text-muted-foreground/60 transition-colors"
+                    aria-label={`Clear ${label}`}
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+                <Pencil
+                  size={12}
+                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
+                />
+              </div>
             )}
           </div>
         </div>

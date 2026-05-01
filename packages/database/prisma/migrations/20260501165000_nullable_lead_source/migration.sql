@@ -1,0 +1,1 @@
+ALTER TABLE "leads" ALTER COLUMN "source" DROP NOT NULL;

@@ -4,6 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SearchField } from '@/components/shared';
 import { employeesApi } from '@/lib/api/employees';
 import { contactsApi } from '@/lib/api/clients';
@@ -11,12 +18,14 @@ import { partnersApi } from '@/lib/api/partners';
 import { marketingApi } from '@/lib/api/marketing';
 import type { Lead } from '@/lib/api/leads';
 import type { ApiFieldError } from '@/lib/api-errors';
+import { LEAD_SOURCES } from '../constants/leadPipeline';
 
 type LeadInlinePayload = Pick<
   Lead,
   | 'contactName'
   | 'phone'
   | 'email'
+  | 'source'
   | 'sourceDetail'
   | 'sourcePartnerId'
   | 'sourceContactId'
@@ -36,6 +45,7 @@ interface FormState {
   contactName: string;
   phone: string;
   email: string;
+  source: string;
   sourceDetail: string;
   sourcePartnerId: string;
   sourceContactId: string;
@@ -68,7 +78,7 @@ export function LeadTransitionInlineEditor({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border p-3">
+    <div className="space-y-3">
       {errorFields.has('contactName') && (
         <Field label="Contact name">
           <Input
@@ -97,6 +107,26 @@ export function LeadTransitionInlineEditor({
             />
           </Field>
         </div>
+      )}
+
+      {errorFields.has('source') && (
+        <Field label="From">
+          <Select
+            value={form.source || undefined}
+            onValueChange={(value) => updateForm('source', value ?? '')}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select source..." />
+            </SelectTrigger>
+            <SelectContent>
+              {LEAD_SOURCES.map((source) => (
+                <SelectItem key={source.value} value={source.value}>
+                  {source.icon} {source.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       )}
 
       {errorFields.has('sourceDetail') && (
@@ -205,7 +235,7 @@ export function LeadTransitionInlineEditor({
         />
       )}
 
-      <Button type="button" disabled={saving} onClick={submit}>
+      <Button type="button" className="w-full" disabled={saving} onClick={submit}>
         Save and move
       </Button>
     </div>
@@ -226,6 +256,7 @@ function getInitialForm(lead: Lead): FormState {
     contactName: lead.contactName ?? '',
     phone: lead.phone ?? '',
     email: lead.email ?? '',
+    source: lead.source ?? '',
     sourceDetail: lead.sourceDetail ?? '',
     sourcePartnerId: lead.sourcePartnerId ?? '',
     sourceContactId: lead.sourceContactId ?? '',
@@ -240,6 +271,7 @@ function buildChangedPayload(lead: Lead, form: FormState): Partial<LeadInlinePay
   assignIfChanged(payload, 'contactName', lead.contactName, form.contactName);
   assignIfChanged(payload, 'phone', lead.phone, form.phone);
   assignIfChanged(payload, 'email', lead.email, form.email);
+  assignIfChanged(payload, 'source', lead.source, form.source);
   assignIfChanged(payload, 'sourceDetail', lead.sourceDetail, form.sourceDetail);
   assignIfChanged(payload, 'sourcePartnerId', lead.sourcePartnerId, form.sourcePartnerId);
   assignIfChanged(payload, 'sourceContactId', lead.sourceContactId, form.sourceContactId);

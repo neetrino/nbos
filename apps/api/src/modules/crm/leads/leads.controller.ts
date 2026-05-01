@@ -73,11 +73,11 @@ export class LeadsController {
   async create(
     @Body()
     body: {
-      name?: string;
-      contactName: string;
+      name: string;
+      contactName?: string;
       phone?: string;
       email?: string;
-      source: string;
+      source?: string | null;
       sourceDetail?: string | null;
       sourcePartnerId?: string | null;
       sourceContactId?: string | null;
@@ -100,7 +100,7 @@ export class LeadsController {
       contactName?: string;
       phone?: string;
       email?: string;
-      source?: string;
+      source?: string | null;
       sourceDetail?: string | null;
       sourcePartnerId?: string | null;
       sourceContactId?: string | null;

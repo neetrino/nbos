@@ -89,6 +89,6 @@ export function getLeadStage(key: string) {
   return LEAD_STAGES.find((s) => s.key === key);
 }
 
-export function getLeadSource(value: string) {
+export function getLeadSource(value: string | null | undefined) {
   return LEAD_SOURCES.find((s) => s.value === value);
 }

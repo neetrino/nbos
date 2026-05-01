@@ -129,7 +129,7 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <StatusBadge label={source?.label ?? lead.source} variant="default" />
+        <StatusBadge label={source?.label ?? 'No source'} variant="default" />
         <div className="flex items-center gap-2">
           {lead.assignee && (
             <div className="bg-accent/20 text-accent flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-bold">

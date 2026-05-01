@@ -149,7 +149,9 @@ export class DealsService {
         ...(data.companyId !== undefined && { companyId: data.companyId }),
         ...(data.contactId && { contactId: data.contactId }),
         ...(data.projectId !== undefined && { projectId: data.projectId }),
-        ...(data.source && { source: data.source as Prisma.DealUpdateInput['source'] }),
+        ...(data.source !== undefined && {
+          source: data.source ? (data.source as Prisma.DealUpdateInput['source']) : null,
+        }),
         ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
         ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
         ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),

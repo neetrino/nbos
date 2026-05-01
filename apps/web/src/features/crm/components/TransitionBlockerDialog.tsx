@@ -41,6 +41,7 @@ interface TransitionBlockerDialogProps<TItem> {
   onBusinessAction?: () => void;
   onOverride?: (reason: string) => Promise<void>;
   inlineEditor?: ReactNode;
+  inlineOnly?: boolean;
 }
 
 const ACTION_BLOCKER_FIELDS = new Set(['invoice', 'payment', 'contract', 'override']);
@@ -58,6 +59,7 @@ export function TransitionBlockerDialog<TItem>({
   onBusinessAction,
   onOverride,
   inlineEditor,
+  inlineOnly = false,
 }: TransitionBlockerDialogProps<TItem>) {
   const [overrideReason, setOverrideReason] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
@@ -65,6 +67,7 @@ export function TransitionBlockerDialog<TItem>({
   const missingFields = blocker?.errors.filter((error) => !isActionBlocker(error)) ?? [];
   const actionBlockers = blocker?.errors.filter(isActionBlocker) ?? [];
   const canOverride = Boolean(onOverride && blocker?.targetStatus === 'WON');
+  const showDetailedBlockers = !inlineOnly;
 
   const runAction = async (action: () => Promise<void>) => {
     setSaving(true);
@@ -84,21 +87,28 @@ export function TransitionBlockerDialog<TItem>({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle size={18} className="text-amber-500" />
-            Stage move blocked
+            {inlineOnly ? 'Complete required fields' : 'Stage move blocked'}
           </DialogTitle>
           <DialogDescription>
-            {entityLabel} {itemLabel} cannot move to {blocker?.targetLabel ?? 'the target stage'}
-            until the required details are complete.
+            {inlineOnly
+              ? `Fill the fields below to move ${entityLabel.toLowerCase()} to ${
+                  blocker?.targetLabel ?? 'the target stage'
+                }.`
+              : `${entityLabel} ${itemLabel} cannot move to ${
+                  blocker?.targetLabel ?? 'the target stage'
+                } until the required details are complete.`}
           </DialogDescription>
         </DialogHeader>
 
         {blocker && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-              {blocker.message}
-            </div>
+            {showDetailedBlockers && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                {blocker.message}
+              </div>
+            )}
 
-            {missingFields.length > 0 && (
+            {showDetailedBlockers && missingFields.length > 0 && (
               <section className="space-y-2">
                 <h4 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
                   Missing fields
@@ -111,7 +121,7 @@ export function TransitionBlockerDialog<TItem>({
               </section>
             )}
 
-            {actionBlockers.length > 0 && (
+            {showDetailedBlockers && actionBlockers.length > 0 && (
               <section className="space-y-2">
                 <h4 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
                   Business blockers
@@ -142,9 +152,11 @@ export function TransitionBlockerDialog<TItem>({
 
             {inlineEditor && (
               <section className="space-y-2">
-                <h4 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
-                  Complete in this popup
-                </h4>
+                {showDetailedBlockers && (
+                  <h4 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                    Complete in this popup
+                  </h4>
+                )}
                 {inlineEditor}
               </section>
             )}
@@ -157,39 +169,41 @@ export function TransitionBlockerDialog<TItem>({
           </div>
         )}
 
-        <DialogFooter>
-          {directActions.map((action) => (
-            <Button key={action.key} type="button" variant="outline" onClick={action.onClick}>
-              {action.label}
+        {!inlineOnly && (
+          <DialogFooter>
+            {directActions.map((action) => (
+              <Button key={action.key} type="button" variant="outline" onClick={action.onClick}>
+                {action.label}
+              </Button>
+            ))}
+            {onBusinessAction && businessActionLabel && (
+              <Button type="button" variant="outline" onClick={onBusinessAction}>
+                {businessActionLabel}
+              </Button>
+            )}
+            <Button type="button" variant="outline" onClick={onOpenDetails}>
+              <ExternalLink size={14} />
+              Open details
             </Button>
-          ))}
-          {onBusinessAction && businessActionLabel && (
-            <Button type="button" variant="outline" onClick={onBusinessAction}>
-              {businessActionLabel}
+            {canOverride && (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={saving || !overrideReason.trim()}
+                onClick={() => {
+                  if (!onOverride) return;
+                  runAction(() => onOverride(overrideReason.trim()));
+                }}
+              >
+                Apply override
+              </Button>
+            )}
+            <Button type="button" disabled={saving} onClick={() => runAction(onRetry)}>
+              <RefreshCcw size={14} />
+              Retry move
             </Button>
-          )}
-          <Button type="button" variant="outline" onClick={onOpenDetails}>
-            <ExternalLink size={14} />
-            Open details
-          </Button>
-          {canOverride && (
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={saving || !overrideReason.trim()}
-              onClick={() => {
-                if (!onOverride) return;
-                runAction(() => onOverride(overrideReason.trim()));
-              }}
-            >
-              Apply override
-            </Button>
-          )}
-          <Button type="button" disabled={saving} onClick={() => runAction(onRetry)}>
-            <RefreshCcw size={14} />
-            Retry move
-          </Button>
-        </DialogFooter>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

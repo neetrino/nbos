@@ -95,6 +95,7 @@ export function DealInfoSection({
           placeholder="Select payment type..."
           icon={<CreditCard size={12} />}
           onSave={(value) => saveField('paymentType', value)}
+          clearable
         />
 
         <InlineField
@@ -133,6 +134,11 @@ export function DealInfoSection({
           onSave={async (value, label) => {
             await saveField('projectId', value);
             setLinkedProjectName(label);
+            setIsNewProject(false);
+          }}
+          onClear={async () => {
+            await saveField('projectId', null);
+            setLinkedProjectName(null);
             setIsNewProject(false);
           }}
           newBadge={
@@ -205,9 +211,8 @@ export function DealInfoSection({
             }))}
             placeholder="Select category..."
             icon={<Layers size={12} />}
-            onSave={(value) =>
-              saveMultipleFields({ productCategory: value as string, productType: null })
-            }
+            onSave={(value) => saveMultipleFields({ productCategory: value, productType: null })}
+            clearable
           />
         )}
 
@@ -228,6 +233,7 @@ export function DealInfoSection({
             placeholder="Select product type..."
             icon={<Tag size={12} />}
             onSave={(value) => saveField('productType', value)}
+            clearable
           />
         )}
 
@@ -246,6 +252,7 @@ export function DealInfoSection({
             icon={<Layers size={12} />}
             onSearch={searchProducts}
             onSave={(value) => saveField('existingProductId', value)}
+            onClear={() => saveField('existingProductId', null)}
           />
         )}
 
@@ -262,6 +269,7 @@ export function DealInfoSection({
             icon={<Building2 size={12} />}
             onSearch={searchCompanies}
             onSave={(value) => saveField('companyId', value)}
+            onClear={() => saveField('companyId', null)}
           />
         )}
       </div>

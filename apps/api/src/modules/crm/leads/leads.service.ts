@@ -7,11 +7,11 @@ const ACTIVE_LEAD_STATUSES = new Set(['NEW', 'DIDNT_GET_THROUGH', 'CONTACT_ESTAB
 const CLOSED_LEAD_STATUSES = new Set(['SPAM', 'SQL']);
 
 interface CreateLeadDto {
-  name?: string;
-  contactName: string;
+  name: string;
+  contactName?: string;
   phone?: string;
   email?: string;
-  source: string;
+  source?: string | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
@@ -26,7 +26,7 @@ interface UpdateLeadDto {
   contactName?: string;
   phone?: string;
   email?: string;
-  source?: string;
+  source?: string | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
   sourceContactId?: string | null;
@@ -70,7 +70,7 @@ export class LeadsService {
       where.status = status as Prisma.EnumLeadStatusEnumFilter['equals'];
     }
     if (source) {
-      where.source = source as Prisma.EnumLeadSourceEnumFilter['equals'];
+      where.source = source as Prisma.EnumLeadSourceEnumNullableFilter['equals'];
     }
     if (assignedTo) {
       where.assignedTo = assignedTo;
@@ -138,10 +138,10 @@ export class LeadsService {
       data: {
         code,
         name: data.name,
-        contactName: data.contactName,
+        contactName: data.contactName ?? '',
         phone: data.phone,
         email: data.email,
-        source: data.source as Prisma.LeadCreateInput['source'],
+        source: data.source ? (data.source as Prisma.LeadCreateInput['source']) : undefined,
         sourceDetail: data.sourceDetail,
         sourcePartnerId: data.sourcePartnerId,
         sourceContactId: data.sourceContactId,
@@ -168,7 +168,9 @@ export class LeadsService {
         ...(data.contactName && { contactName: data.contactName }),
         ...(data.phone !== undefined && { phone: data.phone }),
         ...(data.email !== undefined && { email: data.email }),
-        ...(data.source && { source: data.source as Prisma.LeadUpdateInput['source'] }),
+        ...(data.source !== undefined && {
+          source: data.source ? (data.source as Prisma.LeadUpdateInput['source']) : null,
+        }),
         ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
         ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
         ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),

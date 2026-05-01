@@ -21,6 +21,7 @@ interface SearchFieldProps {
   icon?: ReactNode;
   onSave: (value: string, label: string) => Promise<void> | void;
   onSearch: (query: string) => Promise<SearchOption[]>;
+  onClear?: () => Promise<void> | void;
   onNew?: () => void;
   newLabel?: string;
   newBadge?: ReactNode;
@@ -35,6 +36,7 @@ export function SearchField({
   icon,
   onSave,
   onSearch,
+  onClear,
   onNew,
   newLabel = 'Create new',
   newBadge,
@@ -92,6 +94,18 @@ export function SearchField({
     setSaving(true);
     try {
       await onSave(optValue, optLabel);
+    } finally {
+      setSaving(false);
+      setOpen(false);
+      setQuery('');
+    }
+  };
+
+  const handleClear = async () => {
+    if (!onClear) return;
+    setSaving(true);
+    try {
+      await onClear();
     } finally {
       setSaving(false);
       setOpen(false);
@@ -220,10 +234,26 @@ export function SearchField({
                     <span className="text-muted-foreground">{placeholder ?? 'Not set'}</span>
                   ))}
               </div>
-              <Pencil
-                size={12}
-                className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
-              />
+              <div className="flex items-center gap-1">
+                {onClear && hasValue && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleClear();
+                    }}
+                    disabled={saving}
+                    className="text-muted-foreground/0 hover:text-destructive group-hover:text-muted-foreground/60 transition-colors"
+                    aria-label={`Clear ${label}`}
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+                <Pencil
+                  size={12}
+                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
+                />
+              </div>
             </div>
           </div>
           {newBadge}

@@ -78,7 +78,7 @@ export function LeadSheet({
   const source = getLeadSource(lead.source);
   const leadTitle = lead.name || lead.code;
 
-  const saveField = async (field: string, value: string) => {
+  const saveField = async (field: string, value: string | null) => {
     const payload: Record<string, unknown> = {};
     payload[field] = value || null;
     await onUpdate(lead.id, payload as Partial<Lead>);
@@ -231,7 +231,7 @@ export function LeadSheet({
 interface LeadGeneralContentProps {
   lead: Lead;
   source: ReturnType<typeof getLeadSource>;
-  saveField: (field: string, value: string) => Promise<void>;
+  saveField: (field: string, value: string | null) => Promise<void>;
   onConvertToDeal?: (lead: Lead) => void;
   isTerminal: boolean;
 }
@@ -239,7 +239,7 @@ interface LeadGeneralContentProps {
 function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps) {
   const saveMultipleFields = async (fields: Record<string, string | null>) => {
     for (const [key, val] of Object.entries(fields)) {
-      await saveField(key, val ?? '');
+      await saveField(key, val);
     }
   };
 
@@ -364,10 +364,11 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               label: s.label,
               icon: <span>{s.icon}</span>,
             }))}
+            placeholder="Select source..."
             icon={<Megaphone size={12} />}
             onSave={async (v) => {
               await saveMultipleFields({
-                source: v as string,
+                source: v,
                 sourceDetail: null,
                 sourcePartnerId: null,
                 sourceContactId: null,
@@ -375,6 +376,7 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
                 marketingActivityId: null,
               });
             }}
+            clearable
           />
 
           {(lead.source === 'SALES' || lead.source === 'MARKETING') && (
@@ -400,6 +402,7 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
                   marketingActivityId: null,
                 });
               }}
+              clearable
             />
           )}
 
@@ -428,6 +431,12 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
                   marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
                 });
               }}
+              onClear={() =>
+                saveMultipleFields({
+                  marketingAccountId: null,
+                  marketingActivityId: null,
+                })
+              }
             />
           )}
 
@@ -448,6 +457,7 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               onSave={async (v) => {
                 await saveField('sourcePartnerId', v);
               }}
+              onClear={() => saveField('sourcePartnerId', null)}
             />
           )}
 
@@ -472,6 +482,7 @@ function LeadGeneralContent({ lead, source, saveField }: LeadGeneralContentProps
               onSave={async (v) => {
                 await saveField('sourceContactId', v);
               }}
+              onClear={() => saveField('sourceContactId', null)}
             />
           )}
         </div>

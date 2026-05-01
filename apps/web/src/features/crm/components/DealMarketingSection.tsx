@@ -48,7 +48,7 @@ export function DealMarketingSection({
           icon={<Megaphone size={12} />}
           onSave={(value) =>
             saveMultipleFields({
-              source: value as string,
+              source: value,
               sourceDetail: null,
               sourcePartnerId: null,
               sourceContactId: null,
@@ -56,6 +56,7 @@ export function DealMarketingSection({
               marketingActivityId: null,
             })
           }
+          clearable
         />
 
         {(deal.source === 'SALES' || deal.source === 'MARKETING') && (
@@ -81,6 +82,7 @@ export function DealMarketingSection({
                 marketingActivityId: null,
               })
             }
+            clearable
           />
         )}
 
@@ -103,6 +105,12 @@ export function DealMarketingSection({
             icon={<ExternalLink size={12} />}
             onSearch={searchAttributionOptions}
             onSave={(value) => saveMarketingAttribution(value, saveMultipleFields)}
+            onClear={() =>
+              saveMultipleFields({
+                marketingAccountId: null,
+                marketingActivityId: null,
+              })
+            }
           />
         )}
 
@@ -121,6 +129,7 @@ export function DealMarketingSection({
             icon={<Building2 size={12} />}
             onSearch={searchPartners}
             onSave={(value) => saveField('sourcePartnerId', value)}
+            onClear={() => saveField('sourcePartnerId', null)}
           />
         )}
 
@@ -143,6 +152,7 @@ export function DealMarketingSection({
             icon={<User size={12} />}
             onSearch={searchContacts}
             onSave={(value) => saveField('sourceContactId', value)}
+            onClear={() => saveField('sourceContactId', null)}
           />
         )}
       </div>

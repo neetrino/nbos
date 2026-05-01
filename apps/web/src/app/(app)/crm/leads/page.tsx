@@ -390,7 +390,7 @@ export default function LeadsPipelinePage() {
                     <TableCell className="text-muted-foreground">{lead.phone ?? '—'}</TableCell>
                     <TableCell className="text-muted-foreground">{lead.email ?? '—'}</TableCell>
                     <TableCell>
-                      <StatusBadge label={source?.label ?? lead.source} variant="default" />
+                      <StatusBadge label={source?.label ?? 'No source'} variant="default" />
                     </TableCell>
                     <TableCell>
                       {stage && (
@@ -438,6 +438,7 @@ export default function LeadsPipelinePage() {
         onOpenDetails={handleOpenBlockedLead}
         onRetry={handleRetryBlockedMove}
         directActions={blockerActions}
+        inlineOnly
         inlineEditor={
           transitionBlocker ? (
             <LeadTransitionInlineEditor

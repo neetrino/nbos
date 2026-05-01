@@ -7,7 +7,7 @@ export interface Lead {
   contactName: string;
   phone: string | null;
   email: string | null;
-  source: string;
+  source: string | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;
   sourceContactId: string | null;
@@ -65,11 +65,11 @@ export const leadsApi = {
   },
 
   async create(data: {
-    name?: string;
-    contactName: string;
+    name: string;
+    contactName?: string;
     phone?: string;
     email?: string;
-    source: string;
+    source?: string | null;
     sourceDetail?: string;
     sourcePartnerId?: string;
     sourceContactId?: string;

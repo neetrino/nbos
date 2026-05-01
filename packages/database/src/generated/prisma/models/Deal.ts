@@ -1761,10 +1761,6 @@ export type NullableEnumPaymentTypeEnumFieldUpdateOperationsInput = {
   set?: $Enums.PaymentTypeEnum | null;
 };
 
-export type NullableEnumLeadSourceEnumFieldUpdateOperationsInput = {
-  set?: $Enums.LeadSourceEnum | null;
-};
-
 export type NullableEnumProductCategoryEnumFieldUpdateOperationsInput = {
   set?: $Enums.ProductCategoryEnum | null;
 };
