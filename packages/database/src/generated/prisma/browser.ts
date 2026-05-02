@@ -292,6 +292,11 @@ export type DashboardPreference = Prisma.DashboardPreferenceModel;
  */
 export type PersonalLink = Prisma.PersonalLinkModel;
 /**
+ * Model DashboardNote
+ *
+ */
+export type DashboardNote = Prisma.DashboardNoteModel;
+/**
  * Model Partner
  *
  */

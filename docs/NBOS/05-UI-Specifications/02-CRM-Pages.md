@@ -2,11 +2,12 @@
 
 ## 1. Общее описание
 
-CRM-модуль платформы NBOS охватывает полный цикл продаж: от первого контакта (лида) через квалификацию до закрытия сделки. Модуль состоит из трёх основных страниц:
+CRM-модуль платформы NBOS охватывает полный цикл продаж: от первого контакта (лида) через квалификацию до закрытия сделки. Модуль состоит из основных рабочих страниц:
 
 1. **Lead List** — управление лидами
 2. **Deal Pipeline** — воронка сделок
-3. **Sales Reports / Analytics** — module-owned аналитика продаж, также доступная в Reports Catalog
+
+Глубокие Sales reports, exports, scheduled reports and cross-period comparisons находятся в top-level `Reports / Analytics`, чтобы не дублировать report module внутри CRM.
 
 Доступ к CRM имеют: CEO, Head of Sales, Seller. Finance Director и Head of Delivery имеют ограниченный доступ к аналитике и сделкам (только просмотр).
 
@@ -264,11 +265,11 @@ Popup обязан:
 
 ---
 
-## 5. Страница отчётов продаж (Sales Reports / Analytics)
+## 5. Sales reports in Reports / Analytics
 
-**Путь:** `/crm/analytics`
+**Путь:** `/reports`
 
-Эта страница является CRM-owned view: она показывает аналитику, нужную Sales прямо в контексте CRM. Глобальные exports, scheduled reports, saved report views и cross-module comparisons должны идти через `Reports / Analytics`.
+Sales analytics является CRM-owned projection, но пользовательский report screen живёт в глобальном `Reports / Analytics`. CRM Dashboard может показывать лёгкий Sales Overview и ссылаться в Reports, но отдельного sidebar пункта `Sales Reports / Analytics` внутри CRM быть не должно.
 
 ### 5.1. Фильтры (верхняя панель)
 

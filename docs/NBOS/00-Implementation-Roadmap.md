@@ -337,10 +337,12 @@ Scope:
 Exit criteria:
 
 - Dashboard is action center, not heavy analytics;
-- Reports is read-only catalog over module-owned report definitions;
+- Reports has a read-only catalog over module-owned report definitions;
 - exports use Drive;
 - scheduled reports have owner, status and failure handling;
 - module analytics boundaries are respected.
+
+Phase 6 delivered the foundation: catalog shell, export jobs, schedules, saved views and data-quality warnings. Phase 7 hardens this into a production report module with real multi-direction report views, charts, tables and cross-module discovery while preserving module-owned formulas.
 
 Key docs:
 
@@ -357,6 +359,7 @@ Scope:
 - Bitrix migration mapping;
 - WhatsApp/Web adapter;
 - finance/accounting message flow;
+- production Reports / Analytics module over Finance, Sales, Marketing, Projects / Delivery and Specialists / KPI;
 - bank integration later;
 - external ad/call tracking later;
 - data import/export runbooks.

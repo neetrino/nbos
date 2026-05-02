@@ -20,6 +20,7 @@ export interface DashboardControlCenterProjection {
   priorities: DashboardPriorityProjection[];
   preference: DashboardPreferenceProjection;
   personalLinks: DashboardPersonalLinkProjection[];
+  notes: DashboardNoteProjection[];
   meta: {
     source: 'module-projections';
     generatedAt: string;
@@ -42,4 +43,12 @@ export interface DashboardPersonalLinkProjection {
   placement: string[];
   openInNewTab: boolean;
   isExternal: boolean;
+}
+
+export interface DashboardNoteProjection {
+  id: string;
+  content: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }

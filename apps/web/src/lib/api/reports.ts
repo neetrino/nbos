@@ -2,16 +2,58 @@ import { api } from '../api';
 import type { FileAsset } from './drive';
 
 export type ReportExportFormat = 'CSV' | 'XLSX' | 'PDF';
+export type ReportOwnerModule =
+  | 'FINANCE'
+  | 'CRM'
+  | 'MARKETING'
+  | 'PROJECTS'
+  | 'COMPANY'
+  | 'SUPPORT'
+  | 'PARTNERS'
+  | 'CREDENTIALS';
+export type ReportCategory =
+  | 'EXECUTIVE'
+  | 'FINANCE'
+  | 'SALES'
+  | 'MARKETING'
+  | 'PROJECTS'
+  | 'SPECIALISTS'
+  | 'SUPPORT'
+  | 'PARTNERS'
+  | 'SECURITY';
 export type ReportExportJobStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 export type ReportScheduleStatus = 'ACTIVE' | 'PAUSED' | 'FAILED' | 'ARCHIVED';
 export type ReportScheduleFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY';
 export type ReportDataQualitySeverity = 'INFO' | 'WARNING';
 
+export interface ReportDefinition {
+  key: string;
+  title: string;
+  category: ReportCategory;
+  ownerModule: ReportOwnerModule;
+  description: string;
+  audience: string[];
+  supportedFilters: string[];
+  supportedExports: ReportExportFormat[];
+  visualizations: string[];
+  sourceEndpoints: string[];
+  drillDownHrefs: string[];
+  requiredPermissions: Array<{ module: string; action: string }>;
+  status: 'READY' | 'PARTIAL' | 'PLANNED';
+  dataQualityNotes: string[];
+  dataEndpoint?: string;
+}
+
+export interface ReportDefinitionsResponse {
+  items: ReportDefinition[];
+  meta: { count: number; scope: string };
+}
+
 export interface ReportExportJob {
   id: string;
   reportKey: string;
   reportTitle: string;
-  ownerModule: string;
+  ownerModule: ReportOwnerModule;
   format: ReportExportFormat;
   status: ReportExportJobStatus;
   requestedById: string;
@@ -31,7 +73,7 @@ export interface ReportSchedule {
   id: string;
   reportKey: string;
   reportTitle: string;
-  ownerModule: string;
+  ownerModule: ReportOwnerModule;
   format: ReportExportFormat;
   status: ReportScheduleStatus;
   ownerId: string;
@@ -57,7 +99,7 @@ export interface SavedReportView {
   id: string;
   reportKey: string;
   reportTitle: string;
-  ownerModule: string;
+  ownerModule: ReportOwnerModule;
   name: string;
   filters: Record<string, string | number | boolean | null> | null;
   ownerId: string;
@@ -68,7 +110,7 @@ export interface SavedReportView {
 export interface ReportDataQualityWarning {
   reportKey: string;
   reportTitle: string;
-  ownerModule: string;
+  ownerModule: ReportOwnerModule;
   severity: ReportDataQualitySeverity;
   code: string;
   message: string;
@@ -81,6 +123,11 @@ export interface ReportDataQualityWarningsResponse {
 }
 
 export const reportsApi = {
+  async listDefinitions(): Promise<ReportDefinitionsResponse> {
+    const resp = await api.get<ReportDefinitionsResponse>('/api/reports/definitions');
+    return resp.data;
+  },
+
   async listExportJobs(): Promise<ReportExportJob[]> {
     const resp = await api.get<ReportExportJob[]>('/api/reports/export-jobs');
     return resp.data;
@@ -88,7 +135,7 @@ export const reportsApi = {
 
   async createExportJob(data: {
     reportKey: string;
-    ownerModule?: 'FINANCE';
+    ownerModule?: ReportOwnerModule;
     format: ReportExportFormat;
     filters?: Record<string, string | number | boolean | null>;
   }): Promise<ReportExportJob> {
@@ -103,7 +150,7 @@ export const reportsApi = {
 
   async createSchedule(data: {
     reportKey: string;
-    ownerModule?: 'FINANCE';
+    ownerModule?: ReportOwnerModule;
     format: ReportExportFormat;
     recipientEmails: string[];
     scheduleLabel: string;
@@ -126,7 +173,7 @@ export const reportsApi = {
 
   async createSavedView(data: {
     reportKey: string;
-    ownerModule?: 'FINANCE';
+    ownerModule?: ReportOwnerModule;
     name: string;
     filters?: Record<string, string | number | boolean | null>;
   }): Promise<SavedReportView> {

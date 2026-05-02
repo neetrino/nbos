@@ -64,7 +64,8 @@ export interface ExtensionOrderRef {
 
 export interface ExtensionStats {
   total: number;
-  byStatus: Record<string, number>;
+  byStatus: Array<{ status: string; _count: number }>;
+  bySize: Array<{ size: string; _count: number }>;
 }
 
 interface ListData {

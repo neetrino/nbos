@@ -2,7 +2,16 @@ import type { InputJsonValue } from '@nbos/database';
 import type { ReportScheduleFrequency } from './reports-schedule-recurrence';
 
 export const REPORT_EXPORT_FORMATS = ['CSV', 'XLSX', 'PDF'] as const;
-export const REPORT_EXPORT_OWNER_MODULES = ['FINANCE'] as const;
+export const REPORT_EXPORT_OWNER_MODULES = [
+  'FINANCE',
+  'CRM',
+  'MARKETING',
+  'PROJECTS',
+  'COMPANY',
+  'SUPPORT',
+  'PARTNERS',
+  'CREDENTIALS',
+] as const;
 
 export type ReportExportFormat = (typeof REPORT_EXPORT_FORMATS)[number];
 export type ReportExportOwnerModule = (typeof REPORT_EXPORT_OWNER_MODULES)[number];
@@ -30,6 +39,35 @@ export interface CreateSavedReportViewDto {
   ownerModule?: unknown;
   name?: unknown;
   filters?: unknown;
+}
+
+export type ReportCategory =
+  | 'EXECUTIVE'
+  | 'FINANCE'
+  | 'SALES'
+  | 'MARKETING'
+  | 'PROJECTS'
+  | 'SPECIALISTS'
+  | 'SUPPORT'
+  | 'PARTNERS'
+  | 'SECURITY';
+
+export interface ReportDefinition {
+  key: string;
+  title: string;
+  category: ReportCategory;
+  ownerModule: ReportExportOwnerModule;
+  description: string;
+  audience: string[];
+  supportedFilters: string[];
+  supportedExports: ReportExportFormat[];
+  visualizations: string[];
+  sourceEndpoints: string[];
+  drillDownHrefs: string[];
+  requiredPermissions: Array<{ module: string; action: string }>;
+  status: 'READY' | 'PARTIAL' | 'PLANNED';
+  dataQualityNotes: string[];
+  dataEndpoint?: string;
 }
 
 export interface ParsedReportExportJobInput {

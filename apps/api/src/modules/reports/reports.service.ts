@@ -8,7 +8,6 @@ import { R2_DRIVE_PREFIX } from '../drive/drive-storage';
 import { CashFlowService } from '../finance/reports/cash-flow.service';
 import { CompanyPnlService } from '../finance/reports/company-pnl.service';
 import { ExpensePlanVsActualService } from '../finance/reports/expense-plan-vs-actual.service';
-import { FinanceReportsService } from '../finance/reports/reports.service';
 import { MrrSubscriptionRevenueService } from '../finance/reports/mrr-subscription-revenue.service';
 import { PayrollReportService } from '../finance/reports/payroll-report.service';
 import { ProjectPnlService } from '../finance/reports/project-pnl.service';
@@ -16,6 +15,7 @@ import {
   buildSensitiveReportAuditContext,
   REPORT_FINANCE_CONFIDENTIALITY,
 } from './reports-audit-context';
+import { findReportDefinition, getReportDefinitions } from './report-definition-registry';
 import { ReportsQueueService } from './reports-queue.service';
 import {
   parseReportExportJobInput,
@@ -40,7 +40,6 @@ const SAVED_REPORT_VIEW_LIMIT = 50;
 export class ReportsService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    private readonly financeReportsService: FinanceReportsService,
     private readonly auditService: AuditService,
     private readonly driveService: DriveService,
     private readonly companyPnlService: CompanyPnlService,
@@ -51,6 +50,17 @@ export class ReportsService {
     private readonly projectPnlService: ProjectPnlService,
     private readonly reportsQueueService?: ReportsQueueService,
   ) {}
+
+  listDefinitions() {
+    const items = getReportDefinitions();
+    return {
+      items,
+      meta: {
+        count: items.length,
+        scope: 'Phase 7 Reports / Analytics report center definitions',
+      },
+    };
+  }
 
   async listExportJobs(requestedById: string) {
     return this.prisma.reportExportJob.findMany({
@@ -78,39 +88,38 @@ export class ReportsService {
   }
 
   listDataQualityWarnings(): { items: ReportDataQualityWarning[]; meta: { count: number } } {
-    const definitions = this.financeReportsService.getDefinitions().items;
+    const definitions = getReportDefinitions();
     const items = definitions.flatMap((definition) => {
       const warnings: ReportDataQualityWarning[] = [
         {
-          reportKey: definition.id,
+          reportKey: definition.key,
           reportTitle: definition.title,
-          ownerModule: 'FINANCE',
+          ownerModule: definition.ownerModule,
           severity: 'INFO',
           code: 'MODULE_OWNED_SOURCES',
-          message: 'Finance owns this report formula; Reports exposes source endpoints only.',
+          message: `${definition.ownerModule} owns this report projection; Reports exposes discovery, exports and schedules.`,
           sourceEndpoints: definition.sourceEndpoints,
         },
       ];
-      if (definition.phase6Deferred) {
+      for (const note of definition.dataQualityNotes) {
         warnings.push({
-          reportKey: definition.id,
+          reportKey: definition.key,
           reportTitle: definition.title,
-          ownerModule: 'FINANCE',
+          ownerModule: definition.ownerModule,
           severity: 'INFO',
-          code: 'DEFERRED_DEPTH',
-          message: definition.phase6Deferred,
+          code: 'REPORT_NOTE',
+          message: note,
           sourceEndpoints: definition.sourceEndpoints,
         });
       }
-      if (!definition.aggregateEndpoint || definition.v1Status !== 'definition_ready') {
+      if (definition.status !== 'READY') {
         warnings.push({
-          reportKey: definition.id,
+          reportKey: definition.key,
           reportTitle: definition.title,
-          ownerModule: 'FINANCE',
+          ownerModule: definition.ownerModule,
           severity: 'WARNING',
           code: 'INCOMPLETE_PROJECTION',
-          message:
-            'This report is visible in the catalog but its aggregate projection is incomplete.',
+          message: 'This report is visible in the catalog but its live projection is incomplete.',
           sourceEndpoints: definition.sourceEndpoints,
         });
       }
@@ -121,14 +130,11 @@ export class ReportsService {
 
   async createExportJob(requestedById: string, input: CreateReportExportJobDto) {
     const parsed = parseReportExportJobInput(input);
-    if (parsed.ownerModule !== 'FINANCE') {
-      throw new BadRequestException('Only Finance-owned report exports are wired in this slice.');
-    }
-
-    const definition = this.financeReportsService.getDefinition(parsed.reportKey);
+    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
+    this.assertExportFormatSupported(definition.supportedExports, parsed.format);
     const job = await this.prisma.reportExportJob.create({
       data: {
-        reportKey: definition.id,
+        reportKey: definition.key,
         reportTitle: definition.title,
         ownerModule: parsed.ownerModule,
         format: parsed.format,
@@ -152,14 +158,11 @@ export class ReportsService {
 
   async createSchedule(ownerId: string, input: CreateReportScheduleDto) {
     const parsed = parseReportScheduleInput(input);
-    if (parsed.ownerModule !== 'FINANCE') {
-      throw new BadRequestException('Only Finance-owned report schedules are wired in this slice.');
-    }
-
-    const definition = this.financeReportsService.getDefinition(parsed.reportKey);
+    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
+    this.assertExportFormatSupported(definition.supportedExports, parsed.format);
     const schedule = await this.prisma.reportSchedule.create({
       data: {
-        reportKey: definition.id,
+        reportKey: definition.key,
         reportTitle: definition.title,
         ownerModule: parsed.ownerModule,
         format: parsed.format,
@@ -199,15 +202,10 @@ export class ReportsService {
 
   async createSavedView(ownerId: string, input: CreateSavedReportViewDto) {
     const parsed = parseSavedReportViewInput(input);
-    if (parsed.ownerModule !== 'FINANCE') {
-      throw new BadRequestException(
-        'Only Finance-owned saved report views are wired in this slice.',
-      );
-    }
-    const definition = this.financeReportsService.getDefinition(parsed.reportKey);
+    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
     const view = await this.prisma.savedReportView.create({
       data: {
-        reportKey: definition.id,
+        reportKey: definition.key,
         reportTitle: definition.title,
         ownerModule: parsed.ownerModule,
         name: parsed.name,
@@ -268,7 +266,7 @@ export class ReportsService {
     });
 
     try {
-      const payload = await this.getFinanceReportPayload(job.reportKey, job.filters);
+      const payload = await this.getReportPayload(job.reportKey, job.ownerModule, job.filters);
       const csv = toCsvRows(payload);
       const file = await this.driveService.createGeneratedFileAsset({
         displayName: buildExportFileName(job.reportKey, job.id),
@@ -303,6 +301,18 @@ export class ReportsService {
     };
   }
 
+  private getRegisteredDefinition(reportKey: string, ownerModule: string) {
+    const definition = findReportDefinition(reportKey, ownerModule);
+    if (!definition) throw new NotFoundException('Report definition was not found.');
+    return definition;
+  }
+
+  private assertExportFormatSupported(supportedFormats: readonly string[], format: string) {
+    if (!supportedFormats.includes(format)) {
+      throw new BadRequestException(`Report does not support ${format} export.`);
+    }
+  }
+
   private async failExportJob(jobId: string, actorId: string, message: string) {
     const job = await this.prisma.reportExportJob.update({
       where: { id: jobId },
@@ -319,6 +329,12 @@ export class ReportsService {
     return job;
   }
 
+  private getReportPayload(reportKey: string, ownerModule: string, filters: InputJsonValue | null) {
+    if (ownerModule !== 'FINANCE')
+      return this.getRegistryReportPayload(reportKey, ownerModule, filters);
+    return this.getFinanceReportPayload(reportKey, filters);
+  }
+
   private getFinanceReportPayload(reportKey: string, filters: InputJsonValue | null) {
     const query = parseReportFilters(filters);
     if (reportKey === 'company-pnl') return this.companyPnlService.getReport(query);
@@ -332,6 +348,25 @@ export class ReportsService {
     if (reportKey === 'payroll-report') return this.payrollReportService.getReport(query);
     if (reportKey === 'project-pnl') return this.projectPnlService.getReport(query);
     throw new NotFoundException('Finance report export source was not found.');
+  }
+
+  private getRegistryReportPayload(
+    reportKey: string,
+    ownerModule: string,
+    filters: InputJsonValue | null,
+  ) {
+    const definition = this.getRegisteredDefinition(reportKey, ownerModule);
+    return {
+      reportKey: definition.key,
+      reportTitle: definition.title,
+      ownerModule: definition.ownerModule,
+      generatedAt: new Date().toISOString(),
+      filters: filters ?? null,
+      sourceEndpoints: definition.sourceEndpoints,
+      dataQualityNotes: definition.dataQualityNotes,
+      message:
+        'This export contains the registered report definition and source metadata. Live aggregate rows are owned by the source module projection.',
+    };
   }
 }
 

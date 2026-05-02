@@ -125,11 +125,9 @@ Runtime finance children не соответствуют новому Finance ca
 CRM children тоже должны быть приведены к CRM canon:
 
 - Leads;
-- Deals;
-- CRM Client Chats;
-- Sales Reports / Analytics as CRM-owned module view and Reports Catalog item.
+- Deals.
 
-Runtime now applies child-level permission visibility for CRM and Finance links, so users do not see unavailable sub-sections. Deeper Finance/CRM naming and workflow completeness remains module implementation work.
+Runtime now applies child-level permission visibility for CRM and Finance links, so users do not see unavailable sub-sections. Sales analytics belongs to the global Reports module and should not be duplicated as a CRM sidebar child.
 
 ### B7. Marketing top-level module is missing
 
@@ -163,7 +161,7 @@ Reports / Analytics
 ```
 
 Dashboard не должен тянуть тяжёлую аналитику; он должен вести в Reports.
-Runtime now exposes Reports / Analytics as a top-level read-only module placeholder. Report catalog implementation remains Phase 6 work.
+Runtime now exposes Reports / Analytics as a top-level read-only module in the lower reporting/management area. Phase 7 turns it from placeholder/catalog into a production report center.
 
 ---
 

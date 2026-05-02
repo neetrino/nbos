@@ -18,6 +18,16 @@ export class ReportsController {
     private readonly scheduleManagementService: ReportsScheduleManagementService,
   ) {}
 
+  @Get('definitions')
+  @ApiOperation({
+    summary: 'List Reports / Analytics report definitions',
+    description:
+      'Phase 7 report center registry across Finance, Sales, Marketing, Projects and Specialists/KPI.',
+  })
+  listDefinitions() {
+    return this.reportsService.listDefinitions();
+  }
+
   @Get('export-jobs')
   @ApiOperation({
     summary: 'List current user report export jobs',

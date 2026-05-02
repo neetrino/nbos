@@ -30,6 +30,12 @@ export interface FinanceReportDefinitionsResponse {
   };
 }
 
+export interface FinanceReportQueryParams {
+  dateFrom?: string;
+  dateTo?: string;
+  asOf?: string;
+}
+
 export interface CompanyPnlReport {
   reportId: 'company-pnl';
   title: 'Company P&L';
@@ -239,37 +245,43 @@ export const financeReportsApi = {
     return resp.data;
   },
 
-  async getCompanyPnl(): Promise<CompanyPnlReport> {
-    const resp = await api.get<CompanyPnlReport>('/api/finance/reports/company-pnl');
+  async getCompanyPnl(params?: FinanceReportQueryParams): Promise<CompanyPnlReport> {
+    const resp = await api.get<CompanyPnlReport>('/api/finance/reports/company-pnl', { params });
     return resp.data;
   },
 
-  async getCashFlow(): Promise<CashFlowReport> {
-    const resp = await api.get<CashFlowReport>('/api/finance/reports/cash-flow');
+  async getCashFlow(params?: FinanceReportQueryParams): Promise<CashFlowReport> {
+    const resp = await api.get<CashFlowReport>('/api/finance/reports/cash-flow', { params });
     return resp.data;
   },
 
-  async getExpensePlanVsActual(): Promise<ExpensePlanVsActualReport> {
+  async getExpensePlanVsActual(
+    params?: FinanceReportQueryParams,
+  ): Promise<ExpensePlanVsActualReport> {
     const resp = await api.get<ExpensePlanVsActualReport>(
       '/api/finance/reports/expense-plan-vs-actual',
+      { params },
     );
     return resp.data;
   },
 
-  async getMrrSubscriptionRevenue(): Promise<MrrSubscriptionRevenueReport> {
+  async getMrrSubscriptionRevenue(
+    params?: FinanceReportQueryParams,
+  ): Promise<MrrSubscriptionRevenueReport> {
     const resp = await api.get<MrrSubscriptionRevenueReport>(
       '/api/finance/reports/mrr-subscription-revenue',
+      { params },
     );
     return resp.data;
   },
 
-  async getPayrollReport(): Promise<PayrollReport> {
-    const resp = await api.get<PayrollReport>('/api/finance/reports/payroll');
+  async getPayrollReport(params?: FinanceReportQueryParams): Promise<PayrollReport> {
+    const resp = await api.get<PayrollReport>('/api/finance/reports/payroll', { params });
     return resp.data;
   },
 
-  async getProjectPnl(): Promise<ProjectPnlReport> {
-    const resp = await api.get<ProjectPnlReport>('/api/finance/reports/project-pnl');
+  async getProjectPnl(params?: FinanceReportQueryParams): Promise<ProjectPnlReport> {
+    const resp = await api.get<ProjectPnlReport>('/api/finance/reports/project-pnl', { params });
     return resp.data;
   },
 };

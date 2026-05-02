@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type {
   DashboardMetricProjection,
+  DashboardNote as ApiDashboardNote,
   DashboardPersonalLink as ApiDashboardPersonalLink,
   DashboardPreferenceProjection,
   DashboardPriorityProjection,
@@ -29,6 +30,7 @@ export interface PinnedAction {
 }
 
 export type DashboardPersonalLink = ApiDashboardPersonalLink;
+export type DashboardNote = ApiDashboardNote;
 export type DashboardData = DashboardMetricProjection;
 export type DashboardPreference = DashboardPreferenceProjection;
 export type DashboardPinnedActionKey =
@@ -199,6 +201,40 @@ export const MINI_METRICS = [
     href: '/reports',
   },
 ] as const;
+
+export type MiniMetricDefinition = (typeof MINI_METRICS)[number];
+
+/** Split mini widgets into visible vs hidden lists, preserving saved order where set. */
+export function partitionMiniMetrics(
+  hiddenWidgetIds: readonly string[],
+  visibleWidgetOrder: readonly string[],
+): { visible: MiniMetricDefinition[]; hidden: MiniMetricDefinition[] } {
+  const byId = new Map<string, MiniMetricDefinition>(MINI_METRICS.map((m) => [m.id, m]));
+  const hiddenSet = new Set(hiddenWidgetIds);
+
+  const hidden = hiddenWidgetIds.flatMap((id) => {
+    const metric = byId.get(id);
+    return metric ? [metric] : [];
+  });
+
+  const seen = new Set<string>();
+  const visible: MiniMetricDefinition[] = [];
+
+  const pushIfVisible = (id: string) => {
+    if (seen.has(id) || hiddenSet.has(id)) return;
+    const metric = byId.get(id);
+    if (!metric) return;
+    visible.push(metric);
+    seen.add(id);
+  };
+
+  if (visibleWidgetOrder.length > 0) {
+    for (const id of visibleWidgetOrder) pushIfVisible(id);
+  }
+  for (const metric of MINI_METRICS) pushIfVisible(metric.id);
+
+  return { visible, hidden };
+}
 
 export function priorityClass(severity: PriorityCard['severity']): string {
   if (severity === 'critical') return 'border-red-200 bg-red-50 text-red-800';

@@ -1,0 +1,170 @@
+'use client';
+
+import { useState } from 'react';
+import { Check, SlidersHorizontal } from 'lucide-react';
+import { PageHeader } from '@/components/shared';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import type {
+  DashboardData,
+  DashboardNote,
+  DashboardPersonalLink,
+  MiniMetricDefinition,
+  PinnedAction,
+  PriorityCard,
+} from '../dashboard-control-registry';
+import { MiniAnalytics, PriorityFeed } from './DashboardInsightPanels';
+import { DashboardNotesPanel } from './DashboardNotesPanel';
+import { PinnedActions } from './DashboardPinnedActions';
+
+const PINNED_SKELETON_COUNT = 6;
+
+/**
+ * Caps the notes column (~95% viewport) so long note lists scroll inside the panel.
+ * The dashboard page itself remains scrollable in the app shell (`main`).
+ */
+const DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS = 'max-h-[min(95dvh,calc(100dvh-4.5rem))]';
+
+interface DashboardControlCenterViewProps {
+  actions: PinnedAction[];
+  applyPinnedLayout: (
+    visibleKeys: PinnedAction['key'][],
+    hiddenKeys: PinnedAction['key'][],
+  ) => void;
+  applyWidgetLayout: (visibleIds: string[], hiddenIds: string[]) => void;
+  createDashboardNote: (content: string) => Promise<void>;
+  data: DashboardData | null;
+  deleteDashboardNote: (id: string) => Promise<void>;
+  error: string | null;
+  hiddenActions: PinnedAction[];
+  hiddenMiniMetrics: MiniMetricDefinition[];
+  notes: DashboardNote[];
+  personalLinks: DashboardPersonalLink[];
+  priorities: PriorityCard[];
+  savingPreference: boolean;
+  visibleMiniMetrics: MiniMetricDefinition[];
+  createPersonalLink: (label: string, url: string) => Promise<void>;
+  deletePersonalLink: (id: string) => Promise<void>;
+  reorderDashboardNotes: (noteIds: string[]) => Promise<void>;
+  updateDashboardNote: (id: string, content: string) => Promise<void>;
+}
+
+export function DashboardControlCenterView({
+  actions,
+  applyPinnedLayout,
+  applyWidgetLayout,
+  createDashboardNote,
+  data,
+  deleteDashboardNote,
+  error,
+  hiddenActions,
+  hiddenMiniMetrics,
+  notes,
+  personalLinks,
+  priorities,
+  savingPreference,
+  visibleMiniMetrics,
+  createPersonalLink,
+  deletePersonalLink,
+  reorderDashboardNotes,
+  updateDashboardNote,
+}: DashboardControlCenterViewProps) {
+  const [editMode, setEditMode] = useState(false);
+
+  return (
+    <div className="flex min-h-0 flex-col gap-5">
+      <DashboardHeader
+        editMode={editMode}
+        onToggleEdit={() => setEditMode((current) => !current)}
+      />
+      {error ? <DashboardError message={error} /> : null}
+      <section className="grid min-h-0 items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
+        <div className="min-h-0 space-y-5">
+          <PinnedActions
+            actions={actions}
+            editMode={editMode}
+            hiddenActions={hiddenActions}
+            onApplyPinnedLayout={applyPinnedLayout}
+            onCreatePersonalLink={createPersonalLink}
+            onDeletePersonalLink={deletePersonalLink}
+            personalLinks={personalLinks}
+            saving={savingPreference}
+          />
+          <div className="grid gap-5 lg:grid-cols-2">
+            <MiniAnalytics
+              data={data}
+              editMode={editMode}
+              hiddenMetrics={hiddenMiniMetrics}
+              onApplyWidgetLayout={applyWidgetLayout}
+              visibleMetrics={visibleMiniMetrics}
+            />
+            <PriorityFeed priorities={priorities} />
+          </div>
+        </div>
+        <div
+          className={`flex min-h-0 w-full min-w-0 flex-col self-start ${DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS}`}
+        >
+          <DashboardNotesPanel
+            className="min-h-0 flex-1"
+            notes={notes}
+            onCreateNote={createDashboardNote}
+            onDeleteNote={deleteDashboardNote}
+            onReorderNotes={reorderDashboardNotes}
+            onUpdateNote={updateDashboardNote}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export function DashboardLoadingSkeleton() {
+  return (
+    <div className="flex min-h-0 flex-col gap-5">
+      <Skeleton className="h-20 rounded-2xl" />
+      <div className="grid min-h-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
+        <div className="min-h-0 space-y-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
+              <Skeleton key={index} className="h-20 rounded-md" />
+            ))}
+          </div>
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Skeleton className="h-64 rounded-2xl" />
+            <Skeleton className="h-28 rounded-2xl" />
+          </div>
+        </div>
+        <Skeleton className={`min-h-0 rounded-2xl ${DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS}`} />
+      </div>
+    </div>
+  );
+}
+
+function DashboardHeader({
+  editMode,
+  onToggleEdit,
+}: {
+  editMode: boolean;
+  onToggleEdit: () => void;
+}) {
+  return (
+    <PageHeader title="Dashboard">
+      <Button variant={editMode ? 'default' : 'secondary'} size="sm" onClick={onToggleEdit}>
+        {editMode ? (
+          <Check className="h-3.5 w-3.5" />
+        ) : (
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+        )}
+        {editMode ? 'Done' : 'Edit layout'}
+      </Button>
+    </PageHeader>
+  );
+}
+
+function DashboardError({ message }: { message: string }) {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+      {message}
+    </div>
+  );
+}

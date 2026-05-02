@@ -13,10 +13,10 @@ export function ReportsDataQualityPanel({ warnings, onRefresh }: ReportsDataQual
   const warningCount = warnings.filter((item) => item.severity === 'WARNING').length;
 
   return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="border-border bg-card rounded-2xl border p-5 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
         <div>
-          <p className="font-medium">Data-quality warnings</p>
+          <p className="text-xl font-semibold">Data-quality warnings</p>
           <p className="text-muted-foreground text-sm">
             Honest limitations from module-owned report definitions. No missing data is converted
             into fake zeroes.

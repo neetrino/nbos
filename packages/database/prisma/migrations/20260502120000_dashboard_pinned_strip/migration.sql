@@ -1,0 +1,1 @@
+-- No-op migration placeholder. The dashboard pinned strip change did not require SQL.

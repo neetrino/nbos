@@ -11,6 +11,7 @@ function createModelMock() {
       .fn()
       .mockImplementation(({ create }) => Promise.resolve({ id: 'test-id', ...create })),
     delete: vi.fn().mockResolvedValue({ id: 'test-id' }),
+    deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
     updateMany: vi.fn().mockResolvedValue({ count: 0 }),
     count: vi.fn().mockResolvedValue(0),
     groupBy: vi.fn().mockResolvedValue([]),
@@ -46,6 +47,7 @@ export function createMockPrisma() {
     savedReportView: createModelMock(),
     dashboardPreference: createModelMock(),
     personalLink: createModelMock(),
+    dashboardNote: createModelMock(),
     documentSection: createModelMock(),
     externalDocumentLink: createModelMock(),
     document: createModelMock(),

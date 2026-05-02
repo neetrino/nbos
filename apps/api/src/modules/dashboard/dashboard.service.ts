@@ -4,6 +4,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import type {
   DashboardControlCenterProjection,
   DashboardMetricProjection,
+  DashboardNoteProjection,
   DashboardPersonalLinkProjection,
   DashboardPreferenceProjection,
   DashboardPriorityProjection,
@@ -14,7 +15,10 @@ import {
   type DashboardPinnedActionKey,
   type DashboardWidgetKey,
 } from './dashboard.constants';
+import { DASHBOARD_NOTE_LIMIT, DASHBOARD_NOTE_MAX_LENGTH } from './dashboard-note.constants';
+import type { CreateDashboardNoteDto } from './dto/create-dashboard-note.dto';
 import type { CreatePersonalLinkDto } from './dto/create-personal-link.dto';
+import type { UpdateDashboardNoteDto } from './dto/update-dashboard-note.dto';
 import type { UpdateDashboardPreferenceDto } from './dto/update-dashboard-preference.dto';
 
 const PERSONAL_LINK_LIMIT = 12;
@@ -26,16 +30,18 @@ export class DashboardService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async getControlCenterProjection(employeeId: string): Promise<DashboardControlCenterProjection> {
-    const [metrics, preference, personalLinks] = await Promise.all([
+    const [metrics, preference, personalLinks, notes] = await Promise.all([
       this.getMetrics(),
       this.getOrCreatePreference(employeeId),
       this.listPersonalLinks(employeeId),
+      this.listNotes(employeeId),
     ]);
     return {
       metrics,
       priorities: this.buildPriorities(metrics),
       preference,
       personalLinks,
+      notes,
       meta: {
         source: 'module-projections',
         generatedAt: new Date().toISOString(),
@@ -94,6 +100,96 @@ export class DashboardService {
       take: PERSONAL_LINK_LIMIT,
     });
     return links.map(toPersonalLinkProjection);
+  }
+
+  async deletePersonalLink(employeeId: string, id: string): Promise<{ deleted: boolean }> {
+    const result = await this.prisma.personalLink.deleteMany({
+      where: { id, ownerId: employeeId },
+    });
+    return { deleted: result.count > 0 };
+  }
+
+  async listNotes(employeeId: string): Promise<DashboardNoteProjection[]> {
+    const notes = await this.prisma.dashboardNote.findMany({
+      where: { ownerId: employeeId },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+      take: DASHBOARD_NOTE_LIMIT,
+    });
+    return notes.map(toNoteProjection);
+  }
+
+  async createNote(
+    employeeId: string,
+    data: CreateDashboardNoteDto,
+  ): Promise<DashboardNoteProjection> {
+    const content = sanitizeDashboardNoteContent(data.content);
+    const note = await this.prisma.$transaction(async (tx) => {
+      await tx.dashboardNote.updateMany({
+        where: { ownerId: employeeId },
+        data: { sortOrder: { increment: 1 } },
+      });
+      return tx.dashboardNote.create({
+        data: {
+          ownerId: employeeId,
+          content,
+          sortOrder: 0,
+        },
+      });
+    });
+    return toNoteProjection(note);
+  }
+
+  async updateNote(
+    employeeId: string,
+    id: string,
+    data: UpdateDashboardNoteDto,
+  ): Promise<DashboardNoteProjection> {
+    const content = sanitizeDashboardNoteContent(data.content);
+    const result = await this.prisma.dashboardNote.updateMany({
+      where: { id, ownerId: employeeId },
+      data: { content },
+    });
+    if (result.count === 0) {
+      throw new BadRequestException('Dashboard note was not found.');
+    }
+    const note = await this.prisma.dashboardNote.findFirst({
+      where: { id, ownerId: employeeId },
+    });
+    if (!note) {
+      throw new BadRequestException('Dashboard note was not found.');
+    }
+    return toNoteProjection(note);
+  }
+
+  async reorderNotes(employeeId: string, noteIds: string[]): Promise<DashboardNoteProjection[]> {
+    const uniqueIds = [...new Set(noteIds)];
+    if (uniqueIds.length !== noteIds.length) {
+      throw new BadRequestException('Dashboard note order cannot contain duplicates.');
+    }
+    const existingCount = await this.prisma.dashboardNote.count({
+      where: { ownerId: employeeId, id: { in: uniqueIds } },
+    });
+    if (existingCount !== uniqueIds.length) {
+      throw new BadRequestException('Dashboard note order contains an unknown note.');
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await Promise.all(
+        uniqueIds.map((id, sortOrder) =>
+          tx.dashboardNote.updateMany({
+            where: { id, ownerId: employeeId },
+            data: { sortOrder },
+          }),
+        ),
+      );
+    });
+    return this.listNotes(employeeId);
+  }
+
+  async deleteNote(employeeId: string, id: string): Promise<{ deleted: boolean }> {
+    const result = await this.prisma.dashboardNote.deleteMany({
+      where: { id, ownerId: employeeId },
+    });
+    return { deleted: result.count > 0 };
   }
 
   private async getMetrics(): Promise<DashboardMetricProjection> {
@@ -174,6 +270,10 @@ type PersonalLinkModel = Awaited<
   ReturnType<InstanceType<typeof PrismaClient>['personalLink']['create']>
 >;
 
+type DashboardNoteModel = Awaited<
+  ReturnType<InstanceType<typeof PrismaClient>['dashboardNote']['create']>
+>;
+
 function toPersonalLinkProjection(model: PersonalLinkModel): DashboardPersonalLinkProjection {
   return {
     id: model.id,
@@ -183,6 +283,29 @@ function toPersonalLinkProjection(model: PersonalLinkModel): DashboardPersonalLi
     openInNewTab: model.openInNewTab,
     isExternal: isExternalUrl(model.url),
   };
+}
+
+function toNoteProjection(model: DashboardNoteModel): DashboardNoteProjection {
+  return {
+    id: model.id,
+    content: model.content,
+    sortOrder: model.sortOrder,
+    createdAt: model.createdAt.toISOString(),
+    updatedAt: model.updatedAt.toISOString(),
+  };
+}
+
+function sanitizeDashboardNoteContent(value: string): string {
+  const content = value.trim();
+  if (!content) {
+    throw new BadRequestException('Dashboard note content cannot be empty.');
+  }
+  if (content.length > DASHBOARD_NOTE_MAX_LENGTH) {
+    throw new BadRequestException(
+      `Dashboard note content cannot exceed ${DASHBOARD_NOTE_MAX_LENGTH} characters.`,
+    );
+  }
+  return content;
 }
 
 function getDefaultPinnedActions(role: string | null): DashboardPinnedActionKey[] {
@@ -216,11 +339,35 @@ function isExternalUrl(url: string): boolean {
   return EXTERNAL_URL_PATTERN.test(url);
 }
 
+const HIERARCHICAL_URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
+const BLOCKED_SIMPLE_SCHEME_PATTERN = /^(javascript|data|vbscript|mailto):/i;
+
 function sanitizePersonalLinkUrl(value: string): string {
-  const url = value.trim();
+  let url = value.trim();
+  if (!url) {
+    throw new BadRequestException('Personal link URL must be an internal path or http(s) URL.');
+  }
+
+  if (url.startsWith('//') && !url.startsWith('///')) {
+    url = `https:${url}`;
+  }
+
   const isInternalPath = url.startsWith('/') && !url.startsWith('//');
-  if (isInternalPath || isExternalUrl(url)) return url;
-  throw new BadRequestException('Personal link URL must be an internal path or http(s) URL.');
+  if (isInternalPath) return url;
+  if (isExternalUrl(url)) return url;
+
+  if (HIERARCHICAL_URL_SCHEME_PATTERN.test(url)) {
+    throw new BadRequestException(
+      'Personal link URL must use http(s) or an internal path starting with /.',
+    );
+  }
+  if (BLOCKED_SIMPLE_SCHEME_PATTERN.test(url)) {
+    throw new BadRequestException(
+      'Personal link URL must use http(s) or an internal path starting with /.',
+    );
+  }
+
+  return `https://${url}`;
 }
 
 function toPreferenceProjection(model: DashboardPreferenceModel): DashboardPreferenceProjection {
