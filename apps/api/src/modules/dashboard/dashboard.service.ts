@@ -96,6 +96,13 @@ export class DashboardService {
     return links.map(toPersonalLinkProjection);
   }
 
+  async deletePersonalLink(employeeId: string, id: string): Promise<{ deleted: boolean }> {
+    const result = await this.prisma.personalLink.deleteMany({
+      where: { id, ownerId: employeeId },
+    });
+    return { deleted: result.count > 0 };
+  }
+
   private async getMetrics(): Promise<DashboardMetricProjection> {
     const { start, end } = getTodayRange();
     const [openTasks, dueTodayTasks, openDeals, pendingInvoices, openTickets, criticalTickets] =

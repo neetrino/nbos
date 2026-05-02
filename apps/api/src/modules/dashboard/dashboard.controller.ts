@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
 import { CreatePersonalLinkDto } from './dto/create-personal-link.dto';
@@ -44,5 +44,12 @@ export class DashboardController {
   @ApiOperation({ summary: 'Create a current user personal link' })
   createPersonalLink(@CurrentUser() user: CurrentUserPayload, @Body() body: CreatePersonalLinkDto) {
     return this.dashboardService.createPersonalLink(user.id, body);
+  }
+
+  @Delete('personal-links/:id')
+  @RequirePermission('DASHBOARDS', 'VIEW')
+  @ApiOperation({ summary: 'Delete a current user personal link' })
+  deletePersonalLink(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.dashboardService.deletePersonalLink(user.id, id);
   }
 }

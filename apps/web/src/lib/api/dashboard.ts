@@ -86,4 +86,8 @@ export const dashboardApi = {
     );
     return response.data;
   },
+
+  async deletePersonalLink(id: string): Promise<void> {
+    await api.delete(`/api/dashboard/personal-links/${id}`);
+  },
 };

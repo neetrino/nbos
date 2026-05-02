@@ -62,4 +62,15 @@ describe('DashboardService', () => {
       }),
     );
   });
+
+  it('deletes only current owner personal links', async () => {
+    const prisma = createMockPrisma();
+    const service = new DashboardService(prisma as unknown as InstanceType<typeof PrismaClient>);
+
+    await service.deletePersonalLink('employee-1', 'link-1');
+
+    expect(prisma.personalLink.deleteMany).toHaveBeenCalledWith({
+      where: { id: 'link-1', ownerId: 'employee-1' },
+    });
+  });
 });
