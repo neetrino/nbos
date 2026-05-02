@@ -37,6 +37,18 @@ const NOTE_CARD_Z_INDEX_DRAGGING = 20;
 /** Very subtle tilt (degrees), direction still flips by id — barely visible “pile”. */
 const NOTE_TILT_MAGNITUDES = [0.7, 0.9, 1.1, 1.3, 1.5, 1.8] as const;
 
+/** Corner controls on cream cards (composer + saved notes). */
+const NOTE_CORNER_PILL_CLASS =
+  'h-7 rounded-full border border-amber-200 bg-amber-50/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-100/90';
+
+const NOTE_CORNER_SAVE_PRIMARY_CLASS = cn(
+  NOTE_CORNER_PILL_CLASS,
+  'border-amber-800/30 bg-amber-900 text-amber-50 hover:bg-amber-800 disabled:border-amber-200 disabled:bg-amber-50/90 disabled:text-amber-900/30',
+);
+
+/** Shown next to the composer Save control when the draft is non-empty. */
+const NOTE_COMPOSER_SAVE_ACTION_HINT = '↵ Enter or';
+
 interface DashboardNotesPanelProps {
   className?: string;
   notes?: DashboardNote[];
@@ -57,6 +69,7 @@ export function DashboardNotesPanel({
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const canSave = draft.trim().length > 0 && !saving;
+  const showComposerSave = draft.length > 0;
   const visibleNotes = notes ?? [];
 
   async function saveDraft() {
@@ -94,13 +107,25 @@ export function DashboardNotesPanel({
             className={cn(
               'min-h-36 resize-none border-0 bg-transparent px-4 py-4 text-sm leading-7 shadow-none',
               'placeholder:text-amber-900/40 focus-visible:ring-0',
+              showComposerSave && 'pb-14',
             )}
           />
-          <div className="flex justify-end px-4 pb-3">
-            <Button size="sm" onClick={() => void saveDraft()} disabled={!canSave}>
-              Save
-            </Button>
-          </div>
+          {showComposerSave ? (
+            <div className="absolute right-2 bottom-2 z-10 flex max-w-[calc(100%-1rem)] items-center justify-end gap-2">
+              <p className="min-w-0 text-right text-[10px] leading-snug font-medium text-amber-900/50 select-none">
+                {NOTE_COMPOSER_SAVE_ACTION_HINT}
+              </p>
+              <Button
+                type="button"
+                size="xs"
+                className={cn(NOTE_CORNER_SAVE_PRIMARY_CLASS, 'shrink-0')}
+                disabled={!canSave}
+                onClick={() => void saveDraft()}
+              >
+                Save
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -359,17 +384,13 @@ function NoteEditActions({
   onCancel: () => void;
   onSave: () => void;
 }) {
-  /** Matches `NoteActions` delete control: corner pill on cream card. */
-  const cornerPillClass =
-    'h-7 rounded-full border border-amber-200 bg-amber-50/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-100/90';
-
   return (
     <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1">
       <Button
         type="button"
         variant="ghost"
         size="xs"
-        className={cornerPillClass}
+        className={NOTE_CORNER_PILL_CLASS}
         onClick={(event) => {
           event.stopPropagation();
           onCancel();
@@ -380,10 +401,7 @@ function NoteEditActions({
       <Button
         type="button"
         size="xs"
-        className={cn(
-          cornerPillClass,
-          'border-amber-800/30 bg-amber-900 text-amber-50 hover:bg-amber-800 disabled:border-amber-200 disabled:bg-amber-50/90 disabled:text-amber-900/30',
-        )}
+        className={NOTE_CORNER_SAVE_PRIMARY_CLASS}
         disabled={!canSave}
         onClick={(event) => {
           event.stopPropagation();
