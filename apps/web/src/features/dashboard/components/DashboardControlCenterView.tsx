@@ -18,7 +18,12 @@ import { DashboardNotesPanel } from './DashboardNotesPanel';
 import { PinnedActions } from './DashboardPinnedActions';
 
 const PINNED_SKELETON_COUNT = 6;
-const DASHBOARD_VIEWPORT_HEIGHT_CLASS = 'h-[calc(100dvh-7rem)] max-h-[calc(100dvh-7rem)]';
+
+/**
+ * Caps the notes column (~95% viewport) so long note lists scroll inside the panel.
+ * The dashboard page itself remains scrollable in the app shell (`main`).
+ */
+const DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS = 'max-h-[min(95dvh,calc(100dvh-4.5rem))]';
 
 interface DashboardControlCenterViewProps {
   actions: PinnedAction[];
@@ -67,16 +72,14 @@ export function DashboardControlCenterView({
   const [editMode, setEditMode] = useState(false);
 
   return (
-    <div
-      className={`flex min-h-0 flex-col gap-5 overflow-hidden ${DASHBOARD_VIEWPORT_HEIGHT_CLASS}`}
-    >
+    <div className="flex min-h-0 flex-col gap-5">
       <DashboardHeader
         editMode={editMode}
         onToggleEdit={() => setEditMode((current) => !current)}
       />
       {error ? <DashboardError message={error} /> : null}
-      <section className="grid min-h-0 flex-1 items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
-        <div className="min-h-0 space-y-5 overflow-hidden">
+      <section className="grid min-h-0 items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
+        <div className="min-h-0 space-y-5">
           <PinnedActions
             actions={actions}
             editMode={editMode}
@@ -98,9 +101,11 @@ export function DashboardControlCenterView({
             <PriorityFeed priorities={priorities} />
           </div>
         </div>
-        <div className="min-h-0">
+        <div
+          className={`flex min-h-0 w-full min-w-0 flex-col self-start ${DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS}`}
+        >
           <DashboardNotesPanel
-            className="h-full"
+            className="min-h-0 flex-1"
             notes={notes}
             onCreateNote={createDashboardNote}
             onDeleteNote={deleteDashboardNote}
@@ -115,12 +120,10 @@ export function DashboardControlCenterView({
 
 export function DashboardLoadingSkeleton() {
   return (
-    <div
-      className={`flex min-h-0 flex-col gap-5 overflow-hidden ${DASHBOARD_VIEWPORT_HEIGHT_CLASS}`}
-    >
+    <div className="flex min-h-0 flex-col gap-5">
       <Skeleton className="h-20 rounded-2xl" />
-      <div className="grid min-h-0 flex-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
-        <div className="min-h-0 space-y-5 overflow-hidden">
+      <div className="grid min-h-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
+        <div className="min-h-0 space-y-5">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
               <Skeleton key={index} className="h-20 rounded-md" />
@@ -131,7 +134,7 @@ export function DashboardLoadingSkeleton() {
             <Skeleton className="h-28 rounded-2xl" />
           </div>
         </div>
-        <Skeleton className="min-h-0 rounded-2xl" />
+        <Skeleton className={`min-h-0 rounded-2xl ${DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS}`} />
       </div>
     </div>
   );
