@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import {
   closestCenter,
   DndContext,
@@ -29,6 +29,10 @@ const NOTE_TIME_FORMAT = new Intl.DateTimeFormat('en', {
   hour: '2-digit',
   minute: '2-digit',
 });
+
+/** Stacking: editing card must sit above neighbors (overlap / negative margins). */
+const NOTE_CARD_Z_INDEX_EDITING = 50;
+const NOTE_CARD_Z_INDEX_DRAGGING = 20;
 
 interface DashboardNotesPanelProps {
   className?: string;
@@ -221,6 +225,7 @@ function NoteCard({
   onStartEdit: (note: DashboardNote) => void;
 }) {
   const savedTime = useMemo(() => formatNoteTime(note.createdAt), [note.createdAt]);
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: note.id,
     disabled: isEditing,
@@ -228,7 +233,11 @@ function NoteCard({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 20 : undefined,
+    zIndex: isEditing
+      ? NOTE_CARD_Z_INDEX_EDITING
+      : isDragging
+        ? NOTE_CARD_Z_INDEX_DRAGGING
+        : undefined,
   };
 
   function handleEditKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -242,6 +251,15 @@ function NoteCard({
     void onSaveEdit(note.id);
   }
 
+  useEffect(() => {
+    if (!isEditing) return;
+    const element = editTextareaRef.current;
+    if (!element) return;
+    element.focus();
+    const length = element.value.length;
+    element.setSelectionRange(length, length);
+  }, [isEditing, note.id]);
+
   return (
     <motion.article
       ref={setNodeRef}
@@ -253,76 +271,123 @@ function NoteCard({
       transition={{ duration: 0.22, ease: 'easeOut' }}
       className={cn(
         'group relative -mt-2 touch-none first:mt-0 hover:z-10 hover:mb-2',
+        isEditing && 'mb-2',
         isDragging && 'opacity-25',
       )}
     >
       <div
         className={cn(
-          'relative rounded-xl border border-amber-200 bg-amber-50 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
-          isEditing ? 'p-3' : 'cursor-text px-3 pt-3 pb-7',
+          'relative rounded-xl border border-amber-200 bg-amber-50 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
+          !isEditing && 'cursor-text',
+          isEditing && 'group-hover:translate-y-0',
         )}
         onClick={() => {
           if (!isEditing) onStartEdit(note);
         }}
       >
-        {!isEditing ? (
-          <>
-            <NoteDragCorner dragAttributes={attributes} dragListeners={listeners} />
-            <NoteActions note={note} onDeleteNote={onDeleteNote} />
-          </>
+        <NoteDragCorner
+          disabled={isEditing}
+          dragAttributes={attributes}
+          dragListeners={listeners}
+        />
+        {!isEditing ? <NoteActions note={note} onDeleteNote={onDeleteNote} /> : null}
+        {isEditing ? (
+          <NoteEditActions
+            canSave={editDraft.trim().length > 0}
+            onCancel={onCancelEdit}
+            onSave={() => void onSaveEdit(note.id)}
+          />
         ) : null}
         {isEditing ? (
-          <div className="space-y-2">
-            <Textarea
-              value={editDraft}
-              onChange={(event) => onChangeEditDraft(event.target.value)}
-              onKeyDown={handleEditKeyDown}
-              className="min-h-24 resize-none border-amber-200 bg-amber-50/80 text-sm leading-6 text-amber-950 focus-visible:ring-1"
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={onCancelEdit}>
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                disabled={!editDraft.trim()}
-                onClick={() => void onSaveEdit(note.id)}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
+          <Textarea
+            ref={editTextareaRef}
+            value={editDraft}
+            onChange={(event) => onChangeEditDraft(event.target.value)}
+            onKeyDown={handleEditKeyDown}
+            className="min-h-20 w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 text-amber-950 shadow-none focus-visible:border-0 focus-visible:ring-1 focus-visible:ring-amber-400/45"
+          />
         ) : (
           <p className="text-sm leading-6 whitespace-pre-wrap text-amber-950">{note.content}</p>
         )}
-        {!isEditing ? (
-          <span className="absolute bottom-2 left-3 text-[10px] font-medium text-amber-900/45">
-            {savedTime}
-          </span>
-        ) : null}
+        <span className="pointer-events-none absolute bottom-2 left-3 text-[10px] font-medium text-amber-900/45">
+          {savedTime}
+        </span>
       </div>
     </motion.article>
   );
 }
 
 function NoteDragCorner({
+  disabled,
   dragAttributes,
   dragListeners,
 }: {
+  disabled?: boolean;
   dragAttributes: ReturnType<typeof useSortable>['attributes'];
   dragListeners: ReturnType<typeof useSortable>['listeners'];
 }) {
   return (
     <button
       type="button"
-      className="absolute top-1 left-1 z-10 cursor-grab rounded bg-transparent p-0 text-amber-900/0 transition-colors group-hover:text-amber-900/45 active:cursor-grabbing"
-      aria-label="Drag note"
+      className={cn(
+        'absolute top-1 left-1 z-10 rounded bg-transparent p-0 text-amber-900/0 transition-colors',
+        disabled
+          ? 'pointer-events-none cursor-default opacity-25'
+          : 'cursor-grab text-amber-900/0 group-hover:text-amber-900/45 active:cursor-grabbing',
+      )}
+      aria-label={disabled ? 'Reorder locked while editing' : 'Drag note'}
       onClick={(event) => event.stopPropagation()}
       {...dragAttributes}
-      {...dragListeners}
+      {...(disabled ? {} : dragListeners)}
     >
       <GripVertical className="h-3.5 w-3.5 rotate-45" />
     </button>
+  );
+}
+
+function NoteEditActions({
+  canSave,
+  onCancel,
+  onSave,
+}: {
+  canSave: boolean;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  /** Matches `NoteActions` delete control: corner pill on cream card. */
+  const cornerPillClass =
+    'h-7 rounded-full border border-amber-200 bg-amber-50/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-100/90';
+
+  return (
+    <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1">
+      <Button
+        type="button"
+        variant="ghost"
+        size="xs"
+        className={cornerPillClass}
+        onClick={(event) => {
+          event.stopPropagation();
+          onCancel();
+        }}
+      >
+        Cancel
+      </Button>
+      <Button
+        type="button"
+        size="xs"
+        className={cn(
+          cornerPillClass,
+          'border-amber-800/30 bg-amber-900 text-amber-50 hover:bg-amber-800 disabled:border-amber-200 disabled:bg-amber-50/90 disabled:text-amber-900/30',
+        )}
+        disabled={!canSave}
+        onClick={(event) => {
+          event.stopPropagation();
+          onSave();
+        }}
+      >
+        Save
+      </Button>
+    </div>
   );
 }
 
