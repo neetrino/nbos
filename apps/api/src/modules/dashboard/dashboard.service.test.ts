@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 import { PrismaClient } from '@nbos/database';
 import { createMockPrisma } from '../../test-utils/mock-prisma';
@@ -61,6 +62,51 @@ describe('DashboardService', () => {
         }),
       }),
     );
+  });
+
+  it('normalizes bare host URLs to https for personal links', async () => {
+    const prisma = createMockPrisma();
+    const service = new DashboardService(prisma as unknown as InstanceType<typeof PrismaClient>);
+
+    await service.createPersonalLink('employee-1', {
+      label: 'Vendor',
+      url: 'vendor.example.com/inbox',
+    });
+
+    expect(prisma.personalLink.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          url: 'https://vendor.example.com/inbox',
+          openInNewTab: true,
+        }),
+      }),
+    );
+  });
+
+  it('normalizes protocol-relative URLs to https for personal links', async () => {
+    const prisma = createMockPrisma();
+    const service = new DashboardService(prisma as unknown as InstanceType<typeof PrismaClient>);
+
+    await service.createPersonalLink('employee-1', {
+      label: 'CDN',
+      url: '//cdn.example.com/x',
+    });
+
+    expect(prisma.personalLink.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ url: 'https://cdn.example.com/x' }),
+      }),
+    );
+  });
+
+  it('rejects non-http(s) hierarchical URLs for personal links', async () => {
+    const prisma = createMockPrisma();
+    const service = new DashboardService(prisma as unknown as InstanceType<typeof PrismaClient>);
+
+    await expect(
+      service.createPersonalLink('employee-1', { label: 'FTP', url: 'ftp://files.example/' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.personalLink.create).not.toHaveBeenCalled();
   });
 
   it('deletes only current owner personal links', async () => {

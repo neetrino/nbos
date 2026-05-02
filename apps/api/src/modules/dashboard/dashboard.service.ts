@@ -223,11 +223,35 @@ function isExternalUrl(url: string): boolean {
   return EXTERNAL_URL_PATTERN.test(url);
 }
 
+const HIERARCHICAL_URL_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
+const BLOCKED_SIMPLE_SCHEME_PATTERN = /^(javascript|data|vbscript|mailto):/i;
+
 function sanitizePersonalLinkUrl(value: string): string {
-  const url = value.trim();
+  let url = value.trim();
+  if (!url) {
+    throw new BadRequestException('Personal link URL must be an internal path or http(s) URL.');
+  }
+
+  if (url.startsWith('//') && !url.startsWith('///')) {
+    url = `https:${url}`;
+  }
+
   const isInternalPath = url.startsWith('/') && !url.startsWith('//');
-  if (isInternalPath || isExternalUrl(url)) return url;
-  throw new BadRequestException('Personal link URL must be an internal path or http(s) URL.');
+  if (isInternalPath) return url;
+  if (isExternalUrl(url)) return url;
+
+  if (HIERARCHICAL_URL_SCHEME_PATTERN.test(url)) {
+    throw new BadRequestException(
+      'Personal link URL must use http(s) or an internal path starting with /.',
+    );
+  }
+  if (BLOCKED_SIMPLE_SCHEME_PATTERN.test(url)) {
+    throw new BadRequestException(
+      'Personal link URL must use http(s) or an internal path starting with /.',
+    );
+  }
+
+  return `https://${url}`;
 }
 
 function toPreferenceProjection(model: DashboardPreferenceModel): DashboardPreferenceProjection {
