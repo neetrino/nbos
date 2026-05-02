@@ -19,7 +19,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { AnimatePresence, motion } from 'framer-motion';
-import { GripVertical, Loader2, Pencil, Trash2 } from 'lucide-react';
+import { GripVertical, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -256,14 +256,21 @@ function NoteCard({
         isDragging && 'opacity-25',
       )}
     >
-      <div className="relative rounded-xl border border-amber-200 bg-amber-50 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md">
-        <NoteActions
-          note={note}
-          dragAttributes={attributes}
-          dragListeners={listeners}
-          onDeleteNote={onDeleteNote}
-          onStartEdit={onStartEdit}
-        />
+      <div
+        className={cn(
+          'relative rounded-xl border border-amber-200 bg-amber-50 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
+          isEditing ? 'p-3' : 'cursor-text px-3 pt-3 pb-7',
+        )}
+        onClick={() => {
+          if (!isEditing) onStartEdit(note);
+        }}
+      >
+        {!isEditing ? (
+          <>
+            <NoteDragCorner dragAttributes={attributes} dragListeners={listeners} />
+            <NoteActions note={note} onDeleteNote={onDeleteNote} />
+          </>
+        ) : null}
         {isEditing ? (
           <div className="space-y-2">
             <Textarea
@@ -298,42 +305,36 @@ function NoteCard({
   );
 }
 
-function NoteActions({
+function NoteDragCorner({
   dragAttributes,
   dragListeners,
-  note,
-  onDeleteNote,
-  onStartEdit,
 }: {
   dragAttributes: ReturnType<typeof useSortable>['attributes'];
   dragListeners: ReturnType<typeof useSortable>['listeners'];
+}) {
+  return (
+    <button
+      type="button"
+      className="absolute top-1 left-1 z-10 cursor-grab rounded bg-transparent p-0 text-amber-900/0 transition-colors group-hover:text-amber-900/45 active:cursor-grabbing"
+      aria-label="Drag note"
+      onClick={(event) => event.stopPropagation()}
+      {...dragAttributes}
+      {...dragListeners}
+    >
+      <GripVertical className="h-3.5 w-3.5 rotate-45" />
+    </button>
+  );
+}
+
+function NoteActions({
+  note,
+  onDeleteNote,
+}: {
   note: DashboardNote;
   onDeleteNote: (id: string) => Promise<void>;
-  onStartEdit: (note: DashboardNote) => void;
 }) {
   return (
     <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-      <button
-        type="button"
-        className="cursor-grab rounded-full border border-amber-200 bg-amber-50/90 p-1.5 text-amber-900/45 shadow-sm backdrop-blur active:cursor-grabbing"
-        aria-label="Drag note"
-        {...dragAttributes}
-        {...dragListeners}
-      >
-        <GripVertical className="h-3.5 w-3.5" />
-      </button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 rounded-full border border-amber-200 bg-amber-50/90 text-amber-900/45 shadow-sm backdrop-blur hover:text-amber-800"
-        onClick={(event) => {
-          event.stopPropagation();
-          onStartEdit(note);
-        }}
-        aria-label="Edit note"
-      >
-        <Pencil className="h-3.5 w-3.5" />
-      </Button>
       <Button
         variant="ghost"
         size="icon"
