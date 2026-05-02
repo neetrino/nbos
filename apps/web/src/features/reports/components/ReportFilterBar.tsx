@@ -1,13 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { BookmarkPlus, CalendarRange, Filter, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { ReportDefinition, SavedReportView } from '@/lib/api/reports';
 import { reportsApi } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { buildReportFilters, savedViewToFilters, type ReportFilterState } from '../report-filters';
+
+type PeriodPreset = 'THIS_MONTH' | 'THIS_QUARTER' | 'THIS_YEAR';
+type PeriodMode = PeriodPreset | 'CUSTOM';
+
+const PERIOD_PRESETS: Array<{ id: PeriodPreset; label: string }> = [
+  { id: 'THIS_MONTH', label: 'Month' },
+  { id: 'THIS_QUARTER', label: 'Quarter' },
+  { id: 'THIS_YEAR', label: 'Year' },
+];
 
 interface ReportFilterBarProps {
   definitions: ReportDefinition[];
@@ -31,6 +41,10 @@ export function ReportFilterBar({
   const defaultReportKey = definitions[0]?.key ?? '';
   const [reportKey, setReportKey] = useState(defaultReportKey);
   const [name, setName] = useState('');
+  const [periodMode, setPeriodMode] = useState<PeriodMode>('THIS_MONTH');
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customFrom, setCustomFrom] = useState(filters.dateFrom);
+  const [customTo, setCustomTo] = useState(filters.dateTo);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const selectedReportKey = reportKey || defaultReportKey;
@@ -56,59 +70,51 @@ export function ReportFilterBar({
     }
   }
 
-  return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <div className="grid gap-3 xl:grid-cols-[minmax(260px,1fr)_160px_160px_160px]">
-        <div className="relative">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-          <Input
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search reports, audience, definitions..."
-            className="pl-9"
-          />
-        </div>
-        <DateInput
-          label="Period from"
-          value={filters.dateFrom}
-          onChange={(dateFrom) => onFiltersChange({ ...filters, dateFrom })}
-        />
-        <DateInput
-          label="Period to"
-          value={filters.dateTo}
-          onChange={(dateTo) => onFiltersChange({ ...filters, dateTo })}
-        />
-        <DateInput
-          label="As of"
-          value={filters.asOf}
-          onChange={(asOf) => onFiltersChange({ ...filters, asOf })}
-        />
-      </div>
+  function applyCustomRange() {
+    const dateTo = customTo || customFrom || toDateInputValue(new Date());
+    setPeriodMode('CUSTOM');
+    setCustomOpen(false);
+    onFiltersChange({
+      dateFrom: customFrom,
+      dateTo,
+      asOf: dateTo,
+    });
+  }
 
-      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px_auto]">
-        <Input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Saved view name"
+  return (
+    <div className="border-border/80 bg-card/95 rounded-2xl border p-3 shadow-sm">
+      <div className="relative grid items-center gap-2 xl:grid-cols-[auto_minmax(220px,1fr)_auto_180px_170px_150px_76px]">
+        <div className="text-muted-foreground flex h-9 items-center gap-2 pr-1 text-xs font-medium">
+          <Filter size={14} />
+          Filters
+        </div>
+        <SearchInput search={search} onSearchChange={onSearchChange} />
+        <PeriodButtons
+          activeMode={periodMode}
+          onChange={(preset) => {
+            setPeriodMode(preset);
+            setCustomOpen(false);
+            onFiltersChange(buildPresetFilters(preset));
+          }}
+          onCustomClick={() => {
+            setPeriodMode('CUSTOM');
+            setCustomOpen((current) => !current);
+          }}
         />
-        <select
-          value={selectedReportKey}
-          onChange={(event) => setReportKey(event.target.value)}
-          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
-        >
+        <SelectField value={selectedReportKey} onChange={setReportKey} ariaLabel="Report">
           {definitions.map((definition) => (
             <option key={definition.key} value={definition.key}>
               {definition.title}
             </option>
           ))}
-        </select>
-        <select
+        </SelectField>
+        <SelectField
           value=""
-          onChange={(event) => {
-            const view = savedViews.find((item) => item.id === event.target.value);
+          onChange={(viewId) => {
+            const view = savedViews.find((item) => item.id === viewId);
             if (view) onFiltersChange(savedViewToFilters(view));
           }}
-          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+          ariaLabel="Saved view"
         >
           <option value="">Apply saved view</option>
           {savedViews.map((view) => (
@@ -116,39 +122,188 @@ export function ReportFilterBar({
               {view.name}
             </option>
           ))}
-        </select>
+        </SelectField>
+        <div className="relative">
+          <BookmarkPlus className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+          <Input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Save as..."
+            className="bg-background/80 pl-9"
+          />
+        </div>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
+          size="sm"
           disabled={!selectedDefinition || !name.trim() || saving}
           onClick={() => void saveView()}
+          className="h-9"
         >
-          {saving ? 'Saving...' : 'Save view'}
+          {saving ? '...' : 'Save'}
         </Button>
+        {customOpen ? (
+          <CustomRangePanel
+            dateFrom={customFrom}
+            dateTo={customTo}
+            onDateFromChange={setCustomFrom}
+            onDateToChange={setCustomTo}
+            onApply={applyCustomRange}
+          />
+        ) : null}
       </div>
       {error ? <p className="text-destructive mt-2 text-sm">{error}</p> : null}
     </div>
   );
 }
 
-function DateInput({
-  label,
-  value,
-  onChange,
+function SearchInput({
+  search,
+  onSearchChange,
 }: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
+  search: string;
+  onSearchChange: (search: string) => void;
 }) {
   return (
-    <label className="text-muted-foreground text-xs font-medium">
-      {label}
+    <div className="relative">
+      <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+      <Input
+        value={search}
+        onChange={(event) => onSearchChange(event.target.value)}
+        placeholder="Search reports..."
+        className="bg-background/80 pl-9"
+      />
+    </div>
+  );
+}
+
+function PeriodButtons({
+  activeMode,
+  onChange,
+  onCustomClick,
+}: {
+  activeMode: PeriodMode;
+  onChange: (preset: PeriodPreset) => void;
+  onCustomClick: () => void;
+}) {
+  return (
+    <div className="bg-muted/60 flex h-9 items-center gap-1 rounded-xl p-1">
+      {PERIOD_PRESETS.map((preset) => (
+        <button
+          key={preset.id}
+          type="button"
+          onClick={() => onChange(preset.id)}
+          className={`flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors ${
+            activeMode === preset.id
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <CalendarRange size={13} />
+          {preset.label}
+        </button>
+      ))}
+      <button
+        type="button"
+        onClick={onCustomClick}
+        className={`flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition-colors ${
+          activeMode === 'CUSTOM'
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        <CalendarRange size={13} />
+        Custom
+      </button>
+    </div>
+  );
+}
+
+function CustomRangePanel({
+  dateFrom,
+  dateTo,
+  onDateFromChange,
+  onDateToChange,
+  onApply,
+}: {
+  dateFrom: string;
+  dateTo: string;
+  onDateFromChange: (value: string) => void;
+  onDateToChange: (value: string) => void;
+  onApply: () => void;
+}) {
+  return (
+    <div className="border-border bg-popover absolute top-11 left-0 z-20 grid w-full gap-3 rounded-2xl border p-3 shadow-lg sm:w-96 sm:grid-cols-[1fr_1fr_auto]">
       <Input
         type="date"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="mt-1"
+        aria-label="Custom period start"
+        value={dateFrom}
+        onChange={(event) => onDateFromChange(event.target.value)}
+        className="bg-background"
       />
-    </label>
+      <Input
+        type="date"
+        aria-label="Custom period end"
+        value={dateTo}
+        onChange={(event) => onDateToChange(event.target.value)}
+        className="bg-background"
+      />
+      <Button type="button" size="sm" onClick={onApply} disabled={!dateFrom && !dateTo}>
+        Apply
+      </Button>
+    </div>
   );
+}
+
+function SelectField({
+  value,
+  onChange,
+  children,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  children: ReactNode;
+  ariaLabel: string;
+}) {
+  return (
+    <select
+      aria-label={ariaLabel}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="border-input bg-background/80 h-9 rounded-md border px-3 text-sm"
+    >
+      {children}
+    </select>
+  );
+}
+
+function buildPresetFilters(preset: PeriodPreset): ReportFilterState {
+  const now = new Date();
+  if (preset === 'THIS_QUARTER') {
+    const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+    const start = new Date(now.getFullYear(), quarterStartMonth, 1);
+    return dateRangeToFilters(start, now, now);
+  }
+  if (preset === 'THIS_YEAR') {
+    const start = new Date(now.getFullYear(), 0, 1);
+    return dateRangeToFilters(start, now, now);
+  }
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  return dateRangeToFilters(start, now, now);
+}
+
+function dateRangeToFilters(start: Date, end: Date, asOf: Date): ReportFilterState {
+  return {
+    dateFrom: toDateInputValue(start),
+    dateTo: toDateInputValue(end),
+    asOf: toDateInputValue(asOf),
+  };
+}
+
+function toDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }

@@ -89,10 +89,10 @@ export function ReportsSchedulePanel({
   );
 
   return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="border-border bg-card rounded-2xl border p-5 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
         <div>
-          <p className="font-medium">Scheduled reports</p>
+          <p className="text-xl font-semibold">Scheduled reports</p>
           <p className="text-muted-foreground text-sm">
             Store owner, recipients and simple recurrence for report exports.
           </p>
@@ -106,87 +106,91 @@ export function ReportsSchedulePanel({
         </Button>
       </div>
 
-      <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
-        <select
-          value={selectedReportKey}
-          onChange={(event) => setReportKey(event.target.value)}
-          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
-        >
-          {definitions.map((definition) => (
-            <option key={definition.key} value={definition.key}>
-              {definition.title}
-            </option>
-          ))}
-        </select>
-        <Input
-          type="email"
-          value={recipientEmail}
-          onChange={(event) => setRecipientEmail(event.target.value)}
-          placeholder="recipient@example.com"
-        />
-        <Input
-          value={scheduleLabel}
-          onChange={(event) => setScheduleLabel(event.target.value)}
-          placeholder="Monthly finance packet"
-        />
-      </div>
-
-      <div className="mt-3 grid gap-3 lg:grid-cols-[180px_160px_minmax(0,1fr)]">
-        <select
-          value={frequency}
-          onChange={(event) => setFrequency(event.target.value as ReportScheduleFrequency)}
-          className="border-input bg-background rounded-md border px-3 py-2 text-sm"
-        >
-          <option value="DAILY">Daily</option>
-          <option value="WEEKLY">Weekly</option>
-          <option value="MONTHLY">Monthly</option>
-        </select>
-        <Input
-          type="time"
-          value={timeOfDay}
-          onChange={(event) => setTimeOfDay(event.target.value)}
-        />
-        {frequency === 'WEEKLY' ? (
+      <div className="bg-background/50 mt-5 rounded-2xl border p-4">
+        <p className="mb-3 font-medium">Create schedule</p>
+        <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
           <select
-            value={dayOfWeek}
-            onChange={(event) => setDayOfWeek(Number(event.target.value))}
+            value={selectedReportKey}
+            onChange={(event) => setReportKey(event.target.value)}
             className="border-input bg-background rounded-md border px-3 py-2 text-sm"
           >
-            {WEEKDAYS.map((day) => (
-              <option key={day.value} value={day.value}>
-                {day.label}
+            {definitions.map((definition) => (
+              <option key={definition.key} value={definition.key}>
+                {definition.title}
               </option>
             ))}
           </select>
-        ) : null}
-        {frequency === 'MONTHLY' ? (
-          <div>
+          <Input
+            type="email"
+            value={recipientEmail}
+            onChange={(event) => setRecipientEmail(event.target.value)}
+            placeholder="recipient@example.com"
+          />
+          <Input
+            value={scheduleLabel}
+            onChange={(event) => setScheduleLabel(event.target.value)}
+            placeholder="Monthly finance packet"
+          />
+        </div>
+
+        <div className="mt-3 grid gap-3 lg:grid-cols-[180px_160px_minmax(0,1fr)]">
+          <select
+            value={frequency}
+            onChange={(event) => setFrequency(event.target.value as ReportScheduleFrequency)}
+            className="border-input bg-background rounded-md border px-3 py-2 text-sm"
+          >
+            <option value="DAILY">Daily</option>
+            <option value="WEEKLY">Weekly</option>
+            <option value="MONTHLY">Monthly</option>
+          </select>
+          <Input
+            type="time"
+            value={timeOfDay}
+            onChange={(event) => setTimeOfDay(event.target.value)}
+          />
+          {frequency === 'WEEKLY' ? (
             <select
-              value={dayOfMonth}
-              onChange={(event) => setDayOfMonth(Number(event.target.value))}
-              className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+              value={dayOfWeek}
+              onChange={(event) => setDayOfWeek(Number(event.target.value))}
+              className="border-input bg-background rounded-md border px-3 py-2 text-sm"
             >
-              {Array.from({ length: 28 }, (_, index) => index + 1).map((day) => (
-                <option key={day} value={day}>
-                  Day {day}
+              {WEEKDAYS.map((day) => (
+                <option key={day.value} value={day.value}>
+                  {day.label}
                 </option>
               ))}
             </select>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Monthly report schedules use days 1-28 so February and short months are never skipped.
-            </p>
-          </div>
-        ) : null}
-      </div>
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <Button
-          type="button"
-          onClick={() => void createSchedule()}
-          disabled={!canSubmit || submitting}
-        >
-          {submitting ? 'Creating...' : 'Create schedule'}
-        </Button>
-        {error ? <p className="text-destructive text-sm">{error}</p> : null}
+          ) : null}
+          {frequency === 'MONTHLY' ? (
+            <div>
+              <select
+                value={dayOfMonth}
+                onChange={(event) => setDayOfMonth(Number(event.target.value))}
+                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+              >
+                {Array.from({ length: 28 }, (_, index) => index + 1).map((day) => (
+                  <option key={day} value={day}>
+                    Day {day}
+                  </option>
+                ))}
+              </select>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Monthly report schedules use days 1-28 so February and short months are never
+                skipped.
+              </p>
+            </div>
+          ) : null}
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            onClick={() => void createSchedule()}
+            disabled={!canSubmit || submitting}
+          >
+            {submitting ? 'Creating...' : 'Create schedule'}
+          </Button>
+          {error ? <p className="text-destructive text-sm">{error}</p> : null}
+        </div>
       </div>
 
       {sortedSchedules.length === 0 ? (

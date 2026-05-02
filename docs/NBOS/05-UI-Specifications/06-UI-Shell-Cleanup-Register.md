@@ -125,8 +125,7 @@ Runtime finance children не соответствуют новому Finance ca
 CRM children тоже должны быть приведены к CRM canon:
 
 - Leads;
-- Deals;
-- CRM Client Chats.
+- Deals.
 
 Runtime now applies child-level permission visibility for CRM and Finance links, so users do not see unavailable sub-sections. Sales analytics belongs to the global Reports module and should not be duplicated as a CRM sidebar child.
 

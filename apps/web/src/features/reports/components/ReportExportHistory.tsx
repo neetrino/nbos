@@ -12,10 +12,10 @@ interface ReportExportHistoryProps {
 
 export function ReportExportHistory({ jobs, onRefresh }: ReportExportHistoryProps) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="border-border bg-card rounded-2xl border p-5 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
         <div>
-          <p className="font-medium">Export history</p>
+          <p className="text-xl font-semibold">Export history</p>
           <p className="text-muted-foreground text-sm">
             Generated report files are stored in Drive and audited.
           </p>

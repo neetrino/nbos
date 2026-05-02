@@ -6,7 +6,9 @@
 
 `Report Catalog` - это библиотека отчётов. Пользователь не должен гадать, где искать аналитику: все отчёты доступны из одного места, но drill-down ведёт в исходные модули.
 
-В Phase 7 catalog является не техническим списком definitions, а входом в полноценный Reports module. Каждая строка каталога должна вести к real report view: metric cards, charts/tables, filters, drill-down, export and schedule actions.
+В Phase 7 catalog является не техническим списком definitions, а registry под полноценный Reports module. Основной экран строится как набор direction tabs: Finance, Sales, Marketing, Projects, Specialists, Scheduled, Exports, Data Quality. Каждый direction tab показывает real report view: metric cards, Recharts charts, filters, drill-down, export and schedule actions.
+
+Data loading rule: первый render не вызывает module analytics endpoints. Direction data грузится только при открытии tab и кешируется до смены фильтров или ручного refresh.
 
 ## Phase 7 implementation matrix
 

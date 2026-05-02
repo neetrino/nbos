@@ -67,11 +67,6 @@ const NAV_ITEMS: NavItem[] = [
       },
       { label: 'Leads', href: '/crm/leads', permission: { module: 'CRM_LEADS', action: 'VIEW' } },
       { label: 'Deals', href: '/crm/deals', permission: { module: 'CRM_DEALS', action: 'VIEW' } },
-      {
-        label: 'CRM Client Chats',
-        href: '/messenger?scope=crm',
-        permission: { module: 'MESSENGER', action: 'VIEW' },
-      },
     ],
   },
   {
@@ -380,7 +375,10 @@ export function Sidebar() {
   const { can, isLoading: permsLoading } = usePermission();
   const [collapsed, setCollapsed] = useState(false);
   /** At most one section with children is expanded (accordion). */
-  const [manualExpandedSection, setManualExpandedSection] = useState<string | null>(null);
+  const [manualExpandedSection, setManualExpandedSection] = useState<{
+    label: string;
+    pathname: string;
+  } | null>(null);
 
   const visibleItems = getVisibleNavItems(can, permsLoading);
 
@@ -390,14 +388,17 @@ export function Sidebar() {
         item.children && item.children.some((child) => isChildRouteActive(pathname, child.href)),
     )?.label ?? null;
 
-  const expandedSection = manualExpandedSection ?? activeSection;
+  const expandedSection =
+    manualExpandedSection?.pathname === pathname ? manualExpandedSection.label : activeSection;
 
   const toggleExpanded = (label: string) => {
-    setManualExpandedSection((current) => (current === label ? null : label));
+    setManualExpandedSection((current) =>
+      current?.label === label && current.pathname === pathname ? null : { label, pathname },
+    );
   };
 
   const expandOnly = (label: string) => {
-    setManualExpandedSection(label);
+    setManualExpandedSection({ label, pathname });
   };
 
   const isActive = (href: string) => pathname.startsWith(href);

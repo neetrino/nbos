@@ -123,7 +123,6 @@ Reports = что произошло и что это значит.
 CRM
   Leads
   Deals
-  CRM Client Chats
 ```
 
 CRM отвечает за Lead/Deal pipeline, offers, stage gates и клиентские pre-sale коммуникации.
