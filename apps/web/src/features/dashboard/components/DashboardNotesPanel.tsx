@@ -30,9 +30,12 @@ const NOTE_TIME_FORMAT = new Intl.DateTimeFormat('en', {
   minute: '2-digit',
 });
 
-/** Stacking: editing card must sit above neighbors (overlap / negative margins). */
+/** Stacking: editing card must sit above neighbors when lifted / overlapping hover. */
 const NOTE_CARD_Z_INDEX_EDITING = 50;
 const NOTE_CARD_Z_INDEX_DRAGGING = 20;
+
+/** Very subtle tilt (degrees), direction still flips by id — barely visible “pile”. */
+const NOTE_TILT_MAGNITUDES = [0.7, 0.9, 1.1, 1.3, 1.5, 1.8] as const;
 
 interface DashboardNotesPanelProps {
   className?: string;
@@ -175,7 +178,7 @@ function NoteStack({
       >
         <SortableContext items={noteIds} strategy={verticalListSortingStrategy}>
           <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-            <div className="flex flex-col pt-1 pb-3">
+            <div className="flex flex-col gap-3 px-0.5 pt-2 pb-4">
               <AnimatePresence initial={false}>
                 {notes.map((note) => (
                   <NoteCard
@@ -225,6 +228,7 @@ function NoteCard({
   onStartEdit: (note: DashboardNote) => void;
 }) {
   const savedTime = useMemo(() => formatNoteTime(note.createdAt), [note.createdAt]);
+  const tiltDegrees = useMemo(() => stableTiltDegreesFromNoteId(note.id), [note.id]);
   const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: note.id,
@@ -269,49 +273,50 @@ function NoteCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -10, scale: 0.97 }}
       transition={{ duration: 0.22, ease: 'easeOut' }}
-      className={cn(
-        'group relative -mt-2 touch-none first:mt-0 hover:z-10 hover:mb-2',
-        isEditing && 'mb-2',
-        isDragging && 'opacity-25',
-      )}
+      className={cn('group relative touch-none hover:z-10', isDragging && 'opacity-25')}
     >
       <div
-        className={cn(
-          'relative rounded-xl border border-amber-200 bg-amber-50 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
-          !isEditing && 'cursor-text',
-          isEditing && 'group-hover:translate-y-0',
-        )}
-        onClick={() => {
-          if (!isEditing) onStartEdit(note);
-        }}
+        className="origin-center transition-transform duration-200 ease-out"
+        style={{ transform: isEditing ? 'rotate(0deg)' : `rotate(${tiltDegrees}deg)` }}
       >
-        <NoteDragCorner
-          disabled={isEditing}
-          dragAttributes={attributes}
-          dragListeners={listeners}
-        />
-        {!isEditing ? <NoteActions note={note} onDeleteNote={onDeleteNote} /> : null}
-        {isEditing ? (
-          <NoteEditActions
-            canSave={editDraft.trim().length > 0}
-            onCancel={onCancelEdit}
-            onSave={() => void onSaveEdit(note.id)}
+        <div
+          className={cn(
+            'relative rounded-xl border border-amber-200 bg-amber-50 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
+            !isEditing && 'cursor-text',
+            isEditing && 'group-hover:translate-y-0',
+          )}
+          onClick={() => {
+            if (!isEditing) onStartEdit(note);
+          }}
+        >
+          <NoteDragCorner
+            disabled={isEditing}
+            dragAttributes={attributes}
+            dragListeners={listeners}
           />
-        ) : null}
-        {isEditing ? (
-          <Textarea
-            ref={editTextareaRef}
-            value={editDraft}
-            onChange={(event) => onChangeEditDraft(event.target.value)}
-            onKeyDown={handleEditKeyDown}
-            className="min-h-20 w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 text-amber-950 shadow-none focus-visible:border-0 focus-visible:ring-1 focus-visible:ring-amber-400/45"
-          />
-        ) : (
-          <p className="text-sm leading-6 whitespace-pre-wrap text-amber-950">{note.content}</p>
-        )}
-        <span className="pointer-events-none absolute bottom-2 left-3 text-[10px] font-medium text-amber-900/45">
-          {savedTime}
-        </span>
+          {!isEditing ? <NoteActions note={note} onDeleteNote={onDeleteNote} /> : null}
+          {isEditing ? (
+            <NoteEditActions
+              canSave={editDraft.trim().length > 0}
+              onCancel={onCancelEdit}
+              onSave={() => void onSaveEdit(note.id)}
+            />
+          ) : null}
+          {isEditing ? (
+            <Textarea
+              ref={editTextareaRef}
+              value={editDraft}
+              onChange={(event) => onChangeEditDraft(event.target.value)}
+              onKeyDown={handleEditKeyDown}
+              className="min-h-20 w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 text-amber-950 shadow-none focus-visible:border-0 focus-visible:ring-1 focus-visible:ring-amber-400/45"
+            />
+          ) : (
+            <p className="text-sm leading-6 whitespace-pre-wrap text-amber-950">{note.content}</p>
+          )}
+          <span className="pointer-events-none absolute bottom-2 left-3 text-[10px] font-medium text-amber-900/45">
+            {savedTime}
+          </span>
+        </div>
       </div>
     </motion.article>
   );
@@ -417,8 +422,12 @@ function NoteActions({
 }
 
 function NoteDragPreview({ note }: { note: DashboardNote }) {
+  const tilt = stableTiltDegreesFromNoteId(note.id);
   return (
-    <div className="max-w-sm rotate-1 rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 opacity-95 shadow-2xl ring-2 ring-amber-300/45">
+    <div
+      className="max-w-sm rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 opacity-95 shadow-2xl ring-2 ring-amber-300/45"
+      style={{ transform: `rotate(${tilt}deg)` }}
+    >
       <div className="mb-2 flex items-center gap-1.5">
         <GripVertical className="h-3.5 w-3.5 text-amber-900/50" />
         <span className="text-xs font-semibold text-amber-900/70">Moving note</span>
@@ -428,6 +437,16 @@ function NoteDragPreview({ note }: { note: DashboardNote }) {
       </p>
     </div>
   );
+}
+
+function stableTiltDegreesFromNoteId(noteId: string): number {
+  let hash = 0;
+  for (let i = 0; i < noteId.length; i += 1) {
+    hash = (hash * 33 + noteId.charCodeAt(i)) >>> 0;
+  }
+  const magnitude = NOTE_TILT_MAGNITUDES[hash % NOTE_TILT_MAGNITUDES.length]!;
+  const sign = hash & 1 ? 1 : -1;
+  return sign * magnitude;
 }
 
 function formatNoteTime(value: string): string {
