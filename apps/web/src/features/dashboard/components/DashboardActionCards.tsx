@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import type { HTMLAttributes } from 'react';
-import { ExternalLink, Eye, GripVertical, Link2, Trash2 } from 'lucide-react';
+import { ExternalLink, Eye, Link2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { DashboardPersonalLink, PinnedAction } from '../dashboard-control-registry';
 
@@ -14,8 +13,8 @@ interface PinnedActionCardProps {
   action: PinnedAction;
   /** `hidden` = same tile as visible, eye icon, no navigation (edit layout). */
   variant?: 'visible' | 'hidden';
+  /** Layout editor: no links — tile is dragged via the parent wrapper. */
   editMode: boolean;
-  dragHandleProps?: HTMLAttributes<HTMLButtonElement>;
 }
 
 interface PersonalLinkCardProps {
@@ -24,45 +23,37 @@ interface PersonalLinkCardProps {
   onDelete: () => Promise<void>;
 }
 
-export function PinnedActionCard({
-  action,
-  variant = 'visible',
-  editMode,
-  dragHandleProps,
-}: PinnedActionCardProps) {
+export function PinnedActionCard({ action, variant = 'visible', editMode }: PinnedActionCardProps) {
   const isHidden = variant === 'hidden';
 
-  return (
-    <div className={`${PINNED_DASHBOARD_TILE_CLASS} flex items-stretch gap-2 p-2.5`}>
-      {editMode && dragHandleProps ? (
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground flex shrink-0 cursor-grab touch-none items-center rounded border border-transparent px-1 active:cursor-grabbing"
-          aria-label={`Drag ${action.label}`}
-          {...dragHandleProps}
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-      ) : null}
-      {isHidden ? (
-        <div className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium">
-          <span className="bg-primary/15 text-primary flex shrink-0 rounded-md p-2" aria-hidden>
-            <Eye size={18} />
-          </span>
-          <span className="truncate">{action.label}</span>
-        </div>
-      ) : (
-        <Link
-          href={action.href}
-          className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium"
-        >
-          <span className="bg-primary/15 text-primary flex shrink-0 rounded-md p-2">
-            <action.icon size={18} />
-          </span>
-          <span className="truncate">{action.label}</span>
-        </Link>
-      )}
+  const body = isHidden ? (
+    <div className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium">
+      <span className="bg-primary/15 text-primary flex shrink-0 rounded-md p-2" aria-hidden>
+        <Eye size={18} />
+      </span>
+      <span className="truncate">{action.label}</span>
     </div>
+  ) : editMode ? (
+    <div className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium select-none">
+      <span className="bg-primary/15 text-primary flex shrink-0 rounded-md p-2">
+        <action.icon size={18} />
+      </span>
+      <span className="truncate">{action.label}</span>
+    </div>
+  ) : (
+    <Link
+      href={action.href}
+      className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium"
+    >
+      <span className="bg-primary/15 text-primary flex shrink-0 rounded-md p-2">
+        <action.icon size={18} />
+      </span>
+      <span className="truncate">{action.label}</span>
+    </Link>
+  );
+
+  return (
+    <div className={`${PINNED_DASHBOARD_TILE_CLASS} flex items-stretch gap-2 p-2.5`}>{body}</div>
   );
 }
 

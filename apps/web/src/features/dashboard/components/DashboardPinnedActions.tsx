@@ -1,11 +1,11 @@
 'use client';
 
-import type { DragEndEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
   useDroppable,
   useSensor,
   useSensors,
@@ -13,6 +13,8 @@ import {
 import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { type FormEvent, useState } from 'react';
+import { DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS } from '../dashboard-dnd.constants';
+import { dashboardPointerCollisionDetection } from '../dashboard-dnd-collision';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,6 +52,7 @@ export function PinnedActions({
   personalLinks,
   saving,
 }: PinnedActionsProps) {
+  const [activeDragKey, setActiveDragKey] = useState<PinnedAction['key'] | null>(null);
   const dashboardLinks = personalLinks.filter((link) =>
     link.placement.includes('DASHBOARD_PINNED_ACTIONS'),
   );
@@ -61,9 +64,18 @@ export function PinnedActions({
 
   const visibleKeys = actions.map((a) => a.key);
   const hiddenKeys = hiddenActions.map((a) => a.key);
+  const activeDragAction =
+    activeDragKey !== null
+      ? ([...actions, ...hiddenActions].find((a) => a.key === activeDragKey) ?? null)
+      : null;
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveDragKey(event.active.id as PinnedAction['key']);
+  }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+    setActiveDragKey(null);
     if (!over) return;
     const next = resolveTwoColumnSortMove(
       String(active.id),
@@ -75,6 +87,10 @@ export function PinnedActions({
     );
     if (!next) return;
     onApplyPinnedLayout(next.left, next.right);
+  }
+
+  function handleDragCancel() {
+    setActiveDragKey(null);
   }
 
   return (
@@ -89,13 +105,15 @@ export function PinnedActions({
             </p>
             <DndContext
               sensors={sensors}
-              collisionDetection={closestCenter}
+              collisionDetection={dashboardPointerCollisionDetection}
+              onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
+              onDragCancel={handleDragCancel}
             >
               <div className="mt-4 flex flex-col gap-4">
                 <SortableContext items={visibleKeys} strategy={rectSortingStrategy}>
                   <PinnedDropColumn id={PINNED_DROP_VISIBLE} title="Shown on dashboard">
-                    <div className={GRID_CLASS}>
+                    <div className={`${GRID_CLASS} ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}>
                       {actions.map((action) => (
                         <SortablePinnedTile key={action.key} action={action} variant="visible" />
                       ))}
@@ -104,7 +122,7 @@ export function PinnedActions({
                 </SortableContext>
                 <SortableContext items={hiddenKeys} strategy={rectSortingStrategy}>
                   <PinnedDropColumn id={PINNED_DROP_HIDDEN} title="Hidden">
-                    <div className={GRID_CLASS}>
+                    <div className={`${GRID_CLASS} ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}>
                       {hiddenActions.map((action) => (
                         <SortablePinnedTile key={action.key} action={action} variant="hidden" />
                       ))}
@@ -112,6 +130,15 @@ export function PinnedActions({
                   </PinnedDropColumn>
                 </SortableContext>
               </div>
+              <DragOverlay dropAnimation={null}>
+                {activeDragAction ? (
+                  <PinnedActionCard
+                    action={activeDragAction}
+                    variant={visibleKeys.includes(activeDragAction.key) ? 'visible' : 'hidden'}
+                    editMode={false}
+                  />
+                ) : null}
+              </DragOverlay>
             </DndContext>
             {dashboardLinks.length > 0 ? (
               <div className={`${GRID_CLASS} mt-4`}>
@@ -192,13 +219,18 @@ function SortablePinnedTile({
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
-      <PinnedActionCard
-        action={action}
-        variant={variant}
-        editMode
-        dragHandleProps={{ ...attributes, ...listeners }}
-      />
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'focus-visible:ring-ring touch-none rounded-md outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+        'cursor-grab active:cursor-grabbing',
+        isDragging && 'opacity-55',
+      )}
+      {...attributes}
+      {...listeners}
+    >
+      <PinnedActionCard action={action} variant={variant} editMode />
     </div>
   );
 }
@@ -237,7 +269,7 @@ function CreateLinkInline({
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="/path or https://..."
+            placeholder="/path or example.com (https added)"
           />
         </div>
         <Button type="submit" disabled={!canSubmit || saving}>

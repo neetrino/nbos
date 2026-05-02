@@ -1,7 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
+import { toast } from 'sonner';
 import { dashboardApi } from '@/lib/api/dashboard';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import {
   DashboardControlCenterView,
@@ -72,7 +82,7 @@ function useDashboardControlCenter() {
     [preference],
   );
 
-  const preferenceControls = usePreferenceControls(setPreference);
+  const preferenceControls = usePreferenceControls(preference, setPreference);
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);
@@ -127,15 +137,48 @@ function useDashboardControlCenter() {
   };
 }
 
-function usePreferenceControls(setPreference: (preference: DashboardPreference) => void) {
+function usePreferenceControls(
+  preference: DashboardPreference | null,
+  setPreference: Dispatch<SetStateAction<DashboardPreference | null>>,
+) {
   const [savingPreference, setSavingPreference] = useState(false);
+  const preferenceRef = useRef(preference);
+  preferenceRef.current = preference;
+  const saveGenerationRef = useRef(0);
+  const saveInflightRef = useRef(0);
+
   const savePreference = useCallback(
     async (payload: Partial<DashboardPreference>) => {
+      const previous = preferenceRef.current;
+      if (!previous) return;
+
+      const generation = ++saveGenerationRef.current;
+      const optimistic: DashboardPreference = { ...previous, ...payload };
+      preferenceRef.current = optimistic;
+      setPreference(optimistic);
+
+      saveInflightRef.current += 1;
       setSavingPreference(true);
       try {
-        setPreference(await dashboardApi.updatePreference(payload));
+        const saved = await dashboardApi.updatePreference(payload);
+        if (generation === saveGenerationRef.current) {
+          preferenceRef.current = { ...preferenceRef.current, ...saved };
+          setPreference((current) => (current ? { ...current, ...saved } : saved));
+        }
+      } catch (caught) {
+        if (generation === saveGenerationRef.current) {
+          preferenceRef.current = previous;
+          setPreference(previous);
+          toast.error(
+            getApiErrorMessage(caught, 'Dashboard layout could not be saved. Please try again.'),
+          );
+        }
       } finally {
-        setSavingPreference(false);
+        saveInflightRef.current -= 1;
+        if (saveInflightRef.current <= 0) {
+          saveInflightRef.current = 0;
+          setSavingPreference(false);
+        }
       }
     },
     [setPreference],
