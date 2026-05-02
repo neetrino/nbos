@@ -287,9 +287,6 @@ function PinnedActionsTitle({ editMode }: { editMode: boolean }) {
         <h2 className="text-base font-semibold">Pinned actions</h2>
         {editMode ? <Badge variant="outline">Editing</Badge> : null}
       </div>
-      <p className="text-muted-foreground mt-1 text-sm">
-        Fast daily entry points, kept compact and easy to scan.
-      </p>
     </div>
   );
 }

@@ -108,10 +108,7 @@ function DashboardHeader({
   onToggleEdit: () => void;
 }) {
   return (
-    <PageHeader
-      title="Dashboard"
-      description="Compact command center for daily work, priorities and quick navigation."
-    >
+    <PageHeader title="Dashboard">
       <Button variant={editMode ? 'default' : 'secondary'} size="sm" onClick={onToggleEdit}>
         {editMode ? (
           <Check className="h-3.5 w-3.5" />
