@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type {
   DashboardMetricProjection,
+  DashboardNote as ApiDashboardNote,
   DashboardPersonalLink as ApiDashboardPersonalLink,
   DashboardPreferenceProjection,
   DashboardPriorityProjection,
@@ -29,6 +30,7 @@ export interface PinnedAction {
 }
 
 export type DashboardPersonalLink = ApiDashboardPersonalLink;
+export type DashboardNote = ApiDashboardNote;
 export type DashboardData = DashboardMetricProjection;
 export type DashboardPreference = DashboardPreferenceProjection;
 export type DashboardPinnedActionKey =

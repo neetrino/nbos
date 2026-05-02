@@ -1,6 +1,7 @@
 import { dashboardApi } from '@/lib/api/dashboard';
 import type {
   DashboardData,
+  DashboardNote,
   DashboardPersonalLink,
   DashboardPreference,
   PriorityCard,
@@ -11,6 +12,7 @@ export async function loadDashboardControlData(): Promise<{
   priorities: PriorityCard[];
   preference: DashboardPreference;
   personalLinks: DashboardPersonalLink[];
+  notes: DashboardNote[];
 }> {
   const projection = await dashboardApi.getControlCenter();
   return {
@@ -18,5 +20,6 @@ export async function loadDashboardControlData(): Promise<{
     priorities: projection.priorities,
     preference: projection.preference,
     personalLinks: projection.personalLinks,
+    notes: projection.notes ?? [],
   };
 }

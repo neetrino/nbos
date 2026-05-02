@@ -7,15 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type {
   DashboardData,
+  DashboardNote,
   DashboardPersonalLink,
   MiniMetricDefinition,
   PinnedAction,
   PriorityCard,
 } from '../dashboard-control-registry';
 import { MiniAnalytics, PriorityFeed } from './DashboardInsightPanels';
+import { DashboardNotesPanel } from './DashboardNotesPanel';
 import { PinnedActions } from './DashboardPinnedActions';
 
 const PINNED_SKELETON_COUNT = 6;
+const DASHBOARD_VIEWPORT_HEIGHT_CLASS = 'h-[calc(100dvh-7rem)] max-h-[calc(100dvh-7rem)]';
 
 interface DashboardControlCenterViewProps {
   actions: PinnedAction[];
@@ -24,77 +27,111 @@ interface DashboardControlCenterViewProps {
     hiddenKeys: PinnedAction['key'][],
   ) => void;
   applyWidgetLayout: (visibleIds: string[], hiddenIds: string[]) => void;
+  createDashboardNote: (content: string) => Promise<void>;
   data: DashboardData | null;
+  deleteDashboardNote: (id: string) => Promise<void>;
   error: string | null;
   hiddenActions: PinnedAction[];
   hiddenMiniMetrics: MiniMetricDefinition[];
+  notes: DashboardNote[];
   personalLinks: DashboardPersonalLink[];
   priorities: PriorityCard[];
   savingPreference: boolean;
   visibleMiniMetrics: MiniMetricDefinition[];
   createPersonalLink: (label: string, url: string) => Promise<void>;
   deletePersonalLink: (id: string) => Promise<void>;
+  reorderDashboardNotes: (noteIds: string[]) => Promise<void>;
+  updateDashboardNote: (id: string, content: string) => Promise<void>;
 }
 
 export function DashboardControlCenterView({
   actions,
   applyPinnedLayout,
   applyWidgetLayout,
+  createDashboardNote,
   data,
+  deleteDashboardNote,
   error,
   hiddenActions,
   hiddenMiniMetrics,
+  notes,
   personalLinks,
   priorities,
   savingPreference,
   visibleMiniMetrics,
   createPersonalLink,
   deletePersonalLink,
+  reorderDashboardNotes,
+  updateDashboardNote,
 }: DashboardControlCenterViewProps) {
   const [editMode, setEditMode] = useState(false);
 
   return (
-    <div className="space-y-5">
+    <div
+      className={`flex min-h-0 flex-col gap-5 overflow-hidden ${DASHBOARD_VIEWPORT_HEIGHT_CLASS}`}
+    >
       <DashboardHeader
         editMode={editMode}
         onToggleEdit={() => setEditMode((current) => !current)}
       />
       {error ? <DashboardError message={error} /> : null}
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-        <PinnedActions
-          actions={actions}
-          editMode={editMode}
-          hiddenActions={hiddenActions}
-          onApplyPinnedLayout={applyPinnedLayout}
-          onCreatePersonalLink={createPersonalLink}
-          onDeletePersonalLink={deletePersonalLink}
-          personalLinks={personalLinks}
-          saving={savingPreference}
-        />
-        <MiniAnalytics
-          data={data}
-          editMode={editMode}
-          hiddenMetrics={hiddenMiniMetrics}
-          onApplyWidgetLayout={applyWidgetLayout}
-          visibleMetrics={visibleMiniMetrics}
-        />
+      <section className="grid min-h-0 flex-1 items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
+        <div className="min-h-0 space-y-5 overflow-hidden">
+          <PinnedActions
+            actions={actions}
+            editMode={editMode}
+            hiddenActions={hiddenActions}
+            onApplyPinnedLayout={applyPinnedLayout}
+            onCreatePersonalLink={createPersonalLink}
+            onDeletePersonalLink={deletePersonalLink}
+            personalLinks={personalLinks}
+            saving={savingPreference}
+          />
+          <div className="grid gap-5 lg:grid-cols-2">
+            <MiniAnalytics
+              data={data}
+              editMode={editMode}
+              hiddenMetrics={hiddenMiniMetrics}
+              onApplyWidgetLayout={applyWidgetLayout}
+              visibleMetrics={visibleMiniMetrics}
+            />
+            <PriorityFeed priorities={priorities} />
+          </div>
+        </div>
+        <div className="min-h-0">
+          <DashboardNotesPanel
+            className="h-full"
+            notes={notes}
+            onCreateNote={createDashboardNote}
+            onDeleteNote={deleteDashboardNote}
+            onReorderNotes={reorderDashboardNotes}
+            onUpdateNote={updateDashboardNote}
+          />
+        </div>
       </section>
-      <PriorityFeed priorities={priorities} />
     </div>
   );
 }
 
 export function DashboardLoadingSkeleton() {
   return (
-    <div className="space-y-5">
+    <div
+      className={`flex min-h-0 flex-col gap-5 overflow-hidden ${DASHBOARD_VIEWPORT_HEIGHT_CLASS}`}
+    >
       <Skeleton className="h-20 rounded-2xl" />
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
-            <Skeleton key={index} className="h-20 rounded-md" />
-          ))}
+      <div className="grid min-h-0 flex-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
+        <div className="min-h-0 space-y-5 overflow-hidden">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
+              <Skeleton key={index} className="h-20 rounded-md" />
+            ))}
+          </div>
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Skeleton className="h-64 rounded-2xl" />
+            <Skeleton className="h-28 rounded-2xl" />
+          </div>
         </div>
-        <Skeleton className="h-64 rounded-2xl" />
+        <Skeleton className="min-h-0 rounded-2xl" />
       </div>
     </div>
   );

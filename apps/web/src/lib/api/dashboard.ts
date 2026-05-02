@@ -22,6 +22,7 @@ export interface DashboardControlCenterProjection {
   priorities: DashboardPriorityProjection[];
   preference: DashboardPreferenceProjection;
   personalLinks: DashboardPersonalLink[];
+  notes: DashboardNote[];
   meta: {
     source: 'module-projections';
     generatedAt: string;
@@ -46,6 +47,14 @@ export interface DashboardPersonalLink {
   isExternal: boolean;
 }
 
+export interface DashboardNote {
+  id: string;
+  content: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface UpdateDashboardPreferencePayload {
   pinnedActionOrder?: string[];
   hiddenPinnedActions?: string[];
@@ -59,6 +68,18 @@ export interface CreatePersonalLinkPayload {
   url: string;
   placement?: string[];
   openInNewTab?: boolean;
+}
+
+export interface CreateDashboardNotePayload {
+  content: string;
+}
+
+export interface UpdateDashboardNotePayload {
+  content: string;
+}
+
+export interface ReorderDashboardNotesPayload {
+  noteIds: string[];
 }
 
 export const dashboardApi = {
@@ -89,5 +110,29 @@ export const dashboardApi = {
 
   async deletePersonalLink(id: string): Promise<void> {
     await api.delete(`/api/dashboard/personal-links/${id}`);
+  },
+
+  async listNotes(): Promise<DashboardNote[]> {
+    const response = await api.get<DashboardNote[]>('/api/dashboard/notes');
+    return response.data;
+  },
+
+  async createNote(payload: CreateDashboardNotePayload): Promise<DashboardNote> {
+    const response = await api.post<DashboardNote>('/api/dashboard/notes', payload);
+    return response.data;
+  },
+
+  async updateNote(id: string, payload: UpdateDashboardNotePayload): Promise<DashboardNote> {
+    const response = await api.patch<DashboardNote>(`/api/dashboard/notes/${id}`, payload);
+    return response.data;
+  },
+
+  async reorderNotes(payload: ReorderDashboardNotesPayload): Promise<DashboardNote[]> {
+    const response = await api.patch<DashboardNote[]>('/api/dashboard/notes/order', payload);
+    return response.data;
+  },
+
+  async deleteNote(id: string): Promise<void> {
+    await api.delete(`/api/dashboard/notes/${id}`);
   },
 };

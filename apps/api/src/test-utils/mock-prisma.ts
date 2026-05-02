@@ -47,6 +47,7 @@ export function createMockPrisma() {
     savedReportView: createModelMock(),
     dashboardPreference: createModelMock(),
     personalLink: createModelMock(),
+    dashboardNote: createModelMock(),
     documentSection: createModelMock(),
     externalDocumentLink: createModelMock(),
     document: createModelMock(),

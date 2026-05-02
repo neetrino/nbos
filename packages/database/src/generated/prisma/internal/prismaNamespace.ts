@@ -430,6 +430,7 @@ export const ModelName = {
   Employee: 'Employee',
   DashboardPreference: 'DashboardPreference',
   PersonalLink: 'PersonalLink',
+  DashboardNote: 'DashboardNote',
   Partner: 'Partner',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
@@ -533,6 +534,7 @@ export type TypeMap<
       | 'employee'
       | 'dashboardPreference'
       | 'personalLink'
+      | 'dashboardNote'
       | 'partner'
       | 'messengerChannel'
       | 'messengerChannelMessage'
@@ -4684,6 +4686,82 @@ export type TypeMap<
         };
       };
     };
+    DashboardNote: {
+      payload: Prisma.$DashboardNotePayload<ExtArgs>;
+      fields: Prisma.DashboardNoteFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DashboardNoteFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DashboardNoteFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>;
+        };
+        findFirst: {
+          args: Prisma.DashboardNoteFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DashboardNoteFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>;
+        };
+        findMany: {
+          args: Prisma.DashboardNoteFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>[];
+        };
+        create: {
+          args: Prisma.DashboardNoteCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>;
+        };
+        createMany: {
+          args: Prisma.DashboardNoteCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DashboardNoteCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>[];
+        };
+        delete: {
+          args: Prisma.DashboardNoteDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>;
+        };
+        update: {
+          args: Prisma.DashboardNoteUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>;
+        };
+        deleteMany: {
+          args: Prisma.DashboardNoteDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DashboardNoteUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DashboardNoteUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>[];
+        };
+        upsert: {
+          args: Prisma.DashboardNoteUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DashboardNotePayload>;
+        };
+        aggregate: {
+          args: Prisma.DashboardNoteAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDashboardNote>;
+        };
+        groupBy: {
+          args: Prisma.DashboardNoteGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DashboardNoteGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DashboardNoteCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.DashboardNoteCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     Partner: {
       payload: Prisma.$PartnerPayload<ExtArgs>;
       fields: Prisma.PartnerFieldRefs;
@@ -7894,6 +7972,18 @@ export const PersonalLinkScalarFieldEnum = {
 export type PersonalLinkScalarFieldEnum =
   (typeof PersonalLinkScalarFieldEnum)[keyof typeof PersonalLinkScalarFieldEnum];
 
+export const DashboardNoteScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  content: 'content',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DashboardNoteScalarFieldEnum =
+  (typeof DashboardNoteScalarFieldEnum)[keyof typeof DashboardNoteScalarFieldEnum];
+
 export const PartnerScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -10193,6 +10283,7 @@ export type GlobalOmitConfig = {
   employee?: Prisma.EmployeeOmit;
   dashboardPreference?: Prisma.DashboardPreferenceOmit;
   personalLink?: Prisma.PersonalLinkOmit;
+  dashboardNote?: Prisma.DashboardNoteOmit;
   partner?: Prisma.PartnerOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;

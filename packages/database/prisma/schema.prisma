@@ -1977,6 +1977,7 @@ model Employee {
   reportSchedulesOwned         ReportSchedule[]
   savedReportViews             SavedReportView[]
   personalLinks                PersonalLink[]
+  dashboardNotes               DashboardNote[]
 
   @@map("employees")
 }
@@ -2013,6 +2014,20 @@ model PersonalLink {
 
   @@index([ownerId, sortOrder])
   @@map("personal_links")
+}
+
+model DashboardNote {
+  id        String   @id @default(uuid())
+  ownerId   String   @map("owner_id")
+  content   String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner Employee @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, sortOrder])
+  @@map("dashboard_notes")
 }
 
 enum PartnerTypeEnum {

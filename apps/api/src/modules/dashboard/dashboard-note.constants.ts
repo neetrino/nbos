@@ -1,0 +1,2 @@
+export const DASHBOARD_NOTE_LIMIT = 50;
+export const DASHBOARD_NOTE_MAX_LENGTH = 1_000;

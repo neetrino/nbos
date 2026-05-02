@@ -22,11 +22,14 @@ import {
   PINNED_ACTIONS,
   partitionMiniMetrics,
   type DashboardData,
+  type DashboardNote,
   type DashboardPersonalLink,
   type DashboardPreference,
   type PinnedAction,
   type PriorityCard,
 } from './dashboard-control-registry';
+
+const TEMP_NOTE_ID_PREFIX = 'temp-dashboard-note';
 
 export function DashboardControlCenter() {
   const dashboard = useDashboardControlCenter();
@@ -39,15 +42,20 @@ export function DashboardControlCenter() {
       applyPinnedLayout={dashboard.applyPinnedLayout}
       applyWidgetLayout={dashboard.applyWidgetLayout}
       data={dashboard.data}
+      deleteDashboardNote={dashboard.deleteDashboardNote}
       error={dashboard.error}
       hiddenActions={dashboard.hiddenActions}
       hiddenMiniMetrics={dashboard.hiddenMiniMetrics}
+      notes={dashboard.notes}
       personalLinks={dashboard.personalLinks}
       priorities={dashboard.priorities}
       savingPreference={dashboard.savingPreference}
       visibleMiniMetrics={dashboard.visibleMiniMetrics}
+      createDashboardNote={dashboard.createDashboardNote}
       createPersonalLink={dashboard.createPersonalLink}
       deletePersonalLink={dashboard.deletePersonalLink}
+      reorderDashboardNotes={dashboard.reorderDashboardNotes}
+      updateDashboardNote={dashboard.updateDashboardNote}
     />
   );
 }
@@ -57,6 +65,7 @@ function useDashboardControlCenter() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [preference, setPreference] = useState<DashboardPreference | null>(null);
   const [personalLinks, setPersonalLinks] = useState<DashboardPersonalLink[]>([]);
+  const [notes, setNotes] = useState<DashboardNote[]>([]);
   const [priorities, setPriorities] = useState<PriorityCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,10 +101,12 @@ function useDashboardControlCenter() {
       setData(projection.metrics);
       setPreference(projection.preference);
       setPersonalLinks(projection.personalLinks);
+      setNotes(projection.notes ?? []);
       setPriorities(projection.priorities);
     } catch (caught) {
       setData(null);
       setPersonalLinks([]);
+      setNotes([]);
       setPriorities([]);
       setError(caught instanceof Error ? caught.message : 'Dashboard data could not be loaded.');
     } finally {
@@ -117,6 +128,7 @@ function useDashboardControlCenter() {
     hiddenActions,
     hiddenMiniMetrics,
     loading,
+    notes,
     personalLinks,
     preference,
     priorities,
@@ -134,7 +146,73 @@ function useDashboardControlCenter() {
       await dashboardApi.deletePersonalLink(id);
       setPersonalLinks((current) => current.filter((link) => link.id !== id));
     },
+    createDashboardNote: async (content: string) => {
+      const temporaryId = `${TEMP_NOTE_ID_PREFIX}-${Date.now()}`;
+      const createdAt = new Date().toISOString();
+      const temporaryNote: DashboardNote = {
+        id: temporaryId,
+        content: content.trim(),
+        sortOrder: 0,
+        createdAt,
+        updatedAt: createdAt,
+      };
+      setNotes((current) => [temporaryNote, ...current]);
+      try {
+        const saved = await dashboardApi.createNote({ content });
+        setNotes((current) => current.map((note) => (note.id === temporaryId ? saved : note)));
+      } catch (caught) {
+        setNotes((current) => current.filter((note) => note.id !== temporaryId));
+        toast.error(getApiErrorMessage(caught, 'Dashboard note could not be saved.'));
+        throw caught;
+      }
+    },
+    deleteDashboardNote: async (id: string) => {
+      const previousNotes = notes;
+      setNotes((current) => current.filter((note) => note.id !== id));
+      try {
+        await dashboardApi.deleteNote(id);
+      } catch (caught) {
+        setNotes(previousNotes);
+        toast.error(getApiErrorMessage(caught, 'Dashboard note could not be deleted.'));
+      }
+    },
+    updateDashboardNote: async (id: string, content: string) => {
+      const previousNotes = notes;
+      const updatedAt = new Date().toISOString();
+      setNotes((current) =>
+        current.map((note) =>
+          note.id === id ? { ...note, content: content.trim(), updatedAt } : note,
+        ),
+      );
+      try {
+        const saved = await dashboardApi.updateNote(id, { content });
+        setNotes((current) => current.map((note) => (note.id === id ? saved : note)));
+      } catch (caught) {
+        setNotes(previousNotes);
+        toast.error(getApiErrorMessage(caught, 'Dashboard note could not be updated.'));
+        throw caught;
+      }
+    },
+    reorderDashboardNotes: async (noteIds: string[]) => {
+      const previousNotes = notes;
+      setNotes((current) => orderNotesByIds(current, noteIds));
+      try {
+        const saved = await dashboardApi.reorderNotes({ noteIds });
+        setNotes(saved);
+      } catch (caught) {
+        setNotes(previousNotes);
+        toast.error(getApiErrorMessage(caught, 'Dashboard notes order could not be saved.'));
+      }
+    },
   };
+}
+
+function orderNotesByIds(notes: DashboardNote[], noteIds: string[]): DashboardNote[] {
+  const byId = new Map(notes.map((note) => [note.id, note]));
+  return noteIds.flatMap((id, sortOrder) => {
+    const note = byId.get(id);
+    return note ? [{ ...note, sortOrder }] : [];
+  });
 }
 
 function usePreferenceControls(
