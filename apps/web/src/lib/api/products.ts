@@ -107,7 +107,8 @@ export interface ProductOrderRef {
 
 export interface ProductStats {
   total: number;
-  byStatus: Record<string, number>;
+  byStatus: Array<{ status: string; _count: number }>;
+  byType: Array<{ productType: string; _count: number }>;
 }
 
 interface ListData {

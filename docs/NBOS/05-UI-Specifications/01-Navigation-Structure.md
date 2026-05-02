@@ -62,7 +62,6 @@ Sidebar содержит top-level модули, а не все возможны
 
 ```text
 Dashboard
-Reports / Analytics
 CRM
 Marketing
 Project Hub
@@ -76,6 +75,7 @@ Calendar
 Drive
 Credentials
 My Company
+Reports / Analytics
 Settings / Admin
 ```
 
@@ -124,11 +124,10 @@ CRM
   Leads
   Deals
   CRM Client Chats
-  Sales Reports / Analytics
 ```
 
 CRM отвечает за Lead/Deal pipeline, offers, stage gates и клиентские pre-sale коммуникации.
-`Sales Reports / Analytics` является CRM-owned view и также отображается в `Reports / Analytics` catalog.
+Глубокие Sales reports, exports, scheduled reports and cross-period comparisons живут в top-level `Reports / Analytics`, а CRM может ссылаться на них из lightweight dashboard widgets без отдельного sidebar item.
 
 ### Marketing
 

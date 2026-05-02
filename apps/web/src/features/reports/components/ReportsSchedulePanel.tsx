@@ -4,8 +4,12 @@ import { useMemo, useState } from 'react';
 import { CalendarClock, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { FinanceReportDefinition } from '@/lib/api/finance-reports';
-import { reportsApi, type ReportSchedule, type ReportScheduleFrequency } from '@/lib/api/reports';
+import {
+  reportsApi,
+  type ReportDefinition,
+  type ReportSchedule,
+  type ReportScheduleFrequency,
+} from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 const DEFAULT_TIMEZONE = 'Asia/Yerevan';
@@ -20,7 +24,7 @@ const WEEKDAYS = [
 ];
 
 interface ReportsSchedulePanelProps {
-  definitions: FinanceReportDefinition[];
+  definitions: ReportDefinition[];
   schedules: ReportSchedule[];
   filters: Record<string, string>;
   onSchedulesChange: (schedules: ReportSchedule[]) => void;
@@ -34,7 +38,7 @@ export function ReportsSchedulePanel({
   onSchedulesChange,
   onRefresh,
 }: ReportsSchedulePanelProps) {
-  const defaultReportKey = definitions[0]?.id ?? '';
+  const defaultReportKey = definitions[0]?.key ?? '';
   const [reportKey, setReportKey] = useState(defaultReportKey);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [scheduleLabel, setScheduleLabel] = useState('');
@@ -46,7 +50,10 @@ export function ReportsSchedulePanel({
   const [error, setError] = useState<string | null>(null);
 
   const selectedReportKey = reportKey || defaultReportKey;
-  const canSubmit = Boolean(selectedReportKey && recipientEmail.trim() && scheduleLabel.trim());
+  const selectedDefinition = definitions.find((definition) => definition.key === selectedReportKey);
+  const canSubmit = Boolean(
+    selectedReportKey && selectedDefinition && recipientEmail.trim() && scheduleLabel.trim(),
+  );
 
   async function createSchedule() {
     if (!canSubmit) return;
@@ -55,7 +62,7 @@ export function ReportsSchedulePanel({
     try {
       const schedule = await reportsApi.createSchedule({
         reportKey: selectedReportKey,
-        ownerModule: 'FINANCE',
+        ownerModule: selectedDefinition?.ownerModule,
         format: 'CSV',
         recipientEmails: [recipientEmail.trim()],
         scheduleLabel: scheduleLabel.trim(),
@@ -106,7 +113,7 @@ export function ReportsSchedulePanel({
           className="border-input bg-background rounded-md border px-3 py-2 text-sm"
         >
           {definitions.map((definition) => (
-            <option key={definition.id} value={definition.id}>
+            <option key={definition.key} value={definition.key}>
               {definition.title}
             </option>
           ))}

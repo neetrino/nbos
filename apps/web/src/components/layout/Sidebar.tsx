@@ -55,12 +55,6 @@ interface PermissionRequirement {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard size={20} /> },
   {
-    label: 'Reports / Analytics',
-    href: '/reports',
-    icon: <BarChart3 size={20} />,
-    permission: { module: 'DASHBOARDS', action: 'VIEW' },
-  },
-  {
     label: 'CRM',
     href: '/crm',
     icon: <Users size={20} />,
@@ -77,11 +71,6 @@ const NAV_ITEMS: NavItem[] = [
         label: 'CRM Client Chats',
         href: '/messenger?scope=crm',
         permission: { module: 'MESSENGER', action: 'VIEW' },
-      },
-      {
-        label: 'Sales Reports / Analytics',
-        href: '/reports?module=crm',
-        permission: { module: 'CRM_DEALS', action: 'VIEW' },
       },
     ],
   },
@@ -287,6 +276,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/credentials',
     icon: <KeyRound size={20} />,
     permission: { module: 'CREDENTIALS', action: 'VIEW' },
+  },
+  {
+    label: 'Reports / Analytics',
+    href: '/reports',
+    icon: <BarChart3 size={20} />,
+    permission: { module: 'DASHBOARDS', action: 'VIEW' },
   },
   {
     label: 'Settings / Admin',

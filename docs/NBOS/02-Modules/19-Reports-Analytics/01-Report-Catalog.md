@@ -6,6 +6,21 @@
 
 `Report Catalog` - это библиотека отчётов. Пользователь не должен гадать, где искать аналитику: все отчёты доступны из одного места, но drill-down ведёт в исходные модули.
 
+В Phase 7 catalog является не техническим списком definitions, а входом в полноценный Reports module. Каждая строка каталога должна вести к real report view: metric cards, charts/tables, filters, drill-down, export and schedule actions.
+
+## Phase 7 implementation matrix
+
+| Direction                     | V1 reports                                                                | Source modules                                 | Runtime expectation                                                    |
+| ----------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------- |
+| Finance                       | Company P&L, Project P&L, Cash Flow, MRR, Expense Plan vs Actual, Payroll | Finance, Expenses, Payroll                     | Full report previews and drill-down to Finance records                 |
+| Sales                         | Lead to Deal Funnel, Won/Lost, Pipeline by Stage, Seller Performance      | CRM + Finance payments + Marketing attribution | Sales report cards and charts inside global Reports                    |
+| Marketing                     | Leads by Channel, Campaign Spend vs Result, ROI/CPL, Attribution Quality  | Marketing + CRM + Finance spend                | Marketing reports with honest `No spend data` warnings                 |
+| Projects / Delivery           | Delivery Timeline, Products at Risk, Stage Duration, On-time Delivery     | Projects Hub + Tasks + Calendar                | Cross-project delivery reports, not only project boards                |
+| Specialists / KPI             | Employee KPI, Department KPI, Seller KPI, Delivery KPI                    | My Company + Tasks + CRM + Delivery facts      | Role-aware performance reports without exposing restricted source data |
+| Support / Partners / Security | SLA, Partner Revenue, Vault Access Review                                 | Support, Partners, Credentials                 | Later expansion with stricter permissions and audit                    |
+
+The catalog can show future report definitions only when they are clearly marked as unavailable. The main user view should prioritize reports with real data.
+
 ## Executive Reports
 
 Для Owner / CEO.
@@ -95,7 +110,7 @@ Finance reports должны соответствовать Finance Core Archite
 - Maintenance Pending/Active/On Hold/Canceled/Completed;
 - Prepaid Subscription Coverage.
 
-## Delivery Reports
+## Projects / Delivery Reports
 
 Источник данных: Projects Hub + Tasks + Calendar deadline projections.
 
@@ -109,6 +124,25 @@ Finance reports должны соответствовать Finance Core Archite
 - QA / Transfer Bottlenecks;
 - Work Space / Sprint Performance;
 - Product/Extension Completion Report.
+
+Delivery reports answer whether projects, products and extensions are moving on time. Finance Project P&L covers profitability, but it does not replace delivery analytics.
+
+## Specialists / KPI Reports
+
+Источник данных: My Company + Tasks + module facts.
+
+Отчёты:
+
+- Specialist Workload;
+- Specialist Throughput;
+- Task Completion Quality;
+- Employee KPI Result;
+- Department KPI Result;
+- Seller KPI vs Bonus;
+- PM Delivery Scorecard;
+- Support Specialist SLA Scorecard.
+
+Specialist reports are permission-scoped. A developer can see own/task-scope reports; CEO/Heads can see team-level reports where role permissions allow it.
 
 ## Support Reports
 

@@ -77,17 +77,17 @@ Shipped P0 catalog shell:
 Статус: `DONE` (2026-04-30)
 
 Top-level `Reports / Analytics` is available in the main sidebar at `/reports`.
-CRM also links sales analytics to `/reports?module=crm`.
+CRM does not duplicate `Sales Reports / Analytics` in the sidebar; sales reports live in the global Reports module.
 
-Canonical default: top-level `Reports / Analytics`.
+Canonical default: top-level `Reports / Analytics` in the lower management/reporting area.
 
 ### B3. Report definitions are missing
 
-Статус: `P0 DONE / LATER DEPTH` (2026-04-30)
+Статус: `PHASE 7 IN PROGRESS` (2026-05-02)
 
-Shipped: `/reports` consumes the existing Finance-owned report definition registry and does not copy Finance formulas.
+Shipped foundation: `/reports` consumed the existing Finance-owned report definition registry and did not copy Finance formulas.
 
-Future registry shape only when cross-module analytics becomes a clear product need:
+Phase 7 registry shape for the production report center:
 
 ```text
 ReportDefinition

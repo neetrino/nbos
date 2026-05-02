@@ -2,32 +2,9 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { AuditService } from '../audit/audit.service';
 import { DriveService } from '../drive/drive.service';
-import type { FinanceReportDefinition } from '../finance/reports/finance-report-definitions';
-import { FinanceReportsService } from '../finance/reports/reports.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { ReportsQueueService } from './reports-queue.service';
 import { ReportsService } from './reports.service';
-
-function createFinanceReportsService(): Partial<FinanceReportsService> {
-  const definition: FinanceReportDefinition = {
-    id: 'company-pnl',
-    title: 'Company P&L',
-    audience: ['CEO'],
-    description: 'Finance-owned report.',
-    v1Status: 'definition_ready',
-    sourceEndpoints: [],
-    drillDownHrefs: [],
-    phase3Scope: 'Finance owns formulas.',
-    phase6Deferred: 'Reports owns export jobs.',
-  };
-  return {
-    getDefinition: vi.fn(() => definition),
-    getDefinitions: vi.fn(() => ({
-      items: [definition],
-      meta: { count: 1, scope: 'test', phase6Boundary: 'test' },
-    })),
-  };
-}
 
 function createAuditService(): Partial<AuditService> {
   return { log: vi.fn() };
@@ -55,7 +32,6 @@ const QUEUED_JOB = {
 
 describe('ReportsService', () => {
   let prisma: MockPrisma;
-  let financeReports: ReturnType<typeof createFinanceReportsService>;
   let audit: ReturnType<typeof createAuditService>;
   let drive: ReturnType<typeof createDriveService>;
   let queue: ReturnType<typeof createReportsQueueService>;
@@ -63,7 +39,6 @@ describe('ReportsService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    financeReports = createFinanceReportsService();
     audit = createAuditService();
     drive = createDriveService();
     queue = createReportsQueueService();
@@ -76,7 +51,6 @@ describe('ReportsService', () => {
     const reportService = { getReport: vi.fn().mockResolvedValue({ reportId: 'company-pnl' }) };
     service = new ReportsService(
       prisma as never,
-      financeReports as never,
       audit as never,
       drive as never,
       reportService as never,
@@ -89,7 +63,7 @@ describe('ReportsService', () => {
     );
   });
 
-  it('creates an audited queued export job for a Finance-owned report definition', async () => {
+  it('creates an audited queued export job for a registered report definition', async () => {
     await service.createExportJob('employee-1', {
       reportKey: 'company-pnl',
       ownerModule: 'FINANCE',
@@ -97,7 +71,6 @@ describe('ReportsService', () => {
       filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
     });
 
-    expect(financeReports.getDefinition).toHaveBeenCalledWith('company-pnl');
     expect(prisma.reportExportJob.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -142,14 +115,42 @@ describe('ReportsService', () => {
     );
   });
 
-  it('rejects unsupported report owner modules', async () => {
+  it('rejects mismatched report owner modules', async () => {
     await expect(
       service.createExportJob('employee-1', {
         reportKey: 'company-pnl',
         ownerModule: 'MARKETING',
         format: 'CSV',
       }),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('rejects formats that the report definition does not support', async () => {
+    await expect(
+      service.createExportJob('employee-1', {
+        reportKey: 'marketing-source-performance',
+        ownerModule: 'MARKETING',
+        format: 'PDF',
+      }),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  it('creates an export job for a non-Finance report definition', async () => {
+    await service.createExportJob('employee-1', {
+      reportKey: 'marketing-source-performance',
+      ownerModule: 'MARKETING',
+      format: 'CSV',
+    });
+
+    expect(prisma.reportExportJob.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          reportKey: 'marketing-source-performance',
+          reportTitle: 'Marketing Source Performance',
+          ownerModule: 'MARKETING',
+        }),
+      }),
+    );
   });
 
   it('creates an audited scheduled report model without sending a fake report', async () => {
@@ -232,7 +233,7 @@ describe('ReportsService', () => {
         }),
         expect.objectContaining({
           reportKey: 'company-pnl',
-          code: 'DEFERRED_DEPTH',
+          code: 'REPORT_NOTE',
         }),
       ]),
     );
