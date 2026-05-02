@@ -13,7 +13,9 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar />
       <div className="ml-[260px] flex min-w-0 flex-1 flex-col overflow-hidden transition-all duration-300">
         <Topbar />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="bg-background flex-1 overflow-y-auto overscroll-contain p-6">
+          {children}
+        </main>
       </div>
     </div>
   );
