@@ -62,7 +62,7 @@ Unavailable module -> do not crash the current module.
 - **Pricing Rules:** типы оплаты (Classic 50/50, Classic 30/30/40, Subscription), правила расчёта бонусов
 - **Product Taxonomy:** типы проектов (White Label / Mix / Custom Code), типы продуктов (Website, App, CRM, Logo, SMM), типы заказов (Product, Extension, Subscription)
 - **RBAC Rules:** матрица доступов по ролям (CEO, Seller, PM, Dev, Finance, Ops, Junior)
-- **Bonus Rules:** формулы начисления, KPI-gates, holdback, cap, clawback
+- **Bonus Rules:** формулы начисления, KPI-gates, caps, product bonus pool releases, clawback
 - **Partner Rules:** процент партнёра (30%), условия выплат, типы партнёров
 
 ### Кто управляет:

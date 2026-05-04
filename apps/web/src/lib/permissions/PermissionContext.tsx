@@ -2,13 +2,20 @@
 
 import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 import type { MeResponse, PermissionMap, PermissionScope } from './types';
 import { api, setAuthTokenGetter } from '@/lib/api';
+import { getApiErrorMessage } from '@/lib/api-errors';
+
+const PERMISSIONS_LOAD_ERROR_TOAST_ID = 'nbos-permissions-load-error';
+const PERMISSIONS_ERROR_TOAST_MS = 8_000;
 
 interface PermissionContextValue {
   me: MeResponse | null;
   permissions: PermissionMap;
   isLoading: boolean;
+  /** Set when `/api/me` fails after sign-in; empty permissions alone are ambiguous. */
+  meLoadError: string | null;
   can: (action: string, module: string) => boolean;
   scope: (action: string, module: string) => PermissionScope | null;
 }
@@ -17,6 +24,7 @@ const PermissionCtx = createContext<PermissionContextValue>({
   me: null,
   permissions: {},
   isLoading: true,
+  meLoadError: null,
   can: () => false,
   scope: () => null,
 });
@@ -24,6 +32,7 @@ const PermissionCtx = createContext<PermissionContextValue>({
 export function PermissionProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const [me, setMe] = useState<MeResponse | null>(null);
+  const [meLoadError, setMeLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const prevUserIdRef = useRef<string | undefined>(undefined);
 
@@ -40,6 +49,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     if (status !== 'authenticated' || !userId) {
       setIsLoading(false);
       setMe(null);
+      setMeLoadError(null);
       return;
     }
 
@@ -54,9 +64,22 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
         const res = await api.get<MeResponse>('/api/me');
         if (!cancelled) {
           setMe(res.data);
+          setMeLoadError(null);
+          toast.dismiss(PERMISSIONS_LOAD_ERROR_TOAST_ID);
         }
-      } catch {
-        /* noop */
+      } catch (caught: unknown) {
+        if (!cancelled) {
+          const message = getApiErrorMessage(
+            caught,
+            'Unable to load your permissions. Check your connection or sign in again.',
+          );
+          setMe(null);
+          setMeLoadError(message);
+          toast.error(message, {
+            id: PERMISSIONS_LOAD_ERROR_TOAST_ID,
+            duration: PERMISSIONS_ERROR_TOAST_MS,
+          });
+        }
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -82,7 +105,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <PermissionCtx.Provider value={{ me, permissions, isLoading, can, scope }}>
+    <PermissionCtx.Provider value={{ me, permissions, isLoading, meLoadError, can, scope }}>
       {children}
     </PermissionCtx.Provider>
   );

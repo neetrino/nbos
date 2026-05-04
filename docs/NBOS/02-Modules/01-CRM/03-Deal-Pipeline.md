@@ -243,7 +243,7 @@ Deal Pipeline — воронка для работы с квалифициров
 | Deadline             | Дата                                                 | Да\*\*       | Стадия 7                    |
 | Причина проигрыша    | Текст + выбор                                        | Условно      | Если Failed                 |
 
-> \*Обязательно до перехода дальше первой meaningful stage
+> \*Обязательно до перехода дальше первой meaningful stage. Значение **Marketing From** (Sales / Marketing / Partner / Client) также выбирает строку **политики sales bonus** (независимые проценты Seller и Assistant от базы Classic/Subscription): см. `03-Business-Logic/03-Bonus-Payroll-Logic.md`.
 > \*\*Для `PRODUCT / EXTENSION / OUTSOURCE` это delivery deadline; для `MAINTENANCE` это planned maintenance start date
 
 `Offer Materials` не должны храниться как локальное поле Deal. Deal хранит links на Drive File Assets с purpose `OFFER_DRAFT / OFFER_SENT / OFFER_APPROVED / MESSENGER_PROOF`. При `Deal Won` approved offer автоматически становится видимым в Product Library, Project Library и Client Library по правилам Drive.

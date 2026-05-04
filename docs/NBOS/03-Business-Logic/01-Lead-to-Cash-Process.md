@@ -157,18 +157,18 @@ Deal.status → Deal Won
 
 ---
 
-## После сдачи проекта: Maintenance как подписка
+## После сдачи Product / Extension: Maintenance как подписка
 
 ### Процесс предложения Maintenance
 
-1. **Проект сдан** — клиент подтвердил приёмку
+1. **Product / Extension сдан** — клиент подтвердил приёмку
 2. **Seller связывается** с клиентом и предлагает Maintenance-подписку
 3. Условия фиксируются в **Projects / Finance** (не стадия CRM Deal):
    - Сумма ежемесячной подписки
    - Что входит в Maintenance (техподдержка, мелкие правки, мониторинг)
    - Дата начала подписки
-4. При согласии клиента → создаётся **Subscription** в системе, привязанная к проекту
-5. Проект получает статус **Maintenance** в Projects Hub
+4. При согласии клиента → создаётся **Subscription** в системе, привязанная к Product / Extension
+5. Product / Extension получает Maintenance-связь в Projects Hub
 
 ### Типичный сценарий для Subscription-модели оплаты
 

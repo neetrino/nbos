@@ -32,25 +32,25 @@
 
 Правильное разделение:
 
-| Слой                    | Русское название         | Смысл                                                               |
-| ----------------------- | ------------------------ | ------------------------------------------------------------------- |
-| `Bonus Policy Engine`   | Движок бонусных правил   | Кодовый механизм расчёта, проверки условий и audit                  |
-| `Bonus Policy Template` | Шаблон бонусного правила | Безопасный тип правила: sales, delivery, marketing, support, manual |
-| `Bonus Policy`          | Активное правило бонусов | Настройка для отдела, позиции, уровня или сотрудника                |
-| `KPI Policy Template`   | Шаблон KPI               | Типовые KPI для роли или отдела                                     |
-| `KPI Policy`            | Активное правило KPI     | Какие KPI применяются и как они влияют на выплату                   |
-| `Compensation Profile`  | Профиль оплаты           | Фикс, валюта, активные bonus/kpi policies конкретного сотрудника    |
-| `Bonus Entry`           | Бонусная запись          | Конкретный бонус по сотруднику, проекту, заказу или ручному решению |
-| `Bonus Release`         | Выпуск бонуса к выплате  | Решение включить часть бонуса в конкретный payroll                  |
+| Слой                    | Русское название         | Смысл                                                                           |
+| ----------------------- | ------------------------ | ------------------------------------------------------------------------------- |
+| `Bonus Policy Engine`   | Движок бонусных правил   | Кодовый механизм расчёта, проверки условий и audit                              |
+| `Bonus Policy Template` | Шаблон бонусного правила | Безопасный тип правила: sales, delivery, marketing, support, manual             |
+| `Bonus Policy`          | Активное правило бонусов | Настройка для отдела, позиции, уровня или сотрудника                            |
+| `KPI Policy Template`   | Шаблон KPI               | Типовые KPI для роли или отдела                                                 |
+| `KPI Policy`            | Активное правило KPI     | Какие KPI применяются и как они влияют на выплату                               |
+| `Compensation Profile`  | Профиль оплаты           | Фикс, валюта, активные bonus/kpi policies конкретного сотрудника                |
+| `Bonus Entry`           | Бонусная запись          | Конкретный бонус по сотруднику, Product / Extension, заказу или ручному решению |
+| `Bonus Release`         | Выпуск бонуса к выплате  | Решение включить часть бонуса в конкретный payroll                              |
 
 ### Что должно быть в коде
 
 В коде должны жить:
 
 - типы правил и порядок расчёта;
-- проверка условий: оплата, сдача проекта, KPI, holdback, clawback;
+- проверка условий: оплата, сдача Product / Extension, KPI, product bonus pool, clawback;
 - защита от двойного начисления;
-- расчёт доступного проектного фонда;
+- расчёт доступного продуктового фонда;
 - audit и versioning правил;
 - невозможность случайно выплатить больше без явного `override`.
 
@@ -137,7 +137,7 @@ Compensation Profile не должен хранить только одну те
 Бонус может появиться из:
 
 - оплаты заказа;
-- сдачи проекта;
+- сдачи Product / Extension;
 - оплаты месяца подписки;
 - выполнения KPI;
 - ручного решения CEO / Finance;
@@ -151,7 +151,6 @@ Compensation Profile не должен хранить только одну те
 | `Earned`              | Заработан             | Рабочее событие произошло                       |
 | `Pending Eligibility` | Ждёт условия          | Ждёт оплату, KPI, acceptance или другое условие |
 | `Vested`              | Разрешён к выплате    | Условия выполнены                               |
-| `Holdback`            | Удержание             | Часть суммы удержана временно                   |
 | `Active`              | В ближайший payroll   | Готов войти в зарплатный расчёт                 |
 | `Paid`                | Выплачен              | Выплачен сотруднику                             |
 | `Clawback`            | Отзыв / корректировка | Бонус отозван или скорректирован                |
@@ -160,16 +159,18 @@ Compensation Profile не должен хранить только одну те
 
 ---
 
-## Project Bonus Pool / Бонусный фонд проекта
+## Product Bonus Pool / Бонусный фонд продукта
 
 Для проектных бонусов, особенно при subscription-оплате, нужно отделить план бонуса от фактического выпуска денег.
 
-`Project Bonus Pool / Бонусный фонд проекта` - это плановая сумма бонусов по проекту или order.
+`Product Bonus Pool / Бонусный фонд продукта` - это плановая сумма бонусов по конкретному Product / Extension и его order.
+
+`Project` в NBOS является оболочкой. Один проект может содержать несколько продуктов или доработок, которые клиент оплачивает отдельно. Поэтому фонд, release и остаток считаются **по каждому Product / Extension отдельно**, а не одним общим фондом проекта.
 
 Пример:
 
 ```text
-Project: Website Subscription
+Product: Website Subscription
 Seller:     100,000
 PM:          30,000
 Developer: 120,000
@@ -179,47 +180,47 @@ Total:     300,000
 
 Важные суммы:
 
-| Поле                     | Русское название       | Смысл                                               |
-| ------------------------ | ---------------------- | --------------------------------------------------- |
-| `planned_bonus_amount`   | Плановый бонус         | Сколько всего положено сотруднику по проекту        |
-| `released_bonus_amount`  | Выпущено к выплате     | Сколько уже разрешено включить в payroll            |
-| `paid_bonus_amount`      | Выплачено              | Сколько реально выплачено через expense payments    |
-| `remaining_bonus_amount` | Остаток                | Сколько ещё осталось по плановому бонусу            |
-| `extra_bonus_amount`     | Дополнительный бонус   | Сумма сверх планового бонуса                        |
-| `over_funding_amount`    | Сверх проектного фонда | Сумма, выпущенная сверх полученных денег по проекту |
+| Поле                     | Русское название         | Смысл                                                           |
+| ------------------------ | ------------------------ | --------------------------------------------------------------- |
+| `planned_bonus_amount`   | Плановый бонус           | Сколько всего положено сотруднику по Product / Extension        |
+| `released_bonus_amount`  | Выпущено к выплате       | Сколько уже разрешено включить в payroll                        |
+| `paid_bonus_amount`      | Выплачено                | Сколько реально выплачено через expense payments                |
+| `remaining_bonus_amount` | Остаток                  | Сколько ещё осталось по плановому бонусу                        |
+| `extra_bonus_amount`     | Дополнительный бонус     | Сумма сверх планового бонуса                                    |
+| `over_funding_amount`    | Сверх продуктового фонда | Сумма, выпущенная сверх полученных денег по Product / Extension |
 
-### Available Project Bonus Funding / Доступный проектный фонд
+### Available Product Bonus Funding / Доступный продуктовый фонд
 
-`Available Project Bonus Funding / Доступный проектный фонд` показывает, сколько денег по проекту можно использовать на бонусы без кассового разрыва.
+`Available Product Bonus Funding / Доступный продуктовый фонд` показывает, сколько денег по конкретному Product / Extension можно использовать на бонусы без кассового разрыва.
 
 ```text
 Available Bonus Funding =
-  Project Received Amount
+  Product Received Amount
   - already released bonuses
-  - funding reserved for other project rules, if any
+  - funding reserved for other product rules, if any
 ```
 
-Для subscription-проектов это особенно важно: клиент может купить проект на 1,000,000 AMD и платить по 100,000 AMD в месяц. Сотрудники могут иметь плановый бонус 300,000 AMD, но компания не должна автоматически выплачивать весь delivery bonus до того, как получила деньги.
+Для subscription-продуктов это особенно важно: клиент может купить продукт на 1,000,000 AMD и платить по 100,000 AMD в месяц. Сотрудники могут иметь плановый бонус 300,000 AMD по этому продукту, но компания не должна автоматически выплачивать весь delivery bonus до того, как получила деньги именно по нему.
 
-### Правило до сдачи проекта
+### Правило до сдачи продукта
 
-До `Project Done / Acceptance` бонусы delivery не активируются автоматически.
+До `Product Done / Acceptance` бонусы delivery не активируются автоматически.
 
-До сдачи проекта возможен только ручной `Early Bonus Release / Ранний выпуск бонуса`:
+До сдачи Product / Extension возможен только ручной `Early Bonus Release / Ранний выпуск бонуса`:
 
 - Finance/CEO сам выбирает сотрудника;
 - сам вводит сумму;
-- система показывает доступный проектный фонд;
+- система показывает доступный продуктовый фонд;
 - если сумма выше фонда, показывает `Over Funding`;
 - reason обязателен для выплаты сверх фонда или сверх планового бонуса.
 
-### Правило после сдачи проекта
+### Правило после сдачи продукта
 
-После сдачи проекта система автоматически активирует бонусы на максимально возможную сумму из доступного проектного фонда.
+После сдачи Product / Extension система автоматически активирует бонусы на максимально возможную сумму из доступного продуктового фонда.
 
 ```text
-Project Done
--> calculate Project Received Amount
+Product Done
+-> calculate Product Received Amount
 -> subtract already released bonuses
 -> calculate Available Bonus Funding
 -> auto-release remaining planned bonuses up to available funding
@@ -254,22 +255,22 @@ Designer:  25,000
 
 ```text
 New client payment received
--> update Project Received Amount
+-> update Product Received Amount
 -> update Available Bonus Funding
--> auto-release remaining bonuses, if project is Done
+-> auto-release remaining bonuses, if Product / Extension is Done
 ```
 
 ### Manual Override / Ручное изменение
 
 Finance/CEO всегда может изменить автоматически предложенные суммы:
 
-| Действие                        | Поведение системы                                     |
-| ------------------------------- | ----------------------------------------------------- |
-| Уменьшить release               | Остаток переносится на следующий месяц                |
-| Увеличить release в рамках pool | Разрешается без warning, если хватает project funding |
-| Выплатить сверх planned bonus   | Помечается как `Extra Bonus`, reason обязателен       |
-| Выплатить сверх funding         | Помечается как `Over Funding`, approval обязателен    |
-| Выпустить до сдачи проекта      | `Early Bonus Release`, reason обязателен              |
+| Действие                               | Поведение системы                                     |
+| -------------------------------------- | ----------------------------------------------------- |
+| Уменьшить release                      | Остаток переносится на следующий месяц                |
+| Увеличить release в рамках pool        | Разрешается без warning, если хватает product funding |
+| Выплатить сверх planned bonus          | Помечается как `Extra Bonus`, reason обязателен       |
+| Выплатить сверх funding                | Помечается как `Over Funding`, approval обязателен    |
+| Выпустить до сдачи Product / Extension | `Early Bonus Release`, reason обязателен              |
 
 Система должна помогать платить бонусы максимально быстро, но не должна скрывать риск кассового разрыва.
 
@@ -283,13 +284,13 @@ Default view:
 
 Упрощённые колонки:
 
-| Колонка                    | Что показывает                                |
-| -------------------------- | --------------------------------------------- |
-| `Incoming / Прогноз`       | Потенциальные бонусы                          |
-| `In Progress / В процессе` | Earned, Pending Eligibility, Vested, Holdback |
-| `Active / В payroll`       | Бонусы, которые войдут в ближайший payroll    |
-| `Paid / Выплачено`         | История выплат                                |
-| `Clawback / Корректировки` | Отозванные / скорректированные бонусы         |
+| Колонка                    | Что показывает                             |
+| -------------------------- | ------------------------------------------ |
+| `Incoming / Прогноз`       | Потенциальные бонусы                       |
+| `In Progress / В процессе` | Earned, Pending Eligibility, Vested        |
+| `Active / В payroll`       | Бонусы, которые войдут в ближайший payroll |
+| `Paid / Выплачено`         | История выплат                             |
+| `Clawback / Корректировки` | Отозванные / скорректированные бонусы      |
 
 Дополнительные виды:
 
@@ -305,24 +306,24 @@ Default view:
 
 Основные виды:
 
-| Вид                                | Для чего нужен                                                    |
-| ---------------------------------- | ----------------------------------------------------------------- |
-| `Board / Доска`                    | Быстро видеть бонусы по статусам: Incoming, Pending, Active, Paid |
-| `List / Список`                    | Фильтровать по сотруднику, проекту, месяцу, статусу, типу бонуса  |
-| `Project Bonus Pool / По проектам` | Видеть project received, available funding, planned/released/paid |
-| `Employee / По сотрудникам`        | Видеть все бонусы сотрудника по проектам и месяцам                |
-| `Payroll Preview / К выплате`      | Видеть, что попадёт в ближайший payroll                           |
-| `History Grid / История`           | Месяцы сверху, сотрудники или проекты слева                       |
+| Вид                                 | Для чего нужен                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------- |
+| `Board / Доска`                     | Быстро видеть бонусы по статусам: Incoming, Pending, Active, Paid                     |
+| `List / Список`                     | Фильтровать по сотруднику, Product / Extension, проекту, месяцу, статусу, типу бонуса |
+| `Product Bonus Pool / По продуктам` | Видеть product received, available funding, planned/released/paid                     |
+| `Employee / По сотрудникам`         | Видеть все бонусы сотрудника по Product / Extension и месяцам                         |
+| `Payroll Preview / К выплате`       | Видеть, что попадёт в ближайший payroll                                               |
+| `History Grid / История`            | Месяцы сверху, сотрудники или Product / Extension слева                               |
 
-### Project Bonus Pool view
+### Product Bonus Pool view
 
-Вид по проектам должен показывать:
+Вид по продуктам должен показывать:
 
 ```text
-Project | Received | Released | Paid | Available | Planned Remaining | Over Funding
+Product / Extension | Project | Received | Released | Paid | Available | Planned Remaining | Over Funding
 ```
 
-При раскрытии проекта:
+При раскрытии Product / Extension:
 
 ```text
 Employee | Role | Planned | Released | Paid | Remaining | Suggested | Release Now | Status
@@ -349,7 +350,7 @@ Employee | Role | Planned | Released | Paid | Remaining | Suggested | Release No
 - всех сотрудников, которые входят в расчёт;
 - фиксированную зарплату каждого;
 - бонусы, которые входят в этот месяц;
-- project bonus releases по каждому проекту;
+- product bonus releases по каждому Product / Extension;
 - KPI adjustments, если есть;
 - удержания / corrections, если есть;
 - итог к выплате;
@@ -387,15 +388,15 @@ Employee | Role | Planned | Released | Paid | Remaining | Suggested | Release No
 
 Внутри `Payroll Run Detail` должен быть отдельный рабочий экран для бонусов текущего месяца.
 
-Цель: Finance/CEO должен открыть payroll и сразу увидеть, какие бонусы по каким проектам входят в зарплату, что система предлагает автоматически, и где нужна ручная правка.
+Цель: Finance/CEO должен открыть payroll и сразу увидеть, какие бонусы по каким Product / Extension входят в зарплату, что система предлагает автоматически, и где нужна ручная правка.
 
 Верхний уровень:
 
 ```text
-Project | Client Payments Received | Bonus Released Before | Available Funding | Auto Suggested | Manual Changes | Final Release
+Product / Extension | Project | Client Payments Received | Bonus Released Before | Available Funding | Auto Suggested | Manual Changes | Final Release
 ```
 
-Внутри проекта:
+Внутри Product / Extension:
 
 ```text
 Employee | Role | Planned Bonus | Paid Before | Remaining | Suggested This Month | Release This Month | Warning
@@ -420,7 +421,7 @@ Employee | Role | Planned Bonus | Paid Before | Remaining | Suggested This Month
 
 - фикс;
 - бонусы;
-- бонусы по проектам;
+- бонусы по Product / Extension;
 - KPI;
 - удержания;
 - итог;
@@ -478,7 +479,7 @@ Sipan           400k       430k       410k       400k       ...
 
 - фикс;
 - бонусы;
-- project bonuses breakdown;
+- product bonuses breakdown;
 - KPI;
 - удержания;
 - итог;
@@ -489,7 +490,7 @@ Sipan           400k       430k       410k       400k       ...
 
 ### Salary Detail / Детальная зарплата сотрудника
 
-Внутри зарплатной карточки сотрудника за месяц бонусы должны быть видны по проектам.
+Внутри зарплатной карточки сотрудника за месяц бонусы должны быть видны по Product / Extension.
 
 Пример:
 
@@ -499,16 +500,16 @@ Month: April 2026
 
 Base Salary: 300,000
 
-Project Bonuses:
-Project A | Planned 120,000 | Paid before 60,000 | Release now 60,000 | Remaining 0 | Within Pool
-Project B | Planned 80,000  | Paid before 0      | Release now 30,000 | Remaining 50,000 | Partial
-Project C | Planned 100,000 | Paid before 0      | Release now 120,000 | Remaining 0 | Extra Bonus +20,000
+Product Bonuses:
+Product A | Planned 120,000 | Paid before 60,000 | Release now 60,000 | Remaining 0 | Within Pool
+Extension B | Planned 80,000  | Paid before 0      | Release now 30,000 | Remaining 50,000 | Partial
+Product C | Planned 100,000 | Paid before 0      | Release now 120,000 | Remaining 0 | Extra Bonus +20,000
 
 Total bonuses this month: 210,000
 Total payroll: 510,000
 ```
 
-Ключевой принцип: в зарплате нельзя показывать бонус одной общей цифрой без расшифровки. Finance должен видеть, из каких проектов пришли деньги, что уже paid, что remaining и где есть exception.
+Ключевой принцип: в зарплате нельзя показывать бонус одной общей цифрой без расшифровки. Finance должен видеть, из каких Product / Extension пришли деньги, что уже paid, что remaining и где есть exception.
 
 ---
 
@@ -540,7 +541,7 @@ Total payroll: 510,000
 - бонусы в ближайшем payroll;
 - историю выплат;
 - частичные выплаты;
-- проекты и заказы, из которых пришли бонусы.
+- Product / Extension и заказы, из которых пришли бонусы.
 
 Wallet не хранит отдельный баланс.
 
@@ -549,7 +550,7 @@ Wallet не хранит отдельный баланс.
 ```text
 Compensation Profile
 Bonus Entries
-Project Bonus Pools
+Product Bonus Pools
 Bonus Releases
 Payroll Runs
 Salary Lines
@@ -569,9 +570,9 @@ Expense Payments
 - сотрудников;
 - active compensation profiles;
 - active bonus releases;
-- project bonus pool suggestions;
+- product bonus pool suggestions;
 - KPI / adjustments;
-- holdbacks / corrections.
+- corrections.
 
 ### 2. Проверка
 
@@ -622,8 +623,8 @@ Payroll status:
 Правила:
 
 - salary без проектной привязки идёт в Company P&L;
-- delivery bonus может относиться к Order / Project P&L;
-- sales bonus может относиться к Order / Project P&L;
+- delivery bonus может относиться к Order / Product / Project P&L;
+- sales bonus может относиться к Order / Product / Project P&L;
 - marketing bonus обычно относится к Company P&L, если не привязан к конкретной кампании / проекту.
 
 ---

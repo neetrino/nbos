@@ -127,9 +127,9 @@ CEO:
 - Active бонусы (к выплате)
 - Paid бонусы (история выплат)
 - Итоговые суммы за месяц / квартал / год
-- project bonus pool: planned / released / paid / remaining по проектам
+- product bonus pool: planned / released / paid / remaining по Product / Extension
 - exceptions: Extra Bonus, Over Funding, Early Release
-- Действие **«Мои финансы» / «Открыть кошелёк»** — переход в модуль Finance: **[Employee Wallet](../04-Finance/08-Employee-Wallet.md)** (read-only витрина с разрезом по проектам и полным маппингом состояний бонуса для сотрудника)
+- Действие **«Мои финансы» / «Открыть кошелёк»** — переход в модуль Finance: **[Employee Wallet](../04-Finance/08-Employee-Wallet.md)** (read-only витрина с разрезом по Product / Extension и полным маппингом состояний бонуса для сотрудника)
 
 ### Секция 6: KPI
 
