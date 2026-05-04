@@ -1,58 +1,233 @@
 # NBOS Implementation Progress
 
-> Compact tracker for implementation state. Detailed behavior belongs in `docs/NBOS/02-Modules/*`, cleanup registers, tests and git history.
+> **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-## Current Focus
+**Обновлено:** 2026-05-05
 
-| Field           | Value                                                        |
-| --------------- | ------------------------------------------------------------ |
-| Current phase   | **Phase 7 — Integrations / migration**                       |
-| Current task    | Pre-Phase 7 consistency gate                                 |
-| Status          | DB/RBAC synced; API smoke passes; browser owner pass pending |
-| Last updated    | 2026-05-04                                                   |
-| Source of truth | Roadmap + module cleanup registers                           |
+---
 
-## Phase Snapshot
+## Принципы работы (согласовано)
 
-| Phase                               | Status      | Progress | Current note                                                                                                                                                                |
-| ----------------------------------- | ----------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Phase 1 — Platform shell            | Done        | 100%     | Navigation, RBAC shell, shared states, admin foundation                                                                                                                     |
-| Phase 2 — CRM / Marketing / Intake  | Done        | 100%     | Intake, CRM handoff, marketing spend links, project entry points                                                                                                            |
-| Phase 3 — Finance core              | Done        | 100%     | Finance runtime + Client Services + six report aggregates                                                                                                                   |
-| Phase 4 — Delivery ops              | Done        | 100%     | Product lifecycle, Work Space, Tasks and Support bridges                                                                                                                    |
-| Phase 5 — Collaboration / knowledge | Done        | 100%     | Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents P0 closure slices shipped                                                             |
-| Phase 6 — Control layer             | Done        | 100%     | P0 closed: Dashboard Control Center plus minimal working Reports catalog/filter/saved-view/export/schedule foundation shipped; deeper BI is later only with product clarity |
-| Phase 7 — Integrations / migration  | In progress | 0%       | Pre-Phase 7 consistency gate synced dev DB/RBAC and API smoke passes; manual owner browser pass remains before first feature slice                                          |
+- Сначала **рабочая система по документам** `docs/NBOS` + последовательное закрытие **дельты** (`00-Delta-New-Description.md`) с фиксацией в каноне где нужно; затем **ручная приёмка** блоками.
+- **Миграция с Bitrix** и production cutover — **последние**, после полноты функционала в NBOS.
+- **Банк** (API, выписки, автосверка) — **не делаем на текущем этапе**; внешние интеграции в бэклоге с перечнем нужных данных/кредов (владелец подключает). Исключение: банк.
+- Оценка в конце строки: **S** = маленький срез, **M** = средний, **L** = крупный.
+- Нет запрета на миграции схемы; крупные темы режем на срезы с DoD из конца файла.
 
-## Closed Gates
+---
 
-- Phase 3 full closure: Finance core, Client Services and approved read-only report aggregates are complete.
-- Phase 5 P0 closure: Collaboration/knowledge modules are usable at MVP depth.
-- Control boundary: Dashboard is action center; Reports owns read-only catalog/export/schedule concerns.
-- Phase 6 P0 closure: Dashboard is usable as a Control Center; Reports is minimal and working without deeper BI scope.
-- Pre-Phase 7 stabilization automated gate: Prisma generate, database/API/web typecheck, lint, tests and build passed.
-- Pre-Phase 7 consistency gate: dev DB migrations and owner RBAC are synced; API smoke passes for Dashboard, Notifications, Drive, Documents, Mail, Reports, Tasks and Deals.
+## Что значит «100%» и зачем это в файле
 
-## Recent Milestones
+Это **не отдельный инструмент** и не то, что нужно «выбирать» каждый день. Это пояснение **какие документы считаем обязательными к закрытию**:
 
-| Through    | Area                  | Summary                                                                                                                                                                                                       |
-| ---------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-29 | Phase 3–4             | Finance core and Delivery ops closed: money state, Client Services, report aggregates, product lifecycle and Work Space/Support bridges.                                                                      |
-| 2026-04-30 | Phase 5 closure       | Collaboration/knowledge P0 closed: Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents.                                                                                     |
-| 2026-04-30 | Phase 6 closure       | Control layer P0 closed: Dashboard Control Center plus minimal working Reports catalog/export/schedule/filter/audit foundation.                                                                               |
-| 2026-04-30 | Phase 7 precheck      | Automated checks pass; dev DB/RBAC is synced; owner API smoke passes; manual browser session pass remains.                                                                                                    |
-| 2026-05-04 | Pre-Phase 7 hardening | Web: Next.js `proxy` (`src/proxy.ts`) auth gate; public `/sign-up` invite-only page; `/api/me` failures surface via toast + banner; unused web deps removed; baseline deploy + migration workflow docs added. |
+- **Основа:** всё, что описано в активном каноне `docs/NBOS` (модули, бизнес-логика, UI-спеки).
+- **Плюс:** пункты из `00-Delta-New-Description.md` и устные решения **после того, как они перенесены в канон** — тогда они становятся такими же обязательными, как остальной NBOS.
 
-## Next Action
+**Как пользоваться:** работаем по чеклисту ниже (блок 2); если продукт решил новое правило — сначала **дописываем в `docs/NBOS`**, потом снимаем задачу в этом файле. Миграция Bitrix на это не влияет (она в конце).
 
-1. Run the owner/browser smoke checklist from `docs/PHASE_7_PRECHECK_MANUAL_QA.md` in the logged-in browser session.
-2. If smoke passes, start Phase 7 with `integration-registry-foundation`.
-3. Keep Google v2, AI, complex approval workflow, WAHA runtime and credentials secrets out unless explicitly approved.
+---
 
-## Slice DoD
+## Бонус продаж (канон)
 
-- Behavior matches `docs/NBOS` and the Phase 3 gate.
-- No fake financial, audit, credential or report data.
-- Tests/typecheck/lint run for touched API/web/database areas.
-- Docs updated only at milestone level.
-- One end-of-slice commit bundles related code, tests and docs.
+Один источник правды: `docs/NBOS/03-Business-Logic/03-Bonus-Payroll-Logic.md`. Там: **две независимые ставки** Seller % и Assistant % от базы (**Classic** = общая сумма заказа, **Subscription** = сумма 1-го месяца); строка политики выбирается по **`From`** на сделке; ставки **в БД и UI**, редактируемые; начисление с **первого `Paid`**, идемпотентно; **KPI** — к выплате. Реализация в коде — задачи в блоке 2.
+
+---
+
+## Атрибуция (это не «вопрос», а подсказка для разработки)
+
+Фраза «где живёт» означает **в каком месте продукта делать поля и справочники**, а не открытый вопрос к владельцу:
+
+- Ввод и гейты на **Lead/Deal** (CRM).
+- Справочники «откуда / второй уровень» — в **Marketing Settings** (`18-Marketing`), чтобы CRM только ссылался на согласованные значения.
+
+Подробности — в каноне `01-CRM` и `18-Marketing`.
+
+---
+
+## Credentials: step-up и «сохранение пароля»
+
+**Рекомендация:** сохранение/редактирование записи в vault — под **обычной сессией** + audit. **Повторный ввод пароля (step-up)** — на **reveal / copy / export** секретов и прочие **high-risk** действия по `12-Credentials/*`, а не на каждое сохранение полей. Так баланс удобства и безопасности совпадает с каноном «хранение ≠ показ секрета».
+
+---
+
+## Блок 1 — Закрыто ранее (P0 фаз 1–6)
+
+Отметки для уже поставленного MVP по дорожной карте; при регрессии снять галочку и перенести строку в бэклог.
+
+- [x] Phase 1 — platform shell: навигация, RBAC shell, shared states, админ-фундамент — L
+- [x] Phase 2 — CRM / Marketing intake: гейты лида/сделки, handoff, маркетинговые поля, точки входа в проект — L
+- [x] Phase 3 — Finance core: деньги, Client Services, шесть отчётных агрегатов v1 — L
+- [x] Phase 4 — Delivery: Projects Hub, продукт/доработка, Work Space, задачи, мосты Support — L
+- [x] Phase 5 — Collaboration P0: Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail, Documents — L
+- [x] Phase 6 — Control layer P0: Dashboard Control Center, Reports каталог / export / schedule foundation — L
+- [x] Auth: NextAuth + JWT API + базовые guards — M
+- [x] Deal Won / override и критичные finance gates (P0) — M
+- [x] Product/Extension lifecycle gates (P0) — M
+- [x] Documents: TipTap, поиск, вложения Drive (P0) — L
+- [x] Drive: метаданные, загрузка, связи (P0) — M
+- [x] Credentials: шифрование, reveal, audit (P0) — M
+- [x] Mail/Messenger/Notifications базовые API и очереди (без полной внешней глубины) — L
+
+---
+
+## Блок 2 — Бэклог: делаем до полного канона + дельта (100 строк)
+
+Каждая строка — отдельная задача. **Порядок глобальный:** сначала целостность домена и канона, затем интеграционный фонд (без банка), затем углубление модулей; **Support (глубокий SLA/overlay)** — после основной массы, как договорено; **ручная приёмка** после каждого логического блока.
+
+- [ ] Сводная таблица переходов Lead → Deal → Order → Project в одном каноническом документе — M
+- [ ] Пауза/штрафы подписки при задержке сдачи — правила в каноне и в runtime — M
+- [ ] Создание **Deal без Lead** — backend, UI, валидация, аудит — M
+- [ ] Воронка Lead: статус/колонка **On Hold** после New — M
+- [ ] Поле «название обращения = продукт/услуга» на Lead — S
+- [ ] Двухуровневая атрибуция (верхний канал + зависимый список) + справочники в Marketing Settings — L
+- [ ] Deal: роль **ассистента продаж** (поля, борд, карточка) — M
+- [ ] Бонус: движок **независимых ставок** Seller/Assistant по `From` + Classic/Subscription база + snapshot + UI/БД политики — по `03-Bonus-Payroll-Logic.md` — L
+- [ ] Бонус: удалить legacy `HOLDBACK` / `holdbackPercent` / `holdbackReleaseDate` и заменить текущие project-pools API/UI на **product-level pool release** — M
+- [ ] Правило минимума первого платежа (10% classic / первый месяц subscription) — инвойс-логика — M
+- [ ] Единый вид/доска «все подписочные проекты» — M
+- [ ] Задачи: фильтр и контекст по **Order** внутри проекта — M
+- [ ] CRM: довести direct actions и create-flows где сейчас только «open target» — M
+- [ ] Projects Hub: закрыть оставшиеся пункты cleanup (гейты QA/Transfer по задачам и др.) — M
+- [ ] Clients: сверка `05-Clients-Process-Flow` с UI/API, закрыть разрывы — M
+- [ ] Finance: **Operational Journal**, period close, связь агрегатов с журналом — L
+- [ ] Finance: перестройка UI вокруг Invoice Card / планов расходов / досок канона — L
+- [ ] Finance: summary + scheduler без «старых» семантик статусов — M
+- [ ] Finance: уведомления/напоминания по правилам invoice card, не по legacy board — M
+- [ ] Finance: partial outgoing payments (expense/salary) если в каноне — M
+- [ ] Finance: Employee Wallet read-модель до полноты канона — M
+- [ ] Partners: **UI ↔ API** выравнивание полей и DTO — M
+- [ ] Partners: **Commission Policy** по Deal Type — M
+- [ ] Partners: **Referral Terms** + фиксация % на сделке — M
+- [ ] Partners: **Accrual / Balance / Payout Batch** + связь с Finance journal — L
+- [ ] Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
+- [ ] Reports: централизованные permissions на источники — M
+- [ ] Reports: XLSX/PDF экспорт, retry/cancel, история доставки расписаний — L
+- [ ] Reports: data-quality предупреждения из Marketing и кросс-модульных проекций — M
+- [ ] Integration foundation: `IntegrationProvider` реестр, статусы, аудит, контракт адаптера — L
+- [ ] Admin UI: страница статусов интеграций и required setup — M
+- [ ] Telegram: internal notification channel по канону + явные env/токены — M
+- [ ] Messenger: **ExternalChannelAdapter** контракт + очереди send/receive — L
+- [ ] WAHA / WhatsApp Web path: health, send, webhook receive, вложения через Drive — L
+- [ ] Google: OAuth link scope для Mail/Calendar/Drive **как в каноне** (без банка) — M
+- [ ] Google Calendar **sync** (если остаётся в каноне как цель этапа) — L
+- [ ] Google Workspace Documents **v2 sync** по `20-Documents/05-*` — L
+- [ ] Mail: лимиты первичного импорта + retry policy (зафиксировать и реализовать) — M
+- [ ] Marketing: глубина Board / Attribution Review / popup polish из cleanup — M
+- [ ] Marketing: внешние Ads API только после кредов — отдельный срез после фонда — L
+- [ ] Tasks: выравнивание статусов/enum под канон — M
+- [ ] Tasks: шаблоны повторяющихся задач (не Reports) — M
+- [ ] Drive: массовые операции / lifecycle из cleanup — M
+- [ ] Documents: избранное и расширенная RBAC секций при необходимости канона — M
+- [ ] Credentials: step-up на reveal/copy/export + high-risk уведомления — M
+- [ ] Credentials: довести list API / health metadata (cleanup PARTIAL) — S
+- [ ] Notifications: **пользовательские настройки** каналов/типов событий — M
+- [ ] Notifications: **админ-UI правил** если остаётся в рамках низкой сложности — M
+- [ ] My Company: Compensation / SOP / KPI Scorecard до глубины канона — L
+- [ ] My Company / header: My Account вне Settings везде — S
+- [ ] Technical Infrastructure: связи со Support и мониторинг baseline — M
+- [ ] Settings: integration registry + системные списки для новых интеграций — M
+- [ ] Dashboard: production кэш/refresh виджетов при появлении требований — S
+- [ ] RBAC: entity-level глубина где канон требует — M
+- [ ] Документировать для владельца: **какие env/ключи** нужны по каждой интеграции (кроме банка) — S
+- [ ] Закрыть открытые пункты `00-Technical-Decisions-By-Module.md` по мере срезов (FX, dedup notifications, Drive retention, …) — M
+- [ ] Support: **reopen** как событие/переход, убрать `REOPENED` как постоянный enum при необходимости — M
+- [ ] Support: waiting overlay (client / third party / escalated) — M
+- [ ] Support: change-control представление отдельно от основного потока — M
+- [ ] Support: SLA pause / breach / escalation оркестрация — L
+- [ ] Support: связь Ticket → Technical asset / environment — M
+- [ ] Support: связь с external messenger conversation — M
+- [ ] Support: resolution requirements + auto-close после Extension Done где канон — M
+- [ ] Support: product-context в UI create/filter — M
+- [ ] Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
+- [ ] Ручная приёмка блока «интеграции» — S
+- [ ] Ручная приёмка блока «collaboration + credentials + notifications» — S
+- [ ] Ручная приёмка блока «Support глубина» — S
+- [ ] Обновить cleanup registers статусами по мере закрытия срезов — S
+- [ ] Синхронизировать `docs/дожать до 100% описанного.md` или заменить ссылкой на этот файл — S
+- [ ] Bitrix: **только после** пунктов выше — mapping register + dry-run контракт — L
+- [ ] Bitrix: импорт Contacts/Companies (CSV или API) — после mapping — L
+- [ ] Bitrix: остальные сущности по `07-Migration/*` — L
+- [ ] Регрессионные тесты на критичные гейты после крупных срезов — M
+- [ ] Производительность: тяжёлые отчёты только через очередь (контроль) — S
+- [ ] Аудит: покрыть новые интеграционные события — M
+- [ ] Документация runbook на отказ интеграции (fallback вручную) — M
+- [ ] Finance: заменить legacy `InvoiceStatusEnum` на модель Invoice Card целиком — L
+- [ ] Finance: поля coverage подписок и сетка под канон — M
+- [ ] Finance: автоматический bonus release после Done продукта + override — M
+- [ ] Finance: Expense Backlog автоматизация и уведомления по канону — M
+- [ ] Finance: Client Service Record — полнота связей invoice/expense/task — M
+- [ ] Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S
+- [ ] Marketing: List.am ↔ Finance Expense Plan связь до UX канона — S
+- [ ] CRM: Offer attachment и deal-required fields — глубина если не закрыта — M
+- [ ] Projects Hub: linked orders block Transfer→Done — проверка гейтов — M
+- [ ] Calendar: внешние слои после внутреннего sync-контракта — M
+- [ ] Messenger: поиск/история PostgreSQL — доработка UX при объёме — S
+- [ ] Mail: многопровайдерность и health dashboard — M
+- [ ] Technical: Deploy records + backup policies по канону — M
+- [ ] Technical: webhooks GitHub / репозиторий links как интеграция — M
+- [ ] API: rate limits на публичные integration webhooks — S
+- [ ] Web: E2E smoke для критичных flow (замена разовому precheck) — L
+- [ ] i18n: глубина UI по `20-i18n` если вошло в scope продукта — L
+- [ ] Observability: связка инцидентов Sentry ↔ Support ticket — M
+- [ ] Documents: политика retention/export cleanup согласована и внедрена — M
+- [ ] Drive: дедупликация/квоты если канон потребует — M
+- [ ] Partners: outbound terms / service case разделение — M
+- [ ] Payroll: полнота Salary Board / Payroll Run под `05-Bonus-and-Payroll` — M
+- [ ] Автоматизация сценариев по `docs/NBOS/06-Integrations/05-Automation-Scenarios.md` где зафиксировано в каноне — M
+- [ ] Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S
+
+---
+
+## Блок 3 — Не делаем сейчас / переносим в будущее (≈20 строк)
+
+Список без чекбоксов: это **не** активные задачи текущего этапа. При отмене навсегда — пометить в каноне «won’t».
+
+- **Банк:** API, импорт выписок, автосопоставление платежей — не текущий этап.
+- **Production cutover Bitrix → NBOS** и параллельная эксплуатация — после готовности функционала.
+- **Полный** encrypted migration credentials из Bitrix — поздний этап миграции.
+- **Incremental sync** Bitrix во время переходного периода — после первого импорта.
+- **Meta / Facebook / Instagram** lead ads API без утверждённых business-кредов — позже.
+- **Гос. электронный счёт-фактура / интеграция с государственными реестрами** — после отдельного решения.
+- **AI writing assistant** в Documents — вне core.
+- **Collaborative live cursors** в Documents — вне core.
+- **Публичный анонимный шаринг** Documents/Drive — вне core.
+- **Impersonation** админа — только с явным аудитом и решением.
+- **Обязательная 2FA** для всех — опционально после step-up baseline.
+- **Double-entry** бухгалтерия полного уровня — если шире operational journal; уточнять по `09-Finance-Core-Architecture`.
+- **Meilisearch** для Messenger — только при необходимости объёма.
+- **Partner self-service portal** (партнёр видит свои проекты/выплаты) — отдельное ТЗ после внутреннего Partners.
+- **Клиентский личный кабинет** (клиент видит проекты/счета) — отдельное ТЗ.
+- **Mobile-приложение** и публичные формы — отдельное ТЗ unless канон.
+- **Глубокий marketplace интеграций** (per-tenant overrides, auto-provisioning) — P2 из Phase 7 plan.
+- **Тяжёлая BI** (дашборды уровня отдельного DWH) — не смешивать с operational Reports.
+- **Автоматический** provisioning WAHA без инфраструктуры — не обещать до хостинга.
+- **Репозиторий-wide format:check** зелёный по архивам — низкий приоритет.
+- Архивный чеклист: `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md` — история, не рабочий процесс.
+
+---
+
+## Текущий фокус (кратко)
+
+| Поле           | Значение                                              |
+| -------------- | ----------------------------------------------------- |
+| Режим          | Закрытие **блока 2** сверху вниз + приёмка            |
+| Исключения     | Банк; Bitrix cutover последним                        |
+| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md` |
+
+---
+
+## Slice DoD (без изменений по смыслу)
+
+- Поведение совпадает с `docs/NBOS` и gates Phase 3/Finance.
+- Нет фейковых денег, аудита, кредов и отчётных данных.
+- Тесты / typecheck / lint для затронутых областей.
+- Доки — по крупным вехам; один коммит в конце среза по возможности.
+
+---
+
+## См. также
+
+- `docs/AI-START-HERE.md`
+- `docs/NBOS/00-Implementation-Roadmap.md`
+- `docs/Progress Archive/дожать до 100% описанного.md` (архивная матрица пробелов; чеклист — **этот файл**)
+- `docs/PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md`

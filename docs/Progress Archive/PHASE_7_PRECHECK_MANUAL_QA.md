@@ -1,5 +1,7 @@
 # Phase 7 Precheck Manual QA
 
+> **Archived:** 2026-05-04 — historical stabilization gate before Phase 7. Current execution order and checklists live in `docs/IMPLEMENTATION_PROGRESS.md` (single source). Retained for audit trail.
+
 > Stabilization gate before Phase 7 integrations. This document records the automated gate, module verification matrix, runtime blockers and owner QA checklist.
 
 ## Stabilization Result

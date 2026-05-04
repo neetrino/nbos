@@ -24,4 +24,4 @@ Never commit real values. Before go-live, confirm:
 
 ## Manual verification
 
-After deploy, run the owner browser checklist in `docs/PHASE_7_PRECHECK_MANUAL_QA.md` (or your release checklist) against the staging/production URL.
+After deploy, run the owner checklist from `docs/IMPLEMENTATION_PROGRESS.md` acceptance blocks (or archived `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`) against the staging/production URL.

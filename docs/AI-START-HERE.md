@@ -65,8 +65,7 @@ docs/IMPLEMENTATION_PROGRESS.md
 Current phase (authoritative):
 
 ```text
-See "Current Focus" and Phase tables in docs/IMPLEMENTATION_PROGRESS.md
-(as of 2026-04-29: Phase 5 — Collaboration / knowledge is active; Phases 1–4 are done — see `docs/IMPLEMENTATION_PROGRESS.md`).
+See docs/IMPLEMENTATION_PROGRESS.md — единый чеклист: блок «Закрыто», блок «Бэклог», блок «Не делаем сейчас».
 ```
 
 Key rules:

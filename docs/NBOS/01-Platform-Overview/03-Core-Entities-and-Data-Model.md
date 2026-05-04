@@ -441,29 +441,27 @@ Contact (человек)
 
 Единица бонусного учёта.
 
-| Поле                  | Тип           | Описание                                                                        |
-| --------------------- | ------------- | ------------------------------------------------------------------------------- |
-| id                    | UUID          | Уникальный идентификатор                                                        |
-| employee_id           | FK → Employee | Сотрудник                                                                       |
-| order_id              | FK → Order    | Заказ, за который начислен                                                      |
-| project_id            | FK → Project  | Проект                                                                          |
-| type                  | Enum          | Sales Bonus, Delivery Bonus, PM Bonus, Design Bonus, Marketing Bonus            |
-| amount                | Decimal       | Сумма бонуса                                                                    |
-| percent               | Decimal       | % от суммы заказа                                                               |
-| status                | Enum          | Incoming, Earned, Pending Eligibility, Vested, Holdback, Active, Paid, Clawback |
-| kpi_gate_result       | JSON          | Результат KPI gate, если применяется                                            |
-| planned_amount        | Decimal       | Плановый бонус по project/order pool                                            |
-| released_amount       | Decimal       | Сколько уже выпущено к выплате                                                  |
-| paid_amount           | Decimal       | Сколько реально выплачено                                                       |
-| remaining_amount      | Decimal       | Остаток по плановому бонусу                                                     |
-| extra_bonus_amount    | Decimal       | Сумма сверх планового бонуса                                                    |
-| over_funding_amount   | Decimal       | Сумма сверх доступного проектного фонда                                         |
-| holdback_percent      | Decimal       | % удержания (20% по умолчанию)                                                  |
-| holdback_release_date | Date          | Дата освобождения holdback                                                      |
-| earn_event            | String        | Событие начисления ("Invoice Paid", "Work Done + Paid")                         |
-| payout_month          | String        | Месяц выплаты (YYYY-MM)                                                         |
-| paid_date             | Date          | Фактическая дата выплаты                                                        |
-| notes                 | Text          | Заметки                                                                         |
+| Поле                | Тип           | Описание                                                              |
+| ------------------- | ------------- | --------------------------------------------------------------------- |
+| id                  | UUID          | Уникальный идентификатор                                              |
+| employee_id         | FK → Employee | Сотрудник                                                             |
+| order_id            | FK → Order    | Заказ, за который начислен                                            |
+| project_id          | FK → Project  | Проект                                                                |
+| type                | Enum          | Sales Bonus, Delivery Bonus, PM Bonus, Design Bonus, Marketing Bonus  |
+| amount              | Decimal       | Сумма бонуса                                                          |
+| percent             | Decimal       | % от суммы заказа                                                     |
+| status              | Enum          | Incoming, Earned, Pending Eligibility, Vested, Active, Paid, Clawback |
+| kpi_gate_result     | JSON          | Результат KPI gate, если применяется                                  |
+| planned_amount      | Decimal       | Плановый бонус по Product / Extension / Order pool                    |
+| released_amount     | Decimal       | Сколько уже выпущено к выплате                                        |
+| paid_amount         | Decimal       | Сколько реально выплачено                                             |
+| remaining_amount    | Decimal       | Остаток по плановому бонусу                                           |
+| extra_bonus_amount  | Decimal       | Сумма сверх планового бонуса                                          |
+| over_funding_amount | Decimal       | Сумма сверх доступного продуктового фонда                             |
+| earn_event          | String        | Событие начисления ("Invoice Paid", "Work Done + Paid")               |
+| payout_month        | String        | Месяц выплаты (YYYY-MM)                                               |
+| paid_date           | Date          | Фактическая дата выплаты                                              |
+| notes               | Text          | Заметки                                                               |
 
 **Состояния бонуса:**
 
@@ -471,10 +469,9 @@ Contact (человек)
 2. **Earned** — событие произошло (работа сдана / инвойс оплачен)
 3. **Pending Eligibility** — ожидание KPI-гейта / acceptance / полной оплаты
 4. **Vested** — разрешено к выплате (KPI пройден)
-5. **Holdback** — 20% удержано на 14–30 дней
-6. **Active** — готов к выплате в следующем payroll run
-7. **Paid** — выплачен
-8. **Clawback** — откат (refund/chargeback/спор)
+5. **Active** — готов к выплате в следующем payroll run
+6. **Paid** — выплачен
+7. **Clawback** — откат (refund/chargeback/спор)
 
 **Связи:**
 
@@ -486,22 +483,25 @@ Contact (человек)
 
 ---
 
-### 2.11.0.1. Project Bonus Pool (Бонусный фонд проекта)
+### 2.11.0.1. Product Bonus Pool (Бонусный фонд продукта)
 
-Плановый бонусный фонд проекта или order. Нужен, чтобы разделить "сколько положено" и "сколько уже можно выплатить".
+Плановый бонусный фонд конкретного Product / Extension или связанного order. Нужен, чтобы разделить "сколько положено" и "сколько уже можно выплатить".
 
-| Поле                   | Тип          | Описание                                   |
-| ---------------------- | ------------ | ------------------------------------------ |
-| id                     | UUID         | Уникальный идентификатор                   |
-| project_id             | FK → Project | Проект                                     |
-| order_id               | FK → Order   | Заказ, если применимо                      |
-| total_planned_amount   | Decimal      | Общая плановая сумма бонусов               |
-| total_released_amount  | Decimal      | Уже выпущено к выплате                     |
-| total_paid_amount      | Decimal      | Уже выплачено                              |
-| total_remaining_amount | Decimal      | Остаток планового бонуса                   |
-| available_funding      | Decimal      | Доступный фонд из полученных оплат клиента |
-| over_funding_amount    | Decimal      | Выпущено сверх полученных денег            |
-| status                 | Enum         | Draft, Active, Partially Released, Closed  |
+`Project` является оболочкой и может содержать несколько оплачиваемых продуктов / доработок. Поэтому bonus pool должен быть привязан к **Product / Extension**, а не к Project целиком; Project-level отчёты могут только агрегировать несколько product pools.
+
+| Поле                   | Тип          | Описание                                         |
+| ---------------------- | ------------ | ------------------------------------------------ |
+| id                     | UUID         | Уникальный идентификатор                         |
+| project_id             | FK → Project | Проект                                           |
+| product_id             | FK → Product | Product / Extension, для которого считается фонд |
+| order_id               | FK → Order   | Заказ, если применимо                            |
+| total_planned_amount   | Decimal      | Общая плановая сумма бонусов                     |
+| total_released_amount  | Decimal      | Уже выпущено к выплате                           |
+| total_paid_amount      | Decimal      | Уже выплачено                                    |
+| total_remaining_amount | Decimal      | Остаток планового бонуса                         |
+| available_funding      | Decimal      | Доступный фонд из полученных оплат клиента       |
+| over_funding_amount    | Decimal      | Выпущено сверх полученных денег                  |
+| status                 | Enum         | Draft, Active, Partially Released, Closed        |
 
 ### 2.11.0.2. Bonus Release (Выпуск бонуса)
 
@@ -514,13 +514,14 @@ Contact (человек)
 | payroll_run_id | FK → Payroll Run | Зарплатный расчёт                                     |
 | employee_id    | FK → Employee    | Сотрудник                                             |
 | project_id     | FK → Project     | Проект                                                |
+| product_id     | FK → Product     | Product / Extension, к которому относится выпуск      |
 | amount         | Decimal          | Сумма выпуска                                         |
 | release_type   | Enum             | Auto, Manual, Early, Extra, Over Funding, Correction  |
 | reason         | Text             | Причина, обязательна для Early/Extra/Over Funding     |
 | approved_by_id | FK → Employee    | Кто утвердил exception                                |
 | status         | Enum             | Draft, Approved, Included In Payroll, Paid, Cancelled |
 
-`Bonus Release` создаётся автоматически после сдачи проекта, если есть доступный проектный фонд, или вручную до сдачи / при исключениях.
+`Bonus Release` создаётся автоматически после сдачи Product / Extension, если есть доступный продуктовый фонд, или вручную до сдачи / при исключениях.
 
 ---
 
@@ -554,14 +555,14 @@ Contact (человек)
 
 Безопасный тип правила, реализованный в коде. UI меняет параметры, но не создаёт произвольную бизнес-логику.
 
-| Поле           | Тип    | Описание                              |
-| -------------- | ------ | ------------------------------------- |
-| id             | UUID   | Уникальный идентификатор              |
-| code           | String | Код шаблона                           |
-| type           | Enum   | Bonus, KPI, Release, Holdback, Manual |
-| name           | String | Название                              |
-| allowed_params | JSON   | Какие параметры можно менять в UI     |
-| status         | Enum   | Active, Deprecated                    |
+| Поле           | Тип    | Описание                          |
+| -------------- | ------ | --------------------------------- |
+| id             | UUID   | Уникальный идентификатор          |
+| code           | String | Код шаблона                       |
+| type           | Enum   | Bonus, KPI, Release, Manual       |
+| name           | String | Название                          |
+| allowed_params | JSON   | Какие параметры можно менять в UI |
+| status         | Enum   | Active, Deprecated                |
 
 ### 2.11.1.2. Bonus Policy (Правило бонусов)
 
@@ -573,7 +574,7 @@ Contact (человек)
 | template_id    | FK → Policy Template | Шаблон правила                             |
 | scope          | Enum                 | Company, Department, Seat, Level, Employee |
 | scope_id       | UUID                 | ID объекта scope                           |
-| params         | JSON                 | Проценты, фильтры, caps, holdback, release |
+| params         | JSON                 | Проценты, фильтры, caps, release           |
 | effective_from | Date                 | С какой даты действует                     |
 | effective_to   | Date                 | Когда перестало действовать                |
 | status         | Enum                 | Draft, Active, Archived                    |

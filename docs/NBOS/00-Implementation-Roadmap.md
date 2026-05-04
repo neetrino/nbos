@@ -222,7 +222,7 @@ Exit criteria:
 - subscription billing rules are deterministic;
 - partial expenses/payments are supported;
 - salary/payroll views are clear;
-- bonus release and project bonus pool logic are safe;
+- bonus release and product bonus pool logic are safe;
 - partner payout rules respect Deal Type and Payment Type.
 
 Key docs:

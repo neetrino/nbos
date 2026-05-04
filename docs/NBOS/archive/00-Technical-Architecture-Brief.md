@@ -71,7 +71,7 @@ Contact (человек)
 
 **Expense:** id, type (Planned/Unplanned), category (Domain/Hosting/Service/Marketing/Salary/Bonus/Partner Payout/Tools/Other), name, amount, frequency (One-time/Monthly/Quarterly/Yearly/Multi-year), due_date, status (This Month/Pay Now/Delayed/On Hold/Paid/Unpaid), project_id (optional), is_pass_through, tax_status
 
-**Bonus Entry:** id, employee_id, order_id, project_id, type (Sales/Delivery/PM/Design/Marketing), amount, percent, status (Incoming/Earned/Pending Eligibility/Vested/Holdback/Active/Paid/Clawback), kpi_gate_passed, holdback_percent (20%), holdback_release_date, payout_month
+**Bonus Entry:** id, employee_id, order_id, project_id, type (Sales/Delivery/PM/Design/Marketing), amount, percent, status (Incoming/Earned/Pending Eligibility/Vested/Active/Paid/Clawback), kpi_gate_passed, payout_month
 
 **Lead:** id, contact_name, phone, email, source (Instagram/Facebook/Website/Cold Call/Partner/Referral), status (New/Didn't Get Through/Contact Established/MQL/SPAM/Frozen/SQL)
 
@@ -177,7 +177,7 @@ Employee ──N:M──► Credential (access)
 - Invoice Paid (seller conditions met) → auto-create Seller Bonus
 - Work Done + Invoice Paid → auto-create Delivery Bonus
 - KPI gate check end of month → update bonus statuses
-- Holdback release (30 days after delivery) → move to Active
+- Project bonus pool release → move eligible bonus to Active
 
 ### Projects:
 
@@ -385,7 +385,7 @@ Employee ──N:M──► Credential (access)
 
 - `01-Lead-to-Cash-Process.md` — Полный процесс от лида до денег
 - `02-Order-to-Delivery-Process.md` — От заказа до сдачи проекта
-- `03-Bonus-Payroll-Logic.md` — Бонусная система: формулы, KPI gates, holdback
+- `03-Bonus-Payroll-Logic.md` — Бонусная система: формулы, KPI gates, product bonus pool releases
 - `04-Subscription-Billing-Logic.md` — Биллинг подписок, автоматизация
 - `05-Change-Control-Process.md` — Управление изменениями, billable vs free
 - `06-Entity-Relationships.md` — Карта связей, trigger chains

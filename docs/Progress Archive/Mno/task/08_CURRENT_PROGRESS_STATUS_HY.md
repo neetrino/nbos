@@ -82,7 +82,7 @@
 
 ## Առաջնահերթություններ (առաջարկ)
 
-1. `docs/PHASE_7_PRECHECK_MANUAL_QA.md` ձեռքով QA։
+1. `docs/IMPLEMENTATION_PROGRESS.md` ընդունման բլոկներ (կամ արխիվ `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`)։
 2. Next `middleware.ts` + auth gate։
 3. Fix `/sign-up` (ստեղծել էջ կամ հանել link)։
 4. Dependency cleanup web package։

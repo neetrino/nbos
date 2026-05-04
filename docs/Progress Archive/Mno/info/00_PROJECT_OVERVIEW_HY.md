@@ -49,7 +49,7 @@ Next.js App Router երթուղիները գտնվում են `apps/web/src/app/
 - Փուլեր 1–6՝ **ավարտված** որպես P0/MVP շրջանակ։
 - **Phase 7 — Integrations / migration**՝ **ընթացքում**, նախնական gate-ը ավտոմատ ստուգումներն անցել են, **ձեռքով browser smoke** դեռ պահանջվում է։
 
-Այսինքն՝ **արտադրական միջավայրում** շարունակելուց առաջ պետք է հաստատել QA չեկլիստը (`docs/PHASE_7_PRECHECK_MANUAL_QA.md`՝ նշված է progress ֆայլում)։
+Այսինքն՝ **արտադրական միջավայրում** շարունակելուց առաջ պետք է հաստատել QA ըստ `docs/IMPLEMENTATION_PROGRESS.md` (արխիվ՝ `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`)։
 
 ---
 

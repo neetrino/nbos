@@ -116,15 +116,15 @@ Draft -> Review -> Active -> Archived
 
 ### Типы Bonus Policy
 
-| Тип                    | Для кого / чего                        |
-| ---------------------- | -------------------------------------- |
-| `Sales Bonus`          | Seller / Head of Sales                 |
-| `Delivery Bonus`       | Developer / PM / Designer / QA         |
-| `Marketing Bonus`      | Marketing roles                        |
-| `Support Bonus`        | Support / Maintenance roles            |
-| `Manual Bonus`         | Разовое решение CEO/Finance            |
-| `Project Bonus Pool`   | Плановый фонд бонусов по проекту       |
-| `Subscription Release` | Выпуск бонусов по подписочным проектам |
+| Тип                    | Для кого / чего                                   |
+| ---------------------- | ------------------------------------------------- |
+| `Sales Bonus`          | Seller / Head of Sales                            |
+| `Delivery Bonus`       | Developer / PM / Designer / QA                    |
+| `Marketing Bonus`      | Marketing roles                                   |
+| `Support Bonus`        | Support / Maintenance roles                       |
+| `Manual Bonus`         | Разовое решение CEO/Finance                       |
+| `Product Bonus Pool`   | Плановый фонд бонусов по Product / Extension      |
+| `Subscription Release` | Выпуск бонусов по подписочным Product / Extension |
 
 ### Что можно настраивать
 
@@ -140,19 +140,18 @@ Draft -> Review -> Active -> Archived
 | `level_filter`        | Junior, Middle, Senior, Lead                        |
 | `kpi_gate_policy`     | Как KPI влияет на выплату                           |
 | `cap_policy`          | Максимум бонуса за период                           |
-| `holdback_policy`     | Удержание части бонуса                              |
 | `release_policy`      | Когда бонус становится доступен к payroll           |
 
 ### Sales example
 
 ```text
-Marketing Lead -> 7%
-Cold Call -> 10%
-Existing Client -> 5%
-Partner Referral -> 5%
+From = Sales      -> Classic seller 8%, assistant 2%; Subscription seller 80%, assistant 20%
+From = Marketing  -> Classic seller 6%, assistant 1%; Subscription seller 60%, assistant 10%
+From = Partner    -> Classic seller 6%, assistant 1%; Subscription seller 60%, assistant 10%
+From = Client     -> Classic seller 4%, assistant 1%; Subscription seller 40%, assistant 10%
 ```
 
-Это стартовый шаблон. В будущем ставка может быть своя у каждого seller.
+Это стартовый шаблон. Ставки хранятся в Bonus Policy и могут меняться по effective date / override.
 
 ### Delivery example
 
@@ -203,14 +202,13 @@ KPI Score < 50%   -> 0% bonus available
 
 Примеры templates:
 
-| Template                              | Параметры в UI                                   |
-| ------------------------------------- | ------------------------------------------------ |
-| `Sales percentage by lead source`     | source -> percent                                |
-| `Delivery percentage by product type` | product type -> percent                          |
-| `KPI gate payout multiplier`          | thresholds -> payout percent                     |
-| `Subscription delivery release`       | after project done, release by available funding |
-| `Manual bonus with approval`          | amount, reason, approver                         |
-| `Holdback after delivery`             | holdback percent, release days                   |
+| Template                              | Параметры в UI                                                       |
+| ------------------------------------- | -------------------------------------------------------------------- |
+| `Sales percentage by lead source`     | source -> percent                                                    |
+| `Delivery percentage by product type` | product type -> percent                                              |
+| `KPI gate payout multiplier`          | thresholds -> payout percent                                         |
+| `Subscription delivery release`       | after Product / Extension done, release by available product funding |
+| `Manual bonus with approval`          | amount, reason, approver                                             |
 
 Код отвечает за безопасность и порядок расчёта. UI отвечает за параметры.
 
@@ -379,7 +377,7 @@ Compensation Profile
 -> Payroll Run
 
 Bonus Policy
--> Bonus Entry / Project Bonus Pool / Bonus Release
+-> Bonus Entry / Product Bonus Pool / Bonus Release
 
 KPI Policy
 -> KPI Result
