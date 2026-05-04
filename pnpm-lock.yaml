@@ -177,9 +177,6 @@ importers:
       '@nbos/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@tanstack/react-query':
-        specifier: ^5.74.4
-        version: 5.90.21(react@19.2.3)
       '@tiptap/core':
         specifier: ^3.22.5
         version: 3.22.5(@tiptap/pm@3.22.5)
@@ -273,9 +270,6 @@ importers:
       zod:
         specifier: ^3.25.7
         version: 3.25.76
-      zustand:
-        specifier: ^5.0.5
-        version: 5.0.11(@types/react@19.2.14)(react@19.2.3)
     devDependencies:
       '@nbos/tsconfig':
         specifier: workspace:*
@@ -4455,19 +4449,6 @@ packages:
       postcss: 8.5.8
       tailwindcss: 4.2.1
     dev: true
-
-  /@tanstack/query-core@5.90.20:
-    resolution: {integrity: sha512-OMD2HLpNouXEfZJWcKeVKUgQ5n+n3A2JFmBaScpNDUqSrQSjiveC7dKMe53uJUg1nDG16ttFPz2xfilz6i2uVg==}
-    dev: false
-
-  /@tanstack/react-query@5.90.21(react@19.2.3):
-    resolution: {integrity: sha512-0Lu6y5t+tvlTJMTO7oh5NSpJfpg/5D41LlThfepTixPYkJ0sE2Jj0m0f6yYqujBwIXlId87e234+MxG3D3g7kg==}
-    peerDependencies:
-      react: ^18 || ^19
-    dependencies:
-      '@tanstack/query-core': 5.90.20
-      react: 19.2.3
-    dev: false
 
   /@tiptap/core@3.22.5(@tiptap/pm@3.22.5):
     resolution: {integrity: sha512-L1lhWz6ujGny8LduTJ7MBWYhzigwOvfUJUrJ7IzOJSuy3+OAzisdGDD1GV7LEO/hU0Hr2Mkm1wajRIHExvS9HQ==}
@@ -12133,25 +12114,3 @@ packages:
 
   /zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
-  /zustand@5.0.11(@types/react@19.2.14)(react@19.2.3):
-    resolution: {integrity: sha512-fdZY+dk7zn/vbWNCYmzZULHRrss0jx5pPFiOuMZ/5HJN6Yv3u+1Wswy/4MpZEkEGhtNH+pwxZB8OKgUBPzYAGg==}
-    engines: {node: '>=12.20.0'}
-    peerDependencies:
-      '@types/react': '>=18.0.0'
-      immer: '>=9.0.6'
-      react: '>=18.0.0'
-      use-sync-external-store: '>=1.2.0'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-      immer:
-        optional: true
-      react:
-        optional: true
-      use-sync-external-store:
-        optional: true
-    dependencies:
-      '@types/react': 19.2.14
-      react: 19.2.3
-    dev: false

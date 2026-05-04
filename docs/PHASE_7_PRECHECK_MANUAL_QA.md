@@ -51,6 +51,13 @@ Run this in the owner browser session after the dev server is running and migrat
 ## Known Deferrals
 
 - No real external providers are connected during this gate: WAHA, Telegram, Google, Meta, bank API and GitHub runtime remain disabled.
+- Repo-level `vercel.json` / `Dockerfile` are optional; see `docs/DEPLOYMENT.md` for the baseline hosting split and env checklist.
 - Browser smoke still needs a manual owner-session pass because automation was redirected to sign-in after dev restart.
+
+## Pre-Phase 7 web hardening (automated)
+
+- Next.js **proxy** (edge boundary) is active: unauthenticated visits to protected routes redirect to `/sign-in` with `callbackUrl` (see `apps/web/src/proxy.ts`; `middleware.ts` is not used — deprecated in Next.js 16).
+- Landing `/sign-up` resolves to an invite-only explanation page; public self-registration is not implemented by design.
+- `/api/me` load failures show a Sonner toast and an in-app alert strip instead of failing silently.
 - Repository-wide format drift is not fixed in this gate because it includes archives/generated files and unrelated files.
 - Advanced Phase 7 work should still start with `integration-registry-foundation` unless manual QA finds a higher-priority blocker.

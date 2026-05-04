@@ -1,6 +1,6 @@
 ---
 description: Security — secrets, auth, validation, headers, CORS. Human-run checklist: docs/reference/Check/Security/0 Security List.md
-globs: ["**/auth/**", "**/api/**", "**/middleware.ts", "**/middleware.tsx", "**/*.env*", "**/middleware/**"]
+globs: ["**/auth/**", "**/api/**", "**/middleware.ts", "**/middleware.tsx", "**/proxy.ts", "**/proxy.tsx", "**/*.env*", "**/middleware/**"]
 alwaysApply: false
 ---
 

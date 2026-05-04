@@ -86,7 +86,7 @@ export default async function LandingPage() {
                   href="/sign-up"
                   className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-5 py-2.5 text-sm font-medium transition-colors"
                 >
-                  Get Started
+                  Join with invite
                 </Link>
               </>
             )}
@@ -126,7 +126,7 @@ export default async function LandingPage() {
                 href="/sign-up"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
               >
-                Start Free
+                Join with invite
                 <ArrowRight size={16} />
               </Link>
               <Link
@@ -186,7 +186,7 @@ export default async function LandingPage() {
           <p className="text-muted-foreground mt-4 text-lg">
             {user
               ? 'Your workspace is ready. Jump into the dashboard.'
-              : 'Create your account and start managing your agency in minutes.'}
+              : 'Access is by invitation. Use your invite link to activate your account, or sign in if you already have one.'}
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             {user ? (
@@ -203,7 +203,7 @@ export default async function LandingPage() {
                   href="/sign-up"
                   className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium transition-colors"
                 >
-                  Create Account
+                  How to join
                   <ArrowRight size={16} />
                 </Link>
                 <Link

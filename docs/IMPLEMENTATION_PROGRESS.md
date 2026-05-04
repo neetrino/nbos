@@ -9,7 +9,7 @@
 | Current phase   | **Phase 7 — Integrations / migration**                       |
 | Current task    | Pre-Phase 7 consistency gate                                 |
 | Status          | DB/RBAC synced; API smoke passes; browser owner pass pending |
-| Last updated    | 2026-04-30                                                   |
+| Last updated    | 2026-05-04                                                   |
 | Source of truth | Roadmap + module cleanup registers                           |
 
 ## Phase Snapshot
@@ -35,12 +35,13 @@
 
 ## Recent Milestones
 
-| Through    | Area             | Summary                                                                                                                                  |
-| ---------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-04-29 | Phase 3–4        | Finance core and Delivery ops closed: money state, Client Services, report aggregates, product lifecycle and Work Space/Support bridges. |
-| 2026-04-30 | Phase 5 closure  | Collaboration/knowledge P0 closed: Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents.                |
-| 2026-04-30 | Phase 6 closure  | Control layer P0 closed: Dashboard Control Center plus minimal working Reports catalog/export/schedule/filter/audit foundation.          |
-| 2026-04-30 | Phase 7 precheck | Automated checks pass; dev DB/RBAC is synced; owner API smoke passes; manual browser session pass remains.                               |
+| Through    | Area                  | Summary                                                                                                                                                                                                       |
+| ---------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-04-29 | Phase 3–4             | Finance core and Delivery ops closed: money state, Client Services, report aggregates, product lifecycle and Work Space/Support bridges.                                                                      |
+| 2026-04-30 | Phase 5 closure       | Collaboration/knowledge P0 closed: Calendar, Technical, Notifications, Drive, Credentials, Messenger, Mail and Documents.                                                                                     |
+| 2026-04-30 | Phase 6 closure       | Control layer P0 closed: Dashboard Control Center plus minimal working Reports catalog/export/schedule/filter/audit foundation.                                                                               |
+| 2026-04-30 | Phase 7 precheck      | Automated checks pass; dev DB/RBAC is synced; owner API smoke passes; manual browser session pass remains.                                                                                                    |
+| 2026-05-04 | Pre-Phase 7 hardening | Web: Next.js `proxy` (`src/proxy.ts`) auth gate; public `/sign-up` invite-only page; `/api/me` failures surface via toast + banner; unused web deps removed; baseline deploy + migration workflow docs added. |
 
 ## Next Action
 
