@@ -111,7 +111,7 @@
 - 🟢 [x] Partners: **UI ↔ API** выравнивание полей и DTO — M → wire JSON: `level` (Prisma `Partner.type`, REGULAR/PREMIUM), `defaultPercent` строкой `0.00`, ISO `createdAt`/`updatedAt`; `GET /api/partners` фильтр `level` + deprecated `type`; create/update принимают `level` или legacy `type`; валидация enum на API; web: константы `PARTNER_LEVELS`, колонка Level, CSV `level`/`updatedAt`, CRM partner search subtitle; Partner Card / commission policy / accruals — в следующих строках Partners
 - 🟢 [x] Partners: **Commission Policy** по Deal Type — M → `PartnerCommissionPolicyRow` (`partner_id`, `deal_type` `DealTypeEnum`, `percent`); `GET/PUT /api/partners/:id/commission-policy` (ровно 4 типа; `percent: null` сбрасывает override → `Partner.defaultPercent`); валидация 0–100; web: карточка на `/partners/[id]`
 - 🟢 [x] Partners: **Referral Terms** + фиксация % на сделке — M → `PartnerReferralTerms` (`deal_id` unique, snapshots `deal_type` / `payment_type`, `partner_percent`, `source_policy` POLICY | DEFAULT | OVERRIDE, `override_reason`); авто-sync при create/update сделки (OVERRIDE не пересчитывает %); pre-sync перед stage move если Partner; WON gate для всех типов; `PATCH /api/crm/deals/:id/partner-referral-terms` (`RESET` | `OVERRIDE` + reason ≥3); web: блок в Deal sheet (Marketing) + `dealsApi.patchPartnerReferralTerms`
-- Partners: **Accrual / Balance / Payout Batch** + связь с Finance journal — L → **срез 1 (PAR-01 classic):**
+- 🟢 [x] Partners: **Accrual / Balance / Payout Batch** + связь с Finance journal — L → **срез 1 (PAR-01 classic):**
   `PartnerAccrual` + статусы; создание при `ORDER FULLY_PAID` + delivery DONE (product/extension) +
   `Deal.source=PARTNER` + `PartnerReferralTerms`; строка журнала `PARTNER_ACCRUAL` (basis ACCRUAL);
   триггеры: `PaymentsService`, `ProductsService.complete`, `ExtensionsService.complete`;
@@ -127,7 +127,7 @@
   выбор `ELIGIBLE` accruals → create batch, список batch и approve draft batch. **Срез 6 (manual cancel):**
   `POST /api/partners/:id/payout-batches/:batchId/cancel` для draft с rollback `IN_BATCH` → `ELIGIBLE`;
   web: кнопка Cancel в таблице batch. Дальше: hold reason / outbound terms
-- Partners: outbound terms / service case разделение — M → **срез 1 (foundation):**
+- 🟢 [x] Partners: outbound terms / service case разделение — M → **срез 1 (foundation):**
   `PartnerServiceTerm` (partner/client/company/project links, service type, payment model, amount,
   billing start date, status, optional invoice/subscription links); API:
   `GET/POST /api/partners/:id/service-terms`, `PUT /api/partners/:id/service-terms/:termId`.
