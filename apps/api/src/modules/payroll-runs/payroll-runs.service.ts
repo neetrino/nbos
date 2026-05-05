@@ -78,9 +78,12 @@ export class PayrollRunsService {
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
 
-    const [materializedByRun, auditTrail] = await Promise.all([
+    const [materializedByRun, auditTrail, includedBonusReleaseCount] = await Promise.all([
       fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
       loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
+      this.prisma.bonusRelease.count({
+        where: { payrollRunId: id, status: 'INCLUDED_IN_PAYROLL' },
+      }),
     ]);
 
     return {
@@ -88,6 +91,7 @@ export class PayrollRunsService {
       materializedExpenseLineCount: materializedByRun.get(id) ?? 0,
       journal: buildPayrollRunJournal(run),
       auditTrail,
+      includedBonusReleaseCount,
     };
   }
 

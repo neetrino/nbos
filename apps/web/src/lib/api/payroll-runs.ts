@@ -33,6 +33,9 @@ export interface PayrollRunListRow {
   totalDeductions: string;
   totalPayable: string;
   totalPaid: string;
+  /** Monthly sales plan (major units) for seller KPI payout gate; pair with `kpiSalesActualAmount`. */
+  kpiSalesPlanAmount: string | null;
+  kpiSalesActualAmount: string | null;
   createdAt: string;
   updatedAt: string;
   _count: { salaryLines: number };
@@ -79,10 +82,17 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   approvedBy: { id: string; firstName: string; lastName: string } | null;
   approvedAt: string | null;
   closedAt: string | null;
+  /** Bonus releases currently INCLUDED_IN_PAYROLL on this run (KPI inputs locked until detached). */
+  includedBonusReleaseCount: number;
   /** Read-only milestones from run timestamps (no intermediate status audit yet). */
   journal: PayrollJournalEntry[];
   /** Audit log rows for this run (`CREATED`, `STATUS_CHANGED`, …). */
   auditTrail: PayrollAuditTrailRow[];
+}
+
+export interface PatchPayrollRunBody {
+  kpiSalesPlanAmount?: number | null;
+  kpiSalesActualAmount?: number | null;
 }
 
 export interface PayrollRunListParams {
@@ -143,6 +153,11 @@ export const payrollRunsApi = {
 
   async updateStatus(id: string, status: PayrollRunStatus): Promise<PayrollRunDetail> {
     const resp = await api.patch<PayrollRunDetail>(`/api/payroll-runs/${id}/status`, { status });
+    return resp.data;
+  },
+
+  async patch(id: string, body: PatchPayrollRunBody): Promise<PayrollRunDetail> {
+    const resp = await api.patch<PayrollRunDetail>(`/api/payroll-runs/${id}`, body);
     return resp.data;
   },
 };

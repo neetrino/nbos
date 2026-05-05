@@ -10,6 +10,7 @@ import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-
 import { payrollRunDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
 import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
+import { PayrollRunSalesKpiSection } from '@/features/finance/components/payroll/payroll-run-sales-kpi-section';
 import { PayrollRunSalaryLinesTable } from '@/features/finance/components/payroll/PayrollRunSalaryLinesTable';
 import { usePayrollRunJournalAuditCsvExport } from '@/features/finance/components/payroll/use-payroll-run-journal-audit-csv-export';
 import { usePayrollRunSalaryLinesCsvExport } from '@/features/finance/components/payroll/use-payroll-run-salary-lines-csv-export';
@@ -180,6 +181,8 @@ export default function PayrollRunDetailPage() {
           accent
         />
       </div>
+
+      <PayrollRunSalesKpiSection run={run} onUpdated={setRun} />
 
       {run.auditTrail.length > 0 ? (
         <section className="border-border bg-card rounded-xl border p-4">
