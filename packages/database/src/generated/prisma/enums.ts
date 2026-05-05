@@ -921,6 +921,36 @@ export const PartnerPayoutBatchStatusEnum = {
 export type PartnerPayoutBatchStatusEnum =
   (typeof PartnerPayoutBatchStatusEnum)[keyof typeof PartnerPayoutBatchStatusEnum];
 
+export const PartnerServiceTypeEnum = {
+  SEO: 'SEO',
+  SMM: 'SMM',
+  ADS: 'ADS',
+  OTHER: 'OTHER',
+} as const;
+
+export type PartnerServiceTypeEnum =
+  (typeof PartnerServiceTypeEnum)[keyof typeof PartnerServiceTypeEnum];
+
+export const PartnerServicePaymentModelEnum = {
+  ONE_TIME: 'ONE_TIME',
+  MONTHLY: 'MONTHLY',
+  CUSTOM: 'CUSTOM',
+} as const;
+
+export type PartnerServicePaymentModelEnum =
+  (typeof PartnerServicePaymentModelEnum)[keyof typeof PartnerServicePaymentModelEnum];
+
+export const PartnerServiceStatusEnum = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  ON_HOLD: 'ON_HOLD',
+  CANCELLED: 'CANCELLED',
+  COMPLETED: 'COMPLETED',
+} as const;
+
+export type PartnerServiceStatusEnum =
+  (typeof PartnerServiceStatusEnum)[keyof typeof PartnerServiceStatusEnum];
+
 export const MessengerChannelType = {
   PROJECT: 'PROJECT',
   GENERAL: 'GENERAL',

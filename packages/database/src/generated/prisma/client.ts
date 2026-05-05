@@ -380,6 +380,11 @@ export type PartnerAccrual = Prisma.PartnerAccrualModel;
  */
 export type PartnerPayoutBatch = Prisma.PartnerPayoutBatchModel;
 /**
+ * Model PartnerServiceTerm
+ * Outbound service terms for partner revenue cases (NBOS § Outbound Partner Services).
+ */
+export type PartnerServiceTerm = Prisma.PartnerServiceTermModel;
+/**
  * Model MessengerChannel
  *
  */

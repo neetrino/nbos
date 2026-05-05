@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-05 (Partners: payout batch UI + payout core + PAR-02)
+**Обновлено:** 2026-05-05 (Partners: outbound service terms + payout batches + PAR-02)
 
 ---
 
@@ -127,7 +127,11 @@
   выбор `ELIGIBLE` accruals → create batch, список batch и approve draft batch. **Срез 6 (manual cancel):**
   `POST /api/partners/:id/payout-batches/:batchId/cancel` для draft с rollback `IN_BATCH` → `ELIGIBLE`;
   web: кнопка Cancel в таблице batch. Дальше: hold reason / outbound terms
-- Partners: outbound terms / service case разделение — M
+- Partners: outbound terms / service case разделение — M → **срез 1 (foundation):**
+  `PartnerServiceTerm` (partner/client/company/project links, service type, payment model, amount,
+  billing start date, status, optional invoice/subscription links); API:
+  `GET/POST /api/partners/:id/service-terms`, `PUT /api/partners/:id/service-terms/:termId`.
+  Дальше: web Outbound Services tab + Finance create-from-terms flow
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
 - Reports: централизованные permissions на источники — M
 - Reports: XLSX/PDF экспорт, retry/cancel, история доставки расписаний — L

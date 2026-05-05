@@ -31,6 +31,14 @@ import {
   type CreatePartnerPayoutBatchInput,
   type PartnerPayoutBatchDto,
 } from './partner-payout-batch.ops';
+import {
+  createPartnerServiceTerm,
+  listPartnerServiceTerms,
+  updatePartnerServiceTerm,
+  type CreatePartnerServiceTermInput,
+  type PartnerServiceTermWireDto,
+  type UpdatePartnerServiceTermInput,
+} from './partner-service-terms.ops';
 
 interface PartnerQueryParams {
   page?: number;
@@ -277,6 +285,28 @@ export class PartnersService {
   ): Promise<PartnerPayoutBatchDto> {
     await this.findById(partnerId);
     return cancelPartnerPayoutBatch(this.prisma, partnerId, batchId, input);
+  }
+
+  async listPartnerServiceTerms(partnerId: string): Promise<PartnerServiceTermWireDto[]> {
+    await this.findById(partnerId);
+    return listPartnerServiceTerms(this.prisma, partnerId);
+  }
+
+  async createPartnerServiceTerm(
+    partnerId: string,
+    input: CreatePartnerServiceTermInput,
+  ): Promise<PartnerServiceTermWireDto> {
+    await this.findById(partnerId);
+    return createPartnerServiceTerm(this.prisma, partnerId, input);
+  }
+
+  async updatePartnerServiceTerm(
+    partnerId: string,
+    termId: string,
+    input: UpdatePartnerServiceTermInput,
+  ): Promise<PartnerServiceTermWireDto> {
+    await this.findById(partnerId);
+    return updatePartnerServiceTerm(this.prisma, partnerId, termId, input);
   }
 
   async getStats() {

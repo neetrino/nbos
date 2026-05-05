@@ -2976,6 +2976,103 @@ export type EnumPartnerPayoutBatchStatusEnumWithAggregatesFilter<$PrismaModel = 
   _max?: Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>;
 };
 
+export type EnumPartnerServiceTypeEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServiceTypeEnum
+    | Prisma.EnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServiceTypeEnum[]
+    | Prisma.ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServiceTypeEnum[]
+    | Prisma.ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumPartnerServiceTypeEnumFilter<$PrismaModel> | $Enums.PartnerServiceTypeEnum;
+};
+
+export type EnumPartnerServicePaymentModelEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServicePaymentModelEnum
+    | Prisma.EnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServicePaymentModelEnum[]
+    | Prisma.ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServicePaymentModelEnum[]
+    | Prisma.ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServicePaymentModelEnumFilter<$PrismaModel>
+    | $Enums.PartnerServicePaymentModelEnum;
+};
+
+export type EnumPartnerServiceStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServiceStatusEnum
+    | Prisma.EnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServiceStatusEnum[]
+    | Prisma.ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServiceStatusEnum[]
+    | Prisma.ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServiceStatusEnumFilter<$PrismaModel>
+    | $Enums.PartnerServiceStatusEnum;
+};
+
+export type EnumPartnerServiceTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServiceTypeEnum
+    | Prisma.EnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServiceTypeEnum[]
+    | Prisma.ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServiceTypeEnum[]
+    | Prisma.ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServiceTypeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerServiceTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerServiceTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerServiceTypeEnumFilter<$PrismaModel>;
+};
+
+export type EnumPartnerServicePaymentModelEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServicePaymentModelEnum
+    | Prisma.EnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServicePaymentModelEnum[]
+    | Prisma.ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServicePaymentModelEnum[]
+    | Prisma.ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServicePaymentModelEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerServicePaymentModelEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerServicePaymentModelEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerServicePaymentModelEnumFilter<$PrismaModel>;
+};
+
+export type EnumPartnerServiceStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServiceStatusEnum
+    | Prisma.EnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServiceStatusEnum[]
+    | Prisma.ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServiceStatusEnum[]
+    | Prisma.ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServiceStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerServiceStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerServiceStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerServiceStatusEnumFilter<$PrismaModel>;
+};
+
 export type EnumMessengerChannelTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.MessengerChannelType | Prisma.EnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
   in?:
@@ -6642,6 +6739,103 @@ export type NestedEnumPartnerPayoutBatchStatusEnumWithAggregatesFilter<$PrismaMo
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumPartnerServiceTypeEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServiceTypeEnum
+    | Prisma.EnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServiceTypeEnum[]
+    | Prisma.ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServiceTypeEnum[]
+    | Prisma.ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumPartnerServiceTypeEnumFilter<$PrismaModel> | $Enums.PartnerServiceTypeEnum;
+};
+
+export type NestedEnumPartnerServicePaymentModelEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServicePaymentModelEnum
+    | Prisma.EnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServicePaymentModelEnum[]
+    | Prisma.ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServicePaymentModelEnum[]
+    | Prisma.ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServicePaymentModelEnumFilter<$PrismaModel>
+    | $Enums.PartnerServicePaymentModelEnum;
+};
+
+export type NestedEnumPartnerServiceStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServiceStatusEnum
+    | Prisma.EnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServiceStatusEnum[]
+    | Prisma.ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServiceStatusEnum[]
+    | Prisma.ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServiceStatusEnumFilter<$PrismaModel>
+    | $Enums.PartnerServiceStatusEnum;
+};
+
+export type NestedEnumPartnerServiceTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServiceTypeEnum
+    | Prisma.EnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServiceTypeEnum[]
+    | Prisma.ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServiceTypeEnum[]
+    | Prisma.ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServiceTypeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerServiceTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerServiceTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerServiceTypeEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumPartnerServicePaymentModelEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServicePaymentModelEnum
+    | Prisma.EnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServicePaymentModelEnum[]
+    | Prisma.ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServicePaymentModelEnum[]
+    | Prisma.ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServicePaymentModelEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerServicePaymentModelEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerServicePaymentModelEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerServicePaymentModelEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumPartnerServiceStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerServiceStatusEnum
+    | Prisma.EnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerServiceStatusEnum[]
+    | Prisma.ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerServiceStatusEnum[]
+    | Prisma.ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerServiceStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerServiceStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerServiceStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerServiceStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumMessengerChannelTypeFilter<$PrismaModel = never> = {

@@ -353,6 +353,7 @@ export type InvoiceWhereInput = {
   > | null;
   payments?: Prisma.PaymentListRelationFilter;
   partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
+  partnerServiceTerms?: Prisma.PartnerServiceTermListRelationFilter;
 };
 
 export type InvoiceOrderByWithRelationInput = {
@@ -382,6 +383,7 @@ export type InvoiceOrderByWithRelationInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordOrderByWithRelationInput;
   payments?: Prisma.PaymentOrderByRelationAggregateInput;
   partnerAccruals?: Prisma.PartnerAccrualOrderByRelationAggregateInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermOrderByRelationAggregateInput;
 };
 
 export type InvoiceWhereUniqueInput = Prisma.AtLeast<
@@ -431,6 +433,7 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<
     > | null;
     payments?: Prisma.PaymentListRelationFilter;
     partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
+    partnerServiceTerms?: Prisma.PartnerServiceTermListRelationFilter;
   },
   'id' | 'code'
 >;
@@ -523,6 +526,7 @@ export type InvoiceCreateInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutInvoicesInput;
   payments?: Prisma.PaymentCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceUncheckedCreateInput = {
@@ -548,6 +552,7 @@ export type InvoiceUncheckedCreateInput = {
   updatedAt?: Date | string;
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceUpdateInput = {
@@ -580,6 +585,7 @@ export type InvoiceUpdateInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutInvoicesNestedInput;
   payments?: Prisma.PaymentUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateInput = {
@@ -612,6 +618,7 @@ export type InvoiceUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceCreateManyInput = {
@@ -1210,6 +1217,34 @@ export type InvoiceUpdateOneWithoutPartnerAccrualsNestedInput = {
   >;
 };
 
+export type InvoiceCreateNestedOneWithoutPartnerServiceTermsInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutPartnerServiceTermsInput,
+    Prisma.InvoiceUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutPartnerServiceTermsInput;
+  connect?: Prisma.InvoiceWhereUniqueInput;
+};
+
+export type InvoiceUpdateOneWithoutPartnerServiceTermsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutPartnerServiceTermsInput,
+    Prisma.InvoiceUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutPartnerServiceTermsInput;
+  upsert?: Prisma.InvoiceUpsertWithoutPartnerServiceTermsInput;
+  disconnect?: Prisma.InvoiceWhereInput | boolean;
+  delete?: Prisma.InvoiceWhereInput | boolean;
+  connect?: Prisma.InvoiceWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.InvoiceUpdateToOneWithWhereWithoutPartnerServiceTermsInput,
+      Prisma.InvoiceUpdateWithoutPartnerServiceTermsInput
+    >,
+    Prisma.InvoiceUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+};
+
 export type InvoiceCreateWithoutCompanyInput = {
   id?: string;
   code: string;
@@ -1232,6 +1267,7 @@ export type InvoiceCreateWithoutCompanyInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutInvoicesInput;
   payments?: Prisma.PaymentCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceUncheckedCreateWithoutCompanyInput = {
@@ -1256,6 +1292,7 @@ export type InvoiceUncheckedCreateWithoutCompanyInput = {
   updatedAt?: Date | string;
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceCreateOrConnectWithoutCompanyInput = {
@@ -1352,6 +1389,7 @@ export type InvoiceCreateWithoutOrderInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutInvoicesInput;
   payments?: Prisma.PaymentCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceUncheckedCreateWithoutOrderInput = {
@@ -1376,6 +1414,7 @@ export type InvoiceUncheckedCreateWithoutOrderInput = {
   updatedAt?: Date | string;
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceCreateOrConnectWithoutOrderInput = {
@@ -1441,6 +1480,7 @@ export type InvoiceCreateWithoutPaymentsInput = {
   company?: Prisma.CompanyCreateNestedOneWithoutInvoicesInput;
   clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutInvoicesInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceUncheckedCreateWithoutPaymentsInput = {
@@ -1465,6 +1505,7 @@ export type InvoiceUncheckedCreateWithoutPaymentsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceCreateOrConnectWithoutPaymentsInput = {
@@ -1524,6 +1565,7 @@ export type InvoiceUpdateWithoutPaymentsInput = {
   company?: Prisma.CompanyUpdateOneWithoutInvoicesNestedInput;
   clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutInvoicesNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateWithoutPaymentsInput = {
@@ -1555,6 +1597,7 @@ export type InvoiceUncheckedUpdateWithoutPaymentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceCreateWithoutSubscriptionInput = {
@@ -1579,6 +1622,7 @@ export type InvoiceCreateWithoutSubscriptionInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutInvoicesInput;
   payments?: Prisma.PaymentCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceUncheckedCreateWithoutSubscriptionInput = {
@@ -1603,6 +1647,7 @@ export type InvoiceUncheckedCreateWithoutSubscriptionInput = {
   updatedAt?: Date | string;
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceCreateOrConnectWithoutSubscriptionInput = {
@@ -1668,6 +1713,7 @@ export type InvoiceCreateWithoutClientServiceRecordInput = {
   company?: Prisma.CompanyCreateNestedOneWithoutInvoicesInput;
   payments?: Prisma.PaymentCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceUncheckedCreateWithoutClientServiceRecordInput = {
@@ -1692,6 +1738,7 @@ export type InvoiceUncheckedCreateWithoutClientServiceRecordInput = {
   updatedAt?: Date | string;
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutInvoiceInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceCreateOrConnectWithoutClientServiceRecordInput = {
@@ -1759,6 +1806,7 @@ export type InvoiceCreateWithoutPartnerAccrualsInput = {
   company?: Prisma.CompanyCreateNestedOneWithoutInvoicesInput;
   clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutInvoicesInput;
   payments?: Prisma.PaymentCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceUncheckedCreateWithoutPartnerAccrualsInput = {
@@ -1783,6 +1831,7 @@ export type InvoiceUncheckedCreateWithoutPartnerAccrualsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutInvoiceInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutInvoiceInput;
 };
 
 export type InvoiceCreateOrConnectWithoutPartnerAccrualsInput = {
@@ -1842,6 +1891,7 @@ export type InvoiceUpdateWithoutPartnerAccrualsInput = {
   company?: Prisma.CompanyUpdateOneWithoutInvoicesNestedInput;
   clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutInvoicesNestedInput;
   payments?: Prisma.PaymentUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateWithoutPartnerAccrualsInput = {
@@ -1873,6 +1923,149 @@ export type InvoiceUncheckedUpdateWithoutPartnerAccrualsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutInvoiceNestedInput;
+};
+
+export type InvoiceCreateWithoutPartnerServiceTermsInput = {
+  id?: string;
+  code: string;
+  projectId: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  taxStatus?: $Enums.TaxStatus;
+  type: $Enums.InvoiceTypeEnum;
+  status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
+  dueDate?: Date | string | null;
+  paidDate?: Date | string | null;
+  govInvoiceId?: string | null;
+  paymentLink?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderCreateNestedOneWithoutInvoicesInput;
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutInvoicesInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutInvoicesInput;
+  payments?: Prisma.PaymentCreateNestedManyWithoutInvoiceInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutInvoiceInput;
+};
+
+export type InvoiceUncheckedCreateWithoutPartnerServiceTermsInput = {
+  id?: string;
+  code: string;
+  orderId?: string | null;
+  subscriptionId?: string | null;
+  projectId: string;
+  companyId?: string | null;
+  clientServiceRecordId?: string | null;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  taxStatus?: $Enums.TaxStatus;
+  type: $Enums.InvoiceTypeEnum;
+  status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
+  dueDate?: Date | string | null;
+  paidDate?: Date | string | null;
+  govInvoiceId?: string | null;
+  paymentLink?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutInvoiceInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutInvoiceInput;
+};
+
+export type InvoiceCreateOrConnectWithoutPartnerServiceTermsInput = {
+  where: Prisma.InvoiceWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutPartnerServiceTermsInput,
+    Prisma.InvoiceUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+};
+
+export type InvoiceUpsertWithoutPartnerServiceTermsInput = {
+  update: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutPartnerServiceTermsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutPartnerServiceTermsInput,
+    Prisma.InvoiceUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  where?: Prisma.InvoiceWhereInput;
+};
+
+export type InvoiceUpdateToOneWithWhereWithoutPartnerServiceTermsInput = {
+  where?: Prisma.InvoiceWhereInput;
+  data: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutPartnerServiceTermsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+};
+
+export type InvoiceUpdateWithoutPartnerServiceTermsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
+  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUpdateOneWithoutInvoicesNestedInput;
+  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutInvoicesNestedInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutInvoicesNestedInput;
+  payments?: Prisma.PaymentUpdateManyWithoutInvoiceNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutInvoiceNestedInput;
+};
+
+export type InvoiceUncheckedUpdateWithoutPartnerServiceTermsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
+  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutInvoiceNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceCreateManyCompanyInput = {
@@ -1926,6 +2119,7 @@ export type InvoiceUpdateWithoutCompanyInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutInvoicesNestedInput;
   payments?: Prisma.PaymentUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateWithoutCompanyInput = {
@@ -1957,6 +2151,7 @@ export type InvoiceUncheckedUpdateWithoutCompanyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateManyWithoutCompanyInput = {
@@ -2039,6 +2234,7 @@ export type InvoiceUpdateWithoutOrderInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutInvoicesNestedInput;
   payments?: Prisma.PaymentUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateWithoutOrderInput = {
@@ -2070,6 +2266,7 @@ export type InvoiceUncheckedUpdateWithoutOrderInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateManyWithoutOrderInput = {
@@ -2152,6 +2349,7 @@ export type InvoiceUpdateWithoutSubscriptionInput = {
   clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutInvoicesNestedInput;
   payments?: Prisma.PaymentUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateWithoutSubscriptionInput = {
@@ -2183,6 +2381,7 @@ export type InvoiceUncheckedUpdateWithoutSubscriptionInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateManyWithoutSubscriptionInput = {
@@ -2265,6 +2464,7 @@ export type InvoiceUpdateWithoutClientServiceRecordInput = {
   company?: Prisma.CompanyUpdateOneWithoutInvoicesNestedInput;
   payments?: Prisma.PaymentUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateWithoutClientServiceRecordInput = {
@@ -2296,6 +2496,7 @@ export type InvoiceUncheckedUpdateWithoutClientServiceRecordInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutInvoiceNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutInvoiceNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutInvoiceNestedInput;
 };
 
 export type InvoiceUncheckedUpdateManyWithoutClientServiceRecordInput = {
@@ -2334,6 +2535,7 @@ export type InvoiceUncheckedUpdateManyWithoutClientServiceRecordInput = {
 export type InvoiceCountOutputType = {
   payments: number;
   partnerAccruals: number;
+  partnerServiceTerms: number;
 };
 
 export type InvoiceCountOutputTypeSelect<
@@ -2341,6 +2543,7 @@ export type InvoiceCountOutputTypeSelect<
 > = {
   payments?: boolean | InvoiceCountOutputTypeCountPaymentsArgs;
   partnerAccruals?: boolean | InvoiceCountOutputTypeCountPartnerAccrualsArgs;
+  partnerServiceTerms?: boolean | InvoiceCountOutputTypeCountPartnerServiceTermsArgs;
 };
 
 /**
@@ -2373,6 +2576,15 @@ export type InvoiceCountOutputTypeCountPartnerAccrualsArgs<
   where?: Prisma.PartnerAccrualWhereInput;
 };
 
+/**
+ * InvoiceCountOutputType without action
+ */
+export type InvoiceCountOutputTypeCountPartnerServiceTermsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PartnerServiceTermWhereInput;
+};
+
 export type InvoiceSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -2403,6 +2615,7 @@ export type InvoiceSelect<
     clientServiceRecord?: boolean | Prisma.Invoice$clientServiceRecordArgs<ExtArgs>;
     payments?: boolean | Prisma.Invoice$paymentsArgs<ExtArgs>;
     partnerAccruals?: boolean | Prisma.Invoice$partnerAccrualsArgs<ExtArgs>;
+    partnerServiceTerms?: boolean | Prisma.Invoice$partnerServiceTermsArgs<ExtArgs>;
     _count?: boolean | Prisma.InvoiceCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['invoice']
@@ -2529,6 +2742,7 @@ export type InvoiceInclude<
   clientServiceRecord?: boolean | Prisma.Invoice$clientServiceRecordArgs<ExtArgs>;
   payments?: boolean | Prisma.Invoice$paymentsArgs<ExtArgs>;
   partnerAccruals?: boolean | Prisma.Invoice$partnerAccrualsArgs<ExtArgs>;
+  partnerServiceTerms?: boolean | Prisma.Invoice$partnerServiceTermsArgs<ExtArgs>;
   _count?: boolean | Prisma.InvoiceCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type InvoiceIncludeCreateManyAndReturn<
@@ -2559,6 +2773,7 @@ export type $InvoicePayload<
     clientServiceRecord: Prisma.$ClientServiceRecordPayload<ExtArgs> | null;
     payments: Prisma.$PaymentPayload<ExtArgs>[];
     partnerAccruals: Prisma.$PartnerAccrualPayload<ExtArgs>[];
+    partnerServiceTerms: Prisma.$PartnerServiceTermPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -3177,6 +3392,17 @@ export interface Prisma__InvoiceClient<
       >
     | Null
   >;
+  partnerServiceTerms<T extends Prisma.Invoice$partnerServiceTermsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Invoice$partnerServiceTermsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PartnerServiceTermPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3786,6 +4012,34 @@ export type Invoice$partnerAccrualsArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.PartnerAccrualScalarFieldEnum | Prisma.PartnerAccrualScalarFieldEnum[];
+};
+
+/**
+ * Invoice.partnerServiceTerms
+ */
+export type Invoice$partnerServiceTermsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerServiceTerm
+   */
+  select?: Prisma.PartnerServiceTermSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PartnerServiceTerm
+   */
+  omit?: Prisma.PartnerServiceTermOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerServiceTermInclude<ExtArgs> | null;
+  where?: Prisma.PartnerServiceTermWhereInput;
+  orderBy?:
+    | Prisma.PartnerServiceTermOrderByWithRelationInput
+    | Prisma.PartnerServiceTermOrderByWithRelationInput[];
+  cursor?: Prisma.PartnerServiceTermWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.PartnerServiceTermScalarFieldEnum | Prisma.PartnerServiceTermScalarFieldEnum[];
 };
 
 /**

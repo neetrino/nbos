@@ -36,6 +36,7 @@ model Contact {
   leadsAsSource Lead[]          @relation("LeadSourceContact")
   dealsAsSource Deal[]          @relation("DealSourceContact")
   partners      Partner[]
+  partnerServiceTerms PartnerServiceTerm[]
 
   @@map("contacts")
 }
@@ -69,6 +70,7 @@ model Company {
   invoices                  Invoice[]
   deals                     Deal[]
   operationalJournalEntries OperationalJournalEntry[]
+  partnerServiceTerms       PartnerServiceTerm[]
 
   @@map("companies")
 }
@@ -109,6 +111,7 @@ model Project {
   technicalEnvironments     TechnicalEnvironment[]
   operationalJournalEntries OperationalJournalEntry[]
   partnerAccruals           PartnerAccrual[]
+  partnerServiceTerms       PartnerServiceTerm[]
 
   @@map("projects")
 }
@@ -628,6 +631,7 @@ model Invoice {
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
   payments            Payment[]
   partnerAccruals     PartnerAccrual[]
+  partnerServiceTerms PartnerServiceTerm[]
 
   @@index([clientServiceRecordId])
   @@map("invoices")
@@ -768,6 +772,7 @@ model Subscription {
   partner            Partner?           @relation(fields: [partnerId], references: [id])
   invoices           Invoice[]
   partnerAccruals    PartnerAccrual[]
+  partnerServiceTerms PartnerServiceTerm[]
 
   @@map("subscriptions")
 }
@@ -2326,6 +2331,7 @@ model Partner {
   partnerReferralTerms      PartnerReferralTerms[]
   partnerAccruals           PartnerAccrual[]
   partnerPayoutBatches      PartnerPayoutBatch[]
+  partnerServiceTerms       PartnerServiceTerm[]
 
   @@map("partners")
 }
@@ -2389,6 +2395,27 @@ enum PartnerPayoutBatchStatusEnum {
   CANCELLED
 }
 
+enum PartnerServiceTypeEnum {
+  SEO
+  SMM
+  ADS
+  OTHER
+}
+
+enum PartnerServicePaymentModelEnum {
+  ONE_TIME
+  MONTHLY
+  CUSTOM
+}
+
+enum PartnerServiceStatusEnum {
+  PENDING
+  ACTIVE
+  ON_HOLD
+  CANCELLED
+  COMPLETED
+}
+
 /// Inbound referral commission accrual from client cash (NBOS § Partner Payouts — PAR-01 / PAR-02).
 model PartnerAccrual {
   id              String                   @id @default(uuid())
@@ -2448,6 +2475,37 @@ model PartnerPayoutBatch {
   @@index([partnerId])
   @@index([status])
   @@map("partner_payout_batches")
+}
+
+/// Outbound service terms for partner revenue cases (NBOS § Outbound Partner Services).
+model PartnerServiceTerm {
+  id              String                         @id @default(uuid())
+  partnerId       String                         @map("partner_id")
+  clientContactId String?                        @map("client_contact_id")
+  clientCompanyId String?                        @map("client_company_id")
+  projectId       String?                        @map("project_id")
+  serviceType     PartnerServiceTypeEnum         @map("service_type")
+  paymentModel    PartnerServicePaymentModelEnum @map("payment_model")
+  amount          Decimal                        @db.Decimal(12, 2)
+  billingStartDate DateTime?                     @map("billing_start_date")
+  subscriptionId  String?                        @map("subscription_id")
+  invoiceId       String?                        @map("invoice_id")
+  status          PartnerServiceStatusEnum       @default(PENDING)
+  notes           String?                        @db.Text
+  createdAt       DateTime                       @default(now()) @map("created_at")
+  updatedAt       DateTime                       @updatedAt @map("updated_at")
+
+  partner       Partner        @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  clientContact Contact?       @relation(fields: [clientContactId], references: [id], onDelete: SetNull)
+  clientCompany Company?       @relation(fields: [clientCompanyId], references: [id], onDelete: SetNull)
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  subscription  Subscription?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  invoice       Invoice?       @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([projectId])
+  @@map("partner_service_terms")
 }
 
 // ─── INTERNAL MESSENGER (MVP) ─────────────────────────────

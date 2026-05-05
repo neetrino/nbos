@@ -442,6 +442,7 @@ export const ModelName = {
   PartnerCommissionPolicyRow: 'PartnerCommissionPolicyRow',
   PartnerAccrual: 'PartnerAccrual',
   PartnerPayoutBatch: 'PartnerPayoutBatch',
+  PartnerServiceTerm: 'PartnerServiceTerm',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
   MessengerChannelMessageAttachment: 'MessengerChannelMessageAttachment',
@@ -556,6 +557,7 @@ export type TypeMap<
       | 'partnerCommissionPolicyRow'
       | 'partnerAccrual'
       | 'partnerPayoutBatch'
+      | 'partnerServiceTerm'
       | 'messengerChannel'
       | 'messengerChannelMessage'
       | 'messengerChannelMessageAttachment'
@@ -5616,6 +5618,82 @@ export type TypeMap<
         };
       };
     };
+    PartnerServiceTerm: {
+      payload: Prisma.$PartnerServiceTermPayload<ExtArgs>;
+      fields: Prisma.PartnerServiceTermFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.PartnerServiceTermFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.PartnerServiceTermFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>;
+        };
+        findFirst: {
+          args: Prisma.PartnerServiceTermFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.PartnerServiceTermFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>;
+        };
+        findMany: {
+          args: Prisma.PartnerServiceTermFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>[];
+        };
+        create: {
+          args: Prisma.PartnerServiceTermCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>;
+        };
+        createMany: {
+          args: Prisma.PartnerServiceTermCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.PartnerServiceTermCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>[];
+        };
+        delete: {
+          args: Prisma.PartnerServiceTermDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>;
+        };
+        update: {
+          args: Prisma.PartnerServiceTermUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>;
+        };
+        deleteMany: {
+          args: Prisma.PartnerServiceTermDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.PartnerServiceTermUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.PartnerServiceTermUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>[];
+        };
+        upsert: {
+          args: Prisma.PartnerServiceTermUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerServiceTermPayload>;
+        };
+        aggregate: {
+          args: Prisma.PartnerServiceTermAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePartnerServiceTerm>;
+        };
+        groupBy: {
+          args: Prisma.PartnerServiceTermGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.PartnerServiceTermGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.PartnerServiceTermCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.PartnerServiceTermCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     MessengerChannel: {
       payload: Prisma.$MessengerChannelPayload<ExtArgs>;
       fields: Prisma.MessengerChannelFieldRefs;
@@ -8966,6 +9044,27 @@ export const PartnerPayoutBatchScalarFieldEnum = {
 export type PartnerPayoutBatchScalarFieldEnum =
   (typeof PartnerPayoutBatchScalarFieldEnum)[keyof typeof PartnerPayoutBatchScalarFieldEnum];
 
+export const PartnerServiceTermScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  clientContactId: 'clientContactId',
+  clientCompanyId: 'clientCompanyId',
+  projectId: 'projectId',
+  serviceType: 'serviceType',
+  paymentModel: 'paymentModel',
+  amount: 'amount',
+  billingStartDate: 'billingStartDate',
+  subscriptionId: 'subscriptionId',
+  invoiceId: 'invoiceId',
+  status: 'status',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerServiceTermScalarFieldEnum =
+  (typeof PartnerServiceTermScalarFieldEnum)[keyof typeof PartnerServiceTermScalarFieldEnum];
+
 export const MessengerChannelScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -10907,6 +11006,54 @@ export type ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel> = Fi
 >;
 
 /**
+ * Reference to a field of type 'PartnerServiceTypeEnum'
+ */
+export type EnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerServiceTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'PartnerServiceTypeEnum[]'
+ */
+export type ListEnumPartnerServiceTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerServiceTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'PartnerServicePaymentModelEnum'
+ */
+export type EnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerServicePaymentModelEnum'
+>;
+
+/**
+ * Reference to a field of type 'PartnerServicePaymentModelEnum[]'
+ */
+export type ListEnumPartnerServicePaymentModelEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerServicePaymentModelEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'PartnerServiceStatusEnum'
+ */
+export type EnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerServiceStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'PartnerServiceStatusEnum[]'
+ */
+export type ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerServiceStatusEnum[]'
+>;
+
+/**
  * Reference to a field of type 'MessengerChannelType'
  */
 export type EnumMessengerChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -11470,6 +11617,7 @@ export type GlobalOmitConfig = {
   partnerCommissionPolicyRow?: Prisma.PartnerCommissionPolicyRowOmit;
   partnerAccrual?: Prisma.PartnerAccrualOmit;
   partnerPayoutBatch?: Prisma.PartnerPayoutBatchOmit;
+  partnerServiceTerm?: Prisma.PartnerServiceTermOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;
   messengerChannelMessageAttachment?: Prisma.MessengerChannelMessageAttachmentOmit;

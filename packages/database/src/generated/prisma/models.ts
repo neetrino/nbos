@@ -74,6 +74,7 @@ export type * from './models/PartnerReferralTerms';
 export type * from './models/PartnerCommissionPolicyRow';
 export type * from './models/PartnerAccrual';
 export type * from './models/PartnerPayoutBatch';
+export type * from './models/PartnerServiceTerm';
 export type * from './models/MessengerChannel';
 export type * from './models/MessengerChannelMessage';
 export type * from './models/MessengerChannelMessageAttachment';

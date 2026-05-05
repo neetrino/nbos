@@ -227,6 +227,7 @@ export type CompanyWhereInput = {
   invoices?: Prisma.InvoiceListRelationFilter;
   deals?: Prisma.DealListRelationFilter;
   operationalJournalEntries?: Prisma.OperationalJournalEntryListRelationFilter;
+  partnerServiceTerms?: Prisma.PartnerServiceTermListRelationFilter;
 };
 
 export type CompanyOrderByWithRelationInput = {
@@ -246,6 +247,7 @@ export type CompanyOrderByWithRelationInput = {
   invoices?: Prisma.InvoiceOrderByRelationAggregateInput;
   deals?: Prisma.DealOrderByRelationAggregateInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryOrderByRelationAggregateInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermOrderByRelationAggregateInput;
 };
 
 export type CompanyWhereUniqueInput = Prisma.AtLeast<
@@ -269,6 +271,7 @@ export type CompanyWhereUniqueInput = Prisma.AtLeast<
     invoices?: Prisma.InvoiceListRelationFilter;
     deals?: Prisma.DealListRelationFilter;
     operationalJournalEntries?: Prisma.OperationalJournalEntryListRelationFilter;
+    partnerServiceTerms?: Prisma.PartnerServiceTermListRelationFilter;
   },
   'id'
 >;
@@ -327,6 +330,7 @@ export type CompanyCreateInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyUncheckedCreateInput = {
@@ -345,6 +349,7 @@ export type CompanyUncheckedCreateInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyUpdateInput = {
@@ -363,6 +368,7 @@ export type CompanyUpdateInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyUncheckedUpdateInput = {
@@ -381,6 +387,7 @@ export type CompanyUncheckedUpdateInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyCreateManyInput = {
@@ -685,6 +692,34 @@ export type CompanyUpdateOneWithoutOperationalJournalEntriesNestedInput = {
   >;
 };
 
+export type CompanyCreateNestedOneWithoutPartnerServiceTermsInput = {
+  create?: Prisma.XOR<
+    Prisma.CompanyCreateWithoutPartnerServiceTermsInput,
+    Prisma.CompanyUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  connectOrCreate?: Prisma.CompanyCreateOrConnectWithoutPartnerServiceTermsInput;
+  connect?: Prisma.CompanyWhereUniqueInput;
+};
+
+export type CompanyUpdateOneWithoutPartnerServiceTermsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CompanyCreateWithoutPartnerServiceTermsInput,
+    Prisma.CompanyUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  connectOrCreate?: Prisma.CompanyCreateOrConnectWithoutPartnerServiceTermsInput;
+  upsert?: Prisma.CompanyUpsertWithoutPartnerServiceTermsInput;
+  disconnect?: Prisma.CompanyWhereInput | boolean;
+  delete?: Prisma.CompanyWhereInput | boolean;
+  connect?: Prisma.CompanyWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CompanyUpdateToOneWithWhereWithoutPartnerServiceTermsInput,
+      Prisma.CompanyUpdateWithoutPartnerServiceTermsInput
+    >,
+    Prisma.CompanyUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+};
+
 export type CompanyCreateWithoutContactInput = {
   id?: string;
   name: string;
@@ -700,6 +735,7 @@ export type CompanyCreateWithoutContactInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyUncheckedCreateWithoutContactInput = {
@@ -717,6 +753,7 @@ export type CompanyUncheckedCreateWithoutContactInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyCreateOrConnectWithoutContactInput = {
@@ -792,6 +829,7 @@ export type CompanyCreateWithoutProjectsInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyUncheckedCreateWithoutProjectsInput = {
@@ -809,6 +847,7 @@ export type CompanyUncheckedCreateWithoutProjectsInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyCreateOrConnectWithoutProjectsInput = {
@@ -854,6 +893,7 @@ export type CompanyUpdateWithoutProjectsInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyUncheckedUpdateWithoutProjectsInput = {
@@ -871,6 +911,7 @@ export type CompanyUncheckedUpdateWithoutProjectsInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyCreateWithoutDealsInput = {
@@ -888,6 +929,7 @@ export type CompanyCreateWithoutDealsInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyUncheckedCreateWithoutDealsInput = {
@@ -905,6 +947,7 @@ export type CompanyUncheckedCreateWithoutDealsInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyCreateOrConnectWithoutDealsInput = {
@@ -950,6 +993,7 @@ export type CompanyUpdateWithoutDealsInput = {
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyUncheckedUpdateWithoutDealsInput = {
@@ -967,6 +1011,7 @@ export type CompanyUncheckedUpdateWithoutDealsInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyCreateWithoutInvoicesInput = {
@@ -984,6 +1029,7 @@ export type CompanyCreateWithoutInvoicesInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyUncheckedCreateWithoutInvoicesInput = {
@@ -1001,6 +1047,7 @@ export type CompanyUncheckedCreateWithoutInvoicesInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyCreateOrConnectWithoutInvoicesInput = {
@@ -1046,6 +1093,7 @@ export type CompanyUpdateWithoutInvoicesInput = {
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyUncheckedUpdateWithoutInvoicesInput = {
@@ -1063,6 +1111,7 @@ export type CompanyUncheckedUpdateWithoutInvoicesInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyCreateWithoutOperationalJournalEntriesInput = {
@@ -1080,6 +1129,7 @@ export type CompanyCreateWithoutOperationalJournalEntriesInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyUncheckedCreateWithoutOperationalJournalEntriesInput = {
@@ -1097,6 +1147,7 @@ export type CompanyUncheckedCreateWithoutOperationalJournalEntriesInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientCompanyInput;
 };
 
 export type CompanyCreateOrConnectWithoutOperationalJournalEntriesInput = {
@@ -1142,6 +1193,7 @@ export type CompanyUpdateWithoutOperationalJournalEntriesInput = {
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyUncheckedUpdateWithoutOperationalJournalEntriesInput = {
@@ -1159,6 +1211,107 @@ export type CompanyUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyNestedInput;
+};
+
+export type CompanyCreateWithoutPartnerServiceTermsInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.CompanyType;
+  taxId?: string | null;
+  legalAddress?: string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: $Enums.TaxStatus;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutCompaniesInput;
+  projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
+  deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
+};
+
+export type CompanyUncheckedCreateWithoutPartnerServiceTermsInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.CompanyType;
+  taxId?: string | null;
+  legalAddress?: string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: $Enums.TaxStatus;
+  contactId: string;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCompanyInput;
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCompanyInput;
+  deals?: Prisma.DealUncheckedCreateNestedManyWithoutCompanyInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutCompanyInput;
+};
+
+export type CompanyCreateOrConnectWithoutPartnerServiceTermsInput = {
+  where: Prisma.CompanyWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.CompanyCreateWithoutPartnerServiceTermsInput,
+    Prisma.CompanyUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+};
+
+export type CompanyUpsertWithoutPartnerServiceTermsInput = {
+  update: Prisma.XOR<
+    Prisma.CompanyUpdateWithoutPartnerServiceTermsInput,
+    Prisma.CompanyUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.CompanyCreateWithoutPartnerServiceTermsInput,
+    Prisma.CompanyUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  where?: Prisma.CompanyWhereInput;
+};
+
+export type CompanyUpdateToOneWithWhereWithoutPartnerServiceTermsInput = {
+  where?: Prisma.CompanyWhereInput;
+  data: Prisma.XOR<
+    Prisma.CompanyUpdateWithoutPartnerServiceTermsInput,
+    Prisma.CompanyUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+};
+
+export type CompanyUpdateWithoutPartnerServiceTermsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumCompanyTypeFieldUpdateOperationsInput | $Enums.CompanyType;
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutCompaniesNestedInput;
+  projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
+  invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
+  deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
+};
+
+export type CompanyUncheckedUpdateWithoutPartnerServiceTermsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumCompanyTypeFieldUpdateOperationsInput | $Enums.CompanyType;
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutCompanyNestedInput;
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCompanyNestedInput;
+  deals?: Prisma.DealUncheckedUpdateManyWithoutCompanyNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutCompanyNestedInput;
 };
 
 export type CompanyCreateManyContactInput = {
@@ -1189,6 +1342,7 @@ export type CompanyUpdateWithoutContactInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyUncheckedUpdateWithoutContactInput = {
@@ -1206,6 +1360,7 @@ export type CompanyUncheckedUpdateWithoutContactInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyNestedInput;
 };
 
 export type CompanyUncheckedUpdateManyWithoutContactInput = {
@@ -1230,6 +1385,7 @@ export type CompanyCountOutputType = {
   invoices: number;
   deals: number;
   operationalJournalEntries: number;
+  partnerServiceTerms: number;
 };
 
 export type CompanyCountOutputTypeSelect<
@@ -1239,6 +1395,7 @@ export type CompanyCountOutputTypeSelect<
   invoices?: boolean | CompanyCountOutputTypeCountInvoicesArgs;
   deals?: boolean | CompanyCountOutputTypeCountDealsArgs;
   operationalJournalEntries?: boolean | CompanyCountOutputTypeCountOperationalJournalEntriesArgs;
+  partnerServiceTerms?: boolean | CompanyCountOutputTypeCountPartnerServiceTermsArgs;
 };
 
 /**
@@ -1289,6 +1446,15 @@ export type CompanyCountOutputTypeCountOperationalJournalEntriesArgs<
   where?: Prisma.OperationalJournalEntryWhereInput;
 };
 
+/**
+ * CompanyCountOutputType without action
+ */
+export type CompanyCountOutputTypeCountPartnerServiceTermsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PartnerServiceTermWhereInput;
+};
+
 export type CompanySelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -1309,6 +1475,7 @@ export type CompanySelect<
     invoices?: boolean | Prisma.Company$invoicesArgs<ExtArgs>;
     deals?: boolean | Prisma.Company$dealsArgs<ExtArgs>;
     operationalJournalEntries?: boolean | Prisma.Company$operationalJournalEntriesArgs<ExtArgs>;
+    partnerServiceTerms?: boolean | Prisma.Company$partnerServiceTermsArgs<ExtArgs>;
     _count?: boolean | Prisma.CompanyCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['company']
@@ -1392,6 +1559,7 @@ export type CompanyInclude<
   invoices?: boolean | Prisma.Company$invoicesArgs<ExtArgs>;
   deals?: boolean | Prisma.Company$dealsArgs<ExtArgs>;
   operationalJournalEntries?: boolean | Prisma.Company$operationalJournalEntriesArgs<ExtArgs>;
+  partnerServiceTerms?: boolean | Prisma.Company$partnerServiceTermsArgs<ExtArgs>;
   _count?: boolean | Prisma.CompanyCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type CompanyIncludeCreateManyAndReturn<
@@ -1415,6 +1583,7 @@ export type $CompanyPayload<
     invoices: Prisma.$InvoicePayload<ExtArgs>[];
     deals: Prisma.$DealPayload<ExtArgs>[];
     operationalJournalEntries: Prisma.$OperationalJournalEntryPayload<ExtArgs>[];
+    partnerServiceTerms: Prisma.$PartnerServiceTermPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1997,6 +2166,17 @@ export interface Prisma__CompanyClient<
       >
     | Null
   >;
+  partnerServiceTerms<T extends Prisma.Company$partnerServiceTermsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Company$partnerServiceTermsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PartnerServiceTermPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2567,6 +2747,34 @@ export type Company$operationalJournalEntriesArgs<
   distinct?:
     | Prisma.OperationalJournalEntryScalarFieldEnum
     | Prisma.OperationalJournalEntryScalarFieldEnum[];
+};
+
+/**
+ * Company.partnerServiceTerms
+ */
+export type Company$partnerServiceTermsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerServiceTerm
+   */
+  select?: Prisma.PartnerServiceTermSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PartnerServiceTerm
+   */
+  omit?: Prisma.PartnerServiceTermOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerServiceTermInclude<ExtArgs> | null;
+  where?: Prisma.PartnerServiceTermWhereInput;
+  orderBy?:
+    | Prisma.PartnerServiceTermOrderByWithRelationInput
+    | Prisma.PartnerServiceTermOrderByWithRelationInput[];
+  cursor?: Prisma.PartnerServiceTermWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.PartnerServiceTermScalarFieldEnum | Prisma.PartnerServiceTermScalarFieldEnum[];
 };
 
 /**

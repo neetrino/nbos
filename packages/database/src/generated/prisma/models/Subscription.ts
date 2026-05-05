@@ -293,6 +293,7 @@ export type SubscriptionWhereInput = {
   partner?: Prisma.XOR<Prisma.PartnerNullableScalarRelationFilter, Prisma.PartnerWhereInput> | null;
   invoices?: Prisma.InvoiceListRelationFilter;
   partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
+  partnerServiceTerms?: Prisma.PartnerServiceTermListRelationFilter;
 };
 
 export type SubscriptionOrderByWithRelationInput = {
@@ -313,6 +314,7 @@ export type SubscriptionOrderByWithRelationInput = {
   partner?: Prisma.PartnerOrderByWithRelationInput;
   invoices?: Prisma.InvoiceOrderByRelationAggregateInput;
   partnerAccruals?: Prisma.PartnerAccrualOrderByRelationAggregateInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermOrderByRelationAggregateInput;
 };
 
 export type SubscriptionWhereUniqueInput = Prisma.AtLeast<
@@ -347,6 +349,7 @@ export type SubscriptionWhereUniqueInput = Prisma.AtLeast<
     > | null;
     invoices?: Prisma.InvoiceListRelationFilter;
     partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
+    partnerServiceTerms?: Prisma.PartnerServiceTermListRelationFilter;
   },
   'id' | 'code'
 >;
@@ -420,6 +423,7 @@ export type SubscriptionCreateInput = {
   partner?: Prisma.PartnerCreateNestedOneWithoutSubscriptionsInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionUncheckedCreateInput = {
@@ -438,6 +442,7 @@ export type SubscriptionUncheckedCreateInput = {
   updatedAt?: Date | string;
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionUpdateInput = {
@@ -463,6 +468,7 @@ export type SubscriptionUpdateInput = {
   partner?: Prisma.PartnerUpdateOneWithoutSubscriptionsNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionUncheckedUpdateInput = {
@@ -488,6 +494,7 @@ export type SubscriptionUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionCreateManyInput = {
@@ -859,6 +866,34 @@ export type SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput = {
   >;
 };
 
+export type SubscriptionCreateNestedOneWithoutPartnerServiceTermsInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutPartnerServiceTermsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPartnerServiceTermsInput;
+  connect?: Prisma.SubscriptionWhereUniqueInput;
+};
+
+export type SubscriptionUpdateOneWithoutPartnerServiceTermsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutPartnerServiceTermsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPartnerServiceTermsInput;
+  upsert?: Prisma.SubscriptionUpsertWithoutPartnerServiceTermsInput;
+  disconnect?: Prisma.SubscriptionWhereInput | boolean;
+  delete?: Prisma.SubscriptionWhereInput | boolean;
+  connect?: Prisma.SubscriptionWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionUpdateToOneWithWhereWithoutPartnerServiceTermsInput,
+      Prisma.SubscriptionUpdateWithoutPartnerServiceTermsInput
+    >,
+    Prisma.SubscriptionUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+};
+
 export type SubscriptionCreateWithoutProjectInput = {
   id?: string;
   code: string;
@@ -874,6 +909,7 @@ export type SubscriptionCreateWithoutProjectInput = {
   partner?: Prisma.PartnerCreateNestedOneWithoutSubscriptionsInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionUncheckedCreateWithoutProjectInput = {
@@ -891,6 +927,7 @@ export type SubscriptionUncheckedCreateWithoutProjectInput = {
   updatedAt?: Date | string;
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionCreateOrConnectWithoutProjectInput = {
@@ -973,6 +1010,7 @@ export type SubscriptionCreateWithoutInvoicesInput = {
   project: Prisma.ProjectCreateNestedOneWithoutSubscriptionsInput;
   partner?: Prisma.PartnerCreateNestedOneWithoutSubscriptionsInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionUncheckedCreateWithoutInvoicesInput = {
@@ -990,6 +1028,7 @@ export type SubscriptionUncheckedCreateWithoutInvoicesInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionCreateOrConnectWithoutInvoicesInput = {
@@ -1042,6 +1081,7 @@ export type SubscriptionUpdateWithoutInvoicesInput = {
   project?: Prisma.ProjectUpdateOneRequiredWithoutSubscriptionsNestedInput;
   partner?: Prisma.PartnerUpdateOneWithoutSubscriptionsNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionUncheckedUpdateWithoutInvoicesInput = {
@@ -1066,6 +1106,7 @@ export type SubscriptionUncheckedUpdateWithoutInvoicesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionCreateWithoutPartnerInput = {
@@ -1083,6 +1124,7 @@ export type SubscriptionCreateWithoutPartnerInput = {
   project: Prisma.ProjectCreateNestedOneWithoutSubscriptionsInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionUncheckedCreateWithoutPartnerInput = {
@@ -1100,6 +1142,7 @@ export type SubscriptionUncheckedCreateWithoutPartnerInput = {
   updatedAt?: Date | string;
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionCreateOrConnectWithoutPartnerInput = {
@@ -1158,6 +1201,7 @@ export type SubscriptionCreateWithoutPartnerAccrualsInput = {
   project: Prisma.ProjectCreateNestedOneWithoutSubscriptionsInput;
   partner?: Prisma.PartnerCreateNestedOneWithoutSubscriptionsInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionUncheckedCreateWithoutPartnerAccrualsInput = {
@@ -1175,6 +1219,7 @@ export type SubscriptionUncheckedCreateWithoutPartnerAccrualsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutSubscriptionInput;
 };
 
 export type SubscriptionCreateOrConnectWithoutPartnerAccrualsInput = {
@@ -1227,6 +1272,7 @@ export type SubscriptionUpdateWithoutPartnerAccrualsInput = {
   project?: Prisma.ProjectUpdateOneRequiredWithoutSubscriptionsNestedInput;
   partner?: Prisma.PartnerUpdateOneWithoutSubscriptionsNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionUncheckedUpdateWithoutPartnerAccrualsInput = {
@@ -1251,6 +1297,121 @@ export type SubscriptionUncheckedUpdateWithoutPartnerAccrualsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutSubscriptionNestedInput;
+};
+
+export type SubscriptionCreateWithoutPartnerServiceTermsInput = {
+  id?: string;
+  code: string;
+  type: $Enums.SubscriptionTypeEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  billingDay: number;
+  taxStatus?: $Enums.TaxStatus;
+  startDate: Date | string;
+  endDate?: Date | string | null;
+  status?: $Enums.SubscriptionStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutSubscriptionsInput;
+  partner?: Prisma.PartnerCreateNestedOneWithoutSubscriptionsInput;
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutSubscriptionInput;
+};
+
+export type SubscriptionUncheckedCreateWithoutPartnerServiceTermsInput = {
+  id?: string;
+  code: string;
+  projectId: string;
+  type: $Enums.SubscriptionTypeEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  billingDay: number;
+  taxStatus?: $Enums.TaxStatus;
+  startDate: Date | string;
+  endDate?: Date | string | null;
+  status?: $Enums.SubscriptionStatusEnum;
+  partnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutSubscriptionInput;
+};
+
+export type SubscriptionCreateOrConnectWithoutPartnerServiceTermsInput = {
+  where: Prisma.SubscriptionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutPartnerServiceTermsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+};
+
+export type SubscriptionUpsertWithoutPartnerServiceTermsInput = {
+  update: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutPartnerServiceTermsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutPartnerServiceTermsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutPartnerServiceTermsInput
+  >;
+  where?: Prisma.SubscriptionWhereInput;
+};
+
+export type SubscriptionUpdateToOneWithWhereWithoutPartnerServiceTermsInput = {
+  where?: Prisma.SubscriptionWhereInput;
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutPartnerServiceTermsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+};
+
+export type SubscriptionUpdateWithoutPartnerServiceTermsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumSubscriptionTypeEnumFieldUpdateOperationsInput | $Enums.SubscriptionTypeEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingDay?: Prisma.IntFieldUpdateOperationsInput | number;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?:
+    | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutSubscriptionsNestedInput;
+  partner?: Prisma.PartnerUpdateOneWithoutSubscriptionsNestedInput;
+  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutSubscriptionNestedInput;
+};
+
+export type SubscriptionUncheckedUpdateWithoutPartnerServiceTermsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumSubscriptionTypeEnumFieldUpdateOperationsInput | $Enums.SubscriptionTypeEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingDay?: Prisma.IntFieldUpdateOperationsInput | number;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?:
+    | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatusEnum;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionCreateManyProjectInput = {
@@ -1290,6 +1451,7 @@ export type SubscriptionUpdateWithoutProjectInput = {
   partner?: Prisma.PartnerUpdateOneWithoutSubscriptionsNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionUncheckedUpdateWithoutProjectInput = {
@@ -1314,6 +1476,7 @@ export type SubscriptionUncheckedUpdateWithoutProjectInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionUncheckedUpdateManyWithoutProjectInput = {
@@ -1375,6 +1538,7 @@ export type SubscriptionUpdateWithoutPartnerInput = {
   project?: Prisma.ProjectUpdateOneRequiredWithoutSubscriptionsNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionUncheckedUpdateWithoutPartnerInput = {
@@ -1399,6 +1563,7 @@ export type SubscriptionUncheckedUpdateWithoutPartnerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutSubscriptionNestedInput;
 };
 
 export type SubscriptionUncheckedUpdateManyWithoutPartnerInput = {
@@ -1430,6 +1595,7 @@ export type SubscriptionUncheckedUpdateManyWithoutPartnerInput = {
 export type SubscriptionCountOutputType = {
   invoices: number;
   partnerAccruals: number;
+  partnerServiceTerms: number;
 };
 
 export type SubscriptionCountOutputTypeSelect<
@@ -1437,6 +1603,7 @@ export type SubscriptionCountOutputTypeSelect<
 > = {
   invoices?: boolean | SubscriptionCountOutputTypeCountInvoicesArgs;
   partnerAccruals?: boolean | SubscriptionCountOutputTypeCountPartnerAccrualsArgs;
+  partnerServiceTerms?: boolean | SubscriptionCountOutputTypeCountPartnerServiceTermsArgs;
 };
 
 /**
@@ -1469,6 +1636,15 @@ export type SubscriptionCountOutputTypeCountPartnerAccrualsArgs<
   where?: Prisma.PartnerAccrualWhereInput;
 };
 
+/**
+ * SubscriptionCountOutputType without action
+ */
+export type SubscriptionCountOutputTypeCountPartnerServiceTermsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PartnerServiceTermWhereInput;
+};
+
 export type SubscriptionSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -1490,6 +1666,7 @@ export type SubscriptionSelect<
     partner?: boolean | Prisma.Subscription$partnerArgs<ExtArgs>;
     invoices?: boolean | Prisma.Subscription$invoicesArgs<ExtArgs>;
     partnerAccruals?: boolean | Prisma.Subscription$partnerAccrualsArgs<ExtArgs>;
+    partnerServiceTerms?: boolean | Prisma.Subscription$partnerServiceTermsArgs<ExtArgs>;
     _count?: boolean | Prisma.SubscriptionCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['subscription']
@@ -1582,6 +1759,7 @@ export type SubscriptionInclude<
   partner?: boolean | Prisma.Subscription$partnerArgs<ExtArgs>;
   invoices?: boolean | Prisma.Subscription$invoicesArgs<ExtArgs>;
   partnerAccruals?: boolean | Prisma.Subscription$partnerAccrualsArgs<ExtArgs>;
+  partnerServiceTerms?: boolean | Prisma.Subscription$partnerServiceTermsArgs<ExtArgs>;
   _count?: boolean | Prisma.SubscriptionCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type SubscriptionIncludeCreateManyAndReturn<
@@ -1606,6 +1784,7 @@ export type $SubscriptionPayload<
     partner: Prisma.$PartnerPayload<ExtArgs> | null;
     invoices: Prisma.$InvoicePayload<ExtArgs>[];
     partnerAccruals: Prisma.$PartnerAccrualPayload<ExtArgs>[];
+    partnerServiceTerms: Prisma.$PartnerServiceTermPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -2209,6 +2388,17 @@ export interface Prisma__SubscriptionClient<
       >
     | Null
   >;
+  partnerServiceTerms<T extends Prisma.Subscription$partnerServiceTermsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Subscription$partnerServiceTermsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PartnerServiceTermPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2760,6 +2950,34 @@ export type Subscription$partnerAccrualsArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.PartnerAccrualScalarFieldEnum | Prisma.PartnerAccrualScalarFieldEnum[];
+};
+
+/**
+ * Subscription.partnerServiceTerms
+ */
+export type Subscription$partnerServiceTermsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerServiceTerm
+   */
+  select?: Prisma.PartnerServiceTermSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PartnerServiceTerm
+   */
+  omit?: Prisma.PartnerServiceTermOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerServiceTermInclude<ExtArgs> | null;
+  where?: Prisma.PartnerServiceTermWhereInput;
+  orderBy?:
+    | Prisma.PartnerServiceTermOrderByWithRelationInput
+    | Prisma.PartnerServiceTermOrderByWithRelationInput[];
+  cursor?: Prisma.PartnerServiceTermWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.PartnerServiceTermScalarFieldEnum | Prisma.PartnerServiceTermScalarFieldEnum[];
 };
 
 /**

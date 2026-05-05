@@ -142,6 +142,63 @@ export class PartnersController {
     return this.partnersService.cancelPartnerPayoutBatch(id, batchId, body);
   }
 
+  @Get(':id/service-terms')
+  @ApiOperation({
+    summary: 'List outbound partner service terms (partner pays Neetrino)',
+  })
+  async listPartnerServiceTerms(@Param('id') id: string) {
+    return this.partnersService.listPartnerServiceTerms(id);
+  }
+
+  @Post(':id/service-terms')
+  @ApiOperation({
+    summary: 'Create outbound partner service terms case',
+  })
+  async createPartnerServiceTerm(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      clientContactId?: string | null;
+      clientCompanyId?: string | null;
+      projectId?: string | null;
+      serviceType: string;
+      paymentModel: string;
+      amount: number;
+      billingStartDate?: string;
+      subscriptionId?: string | null;
+      invoiceId?: string | null;
+      status?: string;
+      notes?: string;
+    },
+  ) {
+    return this.partnersService.createPartnerServiceTerm(id, body);
+  }
+
+  @Put(':id/service-terms/:termId')
+  @ApiOperation({
+    summary: 'Update outbound partner service terms case',
+  })
+  async updatePartnerServiceTerm(
+    @Param('id') id: string,
+    @Param('termId') termId: string,
+    @Body()
+    body: {
+      clientContactId?: string | null;
+      clientCompanyId?: string | null;
+      projectId?: string | null;
+      serviceType?: string;
+      paymentModel?: string;
+      amount?: number;
+      billingStartDate?: string | null;
+      subscriptionId?: string | null;
+      invoiceId?: string | null;
+      status?: string;
+      notes?: string;
+    },
+  ) {
+    return this.partnersService.updatePartnerServiceTerm(id, termId, body);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get partner by ID' })
   async findOne(@Param('id') id: string) {
