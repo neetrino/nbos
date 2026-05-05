@@ -98,6 +98,16 @@ export class PayrollRunsController {
     return this.payrollRunsService.create(body, user.id);
   }
 
+  @Post(':id/bonus-releases/attach')
+  @ApiOperation({
+    summary: 'Attach approved bonus releases to salary lines (DRAFT/REVIEW run only)',
+    description:
+      'Each release must be APPROVED; optional `payrollRunId` on the release must match this run when set. Updates `SalaryLine.bonusesTotal` and sets release status to INCLUDED_IN_PAYROLL.',
+  })
+  async attachBonusReleases(@Param('id') id: string, @Body() body: { releaseIds: string[] }) {
+    return this.payrollRunsService.attachBonusReleases(id, body);
+  }
+
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update payroll run status (NBOS workflow)' })
   async updateStatus(

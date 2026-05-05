@@ -24,6 +24,7 @@ import {
 import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
 import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
 import { computePayrollRunListStats, type PayrollRunStatsResult } from './payroll-run-list-stats';
+import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
 
@@ -264,5 +265,18 @@ export class PayrollRunsService {
     });
 
     return this.findById(id);
+  }
+
+  /**
+   * Applies approved `BonusRelease` rows to salary lines for a draft/review run (NBOS Included In Payroll).
+   */
+  async attachBonusReleases(payrollRunId: string, body: { releaseIds: string[] }) {
+    await this.prisma.$transaction(async (tx) => {
+      await attachBonusReleasesToPayrollRun(tx, {
+        payrollRunId,
+        releaseIds: body.releaseIds,
+      });
+    });
+    return this.findById(payrollRunId);
   }
 }

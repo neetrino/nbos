@@ -2,7 +2,10 @@ import { Decimal, type PrismaClient, type SalaryLineStatusEnum } from '@nbos/dat
 import { sumExpensePaymentAmounts } from '../expenses/expense-payment-rollup';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 
-function resolveSalaryLineStatus(totalPayable: Decimal, paid: Decimal): SalaryLineStatusEnum {
+export function resolveSalaryLineStatus(
+  totalPayable: Decimal,
+  paid: Decimal,
+): SalaryLineStatusEnum {
   if (totalPayable.lte(0)) {
     return 'PENDING';
   }
