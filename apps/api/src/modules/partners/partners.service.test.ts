@@ -225,6 +225,25 @@ describe('PartnersService', () => {
     });
   });
 
+  describe('getPartnerAccrualBalance', () => {
+    it('throws when partner is missing', async () => {
+      prisma.partner.findUnique.mockResolvedValue(null);
+      await expect(service.getPartnerAccrualBalance('missing')).rejects.toThrow(NotFoundException);
+    });
+
+    it('returns roll-up from groupBy', async () => {
+      prisma.partner.findUnique.mockResolvedValue(mockPartnerRow());
+      prisma.partnerAccrual.groupBy.mockResolvedValue([
+        { status: 'ELIGIBLE', _sum: { amount: new Decimal('10') } },
+      ]);
+
+      const r = await service.getPartnerAccrualBalance('1');
+
+      expect(r.unpaidTotal).toBe('10.00');
+      expect(r.byStatus.ELIGIBLE).toBe('10.00');
+    });
+  });
+
   describe('getStats', () => {
     it('should return aggregated stats', async () => {
       prisma.partner.count.mockResolvedValue(10);

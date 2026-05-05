@@ -4,7 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { partnersApi, type PartnerAccrualListItem } from '@/lib/api/partners';
+import {
+  partnersApi,
+  type PartnerAccrualBalance,
+  type PartnerAccrualListItem,
+} from '@/lib/api/partners';
 
 function formatDateTime(iso: string): string {
   try {
@@ -24,6 +28,7 @@ function statusLabel(status: string): string {
 export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: number }) {
   const { partnerId, reloadKey = 0 } = props;
   const [rows, setRows] = useState<PartnerAccrualListItem[]>([]);
+  const [balance, setBalance] = useState<PartnerAccrualBalance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,10 +36,15 @@ export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: numb
     setLoading(true);
     setError(null);
     try {
-      const data = await partnersApi.listAccruals(partnerId);
-      setRows(data);
+      const [accrualRows, balanceRow] = await Promise.all([
+        partnersApi.listAccruals(partnerId),
+        partnersApi.getAccrualBalance(partnerId),
+      ]);
+      setRows(accrualRows);
+      setBalance(balanceRow);
     } catch (caught) {
       setRows([]);
+      setBalance(null);
       setError(getApiErrorMessage(caught, 'Accruals could not be loaded.'));
     } finally {
       setLoading(false);
@@ -79,9 +89,30 @@ export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: numb
         <h2 className="text-foreground text-sm font-semibold">Inbound accruals</h2>
       </div>
       <p className="text-muted-foreground mt-1 text-xs">
-        Referral commission accruals from client payments (classic when delivery is done;
-        subscription accruals will appear here as they are implemented).
+        Referral commission from client cash: classic after delivery and full payment; subscription
+        on each paid subscription invoice.
       </p>
+
+      {balance ? (
+        <dl className="border-border bg-muted/30 mt-4 grid grid-cols-2 gap-2 rounded-lg border p-3 text-sm sm:grid-cols-4">
+          <div>
+            <dt className="text-muted-foreground text-xs">Outstanding</dt>
+            <dd className="font-medium tabular-nums">{balance.unpaidTotal}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground text-xs">Paid (accruals)</dt>
+            <dd className="font-medium tabular-nums">{balance.paidTotal}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground text-xs">Eligible</dt>
+            <dd className="tabular-nums">{balance.byStatus.ELIGIBLE}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground text-xs">In batch</dt>
+            <dd className="tabular-nums">{balance.byStatus.IN_BATCH}</dd>
+          </div>
+        </dl>
+      ) : null}
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground mt-4 text-sm">

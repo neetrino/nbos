@@ -95,6 +95,14 @@ export class PartnersController {
     return this.partnersService.listPartnerAccruals(id);
   }
 
+  @Get(':id/balance')
+  @ApiOperation({
+    summary: 'Partner inbound accrual balance by status (unpaid vs paid roll-up)',
+  })
+  async getPartnerAccrualBalance(@Param('id') id: string) {
+    return this.partnersService.getPartnerAccrualBalance(id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get partner by ID' })
   async findOne(@Param('id') id: string) {

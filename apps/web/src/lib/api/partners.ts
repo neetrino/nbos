@@ -47,6 +47,19 @@ export interface PutPartnerCommissionPolicyBody {
   rows: Array<{ dealType: PartnerCommissionDealType; percent: number | null }>;
 }
 
+/** `GET /api/partners/:id/balance` — sums by `PartnerAccrual.status`. */
+export interface PartnerAccrualBalance {
+  byStatus: {
+    ACCRUED: string;
+    ELIGIBLE: string;
+    IN_BATCH: string;
+    PAID: string;
+    CANCELLED: string;
+  };
+  unpaidTotal: string;
+  paidTotal: string;
+}
+
 /** Row from `GET /api/partners/:id/accruals` (inbound referral accruals). */
 export interface PartnerAccrualListItem {
   id: string;
@@ -144,6 +157,11 @@ export const partnersApi = {
 
   async listAccruals(partnerId: string): Promise<PartnerAccrualListItem[]> {
     const resp = await api.get<PartnerAccrualListItem[]>(`/api/partners/${partnerId}/accruals`);
+    return resp.data;
+  },
+
+  async getAccrualBalance(partnerId: string): Promise<PartnerAccrualBalance> {
+    const resp = await api.get<PartnerAccrualBalance>(`/api/partners/${partnerId}/balance`);
     return resp.data;
   },
 };

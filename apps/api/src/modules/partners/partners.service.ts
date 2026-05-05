@@ -17,6 +17,10 @@ import {
   type CommissionPolicyRowInput,
   type PartnerCommissionPolicyViewDto,
 } from './partner-commission-policy.ops';
+import {
+  loadPartnerAccrualBalance,
+  type PartnerAccrualBalanceDto,
+} from './partner-accrual-balance.ops';
 
 interface PartnerQueryParams {
   page?: number;
@@ -184,7 +188,13 @@ export class PartnersService {
     return applyPartnerCommissionPolicy(this.prisma, partnerId, body.rows);
   }
 
-  /** NBOS § Partner Payouts — inbound accruals list (classic + future subscription rows). */
+  /** NBOS § Partner Payouts — roll-up by accrual status (payout batch not required for read). */
+  async getPartnerAccrualBalance(partnerId: string): Promise<PartnerAccrualBalanceDto> {
+    await this.findById(partnerId);
+    return loadPartnerAccrualBalance(this.prisma, partnerId);
+  }
+
+  /** NBOS § Partner Payouts — inbound accruals list (classic + subscription rows). */
   async listPartnerAccruals(partnerId: string) {
     await this.findById(partnerId);
     const rows = await this.prisma.partnerAccrual.findMany({
