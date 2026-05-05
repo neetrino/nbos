@@ -389,6 +389,8 @@ export const ModelName = {
   Order: 'Order',
   Invoice: 'Invoice',
   Payment: 'Payment',
+  FinancePostingPeriod: 'FinancePostingPeriod',
+  OperationalJournalEntry: 'OperationalJournalEntry',
   Subscription: 'Subscription',
   ExpensePlan: 'ExpensePlan',
   Expense: 'Expense',
@@ -497,6 +499,8 @@ export type TypeMap<
       | 'order'
       | 'invoice'
       | 'payment'
+      | 'financePostingPeriod'
+      | 'operationalJournalEntry'
       | 'subscription'
       | 'expensePlan'
       | 'expense'
@@ -1615,6 +1619,158 @@ export type TypeMap<
         count: {
           args: Prisma.PaymentCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.PaymentCountAggregateOutputType> | number;
+        };
+      };
+    };
+    FinancePostingPeriod: {
+      payload: Prisma.$FinancePostingPeriodPayload<ExtArgs>;
+      fields: Prisma.FinancePostingPeriodFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.FinancePostingPeriodFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.FinancePostingPeriodFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>;
+        };
+        findFirst: {
+          args: Prisma.FinancePostingPeriodFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.FinancePostingPeriodFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>;
+        };
+        findMany: {
+          args: Prisma.FinancePostingPeriodFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>[];
+        };
+        create: {
+          args: Prisma.FinancePostingPeriodCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>;
+        };
+        createMany: {
+          args: Prisma.FinancePostingPeriodCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.FinancePostingPeriodCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>[];
+        };
+        delete: {
+          args: Prisma.FinancePostingPeriodDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>;
+        };
+        update: {
+          args: Prisma.FinancePostingPeriodUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>;
+        };
+        deleteMany: {
+          args: Prisma.FinancePostingPeriodDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.FinancePostingPeriodUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.FinancePostingPeriodUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>[];
+        };
+        upsert: {
+          args: Prisma.FinancePostingPeriodUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FinancePostingPeriodPayload>;
+        };
+        aggregate: {
+          args: Prisma.FinancePostingPeriodAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFinancePostingPeriod>;
+        };
+        groupBy: {
+          args: Prisma.FinancePostingPeriodGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.FinancePostingPeriodGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.FinancePostingPeriodCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.FinancePostingPeriodCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    OperationalJournalEntry: {
+      payload: Prisma.$OperationalJournalEntryPayload<ExtArgs>;
+      fields: Prisma.OperationalJournalEntryFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.OperationalJournalEntryFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.OperationalJournalEntryFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>;
+        };
+        findFirst: {
+          args: Prisma.OperationalJournalEntryFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.OperationalJournalEntryFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>;
+        };
+        findMany: {
+          args: Prisma.OperationalJournalEntryFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>[];
+        };
+        create: {
+          args: Prisma.OperationalJournalEntryCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>;
+        };
+        createMany: {
+          args: Prisma.OperationalJournalEntryCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.OperationalJournalEntryCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>[];
+        };
+        delete: {
+          args: Prisma.OperationalJournalEntryDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>;
+        };
+        update: {
+          args: Prisma.OperationalJournalEntryUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>;
+        };
+        deleteMany: {
+          args: Prisma.OperationalJournalEntryDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.OperationalJournalEntryUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.OperationalJournalEntryUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>[];
+        };
+        upsert: {
+          args: Prisma.OperationalJournalEntryUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OperationalJournalEntryPayload>;
+        };
+        aggregate: {
+          args: Prisma.OperationalJournalEntryAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOperationalJournalEntry>;
+        };
+        groupBy: {
+          args: Prisma.OperationalJournalEntryGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.OperationalJournalEntryGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.OperationalJournalEntryCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.OperationalJournalEntryCountAggregateOutputType>
+            | number;
         };
       };
     };
@@ -7529,6 +7685,48 @@ export const PaymentScalarFieldEnum = {
 export type PaymentScalarFieldEnum =
   (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum];
 
+export const FinancePostingPeriodScalarFieldEnum = {
+  id: 'id',
+  monthKey: 'monthKey',
+  status: 'status',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  closedAt: 'closedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type FinancePostingPeriodScalarFieldEnum =
+  (typeof FinancePostingPeriodScalarFieldEnum)[keyof typeof FinancePostingPeriodScalarFieldEnum];
+
+export const OperationalJournalEntryScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  currency: 'currency',
+  fxRateApplied: 'fxRateApplied',
+  functionalAmount: 'functionalAmount',
+  bookedAt: 'bookedAt',
+  recognitionBasis: 'recognitionBasis',
+  postingPeriodId: 'postingPeriodId',
+  idempotencyKey: 'idempotencyKey',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  description: 'description',
+  status: 'status',
+  companyId: 'companyId',
+  projectId: 'projectId',
+  productId: 'productId',
+  orderId: 'orderId',
+  employeeId: 'employeeId',
+  departmentId: 'departmentId',
+  partnerId: 'partnerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type OperationalJournalEntryScalarFieldEnum =
+  (typeof OperationalJournalEntryScalarFieldEnum)[keyof typeof OperationalJournalEntryScalarFieldEnum];
+
 export const SubscriptionScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -9291,6 +9489,70 @@ export type ListEnumInvoiceStatusEnumFieldRefInput<$PrismaModel> = FieldRefInput
 >;
 
 /**
+ * Reference to a field of type 'FinancePostingPeriodStatusEnum'
+ */
+export type EnumFinancePostingPeriodStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FinancePostingPeriodStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'FinancePostingPeriodStatusEnum[]'
+ */
+export type ListEnumFinancePostingPeriodStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'FinancePostingPeriodStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'JournalRecognitionBasisEnum'
+ */
+export type EnumJournalRecognitionBasisEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'JournalRecognitionBasisEnum'
+>;
+
+/**
+ * Reference to a field of type 'JournalRecognitionBasisEnum[]'
+ */
+export type ListEnumJournalRecognitionBasisEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'JournalRecognitionBasisEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'JournalSourceTypeEnum'
+ */
+export type EnumJournalSourceTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'JournalSourceTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'JournalSourceTypeEnum[]'
+ */
+export type ListEnumJournalSourceTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'JournalSourceTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'JournalLineStatusEnum'
+ */
+export type EnumJournalLineStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'JournalLineStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'JournalLineStatusEnum[]'
+ */
+export type ListEnumJournalLineStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'JournalLineStatusEnum[]'
+>;
+
+/**
  * Reference to a field of type 'SubscriptionTypeEnum'
  */
 export type EnumSubscriptionTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -10707,6 +10969,8 @@ export type GlobalOmitConfig = {
   order?: Prisma.OrderOmit;
   invoice?: Prisma.InvoiceOmit;
   payment?: Prisma.PaymentOmit;
+  financePostingPeriod?: Prisma.FinancePostingPeriodOmit;
+  operationalJournalEntry?: Prisma.OperationalJournalEntryOmit;
   subscription?: Prisma.SubscriptionOmit;
   expensePlan?: Prisma.ExpensePlanOmit;
   expense?: Prisma.ExpenseOmit;

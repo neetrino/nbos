@@ -87,6 +87,16 @@ export type Invoice = Prisma.InvoiceModel;
  */
 export type Payment = Prisma.PaymentModel;
 /**
+ * Model FinancePostingPeriod
+ *
+ */
+export type FinancePostingPeriod = Prisma.FinancePostingPeriodModel;
+/**
+ * Model OperationalJournalEntry
+ *
+ */
+export type OperationalJournalEntry = Prisma.OperationalJournalEntryModel;
+/**
  * Model Subscription
  *
  */

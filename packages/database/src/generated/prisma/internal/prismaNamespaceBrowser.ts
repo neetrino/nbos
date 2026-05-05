@@ -62,6 +62,8 @@ export const ModelName = {
   Order: 'Order',
   Invoice: 'Invoice',
   Payment: 'Payment',
+  FinancePostingPeriod: 'FinancePostingPeriod',
+  OperationalJournalEntry: 'OperationalJournalEntry',
   Subscription: 'Subscription',
   ExpensePlan: 'ExpensePlan',
   Expense: 'Expense',
@@ -449,6 +451,48 @@ export const PaymentScalarFieldEnum = {
 
 export type PaymentScalarFieldEnum =
   (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum];
+
+export const FinancePostingPeriodScalarFieldEnum = {
+  id: 'id',
+  monthKey: 'monthKey',
+  status: 'status',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  closedAt: 'closedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type FinancePostingPeriodScalarFieldEnum =
+  (typeof FinancePostingPeriodScalarFieldEnum)[keyof typeof FinancePostingPeriodScalarFieldEnum];
+
+export const OperationalJournalEntryScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  currency: 'currency',
+  fxRateApplied: 'fxRateApplied',
+  functionalAmount: 'functionalAmount',
+  bookedAt: 'bookedAt',
+  recognitionBasis: 'recognitionBasis',
+  postingPeriodId: 'postingPeriodId',
+  idempotencyKey: 'idempotencyKey',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  description: 'description',
+  status: 'status',
+  companyId: 'companyId',
+  projectId: 'projectId',
+  productId: 'productId',
+  orderId: 'orderId',
+  employeeId: 'employeeId',
+  departmentId: 'departmentId',
+  partnerId: 'partnerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type OperationalJournalEntryScalarFieldEnum =
+  (typeof OperationalJournalEntryScalarFieldEnum)[keyof typeof OperationalJournalEntryScalarFieldEnum];
 
 export const SubscriptionScalarFieldEnum = {
   id: 'id',

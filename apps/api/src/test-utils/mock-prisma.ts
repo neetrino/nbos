@@ -72,6 +72,8 @@ export function createMockPrisma() {
     salesBonusPolicy: createModelMock(),
     productBonusPool: createModelMock(),
     bonusRelease: createModelMock(),
+    financePostingPeriod: createModelMock(),
+    operationalJournalEntry: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
     $transaction: vi.fn(),

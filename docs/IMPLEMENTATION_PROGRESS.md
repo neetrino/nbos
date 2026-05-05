@@ -95,7 +95,7 @@
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
 - 🟢 [x] Clients: сверка `05-Clients-Process-Flow` с UI/API, закрыть разрывы — M → edit flows используют `PUT /api/clients/contacts/:id` и `PUT /api/clients/companies/:id` вместо создания дублей; API/UI фильтр Contact Type (`contactType`) мапится на runtime `role`; Companies `type` / `taxStatus` фильтры работают в API; неперсистентный Contact Source убран из Contacts UI
-- Finance: **Operational Journal**, period close, связь агрегатов с журналом — L
+- 🟢 [x] Finance: **Operational Journal**, period close, связь агрегатов с журналом — L → `finance_posting_periods` + `operational_journal_entries`; append-only cash lines for `Payment` with idempotency key `payment:<id>`; closed posting periods reject new journal posts; `GET /api/finance/journal/cash-summary` exposes the journal-backed cash aggregate; existing Finance reports stay on legacy sources until backfill/cutover
 - Finance: перестройка UI вокруг Invoice Card / планов расходов / досок канона — L
 - Finance: summary + scheduler без «старых» семантик статусов — M
 - Finance: уведомления/напоминания по правилам invoice card, не по legacy board — M

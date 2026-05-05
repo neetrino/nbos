@@ -21,6 +21,8 @@ export type * from './models/Deal';
 export type * from './models/Order';
 export type * from './models/Invoice';
 export type * from './models/Payment';
+export type * from './models/FinancePostingPeriod';
+export type * from './models/OperationalJournalEntry';
 export type * from './models/Subscription';
 export type * from './models/ExpensePlan';
 export type * from './models/Expense';

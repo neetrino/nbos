@@ -10,6 +10,7 @@ import {
   resolveOrderStatus,
   sumAmounts,
 } from '../finance-status.utils';
+import { OperationalJournalService } from '../journal/operational-journal.service';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -36,6 +37,7 @@ export class PaymentsService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly salesBonusAccrual: SalesBonusAccrualService,
     private readonly notifications: NotificationService,
+    private readonly operationalJournal: OperationalJournalService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -135,11 +137,15 @@ export class PaymentsService {
       where: { id: data.invoiceId },
       select: {
         id: true,
+        code: true,
         orderId: true,
+        projectId: true,
+        companyId: true,
         amount: true,
         status: true,
         dueDate: true,
         payments: { select: { amount: true } },
+        order: { select: { productId: true } },
       },
     });
     if (!invoice) throw new NotFoundException(`Invoice ${data.invoiceId} not found`);
@@ -162,15 +168,27 @@ export class PaymentsService {
       );
     }
 
+    const paymentDate = new Date(data.paymentDate);
     const created = await this.prisma.payment.create({
       data: {
         invoiceId: data.invoiceId,
         amount: data.amount,
-        paymentDate: new Date(data.paymentDate),
+        paymentDate,
         paymentMethod: data.paymentMethod,
         confirmedBy: data.confirmedBy,
         notes: data.notes,
       },
+    });
+
+    await this.operationalJournal.appendCashPaymentLine({
+      paymentId: created.id,
+      invoiceCode: invoice.code,
+      amount: data.amount,
+      bookedAt: paymentDate,
+      companyId: invoice.companyId,
+      projectId: invoice.projectId,
+      productId: invoice.order?.productId,
+      orderId: invoice.orderId,
     });
 
     await this.syncInvoiceStatus(data.invoiceId);

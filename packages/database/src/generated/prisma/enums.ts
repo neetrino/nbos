@@ -261,6 +261,43 @@ export const InvoiceStatusEnum = {
 
 export type InvoiceStatusEnum = (typeof InvoiceStatusEnum)[keyof typeof InvoiceStatusEnum];
 
+export const FinancePostingPeriodStatusEnum = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+} as const;
+
+export type FinancePostingPeriodStatusEnum =
+  (typeof FinancePostingPeriodStatusEnum)[keyof typeof FinancePostingPeriodStatusEnum];
+
+export const JournalRecognitionBasisEnum = {
+  ACCRUAL: 'ACCRUAL',
+  CASH: 'CASH',
+} as const;
+
+export type JournalRecognitionBasisEnum =
+  (typeof JournalRecognitionBasisEnum)[keyof typeof JournalRecognitionBasisEnum];
+
+export const JournalSourceTypeEnum = {
+  PAYMENT: 'PAYMENT',
+  EXPENSE_PAYMENT: 'EXPENSE_PAYMENT',
+  INVOICE_CARD: 'INVOICE_CARD',
+  EXPENSE_CARD: 'EXPENSE_CARD',
+  PAYROLL_RUN: 'PAYROLL_RUN',
+  SALARY_LINE: 'SALARY_LINE',
+  MANUAL_ADJUSTMENT: 'MANUAL_ADJUSTMENT',
+} as const;
+
+export type JournalSourceTypeEnum =
+  (typeof JournalSourceTypeEnum)[keyof typeof JournalSourceTypeEnum];
+
+export const JournalLineStatusEnum = {
+  ACTIVE: 'ACTIVE',
+  REVERSED: 'REVERSED',
+} as const;
+
+export type JournalLineStatusEnum =
+  (typeof JournalLineStatusEnum)[keyof typeof JournalLineStatusEnum];
+
 export const SubscriptionTypeEnum = {
   MAINTENANCE_ONLY: 'MAINTENANCE_ONLY',
   DEV_AND_MAINTENANCE: 'DEV_AND_MAINTENANCE',

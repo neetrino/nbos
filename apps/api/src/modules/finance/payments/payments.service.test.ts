@@ -45,13 +45,20 @@ describe('PaymentsService', () => {
   let service: PaymentsService;
   let prisma: MockPrisma;
   const salesBonusAccrual = { onInvoicePaid: vi.fn().mockResolvedValue(undefined) };
+  const operationalJournal = { appendCashPaymentLine: vi.fn().mockResolvedValue(undefined) };
   let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     salesBonusAccrual.onInvoicePaid.mockClear();
+    operationalJournal.appendCashPaymentLine.mockClear();
     notifications = { create: vi.fn() } as unknown as NotificationService;
-    service = new PaymentsService(prisma as never, salesBonusAccrual as never, notifications);
+    service = new PaymentsService(
+      prisma as never,
+      salesBonusAccrual as never,
+      notifications,
+      operationalJournal as never,
+    );
   });
 
   describe('findAll', () => {
@@ -122,11 +129,15 @@ describe('PaymentsService', () => {
       prisma.invoice.findUnique
         .mockResolvedValueOnce({
           id: 'inv1',
+          code: 'INV-1',
           orderId: 'ord1',
+          projectId: 'proj-1',
+          companyId: 'company-1',
           amount: 100000,
           status: 'WAITING',
           dueDate: new Date('2026-05-20'),
           payments: [],
+          order: { productId: 'product-1' },
         })
         .mockResolvedValueOnce({
           amount: 100000,
@@ -154,6 +165,16 @@ describe('PaymentsService', () => {
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'ord1' },
         data: { status: 'PARTIALLY_PAID' },
+      });
+      expect(operationalJournal.appendCashPaymentLine).toHaveBeenCalledWith({
+        paymentId: '1',
+        invoiceCode: 'INV-1',
+        amount: 50000,
+        bookedAt: new Date('2026-03-11'),
+        companyId: 'company-1',
+        projectId: 'proj-1',
+        productId: 'product-1',
+        orderId: 'ord1',
       });
       expect(salesBonusAccrual.onInvoicePaid).not.toHaveBeenCalled();
     });
