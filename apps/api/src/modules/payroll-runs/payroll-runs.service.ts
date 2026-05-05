@@ -25,6 +25,8 @@ import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
 import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
 import { computePayrollRunListStats, type PayrollRunStatsResult } from './payroll-run-list-stats';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
+import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
+import { refreshBonusEntryStatusesForReleases } from './payroll-run-bonus-release-side-effects';
 
 const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
 
@@ -267,16 +269,29 @@ export class PayrollRunsService {
     return this.findById(id);
   }
 
-  /**
-   * Applies approved `BonusRelease` rows to salary lines for a draft/review run (NBOS Included In Payroll).
-   */
+  /** NBOS: attach APPROVED bonus releases to this run’s salary lines (DRAFT/REVIEW). */
   async attachBonusReleases(payrollRunId: string, body: { releaseIds: string[] }) {
+    const uniqueIds = [...new Set(body.releaseIds)];
     await this.prisma.$transaction(async (tx) => {
       await attachBonusReleasesToPayrollRun(tx, {
         payrollRunId,
-        releaseIds: body.releaseIds,
+        releaseIds: uniqueIds,
       });
     });
+    await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
+    return this.findById(payrollRunId);
+  }
+
+  /** NBOS: detach INCLUDED_IN_PAYROLL releases back to APPROVED (DRAFT/REVIEW). */
+  async detachBonusReleases(payrollRunId: string, body: { releaseIds: string[] }) {
+    const uniqueIds = [...new Set(body.releaseIds)];
+    await this.prisma.$transaction(async (tx) => {
+      await detachBonusReleasesFromPayrollRun(tx, {
+        payrollRunId,
+        releaseIds: uniqueIds,
+      });
+    });
+    await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
     return this.findById(payrollRunId);
   }
 }

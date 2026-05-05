@@ -3,6 +3,7 @@ import { BONUS_POOL_ZERO, decimalFrom } from './bonus-pool-decimal';
 import { tryCreateProportionalAutoReleases } from './product-bonus-pool-auto-release';
 import { sumPaymentsReceivedForOrder } from './order-received-payments-sum';
 import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
+import { syncBonusEntryStatusesForOrder } from './bonus-entry-status-sync';
 
 export { decimalFrom } from './bonus-pool-decimal';
 
@@ -102,6 +103,8 @@ export async function syncProductBonusPoolForOrder(
       status: poolStatus,
     },
   });
+
+  await syncBonusEntryStatusesForOrder(prisma, orderId);
 }
 
 function derivePoolStatus(

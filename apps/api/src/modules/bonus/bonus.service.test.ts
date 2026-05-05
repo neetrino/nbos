@@ -10,6 +10,7 @@ describe('BonusService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.bonusEntry.findMany.mockResolvedValue([]);
     service = new BonusService(prisma as never);
   });
 

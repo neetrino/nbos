@@ -9,6 +9,7 @@ describe('SalesBonusAccrualService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.bonusEntry.findMany.mockResolvedValue([]);
     service = new SalesBonusAccrualService(prisma as never);
   });
 

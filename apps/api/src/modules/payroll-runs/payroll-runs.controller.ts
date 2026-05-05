@@ -108,6 +108,16 @@ export class PayrollRunsController {
     return this.payrollRunsService.attachBonusReleases(id, body);
   }
 
+  @Post(':id/bonus-releases/detach')
+  @ApiOperation({
+    summary: 'Detach INCLUDED_IN_PAYROLL bonus releases from salary lines (DRAFT/REVIEW run only)',
+    description:
+      'Subtracts amounts from `SalaryLine.bonusesTotal`, sets each release back to APPROVED, and clears `payrollRunId`.',
+  })
+  async detachBonusReleases(@Param('id') id: string, @Body() body: { releaseIds: string[] }) {
+    return this.payrollRunsService.detachBonusReleases(id, body);
+  }
+
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update payroll run status (NBOS workflow)' })
   async updateStatus(
