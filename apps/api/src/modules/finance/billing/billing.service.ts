@@ -1,11 +1,14 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { subscriptionBillingPausedForLateDelivery } from './billing-subscription-delivery-pause';
 
-interface BillingRunResult {
+export interface BillingRunResult {
   generatedInvoices: number;
   totalAmount: number;
   errors: string[];
+  /** Monthly dev subscription invoices not created because delivery missed `Product`/`Extension` deadline. */
+  skippedLateDelivery: { subscriptionCode: string; projectCode: string }[];
 }
 
 @Injectable()
@@ -35,7 +38,27 @@ export class BillingService {
         OR: [{ endDate: null }, { endDate: { gte: now } }],
       },
       include: {
-        project: { select: { id: true, code: true, name: true } },
+        project: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            products: {
+              select: {
+                deadline: true,
+                status: true,
+                deliveryResolution: true,
+                extensions: {
+                  select: {
+                    deadline: true,
+                    status: true,
+                    deliveryResolution: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         partner: { select: { id: true } },
       },
     });
@@ -45,9 +68,27 @@ export class BillingService {
     let generatedInvoices = 0;
     let totalAmount = 0;
     const errors: string[] = [];
+    const skippedLateDelivery: { subscriptionCode: string; projectCode: string }[] = [];
 
     for (const sub of subscriptions) {
       try {
+        if (
+          subscriptionBillingPausedForLateDelivery({
+            subscriptionType: sub.type,
+            products: sub.project.products,
+            billingDate: now,
+          })
+        ) {
+          skippedLateDelivery.push({
+            subscriptionCode: sub.code,
+            projectCode: sub.project.code,
+          });
+          this.logger.log(
+            `Skipping subscription ${sub.code}: development billing pause (delivery past deadline, undelivered)`,
+          );
+          continue;
+        }
+
         const existing = await this.prisma.invoice.findFirst({
           where: {
             subscriptionId: sub.id,
@@ -85,7 +126,7 @@ export class BillingService {
       }
     }
 
-    return { generatedInvoices, totalAmount, errors };
+    return { generatedInvoices, totalAmount, errors, skippedLateDelivery };
   }
 
   /**

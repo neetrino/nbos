@@ -9,6 +9,7 @@ function createMockBillingService(): Partial<BillingService> {
       generatedInvoices: 3,
       totalAmount: 15000,
       errors: [],
+      skippedLateDelivery: [],
     }),
     runMonthlyExpenses: vi.fn().mockResolvedValue({ generated: 2 }),
   };

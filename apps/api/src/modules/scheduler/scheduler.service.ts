@@ -26,8 +26,12 @@ export class SchedulerService {
   async runBilling() {
     this.logger.log('Scheduler: running monthly billing');
     const result = await this.billingService.runMonthlyBilling();
+    const skipNote =
+      result.skippedLateDelivery.length > 0
+        ? `; skipped (late delivery): ${result.skippedLateDelivery.length}`
+        : '';
     this.logger.log(
-      `Billing complete: ${result.generatedInvoices} invoices, $${result.totalAmount}`,
+      `Billing complete: ${result.generatedInvoices} invoices, $${result.totalAmount}${skipNote}`,
     );
     return result;
   }
