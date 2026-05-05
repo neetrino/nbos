@@ -115,6 +115,6 @@ Deal.status = Deal Won
 
 ---
 
-## 8. Создание Deal без Lead (бэклог)
+## 8. Создание Deal без Lead
 
-В каноне выше основной вход — **Lead (SQL) → Deal**. Отдельный сценарий **Deal без предшествующего Lead** зафиксирован в `docs/IMPLEMENTATION_PROGRESS.md` (блок 2) как задача на реализацию; после появления в каноне явного правила эта строка будет дополнена ссылкой на подраздел CRM.
+Основной вход остаётся **Lead (SQL) → Deal**. Дополнительно разрешён **прямой** сценарий: сделка создаётся без `leadId`, с обязательным контактом (`contactId`), именем сделки, блоком атрибуции **From / Where** (как у лида), аудитом `DEAL_CREATED` при наличии пользователя в запросе. Реализация: `POST /api/crm/deals`, `DealsService.create` + `deal-create-validation.ts`, UI — `CreateDealDialog` без `prefill.leadId`.

@@ -15,6 +15,7 @@ import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
 import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
+import { validateDealCreate } from './deal-create-validation';
 
 @Injectable()
 export class DealsService {
@@ -93,7 +94,8 @@ export class DealsService {
     return this.attachHandoffReferences(deal);
   }
 
-  async create(data: CreateDealDto) {
+  async create(data: CreateDealDto, meta: { actorId?: string } = {}) {
+    await validateDealCreate(this.prisma, data);
     const code = await this.generateCode();
     const deal = await this.prisma.deal.create({
       data: {
@@ -131,6 +133,19 @@ export class DealsService {
       },
       include: dealCreateInclude,
     });
+    if (meta.actorId) {
+      await this.auditService.log({
+        entityType: 'DEAL',
+        entityId: deal.id,
+        action: 'DEAL_CREATED',
+        userId: meta.actorId,
+        changes: {
+          code: deal.code,
+          withoutPriorLead: !data.leadId?.trim(),
+          type: data.type,
+        },
+      });
+    }
     return this.attachHandoffReferences(deal);
   }
 

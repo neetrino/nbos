@@ -64,8 +64,9 @@ export class DealsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create a new deal' })
+  @ApiOperation({ summary: 'Create a new deal (with or without prior lead)' })
   async create(
+    @CurrentUser() user: CurrentUserPayload | undefined,
     @Body()
     body: {
       name?: string;
@@ -95,7 +96,7 @@ export class DealsController {
       maintenanceStartAt?: string | null;
     },
   ) {
-    return this.dealsService.create(body);
+    return this.dealsService.create(body, { actorId: user?.id });
   }
 
   @Put(':id')

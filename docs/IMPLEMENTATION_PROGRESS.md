@@ -76,7 +76,7 @@
 
 - [x] Сводная таблица переходов Lead → Deal → Order → Project в одном каноническом документе — M → `docs/NBOS/03-Business-Logic/00-Lead-Deal-Order-Project-Transition-Matrix.md`
 - [x] Пауза/штрафы подписки при задержке сдачи — правила в каноне и в runtime — M → `04-Subscription-Billing-Logic.md` § пауза; `billing-subscription-delivery-pause.ts` + `BillingService.runMonthlyBilling`
-- [ ] Создание **Deal без Lead** — backend, UI, валидация, аудит — M
+- [x] Создание **Deal без Lead** — backend, UI, валидация, аудит — M → `deal-create-validation.ts`, `DealsService.create` + audit `DEAL_CREATED`, `CreateDealDialog`, матрица §8
 - [ ] Воронка Lead: статус/колонка **On Hold** после New — M
 - [ ] Поле «название обращения = продукт/услуга» на Lead — S
 - [ ] Двухуровневая атрибуция (верхний канал + зависимый список) + справочники в Marketing Settings — L

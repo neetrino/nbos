@@ -165,18 +165,99 @@ describe('DealsService', () => {
   });
 
   describe('create', () => {
-    it('generates code and creates deal', async () => {
+    it('generates code and creates direct deal with audit', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
       prisma.deal.findFirst.mockResolvedValue(null);
-      prisma.deal.create.mockResolvedValue({ id: '1', code: 'D-2026-0001' });
-
-      const result = await service.create({
-        contactId: 'c-1',
-        type: 'NEW_PROJECT',
-        paymentType: 'MONTHLY',
-        sellerId: 's-1',
+      prisma.deal.create.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0001',
+        projectId: null,
+        type: 'PRODUCT',
       });
 
+      const result = await service.create(
+        {
+          contactId: 'c-1',
+          type: 'PRODUCT',
+          paymentType: 'CLASSIC',
+          sellerId: 's-1',
+          name: 'Direct client',
+          source: 'SALES',
+          sourceDetail: 'COLD_CALL',
+        },
+        { actorId: 'user-1' },
+      );
+
       expect(result.code).toBe('D-2026-0001');
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'DEAL',
+          action: 'DEAL_CREATED',
+          userId: 'user-1',
+          changes: expect.objectContaining({ withoutPriorLead: true }),
+        }),
+      );
+    });
+
+    it('allows minimal payload when leadId is present', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0002',
+        projectId: null,
+        type: 'PRODUCT',
+      });
+
+      await service.create(
+        {
+          leadId: 'lead-1',
+          contactId: 'c-1',
+          type: 'PRODUCT',
+          paymentType: 'CLASSIC',
+          sellerId: 's-1',
+        },
+        { actorId: 'user-1' },
+      );
+
+      expect(prisma.deal.create).toHaveBeenCalled();
+    });
+
+    it('rejects direct deal without attribution', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
+      await expect(
+        service.create({
+          contactId: 'c-1',
+          type: 'PRODUCT',
+          paymentType: 'CLASSIC',
+          sellerId: 's-1',
+          name: 'Needs attribution',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('skips DEAL_CREATED audit when actorId is omitted', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0003',
+        projectId: null,
+        type: 'PRODUCT',
+      });
+      vi.mocked(auditService.log).mockClear();
+
+      await service.create({
+        contactId: 'c-1',
+        type: 'PRODUCT',
+        paymentType: 'CLASSIC',
+        sellerId: 's-1',
+        name: 'No audit actor',
+        source: 'CLIENT',
+        sourceDetail: 'OTHER',
+      });
+
+      expect(auditService.log).not.toHaveBeenCalled();
     });
   });
 

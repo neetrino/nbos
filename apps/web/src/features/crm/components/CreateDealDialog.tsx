@@ -74,7 +74,8 @@ export function CreateDealDialog({
     );
   })();
 
-  const canSubmit = form.contactId && form.type && form.sellerId;
+  const nameOkForDirectDeal = prefill?.leadId || form.name.trim().length >= 2;
+  const canSubmit = Boolean(form.contactId && form.type && form.sellerId && nameOkForDirectDeal);
   const [attributionOptions, setAttributionOptions] = useState<AttributionOption[]>([]);
 
   useEffect(() => {
@@ -99,7 +100,7 @@ export function CreateDealDialog({
     try {
       await dealsApi.create({
         name: form.name || undefined,
-        leadId: prefill?.leadId,
+        ...(prefill?.leadId ? { leadId: prefill.leadId } : {}),
         contactId: form.contactId,
         type: form.type,
         amount: form.amount ? Number(form.amount) : undefined,
@@ -126,8 +127,17 @@ export function CreateDealDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>{prefill?.leadId ? 'Convert Lead to Deal' : 'New Deal'}</DialogTitle>
+          <DialogTitle>
+            {prefill?.leadId ? 'Convert Lead to Deal' : 'New Deal (no prior lead)'}
+          </DialogTitle>
         </DialogHeader>
+
+        {!prefill?.leadId && (
+          <p className="text-muted-foreground text-sm">
+            Direct entry: set deal name, From, and Where. Contact must exist in the directory (paste
+            Contact ID).
+          </p>
+        )}
 
         {prefill?.contactName && (
           <div className="bg-secondary rounded-lg p-3 text-sm">
@@ -137,7 +147,7 @@ export function CreateDealDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>Deal Name</Label>
+            <Label>{prefill?.leadId ? 'Deal Name' : 'Deal Name *'}</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
