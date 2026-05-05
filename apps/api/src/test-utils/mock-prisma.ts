@@ -68,6 +68,7 @@ export function createMockPrisma() {
     partner: createModelMock(),
     marketingAccount: createModelMock(),
     marketingActivity: createModelMock(),
+    marketingCrmWhereOption: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
     $transaction: vi.fn(),

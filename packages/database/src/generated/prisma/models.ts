@@ -15,6 +15,7 @@ export type * from './models/Product';
 export type * from './models/Extension';
 export type * from './models/MarketingAccount';
 export type * from './models/MarketingActivity';
+export type * from './models/MarketingCrmWhereOption';
 export type * from './models/Lead';
 export type * from './models/Deal';
 export type * from './models/Order';

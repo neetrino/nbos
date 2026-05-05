@@ -7,6 +7,7 @@ import {
   LaunchMarketingActivityDto,
   UpdateMarketingAccountDto,
   UpdateMarketingActivityDto,
+  UpdateMarketingCrmWhereOptionDto,
 } from './marketing.types';
 
 @ApiTags('Marketing')
@@ -14,6 +15,23 @@ import {
 @Controller('marketing')
 export class MarketingController {
   constructor(private readonly marketingService: MarketingService) {}
+
+  @Get('crm-where-options')
+  @ApiOperation({ summary: 'CRM Marketing Where options (active only, or all for settings)' })
+  @ApiQuery({ name: 'includeInactive', required: false, type: Boolean })
+  async getCrmWhereOptions(@Query('includeInactive') includeInactive?: string) {
+    const all = includeInactive === 'true' || includeInactive === '1';
+    return this.marketingService.getCrmWhereOptions(all);
+  }
+
+  @Patch('crm-where-options/:channel')
+  @ApiOperation({ summary: 'Update CRM Marketing Where label, sort order, or active flag' })
+  async updateCrmWhereOption(
+    @Param('channel') channel: string,
+    @Body() body: UpdateMarketingCrmWhereOptionDto,
+  ) {
+    return this.marketingService.updateCrmWhereOption(channel, body);
+  }
 
   @Get('accounts')
   @ApiOperation({ summary: 'Get marketing accounts' })

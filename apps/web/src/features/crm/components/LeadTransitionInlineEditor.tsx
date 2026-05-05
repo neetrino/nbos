@@ -11,11 +11,12 @@ import { partnersApi } from '@/lib/api/partners';
 import { marketingApi } from '@/lib/api/marketing';
 import type { Lead } from '@/lib/api/leads';
 import type { ApiFieldError } from '@/lib/api-errors';
-import { LEAD_SOURCES, MARKETING_CHANNELS, SALES_CHANNELS } from '../constants/leadPipeline';
+import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import {
   isLeadAttributionLocked,
   requiresMarketingWhichOneSelection,
 } from '@nbos/shared/constants';
+import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 
 type LeadInlinePayload = Pick<
   Lead,
@@ -67,9 +68,12 @@ export function LeadTransitionInlineEditor({
   const [touchedRequiredFields, setTouchedRequiredFields] = useState<Set<string>>(new Set());
 
   const errorFields = useMemo(() => new Set(errors.map((error) => error.field)), [errors]);
+  const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
+    form.source === 'MARKETING',
+  );
   const needsAttributionForMove = isLeadAttributionLocked(targetStatus);
   const needsContactMethod = errorFields.has('contactMethod');
-  const whereOptions = getWhereOptions(form.source);
+  const whereOptions = getWhereOptions(form.source, marketingWhereOptions);
   const showWhereField = whereOptions.length > 0;
   const showFromField =
     needsAttributionForMove || errorFields.has('source') || Boolean(!form.source);
@@ -352,12 +356,15 @@ function getInitialForm(lead: Lead): FormState {
   };
 }
 
-function getWhereOptions(source: string) {
+function getWhereOptions(
+  source: string,
+  marketingOptions: Array<{ value: string; label: string }>,
+) {
   if (source === 'SALES') {
     return SALES_CHANNELS.map((channel) => ({ value: channel.value, label: channel.label }));
   }
   if (source === 'MARKETING') {
-    return MARKETING_CHANNELS.map((channel) => ({ value: channel.value, label: channel.label }));
+    return marketingOptions;
   }
   return [];
 }

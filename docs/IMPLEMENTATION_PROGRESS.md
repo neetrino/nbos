@@ -81,7 +81,7 @@
 - 🟢 [x] Создание **Deal без Lead** — backend, UI, валидация, аудит — M → `deal-create-validation.ts`, `DealsService.create` + audit `DEAL_CREATED`, `CreateDealDialog`, матрица §8
 - 🟢 [x] Воронка Lead: статус/колонка **On Hold** после New — M → `LeadStatusEnum.ON_HOLD`, миграция `20260505143000_lead_status_on_hold`, `LEAD_STAGES`, `leads.service`, `02-Lead-Pipeline.md`, матрица §2
 - 🟢 [x] Поле «название обращения = продукт/услуга» на Lead — S → `Lead.name` / `Deal.name` при конверсии; гейт в `lead-conversion.service`, SQL в UI (`LeadTransitionInlineEditor`, `leads/page`, `CreateLeadDialog`, `LeadSheet`), `02-Lead-Pipeline.md`
-- [ ] Двухуровневая атрибуция (верхний канал + зависимый список) + справочники в Marketing Settings — L
+- 🟢 [x] Двухуровневая атрибуция (верхний канал + зависимый список) + справочники в Marketing Settings — L → `MarketingCrmWhereOption` + seed; `GET/PATCH …/crm-where-options`; CRM UI через `useCrmMarketingWhereOptions`; блок в `marketing/settings`; **Pending:** отдельные каналы Instagram/Facebook вместо одного `META_ADS`, Sales Where из БД, Website/SEO подканоны из канона
 - [ ] Deal: роль **ассистента продаж** (поля, борд, карточка) — M
 - [ ] Бонус: движок **независимых ставок** Seller/Assistant по `From` + Classic/Subscription база + snapshot + UI/БД политики — по `03-Bonus-Payroll-Logic.md` — L
 - [ ] Бонус: удалить legacy `HOLDBACK` / `holdbackPercent` / `holdbackReleaseDate` и заменить текущие project-pools API/UI на **product-level pool release** — M

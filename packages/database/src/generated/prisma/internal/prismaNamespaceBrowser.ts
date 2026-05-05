@@ -56,6 +56,7 @@ export const ModelName = {
   Extension: 'Extension',
   MarketingAccount: 'MarketingAccount',
   MarketingActivity: 'MarketingActivity',
+  MarketingCrmWhereOption: 'MarketingCrmWhereOption',
   Lead: 'Lead',
   Deal: 'Deal',
   Order: 'Order',
@@ -307,6 +308,18 @@ export const MarketingActivityScalarFieldEnum = {
 
 export type MarketingActivityScalarFieldEnum =
   (typeof MarketingActivityScalarFieldEnum)[keyof typeof MarketingActivityScalarFieldEnum];
+
+export const MarketingCrmWhereOptionScalarFieldEnum = {
+  channel: 'channel',
+  label: 'label',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MarketingCrmWhereOptionScalarFieldEnum =
+  (typeof MarketingCrmWhereOptionScalarFieldEnum)[keyof typeof MarketingCrmWhereOptionScalarFieldEnum];
 
 export const LeadScalarFieldEnum = {
   id: 'id',

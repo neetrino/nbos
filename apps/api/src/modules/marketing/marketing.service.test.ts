@@ -178,6 +178,48 @@ describe('MarketingService', () => {
       expect.objectContaining({ code: 'EFFICIENCY_PARTIAL_DATA', count: 2 }),
     ]);
   });
+
+  it('returns active CRM Where options only', async () => {
+    prisma.marketingCrmWhereOption.findMany.mockResolvedValue([
+      { channel: 'LIST_AM', label: 'List.am', sortOrder: 30, isActive: true },
+    ]);
+
+    const rows = await service.getCrmWhereOptions(false);
+
+    expect(prisma.marketingCrmWhereOption.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { isActive: true } }),
+    );
+    expect(rows).toEqual([{ channel: 'LIST_AM', label: 'List.am', sortOrder: 30, isActive: true }]);
+  });
+
+  it('returns all CRM Where options when includeInactive is true', async () => {
+    prisma.marketingCrmWhereOption.findMany.mockResolvedValue([]);
+
+    await service.getCrmWhereOptions(true);
+
+    expect(prisma.marketingCrmWhereOption.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: undefined }),
+    );
+  });
+
+  it('updates CRM Where option label', async () => {
+    prisma.marketingCrmWhereOption.findUnique.mockResolvedValue({
+      channel: 'LIST_AM',
+      label: 'List.am',
+      sortOrder: 30,
+      isActive: true,
+    });
+    prisma.marketingCrmWhereOption.update.mockResolvedValue({
+      channel: 'LIST_AM',
+      label: 'List.am (primary)',
+      sortOrder: 30,
+      isActive: true,
+    });
+
+    const updated = await service.updateCrmWhereOption('list_am', { label: 'List.am (primary)' });
+
+    expect(updated.label).toBe('List.am (primary)');
+  });
 });
 
 function activityFixture() {

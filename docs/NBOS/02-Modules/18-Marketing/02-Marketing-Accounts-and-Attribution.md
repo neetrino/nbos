@@ -37,6 +37,8 @@ Channel - верхний уровень источника.
 
 Channels живут в `Marketing Settings`, а не как отдельный ежедневный экран.
 
+Справочник CRM **Where** (при `From = Marketing`) хранится в таблице `marketing_crm_where_options`: код канала (`MarketingChannelEnum`), подпись для UI, `sort_order`, `is_active`; активные строки отдаются API и подставляются в лиды/сделки.
+
 ## Marketing Account
 
 Marketing Account - конкретный аккаунт/номер/страница внутри канала.

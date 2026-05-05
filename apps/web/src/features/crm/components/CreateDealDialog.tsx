@@ -26,9 +26,10 @@ import {
   PRODUCT_TYPES_BY_CATEGORY,
   PAYMENT_TYPES,
 } from '../constants/dealPipeline';
-import { LEAD_SOURCES, MARKETING_CHANNELS } from '../constants/leadPipeline';
+import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import { dealsApi } from '@/lib/api/deals';
 import { marketingApi, type AttributionOption } from '@/lib/api/marketing';
+import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 
 interface CreateDealDialogProps {
   open: boolean;
@@ -77,6 +78,9 @@ export function CreateDealDialog({
   const nameOkForDirectDeal = prefill?.leadId || form.name.trim().length >= 2;
   const canSubmit = Boolean(form.contactId && form.type && form.sellerId && nameOkForDirectDeal);
   const [attributionOptions, setAttributionOptions] = useState<AttributionOption[]>([]);
+  const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
+    form.source === 'MARKETING',
+  );
 
   useEffect(() => {
     if (form.source !== 'MARKETING' || !form.sourceDetail) {
@@ -92,6 +96,13 @@ export function CreateDealDialog({
   const selectedAttribution = attributionOptions.find(
     (option) => `${option.type}:${option.id}` === form.attributionOption,
   );
+
+  const whereChannelOptions =
+    form.source === 'SALES'
+      ? SALES_CHANNELS.map((c) => ({ value: c.value, label: c.label }))
+      : form.source === 'MARKETING'
+        ? marketingWhereOptions
+        : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -302,12 +313,13 @@ export function CreateDealDialog({
                 onValueChange={(v) =>
                   setForm({ ...form, sourceDetail: v as string, attributionOption: '' })
                 }
+                disabled={whereChannelOptions.length === 0}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Channel" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MARKETING_CHANNELS.map((channel) => (
+                  {whereChannelOptions.map((channel) => (
                     <SelectItem key={channel.value} value={channel.value}>
                       {channel.label}
                     </SelectItem>

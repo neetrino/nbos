@@ -26,7 +26,6 @@ import {
   LEAD_SOURCES,
   LEAD_STAGES,
   SALES_CHANNELS,
-  MARKETING_CHANNELS,
   getLeadSource,
 } from '../constants/leadPipeline';
 import { isLeadAttributionLocked } from '@nbos/shared/constants';
@@ -35,6 +34,7 @@ import { partnersApi } from '@/lib/api/partners';
 import { contactsApi } from '@/lib/api/clients';
 import { marketingApi } from '@/lib/api/marketing';
 import { useCallback } from 'react';
+import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -244,6 +244,9 @@ interface LeadGeneralContentProps {
 }
 
 function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneralContentProps) {
+  const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
+    lead.source === 'MARKETING',
+  );
   const saveMultipleFields = async (fields: Record<string, string | null>) => {
     await saveFields(fields);
   };
@@ -277,13 +280,12 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
     [lead.sourceDetail],
   );
 
-  const whereOptions = (() => {
-    if (lead.source === 'SALES')
-      return SALES_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
-    if (lead.source === 'MARKETING')
-      return MARKETING_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
-    return [];
-  })();
+  const whereOptions =
+    lead.source === 'SALES'
+      ? SALES_CHANNELS.map((c) => ({ value: c.value, label: c.label }))
+      : lead.source === 'MARKETING'
+        ? marketingWhereOptions
+        : [];
 
   const attributionLocked = isLeadAttributionLocked(lead.status);
 

@@ -383,6 +383,7 @@ export const ModelName = {
   Extension: 'Extension',
   MarketingAccount: 'MarketingAccount',
   MarketingActivity: 'MarketingActivity',
+  MarketingCrmWhereOption: 'MarketingCrmWhereOption',
   Lead: 'Lead',
   Deal: 'Deal',
   Order: 'Order',
@@ -487,6 +488,7 @@ export type TypeMap<
       | 'extension'
       | 'marketingAccount'
       | 'marketingActivity'
+      | 'marketingCrmWhereOption'
       | 'lead'
       | 'deal'
       | 'order'
@@ -1160,6 +1162,82 @@ export type TypeMap<
           args: Prisma.MarketingActivityCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.MarketingActivityCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    MarketingCrmWhereOption: {
+      payload: Prisma.$MarketingCrmWhereOptionPayload<ExtArgs>;
+      fields: Prisma.MarketingCrmWhereOptionFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.MarketingCrmWhereOptionFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.MarketingCrmWhereOptionFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>;
+        };
+        findFirst: {
+          args: Prisma.MarketingCrmWhereOptionFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.MarketingCrmWhereOptionFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>;
+        };
+        findMany: {
+          args: Prisma.MarketingCrmWhereOptionFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>[];
+        };
+        create: {
+          args: Prisma.MarketingCrmWhereOptionCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>;
+        };
+        createMany: {
+          args: Prisma.MarketingCrmWhereOptionCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.MarketingCrmWhereOptionCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>[];
+        };
+        delete: {
+          args: Prisma.MarketingCrmWhereOptionDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>;
+        };
+        update: {
+          args: Prisma.MarketingCrmWhereOptionUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>;
+        };
+        deleteMany: {
+          args: Prisma.MarketingCrmWhereOptionDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.MarketingCrmWhereOptionUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.MarketingCrmWhereOptionUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>[];
+        };
+        upsert: {
+          args: Prisma.MarketingCrmWhereOptionUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MarketingCrmWhereOptionPayload>;
+        };
+        aggregate: {
+          args: Prisma.MarketingCrmWhereOptionAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMarketingCrmWhereOption>;
+        };
+        groupBy: {
+          args: Prisma.MarketingCrmWhereOptionGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.MarketingCrmWhereOptionGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.MarketingCrmWhereOptionCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.MarketingCrmWhereOptionCountAggregateOutputType>
             | number;
         };
       };
@@ -7079,6 +7157,18 @@ export const MarketingActivityScalarFieldEnum = {
 export type MarketingActivityScalarFieldEnum =
   (typeof MarketingActivityScalarFieldEnum)[keyof typeof MarketingActivityScalarFieldEnum];
 
+export const MarketingCrmWhereOptionScalarFieldEnum = {
+  channel: 'channel',
+  label: 'label',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type MarketingCrmWhereOptionScalarFieldEnum =
+  (typeof MarketingCrmWhereOptionScalarFieldEnum)[keyof typeof MarketingCrmWhereOptionScalarFieldEnum];
+
 export const LeadScalarFieldEnum = {
   id: 'id',
   code: 'code',
@@ -10236,6 +10326,7 @@ export type GlobalOmitConfig = {
   extension?: Prisma.ExtensionOmit;
   marketingAccount?: Prisma.MarketingAccountOmit;
   marketingActivity?: Prisma.MarketingActivityOmit;
+  marketingCrmWhereOption?: Prisma.MarketingCrmWhereOptionOmit;
   lead?: Prisma.LeadOmit;
   deal?: Prisma.DealOmit;
   order?: Prisma.OrderOmit;

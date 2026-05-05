@@ -3,8 +3,9 @@
 import { Building2, ExternalLink, Megaphone, User } from 'lucide-react';
 import { InlineField, SearchField } from '@/components/shared';
 import type { Deal } from '@/lib/api/deals';
-import { LEAD_SOURCES, MARKETING_CHANNELS, SALES_CHANNELS } from '../constants/leadPipeline';
+import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import { isDealAttributionLocked } from '@nbos/shared/constants';
+import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
 
 interface DealMarketingSectionProps {
@@ -24,9 +25,12 @@ export function DealMarketingSection({
   saveField,
   saveMultipleFields,
 }: DealMarketingSectionProps) {
+  const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
+    deal.source === 'MARKETING',
+  );
   const sourceLabel =
     LEAD_SOURCES.find((source) => source.value === deal.source)?.label ?? deal.source;
-  const whereOptions = getWhereOptions(deal.source);
+  const whereOptions = getWhereOptions(deal.source, marketingWhereOptions);
   const attributionLocked = isDealAttributionLocked(deal.status);
 
   return (
@@ -165,12 +169,15 @@ export function DealMarketingSection({
   );
 }
 
-function getWhereOptions(source: string | null) {
+function getWhereOptions(
+  source: string | null,
+  marketingOptions: Array<{ value: string; label: string }>,
+) {
   if (source === 'SALES') {
     return SALES_CHANNELS.map((channel) => ({ value: channel.value, label: channel.label }));
   }
   if (source === 'MARKETING') {
-    return MARKETING_CHANNELS.map((channel) => ({ value: channel.value, label: channel.label }));
+    return marketingOptions;
   }
   return [];
 }

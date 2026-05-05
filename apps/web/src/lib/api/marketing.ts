@@ -82,6 +82,13 @@ export interface AttributionOption {
   subtitle?: string;
 }
 
+export interface MarketingCrmWhereOption {
+  channel: string;
+  label: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
 interface MarketingQueryParams {
   channel?: string;
   status?: string;
@@ -90,6 +97,26 @@ interface MarketingQueryParams {
 }
 
 export const marketingApi = {
+  async getCrmWhereOptions(params?: {
+    includeInactive?: boolean;
+  }): Promise<MarketingCrmWhereOption[]> {
+    const resp = await api.get<MarketingCrmWhereOption[]>('/api/marketing/crm-where-options', {
+      params: params?.includeInactive ? { includeInactive: true } : undefined,
+    });
+    return resp.data;
+  },
+
+  async updateCrmWhereOption(
+    channel: string,
+    data: Partial<Pick<MarketingCrmWhereOption, 'label' | 'sortOrder' | 'isActive'>>,
+  ): Promise<MarketingCrmWhereOption> {
+    const resp = await api.patch<MarketingCrmWhereOption>(
+      `/api/marketing/crm-where-options/${encodeURIComponent(channel)}`,
+      data,
+    );
+    return resp.data;
+  },
+
   async getDashboardSummary(): Promise<MarketingDashboardSummary> {
     const resp = await api.get<MarketingDashboardSummary>('/api/marketing/dashboard');
     return resp.data;

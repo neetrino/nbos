@@ -57,6 +57,11 @@ export type MarketingAccount = Prisma.MarketingAccountModel;
  */
 export type MarketingActivity = Prisma.MarketingActivityModel;
 /**
+ * Model MarketingCrmWhereOption
+ * CRM "Where" options when From = Marketing (labels/order/active; codes match `MarketingChannelEnum`).
+ */
+export type MarketingCrmWhereOption = Prisma.MarketingCrmWhereOptionModel;
+/**
  * Model Lead
  *
  */
