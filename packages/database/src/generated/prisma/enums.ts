@@ -123,6 +123,7 @@ export type ExtensionStatusEnum = (typeof ExtensionStatusEnum)[keyof typeof Exte
 
 export const LeadStatusEnum = {
   NEW: 'NEW',
+  ON_HOLD: 'ON_HOLD',
   DIDNT_GET_THROUGH: 'DIDNT_GET_THROUGH',
   CONTACT_ESTABLISHED: 'CONTACT_ESTABLISHED',
   MQL: 'MQL',

@@ -269,6 +269,24 @@ describe('LeadsService', () => {
       });
       expect(prisma.lead.update).not.toHaveBeenCalled();
     });
+
+    it('allows NEW → ON_HOLD without marketing attribution', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'NEW',
+        source: null,
+        sourceDetail: null,
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
+      prisma.lead.update.mockResolvedValue({ id: '1', status: 'ON_HOLD' });
+
+      const result = await service.updateStatus('1', 'ON_HOLD');
+
+      expect(result.status).toBe('ON_HOLD');
+    });
   });
 
   describe('getStats', () => {

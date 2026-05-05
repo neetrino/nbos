@@ -19,10 +19,11 @@ import {
 } from './index';
 
 describe('Constants', () => {
-  it('LEAD_STATUSES has 6 statuses', () => {
-    expect(LEAD_STATUSES).toHaveLength(6);
+  it('LEAD_STATUSES has 7 statuses', () => {
+    expect(LEAD_STATUSES).toHaveLength(7);
     expect(LEAD_STATUSES[0]).toBe('NEW');
-    expect(LEAD_STATUSES[5]).toBe('SQL');
+    expect(LEAD_STATUSES[1]).toBe('ON_HOLD');
+    expect(LEAD_STATUSES[6]).toBe('SQL');
   });
 
   it('DEAL_STATUSES has 9 statuses', () => {

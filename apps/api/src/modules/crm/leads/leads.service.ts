@@ -7,7 +7,13 @@ import {
   validateAttributionGate,
 } from '../attribution-gate';
 
-const ACTIVE_LEAD_STATUSES = new Set(['NEW', 'DIDNT_GET_THROUGH', 'CONTACT_ESTABLISHED', 'MQL']);
+const ACTIVE_LEAD_STATUSES = new Set([
+  'NEW',
+  'ON_HOLD',
+  'DIDNT_GET_THROUGH',
+  'CONTACT_ESTABLISHED',
+  'MQL',
+]);
 const CLOSED_LEAD_STATUSES = new Set(['SPAM', 'SQL']);
 
 interface CreateLeadDto {
@@ -256,7 +262,7 @@ export class LeadsService {
   }
 
   private requiresAttribution(status: string): boolean {
-    return !['NEW', 'SPAM'].includes(status);
+    return !['NEW', 'ON_HOLD', 'SPAM'].includes(status);
   }
 
   private assertStatusTransitionAllowed(currentStatus: string, targetStatus: string): void {

@@ -3,6 +3,12 @@ import type { StatusVariant } from '@/components/shared/StatusBadge';
 export const LEAD_STAGES = [
   { key: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
   {
+    key: 'ON_HOLD',
+    label: 'On Hold',
+    variant: 'gray' as StatusVariant,
+    color: 'bg-amber-500',
+  },
+  {
     key: 'DIDNT_GET_THROUGH',
     label: "Didn't Get Through",
     variant: 'gray' as StatusVariant,

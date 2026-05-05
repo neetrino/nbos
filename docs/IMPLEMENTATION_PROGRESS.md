@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-05 (блок 2: старт — матрица переходов + секция Pending)
+**Обновлено:** 2026-05-05 (блок 2: 🟢 для закрытых строк; Lead On Hold; Pending)
 
 ---
 
@@ -74,10 +74,12 @@
 
 Каждая строка — отдельная задача. **Порядок глобальный:** сначала целостность домена и канона, затем интеграционный фонд (без банка), затем углубление модулей; **Support (глубокий SLA/overlay)** — после основной массы, как договорено; **ручная приёмка** после каждого логического блока.
 
-- [x] Сводная таблица переходов Lead → Deal → Order → Project в одном каноническом документе — M → `docs/NBOS/03-Business-Logic/00-Lead-Deal-Order-Project-Transition-Matrix.md`
-- [x] Пауза/штрафы подписки при задержке сдачи — правила в каноне и в runtime — M → `04-Subscription-Billing-Logic.md` § пауза; `billing-subscription-delivery-pause.ts` + `BillingService.runMonthlyBilling`
-- [x] Создание **Deal без Lead** — backend, UI, валидация, аудит — M → `deal-create-validation.ts`, `DealsService.create` + audit `DEAL_CREATED`, `CreateDealDialog`, матрица §8
-- [ ] Воронка Lead: статус/колонка **On Hold** после New — M
+**🟢 Уже сделано:** у таких строк в начале стоит **🟢** (и чекбокс `[x]`) — быстро видно, что срез уже в репозитории/каноне.
+
+- 🟢 [x] Сводная таблица переходов Lead → Deal → Order → Project в одном каноническом документе — M → `docs/NBOS/03-Business-Logic/00-Lead-Deal-Order-Project-Transition-Matrix.md`
+- 🟢 [x] Пауза/штрафы подписки при задержке сдачи — правила в каноне и в runtime — M → `04-Subscription-Billing-Logic.md` § пауза; `billing-subscription-delivery-pause.ts` + `BillingService.runMonthlyBilling`
+- 🟢 [x] Создание **Deal без Lead** — backend, UI, валидация, аудит — M → `deal-create-validation.ts`, `DealsService.create` + audit `DEAL_CREATED`, `CreateDealDialog`, матрица §8
+- 🟢 [x] Воронка Lead: статус/колонка **On Hold** после New — M → `LeadStatusEnum.ON_HOLD`, миграция `20260505143000_lead_status_on_hold`, `LEAD_STAGES`, `leads.service`, `02-Lead-Pipeline.md`, матрица §2
 - [ ] Поле «название обращения = продукт/услуга» на Lead — S
 - [ ] Двухуровневая атрибуция (верхний канал + зависимый список) + справочники в Marketing Settings — L
 - [ ] Deal: роль **ассистента продаж** (поля, борд, карточка) — M
