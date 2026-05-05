@@ -2,6 +2,11 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbos/database';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
+import {
+  assertSalesKpiInputsComplete,
+  computePayrollIncludedBonusAmount,
+  resolveSalesKpiPayoutFactorFromRun,
+} from './sales-kpi-payroll-payout';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
@@ -45,7 +50,12 @@ export async function attachBonusReleasesToPayrollRun(
 
   const run = await tx.payrollRun.findUnique({
     where: { id: payrollRunId },
-    select: { id: true, status: true },
+    select: {
+      id: true,
+      status: true,
+      kpiSalesPlanAmount: true,
+      kpiSalesActualAmount: true,
+    },
   });
   if (!run) {
     throw new NotFoundException(`Payroll run ${payrollRunId} not found`);
@@ -64,6 +74,7 @@ export async function attachBonusReleasesToPayrollRun(
       amount: true,
       status: true,
       payrollRunId: true,
+      bonusEntry: { select: { type: true } },
     },
   });
   if (releases.length !== uniqueIds.length) {
@@ -81,6 +92,10 @@ export async function attachBonusReleasesToPayrollRun(
     }
   }
 
+  const hasSalesRelease = releases.some((r) => r.bonusEntry.type === 'SALES');
+  assertSalesKpiInputsComplete(run, hasSalesRelease);
+  const kpiFactor = resolveSalesKpiPayoutFactorFromRun(run);
+
   for (const rel of releases) {
     const line = await tx.salaryLine.findUnique({
       where: {
@@ -93,7 +108,13 @@ export async function attachBonusReleasesToPayrollRun(
       );
     }
 
-    const nextBonuses = line.bonusesTotal.plus(rel.amount);
+    const included = computePayrollIncludedBonusAmount({
+      releaseAmount: rel.amount,
+      bonusType: rel.bonusEntry.type,
+      kpiFactor,
+    });
+
+    const nextBonuses = line.bonusesTotal.plus(included);
     const nextTotal = computeLineTotalPayable({
       baseSalary: line.baseSalary,
       bonusesTotal: nextBonuses,
@@ -119,6 +140,7 @@ export async function attachBonusReleasesToPayrollRun(
       data: {
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId,
+        payrollIncludedAmount: included,
       },
     });
   }

@@ -52,6 +52,7 @@ describe('detachBonusReleasesFromPayrollRun', () => {
         id: 'rel1',
         employeeId: 'e1',
         amount: new Decimal(50),
+        payrollIncludedAmount: new Decimal(50),
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId: 'run1',
       },
@@ -96,8 +97,60 @@ describe('detachBonusReleasesFromPayrollRun', () => {
     );
     expect(tx.bonusRelease.update).toHaveBeenCalledWith({
       where: { id: 'rel1' },
-      data: { status: 'APPROVED', payrollRunId: null },
+      data: { status: 'APPROVED', payrollRunId: null, payrollIncludedAmount: null },
     });
     expect(tx.payrollRun.update).toHaveBeenCalled();
+  });
+
+  it('subtracts payrollIncludedAmount when it differs from release amount', async () => {
+    const tx = createTxMock();
+    tx.payrollRun.findUnique.mockResolvedValue({ id: 'run1', status: 'DRAFT' });
+    tx.bonusRelease.findMany.mockResolvedValue([
+      {
+        id: 'rel1',
+        employeeId: 'e1',
+        amount: new Decimal(100),
+        payrollIncludedAmount: new Decimal(40),
+        status: 'INCLUDED_IN_PAYROLL',
+        payrollRunId: 'run1',
+      },
+    ]);
+    tx.salaryLine.findUnique.mockResolvedValue({
+      id: 'sl1',
+      payrollRunId: 'run1',
+      employeeId: 'e1',
+      baseSalary: new Decimal(100),
+      bonusesTotal: new Decimal(40),
+      adjustmentsTotal: new Decimal(0),
+      deductionsTotal: new Decimal(0),
+      totalPayable: new Decimal(140),
+      paidAmount: new Decimal(0),
+      remainingAmount: new Decimal(140),
+      status: 'APPROVED',
+    });
+    tx.salaryLine.aggregate.mockResolvedValue({
+      _sum: {
+        baseSalary: new Decimal(100),
+        bonusesTotal: new Decimal(0),
+        adjustmentsTotal: new Decimal(0),
+        deductionsTotal: new Decimal(0),
+        totalPayable: new Decimal(100),
+        paidAmount: new Decimal(0),
+      },
+    });
+
+    await detachBonusReleasesFromPayrollRun(tx as never, {
+      payrollRunId: 'run1',
+      releaseIds: ['rel1'],
+    });
+
+    expect(tx.salaryLine.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          bonusesTotal: new Decimal(0),
+          totalPayable: new Decimal(100),
+        }),
+      }),
+    );
   });
 });

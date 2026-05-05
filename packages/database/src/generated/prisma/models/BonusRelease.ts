@@ -27,10 +27,12 @@ export type AggregateBonusRelease = {
 
 export type BonusReleaseAvgAggregateOutputType = {
   amount: runtime.Decimal | null;
+  payrollIncludedAmount: runtime.Decimal | null;
 };
 
 export type BonusReleaseSumAggregateOutputType = {
   amount: runtime.Decimal | null;
+  payrollIncludedAmount: runtime.Decimal | null;
 };
 
 export type BonusReleaseMinAggregateOutputType = {
@@ -42,6 +44,7 @@ export type BonusReleaseMinAggregateOutputType = {
   productId: string | null;
   extensionId: string | null;
   amount: runtime.Decimal | null;
+  payrollIncludedAmount: runtime.Decimal | null;
   releaseType: $Enums.BonusReleaseTypeEnum | null;
   reason: string | null;
   approvedById: string | null;
@@ -59,6 +62,7 @@ export type BonusReleaseMaxAggregateOutputType = {
   productId: string | null;
   extensionId: string | null;
   amount: runtime.Decimal | null;
+  payrollIncludedAmount: runtime.Decimal | null;
   releaseType: $Enums.BonusReleaseTypeEnum | null;
   reason: string | null;
   approvedById: string | null;
@@ -76,6 +80,7 @@ export type BonusReleaseCountAggregateOutputType = {
   productId: number;
   extensionId: number;
   amount: number;
+  payrollIncludedAmount: number;
   releaseType: number;
   reason: number;
   approvedById: number;
@@ -87,10 +92,12 @@ export type BonusReleaseCountAggregateOutputType = {
 
 export type BonusReleaseAvgAggregateInputType = {
   amount?: true;
+  payrollIncludedAmount?: true;
 };
 
 export type BonusReleaseSumAggregateInputType = {
   amount?: true;
+  payrollIncludedAmount?: true;
 };
 
 export type BonusReleaseMinAggregateInputType = {
@@ -102,6 +109,7 @@ export type BonusReleaseMinAggregateInputType = {
   productId?: true;
   extensionId?: true;
   amount?: true;
+  payrollIncludedAmount?: true;
   releaseType?: true;
   reason?: true;
   approvedById?: true;
@@ -119,6 +127,7 @@ export type BonusReleaseMaxAggregateInputType = {
   productId?: true;
   extensionId?: true;
   amount?: true;
+  payrollIncludedAmount?: true;
   releaseType?: true;
   reason?: true;
   approvedById?: true;
@@ -136,6 +145,7 @@ export type BonusReleaseCountAggregateInputType = {
   productId?: true;
   extensionId?: true;
   amount?: true;
+  payrollIncludedAmount?: true;
   releaseType?: true;
   reason?: true;
   approvedById?: true;
@@ -245,6 +255,7 @@ export type BonusReleaseGroupByOutputType = {
   productId: string | null;
   extensionId: string | null;
   amount: runtime.Decimal;
+  payrollIncludedAmount: runtime.Decimal | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason: string | null;
   approvedById: string | null;
@@ -287,6 +298,13 @@ export type BonusReleaseWhereInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.DecimalNullableFilter<'BonusRelease'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?: Prisma.EnumBonusReleaseTypeEnumFilter<'BonusRelease'> | $Enums.BonusReleaseTypeEnum;
   reason?: Prisma.StringNullableFilter<'BonusRelease'> | string | null;
   approvedById?: Prisma.StringNullableFilter<'BonusRelease'> | string | null;
@@ -320,6 +338,7 @@ export type BonusReleaseOrderByWithRelationInput = {
   productId?: Prisma.SortOrderInput | Prisma.SortOrder;
   extensionId?: Prisma.SortOrderInput | Prisma.SortOrder;
   amount?: Prisma.SortOrder;
+  payrollIncludedAmount?: Prisma.SortOrderInput | Prisma.SortOrder;
   releaseType?: Prisma.SortOrder;
   reason?: Prisma.SortOrderInput | Prisma.SortOrder;
   approvedById?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -353,6 +372,13 @@ export type BonusReleaseWhereUniqueInput = Prisma.AtLeast<
       | runtime.DecimalJsLike
       | number
       | string;
+    payrollIncludedAmount?:
+      | Prisma.DecimalNullableFilter<'BonusRelease'>
+      | runtime.Decimal
+      | runtime.DecimalJsLike
+      | number
+      | string
+      | null;
     releaseType?:
       | Prisma.EnumBonusReleaseTypeEnumFilter<'BonusRelease'>
       | $Enums.BonusReleaseTypeEnum;
@@ -395,6 +421,7 @@ export type BonusReleaseOrderByWithAggregationInput = {
   productId?: Prisma.SortOrderInput | Prisma.SortOrder;
   extensionId?: Prisma.SortOrderInput | Prisma.SortOrder;
   amount?: Prisma.SortOrder;
+  payrollIncludedAmount?: Prisma.SortOrderInput | Prisma.SortOrder;
   releaseType?: Prisma.SortOrder;
   reason?: Prisma.SortOrderInput | Prisma.SortOrder;
   approvedById?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -429,6 +456,13 @@ export type BonusReleaseScalarWhereWithAggregatesInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.DecimalNullableWithAggregatesFilter<'BonusRelease'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumWithAggregatesFilter<'BonusRelease'>
     | $Enums.BonusReleaseTypeEnum;
@@ -444,6 +478,7 @@ export type BonusReleaseScalarWhereWithAggregatesInput = {
 export type BonusReleaseCreateInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -467,6 +502,7 @@ export type BonusReleaseUncheckedCreateInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -483,6 +519,13 @@ export type BonusReleaseUpdateInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -515,6 +558,13 @@ export type BonusReleaseUncheckedUpdateInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -536,6 +586,7 @@ export type BonusReleaseCreateManyInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -552,6 +603,13 @@ export type BonusReleaseUpdateManyMutationInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -577,6 +635,13 @@ export type BonusReleaseUncheckedUpdateManyInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -608,6 +673,7 @@ export type BonusReleaseCountOrderByAggregateInput = {
   productId?: Prisma.SortOrder;
   extensionId?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
+  payrollIncludedAmount?: Prisma.SortOrder;
   releaseType?: Prisma.SortOrder;
   reason?: Prisma.SortOrder;
   approvedById?: Prisma.SortOrder;
@@ -618,6 +684,7 @@ export type BonusReleaseCountOrderByAggregateInput = {
 
 export type BonusReleaseAvgOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
+  payrollIncludedAmount?: Prisma.SortOrder;
 };
 
 export type BonusReleaseMaxOrderByAggregateInput = {
@@ -629,6 +696,7 @@ export type BonusReleaseMaxOrderByAggregateInput = {
   productId?: Prisma.SortOrder;
   extensionId?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
+  payrollIncludedAmount?: Prisma.SortOrder;
   releaseType?: Prisma.SortOrder;
   reason?: Prisma.SortOrder;
   approvedById?: Prisma.SortOrder;
@@ -646,6 +714,7 @@ export type BonusReleaseMinOrderByAggregateInput = {
   productId?: Prisma.SortOrder;
   extensionId?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
+  payrollIncludedAmount?: Prisma.SortOrder;
   releaseType?: Prisma.SortOrder;
   reason?: Prisma.SortOrder;
   approvedById?: Prisma.SortOrder;
@@ -656,6 +725,7 @@ export type BonusReleaseMinOrderByAggregateInput = {
 
 export type BonusReleaseSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
+  payrollIncludedAmount?: Prisma.SortOrder;
 };
 
 export type BonusReleaseCreateNestedManyWithoutProjectInput = {
@@ -1271,6 +1341,7 @@ export type BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput = {
 export type BonusReleaseCreateWithoutProjectInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -1292,6 +1363,7 @@ export type BonusReleaseUncheckedCreateWithoutProjectInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -1358,6 +1430,13 @@ export type BonusReleaseScalarWhereInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.DecimalNullableFilter<'BonusRelease'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?: Prisma.EnumBonusReleaseTypeEnumFilter<'BonusRelease'> | $Enums.BonusReleaseTypeEnum;
   reason?: Prisma.StringNullableFilter<'BonusRelease'> | string | null;
   approvedById?: Prisma.StringNullableFilter<'BonusRelease'> | string | null;
@@ -1369,6 +1448,7 @@ export type BonusReleaseScalarWhereInput = {
 export type BonusReleaseCreateWithoutProductInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -1390,6 +1470,7 @@ export type BonusReleaseUncheckedCreateWithoutProductInput = {
   projectId: string;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -1442,6 +1523,7 @@ export type BonusReleaseUpdateManyWithWhereWithoutProductInput = {
 export type BonusReleaseCreateWithoutExtensionInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -1463,6 +1545,7 @@ export type BonusReleaseUncheckedCreateWithoutExtensionInput = {
   projectId: string;
   productId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -1515,6 +1598,7 @@ export type BonusReleaseUpdateManyWithWhereWithoutExtensionInput = {
 export type BonusReleaseCreateWithoutBonusEntryInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -1536,6 +1620,7 @@ export type BonusReleaseUncheckedCreateWithoutBonusEntryInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -1590,6 +1675,7 @@ export type BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput = {
 export type BonusReleaseCreateWithoutPayrollRunInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -1611,6 +1697,7 @@ export type BonusReleaseUncheckedCreateWithoutPayrollRunInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -1665,6 +1752,7 @@ export type BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput = {
 export type BonusReleaseCreateWithoutEmployeeInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -1686,6 +1774,7 @@ export type BonusReleaseUncheckedCreateWithoutEmployeeInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -1710,6 +1799,7 @@ export type BonusReleaseCreateManyEmployeeInputEnvelope = {
 export type BonusReleaseCreateWithoutApprovedByInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -1732,6 +1822,7 @@ export type BonusReleaseUncheckedCreateWithoutApprovedByInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -1818,6 +1909,7 @@ export type BonusReleaseCreateManyProjectInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -1834,6 +1926,13 @@ export type BonusReleaseUpdateWithoutProjectInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -1864,6 +1963,13 @@ export type BonusReleaseUncheckedUpdateWithoutProjectInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -1889,6 +1995,13 @@ export type BonusReleaseUncheckedUpdateManyWithoutProjectInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -1909,6 +2022,7 @@ export type BonusReleaseCreateManyProductInput = {
   projectId: string;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -1925,6 +2039,13 @@ export type BonusReleaseUpdateWithoutProductInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -1955,6 +2076,13 @@ export type BonusReleaseUncheckedUpdateWithoutProductInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -1980,6 +2108,13 @@ export type BonusReleaseUncheckedUpdateManyWithoutProductInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2000,6 +2135,7 @@ export type BonusReleaseCreateManyExtensionInput = {
   projectId: string;
   productId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -2016,6 +2152,13 @@ export type BonusReleaseUpdateWithoutExtensionInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2046,6 +2189,13 @@ export type BonusReleaseUncheckedUpdateWithoutExtensionInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2071,6 +2221,13 @@ export type BonusReleaseUncheckedUpdateManyWithoutExtensionInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2091,6 +2248,7 @@ export type BonusReleaseCreateManyBonusEntryInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -2107,6 +2265,13 @@ export type BonusReleaseUpdateWithoutBonusEntryInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2137,6 +2302,13 @@ export type BonusReleaseUncheckedUpdateWithoutBonusEntryInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2162,6 +2334,13 @@ export type BonusReleaseUncheckedUpdateManyWithoutBonusEntryInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2182,6 +2361,7 @@ export type BonusReleaseCreateManyPayrollRunInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -2198,6 +2378,13 @@ export type BonusReleaseUpdateWithoutPayrollRunInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2228,6 +2415,13 @@ export type BonusReleaseUncheckedUpdateWithoutPayrollRunInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2253,6 +2447,13 @@ export type BonusReleaseUncheckedUpdateManyWithoutPayrollRunInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2273,6 +2474,7 @@ export type BonusReleaseCreateManyEmployeeInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   approvedById?: string | null;
@@ -2290,6 +2492,7 @@ export type BonusReleaseCreateManyApprovedByInput = {
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   releaseType: $Enums.BonusReleaseTypeEnum;
   reason?: string | null;
   status?: $Enums.BonusReleaseStatusEnum;
@@ -2305,6 +2508,13 @@ export type BonusReleaseUpdateWithoutEmployeeInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2335,6 +2545,13 @@ export type BonusReleaseUncheckedUpdateWithoutEmployeeInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2360,6 +2577,13 @@ export type BonusReleaseUncheckedUpdateManyWithoutEmployeeInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2380,6 +2604,13 @@ export type BonusReleaseUpdateWithoutApprovedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2411,6 +2642,13 @@ export type BonusReleaseUncheckedUpdateWithoutApprovedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2436,6 +2674,13 @@ export type BonusReleaseUncheckedUpdateManyWithoutApprovedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   releaseType?:
     | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseTypeEnum;
@@ -2459,6 +2704,7 @@ export type BonusReleaseSelect<
     productId?: boolean;
     extensionId?: boolean;
     amount?: boolean;
+    payrollIncludedAmount?: boolean;
     releaseType?: boolean;
     reason?: boolean;
     approvedById?: boolean;
@@ -2488,6 +2734,7 @@ export type BonusReleaseSelectCreateManyAndReturn<
     productId?: boolean;
     extensionId?: boolean;
     amount?: boolean;
+    payrollIncludedAmount?: boolean;
     releaseType?: boolean;
     reason?: boolean;
     approvedById?: boolean;
@@ -2517,6 +2764,7 @@ export type BonusReleaseSelectUpdateManyAndReturn<
     productId?: boolean;
     extensionId?: boolean;
     amount?: boolean;
+    payrollIncludedAmount?: boolean;
     releaseType?: boolean;
     reason?: boolean;
     approvedById?: boolean;
@@ -2543,6 +2791,7 @@ export type BonusReleaseSelectScalar = {
   productId?: boolean;
   extensionId?: boolean;
   amount?: boolean;
+  payrollIncludedAmount?: boolean;
   releaseType?: boolean;
   reason?: boolean;
   approvedById?: boolean;
@@ -2562,6 +2811,7 @@ export type BonusReleaseOmit<
   | 'productId'
   | 'extensionId'
   | 'amount'
+  | 'payrollIncludedAmount'
   | 'releaseType'
   | 'reason'
   | 'approvedById'
@@ -2627,6 +2877,10 @@ export type $BonusReleasePayload<
       productId: string | null;
       extensionId: string | null;
       amount: runtime.Decimal;
+      /**
+       * Amount applied to `SalaryLine.bonusesTotal` when INCLUDED_IN_PAYROLL (may differ from `amount` for SALES + KPI).
+       */
+      payrollIncludedAmount: runtime.Decimal | null;
       releaseType: $Enums.BonusReleaseTypeEnum;
       reason: string | null;
       approvedById: string | null;
@@ -3304,6 +3558,7 @@ export interface BonusReleaseFieldRefs {
   readonly productId: Prisma.FieldRef<'BonusRelease', 'String'>;
   readonly extensionId: Prisma.FieldRef<'BonusRelease', 'String'>;
   readonly amount: Prisma.FieldRef<'BonusRelease', 'Decimal'>;
+  readonly payrollIncludedAmount: Prisma.FieldRef<'BonusRelease', 'Decimal'>;
   readonly releaseType: Prisma.FieldRef<'BonusRelease', 'BonusReleaseTypeEnum'>;
   readonly reason: Prisma.FieldRef<'BonusRelease', 'String'>;
   readonly approvedById: Prisma.FieldRef<'BonusRelease', 'String'>;

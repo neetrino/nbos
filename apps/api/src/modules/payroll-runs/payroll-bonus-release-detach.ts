@@ -61,6 +61,7 @@ export async function detachBonusReleasesFromPayrollRun(
       id: true,
       employeeId: true,
       amount: true,
+      payrollIncludedAmount: true,
       status: true,
       payrollRunId: true,
     },
@@ -92,13 +93,15 @@ export async function detachBonusReleasesFromPayrollRun(
       );
     }
 
-    if (line.bonusesTotal.lt(rel.amount)) {
+    const applied = rel.payrollIncludedAmount ?? rel.amount;
+
+    if (line.bonusesTotal.lt(applied)) {
       throw new BadRequestException(
         `Salary line bonus total is lower than release ${rel.id}; cannot detach safely.`,
       );
     }
 
-    const nextBonuses = line.bonusesTotal.minus(rel.amount);
+    const nextBonuses = line.bonusesTotal.minus(applied);
     const nextTotal = computeLineTotalPayable({
       baseSalary: line.baseSalary,
       bonusesTotal: nextBonuses,
@@ -124,6 +127,7 @@ export async function detachBonusReleasesFromPayrollRun(
       data: {
         status: 'APPROVED',
         payrollRunId: null,
+        payrollIncludedAmount: null,
       },
     });
   }

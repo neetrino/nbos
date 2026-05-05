@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
-import { PayrollRunsService } from './payroll-runs.service';
+import { PayrollRunsService, type PatchPayrollRunBody } from './payroll-runs.service';
 
 @ApiTags('Payroll runs')
 @ApiBearerAuth()
@@ -87,6 +87,16 @@ export class PayrollRunsController {
   })
   async findOne(@Param('id') id: string) {
     return this.payrollRunsService.findById(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Patch payroll run (sales KPI inputs for seller payout gate)',
+    description:
+      'Updates `kpiSalesPlanAmount` / `kpiSalesActualAmount` (NBOS § KPI to payout). Only while DRAFT/REVIEW and with no bonus releases attached.',
+  })
+  async patchPayrollRun(@Param('id') id: string, @Body() body: PatchPayrollRunBody) {
+    return this.payrollRunsService.patchPayrollRun(id, body);
   }
 
   @Post()

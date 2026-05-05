@@ -32,6 +32,8 @@ export type PayrollRunAvgAggregateOutputType = {
   totalDeductions: runtime.Decimal | null;
   totalPayable: runtime.Decimal | null;
   totalPaid: runtime.Decimal | null;
+  kpiSalesPlanAmount: runtime.Decimal | null;
+  kpiSalesActualAmount: runtime.Decimal | null;
 };
 
 export type PayrollRunSumAggregateOutputType = {
@@ -41,6 +43,8 @@ export type PayrollRunSumAggregateOutputType = {
   totalDeductions: runtime.Decimal | null;
   totalPayable: runtime.Decimal | null;
   totalPaid: runtime.Decimal | null;
+  kpiSalesPlanAmount: runtime.Decimal | null;
+  kpiSalesActualAmount: runtime.Decimal | null;
 };
 
 export type PayrollRunMinAggregateOutputType = {
@@ -53,6 +57,8 @@ export type PayrollRunMinAggregateOutputType = {
   totalDeductions: runtime.Decimal | null;
   totalPayable: runtime.Decimal | null;
   totalPaid: runtime.Decimal | null;
+  kpiSalesPlanAmount: runtime.Decimal | null;
+  kpiSalesActualAmount: runtime.Decimal | null;
   createdById: string | null;
   approvedById: string | null;
   approvedAt: Date | null;
@@ -71,6 +77,8 @@ export type PayrollRunMaxAggregateOutputType = {
   totalDeductions: runtime.Decimal | null;
   totalPayable: runtime.Decimal | null;
   totalPaid: runtime.Decimal | null;
+  kpiSalesPlanAmount: runtime.Decimal | null;
+  kpiSalesActualAmount: runtime.Decimal | null;
   createdById: string | null;
   approvedById: string | null;
   approvedAt: Date | null;
@@ -89,6 +97,8 @@ export type PayrollRunCountAggregateOutputType = {
   totalDeductions: number;
   totalPayable: number;
   totalPaid: number;
+  kpiSalesPlanAmount: number;
+  kpiSalesActualAmount: number;
   createdById: number;
   approvedById: number;
   approvedAt: number;
@@ -105,6 +115,8 @@ export type PayrollRunAvgAggregateInputType = {
   totalDeductions?: true;
   totalPayable?: true;
   totalPaid?: true;
+  kpiSalesPlanAmount?: true;
+  kpiSalesActualAmount?: true;
 };
 
 export type PayrollRunSumAggregateInputType = {
@@ -114,6 +126,8 @@ export type PayrollRunSumAggregateInputType = {
   totalDeductions?: true;
   totalPayable?: true;
   totalPaid?: true;
+  kpiSalesPlanAmount?: true;
+  kpiSalesActualAmount?: true;
 };
 
 export type PayrollRunMinAggregateInputType = {
@@ -126,6 +140,8 @@ export type PayrollRunMinAggregateInputType = {
   totalDeductions?: true;
   totalPayable?: true;
   totalPaid?: true;
+  kpiSalesPlanAmount?: true;
+  kpiSalesActualAmount?: true;
   createdById?: true;
   approvedById?: true;
   approvedAt?: true;
@@ -144,6 +160,8 @@ export type PayrollRunMaxAggregateInputType = {
   totalDeductions?: true;
   totalPayable?: true;
   totalPaid?: true;
+  kpiSalesPlanAmount?: true;
+  kpiSalesActualAmount?: true;
   createdById?: true;
   approvedById?: true;
   approvedAt?: true;
@@ -162,6 +180,8 @@ export type PayrollRunCountAggregateInputType = {
   totalDeductions?: true;
   totalPayable?: true;
   totalPaid?: true;
+  kpiSalesPlanAmount?: true;
+  kpiSalesActualAmount?: true;
   createdById?: true;
   approvedById?: true;
   approvedAt?: true;
@@ -270,6 +290,8 @@ export type PayrollRunGroupByOutputType = {
   totalDeductions: runtime.Decimal;
   totalPayable: runtime.Decimal;
   totalPaid: runtime.Decimal;
+  kpiSalesPlanAmount: runtime.Decimal | null;
+  kpiSalesActualAmount: runtime.Decimal | null;
   createdById: string | null;
   approvedById: string | null;
   approvedAt: Date | null;
@@ -338,6 +360,20 @@ export type PayrollRunWhereInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.DecimalNullableFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.DecimalNullableFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
   approvedById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
   approvedAt?: Prisma.DateTimeNullableFilter<'PayrollRun'> | Date | string | null;
@@ -366,6 +402,8 @@ export type PayrollRunOrderByWithRelationInput = {
   totalDeductions?: Prisma.SortOrder;
   totalPayable?: Prisma.SortOrder;
   totalPaid?: Prisma.SortOrder;
+  kpiSalesPlanAmount?: Prisma.SortOrderInput | Prisma.SortOrder;
+  kpiSalesActualAmount?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder;
   approvedById?: Prisma.SortOrderInput | Prisma.SortOrder;
   approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -422,6 +460,20 @@ export type PayrollRunWhereUniqueInput = Prisma.AtLeast<
       | runtime.DecimalJsLike
       | number
       | string;
+    kpiSalesPlanAmount?:
+      | Prisma.DecimalNullableFilter<'PayrollRun'>
+      | runtime.Decimal
+      | runtime.DecimalJsLike
+      | number
+      | string
+      | null;
+    kpiSalesActualAmount?:
+      | Prisma.DecimalNullableFilter<'PayrollRun'>
+      | runtime.Decimal
+      | runtime.DecimalJsLike
+      | number
+      | string
+      | null;
     createdById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
     approvedById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
     approvedAt?: Prisma.DateTimeNullableFilter<'PayrollRun'> | Date | string | null;
@@ -452,6 +504,8 @@ export type PayrollRunOrderByWithAggregationInput = {
   totalDeductions?: Prisma.SortOrder;
   totalPayable?: Prisma.SortOrder;
   totalPaid?: Prisma.SortOrder;
+  kpiSalesPlanAmount?: Prisma.SortOrderInput | Prisma.SortOrder;
+  kpiSalesActualAmount?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder;
   approvedById?: Prisma.SortOrderInput | Prisma.SortOrder;
   approvedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -514,6 +568,20 @@ export type PayrollRunScalarWhereWithAggregatesInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.DecimalNullableWithAggregatesFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.DecimalNullableWithAggregatesFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.StringNullableWithAggregatesFilter<'PayrollRun'> | string | null;
   approvedById?: Prisma.StringNullableWithAggregatesFilter<'PayrollRun'> | string | null;
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'PayrollRun'> | Date | string | null;
@@ -532,6 +600,8 @@ export type PayrollRunCreateInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -552,6 +622,8 @@ export type PayrollRunUncheckedCreateInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   createdById?: string | null;
   approvedById?: string | null;
   approvedAt?: Date | string | null;
@@ -602,6 +674,20 @@ export type PayrollRunUpdateInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -652,6 +738,20 @@ export type PayrollRunUncheckedUpdateInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -672,6 +772,8 @@ export type PayrollRunCreateManyInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   createdById?: string | null;
   approvedById?: string | null;
   approvedAt?: Date | string | null;
@@ -720,6 +822,20 @@ export type PayrollRunUpdateManyMutationInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -766,6 +882,20 @@ export type PayrollRunUncheckedUpdateManyInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -789,6 +919,8 @@ export type PayrollRunCountOrderByAggregateInput = {
   totalDeductions?: Prisma.SortOrder;
   totalPayable?: Prisma.SortOrder;
   totalPaid?: Prisma.SortOrder;
+  kpiSalesPlanAmount?: Prisma.SortOrder;
+  kpiSalesActualAmount?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   approvedById?: Prisma.SortOrder;
   approvedAt?: Prisma.SortOrder;
@@ -804,6 +936,8 @@ export type PayrollRunAvgOrderByAggregateInput = {
   totalDeductions?: Prisma.SortOrder;
   totalPayable?: Prisma.SortOrder;
   totalPaid?: Prisma.SortOrder;
+  kpiSalesPlanAmount?: Prisma.SortOrder;
+  kpiSalesActualAmount?: Prisma.SortOrder;
 };
 
 export type PayrollRunMaxOrderByAggregateInput = {
@@ -816,6 +950,8 @@ export type PayrollRunMaxOrderByAggregateInput = {
   totalDeductions?: Prisma.SortOrder;
   totalPayable?: Prisma.SortOrder;
   totalPaid?: Prisma.SortOrder;
+  kpiSalesPlanAmount?: Prisma.SortOrder;
+  kpiSalesActualAmount?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   approvedById?: Prisma.SortOrder;
   approvedAt?: Prisma.SortOrder;
@@ -834,6 +970,8 @@ export type PayrollRunMinOrderByAggregateInput = {
   totalDeductions?: Prisma.SortOrder;
   totalPayable?: Prisma.SortOrder;
   totalPaid?: Prisma.SortOrder;
+  kpiSalesPlanAmount?: Prisma.SortOrder;
+  kpiSalesActualAmount?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   approvedById?: Prisma.SortOrder;
   approvedAt?: Prisma.SortOrder;
@@ -849,6 +987,8 @@ export type PayrollRunSumOrderByAggregateInput = {
   totalDeductions?: Prisma.SortOrder;
   totalPayable?: Prisma.SortOrder;
   totalPaid?: Prisma.SortOrder;
+  kpiSalesPlanAmount?: Prisma.SortOrder;
+  kpiSalesActualAmount?: Prisma.SortOrder;
 };
 
 export type PayrollRunScalarRelationFilter = {
@@ -1106,6 +1246,8 @@ export type PayrollRunCreateWithoutBonusReleasesInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -1125,6 +1267,8 @@ export type PayrollRunUncheckedCreateWithoutBonusReleasesInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   createdById?: string | null;
   approvedById?: string | null;
   approvedAt?: Date | string | null;
@@ -1202,6 +1346,20 @@ export type PayrollRunUpdateWithoutBonusReleasesInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1251,6 +1409,20 @@ export type PayrollRunUncheckedUpdateWithoutBonusReleasesInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1270,6 +1442,8 @@ export type PayrollRunCreateWithoutSalaryLinesInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -1289,6 +1463,8 @@ export type PayrollRunUncheckedCreateWithoutSalaryLinesInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   createdById?: string | null;
   approvedById?: string | null;
   approvedAt?: Date | string | null;
@@ -1366,6 +1542,20 @@ export type PayrollRunUpdateWithoutSalaryLinesInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1415,6 +1605,20 @@ export type PayrollRunUncheckedUpdateWithoutSalaryLinesInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1434,6 +1638,8 @@ export type PayrollRunCreateWithoutCreatedByInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -1453,6 +1659,8 @@ export type PayrollRunUncheckedCreateWithoutCreatedByInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   approvedById?: string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
@@ -1485,6 +1693,8 @@ export type PayrollRunCreateWithoutApprovedByInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -1504,6 +1714,8 @@ export type PayrollRunUncheckedCreateWithoutApprovedByInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   createdById?: string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
@@ -1597,6 +1809,20 @@ export type PayrollRunScalarWhereInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.DecimalNullableFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.DecimalNullableFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
   approvedById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
   approvedAt?: Prisma.DateTimeNullableFilter<'PayrollRun'> | Date | string | null;
@@ -1643,6 +1869,8 @@ export type PayrollRunCreateManyCreatedByInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   approvedById?: string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
@@ -1660,6 +1888,8 @@ export type PayrollRunCreateManyApprovedByInput = {
   totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   createdById?: string | null;
   approvedAt?: Date | string | null;
   closedAt?: Date | string | null;
@@ -1707,6 +1937,20 @@ export type PayrollRunUpdateWithoutCreatedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1756,6 +2000,20 @@ export type PayrollRunUncheckedUpdateWithoutCreatedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1805,6 +2063,20 @@ export type PayrollRunUncheckedUpdateManyWithoutCreatedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1852,6 +2124,20 @@ export type PayrollRunUpdateWithoutApprovedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1901,6 +2187,20 @@ export type PayrollRunUncheckedUpdateWithoutApprovedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1950,6 +2250,20 @@ export type PayrollRunUncheckedUpdateManyWithoutApprovedByInput = {
     | runtime.DecimalJsLike
     | number
     | string;
+  kpiSalesPlanAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2016,6 +2330,8 @@ export type PayrollRunSelect<
     totalDeductions?: boolean;
     totalPayable?: boolean;
     totalPaid?: boolean;
+    kpiSalesPlanAmount?: boolean;
+    kpiSalesActualAmount?: boolean;
     createdById?: boolean;
     approvedById?: boolean;
     approvedAt?: boolean;
@@ -2044,6 +2360,8 @@ export type PayrollRunSelectCreateManyAndReturn<
     totalDeductions?: boolean;
     totalPayable?: boolean;
     totalPaid?: boolean;
+    kpiSalesPlanAmount?: boolean;
+    kpiSalesActualAmount?: boolean;
     createdById?: boolean;
     approvedById?: boolean;
     approvedAt?: boolean;
@@ -2069,6 +2387,8 @@ export type PayrollRunSelectUpdateManyAndReturn<
     totalDeductions?: boolean;
     totalPayable?: boolean;
     totalPaid?: boolean;
+    kpiSalesPlanAmount?: boolean;
+    kpiSalesActualAmount?: boolean;
     createdById?: boolean;
     approvedById?: boolean;
     approvedAt?: boolean;
@@ -2091,6 +2411,8 @@ export type PayrollRunSelectScalar = {
   totalDeductions?: boolean;
   totalPayable?: boolean;
   totalPaid?: boolean;
+  kpiSalesPlanAmount?: boolean;
+  kpiSalesActualAmount?: boolean;
   createdById?: boolean;
   approvedById?: boolean;
   approvedAt?: boolean;
@@ -2111,6 +2433,8 @@ export type PayrollRunOmit<
   | 'totalDeductions'
   | 'totalPayable'
   | 'totalPaid'
+  | 'kpiSalesPlanAmount'
+  | 'kpiSalesActualAmount'
   | 'createdById'
   | 'approvedById'
   | 'approvedAt'
@@ -2162,6 +2486,14 @@ export type $PayrollRunPayload<
       totalDeductions: runtime.Decimal;
       totalPayable: runtime.Decimal;
       totalPaid: runtime.Decimal;
+      /**
+       * Monthly sales plan (major units) for seller KPI payout gate; pair with `kpiSalesActualAmount` (NBOS § KPI).
+       */
+      kpiSalesPlanAmount: runtime.Decimal | null;
+      /**
+       * Recognized sales actual for the same month as `payrollMonth` (major units).
+       */
+      kpiSalesActualAmount: runtime.Decimal | null;
       createdById: string | null;
       approvedById: string | null;
       approvedAt: Date | null;
@@ -2794,6 +3126,8 @@ export interface PayrollRunFieldRefs {
   readonly totalDeductions: Prisma.FieldRef<'PayrollRun', 'Decimal'>;
   readonly totalPayable: Prisma.FieldRef<'PayrollRun', 'Decimal'>;
   readonly totalPaid: Prisma.FieldRef<'PayrollRun', 'Decimal'>;
+  readonly kpiSalesPlanAmount: Prisma.FieldRef<'PayrollRun', 'Decimal'>;
+  readonly kpiSalesActualAmount: Prisma.FieldRef<'PayrollRun', 'Decimal'>;
   readonly createdById: Prisma.FieldRef<'PayrollRun', 'String'>;
   readonly approvedById: Prisma.FieldRef<'PayrollRun', 'String'>;
   readonly approvedAt: Prisma.FieldRef<'PayrollRun', 'DateTime'>;
