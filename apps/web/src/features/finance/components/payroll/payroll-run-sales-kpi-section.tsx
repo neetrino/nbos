@@ -140,6 +140,12 @@ export function PayrollRunSalesKpiSection(props: {
             placeholder="e.g. 3800000"
             autoComplete="off"
           />
+          <p className="text-muted-foreground text-xs">
+            From payments ({run.payrollMonth}, UTC):{' '}
+            <span className="text-foreground font-medium tabular-nums">
+              {moneyStringOrEmpty(run.kpiSalesActualSuggestedAmount)}
+            </span>
+          </p>
         </div>
       </div>
       {error ? <p className="text-destructive mt-2 text-sm">{error}</p> : null}
@@ -147,6 +153,18 @@ export function PayrollRunSalesKpiSection(props: {
         <div className="mt-3 flex flex-wrap gap-2">
           <Button type="button" size="sm" disabled={saving} onClick={() => void handleSave()}>
             Save KPI inputs
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={saving}
+            onClick={() => {
+              setActual(moneyStringOrEmpty(run.kpiSalesActualSuggestedAmount));
+              setError(null);
+            }}
+          >
+            Use payment total
           </Button>
           <Button
             type="button"

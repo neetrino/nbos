@@ -34,7 +34,7 @@ describe('buildBonusBoardCsvContent', () => {
   it('returns header only when no rows', () => {
     const csv = buildBonusBoardCsvContent([]);
     expect(csv).toBe(
-      'id,employeeId,employeeName,projectId,projectCode,projectName,orderId,orderCode,type,amount,percent,status,kpiGatePassed,payoutMonth,createdAt,updatedAt',
+      'id,employeeId,employeeName,projectId,projectCode,projectName,orderId,orderCode,type,amount,percent,status,kpiGatePassed,payoutMonth,createdAt,updatedAt,salesAccrualHint,salesAccrualInvoiceId',
     );
   });
 

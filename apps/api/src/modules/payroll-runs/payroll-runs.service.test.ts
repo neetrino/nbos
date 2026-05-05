@@ -182,7 +182,9 @@ describe('PayrollRunsService', () => {
         createdBy: { id: 'e1', firstName: 'A', lastName: 'B' },
         approvedBy: { id: 'e2', firstName: 'C', lastName: 'D' },
       });
+      prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal('99.10') } });
       const result = await service.findById('p1');
+      expect(result.kpiSalesActualSuggestedAmount).toBe('99.10');
       expect(result.materializedExpenseLineCount).toBe(2);
       expect(result.journal).toHaveLength(3);
       expect(result.journal.map((j: { kind: string }) => j.kind)).toEqual([

@@ -84,6 +84,11 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   closedAt: string | null;
   /** Bonus releases currently INCLUDED_IN_PAYROLL on this run (KPI inputs locked until detached). */
   includedBonusReleaseCount: number;
+  /**
+   * Sum of `Payment.amount` with `paymentDate` in the run’s calendar month (UTC).
+   * Hint for sales actual; does not persist until saved via PATCH.
+   */
+  kpiSalesActualSuggestedAmount: string;
   /** Read-only milestones from run timestamps (no intermediate status audit yet). */
   journal: PayrollJournalEntry[];
   /** Audit log rows for this run (`CREATED`, `STATUS_CHANGED`, …). */

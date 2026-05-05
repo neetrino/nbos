@@ -12,8 +12,15 @@ export interface EmployeeWalletBonusRow {
   type: string;
   status: string;
   walletGroup: WalletBonusPipelineGroup;
+  /** Planned amount on the bonus entry. */
   amount: string;
   percent: string;
+  releasedAmount: string;
+  paidAmount: string;
+  remainingAmount: string;
+  payrollMonth: string | null;
+  orderPaymentType: string | null;
+  salesAccrualHint: string | null;
   project: { code: string; name: string };
   order: { code: string };
   createdAt: string;

@@ -35,9 +35,20 @@ describe('EmployeeWalletService', () => {
         status: 'EARNED',
         amount: new Decimal(10_000),
         percent: new Decimal(5),
+        salesBonusSlot: 'SELLER',
+        calculationSnapshot: { paymentModel: 'CLASSIC' },
         project: { code: 'P1', name: 'Proj' },
-        order: { code: 'O1' },
+        order: { code: 'O1', paymentType: 'CLASSIC' },
         createdAt: new Date('2026-01-01'),
+      },
+    ]);
+    prisma.bonusRelease.findMany.mockResolvedValue([
+      {
+        bonusEntryId: 'b1',
+        amount: new Decimal(2000),
+        status: 'PAID',
+        updatedAt: new Date('2026-01-15'),
+        payrollRun: { payrollMonth: '2026-02' },
       },
     ]);
     prisma.salaryLine.findMany.mockResolvedValue([
@@ -59,6 +70,11 @@ describe('EmployeeWalletService', () => {
     expect(snap.employee.baseSalary).toBe('100000');
     expect(snap.bonuses).toHaveLength(1);
     expect(snap.bonuses[0].walletGroup).toBe('IN_PROGRESS');
+    expect(snap.bonuses[0].releasedAmount).toBe('2000.00');
+    expect(snap.bonuses[0].paidAmount).toBe('2000.00');
+    expect(snap.bonuses[0].remainingAmount).toBe('8000.00');
+    expect(snap.bonuses[0].payrollMonth).toBe('2026-02');
+    expect(snap.bonuses[0].salesAccrualHint).toBe('Seller · Classic');
     expect(snap.salaryHistory).toHaveLength(1);
     expect(snap.salaryHistory[0].expenseId).toBe('ex1');
     expect(snap.salaryHistory[0].payrollRunId).toBe('run-1');

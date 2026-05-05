@@ -189,8 +189,28 @@ export default function EmployeeWalletPage() {
                         </div>
                         <div className="text-muted-foreground mt-0.5">{b.type}</div>
                         <div className="text-foreground mt-1 font-semibold">
-                          {formatAmount(parseAmount(b.amount))}
+                          Planned {formatAmount(parseAmount(b.amount))}
                         </div>
+                        <div className="text-muted-foreground mt-1 leading-snug tabular-nums">
+                          Released {formatAmount(parseAmount(b.releasedAmount))} · Paid{' '}
+                          {formatAmount(parseAmount(b.paidAmount))} · Remaining{' '}
+                          {formatAmount(parseAmount(b.remainingAmount))}
+                        </div>
+                        {b.payrollMonth ? (
+                          <div className="text-muted-foreground mt-1 text-[10px]">
+                            Payroll (release): {b.payrollMonth}
+                          </div>
+                        ) : null}
+                        {b.salesAccrualHint ? (
+                          <div className="text-muted-foreground mt-1 text-[10px]">
+                            {b.salesAccrualHint}
+                          </div>
+                        ) : null}
+                        {b.orderPaymentType === 'SUBSCRIPTION' ? (
+                          <div className="text-muted-foreground mt-1 text-[10px] leading-snug">
+                            Subscription order — bonus releases may follow client invoice payments.
+                          </div>
+                        ) : null}
                       </li>
                     ))
                   )}

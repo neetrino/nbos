@@ -1,3 +1,4 @@
+import { bonusSalesAccrualHint } from '@/features/finance/utils/bonus-sales-accrual-hint';
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 
@@ -18,6 +19,8 @@ const CSV_HEADERS = [
   'payoutMonth',
   'createdAt',
   'updatedAt',
+  'salesAccrualHint',
+  'salesAccrualInvoiceId',
 ] as const;
 
 const CSV_UTF8_BOM = '\uFEFF';
@@ -58,6 +61,8 @@ function rowToCsvCells(row: BonusEntryListRow): string[] {
     row.payoutMonth ?? '',
     row.createdAt,
     row.updatedAt,
+    bonusSalesAccrualHint(row) ?? '',
+    row.salesAccrualInvoiceId ?? '',
   ];
   return cells.map((c) => escapeCsvCell(String(c)));
 }

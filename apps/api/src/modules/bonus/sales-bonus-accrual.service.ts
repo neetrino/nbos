@@ -1,12 +1,34 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { Decimal, PrismaClient, type InputJsonValue } from '@nbos/database';
+import { Decimal, PrismaClient, type InputJsonValue, type LeadSourceEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
+import {
+  SALES_BONUS_TYPE,
+  buildSalesBonusAmountRows,
+  persistSalesBonusRows,
+} from './sales-bonus-accrual-rows';
 
-const SALES_BONUS_TYPE = 'SALES' as const;
-const BONUS_STATUS_INCOMING = 'INCOMING' as const;
+type SlottedPaymentModel = 'CLASSIC' | 'SUBSCRIPTION_FIRST_MONTH';
+type PolicyPaymentModel = SlottedPaymentModel | 'SUBSCRIPTION_RECURRING';
 
-type PaymentModelKey = 'CLASSIC' | 'SUBSCRIPTION_FIRST_MONTH';
+type AccrualBasis = 'ORDER_TOTAL' | 'FIRST_PAID_INVOICE_AMOUNT' | 'SUBSCRIPTION_RECURRING_INVOICE';
+
+type AccrualDeal = {
+  id: string;
+  source: LeadSourceEnum;
+  sellerId: string;
+  sellerAssistantId: string | null;
+};
+
+type AccrualOrder = {
+  id: string;
+  projectId: string;
+  totalAmount: Decimal;
+  paymentType: string;
+  dealId: string;
+  deal: AccrualDeal;
+};
 
 @Injectable()
 export class SalesBonusAccrualService {
@@ -15,12 +37,16 @@ export class SalesBonusAccrualService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   /**
-   * Called when an invoice is fully PAID. Creates at most one Seller and one Assistant
-   * SALES bonus row per order (idempotent by `salesBonusSlot`).
+   * Called when an invoice is fully PAID. Classic: one seller + assistant wave per order.
+   * Subscription: first paid invoice uses first-month policy; later paid invoices use
+   * `SUBSCRIPTION_RECURRING` (idempotent per invoice via `salesAccrualInvoiceId`).
    */
   async onInvoicePaid(invoiceId: string): Promise<void> {
     try {
-      await this.runAccrual(invoiceId);
+      const orderIdToSync = await this.runAccrual(invoiceId);
+      if (orderIdToSync) {
+        await syncProductBonusPoolForOrder(this.prisma, orderIdToSync);
+      }
     } catch (err) {
       this.logger.error(
         { err, invoiceId, message: err instanceof Error ? err.message : String(err) },
@@ -29,7 +55,8 @@ export class SalesBonusAccrualService {
     }
   }
 
-  private async runAccrual(invoiceId: string): Promise<void> {
+  /** @returns order id when bonus rows were created and product pool should sync. */
+  private async runAccrual(invoiceId: string): Promise<string | null> {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
       select: {
@@ -58,121 +85,197 @@ export class SalesBonusAccrualService {
     });
 
     if (!invoice || invoice.status !== 'PAID' || !invoice.orderId || !invoice.order) {
-      return;
+      return null;
     }
 
-    const order = invoice.order;
-    if (!order.dealId || !order.deal) {
-      return;
+    const raw = invoice.order;
+    if (!raw.dealId || !raw.deal || !raw.deal.source) {
+      if (raw.deal && !raw.deal.source) {
+        this.logger.warn(
+          { dealId: raw.deal.id, orderId: raw.id },
+          'Skipping sales bonus: Deal has no From (source)',
+        );
+      }
+      return null;
     }
 
-    const deal = order.deal;
-    if (!deal.source) {
+    const order: AccrualOrder = {
+      id: raw.id,
+      projectId: raw.projectId,
+      totalAmount: decimalFrom(raw.totalAmount),
+      paymentType: raw.paymentType,
+      dealId: raw.dealId,
+      deal: {
+        id: raw.deal.id,
+        source: raw.deal.source,
+        sellerId: raw.deal.sellerId,
+        sellerAssistantId: raw.deal.sellerAssistantId,
+      },
+    };
+
+    const invoiceCore = { id: invoice.id, amount: decimalFrom(invoice.amount) };
+
+    if (order.paymentType === 'SUBSCRIPTION') {
+      const created = await this.runSubscriptionAccrual(invoiceCore, order);
+      return created ? order.id : null;
+    }
+
+    const created = await this.runSlottedAccrual(invoiceCore, order, 'CLASSIC', {
+      baseAmount: order.totalAmount,
+      basis: 'ORDER_TOTAL',
+    });
+    return created ? order.id : null;
+  }
+
+  private async runSubscriptionAccrual(
+    invoice: { id: string; amount: Decimal },
+    order: AccrualOrder,
+  ): Promise<boolean> {
+    const firstMonthDone = await this.hasSlottedSalesBonus(order.id);
+    if (!firstMonthDone) {
+      return this.runSlottedAccrual(invoice, order, 'SUBSCRIPTION_FIRST_MONTH', {
+        baseAmount: decimalFrom(invoice.amount),
+        basis: 'FIRST_PAID_INVOICE_AMOUNT',
+      });
+    }
+    return this.runSubscriptionRecurringAccrual(invoice, order);
+  }
+
+  private async hasSlottedSalesBonus(orderId: string): Promise<boolean> {
+    const row = await this.prisma.bonusEntry.findFirst({
+      where: { orderId, type: SALES_BONUS_TYPE, salesBonusSlot: { not: null } },
+      select: { id: true },
+    });
+    return row != null;
+  }
+
+  private async runSubscriptionRecurringAccrual(
+    invoice: { id: string; amount: Decimal },
+    order: AccrualOrder,
+  ): Promise<boolean> {
+    const duplicate = await this.prisma.bonusEntry.findFirst({
+      where: {
+        orderId: order.id,
+        type: SALES_BONUS_TYPE,
+        salesAccrualInvoiceId: invoice.id,
+      },
+      select: { id: true },
+    });
+    if (duplicate) {
+      return false;
+    }
+
+    const policy = await this.loadPolicy(order.deal.source, 'SUBSCRIPTION_RECURRING');
+    if (!policy) {
       this.logger.warn(
-        { dealId: deal.id, orderId: order.id },
-        'Skipping sales bonus: Deal has no From (source)',
+        { from: order.deal.source, paymentModel: 'SUBSCRIPTION_RECURRING', dealId: order.deal.id },
+        'No active sales bonus policy row',
       );
-      return;
+      return false;
     }
 
-    const paymentModel: PaymentModelKey =
-      order.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION_FIRST_MONTH' : 'CLASSIC';
+    if (policy.sellerPercent.eq(0) && policy.assistantPercent.eq(0)) {
+      return false;
+    }
 
+    const baseAmount = decimalFrom(invoice.amount);
+    const snapshot = {
+      fromCategory: order.deal.source,
+      paymentModel: 'SUBSCRIPTION_RECURRING' as const,
+      sellerPercent: Number(policy.sellerPercent),
+      assistantPercent: Number(policy.assistantPercent),
+      baseAmount: baseAmount.toString(),
+      invoiceId: invoice.id,
+      orderId: order.id,
+      dealId: order.deal.id,
+      basis: 'SUBSCRIPTION_RECURRING_INVOICE' as const,
+    };
+
+    const rows = buildSalesBonusAmountRows(order.deal, policy, baseAmount);
+    if (rows.length === 0) {
+      return false;
+    }
+
+    const snapshotJson = snapshot as InputJsonValue;
+    await persistSalesBonusRows(
+      this.prisma,
+      order,
+      order.deal,
+      rows,
+      snapshotJson,
+      invoice.id,
+      null,
+    );
+    return true;
+  }
+
+  private async loadPolicy(
+    fromCategory: LeadSourceEnum,
+    paymentModel: PolicyPaymentModel,
+  ): Promise<{ sellerPercent: Decimal; assistantPercent: Decimal } | null> {
     const policy = await this.prisma.salesBonusPolicy.findFirst({
       where: {
-        fromCategory: deal.source,
+        fromCategory,
         paymentModel,
         isActive: true,
         effectiveFrom: { lte: new Date() },
       },
       orderBy: { effectiveFrom: 'desc' },
     });
+    if (!policy) return null;
+    return {
+      sellerPercent: new Decimal(policy.sellerPercent),
+      assistantPercent: new Decimal(policy.assistantPercent),
+    };
+  }
 
+  private async runSlottedAccrual(
+    invoice: { id: string; amount: Decimal },
+    order: AccrualOrder,
+    paymentModel: SlottedPaymentModel,
+    params: { baseAmount: Decimal; basis: AccrualBasis },
+  ): Promise<boolean> {
+    const slottedExists = await this.hasSlottedSalesBonus(order.id);
+    if (slottedExists) {
+      return false;
+    }
+
+    const policy = await this.loadPolicy(order.deal.source, paymentModel);
     if (!policy) {
       this.logger.warn(
-        { from: deal.source, paymentModel, dealId: deal.id },
+        { from: order.deal.source, paymentModel, dealId: order.deal.id },
         'No active sales bonus policy row',
       );
-      return;
+      return false;
     }
-
-    const existingSlots = await this.prisma.bonusEntry.findMany({
-      where: { orderId: order.id, salesBonusSlot: { not: null } },
-      select: { salesBonusSlot: true },
-    });
-    const taken = new Set(existingSlots.map((row) => row.salesBonusSlot).filter(Boolean));
-    if (taken.has('SELLER')) {
-      return;
-    }
-
-    const baseAmount =
-      paymentModel === 'CLASSIC' ? new Decimal(order.totalAmount) : new Decimal(invoice.amount);
 
     const snapshot = {
-      fromCategory: deal.source,
+      fromCategory: order.deal.source,
       paymentModel,
       sellerPercent: Number(policy.sellerPercent),
       assistantPercent: Number(policy.assistantPercent),
-      baseAmount: baseAmount.toString(),
+      baseAmount: params.baseAmount.toString(),
       invoiceId: invoice.id,
       orderId: order.id,
-      dealId: deal.id,
-      basis: paymentModel === 'CLASSIC' ? 'ORDER_TOTAL' : 'FIRST_PAID_INVOICE_AMOUNT',
+      dealId: order.deal.id,
+      basis: params.basis,
     };
 
-    const sellerAmount = baseAmount.mul(policy.sellerPercent).div(new Decimal(100));
-    const assistantAmount = baseAmount.mul(policy.assistantPercent).div(new Decimal(100));
-
-    const rows: Array<{
-      employeeId: string;
-      slot: 'SELLER' | 'ASSISTANT';
-      amount: Decimal;
-      percent: Decimal;
-    }> = [];
-
-    if (sellerAmount.gt(0)) {
-      rows.push({
-        employeeId: deal.sellerId,
-        slot: 'SELLER',
-        amount: sellerAmount,
-        percent: policy.sellerPercent,
-      });
-    }
-
-    if (assistantAmount.gt(0) && deal.sellerAssistantId) {
-      rows.push({
-        employeeId: deal.sellerAssistantId,
-        slot: 'ASSISTANT',
-        amount: assistantAmount,
-        percent: policy.assistantPercent,
-      });
-    }
-
+    const rows = buildSalesBonusAmountRows(order.deal, policy, params.baseAmount);
     if (rows.length === 0) {
-      return;
+      return false;
     }
 
     const snapshotJson = snapshot as InputJsonValue;
-
-    await this.prisma.$transaction(
-      rows.map((row) =>
-        this.prisma.bonusEntry.create({
-          data: {
-            employeeId: row.employeeId,
-            orderId: order.id,
-            projectId: order.projectId,
-            dealId: deal.id,
-            type: SALES_BONUS_TYPE,
-            amount: row.amount,
-            percent: row.percent,
-            status: BONUS_STATUS_INCOMING,
-            salesBonusSlot: row.slot,
-            calculationSnapshot: snapshotJson,
-          },
-        }),
-      ),
+    await persistSalesBonusRows(
+      this.prisma,
+      order,
+      order.deal,
+      rows,
+      snapshotJson,
+      invoice.id,
+      'slot',
     );
-
-    await syncProductBonusPoolForOrder(this.prisma, order.id);
+    return true;
   }
 }

@@ -32,6 +32,8 @@ export interface BonusProjectRef {
   name: string;
 }
 
+export type SalesBonusSlot = 'SELLER' | 'ASSISTANT';
+
 export interface BonusEntryListRow {
   id: string;
   employeeId: string;
@@ -48,6 +50,12 @@ export interface BonusEntryListRow {
   employee: BonusEmployeeRef;
   order: BonusOrderRef;
   project: BonusProjectRef;
+  /** Present for sales bonus rows; null for subscription month 2+ accrual waves. */
+  salesBonusSlot?: SalesBonusSlot | null;
+  /** Invoice that triggered this accrual (sales bonus idempotency / audit). */
+  salesAccrualInvoiceId?: string | null;
+  /** Accrual snapshot from API (payment model, basis, …). */
+  calculationSnapshot?: unknown;
 }
 
 export interface BonusStatsByStatusRow {
@@ -137,7 +145,10 @@ export const BONUS_LIST_PAGE_SIZE = 500;
 const BONUS_FETCH_MAX_PAGES = 40;
 
 /** Matches `SalesBonusPaymentModelEnum` (sales bonus policy rows). */
-export type SalesBonusPaymentModel = 'CLASSIC' | 'SUBSCRIPTION_FIRST_MONTH';
+export type SalesBonusPaymentModel =
+  | 'CLASSIC'
+  | 'SUBSCRIPTION_FIRST_MONTH'
+  | 'SUBSCRIPTION_RECURRING';
 
 /** Row from `GET /api/bonus/sales-policies`. Decimal fields arrive as strings in JSON. */
 export interface SalesBonusPolicyRow {

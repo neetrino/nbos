@@ -30,6 +30,7 @@ import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach'
 import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
 import { refreshBonusEntryStatusesForReleases } from './payroll-run-bonus-release-side-effects';
 import { applyPayrollRunKpiPatch, type PatchPayrollRunBody } from './payroll-run-kpi-patch';
+import { sumPaymentsForPayrollMonthSuggestedSalesKpi } from './payroll-run-suggested-sales-actual';
 
 export type { PayrollRunListParams } from './payroll-run-list-queries';
 export type { PayrollRunStatsResult } from './payroll-run-list-stats';
@@ -78,12 +79,18 @@ export class PayrollRunsService {
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
 
-    const [materializedByRun, auditTrail, includedBonusReleaseCount] = await Promise.all([
+    const [
+      materializedByRun,
+      auditTrail,
+      includedBonusReleaseCount,
+      kpiSalesActualSuggestedAmount,
+    ] = await Promise.all([
       fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
       loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
       this.prisma.bonusRelease.count({
         where: { payrollRunId: id, status: 'INCLUDED_IN_PAYROLL' },
       }),
+      sumPaymentsForPayrollMonthSuggestedSalesKpi(this.prisma, run.payrollMonth),
     ]);
 
     return {
@@ -92,6 +99,7 @@ export class PayrollRunsService {
       journal: buildPayrollRunJournal(run),
       auditTrail,
       includedBonusReleaseCount,
+      kpiSalesActualSuggestedAmount: kpiSalesActualSuggestedAmount.toFixed(2),
     };
   }
 

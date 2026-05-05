@@ -17,6 +17,12 @@ const BONUS_HEADERS = [
   'status',
   'amount',
   'percent',
+  'releasedAmount',
+  'paidAmount',
+  'remainingAmount',
+  'payrollMonth',
+  'orderPaymentType',
+  'salesAccrualHint',
   'projectCode',
   'projectName',
   'orderCode',
@@ -37,6 +43,12 @@ export function buildWalletBonusesCsvContent(rows: EmployeeWalletBonusRow[]): st
         r.status,
         r.amount,
         r.percent,
+        r.releasedAmount,
+        r.paidAmount,
+        r.remainingAmount,
+        r.payrollMonth ?? '',
+        r.orderPaymentType ?? '',
+        r.salesAccrualHint ?? '',
         r.project.code,
         r.project.name,
         r.order.code,
@@ -51,19 +63,13 @@ export function buildWalletBonusesCsvContent(rows: EmployeeWalletBonusRow[]): st
 }
 
 function grandTotalWalletBonusesCsvLine(rows: EmployeeWalletBonusRow[]): string {
-  const amount = sumMoneyStringsMajorUnits(rows.map((r) => r.amount)).toFixed(2);
-  const cells = [
-    '_grand_total',
-    `All bonus rows (${rows.length})`,
-    '',
-    '',
-    amount,
-    '',
-    '',
-    '',
-    '',
-    '',
-  ];
+  const planned = sumMoneyStringsMajorUnits(rows.map((r) => r.amount)).toFixed(2);
+  const paid = sumMoneyStringsMajorUnits(rows.map((r) => r.paidAmount)).toFixed(2);
+  const cells: string[] = new Array(BONUS_HEADERS.length).fill('');
+  cells[0] = '_grand_total';
+  cells[1] = `All bonus rows (${rows.length})`;
+  cells[BONUS_HEADERS.indexOf('amount')] = planned;
+  cells[BONUS_HEADERS.indexOf('paidAmount')] = paid;
   return cells.map((c) => escapeCsvCell(String(c))).join(',');
 }
 

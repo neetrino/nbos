@@ -785,6 +785,8 @@ enum BonusTypeEnum {
 enum SalesBonusPaymentModelEnum {
   CLASSIC
   SUBSCRIPTION_FIRST_MONTH
+  /// Months 2+ of a subscription order; separate editable rates from first month (NBOS).
+  SUBSCRIPTION_RECURRING
 }
 
 enum SalesBonusSlotEnum {
@@ -841,6 +843,8 @@ model BonusEntry {
   orderId              String              @map("order_id")
   projectId            String              @map("project_id")
   dealId               String?             @map("deal_id")
+  /// Invoice whose PAID event triggered this accrual (subscription recurring idempotency; audit).
+  salesAccrualInvoiceId String?            @map("sales_accrual_invoice_id")
   salesBonusSlot       SalesBonusSlotEnum? @map("sales_bonus_slot")
   calculationSnapshot  Json?             @map("calculation_snapshot")
   type                 BonusTypeEnum
@@ -859,6 +863,7 @@ model BonusEntry {
   bonusReleases BonusRelease[]
 
   @@index([orderId, salesBonusSlot])
+  @@index([orderId, salesAccrualInvoiceId])
   @@map("bonus_entries")
 }
 

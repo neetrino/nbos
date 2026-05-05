@@ -18,6 +18,7 @@ import { bonusesApi, type SalesBonusPaymentModel, type SalesBonusPolicyRow } fro
 const PAYMENT_MODEL_LABEL: Record<SalesBonusPaymentModel, string> = {
   CLASSIC: 'Classic (order total)',
   SUBSCRIPTION_FIRST_MONTH: 'Subscription (1st paid invoice)',
+  SUBSCRIPTION_RECURRING: 'Subscription (month 2+ per paid invoice)',
 };
 
 function parsePercentInput(raw: string): number | null {
@@ -74,7 +75,7 @@ export default function SalesBonusPoliciesPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Sales bonus policies"
-        description="Seller and assistant percentages by CRM From category and payment model (NBOS sales bonus accrual on first fully paid invoice)."
+        description="Seller and assistant percentages by CRM From category and payment model (classic on first fully paid tranche; subscription: first paid invoice, then month 2+ per invoice when rates are set)."
       >
         <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
           Refresh

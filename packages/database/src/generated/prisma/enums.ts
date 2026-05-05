@@ -347,6 +347,7 @@ export type BonusTypeEnum = (typeof BonusTypeEnum)[keyof typeof BonusTypeEnum];
 export const SalesBonusPaymentModelEnum = {
   CLASSIC: 'CLASSIC',
   SUBSCRIPTION_FIRST_MONTH: 'SUBSCRIPTION_FIRST_MONTH',
+  SUBSCRIPTION_RECURRING: 'SUBSCRIPTION_RECURRING',
 } as const;
 
 export type SalesBonusPaymentModelEnum =

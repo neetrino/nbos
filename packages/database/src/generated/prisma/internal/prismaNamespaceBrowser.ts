@@ -545,6 +545,7 @@ export const BonusEntryScalarFieldEnum = {
   orderId: 'orderId',
   projectId: 'projectId',
   dealId: 'dealId',
+  salesAccrualInvoiceId: 'salesAccrualInvoiceId',
   salesBonusSlot: 'salesBonusSlot',
   calculationSnapshot: 'calculationSnapshot',
   type: 'type',

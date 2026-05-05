@@ -41,6 +41,7 @@ export type BonusEntryMinAggregateOutputType = {
   orderId: string | null;
   projectId: string | null;
   dealId: string | null;
+  salesAccrualInvoiceId: string | null;
   salesBonusSlot: $Enums.SalesBonusSlotEnum | null;
   type: $Enums.BonusTypeEnum | null;
   amount: runtime.Decimal | null;
@@ -58,6 +59,7 @@ export type BonusEntryMaxAggregateOutputType = {
   orderId: string | null;
   projectId: string | null;
   dealId: string | null;
+  salesAccrualInvoiceId: string | null;
   salesBonusSlot: $Enums.SalesBonusSlotEnum | null;
   type: $Enums.BonusTypeEnum | null;
   amount: runtime.Decimal | null;
@@ -75,6 +77,7 @@ export type BonusEntryCountAggregateOutputType = {
   orderId: number;
   projectId: number;
   dealId: number;
+  salesAccrualInvoiceId: number;
   salesBonusSlot: number;
   calculationSnapshot: number;
   type: number;
@@ -104,6 +107,7 @@ export type BonusEntryMinAggregateInputType = {
   orderId?: true;
   projectId?: true;
   dealId?: true;
+  salesAccrualInvoiceId?: true;
   salesBonusSlot?: true;
   type?: true;
   amount?: true;
@@ -121,6 +125,7 @@ export type BonusEntryMaxAggregateInputType = {
   orderId?: true;
   projectId?: true;
   dealId?: true;
+  salesAccrualInvoiceId?: true;
   salesBonusSlot?: true;
   type?: true;
   amount?: true;
@@ -138,6 +143,7 @@ export type BonusEntryCountAggregateInputType = {
   orderId?: true;
   projectId?: true;
   dealId?: true;
+  salesAccrualInvoiceId?: true;
   salesBonusSlot?: true;
   calculationSnapshot?: true;
   type?: true;
@@ -246,6 +252,7 @@ export type BonusEntryGroupByOutputType = {
   orderId: string;
   projectId: string;
   dealId: string | null;
+  salesAccrualInvoiceId: string | null;
   salesBonusSlot: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot: runtime.JsonValue | null;
   type: $Enums.BonusTypeEnum;
@@ -284,6 +291,7 @@ export type BonusEntryWhereInput = {
   orderId?: Prisma.StringFilter<'BonusEntry'> | string;
   projectId?: Prisma.StringFilter<'BonusEntry'> | string;
   dealId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
+  salesAccrualInvoiceId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
   salesBonusSlot?:
     | Prisma.EnumSalesBonusSlotEnumNullableFilter<'BonusEntry'>
     | $Enums.SalesBonusSlotEnum
@@ -320,6 +328,7 @@ export type BonusEntryOrderByWithRelationInput = {
   orderId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   dealId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  salesAccrualInvoiceId?: Prisma.SortOrderInput | Prisma.SortOrder;
   salesBonusSlot?: Prisma.SortOrderInput | Prisma.SortOrder;
   calculationSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder;
   type?: Prisma.SortOrder;
@@ -347,6 +356,7 @@ export type BonusEntryWhereUniqueInput = Prisma.AtLeast<
     orderId?: Prisma.StringFilter<'BonusEntry'> | string;
     projectId?: Prisma.StringFilter<'BonusEntry'> | string;
     dealId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
+    salesAccrualInvoiceId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
     salesBonusSlot?:
       | Prisma.EnumSalesBonusSlotEnumNullableFilter<'BonusEntry'>
       | $Enums.SalesBonusSlotEnum
@@ -385,6 +395,7 @@ export type BonusEntryOrderByWithAggregationInput = {
   orderId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   dealId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  salesAccrualInvoiceId?: Prisma.SortOrderInput | Prisma.SortOrder;
   salesBonusSlot?: Prisma.SortOrderInput | Prisma.SortOrder;
   calculationSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder;
   type?: Prisma.SortOrder;
@@ -415,6 +426,7 @@ export type BonusEntryScalarWhereWithAggregatesInput = {
   orderId?: Prisma.StringWithAggregatesFilter<'BonusEntry'> | string;
   projectId?: Prisma.StringWithAggregatesFilter<'BonusEntry'> | string;
   dealId?: Prisma.StringNullableWithAggregatesFilter<'BonusEntry'> | string | null;
+  salesAccrualInvoiceId?: Prisma.StringNullableWithAggregatesFilter<'BonusEntry'> | string | null;
   salesBonusSlot?:
     | Prisma.EnumSalesBonusSlotEnumNullableWithAggregatesFilter<'BonusEntry'>
     | $Enums.SalesBonusSlotEnum
@@ -442,6 +454,7 @@ export type BonusEntryScalarWhereWithAggregatesInput = {
 
 export type BonusEntryCreateInput = {
   id?: string;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -465,6 +478,7 @@ export type BonusEntryUncheckedCreateInput = {
   orderId: string;
   projectId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -480,6 +494,7 @@ export type BonusEntryUncheckedCreateInput = {
 
 export type BonusEntryUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -516,6 +531,7 @@ export type BonusEntryUncheckedUpdateInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -548,6 +564,7 @@ export type BonusEntryCreateManyInput = {
   orderId: string;
   projectId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -562,6 +579,7 @@ export type BonusEntryCreateManyInput = {
 
 export type BonusEntryUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -593,6 +611,7 @@ export type BonusEntryUncheckedUpdateManyInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -634,6 +653,7 @@ export type BonusEntryCountOrderByAggregateInput = {
   orderId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   dealId?: Prisma.SortOrder;
+  salesAccrualInvoiceId?: Prisma.SortOrder;
   salesBonusSlot?: Prisma.SortOrder;
   calculationSnapshot?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
@@ -657,6 +677,7 @@ export type BonusEntryMaxOrderByAggregateInput = {
   orderId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   dealId?: Prisma.SortOrder;
+  salesAccrualInvoiceId?: Prisma.SortOrder;
   salesBonusSlot?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
@@ -674,6 +695,7 @@ export type BonusEntryMinOrderByAggregateInput = {
   orderId?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
   dealId?: Prisma.SortOrder;
+  salesAccrualInvoiceId?: Prisma.SortOrder;
   salesBonusSlot?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   amount?: Prisma.SortOrder;
@@ -1083,6 +1105,7 @@ export type BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput = {
 
 export type BonusEntryCreateWithoutProjectInput = {
   id?: string;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1104,6 +1127,7 @@ export type BonusEntryUncheckedCreateWithoutProjectInput = {
   employeeId: string;
   orderId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1167,6 +1191,7 @@ export type BonusEntryScalarWhereInput = {
   orderId?: Prisma.StringFilter<'BonusEntry'> | string;
   projectId?: Prisma.StringFilter<'BonusEntry'> | string;
   dealId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
+  salesAccrualInvoiceId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
   salesBonusSlot?:
     | Prisma.EnumSalesBonusSlotEnumNullableFilter<'BonusEntry'>
     | $Enums.SalesBonusSlotEnum
@@ -1194,6 +1219,7 @@ export type BonusEntryScalarWhereInput = {
 
 export type BonusEntryCreateWithoutDealInput = {
   id?: string;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1215,6 +1241,7 @@ export type BonusEntryUncheckedCreateWithoutDealInput = {
   employeeId: string;
   orderId: string;
   projectId: string;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1271,6 +1298,7 @@ export type BonusEntryUpdateManyWithWhereWithoutDealInput = {
 
 export type BonusEntryCreateWithoutOrderInput = {
   id?: string;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1292,6 +1320,7 @@ export type BonusEntryUncheckedCreateWithoutOrderInput = {
   employeeId: string;
   projectId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1348,6 +1377,7 @@ export type BonusEntryUpdateManyWithWhereWithoutOrderInput = {
 
 export type BonusEntryCreateWithoutBonusReleasesInput = {
   id?: string;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1370,6 +1400,7 @@ export type BonusEntryUncheckedCreateWithoutBonusReleasesInput = {
   orderId: string;
   projectId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1412,6 +1443,7 @@ export type BonusEntryUpdateToOneWithWhereWithoutBonusReleasesInput = {
 
 export type BonusEntryUpdateWithoutBonusReleasesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1447,6 +1479,7 @@ export type BonusEntryUncheckedUpdateWithoutBonusReleasesInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1474,6 +1507,7 @@ export type BonusEntryUncheckedUpdateWithoutBonusReleasesInput = {
 
 export type BonusEntryCreateWithoutEmployeeInput = {
   id?: string;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1495,6 +1529,7 @@ export type BonusEntryUncheckedCreateWithoutEmployeeInput = {
   orderId: string;
   projectId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1554,6 +1589,7 @@ export type BonusEntryCreateManyProjectInput = {
   employeeId: string;
   orderId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1568,6 +1604,7 @@ export type BonusEntryCreateManyProjectInput = {
 
 export type BonusEntryUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1602,6 +1639,7 @@ export type BonusEntryUncheckedUpdateWithoutProjectInput = {
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1633,6 +1671,7 @@ export type BonusEntryUncheckedUpdateManyWithoutProjectInput = {
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1663,6 +1702,7 @@ export type BonusEntryCreateManyDealInput = {
   employeeId: string;
   orderId: string;
   projectId: string;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1677,6 +1717,7 @@ export type BonusEntryCreateManyDealInput = {
 
 export type BonusEntryUpdateWithoutDealInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1711,6 +1752,7 @@ export type BonusEntryUncheckedUpdateWithoutDealInput = {
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1742,6 +1784,7 @@ export type BonusEntryUncheckedUpdateManyWithoutDealInput = {
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1772,6 +1815,7 @@ export type BonusEntryCreateManyOrderInput = {
   employeeId: string;
   projectId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1786,6 +1830,7 @@ export type BonusEntryCreateManyOrderInput = {
 
 export type BonusEntryUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1820,6 +1865,7 @@ export type BonusEntryUncheckedUpdateWithoutOrderInput = {
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1851,6 +1897,7 @@ export type BonusEntryUncheckedUpdateManyWithoutOrderInput = {
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1881,6 +1928,7 @@ export type BonusEntryCreateManyEmployeeInput = {
   orderId: string;
   projectId: string;
   dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
   calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   type: $Enums.BonusTypeEnum;
@@ -1895,6 +1943,7 @@ export type BonusEntryCreateManyEmployeeInput = {
 
 export type BonusEntryUpdateWithoutEmployeeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1929,6 +1978,7 @@ export type BonusEntryUncheckedUpdateWithoutEmployeeInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -1960,6 +2010,7 @@ export type BonusEntryUncheckedUpdateManyWithoutEmployeeInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
     | $Enums.SalesBonusSlotEnum
@@ -2029,6 +2080,7 @@ export type BonusEntrySelect<
     orderId?: boolean;
     projectId?: boolean;
     dealId?: boolean;
+    salesAccrualInvoiceId?: boolean;
     salesBonusSlot?: boolean;
     calculationSnapshot?: boolean;
     type?: boolean;
@@ -2058,6 +2110,7 @@ export type BonusEntrySelectCreateManyAndReturn<
     orderId?: boolean;
     projectId?: boolean;
     dealId?: boolean;
+    salesAccrualInvoiceId?: boolean;
     salesBonusSlot?: boolean;
     calculationSnapshot?: boolean;
     type?: boolean;
@@ -2085,6 +2138,7 @@ export type BonusEntrySelectUpdateManyAndReturn<
     orderId?: boolean;
     projectId?: boolean;
     dealId?: boolean;
+    salesAccrualInvoiceId?: boolean;
     salesBonusSlot?: boolean;
     calculationSnapshot?: boolean;
     type?: boolean;
@@ -2109,6 +2163,7 @@ export type BonusEntrySelectScalar = {
   orderId?: boolean;
   projectId?: boolean;
   dealId?: boolean;
+  salesAccrualInvoiceId?: boolean;
   salesBonusSlot?: boolean;
   calculationSnapshot?: boolean;
   type?: boolean;
@@ -2129,6 +2184,7 @@ export type BonusEntryOmit<
   | 'orderId'
   | 'projectId'
   | 'dealId'
+  | 'salesAccrualInvoiceId'
   | 'salesBonusSlot'
   | 'calculationSnapshot'
   | 'type'
@@ -2186,6 +2242,10 @@ export type $BonusEntryPayload<
       orderId: string;
       projectId: string;
       dealId: string | null;
+      /**
+       * Invoice whose PAID event triggered this accrual (subscription recurring idempotency; audit).
+       */
+      salesAccrualInvoiceId: string | null;
       salesBonusSlot: $Enums.SalesBonusSlotEnum | null;
       calculationSnapshot: runtime.JsonValue | null;
       type: $Enums.BonusTypeEnum;
@@ -2836,6 +2896,7 @@ export interface BonusEntryFieldRefs {
   readonly orderId: Prisma.FieldRef<'BonusEntry', 'String'>;
   readonly projectId: Prisma.FieldRef<'BonusEntry', 'String'>;
   readonly dealId: Prisma.FieldRef<'BonusEntry', 'String'>;
+  readonly salesAccrualInvoiceId: Prisma.FieldRef<'BonusEntry', 'String'>;
   readonly salesBonusSlot: Prisma.FieldRef<'BonusEntry', 'SalesBonusSlotEnum'>;
   readonly calculationSnapshot: Prisma.FieldRef<'BonusEntry', 'Json'>;
   readonly type: Prisma.FieldRef<'BonusEntry', 'BonusTypeEnum'>;

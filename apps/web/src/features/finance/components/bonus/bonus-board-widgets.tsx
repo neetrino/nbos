@@ -12,6 +12,7 @@ import {
   BONUS_BOARD_TYPE_CONFIG,
 } from '@/features/finance/constants/bonus-board';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { bonusSalesAccrualHint } from '@/features/finance/utils/bonus-sales-accrual-hint';
 import type { BonusEntryListRow, BonusStatus, BonusType } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -108,6 +109,7 @@ export function BonusCard({
 }) {
   const typeCfg = BONUS_BOARD_TYPE_CONFIG[row.type];
   const project = projectLabel(row.project);
+  const salesHint = bonusSalesAccrualHint(row);
 
   return (
     <div
@@ -143,6 +145,10 @@ export function BonusCard({
         <DollarSign size={12} className="text-accent" />
         {formatAmount(parseBonusAmount(row.amount))}
       </div>
+
+      {salesHint ? (
+        <p className="text-muted-foreground mt-1 text-[10px] leading-snug">{salesHint}</p>
+      ) : null}
 
       {project && (
         <div className="text-muted-foreground mt-2 flex items-center gap-1 text-[10px]">
