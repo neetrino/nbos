@@ -1,6 +1,11 @@
 import { AlertTriangle, Building2, Calendar, FolderKanban } from 'lucide-react';
 import { KanbanBoard, StatusBadge, type KanbanColumn } from '@/components/shared';
-import { formatAmount, INVOICE_STAGES, INVOICE_TYPES } from '@/features/finance/constants/finance';
+import {
+  formatAmount,
+  getInvoiceMoneyStage,
+  INVOICE_STAGES,
+  INVOICE_TYPES,
+} from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoiceKanbanProps {
@@ -62,6 +67,7 @@ function InvoiceKanbanCard({
   onInvoiceClick: (invoice: Invoice) => void;
 }) {
   const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
+  const money = getInvoiceMoneyStage(invoice.moneyStatus);
   const overdueDays = resolveOverdueDays(invoice);
 
   return (
@@ -75,6 +81,7 @@ function InvoiceKanbanCard({
       </div>
       <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
       {type && <StatusBadge label={type.label} variant="blue" />}
+      {money && <StatusBadge label={money.label} variant={money.variant} />}
       {invoice.company && <InvoiceCompany name={invoice.company.name} />}
       {invoice.project && <InvoiceProject name={invoice.project.name} />}
       {invoice.dueDate && <InvoiceDueDate dueDate={invoice.dueDate} />}

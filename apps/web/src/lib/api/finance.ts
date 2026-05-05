@@ -38,6 +38,8 @@ export interface Invoice {
   taxStatus: string;
   type: string;
   status: string;
+  /** Invoice Card money layer (canonical); legacy `status` remains for pipeline/kanban until migration completes. */
+  moneyStatus: string;
   dueDate: string | null;
   paidDate: string | null;
   govInvoiceId: string | null;

@@ -1061,6 +1061,19 @@ export type EnumInvoiceStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumInvoiceStatusEnumFilter<$PrismaModel> | $Enums.InvoiceStatusEnum;
 };
 
+export type EnumInvoiceMoneyStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.InvoiceMoneyStatusEnum
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.InvoiceMoneyStatusEnum[]
+    | Prisma.ListEnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.InvoiceMoneyStatusEnum[]
+    | Prisma.ListEnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumInvoiceMoneyStatusEnumFilter<$PrismaModel> | $Enums.InvoiceMoneyStatusEnum;
+};
+
 export type EnumInvoiceTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.InvoiceTypeEnum | Prisma.EnumInvoiceTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.InvoiceTypeEnum[] | Prisma.ListEnumInvoiceTypeEnumFieldRefInput<$PrismaModel>;
@@ -1081,6 +1094,24 @@ export type EnumInvoiceStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumInvoiceStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumInvoiceStatusEnumFilter<$PrismaModel>;
+};
+
+export type EnumInvoiceMoneyStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.InvoiceMoneyStatusEnum
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.InvoiceMoneyStatusEnum[]
+    | Prisma.ListEnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.InvoiceMoneyStatusEnum[]
+    | Prisma.ListEnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumInvoiceMoneyStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.InvoiceMoneyStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumInvoiceMoneyStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumInvoiceMoneyStatusEnumFilter<$PrismaModel>;
 };
 
 export type EnumFinancePostingPeriodStatusEnumFilter<$PrismaModel = never> = {
@@ -4599,6 +4630,19 @@ export type NestedEnumInvoiceStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumInvoiceStatusEnumFilter<$PrismaModel> | $Enums.InvoiceStatusEnum;
 };
 
+export type NestedEnumInvoiceMoneyStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.InvoiceMoneyStatusEnum
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.InvoiceMoneyStatusEnum[]
+    | Prisma.ListEnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.InvoiceMoneyStatusEnum[]
+    | Prisma.ListEnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumInvoiceMoneyStatusEnumFilter<$PrismaModel> | $Enums.InvoiceMoneyStatusEnum;
+};
+
 export type NestedEnumInvoiceTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.InvoiceTypeEnum | Prisma.EnumInvoiceTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.InvoiceTypeEnum[] | Prisma.ListEnumInvoiceTypeEnumFieldRefInput<$PrismaModel>;
@@ -4619,6 +4663,24 @@ export type NestedEnumInvoiceStatusEnumWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumInvoiceStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumInvoiceStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumInvoiceMoneyStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.InvoiceMoneyStatusEnum
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.InvoiceMoneyStatusEnum[]
+    | Prisma.ListEnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.InvoiceMoneyStatusEnum[]
+    | Prisma.ListEnumInvoiceMoneyStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumInvoiceMoneyStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.InvoiceMoneyStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumInvoiceMoneyStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumInvoiceMoneyStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumFinancePostingPeriodStatusEnumFilter<$PrismaModel = never> = {

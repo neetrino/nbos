@@ -18,6 +18,16 @@ export const INVOICE_STAGES = [
   { value: 'PAID', label: 'Paid', variant: 'green' as StatusVariant },
 ] as const;
 
+/** Invoice Card money status (canonical); separate from legacy pipeline `INVOICE_STAGES`. */
+export const INVOICE_MONEY_STAGES = [
+  { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant },
+  { value: 'AWAITING_PAYMENT', label: 'Awaiting payment', variant: 'purple' as StatusVariant },
+  { value: 'OVERDUE', label: 'Overdue', variant: 'orange' as StatusVariant },
+  { value: 'ON_HOLD', label: 'On hold', variant: 'gray' as StatusVariant },
+  { value: 'PAID', label: 'Paid', variant: 'green' as StatusVariant },
+  { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant },
+] as const;
+
 export const EXPENSE_STAGES = [
   { value: 'THIS_MONTH', label: 'This Month', variant: 'blue' as StatusVariant },
   { value: 'PAY_NOW', label: 'Pay Now', variant: 'orange' as StatusVariant },
@@ -67,6 +77,11 @@ export type FinancePeriod = (typeof FINANCE_PERIOD_OPTIONS)[number]['value'];
 
 export function getInvoiceStage(value: string) {
   return INVOICE_STAGES.find((s) => s.value === value);
+}
+
+export function getInvoiceMoneyStage(value: string | undefined) {
+  if (!value) return undefined;
+  return INVOICE_MONEY_STAGES.find((s) => s.value === value);
 }
 
 export function getExpenseStage(value: string) {

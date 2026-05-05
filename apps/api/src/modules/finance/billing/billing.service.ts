@@ -113,6 +113,7 @@ export class BillingService {
             taxStatus: sub.taxStatus,
             type: 'SUBSCRIPTION' as Prisma.InvoiceCreateInput['type'],
             dueDate,
+            moneyStatus: 'NEW',
           },
         });
 

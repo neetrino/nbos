@@ -8,7 +8,11 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
-import { formatAmount, getInvoiceStage } from '@/features/finance/constants/finance';
+import {
+  formatAmount,
+  getInvoiceMoneyStage,
+  getInvoiceStage,
+} from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoicesTableProps {
@@ -27,6 +31,7 @@ export function InvoicesTable({ invoices, onInvoiceClick }: InvoicesTableProps) 
             <TableHead>Type</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Money</TableHead>
             <TableHead>Tax</TableHead>
             <TableHead>Due Date</TableHead>
             <TableHead>Paid Date</TableHead>
@@ -50,6 +55,7 @@ function InvoiceTableRow({
   onInvoiceClick: (invoice: Invoice) => void;
 }) {
   const stage = getInvoiceStage(invoice.status);
+  const money = getInvoiceMoneyStage(invoice.moneyStatus);
 
   return (
     <TableRow className="cursor-pointer" onClick={() => onInvoiceClick(invoice)}>
@@ -60,6 +66,7 @@ function InvoiceTableRow({
       <TableCell className="text-xs">{invoice.type}</TableCell>
       <InvoiceAmountCell amount={invoice.amount} />
       <TableCell>{stage && <StatusBadge label={stage.label} variant={stage.variant} />}</TableCell>
+      <TableCell>{money && <StatusBadge label={money.label} variant={money.variant} />}</TableCell>
       <InvoiceTaxCell taxStatus={invoice.taxStatus} />
       <InvoiceDueDateCell invoice={invoice} />
       <TableCell className="text-xs text-green-600">

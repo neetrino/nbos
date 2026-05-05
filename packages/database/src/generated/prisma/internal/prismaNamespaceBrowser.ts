@@ -426,6 +426,7 @@ export const InvoiceScalarFieldEnum = {
   taxStatus: 'taxStatus',
   type: 'type',
   status: 'status',
+  moneyStatus: 'moneyStatus',
   dueDate: 'dueDate',
   paidDate: 'paidDate',
   govInvoiceId: 'govInvoiceId',

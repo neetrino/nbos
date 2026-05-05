@@ -44,6 +44,7 @@ describe('BillingService', () => {
             amount: 5000,
             taxStatus: 'TAX_FREE',
             type: 'SUBSCRIPTION',
+            moneyStatus: 'NEW',
           }),
         }),
       );

@@ -21,6 +21,7 @@ const mockInvoice = (id: string): Invoice => ({
   taxStatus: 'TAX',
   type: 'STANDARD',
   status: 'DRAFT',
+  moneyStatus: 'NEW',
   dueDate: null,
   paidDate: null,
   govInvoiceId: null,

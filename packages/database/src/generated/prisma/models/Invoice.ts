@@ -45,6 +45,7 @@ export type InvoiceMinAggregateOutputType = {
   taxStatus: $Enums.TaxStatus | null;
   type: $Enums.InvoiceTypeEnum | null;
   status: $Enums.InvoiceStatusEnum | null;
+  moneyStatus: $Enums.InvoiceMoneyStatusEnum | null;
   dueDate: Date | null;
   paidDate: Date | null;
   govInvoiceId: string | null;
@@ -65,6 +66,7 @@ export type InvoiceMaxAggregateOutputType = {
   taxStatus: $Enums.TaxStatus | null;
   type: $Enums.InvoiceTypeEnum | null;
   status: $Enums.InvoiceStatusEnum | null;
+  moneyStatus: $Enums.InvoiceMoneyStatusEnum | null;
   dueDate: Date | null;
   paidDate: Date | null;
   govInvoiceId: string | null;
@@ -85,6 +87,7 @@ export type InvoiceCountAggregateOutputType = {
   taxStatus: number;
   type: number;
   status: number;
+  moneyStatus: number;
   dueDate: number;
   paidDate: number;
   govInvoiceId: number;
@@ -114,6 +117,7 @@ export type InvoiceMinAggregateInputType = {
   taxStatus?: true;
   type?: true;
   status?: true;
+  moneyStatus?: true;
   dueDate?: true;
   paidDate?: true;
   govInvoiceId?: true;
@@ -134,6 +138,7 @@ export type InvoiceMaxAggregateInputType = {
   taxStatus?: true;
   type?: true;
   status?: true;
+  moneyStatus?: true;
   dueDate?: true;
   paidDate?: true;
   govInvoiceId?: true;
@@ -154,6 +159,7 @@ export type InvoiceCountAggregateInputType = {
   taxStatus?: true;
   type?: true;
   status?: true;
+  moneyStatus?: true;
   dueDate?: true;
   paidDate?: true;
   govInvoiceId?: true;
@@ -262,6 +268,7 @@ export type InvoiceGroupByOutputType = {
   taxStatus: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status: $Enums.InvoiceStatusEnum;
+  moneyStatus: $Enums.InvoiceMoneyStatusEnum;
   dueDate: Date | null;
   paidDate: Date | null;
   govInvoiceId: string | null;
@@ -307,6 +314,7 @@ export type InvoiceWhereInput = {
   taxStatus?: Prisma.EnumTaxStatusFilter<'Invoice'> | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
+  moneyStatus?: Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'> | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
   paidDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
   govInvoiceId?: Prisma.StringNullableFilter<'Invoice'> | string | null;
@@ -338,6 +346,7 @@ export type InvoiceOrderByWithRelationInput = {
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  moneyStatus?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   paidDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -372,6 +381,9 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<
     taxStatus?: Prisma.EnumTaxStatusFilter<'Invoice'> | $Enums.TaxStatus;
     type?: Prisma.EnumInvoiceTypeEnumFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
     status?: Prisma.EnumInvoiceStatusEnumFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
+    moneyStatus?:
+      | Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'>
+      | $Enums.InvoiceMoneyStatusEnum;
     dueDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
     paidDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
     govInvoiceId?: Prisma.StringNullableFilter<'Invoice'> | string | null;
@@ -408,6 +420,7 @@ export type InvoiceOrderByWithAggregationInput = {
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  moneyStatus?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   paidDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -445,6 +458,9 @@ export type InvoiceScalarWhereWithAggregatesInput = {
   taxStatus?: Prisma.EnumTaxStatusWithAggregatesFilter<'Invoice'> | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumWithAggregatesFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumWithAggregatesFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumWithAggregatesFilter<'Invoice'>
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Invoice'> | Date | string | null;
   paidDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Invoice'> | Date | string | null;
   govInvoiceId?: Prisma.StringNullableWithAggregatesFilter<'Invoice'> | string | null;
@@ -461,6 +477,7 @@ export type InvoiceCreateInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -486,6 +503,7 @@ export type InvoiceUncheckedCreateInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -508,6 +526,9 @@ export type InvoiceUpdateInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -538,6 +559,9 @@ export type InvoiceUncheckedUpdateInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -559,6 +583,7 @@ export type InvoiceCreateManyInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -580,6 +605,9 @@ export type InvoiceUpdateManyMutationInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -605,6 +633,9 @@ export type InvoiceUncheckedUpdateManyInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -635,6 +666,7 @@ export type InvoiceCountOrderByAggregateInput = {
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  moneyStatus?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
   paidDate?: Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrder;
@@ -659,6 +691,7 @@ export type InvoiceMaxOrderByAggregateInput = {
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  moneyStatus?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
   paidDate?: Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrder;
@@ -679,6 +712,7 @@ export type InvoiceMinOrderByAggregateInput = {
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
+  moneyStatus?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
   paidDate?: Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrder;
@@ -874,6 +908,10 @@ export type EnumInvoiceTypeEnumFieldUpdateOperationsInput = {
 
 export type EnumInvoiceStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.InvoiceStatusEnum;
+};
+
+export type EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.InvoiceMoneyStatusEnum;
 };
 
 export type InvoiceCreateNestedOneWithoutPaymentsInput = {
@@ -1082,6 +1120,7 @@ export type InvoiceCreateWithoutCompanyInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1105,6 +1144,7 @@ export type InvoiceUncheckedCreateWithoutCompanyInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1175,6 +1215,7 @@ export type InvoiceScalarWhereInput = {
   taxStatus?: Prisma.EnumTaxStatusFilter<'Invoice'> | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
+  moneyStatus?: Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'> | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
   paidDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
   govInvoiceId?: Prisma.StringNullableFilter<'Invoice'> | string | null;
@@ -1191,6 +1232,7 @@ export type InvoiceCreateWithoutOrderInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1214,6 +1256,7 @@ export type InvoiceUncheckedCreateWithoutOrderInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1272,6 +1315,7 @@ export type InvoiceCreateWithoutPaymentsInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1296,6 +1340,7 @@ export type InvoiceUncheckedCreateWithoutPaymentsInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1345,6 +1390,9 @@ export type InvoiceUpdateWithoutPaymentsInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1374,6 +1422,9 @@ export type InvoiceUncheckedUpdateWithoutPaymentsInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1390,6 +1441,7 @@ export type InvoiceCreateWithoutSubscriptionInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1413,6 +1465,7 @@ export type InvoiceUncheckedCreateWithoutSubscriptionInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1471,6 +1524,7 @@ export type InvoiceCreateWithoutClientServiceRecordInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1494,6 +1548,7 @@ export type InvoiceUncheckedCreateWithoutClientServiceRecordInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1557,6 +1612,7 @@ export type InvoiceCreateManyCompanyInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1578,6 +1634,9 @@ export type InvoiceUpdateWithoutCompanyInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1606,6 +1665,9 @@ export type InvoiceUncheckedUpdateWithoutCompanyInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1631,6 +1693,9 @@ export type InvoiceUncheckedUpdateManyWithoutCompanyInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1650,6 +1715,7 @@ export type InvoiceCreateManyOrderInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1671,6 +1737,9 @@ export type InvoiceUpdateWithoutOrderInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1699,6 +1768,9 @@ export type InvoiceUncheckedUpdateWithoutOrderInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1724,6 +1796,9 @@ export type InvoiceUncheckedUpdateManyWithoutOrderInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1743,6 +1818,7 @@ export type InvoiceCreateManySubscriptionInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1764,6 +1840,9 @@ export type InvoiceUpdateWithoutSubscriptionInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1792,6 +1871,9 @@ export type InvoiceUncheckedUpdateWithoutSubscriptionInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1817,6 +1899,9 @@ export type InvoiceUncheckedUpdateManyWithoutSubscriptionInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1836,6 +1921,7 @@ export type InvoiceCreateManyClientServiceRecordInput = {
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
+  moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1857,6 +1943,9 @@ export type InvoiceUpdateWithoutClientServiceRecordInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1885,6 +1974,9 @@ export type InvoiceUncheckedUpdateWithoutClientServiceRecordInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1910,6 +2002,9 @@ export type InvoiceUncheckedUpdateManyWithoutClientServiceRecordInput = {
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
+  moneyStatus?:
+    | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
+    | $Enums.InvoiceMoneyStatusEnum;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1968,6 +2063,7 @@ export type InvoiceSelect<
     taxStatus?: boolean;
     type?: boolean;
     status?: boolean;
+    moneyStatus?: boolean;
     dueDate?: boolean;
     paidDate?: boolean;
     govInvoiceId?: boolean;
@@ -1999,6 +2095,7 @@ export type InvoiceSelectCreateManyAndReturn<
     taxStatus?: boolean;
     type?: boolean;
     status?: boolean;
+    moneyStatus?: boolean;
     dueDate?: boolean;
     paidDate?: boolean;
     govInvoiceId?: boolean;
@@ -2028,6 +2125,7 @@ export type InvoiceSelectUpdateManyAndReturn<
     taxStatus?: boolean;
     type?: boolean;
     status?: boolean;
+    moneyStatus?: boolean;
     dueDate?: boolean;
     paidDate?: boolean;
     govInvoiceId?: boolean;
@@ -2054,6 +2152,7 @@ export type InvoiceSelectScalar = {
   taxStatus?: boolean;
   type?: boolean;
   status?: boolean;
+  moneyStatus?: boolean;
   dueDate?: boolean;
   paidDate?: boolean;
   govInvoiceId?: boolean;
@@ -2076,6 +2175,7 @@ export type InvoiceOmit<
   | 'taxStatus'
   | 'type'
   | 'status'
+  | 'moneyStatus'
   | 'dueDate'
   | 'paidDate'
   | 'govInvoiceId'
@@ -2135,6 +2235,7 @@ export type $InvoicePayload<
       taxStatus: $Enums.TaxStatus;
       type: $Enums.InvoiceTypeEnum;
       status: $Enums.InvoiceStatusEnum;
+      moneyStatus: $Enums.InvoiceMoneyStatusEnum;
       dueDate: Date | null;
       paidDate: Date | null;
       govInvoiceId: string | null;
@@ -2761,6 +2862,7 @@ export interface InvoiceFieldRefs {
   readonly taxStatus: Prisma.FieldRef<'Invoice', 'TaxStatus'>;
   readonly type: Prisma.FieldRef<'Invoice', 'InvoiceTypeEnum'>;
   readonly status: Prisma.FieldRef<'Invoice', 'InvoiceStatusEnum'>;
+  readonly moneyStatus: Prisma.FieldRef<'Invoice', 'InvoiceMoneyStatusEnum'>;
   readonly dueDate: Prisma.FieldRef<'Invoice', 'DateTime'>;
   readonly paidDate: Prisma.FieldRef<'Invoice', 'DateTime'>;
   readonly govInvoiceId: Prisma.FieldRef<'Invoice', 'String'>;

@@ -19,6 +19,7 @@ import {
   syncInvoiceOrderStatus,
 } from './invoice-service-helpers';
 import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
+import { resolveInvoiceMoneyStatus } from './invoice-money-status';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -183,8 +184,18 @@ export class InvoicesService {
 
     this.assertManualStatusTransitionAllowed(status as InvoiceStatusEnum, derivedStatus);
 
+    const now = new Date();
+    const moneyStatus = resolveInvoiceMoneyStatus({
+      legacyStatus: status as InvoiceStatusEnum,
+      amount,
+      paid,
+      dueDate: invoice.dueDate,
+      now,
+    });
+
     const updateData: Prisma.InvoiceUpdateInput = {
       status: status as InvoiceStatusEnum,
+      moneyStatus,
     };
     if (status === 'PAID') {
       updateData.paidDate = getLatestPaymentDate(invoice.payments);

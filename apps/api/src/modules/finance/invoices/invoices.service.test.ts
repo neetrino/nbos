@@ -25,6 +25,7 @@ function mockInvoiceFindByIdRow(
     amount,
     dueDate: new Date('2026-04-20'),
     status: 'PAID',
+    moneyStatus: 'PAID',
     type: 'SUBSCRIPTION',
     taxStatus: 'TAX',
     orderId: null,
@@ -132,6 +133,7 @@ describe('InvoicesService', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             status: 'PAID',
+            moneyStatus: 'PAID',
             paidDate,
           }),
         }),

@@ -160,7 +160,7 @@ describe('PaymentsService', () => {
       expect(result.amount).toBe(50000);
       expect(prisma.invoice.update).toHaveBeenCalledWith({
         where: { id: 'inv1' },
-        data: { status: 'WAITING', paidDate: null },
+        data: { status: 'WAITING', moneyStatus: 'AWAITING_PAYMENT', paidDate: null },
       });
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'ord1' },
@@ -222,7 +222,7 @@ describe('PaymentsService', () => {
 
       expect(prisma.invoice.update).toHaveBeenCalledWith({
         where: { id: 'inv1' },
-        data: { status: 'PAID', paidDate: latestPaymentDate },
+        data: { status: 'PAID', moneyStatus: 'PAID', paidDate: latestPaymentDate },
       });
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'ord1' },
@@ -264,7 +264,7 @@ describe('PaymentsService', () => {
 
       expect(prisma.invoice.update).toHaveBeenCalledWith({
         where: { id: 'inv1' },
-        data: { status: 'DELAYED', paidDate: null },
+        data: { status: 'DELAYED', moneyStatus: 'OVERDUE', paidDate: null },
       });
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'ord1' },

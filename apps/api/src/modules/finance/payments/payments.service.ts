@@ -10,6 +10,7 @@ import {
   resolveOrderStatus,
   sumAmounts,
 } from '../finance-status.utils';
+import { resolveInvoiceMoneyStatus } from '../invoices/invoice-money-status';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 
 interface CreatePaymentDto {
@@ -289,17 +290,27 @@ export class PaymentsService {
     if (!invoice) return;
 
     const paid = sumAmounts(invoice.payments);
+    const amount = Number(invoice.amount);
     const status = resolveInvoiceStatus({
-      amount: Number(invoice.amount),
+      amount,
       paid,
       dueDate: invoice.dueDate,
       currentStatus: invoice.status,
+    });
+    const now = new Date();
+    const moneyStatus = resolveInvoiceMoneyStatus({
+      legacyStatus: status,
+      amount,
+      paid,
+      dueDate: invoice.dueDate,
+      now,
     });
 
     await this.prisma.invoice.update({
       where: { id: invoiceId },
       data: {
         status,
+        moneyStatus,
         paidDate: status === 'PAID' ? getLatestPaymentDate(invoice.payments) : null,
       },
     });

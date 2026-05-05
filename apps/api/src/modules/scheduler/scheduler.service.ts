@@ -74,7 +74,10 @@ export class SchedulerService {
     const ids = overdueInvoices.map((inv) => inv.id);
     await this.prisma.invoice.updateMany({
       where: { id: { in: ids } },
-      data: { status: 'DELAYED' as Prisma.InvoiceUpdateManyMutationInput['status'] },
+      data: {
+        status: 'DELAYED' as Prisma.InvoiceUpdateManyMutationInput['status'],
+        moneyStatus: 'OVERDUE' as Prisma.InvoiceUpdateManyMutationInput['moneyStatus'],
+      },
     });
 
     this.logger.log(

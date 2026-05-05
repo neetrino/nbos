@@ -261,6 +261,18 @@ export const InvoiceStatusEnum = {
 
 export type InvoiceStatusEnum = (typeof InvoiceStatusEnum)[keyof typeof InvoiceStatusEnum];
 
+export const InvoiceMoneyStatusEnum = {
+  NEW: 'NEW',
+  AWAITING_PAYMENT: 'AWAITING_PAYMENT',
+  OVERDUE: 'OVERDUE',
+  ON_HOLD: 'ON_HOLD',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type InvoiceMoneyStatusEnum =
+  (typeof InvoiceMoneyStatusEnum)[keyof typeof InvoiceMoneyStatusEnum];
+
 export const FinancePostingPeriodStatusEnum = {
   OPEN: 'OPEN',
   CLOSED: 'CLOSED',

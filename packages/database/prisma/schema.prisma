@@ -585,24 +585,34 @@ enum InvoiceStatusEnum {
   PAID
 }
 
+enum InvoiceMoneyStatusEnum {
+  NEW
+  AWAITING_PAYMENT
+  OVERDUE
+  ON_HOLD
+  PAID
+  CANCELLED
+}
+
 model Invoice {
-  id                    String            @id @default(uuid())
-  code                  String            @unique
-  orderId               String?           @map("order_id")
-  subscriptionId        String?           @map("subscription_id")
-  projectId             String            @map("project_id")
-  companyId             String?           @map("company_id")
-  clientServiceRecordId String?           @map("client_service_record_id")
-  amount                Decimal           @db.Decimal(12, 2)
-  taxStatus             TaxStatus         @default(TAX) @map("tax_status")
+  id                    String                 @id @default(uuid())
+  code                  String                 @unique
+  orderId               String?                @map("order_id")
+  subscriptionId        String?                @map("subscription_id")
+  projectId             String                 @map("project_id")
+  companyId             String?                @map("company_id")
+  clientServiceRecordId String?                @map("client_service_record_id")
+  amount                Decimal                @db.Decimal(12, 2)
+  taxStatus             TaxStatus              @default(TAX) @map("tax_status")
   type                  InvoiceTypeEnum
-  status                InvoiceStatusEnum @default(THIS_MONTH)
-  dueDate               DateTime?         @map("due_date")
-  paidDate              DateTime?         @map("paid_date")
-  govInvoiceId          String?           @map("gov_invoice_id")
-  paymentLink           String?           @map("payment_link")
-  createdAt             DateTime          @default(now()) @map("created_at")
-  updatedAt             DateTime          @updatedAt @map("updated_at")
+  status                InvoiceStatusEnum      @default(THIS_MONTH)
+  moneyStatus           InvoiceMoneyStatusEnum @default(NEW) @map("money_status")
+  dueDate               DateTime?              @map("due_date")
+  paidDate              DateTime?              @map("paid_date")
+  govInvoiceId          String?                @map("gov_invoice_id")
+  paymentLink           String?                @map("payment_link")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
 
   order               Order?               @relation(fields: [orderId], references: [id])
   subscription        Subscription?        @relation(fields: [subscriptionId], references: [id])

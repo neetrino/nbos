@@ -15,6 +15,7 @@ function minimalInvoice(overrides: Partial<Invoice>): Invoice {
     taxStatus: 'TAX',
     type: 'STANDARD',
     status: 'DRAFT',
+    moneyStatus: 'NEW',
     dueDate: null,
     paidDate: null,
     govInvoiceId: null,
@@ -41,6 +42,7 @@ describe('buildInvoicesCsvContent', () => {
     const csv = buildInvoicesCsvContent([]);
     expect(csv.split('\r\n')).toHaveLength(1);
     expect(csv).toContain('coveragePaidAmount');
+    expect(csv).toContain('moneyStatus');
   });
 
   it('escapes commas in description', () => {
