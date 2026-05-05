@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-05 (Finance: счета — фильтр/kanban/stats на `money_status`)
+**Обновлено:** 2026-05-05 (Finance: expense backlog notification jobs)
 
 ---
 
@@ -105,7 +105,7 @@
 - 🟢 [x] Finance: потребители **`money_status`** — фильтр `GET /finance/invoices?moneyStatus=`, канбан колонок по money + `PATCH …/money-status` (companion legacy для order/deal), `GET /finance/invoices/stats` и dashboard summary `groupBy` по money; web: FilterBar, drag→`updateMoneyStatus`, donut по money; scope stats CSV `by_money_status`; `resolveInvoiceMoneyStatus`: legacy `FAIL` → money `CANCELLED` — M (**срез 2**)
 - Finance: убрать legacy `InvoiceStatusEnum` из схемы и кода после полного отказа от companion-слоя — L (**финишер**)
 - 🟢 [x] Finance: поля coverage на Invoice Card подписок + **Subscription Grid** (`coverage_start_month` / `count`, billing/create, rollup; `GET /api/finance/subscriptions/grid`; UI: матрица года, paid/pending/overdue/forecast/missed, итоги; ссылка на Invoice Card через `openInvoice`) — M
-- Finance: Expense Backlog автоматизация и уведомления по канону — M
+- 🟢 [x] Finance: Expense Backlog — idempotent notification jobs по канону — M → `ExpenseBacklogRemindersService`: недельный дайджест открытого backlog (`DELAYED` + `backlogReason` + остаток по `ExpensePayment`) для `FINANCE_TEAM`; ежедневные напоминания по просроченному `dueDate`; `POST /api/scheduler/expense-backlog-reminders`; типы `finance.expense.backlog_weekly_digest` / `finance.expense.backlog_due_overdue` в `notification-rules.ts`. Внешняя доставка — по адаптерам; поля «дата пересмотра» On Hold — вне среза
 - Finance: Client Service Record — полнота связей invoice/expense/task — M
 - Payroll: полнота Salary Board / Payroll Run под `05-Bonus-and-Payroll` — M
 - Partners: **UI ↔ API** выравнивание полей и DTO — M

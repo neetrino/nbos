@@ -16,7 +16,7 @@ export const EXPENSE_BACKLOG_LIST_PATH = '/finance/expenses/backlog' as const;
 /** NBOS: paid cards live off the active board (`04-Finance-Pages` Closed scope). */
 export const EXPENSE_CLOSED_LIST_PATH = '/finance/expenses/closed' as const;
 
-/** Until backlog reasons exist in schema, backlog list filters by Delayed status (NBOS Expenses module). */
+/** Backlog list uses `DELAYED` + `backlogReason` in API/UI (NBOS Expense Backlog path). */
 export const EXPENSE_BACKLOG_FIXED_STATUS = 'DELAYED' as const;
 
 /** Closed list filters by paid status (ledger may still show partial history on older rows). */

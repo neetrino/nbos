@@ -3,6 +3,7 @@ import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { BillingService } from '../finance/billing/billing.service';
 import { InvoiceCardRemindersService } from '../finance/invoices/invoice-card-reminders.service';
+import { ExpenseBacklogRemindersService } from '../expenses/expense-backlog-reminders.service';
 import { ExpensePlansService } from '../expenses/expense-plans.service';
 import { ReportsScheduleRunnerService } from '../reports/reports-schedule-runner.service';
 
@@ -20,6 +21,7 @@ export class SchedulerService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly billingService: BillingService,
     private readonly invoiceCardRemindersService: InvoiceCardRemindersService,
+    private readonly expenseBacklogRemindersService: ExpenseBacklogRemindersService,
     private readonly expensePlansService: ExpensePlansService,
     private readonly reportsScheduleRunnerService: ReportsScheduleRunnerService,
   ) {}
@@ -104,6 +106,16 @@ export class SchedulerService {
     const result = await this.invoiceCardRemindersService.runDueInvoiceCardReminders();
     this.logger.log(
       `Invoice card reminders: eligible=${result.eligibleCount}, created=${result.created.length}, skipped=${result.skippedExisting}`,
+    );
+    return result;
+  }
+
+  /** Expense Backlog: weekly finance digest + daily due reminders (idempotent jobs). */
+  async runExpenseBacklogReminders() {
+    this.logger.log('Scheduler: expense backlog reminders');
+    const result = await this.expenseBacklogRemindersService.runExpenseBacklogReminders();
+    this.logger.log(
+      `Expense backlog reminders: digest=${JSON.stringify(result.digest)}, dueCreated=${result.due.created.length}, dueSkipped=${result.due.skippedExisting}`,
     );
     return result;
   }

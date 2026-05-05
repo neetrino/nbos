@@ -21,6 +21,16 @@ export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
     category: 'action_required',
     priority: 'high',
   },
+  {
+    eventType: 'finance.expense.backlog_weekly_digest',
+    category: 'informational',
+    priority: 'normal',
+  },
+  {
+    eventType: 'finance.expense.backlog_due_overdue',
+    category: 'action_required',
+    priority: 'high',
+  },
   { eventType: 'task.overdue', category: 'action_required', priority: 'high' },
   { eventType: 'finance.overdue', category: 'action_required', priority: 'high' },
   { eventType: 'mail.health_degraded', category: 'system_health', priority: 'high' },
