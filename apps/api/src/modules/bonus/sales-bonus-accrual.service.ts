@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { Decimal, PrismaClient, type InputJsonValue, type LeadSourceEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import {
@@ -34,7 +35,10 @@ type AccrualOrder = {
 export class SalesBonusAccrualService {
   private readonly logger = new Logger(SalesBonusAccrualService.name);
 
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   /**
    * Called when an invoice is fully PAID. Classic: one seller + assistant wave per order.
@@ -45,7 +49,7 @@ export class SalesBonusAccrualService {
     try {
       const orderIdToSync = await this.runAccrual(invoiceId);
       if (orderIdToSync) {
-        await syncProductBonusPoolForOrder(this.prisma, orderIdToSync);
+        await syncProductBonusPoolForOrder(this.prisma, orderIdToSync, this.notifications);
       }
     } catch (err) {
       this.logger.error(

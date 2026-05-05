@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { NotificationModule } from '../../notifications/notification.module';
 import { ProductsService } from './products.service';
 
 /**
@@ -6,6 +7,7 @@ import { ProductsService } from './products.service';
  * so that `GET /api/projects/products` is not captured by `GET /api/projects/:id`.
  */
 @Module({
+  imports: [NotificationModule],
   providers: [ProductsService],
   exports: [ProductsService],
 })

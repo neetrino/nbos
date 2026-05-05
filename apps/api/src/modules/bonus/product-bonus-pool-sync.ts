@@ -1,4 +1,6 @@
 import { Decimal, PrismaClient, type ProductBonusPoolStatusEnum } from '@nbos/database';
+import { publishBonusEntryWalletHints } from '../employees/employee-wallet-notify.ops';
+import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { BONUS_POOL_ZERO, decimalFrom } from './bonus-pool-decimal';
 import { tryCreateProportionalAutoReleases } from './product-bonus-pool-auto-release';
 import { sumPaymentsReceivedForOrder } from './order-received-payments-sum';
@@ -16,6 +18,7 @@ const ZERO = BONUS_POOL_ZERO;
 export async function syncProductBonusPoolForOrder(
   prisma: InstanceType<typeof PrismaClient>,
   orderId: string,
+  notify?: WalletInAppNotifySink,
 ): Promise<void> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
@@ -104,7 +107,10 @@ export async function syncProductBonusPoolForOrder(
     },
   });
 
-  await syncBonusEntryStatusesForOrder(prisma, orderId);
+  const hints = await syncBonusEntryStatusesForOrder(prisma, orderId);
+  if (notify && hints.length > 0) {
+    await publishBonusEntryWalletHints(notify, hints);
+  }
 }
 
 function derivePoolStatus(

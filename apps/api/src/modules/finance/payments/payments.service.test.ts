@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PaymentsService } from './payments.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import type { NotificationService } from '../../notifications/notification.service';
 
 /** Row returned by `findById` after `create` completes sync helpers. */
 function mockPaymentFindByIdRow(
@@ -44,11 +45,13 @@ describe('PaymentsService', () => {
   let service: PaymentsService;
   let prisma: MockPrisma;
   const salesBonusAccrual = { onInvoicePaid: vi.fn().mockResolvedValue(undefined) };
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     salesBonusAccrual.onInvoicePaid.mockClear();
-    service = new PaymentsService(prisma as never, salesBonusAccrual as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new PaymentsService(prisma as never, salesBonusAccrual as never, notifications);
   });
 
   describe('findAll', () => {

@@ -1,17 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Decimal } from '@nbos/database';
 import { ExpensesService } from './expenses.service';
 import { EXPENSE_LIST_MAX_PAGE_SIZE } from './expenses-list-pagination';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import type { NotificationService } from '../notifications/notification.service';
 
 describe('ExpensesService', () => {
   let service: ExpensesService;
   let prisma: MockPrisma;
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ExpensesService(prisma as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new ExpensesService(prisma as never, notifications);
   });
 
   describe('findAll', () => {
@@ -447,6 +450,10 @@ describe('ExpensesService', () => {
         })
         .mockResolvedValueOnce({
           id: 'e1',
+          salaryLine: null,
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
           name: 'X',
           amount: new Decimal(100),
           status: 'THIS_MONTH',
@@ -488,6 +495,10 @@ describe('ExpensesService', () => {
           amount: new Decimal(100),
           status: 'UNPAID',
           expensePayments: [{ amount: new Decimal(60) }, { amount: new Decimal(40) }],
+        })
+        .mockResolvedValueOnce({
+          id: 'e1',
+          salaryLine: null,
         })
         .mockResolvedValueOnce({
           id: 'e1',

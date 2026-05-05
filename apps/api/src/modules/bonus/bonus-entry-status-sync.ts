@@ -1,4 +1,5 @@
-import { PrismaClient, type BonusStatusEnum } from '@nbos/database';
+import { PrismaClient, type BonusStatusEnum, type Decimal } from '@nbos/database';
+import type { BonusEntryWalletHint } from '../employees/employee-wallet-bonus-hint.types';
 import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
 import { decimalFrom } from './bonus-pool-decimal';
 
@@ -13,23 +14,41 @@ const PROMOTABLE_ENTRY_STATUSES: BonusStatusEnum[] = [
   'VESTED',
 ];
 
+type EntryRow = {
+  id: string;
+  status: BonusStatusEnum;
+  amount: Decimal;
+  employeeId: string;
+  order: { code: string };
+};
+
 /**
  * Aligns `BonusEntry.status` with counting `BonusRelease` rows (NBOS board: Active ≈ in payroll pipeline).
+ * Returns a wallet hint when the entry transitions to ACTIVE (in-app notify; paid path uses release rows).
  */
 export async function refreshBonusEntryStatusAfterReleasesChange(
   db: StatusSyncDb,
   bonusEntryId: string,
-): Promise<void> {
-  const entry = await db.bonusEntry.findUnique({
+): Promise<BonusEntryWalletHint | null> {
+  const entry: EntryRow | null = await db.bonusEntry.findUnique({
     where: { id: bonusEntryId },
-    select: { id: true, status: true, amount: true },
+    select: {
+      id: true,
+      status: true,
+      amount: true,
+      employeeId: true,
+      order: { select: { code: true } },
+    },
   });
   if (!entry) {
-    return;
+    return null;
   }
   if (TERMINAL_ENTRY_STATUSES.includes(entry.status)) {
-    return;
+    return null;
   }
+
+  const before = entry.status;
+  const orderCode = entry.order.code;
 
   const paidAgg = await db.bonusRelease.aggregate({
     where: { bonusEntryId, status: 'PAID' },
@@ -43,7 +62,7 @@ export async function refreshBonusEntryStatusAfterReleasesChange(
       where: { id: bonusEntryId },
       data: { status: 'PAID' },
     });
-    return;
+    return null;
   }
 
   const agg = await db.bonusRelease.aggregate({
@@ -60,7 +79,15 @@ export async function refreshBonusEntryStatusAfterReleasesChange(
       where: { id: bonusEntryId },
       data: { status: 'ACTIVE' },
     });
-    return;
+    if (before !== 'ACTIVE') {
+      return {
+        kind: 'BECAME_ACTIVE',
+        entryId: entry.id,
+        employeeId: entry.employeeId,
+        orderCode,
+      };
+    }
+    return null;
   }
 
   if (entry.status === 'ACTIVE' && released.isZero()) {
@@ -69,17 +96,23 @@ export async function refreshBonusEntryStatusAfterReleasesChange(
       data: { status: 'INCOMING' },
     });
   }
+  return null;
 }
 
 export async function syncBonusEntryStatusesForOrder(
   db: StatusSyncDb,
   orderId: string,
-): Promise<void> {
+): Promise<BonusEntryWalletHint[]> {
+  const hints: BonusEntryWalletHint[] = [];
   const entries = await db.bonusEntry.findMany({
     where: { orderId },
     select: { id: true },
   });
   for (const row of entries) {
-    await refreshBonusEntryStatusAfterReleasesChange(db, row.id);
+    const hint = await refreshBonusEntryStatusAfterReleasesChange(db, row.id);
+    if (hint) {
+      hints.push(hint);
+    }
   }
+  return hints;
 }

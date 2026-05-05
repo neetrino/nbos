@@ -5,6 +5,12 @@ export interface NotificationRuleConfig {
 }
 
 export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
+  { eventType: 'finance.wallet.bonus_active', category: 'informational', priority: 'normal' },
+  { eventType: 'finance.wallet.bonus_paid', category: 'informational', priority: 'normal' },
+  { eventType: 'finance.wallet.bonus_corrected', category: 'informational', priority: 'normal' },
+  { eventType: 'finance.wallet.payroll_created', category: 'informational', priority: 'normal' },
+  { eventType: 'finance.wallet.payroll_closed', category: 'informational', priority: 'normal' },
+  { eventType: 'finance.wallet.salary_payment', category: 'informational', priority: 'normal' },
   { eventType: 'task.overdue', category: 'action_required', priority: 'high' },
   { eventType: 'finance.overdue', category: 'action_required', priority: 'high' },
   { eventType: 'mail.health_degraded', category: 'system_health', priority: 'high' },

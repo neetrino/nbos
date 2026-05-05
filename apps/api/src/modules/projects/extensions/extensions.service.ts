@@ -9,6 +9,7 @@ import {
   type DeliveryWorkStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { NotificationService } from '../../notifications/notification.service';
 import {
   attachExtensionReadiness,
   validateExtensionStageGate,
@@ -72,6 +73,7 @@ export class ExtensionsService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -319,7 +321,7 @@ export class ExtensionsService {
       select: { id: true },
     });
     if (linkedOrder) {
-      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id);
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
     }
     return attachExtensionReadiness(updated);
   }

@@ -1,17 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Decimal } from '@nbos/database';
 import { SalesBonusAccrualService } from './sales-bonus-accrual.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import type { NotificationService } from '../notifications/notification.service';
 
 describe('SalesBonusAccrualService', () => {
   let prisma: MockPrisma;
   let service: SalesBonusAccrualService;
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     prisma.bonusEntry.findMany.mockResolvedValue([]);
     prisma.bonusEntry.findFirst.mockResolvedValue(null);
-    service = new SalesBonusAccrualService(prisma as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new SalesBonusAccrualService(prisma as never, notifications);
   });
 
   it('does nothing when invoice is not PAID', async () => {

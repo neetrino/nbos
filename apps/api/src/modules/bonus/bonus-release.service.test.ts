@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { BonusReleaseService } from './bonus-release.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import type { NotificationService } from '../notifications/notification.service';
 
 const sampleEntry = {
   id: 'be1',
@@ -16,11 +17,13 @@ const sampleEntry = {
 describe('BonusReleaseService', () => {
   let prisma: MockPrisma;
   let service: BonusReleaseService;
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     prisma.bonusEntry.findMany.mockResolvedValue([]);
-    service = new BonusReleaseService(prisma as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new BonusReleaseService(prisma as never, notifications);
   });
 
   it('listForEntry throws when entry missing', async () => {

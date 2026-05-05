@@ -5,6 +5,8 @@ import {
   syncBonusEntryStatusesForOrder,
 } from './bonus-entry-status-sync';
 
+const entryMeta = { employeeId: 'emp1', order: { code: 'ORD-1' } };
+
 function createDbMock() {
   return {
     bonusEntry: {
@@ -30,6 +32,7 @@ describe('refreshBonusEntryStatusAfterReleasesChange', () => {
       id: 'be1',
       status: 'INCOMING',
       amount: new Decimal(100),
+      ...entryMeta,
     });
     db.bonusRelease.aggregate
       .mockResolvedValueOnce({ _sum: { amount: null } })
@@ -48,6 +51,7 @@ describe('refreshBonusEntryStatusAfterReleasesChange', () => {
       id: 'be1',
       status: 'ACTIVE',
       amount: new Decimal(100),
+      ...entryMeta,
     });
     db.bonusRelease.aggregate.mockResolvedValueOnce({ _sum: { amount: new Decimal(100) } });
 
@@ -64,6 +68,7 @@ describe('refreshBonusEntryStatusAfterReleasesChange', () => {
       id: 'be1',
       status: 'PAID',
       amount: new Decimal(50),
+      ...entryMeta,
     });
 
     await refreshBonusEntryStatusAfterReleasesChange(db as never, 'be1');
@@ -77,6 +82,7 @@ describe('refreshBonusEntryStatusAfterReleasesChange', () => {
       id: 'be1',
       status: 'ACTIVE',
       amount: new Decimal(100),
+      ...entryMeta,
     });
     db.bonusRelease.aggregate
       .mockResolvedValueOnce({ _sum: { amount: null } })
@@ -96,8 +102,13 @@ describe('syncBonusEntryStatusesForOrder', () => {
     const db = createDbMock();
     db.bonusEntry.findMany.mockResolvedValue([{ id: 'a' }, { id: 'b' }]);
     db.bonusEntry.findUnique
-      .mockResolvedValueOnce({ id: 'a', status: 'INCOMING', amount: new Decimal(100) })
-      .mockResolvedValueOnce({ id: 'b', status: 'ACTIVE', amount: new Decimal(100) });
+      .mockResolvedValueOnce({
+        id: 'a',
+        status: 'INCOMING',
+        amount: new Decimal(100),
+        ...entryMeta,
+      })
+      .mockResolvedValueOnce({ id: 'b', status: 'ACTIVE', amount: new Decimal(100), ...entryMeta });
     db.bonusRelease.aggregate
       .mockResolvedValueOnce({ _sum: { amount: null } })
       .mockResolvedValueOnce({ _sum: { amount: new Decimal(1) } })

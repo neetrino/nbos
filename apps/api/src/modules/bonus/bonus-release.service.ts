@@ -6,6 +6,8 @@ import {
   type BonusReleaseTypeEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { notifyBonusReleaseCorrected } from '../employees/employee-wallet-notify.ops';
+import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
@@ -39,14 +41,17 @@ type BonusEntryForRelease = {
   orderId: string;
   projectId: string;
   amount: Decimal;
-  order: { productId: string | null; extensionId: string | null };
+  order: { productId: string | null; extensionId: string | null; code: string };
 };
 
 @Injectable()
 export class BonusReleaseService {
   private readonly logger = new Logger(BonusReleaseService.name);
 
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   async listForEntry(bonusEntryId: string) {
     const entry = await this.prisma.bonusEntry.findUnique({
@@ -89,7 +94,7 @@ export class BonusReleaseService {
       },
     });
 
-    await syncProductBonusPoolForOrder(this.prisma, entry.orderId);
+    await syncProductBonusPoolForOrder(this.prisma, entry.orderId, this.notifications);
     this.logger.log({ msg: 'bonus_release_created', id: created.id, bonusEntryId: entry.id });
     return created;
   }
@@ -146,7 +151,15 @@ export class BonusReleaseService {
       },
     });
 
-    await syncProductBonusPoolForOrder(this.prisma, entry.orderId);
+    await syncProductBonusPoolForOrder(this.prisma, entry.orderId, this.notifications);
+    if (nextType === 'CORRECTION') {
+      await notifyBonusReleaseCorrected(this.notifications, {
+        employeeId: entry.employeeId,
+        releaseId,
+        orderCode: entry.order.code,
+        amountLabel: nextAmt.toFixed(2),
+      });
+    }
     this.logger.log({ msg: 'bonus_release_patched', id: releaseId, bonusEntryId: entry.id });
     return updated;
   }
@@ -160,7 +173,7 @@ export class BonusReleaseService {
         orderId: true,
         projectId: true,
         amount: true,
-        order: { select: { productId: true, extensionId: true } },
+        order: { select: { productId: true, extensionId: true, code: true } },
       },
     });
     if (!entry) {

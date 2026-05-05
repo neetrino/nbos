@@ -1,16 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { PayrollRunsService } from './payroll-runs.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import type { NotificationService } from '../notifications/notification.service';
 
 describe('PayrollRunsService', () => {
   let service: PayrollRunsService;
   let prisma: MockPrisma;
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new PayrollRunsService(prisma as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new PayrollRunsService(prisma as never, notifications);
   });
 
   describe('findAll', () => {

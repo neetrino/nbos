@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationService } from '../notifications/notification.service';
 import { isValidPayrollMonth } from './payroll-runs.constants';
 import { parsePayrollRunStatusQuery } from './payroll-run-list-scope';
 import {
@@ -28,7 +29,14 @@ import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-ma
 import { type PayrollRunStatsResult } from './payroll-run-list-stats';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
-import { refreshBonusEntryStatusesForReleases } from './payroll-run-bonus-release-side-effects';
+import {
+  refreshBonusEntryStatusesForReleases,
+  syncProductBonusPoolsForBonusReleases,
+} from './payroll-run-bonus-release-side-effects';
+import {
+  notifyEmployeesOnPayrollRunClosed,
+  notifyEmployeesOnPayrollRunCreated,
+} from './payroll-run-employee-wallet-notify';
 import { applyPayrollRunKpiPatch, type PatchPayrollRunBody } from './payroll-run-kpi-patch';
 import { sumPaymentsForPayrollMonthSuggestedSalesKpi } from './payroll-run-suggested-sales-actual';
 
@@ -50,7 +58,10 @@ export interface PayrollRunStatusMeta {
 
 @Injectable()
 export class PayrollRunsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   async findAll(params: PayrollRunListParams) {
     return queryPayrollRunList(this.prisma, params);
@@ -172,6 +183,10 @@ export class PayrollRunsService {
       return run.id;
     });
 
+    if (seedLines) {
+      await notifyEmployeesOnPayrollRunCreated(this.prisma, this.notifications, newId, month);
+    }
+
     return this.findById(newId);
   }
 
@@ -223,6 +238,15 @@ export class PayrollRunsService {
       });
     });
 
+    if (status === 'CLOSED') {
+      await notifyEmployeesOnPayrollRunClosed(
+        this.prisma,
+        this.notifications,
+        id,
+        run.payrollMonth,
+      );
+    }
+
     return this.findById(id);
   }
 
@@ -236,6 +260,7 @@ export class PayrollRunsService {
       });
     });
     await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
+    await syncProductBonusPoolsForBonusReleases(this.prisma, uniqueIds, this.notifications);
     return this.findById(payrollRunId);
   }
 
@@ -249,6 +274,7 @@ export class PayrollRunsService {
       });
     });
     await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
+    await syncProductBonusPoolsForBonusReleases(this.prisma, uniqueIds, this.notifications);
     return this.findById(payrollRunId);
   }
 }

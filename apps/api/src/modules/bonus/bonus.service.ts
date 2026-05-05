@@ -6,6 +6,7 @@ import {
   type BonusStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationService } from '../notifications/notification.service';
 import {
   foldBonusProductPools,
   type BonusOrderPoolGroupRow,
@@ -40,7 +41,10 @@ interface BonusQueryParams {
 
 @Injectable()
 export class BonusService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   async findAll(params: BonusQueryParams) {
     const {
@@ -110,7 +114,7 @@ export class BonusService {
         project: { select: { id: true, code: true, name: true } },
       },
     });
-    await syncProductBonusPoolForOrder(this.prisma, data.orderId);
+    await syncProductBonusPoolForOrder(this.prisma, data.orderId, this.notifications);
     return created;
   }
 
@@ -120,7 +124,7 @@ export class BonusService {
       where: { id },
       data: { status: status as BonusStatusEnum },
     });
-    await syncProductBonusPoolForOrder(this.prisma, existing.orderId);
+    await syncProductBonusPoolForOrder(this.prisma, existing.orderId, this.notifications);
     return updated;
   }
 

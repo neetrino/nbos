@@ -1,15 +1,18 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProductsService } from './products.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import type { NotificationService } from '../../notifications/notification.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
   let prisma: MockPrisma;
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ProductsService(prisma as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new ProductsService(prisma as never, notifications);
   });
 
   describe('findAll', () => {

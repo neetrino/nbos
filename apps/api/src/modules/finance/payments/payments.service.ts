@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { NotificationService } from '../../notifications/notification.service';
 import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import {
@@ -34,6 +35,7 @@ export class PaymentsService {
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly salesBonusAccrual: SalesBonusAccrualService,
+    private readonly notifications: NotificationService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -175,7 +177,7 @@ export class PaymentsService {
 
     if (invoice.orderId) {
       await this.syncOrderStatus(invoice.orderId);
-      await syncProductBonusPoolForOrder(this.prisma, invoice.orderId);
+      await syncProductBonusPoolForOrder(this.prisma, invoice.orderId, this.notifications);
     }
 
     const refreshed = await this.prisma.invoice.findUnique({
@@ -196,7 +198,7 @@ export class PaymentsService {
     await this.syncInvoiceStatus(payment.invoiceId);
     if (payment.invoice.orderId) {
       await this.syncOrderStatus(payment.invoice.orderId);
-      await syncProductBonusPoolForOrder(this.prisma, payment.invoice.orderId);
+      await syncProductBonusPoolForOrder(this.prisma, payment.invoice.orderId, this.notifications);
     }
   }
 

@@ -1,17 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Decimal } from '@nbos/database';
 import { BonusService } from './bonus.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
+import type { NotificationService } from '../notifications/notification.service';
 
 describe('BonusService', () => {
   let service: BonusService;
   let prisma: MockPrisma;
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     prisma.bonusEntry.findMany.mockResolvedValue([]);
-    service = new BonusService(prisma as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new BonusService(prisma as never, notifications);
   });
 
   describe('findAll', () => {
