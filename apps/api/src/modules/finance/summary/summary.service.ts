@@ -2,6 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { PayrollRunsService } from '../../payroll-runs/payroll-runs.service';
+import {
+  ACTIVE_EXPENSE_STATUSES,
+  OPEN_INVOICE_STATUSES,
+  foldExpenseCards,
+  foldInvoiceCards,
+} from './finance-card-metrics';
 import { getFinanceReconciliationSummary } from './finance-reconciliation-summary';
 
 interface FinanceSummaryParams {
@@ -19,6 +25,7 @@ export class FinanceSummaryService {
   async getDashboardSummary(params: FinanceSummaryParams = {}) {
     const [
       invoiceStats,
+      expenseStats,
       subscriptionStats,
       recentPayments,
       upcomingInvoices,
@@ -26,6 +33,7 @@ export class FinanceSummaryService {
       payrollRuns,
     ] = await Promise.all([
       this.getInvoiceStats(params),
+      this.getExpenseCardStats(params),
       this.getSubscriptionStats(params),
       this.getRecentPayments(params),
       this.getUpcomingInvoices(params),
@@ -43,6 +51,8 @@ export class FinanceSummaryService {
         monthlyRecurringRevenue: subscriptionStats.monthlyRevenue,
         activeSubscriptions: subscriptionStats.activeSubscriptions,
       },
+      invoiceCards: invoiceStats.invoiceCards,
+      expenseCards: expenseStats,
       invoiceStatusItems: invoiceStats.byStatus,
       reconciliation,
       recentPayments,
@@ -54,9 +64,21 @@ export class FinanceSummaryService {
 
   private async getInvoiceStats(params: FinanceSummaryParams) {
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
-    const paidDate = this.buildDateRange(params.dateFrom, params.dateTo);
+    const paymentDate = this.buildDateRange(params.dateFrom, params.dateTo);
 
-    const [total, byStatus, totalRevenue, outstanding, overdue] = await Promise.all([
+    const [invoiceCards, total, byStatus, totalRevenue] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where: {
+          status: { in: [...OPEN_INVOICE_STATUSES, 'PAID', 'FAIL', 'ON_HOLD'] },
+          ...(createdAt ? { createdAt } : {}),
+        },
+        select: {
+          amount: true,
+          dueDate: true,
+          status: true,
+          payments: { select: { amount: true } },
+        },
+      }),
       this.prisma.invoice.count({
         ...(createdAt ? { where: { createdAt } } : {}),
       }),
@@ -66,30 +88,14 @@ export class FinanceSummaryService {
         _count: true,
         _sum: { amount: true },
       }),
-      this.prisma.invoice.aggregate({
+      this.prisma.payment.aggregate({
         where: {
-          status: 'PAID',
-          ...(paidDate ? { paidDate } : {}),
+          ...(paymentDate ? { paymentDate } : {}),
         },
-        _sum: { amount: true },
-      }),
-      this.prisma.invoice.aggregate({
-        where: {
-          status: { not: 'PAID' },
-          ...(createdAt ? { createdAt } : {}),
-        },
-        _count: true,
-        _sum: { amount: true },
-      }),
-      this.prisma.invoice.aggregate({
-        where: {
-          status: 'DELAYED',
-          ...(createdAt ? { createdAt } : {}),
-        },
-        _count: true,
         _sum: { amount: true },
       }),
     ]);
+    const invoiceCardSummary = foldInvoiceCards(invoiceCards);
 
     return {
       total,
@@ -99,15 +105,29 @@ export class FinanceSummaryService {
         amount: item._sum.amount,
       })),
       totalRevenue: totalRevenue._sum.amount,
-      outstanding: {
-        count: outstanding._count,
-        amount: outstanding._sum.amount,
-      },
-      overdue: {
-        count: overdue._count,
-        amount: overdue._sum.amount,
-      },
+      outstanding: invoiceCardSummary.outstanding,
+      overdue: invoiceCardSummary.overdue,
+      invoiceCards: invoiceCardSummary,
     };
+  }
+
+  private async getExpenseCardStats(params: FinanceSummaryParams) {
+    const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
+    const expenses = await this.prisma.expense.findMany({
+      where: {
+        ...(createdAt ? { createdAt } : {}),
+        status: { in: [...ACTIVE_EXPENSE_STATUSES, 'PAID', 'UNPAID'] },
+      },
+      select: {
+        amount: true,
+        dueDate: true,
+        status: true,
+        backlogReason: true,
+        expensePayments: { select: { amount: true } },
+      },
+    });
+
+    return foldExpenseCards(expenses);
   }
 
   private async getSubscriptionStats(params: FinanceSummaryParams) {
@@ -187,7 +207,7 @@ export class FinanceSummaryService {
 
     const invoices = await this.prisma.invoice.findMany({
       where: {
-        status: { not: 'PAID' },
+        status: { in: [...OPEN_INVOICE_STATUSES] },
         dueDate,
       },
       orderBy: { dueDate: 'asc' },

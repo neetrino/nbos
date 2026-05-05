@@ -349,7 +349,7 @@ Frontend still references old finance statuses and pages:
 
 ### C8. Finance summary and scheduler logic still use old status semantics
 
-Статус: `STALE CODE`
+Статус: `PARTIAL`
 
 Examples:
 
@@ -357,18 +357,17 @@ Examples:
 - [apps/api/src/modules/scheduler/scheduler.service.ts](../../../../apps/api/src/modules/scheduler/scheduler.service.ts)
 - [apps/api/src/modules/finance/finance-status.utils.ts](../../../../apps/api/src/modules/finance/finance-status.utils.ts)
 
-They currently calculate status and summary around old invoice and expense stages.
+`summary.service.ts` now exposes domain-driven `invoiceCards` and `expenseCards` metrics, and
+`scheduler.service.ts` no longer auto-moves `ON_HOLD` invoice cards to `DELAYED`.
+Legacy `invoiceStatusItems` and `finance-status.utils.ts` remain only for compatibility slices until the
+full Invoice Card money-status model replaces `InvoiceStatusEnum`.
 
-Будущий refactor:
+Remaining refactor:
 
-- replace status-driven summary with domain-driven metrics:
-  - open invoice cards;
-  - overdue invoice cards;
-  - expected incoming;
-  - expense cards due soon / due now / overdue;
-  - expense backlog;
-  - subscription coverage;
-  - payroll payable / paid / remaining.
+- finish expected incoming from official invoice/payment request fields;
+- expose expense `due now` separately when the runtime model has an explicit threshold;
+- replace subscription statuses and coverage fields;
+- replace legacy invoice board status distribution after the Invoice Card model lands.
 
 ---
 

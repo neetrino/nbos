@@ -84,9 +84,11 @@ export class InvoicesService {
       this.prisma.invoice.findMany({
         where,
         include: {
-          order: { select: { id: true, code: true } },
+          order: {
+            select: { id: true, code: true, project: { select: { id: true, name: true } } },
+          },
+          subscription: { select: { project: { select: { id: true, name: true } } } },
           company: { select: { id: true, name: true } },
-          project: { select: { id: true, name: true } },
           payments: { select: { id: true, amount: true, paymentDate: true } },
           _count: { select: { payments: true } },
         },
@@ -98,7 +100,12 @@ export class InvoicesService {
     ]);
 
     return {
-      items: items.map(attachInvoicePaymentCoverage),
+      items: items.map((invoice) =>
+        attachInvoicePaymentCoverage({
+          ...invoice,
+          project: invoice.order?.project ?? invoice.subscription?.project ?? null,
+        }),
+      ),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -107,15 +114,17 @@ export class InvoicesService {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
       include: {
-        order: true,
-        subscription: true,
+        order: { include: { project: true } },
+        subscription: { include: { project: true } },
         company: true,
-        project: true,
         payments: true,
       },
     });
     if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
-    return attachInvoicePaymentCoverage(invoice);
+    return attachInvoicePaymentCoverage({
+      ...invoice,
+      project: invoice.order?.project ?? invoice.subscription?.project ?? null,
+    });
   }
 
   async create(data: CreateInvoiceDto) {

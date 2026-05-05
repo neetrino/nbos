@@ -80,6 +80,15 @@ describe('SchedulerService', () => {
           data: { status: 'DELAYED' },
         }),
       );
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: {
+              notIn: ['PAID', 'FAIL', 'DELAYED', 'ON_HOLD'],
+            },
+          }),
+        }),
+      );
     });
 
     it('should return 0 when no overdue invoices', async () => {
