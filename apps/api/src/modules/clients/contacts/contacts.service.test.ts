@@ -18,11 +18,20 @@ describe('ContactsService', () => {
       expect(result.meta.page).toBe(1);
     });
 
-    it('applies role filter', async () => {
-      await service.findAll({ role: 'CLIENT' });
+    it('applies contact type filter', async () => {
+      await service.findAll({ contactType: 'CLIENT' });
       expect(prisma.contact.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ role: 'CLIENT' }),
+        }),
+      );
+    });
+
+    it('keeps role filter as a compatibility alias', async () => {
+      await service.findAll({ role: 'PARTNER' });
+      expect(prisma.contact.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ role: 'PARTNER' }),
         }),
       );
     });

@@ -17,6 +17,7 @@ interface CompanyQueryParams {
   page?: number;
   pageSize?: number;
   search?: string;
+  taxStatus?: string;
   type?: string;
 }
 
@@ -25,7 +26,7 @@ export class CompaniesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: CompanyQueryParams) {
-    const { page = 1, pageSize = 20, search, type } = params;
+    const { page = 1, pageSize = 20, search, taxStatus, type } = params;
     const where: Prisma.CompanyWhereInput = {};
 
     if (search) {
@@ -35,6 +36,7 @@ export class CompaniesService {
       ];
     }
     if (type) where.type = type as CompanyType;
+    if (taxStatus) where.taxStatus = taxStatus as TaxStatus;
 
     const [items, total] = await Promise.all([
       this.prisma.company.findMany({

@@ -14,6 +14,7 @@ interface CreateContactDto {
 interface ContactQueryParams {
   page?: number;
   pageSize?: number;
+  contactType?: string;
   role?: string;
   search?: string;
   sortBy?: string;
@@ -28,6 +29,7 @@ export class ContactsService {
     const {
       page = 1,
       pageSize = 20,
+      contactType,
       role,
       search,
       sortBy = 'createdAt',
@@ -35,7 +37,8 @@ export class ContactsService {
     } = params;
 
     const where: Prisma.ContactWhereInput = {};
-    if (role) where.role = role as ContactRole;
+    const typeFilter = contactType ?? role;
+    if (typeFilter) where.role = typeFilter as ContactRole;
     if (search) {
       where.OR = [
         { firstName: { contains: search, mode: 'insensitive' } },
