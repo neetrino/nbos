@@ -592,6 +592,12 @@ function getLocalLeadTransitionErrors(lead: Lead, targetStatus: string): ApiFiel
   errors.push(...getLocalAttributionErrors(lead));
 
   if (targetStatus === 'SQL') {
+    if (!lead.name?.trim()) {
+      errors.push({
+        field: 'name',
+        message: 'Inquiry title (product/service) is required before Lead Won / Deal',
+      });
+    }
     if (!lead.contactName.trim()) {
       errors.push({ field: 'contactName', message: 'Contact name is required' });
     }

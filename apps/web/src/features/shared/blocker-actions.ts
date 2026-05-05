@@ -17,6 +17,7 @@ const CRM_ACTION_RULES = [
     label: 'Open required Lead fields',
     target: 'details',
     fields: [
+      'name',
       'contactName',
       'contactMethod',
       'source',

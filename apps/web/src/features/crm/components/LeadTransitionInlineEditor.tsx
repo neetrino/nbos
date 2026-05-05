@@ -19,6 +19,7 @@ import {
 
 type LeadInlinePayload = Pick<
   Lead,
+  | 'name'
   | 'contactName'
   | 'phone'
   | 'email'
@@ -41,6 +42,7 @@ interface LeadTransitionInlineEditorProps {
 }
 
 interface FormState {
+  name: string;
   contactName: string;
   phone: string;
   email: string;
@@ -104,6 +106,19 @@ export function LeadTransitionInlineEditor({
 
   return (
     <div className="space-y-3">
+      {(targetStatus === 'SQL' || errorFields.has('name')) && (
+        <Field
+          label="Inquiry title (product / service)"
+          invalid={touchedRequiredFields.has('name')}
+        >
+          <Input
+            value={form.name}
+            onChange={(event) => updateForm('name', event.target.value)}
+            placeholder="e.g. Company website, CRM integration"
+          />
+        </Field>
+      )}
+
       {targetStatus === 'SQL' || errorFields.has('contactName') ? (
         <Field label="Contact name" invalid={touchedRequiredFields.has('contactName')}>
           <Input
@@ -323,6 +338,7 @@ function NativeSelect({
 
 function getInitialForm(lead: Lead): FormState {
   return {
+    name: lead.name ?? '',
     contactName: lead.contactName ?? '',
     phone: lead.phone ?? '',
     email: lead.email ?? '',
@@ -394,6 +410,7 @@ function buildRequiredFieldSet(
     required.add('whichOne');
   }
   if (targetStatus === 'SQL') {
+    required.add('name');
     required.add('contactName');
     required.add('contactMethod');
     required.add('assignedTo');
@@ -409,6 +426,7 @@ function getMissingFields(
   const required = buildRequiredFieldSet(form, errors, targetStatus);
   const missing: string[] = [];
 
+  if (required.has('name') && !form.name.trim()) missing.push('name');
   if (required.has('contactName') && !form.contactName.trim()) missing.push('contactName');
   if (required.has('contactMethod') && !form.phone.trim() && !form.email.trim()) {
     missing.push('contactMethod');
@@ -429,6 +447,7 @@ function getMissingFields(
 
 function buildChangedPayload(lead: Lead, form: FormState): Partial<LeadInlinePayload> {
   const payload: Partial<LeadInlinePayload> = {};
+  assignIfChanged(payload, 'name', lead.name, form.name);
   assignIfChanged(payload, 'contactName', lead.contactName, form.contactName);
   assignIfChanged(payload, 'phone', lead.phone, form.phone);
   assignIfChanged(payload, 'email', lead.email, form.email);

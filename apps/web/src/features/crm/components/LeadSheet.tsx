@@ -128,14 +128,14 @@ export function LeadSheet({
               onChange={(e) => setNameValue(e.target.value)}
               onBlur={saveLeadName}
               onKeyDown={handleNameKeyDown}
-              placeholder="Lead name..."
+              placeholder="Inquiry title (product / service)…"
               className="text-foreground w-full border-0 border-b-2 border-sky-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
             />
           ) : (
             <h2
               onClick={startEditingName}
               className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-              title="Click to edit lead name"
+              title="Click to edit inquiry title (product / service)"
             >
               {leadTitle}
             </h2>
