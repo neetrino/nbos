@@ -103,6 +103,33 @@ export class PartnersController {
     return this.partnersService.getPartnerAccrualBalance(id);
   }
 
+  @Get(':id/payout-batches')
+  @ApiOperation({ summary: 'List partner payout batches' })
+  async listPartnerPayoutBatches(@Param('id') id: string) {
+    return this.partnersService.listPartnerPayoutBatches(id);
+  }
+
+  @Post(':id/payout-batches')
+  @ApiOperation({ summary: 'Create a draft payout batch from eligible partner accruals' })
+  async createPartnerPayoutBatch(
+    @Param('id') id: string,
+    @Body() body: { accrualIds: string[]; payoutDate?: string; notes?: string },
+  ) {
+    return this.partnersService.createPartnerPayoutBatch(id, body);
+  }
+
+  @Post(':id/payout-batches/:batchId/approve')
+  @ApiOperation({
+    summary: 'Approve payout batch and create Partner Payout expense card',
+  })
+  async approvePartnerPayoutBatch(
+    @Param('id') id: string,
+    @Param('batchId') batchId: string,
+    @Body() body: { payoutDate?: string; approvedBy?: string; notes?: string },
+  ) {
+    return this.partnersService.approvePartnerPayoutBatch(id, batchId, body);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get partner by ID' })
   async findOne(@Param('id') id: string) {

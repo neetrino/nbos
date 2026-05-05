@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
 import { notifySalaryExpensePayment } from '../employees/employee-wallet-notify.ops';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
+import { syncPartnerPayoutPaidFromExpense } from '../partners/partner-payout-batch.ops';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { sumExpensePaymentAmounts } from './expense-payment-rollup';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
@@ -58,6 +59,7 @@ export async function createExpensePaymentRecord(
 
   await syncExpenseStatusWithPaymentLedger(prisma, expenseId);
   await syncSalaryLinePaidFromExpenseLedger(prisma, expenseId, opts?.notify);
+  await syncPartnerPayoutPaidFromExpense(prisma, expenseId);
 
   if (!opts?.notify) {
     return;

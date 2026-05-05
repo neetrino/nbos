@@ -862,6 +862,7 @@ model Expense {
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
   expensePayments     ExpensePayment[]
   salaryLine          SalaryLine?
+  partnerPayoutBatch  PartnerPayoutBatch?
 
   @@index([expensePlanId])
   @@index([clientServiceRecordId])
@@ -2324,6 +2325,7 @@ model Partner {
   commissionPolicyRows      PartnerCommissionPolicyRow[]
   partnerReferralTerms      PartnerReferralTerms[]
   partnerAccruals           PartnerAccrual[]
+  partnerPayoutBatches      PartnerPayoutBatch[]
 
   @@map("partners")
 }
@@ -2379,6 +2381,14 @@ enum PartnerAccrualStatusEnum {
   CANCELLED
 }
 
+enum PartnerPayoutBatchStatusEnum {
+  DRAFT
+  APPROVED
+  EXPENSE_CREATED
+  PAID
+  CANCELLED
+}
+
 /// Inbound referral commission accrual from client cash (NBOS § Partner Payouts — PAR-01 / PAR-02).
 model PartnerAccrual {
   id              String                   @id @default(uuid())
@@ -2390,6 +2400,7 @@ model PartnerAccrual {
   subscriptionId  String?                  @map("subscription_id")
   invoiceId       String?                  @map("invoice_id")
   paymentId       String                   @unique @map("payment_id")
+  payoutBatchId   String?                  @map("payout_batch_id")
   dealType        DealTypeEnum             @map("deal_type")
   paymentType     PaymentTypeEnum          @map("payment_type")
   baseAmount      Decimal                  @map("base_amount") @db.Decimal(14, 2)
@@ -2408,11 +2419,35 @@ model PartnerAccrual {
   subscription  Subscription?        @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   invoice       Invoice?             @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
   payment       Payment              @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  payoutBatch   PartnerPayoutBatch?  @relation(fields: [payoutBatchId], references: [id], onDelete: SetNull)
 
   @@index([partnerId])
   @@index([orderId])
   @@index([projectId])
+  @@index([payoutBatchId])
   @@map("partner_accruals")
+}
+
+/// Finance-selected batch of partner accruals to be paid as one Partner Payout expense.
+model PartnerPayoutBatch {
+  id          String                         @id @default(uuid())
+  partnerId   String                         @map("partner_id")
+  totalAmount Decimal                        @map("total_amount") @db.Decimal(14, 2)
+  status      PartnerPayoutBatchStatusEnum   @default(DRAFT)
+  payoutDate  DateTime?                      @map("payout_date")
+  expenseId   String?                        @unique @map("expense_id")
+  approvedBy  String?                        @map("approved_by")
+  notes       String?                        @db.Text
+  createdAt   DateTime                       @default(now()) @map("created_at")
+  updatedAt   DateTime                       @updatedAt @map("updated_at")
+
+  partner  Partner          @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  expense  Expense?         @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+  accruals PartnerAccrual[]
+
+  @@index([partnerId])
+  @@index([status])
+  @@map("partner_payout_batches")
 }
 
 // ─── INTERNAL MESSENGER (MVP) ─────────────────────────────

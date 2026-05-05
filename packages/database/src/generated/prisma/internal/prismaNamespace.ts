@@ -441,6 +441,7 @@ export const ModelName = {
   PartnerReferralTerms: 'PartnerReferralTerms',
   PartnerCommissionPolicyRow: 'PartnerCommissionPolicyRow',
   PartnerAccrual: 'PartnerAccrual',
+  PartnerPayoutBatch: 'PartnerPayoutBatch',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
   MessengerChannelMessageAttachment: 'MessengerChannelMessageAttachment',
@@ -554,6 +555,7 @@ export type TypeMap<
       | 'partnerReferralTerms'
       | 'partnerCommissionPolicyRow'
       | 'partnerAccrual'
+      | 'partnerPayoutBatch'
       | 'messengerChannel'
       | 'messengerChannelMessage'
       | 'messengerChannelMessageAttachment'
@@ -5538,6 +5540,82 @@ export type TypeMap<
         };
       };
     };
+    PartnerPayoutBatch: {
+      payload: Prisma.$PartnerPayoutBatchPayload<ExtArgs>;
+      fields: Prisma.PartnerPayoutBatchFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.PartnerPayoutBatchFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.PartnerPayoutBatchFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>;
+        };
+        findFirst: {
+          args: Prisma.PartnerPayoutBatchFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.PartnerPayoutBatchFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>;
+        };
+        findMany: {
+          args: Prisma.PartnerPayoutBatchFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>[];
+        };
+        create: {
+          args: Prisma.PartnerPayoutBatchCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>;
+        };
+        createMany: {
+          args: Prisma.PartnerPayoutBatchCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.PartnerPayoutBatchCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>[];
+        };
+        delete: {
+          args: Prisma.PartnerPayoutBatchDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>;
+        };
+        update: {
+          args: Prisma.PartnerPayoutBatchUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>;
+        };
+        deleteMany: {
+          args: Prisma.PartnerPayoutBatchDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.PartnerPayoutBatchUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.PartnerPayoutBatchUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>[];
+        };
+        upsert: {
+          args: Prisma.PartnerPayoutBatchUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerPayoutBatchPayload>;
+        };
+        aggregate: {
+          args: Prisma.PartnerPayoutBatchAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePartnerPayoutBatch>;
+        };
+        groupBy: {
+          args: Prisma.PartnerPayoutBatchGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.PartnerPayoutBatchGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.PartnerPayoutBatchCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.PartnerPayoutBatchCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     MessengerChannel: {
       payload: Prisma.$MessengerChannelPayload<ExtArgs>;
       fields: Prisma.MessengerChannelFieldRefs;
@@ -8857,6 +8935,7 @@ export const PartnerAccrualScalarFieldEnum = {
   subscriptionId: 'subscriptionId',
   invoiceId: 'invoiceId',
   paymentId: 'paymentId',
+  payoutBatchId: 'payoutBatchId',
   dealType: 'dealType',
   paymentType: 'paymentType',
   baseAmount: 'baseAmount',
@@ -8870,6 +8949,22 @@ export const PartnerAccrualScalarFieldEnum = {
 
 export type PartnerAccrualScalarFieldEnum =
   (typeof PartnerAccrualScalarFieldEnum)[keyof typeof PartnerAccrualScalarFieldEnum];
+
+export const PartnerPayoutBatchScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  totalAmount: 'totalAmount',
+  status: 'status',
+  payoutDate: 'payoutDate',
+  expenseId: 'expenseId',
+  approvedBy: 'approvedBy',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerPayoutBatchScalarFieldEnum =
+  (typeof PartnerPayoutBatchScalarFieldEnum)[keyof typeof PartnerPayoutBatchScalarFieldEnum];
 
 export const MessengerChannelScalarFieldEnum = {
   id: 'id',
@@ -10796,6 +10891,22 @@ export type ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel> = FieldR
 >;
 
 /**
+ * Reference to a field of type 'PartnerPayoutBatchStatusEnum'
+ */
+export type EnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerPayoutBatchStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'PartnerPayoutBatchStatusEnum[]'
+ */
+export type ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerPayoutBatchStatusEnum[]'
+>;
+
+/**
  * Reference to a field of type 'MessengerChannelType'
  */
 export type EnumMessengerChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -11358,6 +11469,7 @@ export type GlobalOmitConfig = {
   partnerReferralTerms?: Prisma.PartnerReferralTermsOmit;
   partnerCommissionPolicyRow?: Prisma.PartnerCommissionPolicyRowOmit;
   partnerAccrual?: Prisma.PartnerAccrualOmit;
+  partnerPayoutBatch?: Prisma.PartnerPayoutBatchOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;
   messengerChannelMessageAttachment?: Prisma.MessengerChannelMessageAttachmentOmit;

@@ -347,6 +347,11 @@ export type PartnerCommissionPolicyRow = Prisma.PartnerCommissionPolicyRowModel;
  */
 export type PartnerAccrual = Prisma.PartnerAccrualModel;
 /**
+ * Model PartnerPayoutBatch
+ * Finance-selected batch of partner accruals to be paid as one Partner Payout expense.
+ */
+export type PartnerPayoutBatch = Prisma.PartnerPayoutBatchModel;
+/**
  * Model MessengerChannel
  *
  */

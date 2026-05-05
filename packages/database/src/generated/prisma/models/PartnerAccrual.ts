@@ -48,6 +48,7 @@ export type PartnerAccrualMinAggregateOutputType = {
   subscriptionId: string | null;
   invoiceId: string | null;
   paymentId: string | null;
+  payoutBatchId: string | null;
   dealType: $Enums.DealTypeEnum | null;
   paymentType: $Enums.PaymentTypeEnum | null;
   baseAmount: runtime.Decimal | null;
@@ -69,6 +70,7 @@ export type PartnerAccrualMaxAggregateOutputType = {
   subscriptionId: string | null;
   invoiceId: string | null;
   paymentId: string | null;
+  payoutBatchId: string | null;
   dealType: $Enums.DealTypeEnum | null;
   paymentType: $Enums.PaymentTypeEnum | null;
   baseAmount: runtime.Decimal | null;
@@ -90,6 +92,7 @@ export type PartnerAccrualCountAggregateOutputType = {
   subscriptionId: number;
   invoiceId: number;
   paymentId: number;
+  payoutBatchId: number;
   dealType: number;
   paymentType: number;
   baseAmount: number;
@@ -124,6 +127,7 @@ export type PartnerAccrualMinAggregateInputType = {
   subscriptionId?: true;
   invoiceId?: true;
   paymentId?: true;
+  payoutBatchId?: true;
   dealType?: true;
   paymentType?: true;
   baseAmount?: true;
@@ -145,6 +149,7 @@ export type PartnerAccrualMaxAggregateInputType = {
   subscriptionId?: true;
   invoiceId?: true;
   paymentId?: true;
+  payoutBatchId?: true;
   dealType?: true;
   paymentType?: true;
   baseAmount?: true;
@@ -166,6 +171,7 @@ export type PartnerAccrualCountAggregateInputType = {
   subscriptionId?: true;
   invoiceId?: true;
   paymentId?: true;
+  payoutBatchId?: true;
   dealType?: true;
   paymentType?: true;
   baseAmount?: true;
@@ -279,6 +285,7 @@ export type PartnerAccrualGroupByOutputType = {
   subscriptionId: string | null;
   invoiceId: string | null;
   paymentId: string;
+  payoutBatchId: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal;
@@ -320,6 +327,7 @@ export type PartnerAccrualWhereInput = {
   subscriptionId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
   invoiceId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
   paymentId?: Prisma.StringFilter<'PartnerAccrual'> | string;
+  payoutBatchId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
   dealType?: Prisma.EnumDealTypeEnumFilter<'PartnerAccrual'> | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFilter<'PartnerAccrual'> | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -360,6 +368,10 @@ export type PartnerAccrualWhereInput = {
   > | null;
   invoice?: Prisma.XOR<Prisma.InvoiceNullableScalarRelationFilter, Prisma.InvoiceWhereInput> | null;
   payment?: Prisma.XOR<Prisma.PaymentScalarRelationFilter, Prisma.PaymentWhereInput>;
+  payoutBatch?: Prisma.XOR<
+    Prisma.PartnerPayoutBatchNullableScalarRelationFilter,
+    Prisma.PartnerPayoutBatchWhereInput
+  > | null;
 };
 
 export type PartnerAccrualOrderByWithRelationInput = {
@@ -372,6 +384,7 @@ export type PartnerAccrualOrderByWithRelationInput = {
   subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder;
   invoiceId?: Prisma.SortOrderInput | Prisma.SortOrder;
   paymentId?: Prisma.SortOrder;
+  payoutBatchId?: Prisma.SortOrderInput | Prisma.SortOrder;
   dealType?: Prisma.SortOrder;
   paymentType?: Prisma.SortOrder;
   baseAmount?: Prisma.SortOrder;
@@ -389,6 +402,7 @@ export type PartnerAccrualOrderByWithRelationInput = {
   subscription?: Prisma.SubscriptionOrderByWithRelationInput;
   invoice?: Prisma.InvoiceOrderByWithRelationInput;
   payment?: Prisma.PaymentOrderByWithRelationInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchOrderByWithRelationInput;
 };
 
 export type PartnerAccrualWhereUniqueInput = Prisma.AtLeast<
@@ -405,6 +419,7 @@ export type PartnerAccrualWhereUniqueInput = Prisma.AtLeast<
     orderId?: Prisma.StringFilter<'PartnerAccrual'> | string;
     subscriptionId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
     invoiceId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
+    payoutBatchId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
     dealType?: Prisma.EnumDealTypeEnumFilter<'PartnerAccrual'> | $Enums.DealTypeEnum;
     paymentType?: Prisma.EnumPaymentTypeEnumFilter<'PartnerAccrual'> | $Enums.PaymentTypeEnum;
     baseAmount?:
@@ -451,6 +466,10 @@ export type PartnerAccrualWhereUniqueInput = Prisma.AtLeast<
       Prisma.InvoiceWhereInput
     > | null;
     payment?: Prisma.XOR<Prisma.PaymentScalarRelationFilter, Prisma.PaymentWhereInput>;
+    payoutBatch?: Prisma.XOR<
+      Prisma.PartnerPayoutBatchNullableScalarRelationFilter,
+      Prisma.PartnerPayoutBatchWhereInput
+    > | null;
   },
   'id' | 'paymentId'
 >;
@@ -465,6 +484,7 @@ export type PartnerAccrualOrderByWithAggregationInput = {
   subscriptionId?: Prisma.SortOrderInput | Prisma.SortOrder;
   invoiceId?: Prisma.SortOrderInput | Prisma.SortOrder;
   paymentId?: Prisma.SortOrder;
+  payoutBatchId?: Prisma.SortOrderInput | Prisma.SortOrder;
   dealType?: Prisma.SortOrder;
   paymentType?: Prisma.SortOrder;
   baseAmount?: Prisma.SortOrder;
@@ -498,6 +518,7 @@ export type PartnerAccrualScalarWhereWithAggregatesInput = {
   subscriptionId?: Prisma.StringNullableWithAggregatesFilter<'PartnerAccrual'> | string | null;
   invoiceId?: Prisma.StringNullableWithAggregatesFilter<'PartnerAccrual'> | string | null;
   paymentId?: Prisma.StringWithAggregatesFilter<'PartnerAccrual'> | string;
+  payoutBatchId?: Prisma.StringNullableWithAggregatesFilter<'PartnerAccrual'> | string | null;
   dealType?: Prisma.EnumDealTypeEnumWithAggregatesFilter<'PartnerAccrual'> | $Enums.DealTypeEnum;
   paymentType?:
     | Prisma.EnumPaymentTypeEnumWithAggregatesFilter<'PartnerAccrual'>
@@ -547,6 +568,7 @@ export type PartnerAccrualCreateInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
   invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
   payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateInput = {
@@ -559,6 +581,7 @@ export type PartnerAccrualUncheckedCreateInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -606,6 +629,7 @@ export type PartnerAccrualUpdateInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
   invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
   payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateInput = {
@@ -618,6 +642,7 @@ export type PartnerAccrualUncheckedUpdateInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -656,6 +681,7 @@ export type PartnerAccrualCreateManyInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -707,6 +733,7 @@ export type PartnerAccrualUncheckedUpdateManyInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -760,6 +787,7 @@ export type PartnerAccrualCountOrderByAggregateInput = {
   subscriptionId?: Prisma.SortOrder;
   invoiceId?: Prisma.SortOrder;
   paymentId?: Prisma.SortOrder;
+  payoutBatchId?: Prisma.SortOrder;
   dealType?: Prisma.SortOrder;
   paymentType?: Prisma.SortOrder;
   baseAmount?: Prisma.SortOrder;
@@ -787,6 +815,7 @@ export type PartnerAccrualMaxOrderByAggregateInput = {
   subscriptionId?: Prisma.SortOrder;
   invoiceId?: Prisma.SortOrder;
   paymentId?: Prisma.SortOrder;
+  payoutBatchId?: Prisma.SortOrder;
   dealType?: Prisma.SortOrder;
   paymentType?: Prisma.SortOrder;
   baseAmount?: Prisma.SortOrder;
@@ -808,6 +837,7 @@ export type PartnerAccrualMinOrderByAggregateInput = {
   subscriptionId?: Prisma.SortOrder;
   invoiceId?: Prisma.SortOrder;
   paymentId?: Prisma.SortOrder;
+  payoutBatchId?: Prisma.SortOrder;
   dealType?: Prisma.SortOrder;
   paymentType?: Prisma.SortOrder;
   baseAmount?: Prisma.SortOrder;
@@ -1487,6 +1517,92 @@ export type EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.PartnerAccrualStatusEnum;
 };
 
+export type PartnerAccrualCreateNestedManyWithoutPayoutBatchInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutPayoutBatchInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutPayoutBatchInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutPayoutBatchInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyPayoutBatchInputEnvelope;
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+};
+
+export type PartnerAccrualUncheckedCreateNestedManyWithoutPayoutBatchInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutPayoutBatchInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutPayoutBatchInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutPayoutBatchInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyPayoutBatchInputEnvelope;
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+};
+
+export type PartnerAccrualUpdateManyWithoutPayoutBatchNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutPayoutBatchInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutPayoutBatchInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutPayoutBatchInput[];
+  upsert?:
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutPayoutBatchInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyPayoutBatchInputEnvelope;
+  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutPayoutBatchInput[];
+  updateMany?:
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutPayoutBatchInput[];
+  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
+};
+
+export type PartnerAccrualUncheckedUpdateManyWithoutPayoutBatchNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutPayoutBatchInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutPayoutBatchInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutPayoutBatchInput[];
+  upsert?:
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutPayoutBatchInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyPayoutBatchInputEnvelope;
+  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutPayoutBatchInput[];
+  updateMany?:
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutPayoutBatchInput
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutPayoutBatchInput[];
+  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
+};
+
 export type PartnerAccrualCreateWithoutProjectInput = {
   id?: string;
   dealType: $Enums.DealTypeEnum;
@@ -1505,6 +1621,7 @@ export type PartnerAccrualCreateWithoutProjectInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
   invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
   payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateWithoutProjectInput = {
@@ -1516,6 +1633,7 @@ export type PartnerAccrualUncheckedCreateWithoutProjectInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -1581,6 +1699,7 @@ export type PartnerAccrualScalarWhereInput = {
   subscriptionId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
   invoiceId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
   paymentId?: Prisma.StringFilter<'PartnerAccrual'> | string;
+  payoutBatchId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
   dealType?: Prisma.EnumDealTypeEnumFilter<'PartnerAccrual'> | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFilter<'PartnerAccrual'> | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -1627,6 +1746,7 @@ export type PartnerAccrualCreateWithoutProductInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
   invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
   payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateWithoutProductInput = {
@@ -1638,6 +1758,7 @@ export type PartnerAccrualUncheckedCreateWithoutProductInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -1708,6 +1829,7 @@ export type PartnerAccrualCreateWithoutOrderInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
   invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
   payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateWithoutOrderInput = {
@@ -1719,6 +1841,7 @@ export type PartnerAccrualUncheckedCreateWithoutOrderInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -1789,6 +1912,7 @@ export type PartnerAccrualCreateWithoutInvoiceInput = {
   order: Prisma.OrderCreateNestedOneWithoutPartnerAccrualsInput;
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
   payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateWithoutInvoiceInput = {
@@ -1800,6 +1924,7 @@ export type PartnerAccrualUncheckedCreateWithoutInvoiceInput = {
   orderId: string;
   subscriptionId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -1870,6 +1995,7 @@ export type PartnerAccrualCreateWithoutPaymentInput = {
   order: Prisma.OrderCreateNestedOneWithoutPartnerAccrualsInput;
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
   invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateWithoutPaymentInput = {
@@ -1881,6 +2007,7 @@ export type PartnerAccrualUncheckedCreateWithoutPaymentInput = {
   orderId: string;
   subscriptionId?: string | null;
   invoiceId?: string | null;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -1955,6 +2082,7 @@ export type PartnerAccrualUpdateWithoutPaymentInput = {
   order?: Prisma.OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
   subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
   invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateWithoutPaymentInput = {
@@ -1966,6 +2094,7 @@ export type PartnerAccrualUncheckedUpdateWithoutPaymentInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2012,6 +2141,7 @@ export type PartnerAccrualCreateWithoutSubscriptionInput = {
   order: Prisma.OrderCreateNestedOneWithoutPartnerAccrualsInput;
   invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
   payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateWithoutSubscriptionInput = {
@@ -2023,6 +2153,7 @@ export type PartnerAccrualUncheckedCreateWithoutSubscriptionInput = {
   orderId: string;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2095,6 +2226,7 @@ export type PartnerAccrualCreateWithoutPartnerInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
   invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
   payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateWithoutPartnerInput = {
@@ -2106,6 +2238,7 @@ export type PartnerAccrualUncheckedCreateWithoutPartnerInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2176,6 +2309,7 @@ export type PartnerAccrualCreateWithoutReferralTermsInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
   invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
   payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
 };
 
 export type PartnerAccrualUncheckedCreateWithoutReferralTermsInput = {
@@ -2187,6 +2321,7 @@ export type PartnerAccrualUncheckedCreateWithoutReferralTermsInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2241,6 +2376,91 @@ export type PartnerAccrualUpdateManyWithWhereWithoutReferralTermsInput = {
   >;
 };
 
+export type PartnerAccrualCreateWithoutPayoutBatchInput = {
+  id?: string;
+  dealType: $Enums.DealTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  partner: Prisma.PartnerCreateNestedOneWithoutPartnerAccrualsInput;
+  referralTerms: Prisma.PartnerReferralTermsCreateNestedOneWithoutPartnerAccrualsInput;
+  project: Prisma.ProjectCreateNestedOneWithoutPartnerAccrualsInput;
+  product?: Prisma.ProductCreateNestedOneWithoutPartnerAccrualsInput;
+  order: Prisma.OrderCreateNestedOneWithoutPartnerAccrualsInput;
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
+  payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+};
+
+export type PartnerAccrualUncheckedCreateWithoutPayoutBatchInput = {
+  id?: string;
+  partnerId: string;
+  referralTermsId: string;
+  projectId: string;
+  productId?: string | null;
+  orderId: string;
+  subscriptionId?: string | null;
+  invoiceId?: string | null;
+  paymentId: string;
+  dealType: $Enums.DealTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerAccrualCreateOrConnectWithoutPayoutBatchInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerAccrualCreateWithoutPayoutBatchInput,
+    Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput
+  >;
+};
+
+export type PartnerAccrualCreateManyPayoutBatchInputEnvelope = {
+  data:
+    | Prisma.PartnerAccrualCreateManyPayoutBatchInput
+    | Prisma.PartnerAccrualCreateManyPayoutBatchInput[];
+  skipDuplicates?: boolean;
+};
+
+export type PartnerAccrualUpsertWithWhereUniqueWithoutPayoutBatchInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateWithoutPayoutBatchInput,
+    Prisma.PartnerAccrualUncheckedUpdateWithoutPayoutBatchInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerAccrualCreateWithoutPayoutBatchInput,
+    Prisma.PartnerAccrualUncheckedCreateWithoutPayoutBatchInput
+  >;
+};
+
+export type PartnerAccrualUpdateWithWhereUniqueWithoutPayoutBatchInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateWithoutPayoutBatchInput,
+    Prisma.PartnerAccrualUncheckedUpdateWithoutPayoutBatchInput
+  >;
+};
+
+export type PartnerAccrualUpdateManyWithWhereWithoutPayoutBatchInput = {
+  where: Prisma.PartnerAccrualScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateManyMutationInput,
+    Prisma.PartnerAccrualUncheckedUpdateManyWithoutPayoutBatchInput
+  >;
+};
+
 export type PartnerAccrualCreateManyProjectInput = {
   id?: string;
   partnerId: string;
@@ -2250,6 +2470,7 @@ export type PartnerAccrualCreateManyProjectInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2296,6 +2517,7 @@ export type PartnerAccrualUpdateWithoutProjectInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
   invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
   payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateWithoutProjectInput = {
@@ -2307,6 +2529,7 @@ export type PartnerAccrualUncheckedUpdateWithoutProjectInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2344,6 +2567,7 @@ export type PartnerAccrualUncheckedUpdateManyWithoutProjectInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2381,6 +2605,7 @@ export type PartnerAccrualCreateManyProductInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2427,6 +2652,7 @@ export type PartnerAccrualUpdateWithoutProductInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
   invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
   payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateWithoutProductInput = {
@@ -2438,6 +2664,7 @@ export type PartnerAccrualUncheckedUpdateWithoutProductInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2475,6 +2702,7 @@ export type PartnerAccrualUncheckedUpdateManyWithoutProductInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2512,6 +2740,7 @@ export type PartnerAccrualCreateManyOrderInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2558,6 +2787,7 @@ export type PartnerAccrualUpdateWithoutOrderInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
   invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
   payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateWithoutOrderInput = {
@@ -2569,6 +2799,7 @@ export type PartnerAccrualUncheckedUpdateWithoutOrderInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2606,6 +2837,7 @@ export type PartnerAccrualUncheckedUpdateManyWithoutOrderInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2643,6 +2875,7 @@ export type PartnerAccrualCreateManyInvoiceInput = {
   orderId: string;
   subscriptionId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2689,6 +2922,7 @@ export type PartnerAccrualUpdateWithoutInvoiceInput = {
   order?: Prisma.OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
   subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
   payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateWithoutInvoiceInput = {
@@ -2700,6 +2934,7 @@ export type PartnerAccrualUncheckedUpdateWithoutInvoiceInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2737,6 +2972,7 @@ export type PartnerAccrualUncheckedUpdateManyWithoutInvoiceInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2774,6 +3010,7 @@ export type PartnerAccrualCreateManySubscriptionInput = {
   orderId: string;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2820,6 +3057,7 @@ export type PartnerAccrualUpdateWithoutSubscriptionInput = {
   order?: Prisma.OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
   invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
   payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateWithoutSubscriptionInput = {
@@ -2831,6 +3069,7 @@ export type PartnerAccrualUncheckedUpdateWithoutSubscriptionInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2868,6 +3107,7 @@ export type PartnerAccrualUncheckedUpdateManyWithoutSubscriptionInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2905,6 +3145,7 @@ export type PartnerAccrualCreateManyPartnerInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2951,6 +3192,7 @@ export type PartnerAccrualUpdateWithoutPartnerInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
   invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
   payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateWithoutPartnerInput = {
@@ -2962,6 +3204,7 @@ export type PartnerAccrualUncheckedUpdateWithoutPartnerInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -2999,6 +3242,7 @@ export type PartnerAccrualUncheckedUpdateManyWithoutPartnerInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:
@@ -3036,6 +3280,7 @@ export type PartnerAccrualCreateManyReferralTermsInput = {
   subscriptionId?: string | null;
   invoiceId?: string | null;
   paymentId: string;
+  payoutBatchId?: string | null;
   dealType: $Enums.DealTypeEnum;
   paymentType: $Enums.PaymentTypeEnum;
   baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -3082,11 +3327,148 @@ export type PartnerAccrualUpdateWithoutReferralTermsInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
   invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
   payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
 };
 
 export type PartnerAccrualUncheckedUpdateWithoutReferralTermsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerAccrualUncheckedUpdateManyWithoutReferralTermsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerAccrualCreateManyPayoutBatchInput = {
+  id?: string;
+  partnerId: string;
+  referralTermsId: string;
+  projectId: string;
+  productId?: string | null;
+  orderId: string;
+  subscriptionId?: string | null;
+  invoiceId?: string | null;
+  paymentId: string;
+  dealType: $Enums.DealTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerAccrualUpdateWithoutPayoutBatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  referralTerms?: Prisma.PartnerReferralTermsUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutPartnerAccrualsNestedInput;
+  order?: Prisma.OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
+  invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
+  payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+};
+
+export type PartnerAccrualUncheckedUpdateWithoutPayoutBatchInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3121,9 +3503,10 @@ export type PartnerAccrualUncheckedUpdateWithoutReferralTermsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type PartnerAccrualUncheckedUpdateManyWithoutReferralTermsInput = {
+export type PartnerAccrualUncheckedUpdateManyWithoutPayoutBatchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -3171,6 +3554,7 @@ export type PartnerAccrualSelect<
     subscriptionId?: boolean;
     invoiceId?: boolean;
     paymentId?: boolean;
+    payoutBatchId?: boolean;
     dealType?: boolean;
     paymentType?: boolean;
     baseAmount?: boolean;
@@ -3188,6 +3572,7 @@ export type PartnerAccrualSelect<
     subscription?: boolean | Prisma.PartnerAccrual$subscriptionArgs<ExtArgs>;
     invoice?: boolean | Prisma.PartnerAccrual$invoiceArgs<ExtArgs>;
     payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>;
+    payoutBatch?: boolean | Prisma.PartnerAccrual$payoutBatchArgs<ExtArgs>;
   },
   ExtArgs['result']['partnerAccrual']
 >;
@@ -3205,6 +3590,7 @@ export type PartnerAccrualSelectCreateManyAndReturn<
     subscriptionId?: boolean;
     invoiceId?: boolean;
     paymentId?: boolean;
+    payoutBatchId?: boolean;
     dealType?: boolean;
     paymentType?: boolean;
     baseAmount?: boolean;
@@ -3222,6 +3608,7 @@ export type PartnerAccrualSelectCreateManyAndReturn<
     subscription?: boolean | Prisma.PartnerAccrual$subscriptionArgs<ExtArgs>;
     invoice?: boolean | Prisma.PartnerAccrual$invoiceArgs<ExtArgs>;
     payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>;
+    payoutBatch?: boolean | Prisma.PartnerAccrual$payoutBatchArgs<ExtArgs>;
   },
   ExtArgs['result']['partnerAccrual']
 >;
@@ -3239,6 +3626,7 @@ export type PartnerAccrualSelectUpdateManyAndReturn<
     subscriptionId?: boolean;
     invoiceId?: boolean;
     paymentId?: boolean;
+    payoutBatchId?: boolean;
     dealType?: boolean;
     paymentType?: boolean;
     baseAmount?: boolean;
@@ -3256,6 +3644,7 @@ export type PartnerAccrualSelectUpdateManyAndReturn<
     subscription?: boolean | Prisma.PartnerAccrual$subscriptionArgs<ExtArgs>;
     invoice?: boolean | Prisma.PartnerAccrual$invoiceArgs<ExtArgs>;
     payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>;
+    payoutBatch?: boolean | Prisma.PartnerAccrual$payoutBatchArgs<ExtArgs>;
   },
   ExtArgs['result']['partnerAccrual']
 >;
@@ -3270,6 +3659,7 @@ export type PartnerAccrualSelectScalar = {
   subscriptionId?: boolean;
   invoiceId?: boolean;
   paymentId?: boolean;
+  payoutBatchId?: boolean;
   dealType?: boolean;
   paymentType?: boolean;
   baseAmount?: boolean;
@@ -3293,6 +3683,7 @@ export type PartnerAccrualOmit<
   | 'subscriptionId'
   | 'invoiceId'
   | 'paymentId'
+  | 'payoutBatchId'
   | 'dealType'
   | 'paymentType'
   | 'baseAmount'
@@ -3315,6 +3706,7 @@ export type PartnerAccrualInclude<
   subscription?: boolean | Prisma.PartnerAccrual$subscriptionArgs<ExtArgs>;
   invoice?: boolean | Prisma.PartnerAccrual$invoiceArgs<ExtArgs>;
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>;
+  payoutBatch?: boolean | Prisma.PartnerAccrual$payoutBatchArgs<ExtArgs>;
 };
 export type PartnerAccrualIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -3327,6 +3719,7 @@ export type PartnerAccrualIncludeCreateManyAndReturn<
   subscription?: boolean | Prisma.PartnerAccrual$subscriptionArgs<ExtArgs>;
   invoice?: boolean | Prisma.PartnerAccrual$invoiceArgs<ExtArgs>;
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>;
+  payoutBatch?: boolean | Prisma.PartnerAccrual$payoutBatchArgs<ExtArgs>;
 };
 export type PartnerAccrualIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -3339,6 +3732,7 @@ export type PartnerAccrualIncludeUpdateManyAndReturn<
   subscription?: boolean | Prisma.PartnerAccrual$subscriptionArgs<ExtArgs>;
   invoice?: boolean | Prisma.PartnerAccrual$invoiceArgs<ExtArgs>;
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>;
+  payoutBatch?: boolean | Prisma.PartnerAccrual$payoutBatchArgs<ExtArgs>;
 };
 
 export type $PartnerAccrualPayload<
@@ -3354,6 +3748,7 @@ export type $PartnerAccrualPayload<
     subscription: Prisma.$SubscriptionPayload<ExtArgs> | null;
     invoice: Prisma.$InvoicePayload<ExtArgs> | null;
     payment: Prisma.$PaymentPayload<ExtArgs>;
+    payoutBatch: Prisma.$PartnerPayoutBatchPayload<ExtArgs> | null;
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -3366,6 +3761,7 @@ export type $PartnerAccrualPayload<
       subscriptionId: string | null;
       invoiceId: string | null;
       paymentId: string;
+      payoutBatchId: string | null;
       dealType: $Enums.DealTypeEnum;
       paymentType: $Enums.PaymentTypeEnum;
       baseAmount: runtime.Decimal;
@@ -4025,6 +4421,19 @@ export interface Prisma__PartnerAccrualClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  payoutBatch<T extends Prisma.PartnerAccrual$payoutBatchArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.PartnerAccrual$payoutBatchArgs<ExtArgs>>,
+  ): Prisma.Prisma__PartnerPayoutBatchClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$PartnerPayoutBatchPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4065,6 +4474,7 @@ export interface PartnerAccrualFieldRefs {
   readonly subscriptionId: Prisma.FieldRef<'PartnerAccrual', 'String'>;
   readonly invoiceId: Prisma.FieldRef<'PartnerAccrual', 'String'>;
   readonly paymentId: Prisma.FieldRef<'PartnerAccrual', 'String'>;
+  readonly payoutBatchId: Prisma.FieldRef<'PartnerAccrual', 'String'>;
   readonly dealType: Prisma.FieldRef<'PartnerAccrual', 'DealTypeEnum'>;
   readonly paymentType: Prisma.FieldRef<'PartnerAccrual', 'PaymentTypeEnum'>;
   readonly baseAmount: Prisma.FieldRef<'PartnerAccrual', 'Decimal'>;
@@ -4569,6 +4979,27 @@ export type PartnerAccrual$invoiceArgs<
    */
   include?: Prisma.InvoiceInclude<ExtArgs> | null;
   where?: Prisma.InvoiceWhereInput;
+};
+
+/**
+ * PartnerAccrual.payoutBatch
+ */
+export type PartnerAccrual$payoutBatchArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerPayoutBatch
+   */
+  select?: Prisma.PartnerPayoutBatchSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PartnerPayoutBatch
+   */
+  omit?: Prisma.PartnerPayoutBatchOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerPayoutBatchInclude<ExtArgs> | null;
+  where?: Prisma.PartnerPayoutBatchWhereInput;
 };
 
 /**

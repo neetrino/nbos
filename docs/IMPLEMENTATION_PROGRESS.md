@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-05 (Partners: accrual balance API + PAR-02 + commission policy + expense backlog)
+**Обновлено:** 2026-05-05 (Partners: payout batch + accrual balance + PAR-02)
 
 ---
 
@@ -120,7 +120,10 @@
   по `invoice.orderId` или `order.findFirst` по проекту (с `subscription.partnerId` при отсутствии order);
   `PartnerAccrualSubscriptionService` из `PaymentsService`; идемпотентность `paymentId` @unique.
   **Срез 3 (balance read):** `GET /api/partners/:id/balance` — `groupBy` по статусу, `unpaidTotal` /
-  `paidTotal`; web: сводка на карточке accruals. Дальше: `PartnerPayoutBatch`, expense link
+  `paidTotal`; web: сводка на карточке accruals. **Срез 4 (payout batch core):**
+  `PartnerPayoutBatch` + `payout_batch_id` на accruals; `GET/POST /api/partners/:id/payout-batches`;
+  `POST /api/partners/:id/payout-batches/:batchId/approve` создаёт Expense `PARTNER_PAYOUT`;
+  при полной оплате Expense batch и accruals переходят в `PAID`. Дальше: UI для batch и manual cancel/hold
 - Partners: outbound terms / service case разделение — M
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
 - Reports: централизованные permissions на источники — M

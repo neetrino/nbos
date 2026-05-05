@@ -910,6 +910,17 @@ export const PartnerAccrualStatusEnum = {
 export type PartnerAccrualStatusEnum =
   (typeof PartnerAccrualStatusEnum)[keyof typeof PartnerAccrualStatusEnum];
 
+export const PartnerPayoutBatchStatusEnum = {
+  DRAFT: 'DRAFT',
+  APPROVED: 'APPROVED',
+  EXPENSE_CREATED: 'EXPENSE_CREATED',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PartnerPayoutBatchStatusEnum =
+  (typeof PartnerPayoutBatchStatusEnum)[keyof typeof PartnerPayoutBatchStatusEnum];
+
 export const MessengerChannelType = {
   PROJECT: 'PROJECT',
   GENERAL: 'GENERAL',

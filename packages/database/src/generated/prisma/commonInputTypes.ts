@@ -2943,6 +2943,39 @@ export type EnumPartnerAccrualStatusEnumWithAggregatesFilter<$PrismaModel = neve
   _max?: Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>;
 };
 
+export type EnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerPayoutBatchStatusEnum
+    | Prisma.EnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerPayoutBatchStatusEnum[]
+    | Prisma.ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerPayoutBatchStatusEnum[]
+    | Prisma.ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>
+    | $Enums.PartnerPayoutBatchStatusEnum;
+};
+
+export type EnumPartnerPayoutBatchStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerPayoutBatchStatusEnum
+    | Prisma.EnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerPayoutBatchStatusEnum[]
+    | Prisma.ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerPayoutBatchStatusEnum[]
+    | Prisma.ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerPayoutBatchStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerPayoutBatchStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>;
+};
+
 export type EnumMessengerChannelTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.MessengerChannelType | Prisma.EnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
   in?:
@@ -6576,6 +6609,39 @@ export type NestedEnumPartnerAccrualStatusEnumWithAggregatesFilter<$PrismaModel 
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerPayoutBatchStatusEnum
+    | Prisma.EnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerPayoutBatchStatusEnum[]
+    | Prisma.ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerPayoutBatchStatusEnum[]
+    | Prisma.ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>
+    | $Enums.PartnerPayoutBatchStatusEnum;
+};
+
+export type NestedEnumPartnerPayoutBatchStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerPayoutBatchStatusEnum
+    | Prisma.EnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerPayoutBatchStatusEnum[]
+    | Prisma.ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerPayoutBatchStatusEnum[]
+    | Prisma.ListEnumPartnerPayoutBatchStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerPayoutBatchStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerPayoutBatchStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerPayoutBatchStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumMessengerChannelTypeFilter<$PrismaModel = never> = {

@@ -1,6 +1,6 @@
-import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
+import { Decimal, PrismaClient, type PartnerAccrualStatusEnum } from '@nbos/database';
 
-const PARTNER_ACCRUAL_STATUSES: Prisma.PartnerAccrualStatusEnum[] = [
+const PARTNER_ACCRUAL_STATUSES: PartnerAccrualStatusEnum[] = [
   'ACCRUED',
   'ELIGIBLE',
   'IN_BATCH',
@@ -10,7 +10,7 @@ const PARTNER_ACCRUAL_STATUSES: Prisma.PartnerAccrualStatusEnum[] = [
 
 /** Wire: NBOS § Partner Payouts — balance roll-up by accrual status (no payout batch yet). */
 export interface PartnerAccrualBalanceDto {
-  byStatus: Record<Prisma.PartnerAccrualStatusEnum, string>;
+  byStatus: Record<PartnerAccrualStatusEnum, string>;
   /** Sum of ACCRUED + ELIGIBLE + IN_BATCH (not yet marked paid to partner). */
   unpaidTotal: string;
   /** Sum of PAID accruals. */
@@ -27,7 +27,7 @@ export async function loadPartnerAccrualBalance(
     _sum: { amount: true },
   });
 
-  const sums = new Map<Prisma.PartnerAccrualStatusEnum, Decimal>();
+  const sums = new Map<PartnerAccrualStatusEnum, Decimal>();
   for (const s of PARTNER_ACCRUAL_STATUSES) {
     sums.set(s, new Decimal(0));
   }

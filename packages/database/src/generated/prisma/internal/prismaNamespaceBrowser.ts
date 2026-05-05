@@ -114,6 +114,7 @@ export const ModelName = {
   PartnerReferralTerms: 'PartnerReferralTerms',
   PartnerCommissionPolicyRow: 'PartnerCommissionPolicyRow',
   PartnerAccrual: 'PartnerAccrual',
+  PartnerPayoutBatch: 'PartnerPayoutBatch',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
   MessengerChannelMessageAttachment: 'MessengerChannelMessageAttachment',
@@ -1393,6 +1394,7 @@ export const PartnerAccrualScalarFieldEnum = {
   subscriptionId: 'subscriptionId',
   invoiceId: 'invoiceId',
   paymentId: 'paymentId',
+  payoutBatchId: 'payoutBatchId',
   dealType: 'dealType',
   paymentType: 'paymentType',
   baseAmount: 'baseAmount',
@@ -1406,6 +1408,22 @@ export const PartnerAccrualScalarFieldEnum = {
 
 export type PartnerAccrualScalarFieldEnum =
   (typeof PartnerAccrualScalarFieldEnum)[keyof typeof PartnerAccrualScalarFieldEnum];
+
+export const PartnerPayoutBatchScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  totalAmount: 'totalAmount',
+  status: 'status',
+  payoutDate: 'payoutDate',
+  expenseId: 'expenseId',
+  approvedBy: 'approvedBy',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerPayoutBatchScalarFieldEnum =
+  (typeof PartnerPayoutBatchScalarFieldEnum)[keyof typeof PartnerPayoutBatchScalarFieldEnum];
 
 export const MessengerChannelScalarFieldEnum = {
   id: 'id',

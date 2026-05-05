@@ -21,6 +21,14 @@ import {
   loadPartnerAccrualBalance,
   type PartnerAccrualBalanceDto,
 } from './partner-accrual-balance.ops';
+import {
+  approvePartnerPayoutBatch,
+  createPartnerPayoutBatch,
+  listPartnerPayoutBatches,
+  type ApprovePartnerPayoutBatchInput,
+  type CreatePartnerPayoutBatchInput,
+  type PartnerPayoutBatchDto,
+} from './partner-payout-batch.ops';
 
 interface PartnerQueryParams {
   page?: number;
@@ -236,6 +244,28 @@ export class PartnersService {
       eligibleAt: r.eligibleAt?.toISOString() ?? null,
       createdAt: r.createdAt.toISOString(),
     }));
+  }
+
+  async listPartnerPayoutBatches(partnerId: string): Promise<PartnerPayoutBatchDto[]> {
+    await this.findById(partnerId);
+    return listPartnerPayoutBatches(this.prisma, partnerId);
+  }
+
+  async createPartnerPayoutBatch(
+    partnerId: string,
+    input: CreatePartnerPayoutBatchInput,
+  ): Promise<PartnerPayoutBatchDto> {
+    await this.findById(partnerId);
+    return createPartnerPayoutBatch(this.prisma, partnerId, input);
+  }
+
+  async approvePartnerPayoutBatch(
+    partnerId: string,
+    batchId: string,
+    input: ApprovePartnerPayoutBatchInput,
+  ): Promise<PartnerPayoutBatchDto> {
+    await this.findById(partnerId);
+    return approvePartnerPayoutBatch(this.prisma, partnerId, batchId, input);
   }
 
   async getStats() {

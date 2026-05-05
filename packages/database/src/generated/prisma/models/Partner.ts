@@ -258,6 +258,7 @@ export type PartnerWhereInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowListRelationFilter;
   partnerReferralTerms?: Prisma.PartnerReferralTermsListRelationFilter;
   partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchListRelationFilter;
 };
 
 export type PartnerOrderByWithRelationInput = {
@@ -279,6 +280,7 @@ export type PartnerOrderByWithRelationInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowOrderByRelationAggregateInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsOrderByRelationAggregateInput;
   partnerAccruals?: Prisma.PartnerAccrualOrderByRelationAggregateInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchOrderByRelationAggregateInput;
 };
 
 export type PartnerWhereUniqueInput = Prisma.AtLeast<
@@ -312,6 +314,7 @@ export type PartnerWhereUniqueInput = Prisma.AtLeast<
     commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowListRelationFilter;
     partnerReferralTerms?: Prisma.PartnerReferralTermsListRelationFilter;
     partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
+    partnerPayoutBatches?: Prisma.PartnerPayoutBatchListRelationFilter;
   },
   'id'
 >;
@@ -377,6 +380,7 @@ export type PartnerCreateInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateInput = {
@@ -397,6 +401,7 @@ export type PartnerUncheckedCreateInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUpdateInput = {
@@ -424,6 +429,7 @@ export type PartnerUpdateInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateInput = {
@@ -451,6 +457,7 @@ export type PartnerUncheckedUpdateInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateManyInput = {
@@ -882,6 +889,32 @@ export type PartnerUpdateOneRequiredWithoutPartnerAccrualsNestedInput = {
   >;
 };
 
+export type PartnerCreateNestedOneWithoutPartnerPayoutBatchesInput = {
+  create?: Prisma.XOR<
+    Prisma.PartnerCreateWithoutPartnerPayoutBatchesInput,
+    Prisma.PartnerUncheckedCreateWithoutPartnerPayoutBatchesInput
+  >;
+  connectOrCreate?: Prisma.PartnerCreateOrConnectWithoutPartnerPayoutBatchesInput;
+  connect?: Prisma.PartnerWhereUniqueInput;
+};
+
+export type PartnerUpdateOneRequiredWithoutPartnerPayoutBatchesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.PartnerCreateWithoutPartnerPayoutBatchesInput,
+    Prisma.PartnerUncheckedCreateWithoutPartnerPayoutBatchesInput
+  >;
+  connectOrCreate?: Prisma.PartnerCreateOrConnectWithoutPartnerPayoutBatchesInput;
+  upsert?: Prisma.PartnerUpsertWithoutPartnerPayoutBatchesInput;
+  connect?: Prisma.PartnerWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.PartnerUpdateToOneWithWhereWithoutPartnerPayoutBatchesInput,
+      Prisma.PartnerUpdateWithoutPartnerPayoutBatchesInput
+    >,
+    Prisma.PartnerUncheckedUpdateWithoutPartnerPayoutBatchesInput
+  >;
+};
+
 export type PartnerCreateWithoutContactInput = {
   id?: string;
   name: string;
@@ -899,6 +932,7 @@ export type PartnerCreateWithoutContactInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutContactInput = {
@@ -918,6 +952,7 @@ export type PartnerUncheckedCreateWithoutContactInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutContactInput = {
@@ -998,6 +1033,7 @@ export type PartnerCreateWithoutLeadsAsSourceInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutLeadsAsSourceInput = {
@@ -1017,6 +1053,7 @@ export type PartnerUncheckedCreateWithoutLeadsAsSourceInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutLeadsAsSourceInput = {
@@ -1071,6 +1108,7 @@ export type PartnerUpdateWithoutLeadsAsSourceInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutLeadsAsSourceInput = {
@@ -1097,6 +1135,7 @@ export type PartnerUncheckedUpdateWithoutLeadsAsSourceInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateWithoutDealsAsSourceInput = {
@@ -1116,6 +1155,7 @@ export type PartnerCreateWithoutDealsAsSourceInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutDealsAsSourceInput = {
@@ -1135,6 +1175,7 @@ export type PartnerUncheckedCreateWithoutDealsAsSourceInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutDealsAsSourceInput = {
@@ -1189,6 +1230,7 @@ export type PartnerUpdateWithoutDealsAsSourceInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutDealsAsSourceInput = {
@@ -1215,6 +1257,7 @@ export type PartnerUncheckedUpdateWithoutDealsAsSourceInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateWithoutOrdersInput = {
@@ -1234,6 +1277,7 @@ export type PartnerCreateWithoutOrdersInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutOrdersInput = {
@@ -1253,6 +1297,7 @@ export type PartnerUncheckedCreateWithoutOrdersInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutOrdersInput = {
@@ -1307,6 +1352,7 @@ export type PartnerUpdateWithoutOrdersInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutOrdersInput = {
@@ -1333,6 +1379,7 @@ export type PartnerUncheckedUpdateWithoutOrdersInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateWithoutOperationalJournalEntriesInput = {
@@ -1352,6 +1399,7 @@ export type PartnerCreateWithoutOperationalJournalEntriesInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutOperationalJournalEntriesInput = {
@@ -1371,6 +1419,7 @@ export type PartnerUncheckedCreateWithoutOperationalJournalEntriesInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutOperationalJournalEntriesInput = {
@@ -1425,6 +1474,7 @@ export type PartnerUpdateWithoutOperationalJournalEntriesInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutOperationalJournalEntriesInput = {
@@ -1451,6 +1501,7 @@ export type PartnerUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateWithoutSubscriptionsInput = {
@@ -1470,6 +1521,7 @@ export type PartnerCreateWithoutSubscriptionsInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutSubscriptionsInput = {
@@ -1489,6 +1541,7 @@ export type PartnerUncheckedCreateWithoutSubscriptionsInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutSubscriptionsInput = {
@@ -1543,6 +1596,7 @@ export type PartnerUpdateWithoutSubscriptionsInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutSubscriptionsInput = {
@@ -1569,6 +1623,7 @@ export type PartnerUncheckedUpdateWithoutSubscriptionsInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateWithoutPartnerReferralTermsInput = {
@@ -1588,6 +1643,7 @@ export type PartnerCreateWithoutPartnerReferralTermsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutPartnerInput;
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutPartnerReferralTermsInput = {
@@ -1607,6 +1663,7 @@ export type PartnerUncheckedCreateWithoutPartnerReferralTermsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutPartnerInput;
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutPartnerReferralTermsInput = {
@@ -1661,6 +1718,7 @@ export type PartnerUpdateWithoutPartnerReferralTermsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutPartnerNestedInput;
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutPartnerReferralTermsInput = {
@@ -1687,6 +1745,7 @@ export type PartnerUncheckedUpdateWithoutPartnerReferralTermsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutPartnerNestedInput;
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateWithoutCommissionPolicyRowsInput = {
@@ -1706,6 +1765,7 @@ export type PartnerCreateWithoutCommissionPolicyRowsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutCommissionPolicyRowsInput = {
@@ -1725,6 +1785,7 @@ export type PartnerUncheckedCreateWithoutCommissionPolicyRowsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutCommissionPolicyRowsInput = {
@@ -1779,6 +1840,7 @@ export type PartnerUpdateWithoutCommissionPolicyRowsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutCommissionPolicyRowsInput = {
@@ -1805,6 +1867,7 @@ export type PartnerUncheckedUpdateWithoutCommissionPolicyRowsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateWithoutPartnerAccrualsInput = {
@@ -1824,6 +1887,7 @@ export type PartnerCreateWithoutPartnerAccrualsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutPartnerInput;
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerUncheckedCreateWithoutPartnerAccrualsInput = {
@@ -1843,6 +1907,7 @@ export type PartnerUncheckedCreateWithoutPartnerAccrualsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutPartnerInput;
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
 };
 
 export type PartnerCreateOrConnectWithoutPartnerAccrualsInput = {
@@ -1897,6 +1962,7 @@ export type PartnerUpdateWithoutPartnerAccrualsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutPartnerNestedInput;
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutPartnerAccrualsInput = {
@@ -1923,6 +1989,129 @@ export type PartnerUncheckedUpdateWithoutPartnerAccrualsInput = {
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutPartnerNestedInput;
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
+};
+
+export type PartnerCreateWithoutPartnerPayoutBatchesInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
+  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
+  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutPartnerInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+};
+
+export type PartnerUncheckedCreateWithoutPartnerPayoutBatchesInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  contactId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPartnerInput;
+  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourcePartnerInput;
+  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourcePartnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutPartnerInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+};
+
+export type PartnerCreateOrConnectWithoutPartnerPayoutBatchesInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerCreateWithoutPartnerPayoutBatchesInput,
+    Prisma.PartnerUncheckedCreateWithoutPartnerPayoutBatchesInput
+  >;
+};
+
+export type PartnerUpsertWithoutPartnerPayoutBatchesInput = {
+  update: Prisma.XOR<
+    Prisma.PartnerUpdateWithoutPartnerPayoutBatchesInput,
+    Prisma.PartnerUncheckedUpdateWithoutPartnerPayoutBatchesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerCreateWithoutPartnerPayoutBatchesInput,
+    Prisma.PartnerUncheckedCreateWithoutPartnerPayoutBatchesInput
+  >;
+  where?: Prisma.PartnerWhereInput;
+};
+
+export type PartnerUpdateToOneWithWhereWithoutPartnerPayoutBatchesInput = {
+  where?: Prisma.PartnerWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerUpdateWithoutPartnerPayoutBatchesInput,
+    Prisma.PartnerUncheckedUpdateWithoutPartnerPayoutBatchesInput
+  >;
+};
+
+export type PartnerUpdateWithoutPartnerPayoutBatchesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
+  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
+  dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutPartnerNestedInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+};
+
+export type PartnerUncheckedUpdateWithoutPartnerPayoutBatchesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPartnerNestedInput;
+  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutPartnerNestedInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerCreateManyContactInput = {
@@ -1960,6 +2149,7 @@ export type PartnerUpdateWithoutContactInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateWithoutContactInput = {
@@ -1986,6 +2176,7 @@ export type PartnerUncheckedUpdateWithoutContactInput = {
   commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
 export type PartnerUncheckedUpdateManyWithoutContactInput = {
@@ -2019,6 +2210,7 @@ export type PartnerCountOutputType = {
   commissionPolicyRows: number;
   partnerReferralTerms: number;
   partnerAccruals: number;
+  partnerPayoutBatches: number;
 };
 
 export type PartnerCountOutputTypeSelect<
@@ -2032,6 +2224,7 @@ export type PartnerCountOutputTypeSelect<
   commissionPolicyRows?: boolean | PartnerCountOutputTypeCountCommissionPolicyRowsArgs;
   partnerReferralTerms?: boolean | PartnerCountOutputTypeCountPartnerReferralTermsArgs;
   partnerAccruals?: boolean | PartnerCountOutputTypeCountPartnerAccrualsArgs;
+  partnerPayoutBatches?: boolean | PartnerCountOutputTypeCountPartnerPayoutBatchesArgs;
 };
 
 /**
@@ -2118,6 +2311,15 @@ export type PartnerCountOutputTypeCountPartnerAccrualsArgs<
   where?: Prisma.PartnerAccrualWhereInput;
 };
 
+/**
+ * PartnerCountOutputType without action
+ */
+export type PartnerCountOutputTypeCountPartnerPayoutBatchesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PartnerPayoutBatchWhereInput;
+};
+
 export type PartnerSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -2140,6 +2342,7 @@ export type PartnerSelect<
     commissionPolicyRows?: boolean | Prisma.Partner$commissionPolicyRowsArgs<ExtArgs>;
     partnerReferralTerms?: boolean | Prisma.Partner$partnerReferralTermsArgs<ExtArgs>;
     partnerAccruals?: boolean | Prisma.Partner$partnerAccrualsArgs<ExtArgs>;
+    partnerPayoutBatches?: boolean | Prisma.Partner$partnerPayoutBatchesArgs<ExtArgs>;
     _count?: boolean | Prisma.PartnerCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['partner']
@@ -2219,6 +2422,7 @@ export type PartnerInclude<
   commissionPolicyRows?: boolean | Prisma.Partner$commissionPolicyRowsArgs<ExtArgs>;
   partnerReferralTerms?: boolean | Prisma.Partner$partnerReferralTermsArgs<ExtArgs>;
   partnerAccruals?: boolean | Prisma.Partner$partnerAccrualsArgs<ExtArgs>;
+  partnerPayoutBatches?: boolean | Prisma.Partner$partnerPayoutBatchesArgs<ExtArgs>;
   _count?: boolean | Prisma.PartnerCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type PartnerIncludeCreateManyAndReturn<
@@ -2246,6 +2450,7 @@ export type $PartnerPayload<
     commissionPolicyRows: Prisma.$PartnerCommissionPolicyRowPayload<ExtArgs>[];
     partnerReferralTerms: Prisma.$PartnerReferralTermsPayload<ExtArgs>[];
     partnerAccruals: Prisma.$PartnerAccrualPayload<ExtArgs>[];
+    partnerPayoutBatches: Prisma.$PartnerPayoutBatchPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -2858,6 +3063,17 @@ export interface Prisma__PartnerClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$PartnerAccrualPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  partnerPayoutBatches<T extends Prisma.Partner$partnerPayoutBatchesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Partner$partnerPayoutBatchesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PartnerPayoutBatchPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -3569,6 +3785,34 @@ export type Partner$partnerAccrualsArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.PartnerAccrualScalarFieldEnum | Prisma.PartnerAccrualScalarFieldEnum[];
+};
+
+/**
+ * Partner.partnerPayoutBatches
+ */
+export type Partner$partnerPayoutBatchesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerPayoutBatch
+   */
+  select?: Prisma.PartnerPayoutBatchSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PartnerPayoutBatch
+   */
+  omit?: Prisma.PartnerPayoutBatchOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerPayoutBatchInclude<ExtArgs> | null;
+  where?: Prisma.PartnerPayoutBatchWhereInput;
+  orderBy?:
+    | Prisma.PartnerPayoutBatchOrderByWithRelationInput
+    | Prisma.PartnerPayoutBatchOrderByWithRelationInput[];
+  cursor?: Prisma.PartnerPayoutBatchWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.PartnerPayoutBatchScalarFieldEnum | Prisma.PartnerPayoutBatchScalarFieldEnum[];
 };
 
 /**

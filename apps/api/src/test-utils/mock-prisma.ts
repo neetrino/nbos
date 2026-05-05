@@ -70,6 +70,7 @@ export function createMockPrisma() {
     partnerCommissionPolicyRow: createModelMock(),
     partnerReferralTerms: createModelMock(),
     partnerAccrual: createModelMock(),
+    partnerPayoutBatch: createModelMock(),
     marketingAccount: createModelMock(),
     marketingActivity: createModelMock(),
     marketingCrmWhereOption: createModelMock(),
