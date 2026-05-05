@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   partnersApi,
   type PartnerAccrualBalance,
   type PartnerAccrualListItem,
+  type PartnerPayoutBatch,
 } from '@/lib/api/partners';
 
 function formatDateTime(iso: string): string {
@@ -29,27 +31,76 @@ export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: numb
   const { partnerId, reloadKey = 0 } = props;
   const [rows, setRows] = useState<PartnerAccrualListItem[]>([]);
   const [balance, setBalance] = useState<PartnerAccrualBalance | null>(null);
+  const [batches, setBatches] = useState<PartnerPayoutBatch[]>([]);
+  const [selectedAccrualIds, setSelectedAccrualIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [creatingBatch, setCreatingBatch] = useState(false);
+  const [approvingBatchId, setApprovingBatchId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setActionError(null);
     try {
-      const [accrualRows, balanceRow] = await Promise.all([
+      const [accrualRows, balanceRow, payoutBatches] = await Promise.all([
         partnersApi.listAccruals(partnerId),
         partnersApi.getAccrualBalance(partnerId),
+        partnersApi.listPayoutBatches(partnerId),
       ]);
       setRows(accrualRows);
       setBalance(balanceRow);
+      setBatches(payoutBatches);
+      setSelectedAccrualIds((prev) =>
+        prev.filter((id) => accrualRows.some((row) => row.id === id && row.status === 'ELIGIBLE')),
+      );
     } catch (caught) {
       setRows([]);
       setBalance(null);
+      setBatches([]);
+      setSelectedAccrualIds([]);
       setError(getApiErrorMessage(caught, 'Accruals could not be loaded.'));
     } finally {
       setLoading(false);
     }
   }, [partnerId]);
+
+  const toggleAccrual = (accrualId: string, checked: boolean) => {
+    setSelectedAccrualIds((prev) => {
+      if (checked) return [...prev, accrualId];
+      return prev.filter((id) => id !== accrualId);
+    });
+  };
+
+  const createPayoutBatch = async () => {
+    if (selectedAccrualIds.length === 0 || creatingBatch) return;
+    setCreatingBatch(true);
+    setActionError(null);
+    try {
+      await partnersApi.createPayoutBatch(partnerId, { accrualIds: selectedAccrualIds });
+      setSelectedAccrualIds([]);
+      await load();
+    } catch (caught) {
+      setActionError(getApiErrorMessage(caught, 'Payout batch could not be created.'));
+    } finally {
+      setCreatingBatch(false);
+    }
+  };
+
+  const approvePayoutBatch = async (batchId: string) => {
+    if (approvingBatchId) return;
+    setApprovingBatchId(batchId);
+    setActionError(null);
+    try {
+      await partnersApi.approvePayoutBatch(partnerId, batchId);
+      await load();
+    } catch (caught) {
+      setActionError(getApiErrorMessage(caught, 'Payout batch could not be approved.'));
+    } finally {
+      setApprovingBatchId(null);
+    }
+  };
 
   useEffect(() => {
     void load();
@@ -92,6 +143,11 @@ export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: numb
         Referral commission from client cash: classic after delivery and full payment; subscription
         on each paid subscription invoice.
       </p>
+      {actionError ? (
+        <p className="text-destructive mt-3 text-xs" role="alert">
+          {actionError}
+        </p>
+      ) : null}
 
       {balance ? (
         <dl className="border-border bg-muted/30 mt-4 grid grid-cols-2 gap-2 rounded-lg border p-3 text-sm sm:grid-cols-4">
@@ -156,6 +212,129 @@ export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: numb
           </table>
         </div>
       )}
+
+      <div className="border-border mt-5 border-t pt-4">
+        <h3 className="text-foreground text-sm font-semibold">Payout batches</h3>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Select eligible accruals to create a payout batch. Approve draft batch to create a Partner
+          Payout expense card.
+        </p>
+
+        {rows.filter((r) => r.status === 'ELIGIBLE').length === 0 ? (
+          <p className="text-muted-foreground mt-3 text-sm">
+            No eligible accruals available for payout batch creation.
+          </p>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[560px] border-collapse text-left text-sm">
+              <thead>
+                <tr className="text-muted-foreground border-b text-xs tracking-wide uppercase">
+                  <th className="w-10 pb-2" />
+                  <th className="pr-3 pb-2 font-medium">Created</th>
+                  <th className="pr-3 pb-2 font-medium">Order</th>
+                  <th className="pr-3 pb-2 text-right font-medium">Accrual</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows
+                  .filter((r) => r.status === 'ELIGIBLE')
+                  .map((r) => (
+                    <tr key={r.id} className="border-border border-b last:border-0">
+                      <td className="py-2 align-top">
+                        <Checkbox
+                          checked={selectedAccrualIds.includes(r.id)}
+                          onCheckedChange={(next) => toggleAccrual(r.id, Boolean(next))}
+                          aria-label={`Select accrual ${r.id}`}
+                        />
+                      </td>
+                      <td className="text-muted-foreground py-2 pr-3 align-top text-xs tabular-nums">
+                        {formatDateTime(r.createdAt)}
+                      </td>
+                      <td className="py-2 pr-3 align-top font-mono text-xs">
+                        {r.orderId.slice(0, 8)}…
+                      </td>
+                      <td className="py-2 pr-3 text-right align-top font-medium tabular-nums">
+                        {r.amount}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p className="text-muted-foreground text-xs">
+                Selected accruals: {selectedAccrualIds.length}
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void createPayoutBatch()}
+                disabled={selectedAccrualIds.length === 0 || creatingBatch}
+              >
+                {creatingBatch ? 'Creating…' : 'Create payout batch'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {batches.length === 0 ? (
+          <p className="text-muted-foreground mt-4 text-sm">No payout batches created yet.</p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+              <thead>
+                <tr className="text-muted-foreground border-b text-xs tracking-wide uppercase">
+                  <th className="pr-3 pb-2 font-medium">Created</th>
+                  <th className="pr-3 pb-2 font-medium">Batch</th>
+                  <th className="pr-3 pb-2 text-right font-medium">Total</th>
+                  <th className="pr-3 pb-2 text-right font-medium">Accruals</th>
+                  <th className="pr-3 pb-2 font-medium">Expense</th>
+                  <th className="pr-3 pb-2 font-medium">Status</th>
+                  <th className="pb-2 text-right font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {batches.map((batch) => (
+                  <tr key={batch.id} className="border-border border-b last:border-0">
+                    <td className="text-muted-foreground py-2 pr-3 align-top text-xs tabular-nums">
+                      {formatDateTime(batch.createdAt)}
+                    </td>
+                    <td className="py-2 pr-3 align-top font-mono text-xs">
+                      {batch.id.slice(0, 8)}…
+                    </td>
+                    <td className="py-2 pr-3 text-right align-top font-medium tabular-nums">
+                      {batch.totalAmount}
+                    </td>
+                    <td className="py-2 pr-3 text-right align-top tabular-nums">
+                      {batch.accrualCount}
+                    </td>
+                    <td className="py-2 pr-3 align-top font-mono text-xs">
+                      {batch.expenseId ? `${batch.expenseId.slice(0, 8)}…` : '—'}
+                    </td>
+                    <td className="py-2 pr-3 align-top text-xs capitalize">
+                      {statusLabel(batch.status)}
+                    </td>
+                    <td className="py-2 text-right align-top">
+                      {batch.status === 'DRAFT' ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void approvePayoutBatch(batch.id)}
+                          disabled={approvingBatchId !== null}
+                        >
+                          {approvingBatchId === batch.id ? 'Approving…' : 'Approve'}
+                        </Button>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

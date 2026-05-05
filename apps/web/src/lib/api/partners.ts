@@ -79,6 +79,32 @@ export interface PartnerAccrualListItem {
   createdAt: string;
 }
 
+/** `GET /api/partners/:id/payout-batches` row. */
+export interface PartnerPayoutBatch {
+  id: string;
+  partnerId: string;
+  totalAmount: string;
+  status: 'DRAFT' | 'APPROVED' | 'EXPENSE_CREATED' | 'PAID' | 'CANCELLED';
+  payoutDate: string | null;
+  expenseId: string | null;
+  approvedBy: string | null;
+  notes: string | null;
+  accrualCount: number;
+  createdAt: string;
+}
+
+export interface CreatePartnerPayoutBatchPayload {
+  accrualIds: string[];
+  payoutDate?: string;
+  notes?: string;
+}
+
+export interface ApprovePartnerPayoutBatchPayload {
+  payoutDate?: string;
+  approvedBy?: string;
+  notes?: string;
+}
+
 export interface PartnerListParams {
   page?: number;
   pageSize?: number;
@@ -162,6 +188,34 @@ export const partnersApi = {
 
   async getAccrualBalance(partnerId: string): Promise<PartnerAccrualBalance> {
     const resp = await api.get<PartnerAccrualBalance>(`/api/partners/${partnerId}/balance`);
+    return resp.data;
+  },
+
+  async listPayoutBatches(partnerId: string): Promise<PartnerPayoutBatch[]> {
+    const resp = await api.get<PartnerPayoutBatch[]>(`/api/partners/${partnerId}/payout-batches`);
+    return resp.data;
+  },
+
+  async createPayoutBatch(
+    partnerId: string,
+    body: CreatePartnerPayoutBatchPayload,
+  ): Promise<PartnerPayoutBatch> {
+    const resp = await api.post<PartnerPayoutBatch>(
+      `/api/partners/${partnerId}/payout-batches`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async approvePayoutBatch(
+    partnerId: string,
+    batchId: string,
+    body: ApprovePartnerPayoutBatchPayload = {},
+  ): Promise<PartnerPayoutBatch> {
+    const resp = await api.post<PartnerPayoutBatch>(
+      `/api/partners/${partnerId}/payout-batches/${batchId}/approve`,
+      body,
+    );
     return resp.data;
   },
 };
