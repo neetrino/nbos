@@ -218,10 +218,16 @@ Runtime сейчас использует старые statuses:
   - workflow: `Planned / Due Soon / Due Now / Overdue / On Hold / Backlog / Paid / Cancelled`;
   - payment: `Unpaid / Partially Paid / Paid`.
 
+Done slice:
+
+- Partial and full outgoing payments are implemented via `ExpensePayment` (`expense-payment-create.ts`),
+  with ledger `paymentStatus` `UNPAID` / `PARTIAL` / `PAID` and guards when editing expense amount.
+- Payroll-linked salary expenses sync `SalaryLine.paidAmount` / `remainingAmount` / `PARTIALLY_PAID`
+  through `payroll-salary-line-ledger-sync.ts`.
+
 Будущий refactor:
 
 - split existing expense model or introduce new tables;
-- add partial payments;
 - add backlog reason;
 - update expense board routes and UI;
 - update P&L and cash flow sources.
@@ -384,7 +390,9 @@ Remaining refactor:
 2. Add notification/reminder automation based on invoice card rules, not invoice board stages.
 3. Replace subscription statuses and add billing coverage fields.
 4. Add `Expense Plan`, `Expense Card`, `Expense Payment`, `Expense Backlog`.
-5. Add partial outgoing payments for expenses and salary.
+5. ~~Add partial outgoing payments for expenses and salary.~~ Partial/full outgoing is implemented via
+   `ExpensePayment`; salary lines linked to an expense card sync partial pay state. Remaining work is
+   the full canon entity split and payroll UI depth (see items 4, 7, 12).
 6. Add `Client Service Record` and connect it to invoice/expense/task/credential.
 7. Add `Compensation Profile`, `Product Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`.
 8. Add automatic subscription delivery bonus release after Product / Extension done, with manual override.
