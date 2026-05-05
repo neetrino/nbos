@@ -87,6 +87,14 @@ export class PartnersController {
     return this.partnersService.putCommissionPolicy(id, body);
   }
 
+  @Get(':id/accruals')
+  @ApiOperation({
+    summary: 'Partner accruals (inbound referral commissions from client payments)',
+  })
+  async listPartnerAccruals(@Param('id') id: string) {
+    return this.partnersService.listPartnerAccruals(id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get partner by ID' })
   async findOne(@Param('id') id: string) {

@@ -270,6 +270,7 @@ export type PartnerReferralTermsWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<'PartnerReferralTerms'> | Date | string;
   deal?: Prisma.XOR<Prisma.DealScalarRelationFilter, Prisma.DealWhereInput>;
   partner?: Prisma.XOR<Prisma.PartnerScalarRelationFilter, Prisma.PartnerWhereInput>;
+  partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
 };
 
 export type PartnerReferralTermsOrderByWithRelationInput = {
@@ -285,6 +286,7 @@ export type PartnerReferralTermsOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder;
   deal?: Prisma.DealOrderByWithRelationInput;
   partner?: Prisma.PartnerOrderByWithRelationInput;
+  partnerAccruals?: Prisma.PartnerAccrualOrderByRelationAggregateInput;
 };
 
 export type PartnerReferralTermsWhereUniqueInput = Prisma.AtLeast<
@@ -314,6 +316,7 @@ export type PartnerReferralTermsWhereUniqueInput = Prisma.AtLeast<
     updatedAt?: Prisma.DateTimeFilter<'PartnerReferralTerms'> | Date | string;
     deal?: Prisma.XOR<Prisma.DealScalarRelationFilter, Prisma.DealWhereInput>;
     partner?: Prisma.XOR<Prisma.PartnerScalarRelationFilter, Prisma.PartnerWhereInput>;
+    partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
   },
   'id' | 'dealId'
 >;
@@ -382,6 +385,7 @@ export type PartnerReferralTermsCreateInput = {
   updatedAt?: Date | string;
   deal: Prisma.DealCreateNestedOneWithoutPartnerReferralTermsInput;
   partner: Prisma.PartnerCreateNestedOneWithoutPartnerReferralTermsInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutReferralTermsInput;
 };
 
 export type PartnerReferralTermsUncheckedCreateInput = {
@@ -395,6 +399,7 @@ export type PartnerReferralTermsUncheckedCreateInput = {
   overrideReason?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutReferralTermsInput;
 };
 
 export type PartnerReferralTermsUpdateInput = {
@@ -418,6 +423,7 @@ export type PartnerReferralTermsUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   deal?: Prisma.DealUpdateOneRequiredWithoutPartnerReferralTermsNestedInput;
   partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerReferralTermsNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutReferralTermsNestedInput;
 };
 
 export type PartnerReferralTermsUncheckedUpdateInput = {
@@ -441,6 +447,7 @@ export type PartnerReferralTermsUncheckedUpdateInput = {
   overrideReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutReferralTermsNestedInput;
 };
 
 export type PartnerReferralTermsCreateManyInput = {
@@ -560,6 +567,11 @@ export type PartnerReferralTermsMinOrderByAggregateInput = {
 
 export type PartnerReferralTermsSumOrderByAggregateInput = {
   partnerPercent?: Prisma.SortOrder;
+};
+
+export type PartnerReferralTermsScalarRelationFilter = {
+  is?: Prisma.PartnerReferralTermsWhereInput;
+  isNot?: Prisma.PartnerReferralTermsWhereInput;
 };
 
 export type PartnerReferralTermsCreateNestedOneWithoutDealInput = {
@@ -728,6 +740,32 @@ export type EnumPartnerReferralSourcePolicyEnumFieldUpdateOperationsInput = {
   set?: $Enums.PartnerReferralSourcePolicyEnum;
 };
 
+export type PartnerReferralTermsCreateNestedOneWithoutPartnerAccrualsInput = {
+  create?: Prisma.XOR<
+    Prisma.PartnerReferralTermsCreateWithoutPartnerAccrualsInput,
+    Prisma.PartnerReferralTermsUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  connectOrCreate?: Prisma.PartnerReferralTermsCreateOrConnectWithoutPartnerAccrualsInput;
+  connect?: Prisma.PartnerReferralTermsWhereUniqueInput;
+};
+
+export type PartnerReferralTermsUpdateOneRequiredWithoutPartnerAccrualsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.PartnerReferralTermsCreateWithoutPartnerAccrualsInput,
+    Prisma.PartnerReferralTermsUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  connectOrCreate?: Prisma.PartnerReferralTermsCreateOrConnectWithoutPartnerAccrualsInput;
+  upsert?: Prisma.PartnerReferralTermsUpsertWithoutPartnerAccrualsInput;
+  connect?: Prisma.PartnerReferralTermsWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.PartnerReferralTermsUpdateToOneWithWhereWithoutPartnerAccrualsInput,
+      Prisma.PartnerReferralTermsUpdateWithoutPartnerAccrualsInput
+    >,
+    Prisma.PartnerReferralTermsUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+};
+
 export type PartnerReferralTermsCreateWithoutDealInput = {
   id?: string;
   dealType: $Enums.DealTypeEnum;
@@ -738,6 +776,7 @@ export type PartnerReferralTermsCreateWithoutDealInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   partner: Prisma.PartnerCreateNestedOneWithoutPartnerReferralTermsInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutReferralTermsInput;
 };
 
 export type PartnerReferralTermsUncheckedCreateWithoutDealInput = {
@@ -750,6 +789,7 @@ export type PartnerReferralTermsUncheckedCreateWithoutDealInput = {
   overrideReason?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutReferralTermsInput;
 };
 
 export type PartnerReferralTermsCreateOrConnectWithoutDealInput = {
@@ -800,6 +840,7 @@ export type PartnerReferralTermsUpdateWithoutDealInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerReferralTermsNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutReferralTermsNestedInput;
 };
 
 export type PartnerReferralTermsUncheckedUpdateWithoutDealInput = {
@@ -822,6 +863,7 @@ export type PartnerReferralTermsUncheckedUpdateWithoutDealInput = {
   overrideReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutReferralTermsNestedInput;
 };
 
 export type PartnerReferralTermsCreateWithoutPartnerInput = {
@@ -834,6 +876,7 @@ export type PartnerReferralTermsCreateWithoutPartnerInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   deal: Prisma.DealCreateNestedOneWithoutPartnerReferralTermsInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutReferralTermsInput;
 };
 
 export type PartnerReferralTermsUncheckedCreateWithoutPartnerInput = {
@@ -846,6 +889,7 @@ export type PartnerReferralTermsUncheckedCreateWithoutPartnerInput = {
   overrideReason?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutReferralTermsInput;
 };
 
 export type PartnerReferralTermsCreateOrConnectWithoutPartnerInput = {
@@ -917,6 +961,106 @@ export type PartnerReferralTermsScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<'PartnerReferralTerms'> | Date | string;
 };
 
+export type PartnerReferralTermsCreateWithoutPartnerAccrualsInput = {
+  id?: string;
+  dealType: $Enums.DealTypeEnum;
+  paymentType?: $Enums.PaymentTypeEnum | null;
+  partnerPercent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  sourcePolicy: $Enums.PartnerReferralSourcePolicyEnum;
+  overrideReason?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deal: Prisma.DealCreateNestedOneWithoutPartnerReferralTermsInput;
+  partner: Prisma.PartnerCreateNestedOneWithoutPartnerReferralTermsInput;
+};
+
+export type PartnerReferralTermsUncheckedCreateWithoutPartnerAccrualsInput = {
+  id?: string;
+  dealId: string;
+  partnerId: string;
+  dealType: $Enums.DealTypeEnum;
+  paymentType?: $Enums.PaymentTypeEnum | null;
+  partnerPercent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  sourcePolicy: $Enums.PartnerReferralSourcePolicyEnum;
+  overrideReason?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerReferralTermsCreateOrConnectWithoutPartnerAccrualsInput = {
+  where: Prisma.PartnerReferralTermsWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerReferralTermsCreateWithoutPartnerAccrualsInput,
+    Prisma.PartnerReferralTermsUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+};
+
+export type PartnerReferralTermsUpsertWithoutPartnerAccrualsInput = {
+  update: Prisma.XOR<
+    Prisma.PartnerReferralTermsUpdateWithoutPartnerAccrualsInput,
+    Prisma.PartnerReferralTermsUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerReferralTermsCreateWithoutPartnerAccrualsInput,
+    Prisma.PartnerReferralTermsUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  where?: Prisma.PartnerReferralTermsWhereInput;
+};
+
+export type PartnerReferralTermsUpdateToOneWithWhereWithoutPartnerAccrualsInput = {
+  where?: Prisma.PartnerReferralTermsWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerReferralTermsUpdateWithoutPartnerAccrualsInput,
+    Prisma.PartnerReferralTermsUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+};
+
+export type PartnerReferralTermsUpdateWithoutPartnerAccrualsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?:
+    | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
+    | $Enums.PaymentTypeEnum
+    | null;
+  partnerPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  sourcePolicy?:
+    | Prisma.EnumPartnerReferralSourcePolicyEnumFieldUpdateOperationsInput
+    | $Enums.PartnerReferralSourcePolicyEnum;
+  overrideReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  deal?: Prisma.DealUpdateOneRequiredWithoutPartnerReferralTermsNestedInput;
+  partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerReferralTermsNestedInput;
+};
+
+export type PartnerReferralTermsUncheckedUpdateWithoutPartnerAccrualsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealId?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?:
+    | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
+    | $Enums.PaymentTypeEnum
+    | null;
+  partnerPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  sourcePolicy?:
+    | Prisma.EnumPartnerReferralSourcePolicyEnumFieldUpdateOperationsInput
+    | $Enums.PartnerReferralSourcePolicyEnum;
+  overrideReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
 export type PartnerReferralTermsCreateManyPartnerInput = {
   id?: string;
   dealId: string;
@@ -949,6 +1093,7 @@ export type PartnerReferralTermsUpdateWithoutPartnerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   deal?: Prisma.DealUpdateOneRequiredWithoutPartnerReferralTermsNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutReferralTermsNestedInput;
 };
 
 export type PartnerReferralTermsUncheckedUpdateWithoutPartnerInput = {
@@ -971,6 +1116,7 @@ export type PartnerReferralTermsUncheckedUpdateWithoutPartnerInput = {
   overrideReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutReferralTermsNestedInput;
 };
 
 export type PartnerReferralTermsUncheckedUpdateManyWithoutPartnerInput = {
@@ -995,6 +1141,41 @@ export type PartnerReferralTermsUncheckedUpdateManyWithoutPartnerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+/**
+ * Count Type PartnerReferralTermsCountOutputType
+ */
+
+export type PartnerReferralTermsCountOutputType = {
+  partnerAccruals: number;
+};
+
+export type PartnerReferralTermsCountOutputTypeSelect<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  partnerAccruals?: boolean | PartnerReferralTermsCountOutputTypeCountPartnerAccrualsArgs;
+};
+
+/**
+ * PartnerReferralTermsCountOutputType without action
+ */
+export type PartnerReferralTermsCountOutputTypeDefaultArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerReferralTermsCountOutputType
+   */
+  select?: Prisma.PartnerReferralTermsCountOutputTypeSelect<ExtArgs> | null;
+};
+
+/**
+ * PartnerReferralTermsCountOutputType without action
+ */
+export type PartnerReferralTermsCountOutputTypeCountPartnerAccrualsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PartnerAccrualWhereInput;
+};
+
 export type PartnerReferralTermsSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -1011,6 +1192,8 @@ export type PartnerReferralTermsSelect<
     updatedAt?: boolean;
     deal?: boolean | Prisma.DealDefaultArgs<ExtArgs>;
     partner?: boolean | Prisma.PartnerDefaultArgs<ExtArgs>;
+    partnerAccruals?: boolean | Prisma.PartnerReferralTerms$partnerAccrualsArgs<ExtArgs>;
+    _count?: boolean | Prisma.PartnerReferralTermsCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['partnerReferralTerms']
 >;
@@ -1088,6 +1271,8 @@ export type PartnerReferralTermsInclude<
 > = {
   deal?: boolean | Prisma.DealDefaultArgs<ExtArgs>;
   partner?: boolean | Prisma.PartnerDefaultArgs<ExtArgs>;
+  partnerAccruals?: boolean | Prisma.PartnerReferralTerms$partnerAccrualsArgs<ExtArgs>;
+  _count?: boolean | Prisma.PartnerReferralTermsCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type PartnerReferralTermsIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -1109,6 +1294,7 @@ export type $PartnerReferralTermsPayload<
   objects: {
     deal: Prisma.$DealPayload<ExtArgs>;
     partner: Prisma.$PartnerPayload<ExtArgs>;
+    partnerAccruals: Prisma.$PartnerAccrualPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1691,6 +1877,17 @@ export interface Prisma__PartnerReferralTermsClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  partnerAccruals<T extends Prisma.PartnerReferralTerms$partnerAccrualsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.PartnerReferralTerms$partnerAccrualsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PartnerAccrualPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2182,6 +2379,34 @@ export type PartnerReferralTermsDeleteManyArgs<
    * Limit how many PartnerReferralTerms to delete.
    */
   limit?: number;
+};
+
+/**
+ * PartnerReferralTerms.partnerAccruals
+ */
+export type PartnerReferralTerms$partnerAccrualsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerAccrual
+   */
+  select?: Prisma.PartnerAccrualSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PartnerAccrual
+   */
+  omit?: Prisma.PartnerAccrualOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerAccrualInclude<ExtArgs> | null;
+  where?: Prisma.PartnerAccrualWhereInput;
+  orderBy?:
+    | Prisma.PartnerAccrualOrderByWithRelationInput
+    | Prisma.PartnerAccrualOrderByWithRelationInput[];
+  cursor?: Prisma.PartnerAccrualWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.PartnerAccrualScalarFieldEnum | Prisma.PartnerAccrualScalarFieldEnum[];
 };
 
 /**

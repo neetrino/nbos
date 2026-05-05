@@ -46,18 +46,23 @@ describe('PaymentsService', () => {
   let prisma: MockPrisma;
   const salesBonusAccrual = { onInvoicePaid: vi.fn().mockResolvedValue(undefined) };
   const operationalJournal = { appendCashPaymentLine: vi.fn().mockResolvedValue(undefined) };
+  const partnerAccrualClassic = {
+    tryInboundClassicAfterClientPayment: vi.fn().mockResolvedValue(undefined),
+  };
   let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     salesBonusAccrual.onInvoicePaid.mockClear();
     operationalJournal.appendCashPaymentLine.mockClear();
+    partnerAccrualClassic.tryInboundClassicAfterClientPayment.mockClear();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     service = new PaymentsService(
       prisma as never,
       salesBonusAccrual as never,
       notifications,
       operationalJournal as never,
+      partnerAccrualClassic as never,
     );
   });
 
@@ -151,6 +156,7 @@ describe('PaymentsService', () => {
         { status: 'WAITING', amount: 100000, payments: [{ amount: 50000 }] },
       ]);
       prisma.payment.findUnique.mockResolvedValue(mockPaymentFindByIdRow('1'));
+      prisma.order.findUnique.mockResolvedValue({ status: 'PARTIALLY_PAID' });
 
       const result = await service.create({
         invoiceId: 'inv1',
@@ -177,6 +183,7 @@ describe('PaymentsService', () => {
         orderId: 'ord1',
       });
       expect(salesBonusAccrual.onInvoicePaid).not.toHaveBeenCalled();
+      expect(partnerAccrualClassic.tryInboundClassicAfterClientPayment).not.toHaveBeenCalled();
     });
 
     it('marks invoice and order as paid when coverage reaches total amount', async () => {
@@ -213,6 +220,7 @@ describe('PaymentsService', () => {
           },
         }),
       );
+      prisma.order.findUnique.mockResolvedValue({ status: 'FULLY_PAID' });
 
       await service.create({
         invoiceId: 'inv1',
@@ -229,6 +237,11 @@ describe('PaymentsService', () => {
         data: { status: 'FULLY_PAID' },
       });
       expect(salesBonusAccrual.onInvoicePaid).toHaveBeenCalledWith('inv1');
+      expect(partnerAccrualClassic.tryInboundClassicAfterClientPayment).toHaveBeenCalledWith({
+        orderId: 'ord1',
+        paymentId: '2',
+        invoiceId: 'inv1',
+      });
     });
 
     it('marks unpaid overdue invoice as delayed after payment sync if still not fully covered', async () => {
@@ -255,6 +268,7 @@ describe('PaymentsService', () => {
       prisma.payment.findUnique.mockResolvedValue(
         mockPaymentFindByIdRow('3', { amount: 30000, invoice: { status: 'DELAYED' } }),
       );
+      prisma.order.findUnique.mockResolvedValue({ status: 'PARTIALLY_PAID' });
 
       await service.create({
         invoiceId: 'inv1',

@@ -28,6 +28,7 @@ import {
 } from '../delivery-lifecycle';
 import { buildProductDoneReadiness } from './product-done-readiness';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
+import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 
 interface CreateProductDto {
   projectId: string;
@@ -88,6 +89,7 @@ export class ProductsService {
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
+    private readonly partnerAccrualClassic: PartnerAccrualClassicService,
   ) {}
 
   async findAll(params: ProductQueryParams) {
@@ -361,6 +363,7 @@ export class ProductsService {
     });
     if (linkedOrder) {
       await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
+      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
     }
     return attachProductDeliveryLifecycle(updatedProduct);
   }

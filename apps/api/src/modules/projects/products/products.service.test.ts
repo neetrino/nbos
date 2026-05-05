@@ -9,10 +9,15 @@ describe('ProductsService', () => {
   let prisma: MockPrisma;
   let notifications: NotificationService;
 
+  const partnerAccrualClassic = {
+    tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
-    service = new ProductsService(prisma as never, notifications);
+    partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
+    service = new ProductsService(prisma as never, notifications, partnerAccrualClassic as never);
   });
 
   describe('findAll', () => {

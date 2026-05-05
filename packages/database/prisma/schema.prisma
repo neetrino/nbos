@@ -108,6 +108,7 @@ model Project {
   technicalAssets           TechnicalAsset[]
   technicalEnvironments     TechnicalEnvironment[]
   operationalJournalEntries OperationalJournalEntry[]
+  partnerAccruals           PartnerAccrual[]
 
   @@map("projects")
 }
@@ -226,6 +227,7 @@ model Product {
   technicalAssets           TechnicalAsset[]
   technicalEnvironments     TechnicalEnvironment[]
   operationalJournalEntries OperationalJournalEntry[]
+  partnerAccruals           PartnerAccrual[]
 
   @@index([deliveryStage])
   @@index([deliveryWorkStatus])
@@ -564,6 +566,7 @@ model Order {
   bonusEntries              BonusEntry[]
   productBonusPool          ProductBonusPool?
   operationalJournalEntries OperationalJournalEntry[]
+  partnerAccruals           PartnerAccrual[]
 
   @@map("orders")
 }
@@ -624,6 +627,7 @@ model Invoice {
   company             Company?             @relation(fields: [companyId], references: [id])
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
   payments            Payment[]
+  partnerAccruals     PartnerAccrual[]
 
   @@index([clientServiceRecordId])
   @@map("invoices")
@@ -642,6 +646,7 @@ model Payment {
 
   invoice   Invoice   @relation(fields: [invoiceId], references: [id])
   confirmer Employee? @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
+  partnerAccrual PartnerAccrual?
 
   @@map("payments")
 }
@@ -664,6 +669,7 @@ enum JournalSourceTypeEnum {
   PAYROLL_RUN
   SALARY_LINE
   MANUAL_ADJUSTMENT
+  PARTNER_ACCRUAL
 }
 
 enum JournalLineStatusEnum {
@@ -759,8 +765,9 @@ model Subscription {
   updatedAt  DateTime               @updatedAt @map("updated_at")
 
   project  Project   @relation(fields: [projectId], references: [id])
-  partner  Partner?  @relation(fields: [partnerId], references: [id])
-  invoices Invoice[]
+  partner            Partner?           @relation(fields: [partnerId], references: [id])
+  invoices           Invoice[]
+  partnerAccruals    PartnerAccrual[]
 
   @@map("subscriptions")
 }
@@ -2316,6 +2323,7 @@ model Partner {
   operationalJournalEntries OperationalJournalEntry[]
   commissionPolicyRows      PartnerCommissionPolicyRow[]
   partnerReferralTerms      PartnerReferralTerms[]
+  partnerAccruals           PartnerAccrual[]
 
   @@map("partners")
 }
@@ -2339,8 +2347,9 @@ model PartnerReferralTerms {
   createdAt      DateTime                         @default(now()) @map("created_at")
   updatedAt      DateTime                         @updatedAt @map("updated_at")
 
-  deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  deal             Deal             @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  partner          Partner          @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  partnerAccruals  PartnerAccrual[]
 
   @@index([partnerId])
   @@map("partner_referral_terms")
@@ -2360,6 +2369,50 @@ model PartnerCommissionPolicyRow {
   @@unique([partnerId, dealType])
   @@index([partnerId])
   @@map("partner_commission_policy_rows")
+}
+
+enum PartnerAccrualStatusEnum {
+  ACCRUED
+  ELIGIBLE
+  IN_BATCH
+  PAID
+  CANCELLED
+}
+
+/// Inbound referral commission accrual from client cash (NBOS § Partner Payouts — PAR-01 / PAR-02).
+model PartnerAccrual {
+  id              String                   @id @default(uuid())
+  partnerId       String                   @map("partner_id")
+  referralTermsId String                   @map("referral_terms_id")
+  projectId       String                   @map("project_id")
+  productId       String?                  @map("product_id")
+  orderId         String                   @map("order_id")
+  subscriptionId  String?                  @map("subscription_id")
+  invoiceId       String?                  @map("invoice_id")
+  paymentId       String                   @unique @map("payment_id")
+  dealType        DealTypeEnum             @map("deal_type")
+  paymentType     PaymentTypeEnum          @map("payment_type")
+  baseAmount      Decimal                  @map("base_amount") @db.Decimal(14, 2)
+  percent         Decimal                  @db.Decimal(5, 2)
+  amount          Decimal                  @db.Decimal(14, 2)
+  status          PartnerAccrualStatusEnum @default(ELIGIBLE)
+  eligibleAt      DateTime?                @map("eligible_at")
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+
+  partner       Partner              @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  referralTerms PartnerReferralTerms @relation(fields: [referralTermsId], references: [id], onDelete: Restrict)
+  project       Project              @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  order         Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  subscription  Subscription?        @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  invoice       Invoice?             @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  payment       Payment              @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([partnerId])
+  @@index([orderId])
+  @@index([projectId])
+  @@map("partner_accruals")
 }
 
 // ─── INTERNAL MESSENGER (MVP) ─────────────────────────────

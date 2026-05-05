@@ -2910,6 +2910,39 @@ export type EnumPartnerReferralSourcePolicyEnumWithAggregatesFilter<$PrismaModel
   _max?: Prisma.NestedEnumPartnerReferralSourcePolicyEnumFilter<$PrismaModel>;
 };
 
+export type EnumPartnerAccrualStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerAccrualStatusEnum
+    | Prisma.EnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerAccrualStatusEnum[]
+    | Prisma.ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerAccrualStatusEnum[]
+    | Prisma.ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>
+    | $Enums.PartnerAccrualStatusEnum;
+};
+
+export type EnumPartnerAccrualStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerAccrualStatusEnum
+    | Prisma.EnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerAccrualStatusEnum[]
+    | Prisma.ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerAccrualStatusEnum[]
+    | Prisma.ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerAccrualStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerAccrualStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>;
+};
+
 export type EnumMessengerChannelTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.MessengerChannelType | Prisma.EnumMessengerChannelTypeFieldRefInput<$PrismaModel>;
   in?:
@@ -6510,6 +6543,39 @@ export type NestedEnumPartnerReferralSourcePolicyEnumWithAggregatesFilter<$Prism
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumPartnerReferralSourcePolicyEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumPartnerReferralSourcePolicyEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerAccrualStatusEnum
+    | Prisma.EnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerAccrualStatusEnum[]
+    | Prisma.ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerAccrualStatusEnum[]
+    | Prisma.ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>
+    | $Enums.PartnerAccrualStatusEnum;
+};
+
+export type NestedEnumPartnerAccrualStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerAccrualStatusEnum
+    | Prisma.EnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerAccrualStatusEnum[]
+    | Prisma.ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerAccrualStatusEnum[]
+    | Prisma.ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerAccrualStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerAccrualStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerAccrualStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumMessengerChannelTypeFilter<$PrismaModel = never> = {

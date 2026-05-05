@@ -184,6 +184,50 @@ export class PartnersService {
     return applyPartnerCommissionPolicy(this.prisma, partnerId, body.rows);
   }
 
+  /** NBOS § Partner Payouts — inbound accruals list (classic + future subscription rows). */
+  async listPartnerAccruals(partnerId: string) {
+    await this.findById(partnerId);
+    const rows = await this.prisma.partnerAccrual.findMany({
+      where: { partnerId },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      select: {
+        id: true,
+        orderId: true,
+        projectId: true,
+        productId: true,
+        subscriptionId: true,
+        paymentId: true,
+        invoiceId: true,
+        dealType: true,
+        paymentType: true,
+        baseAmount: true,
+        percent: true,
+        amount: true,
+        status: true,
+        eligibleAt: true,
+        createdAt: true,
+      },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      orderId: r.orderId,
+      projectId: r.projectId,
+      productId: r.productId,
+      subscriptionId: r.subscriptionId,
+      paymentId: r.paymentId,
+      invoiceId: r.invoiceId,
+      dealType: r.dealType,
+      paymentType: r.paymentType,
+      baseAmount: r.baseAmount.toFixed(2),
+      percent: r.percent.toFixed(2),
+      amount: r.amount.toFixed(2),
+      status: r.status,
+      eligibleAt: r.eligibleAt?.toISOString() ?? null,
+      createdAt: r.createdAt.toISOString(),
+    }));
+  }
+
   async getStats() {
     const [total, totalSubscriptions, avgPayout] = await Promise.all([
       this.prisma.partner.count(),

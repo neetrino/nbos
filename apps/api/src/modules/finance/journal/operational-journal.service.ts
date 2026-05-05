@@ -13,6 +13,18 @@ interface PaymentJournalLineInput {
   orderId?: string | null;
 }
 
+export interface PartnerAccrualJournalLineInput {
+  partnerAccrualId: string;
+  amount: number;
+  bookedAt: Date;
+  partnerId: string;
+  companyId?: string | null;
+  projectId: string;
+  productId?: string | null;
+  orderId: string;
+  description?: string;
+}
+
 interface PostingPeriod {
   id: string;
   status: 'OPEN' | 'CLOSED';
@@ -94,6 +106,38 @@ export class OperationalJournalService {
         projectId: input.projectId ?? undefined,
         productId: input.productId ?? undefined,
         orderId: input.orderId ?? undefined,
+      },
+    });
+  }
+
+  /**
+   * Accrual-basis partner liability line (does not affect {@link getCashMovementSummary} cash totals).
+   */
+  async appendPartnerAccrualLine(input: PartnerAccrualJournalLineInput) {
+    const postingPeriod = await this.ensureOpenPostingPeriod(input.bookedAt);
+    const description =
+      input.description ?? `Partner accrual ${input.partnerAccrualId.slice(0, 8)}`;
+
+    return this.prisma.operationalJournalEntry.upsert({
+      where: { idempotencyKey: `partner-accrual:${input.partnerAccrualId}` },
+      update: {},
+      create: {
+        amount: input.amount,
+        currency: FUNCTIONAL_CURRENCY,
+        fxRateApplied: DEFAULT_FX_RATE,
+        functionalAmount: input.amount,
+        bookedAt: input.bookedAt,
+        recognitionBasis: 'ACCRUAL',
+        postingPeriodId: postingPeriod.id,
+        idempotencyKey: `partner-accrual:${input.partnerAccrualId}`,
+        sourceType: 'PARTNER_ACCRUAL',
+        sourceId: input.partnerAccrualId,
+        description,
+        companyId: input.companyId ?? undefined,
+        projectId: input.projectId,
+        productId: input.productId ?? undefined,
+        orderId: input.orderId,
+        partnerId: input.partnerId,
       },
     });
   }

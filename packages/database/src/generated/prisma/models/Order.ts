@@ -377,6 +377,7 @@ export type OrderWhereInput = {
     Prisma.ProductBonusPoolWhereInput
   > | null;
   operationalJournalEntries?: Prisma.OperationalJournalEntryListRelationFilter;
+  partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
 };
 
 export type OrderOrderByWithRelationInput = {
@@ -408,6 +409,7 @@ export type OrderOrderByWithRelationInput = {
   bonusEntries?: Prisma.BonusEntryOrderByRelationAggregateInput;
   productBonusPool?: Prisma.ProductBonusPoolOrderByWithRelationInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryOrderByRelationAggregateInput;
+  partnerAccruals?: Prisma.PartnerAccrualOrderByRelationAggregateInput;
 };
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<
@@ -481,6 +483,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<
       Prisma.ProductBonusPoolWhereInput
     > | null;
     operationalJournalEntries?: Prisma.OperationalJournalEntryListRelationFilter;
+    partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
   },
   'id' | 'code' | 'productId' | 'extensionId'
 >;
@@ -587,6 +590,7 @@ export type OrderCreateInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateInput = {
@@ -613,6 +617,7 @@ export type OrderUncheckedCreateInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUpdateInput = {
@@ -665,6 +670,7 @@ export type OrderUpdateInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateInput = {
@@ -717,6 +723,7 @@ export type OrderUncheckedUpdateInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderCreateManyInput = {
@@ -1418,6 +1425,32 @@ export type OrderUncheckedUpdateManyWithoutPartnerNestedInput = {
   deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[];
 };
 
+export type OrderCreateNestedOneWithoutPartnerAccrualsInput = {
+  create?: Prisma.XOR<
+    Prisma.OrderCreateWithoutPartnerAccrualsInput,
+    Prisma.OrderUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPartnerAccrualsInput;
+  connect?: Prisma.OrderWhereUniqueInput;
+};
+
+export type OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.OrderCreateWithoutPartnerAccrualsInput,
+    Prisma.OrderUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPartnerAccrualsInput;
+  upsert?: Prisma.OrderUpsertWithoutPartnerAccrualsInput;
+  connect?: Prisma.OrderWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.OrderUpdateToOneWithWhereWithoutPartnerAccrualsInput,
+      Prisma.OrderUpdateWithoutPartnerAccrualsInput
+    >,
+    Prisma.OrderUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+};
+
 export type OrderCreateWithoutProjectInput = {
   id?: string;
   code: string;
@@ -1441,6 +1474,7 @@ export type OrderCreateWithoutProjectInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutProjectInput = {
@@ -1466,6 +1500,7 @@ export type OrderUncheckedCreateWithoutProjectInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutProjectInput = {
@@ -1583,6 +1618,7 @@ export type OrderCreateWithoutProductInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutProductInput = {
@@ -1608,6 +1644,7 @@ export type OrderUncheckedCreateWithoutProductInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutProductInput = {
@@ -1687,6 +1724,7 @@ export type OrderUpdateWithoutProductInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutProductInput = {
@@ -1738,6 +1776,7 @@ export type OrderUncheckedUpdateWithoutProductInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderCreateWithoutExtensionInput = {
@@ -1763,6 +1802,7 @@ export type OrderCreateWithoutExtensionInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutExtensionInput = {
@@ -1788,6 +1828,7 @@ export type OrderUncheckedCreateWithoutExtensionInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutExtensionInput = {
@@ -1867,6 +1908,7 @@ export type OrderUpdateWithoutExtensionInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutExtensionInput = {
@@ -1918,6 +1960,7 @@ export type OrderUncheckedUpdateWithoutExtensionInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderCreateWithoutDealInput = {
@@ -1943,6 +1986,7 @@ export type OrderCreateWithoutDealInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutDealInput = {
@@ -1968,6 +2012,7 @@ export type OrderUncheckedCreateWithoutDealInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutDealInput = {
@@ -2031,6 +2076,7 @@ export type OrderCreateWithoutInvoicesInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutInvoicesInput = {
@@ -2056,6 +2102,7 @@ export type OrderUncheckedCreateWithoutInvoicesInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutInvoicesInput = {
@@ -2135,6 +2182,7 @@ export type OrderUpdateWithoutInvoicesInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutInvoicesInput = {
@@ -2186,6 +2234,7 @@ export type OrderUncheckedUpdateWithoutInvoicesInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderCreateWithoutOperationalJournalEntriesInput = {
@@ -2211,6 +2260,7 @@ export type OrderCreateWithoutOperationalJournalEntriesInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutOrderInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutOperationalJournalEntriesInput = {
@@ -2236,6 +2286,7 @@ export type OrderUncheckedCreateWithoutOperationalJournalEntriesInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutOrderInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutOperationalJournalEntriesInput = {
@@ -2315,6 +2366,7 @@ export type OrderUpdateWithoutOperationalJournalEntriesInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutOrderNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutOperationalJournalEntriesInput = {
@@ -2366,6 +2418,7 @@ export type OrderUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutOrderNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderCreateWithoutBonusEntriesInput = {
@@ -2391,6 +2444,7 @@ export type OrderCreateWithoutBonusEntriesInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutBonusEntriesInput = {
@@ -2416,6 +2470,7 @@ export type OrderUncheckedCreateWithoutBonusEntriesInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutBonusEntriesInput = {
@@ -2495,6 +2550,7 @@ export type OrderUpdateWithoutBonusEntriesInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutBonusEntriesInput = {
@@ -2546,6 +2602,7 @@ export type OrderUncheckedUpdateWithoutBonusEntriesInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderCreateWithoutProductBonusPoolInput = {
@@ -2571,6 +2628,7 @@ export type OrderCreateWithoutProductBonusPoolInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutOrderInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutProductBonusPoolInput = {
@@ -2596,6 +2654,7 @@ export type OrderUncheckedCreateWithoutProductBonusPoolInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutOrderInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutProductBonusPoolInput = {
@@ -2675,6 +2734,7 @@ export type OrderUpdateWithoutProductBonusPoolInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutOrderNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutProductBonusPoolInput = {
@@ -2726,6 +2786,7 @@ export type OrderUncheckedUpdateWithoutProductBonusPoolInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutOrderNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderCreateWithoutPartnerInput = {
@@ -2751,6 +2812,7 @@ export type OrderCreateWithoutPartnerInput = {
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderUncheckedCreateWithoutPartnerInput = {
@@ -2776,6 +2838,7 @@ export type OrderUncheckedCreateWithoutPartnerInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutOrderInput;
 };
 
 export type OrderCreateOrConnectWithoutPartnerInput = {
@@ -2817,6 +2880,190 @@ export type OrderUpdateManyWithWhereWithoutPartnerInput = {
     Prisma.OrderUpdateManyMutationInput,
     Prisma.OrderUncheckedUpdateManyWithoutPartnerInput
   >;
+};
+
+export type OrderCreateWithoutPartnerAccrualsInput = {
+  id?: string;
+  code: string;
+  type: $Enums.OrderTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  taxStatus?: $Enums.TaxStatus;
+  status?: $Enums.OrderStatusEnum;
+  partnerPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  sellerBonusPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  deliveryBonusPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  sellerBonusSource?: $Enums.LeadSourceEnum | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutOrdersInput;
+  deal?: Prisma.DealCreateNestedOneWithoutOrdersInput;
+  product?: Prisma.ProductCreateNestedOneWithoutOrderInput;
+  extension?: Prisma.ExtensionCreateNestedOneWithoutOrderInput;
+  partner?: Prisma.PartnerCreateNestedOneWithoutOrdersInput;
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutOrderInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutOrderInput;
+  productBonusPool?: Prisma.ProductBonusPoolCreateNestedOneWithoutOrderInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutOrderInput;
+};
+
+export type OrderUncheckedCreateWithoutPartnerAccrualsInput = {
+  id?: string;
+  code: string;
+  projectId: string;
+  dealId?: string | null;
+  productId?: string | null;
+  extensionId?: string | null;
+  type: $Enums.OrderTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  taxStatus?: $Enums.TaxStatus;
+  status?: $Enums.OrderStatusEnum;
+  partnerId?: string | null;
+  partnerPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  sellerBonusPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  deliveryBonusPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  sellerBonusSource?: $Enums.LeadSourceEnum | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutOrderInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutOrderInput;
+  productBonusPool?: Prisma.ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutOrderInput;
+};
+
+export type OrderCreateOrConnectWithoutPartnerAccrualsInput = {
+  where: Prisma.OrderWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.OrderCreateWithoutPartnerAccrualsInput,
+    Prisma.OrderUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+};
+
+export type OrderUpsertWithoutPartnerAccrualsInput = {
+  update: Prisma.XOR<
+    Prisma.OrderUpdateWithoutPartnerAccrualsInput,
+    Prisma.OrderUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.OrderCreateWithoutPartnerAccrualsInput,
+    Prisma.OrderUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  where?: Prisma.OrderWhereInput;
+};
+
+export type OrderUpdateToOneWithWhereWithoutPartnerAccrualsInput = {
+  where?: Prisma.OrderWhereInput;
+  data: Prisma.XOR<
+    Prisma.OrderUpdateWithoutPartnerAccrualsInput,
+    Prisma.OrderUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+};
+
+export type OrderUpdateWithoutPartnerAccrualsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumOrderTypeEnumFieldUpdateOperationsInput | $Enums.OrderTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  totalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  status?: Prisma.EnumOrderStatusEnumFieldUpdateOperationsInput | $Enums.OrderStatusEnum;
+  partnerPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  sellerBonusPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  deliveryBonusPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  sellerBonusSource?:
+    | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
+    | $Enums.LeadSourceEnum
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutOrdersNestedInput;
+  deal?: Prisma.DealUpdateOneWithoutOrdersNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutOrderNestedInput;
+  extension?: Prisma.ExtensionUpdateOneWithoutOrderNestedInput;
+  partner?: Prisma.PartnerUpdateOneWithoutOrdersNestedInput;
+  invoices?: Prisma.InvoiceUpdateManyWithoutOrderNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
+  productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+};
+
+export type OrderUncheckedUpdateWithoutPartnerAccrualsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumOrderTypeEnumFieldUpdateOperationsInput | $Enums.OrderTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  totalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  status?: Prisma.EnumOrderStatusEnumFieldUpdateOperationsInput | $Enums.OrderStatusEnum;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  partnerPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  sellerBonusPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  deliveryBonusPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  sellerBonusSource?:
+    | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
+    | $Enums.LeadSourceEnum
+    | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutOrderNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderCreateManyProjectInput = {
@@ -2889,6 +3136,7 @@ export type OrderUpdateWithoutProjectInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutProjectInput = {
@@ -2940,6 +3188,7 @@ export type OrderUncheckedUpdateWithoutProjectInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateManyWithoutProjectInput = {
@@ -3059,6 +3308,7 @@ export type OrderUpdateWithoutDealInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutDealInput = {
@@ -3110,6 +3360,7 @@ export type OrderUncheckedUpdateWithoutDealInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateManyWithoutDealInput = {
@@ -3229,6 +3480,7 @@ export type OrderUpdateWithoutPartnerInput = {
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateWithoutPartnerInput = {
@@ -3280,6 +3532,7 @@ export type OrderUncheckedUpdateWithoutPartnerInput = {
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutOrderNestedInput;
   productBonusPool?: Prisma.ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutOrderNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderNestedInput;
 };
 
 export type OrderUncheckedUpdateManyWithoutPartnerInput = {
@@ -3337,6 +3590,7 @@ export type OrderCountOutputType = {
   invoices: number;
   bonusEntries: number;
   operationalJournalEntries: number;
+  partnerAccruals: number;
 };
 
 export type OrderCountOutputTypeSelect<
@@ -3345,6 +3599,7 @@ export type OrderCountOutputTypeSelect<
   invoices?: boolean | OrderCountOutputTypeCountInvoicesArgs;
   bonusEntries?: boolean | OrderCountOutputTypeCountBonusEntriesArgs;
   operationalJournalEntries?: boolean | OrderCountOutputTypeCountOperationalJournalEntriesArgs;
+  partnerAccruals?: boolean | OrderCountOutputTypeCountPartnerAccrualsArgs;
 };
 
 /**
@@ -3386,6 +3641,15 @@ export type OrderCountOutputTypeCountOperationalJournalEntriesArgs<
   where?: Prisma.OperationalJournalEntryWhereInput;
 };
 
+/**
+ * OrderCountOutputType without action
+ */
+export type OrderCountOutputTypeCountPartnerAccrualsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PartnerAccrualWhereInput;
+};
+
 export type OrderSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -3418,6 +3682,7 @@ export type OrderSelect<
     bonusEntries?: boolean | Prisma.Order$bonusEntriesArgs<ExtArgs>;
     productBonusPool?: boolean | Prisma.Order$productBonusPoolArgs<ExtArgs>;
     operationalJournalEntries?: boolean | Prisma.Order$operationalJournalEntriesArgs<ExtArgs>;
+    partnerAccruals?: boolean | Prisma.Order$partnerAccrualsArgs<ExtArgs>;
     _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['order']
@@ -3545,6 +3810,7 @@ export type OrderInclude<
   bonusEntries?: boolean | Prisma.Order$bonusEntriesArgs<ExtArgs>;
   productBonusPool?: boolean | Prisma.Order$productBonusPoolArgs<ExtArgs>;
   operationalJournalEntries?: boolean | Prisma.Order$operationalJournalEntriesArgs<ExtArgs>;
+  partnerAccruals?: boolean | Prisma.Order$partnerAccrualsArgs<ExtArgs>;
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type OrderIncludeCreateManyAndReturn<
@@ -3580,6 +3846,7 @@ export type $OrderPayload<
     bonusEntries: Prisma.$BonusEntryPayload<ExtArgs>[];
     productBonusPool: Prisma.$ProductBonusPoolPayload<ExtArgs> | null;
     operationalJournalEntries: Prisma.$OperationalJournalEntryPayload<ExtArgs>[];
+    partnerAccruals: Prisma.$PartnerAccrualPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -4218,6 +4485,17 @@ export interface Prisma__OrderClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$OperationalJournalEntryPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  partnerAccruals<T extends Prisma.Order$partnerAccrualsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Order$partnerAccrualsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PartnerAccrualPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -4881,6 +5159,34 @@ export type Order$operationalJournalEntriesArgs<
   distinct?:
     | Prisma.OperationalJournalEntryScalarFieldEnum
     | Prisma.OperationalJournalEntryScalarFieldEnum[];
+};
+
+/**
+ * Order.partnerAccruals
+ */
+export type Order$partnerAccrualsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerAccrual
+   */
+  select?: Prisma.PartnerAccrualSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PartnerAccrual
+   */
+  omit?: Prisma.PartnerAccrualOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerAccrualInclude<ExtArgs> | null;
+  where?: Prisma.PartnerAccrualWhereInput;
+  orderBy?:
+    | Prisma.PartnerAccrualOrderByWithRelationInput
+    | Prisma.PartnerAccrualOrderByWithRelationInput[];
+  cursor?: Prisma.PartnerAccrualWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.PartnerAccrualScalarFieldEnum | Prisma.PartnerAccrualScalarFieldEnum[];
 };
 
 /**

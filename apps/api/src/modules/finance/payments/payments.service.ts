@@ -12,6 +12,7 @@ import {
 } from '../finance-status.utils';
 import { resolveInvoiceMoneyStatus } from '../invoices/invoice-money-status';
 import { OperationalJournalService } from '../journal/operational-journal.service';
+import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -39,6 +40,7 @@ export class PaymentsService {
     private readonly salesBonusAccrual: SalesBonusAccrualService,
     private readonly notifications: NotificationService,
     private readonly operationalJournal: OperationalJournalService,
+    private readonly partnerAccrualClassic: PartnerAccrualClassicService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -197,6 +199,17 @@ export class PaymentsService {
     if (invoice.orderId) {
       await this.syncOrderStatus(invoice.orderId);
       await syncProductBonusPoolForOrder(this.prisma, invoice.orderId, this.notifications);
+      const ord = await this.prisma.order.findUnique({
+        where: { id: invoice.orderId },
+        select: { status: true },
+      });
+      if (ord?.status === 'FULLY_PAID') {
+        await this.partnerAccrualClassic.tryInboundClassicAfterClientPayment({
+          orderId: invoice.orderId,
+          paymentId: created.id,
+          invoiceId: data.invoiceId,
+        });
+      }
     }
 
     const refreshed = await this.prisma.invoice.findUnique({

@@ -47,6 +47,25 @@ export interface PutPartnerCommissionPolicyBody {
   rows: Array<{ dealType: PartnerCommissionDealType; percent: number | null }>;
 }
 
+/** Row from `GET /api/partners/:id/accruals` (inbound referral accruals). */
+export interface PartnerAccrualListItem {
+  id: string;
+  orderId: string;
+  projectId: string;
+  productId: string | null;
+  subscriptionId: string | null;
+  paymentId: string;
+  invoiceId: string | null;
+  dealType: string;
+  paymentType: string;
+  baseAmount: string;
+  percent: string;
+  amount: string;
+  status: string;
+  eligibleAt: string | null;
+  createdAt: string;
+}
+
 export interface PartnerListParams {
   page?: number;
   pageSize?: number;
@@ -120,6 +139,11 @@ export const partnersApi = {
       `/api/partners/${partnerId}/commission-policy`,
       body,
     );
+    return resp.data;
+  },
+
+  async listAccruals(partnerId: string): Promise<PartnerAccrualListItem[]> {
+    const resp = await api.get<PartnerAccrualListItem[]>(`/api/partners/${partnerId}/accruals`);
     return resp.data;
   },
 };

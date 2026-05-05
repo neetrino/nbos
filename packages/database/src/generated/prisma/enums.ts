@@ -297,6 +297,7 @@ export const JournalSourceTypeEnum = {
   PAYROLL_RUN: 'PAYROLL_RUN',
   SALARY_LINE: 'SALARY_LINE',
   MANUAL_ADJUSTMENT: 'MANUAL_ADJUSTMENT',
+  PARTNER_ACCRUAL: 'PARTNER_ACCRUAL',
 } as const;
 
 export type JournalSourceTypeEnum =
@@ -897,6 +898,17 @@ export const PartnerReferralSourcePolicyEnum = {
 
 export type PartnerReferralSourcePolicyEnum =
   (typeof PartnerReferralSourcePolicyEnum)[keyof typeof PartnerReferralSourcePolicyEnum];
+
+export const PartnerAccrualStatusEnum = {
+  ACCRUED: 'ACCRUED',
+  ELIGIBLE: 'ELIGIBLE',
+  IN_BATCH: 'IN_BATCH',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type PartnerAccrualStatusEnum =
+  (typeof PartnerAccrualStatusEnum)[keyof typeof PartnerAccrualStatusEnum];
 
 export const MessengerChannelType = {
   PROJECT: 'PROJECT',

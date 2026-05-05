@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { EditPartnerDialog } from '@/features/partners/components/EditPartnerDialog';
+import { PartnerAccrualsCard } from '@/features/partners/components/PartnerAccrualsCard';
 import { PartnerCommissionPolicyCard } from '@/features/partners/components/PartnerCommissionPolicyCard';
 import {
   getPartnerDirection,
@@ -51,6 +52,7 @@ export default function PartnerDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [accrualsReloadKey, setAccrualsReloadKey] = useState(0);
 
   const fetchPartner = useCallback(async () => {
     if (!id) return;
@@ -59,6 +61,7 @@ export default function PartnerDetailPage() {
       const data = await partnersApi.getById(id);
       setPartner(data);
       setError(null);
+      setAccrualsReloadKey((k) => k + 1);
     } catch (caught) {
       setPartner(null);
       setError(
@@ -211,6 +214,8 @@ export default function PartnerDetailPage() {
       </div>
 
       <PartnerCommissionPolicyCard partnerId={partner.id} />
+
+      <PartnerAccrualsCard partnerId={partner.id} reloadKey={accrualsReloadKey} />
 
       <div className="border-border bg-card rounded-xl border p-4">
         <p className="text-muted-foreground text-xs">Primary contact</p>

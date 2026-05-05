@@ -370,6 +370,11 @@ export type PartnerReferralTerms = Prisma.PartnerReferralTermsModel;
  */
 export type PartnerCommissionPolicyRow = Prisma.PartnerCommissionPolicyRowModel;
 /**
+ * Model PartnerAccrual
+ * Inbound referral commission accrual from client cash (NBOS § Partner Payouts — PAR-01 / PAR-02).
+ */
+export type PartnerAccrual = Prisma.PartnerAccrualModel;
+/**
  * Model MessengerChannel
  *
  */

@@ -440,6 +440,7 @@ export const ModelName = {
   Partner: 'Partner',
   PartnerReferralTerms: 'PartnerReferralTerms',
   PartnerCommissionPolicyRow: 'PartnerCommissionPolicyRow',
+  PartnerAccrual: 'PartnerAccrual',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
   MessengerChannelMessageAttachment: 'MessengerChannelMessageAttachment',
@@ -552,6 +553,7 @@ export type TypeMap<
       | 'partner'
       | 'partnerReferralTerms'
       | 'partnerCommissionPolicyRow'
+      | 'partnerAccrual'
       | 'messengerChannel'
       | 'messengerChannelMessage'
       | 'messengerChannelMessageAttachment'
@@ -5460,6 +5462,82 @@ export type TypeMap<
         };
       };
     };
+    PartnerAccrual: {
+      payload: Prisma.$PartnerAccrualPayload<ExtArgs>;
+      fields: Prisma.PartnerAccrualFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.PartnerAccrualFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.PartnerAccrualFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>;
+        };
+        findFirst: {
+          args: Prisma.PartnerAccrualFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.PartnerAccrualFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>;
+        };
+        findMany: {
+          args: Prisma.PartnerAccrualFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>[];
+        };
+        create: {
+          args: Prisma.PartnerAccrualCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>;
+        };
+        createMany: {
+          args: Prisma.PartnerAccrualCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.PartnerAccrualCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>[];
+        };
+        delete: {
+          args: Prisma.PartnerAccrualDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>;
+        };
+        update: {
+          args: Prisma.PartnerAccrualUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>;
+        };
+        deleteMany: {
+          args: Prisma.PartnerAccrualDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.PartnerAccrualUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.PartnerAccrualUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>[];
+        };
+        upsert: {
+          args: Prisma.PartnerAccrualUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerAccrualPayload>;
+        };
+        aggregate: {
+          args: Prisma.PartnerAccrualAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePartnerAccrual>;
+        };
+        groupBy: {
+          args: Prisma.PartnerAccrualGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.PartnerAccrualGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.PartnerAccrualCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.PartnerAccrualCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     MessengerChannel: {
       payload: Prisma.$MessengerChannelPayload<ExtArgs>;
       fields: Prisma.MessengerChannelFieldRefs;
@@ -8769,6 +8847,30 @@ export const PartnerCommissionPolicyRowScalarFieldEnum = {
 export type PartnerCommissionPolicyRowScalarFieldEnum =
   (typeof PartnerCommissionPolicyRowScalarFieldEnum)[keyof typeof PartnerCommissionPolicyRowScalarFieldEnum];
 
+export const PartnerAccrualScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  referralTermsId: 'referralTermsId',
+  projectId: 'projectId',
+  productId: 'productId',
+  orderId: 'orderId',
+  subscriptionId: 'subscriptionId',
+  invoiceId: 'invoiceId',
+  paymentId: 'paymentId',
+  dealType: 'dealType',
+  paymentType: 'paymentType',
+  baseAmount: 'baseAmount',
+  percent: 'percent',
+  amount: 'amount',
+  status: 'status',
+  eligibleAt: 'eligibleAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerAccrualScalarFieldEnum =
+  (typeof PartnerAccrualScalarFieldEnum)[keyof typeof PartnerAccrualScalarFieldEnum];
+
 export const MessengerChannelScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -10678,6 +10780,22 @@ export type ListEnumPartnerReferralSourcePolicyEnumFieldRefInput<$PrismaModel> =
 >;
 
 /**
+ * Reference to a field of type 'PartnerAccrualStatusEnum'
+ */
+export type EnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerAccrualStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'PartnerAccrualStatusEnum[]'
+ */
+export type ListEnumPartnerAccrualStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerAccrualStatusEnum[]'
+>;
+
+/**
  * Reference to a field of type 'MessengerChannelType'
  */
 export type EnumMessengerChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -11239,6 +11357,7 @@ export type GlobalOmitConfig = {
   partner?: Prisma.PartnerOmit;
   partnerReferralTerms?: Prisma.PartnerReferralTermsOmit;
   partnerCommissionPolicyRow?: Prisma.PartnerCommissionPolicyRowOmit;
+  partnerAccrual?: Prisma.PartnerAccrualOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;
   messengerChannelMessageAttachment?: Prisma.MessengerChannelMessageAttachmentOmit;

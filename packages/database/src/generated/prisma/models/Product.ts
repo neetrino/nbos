@@ -332,6 +332,7 @@ export type ProductWhereInput = {
   technicalAssets?: Prisma.TechnicalAssetListRelationFilter;
   technicalEnvironments?: Prisma.TechnicalEnvironmentListRelationFilter;
   operationalJournalEntries?: Prisma.OperationalJournalEntryListRelationFilter;
+  partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
 };
 
 export type ProductOrderByWithRelationInput = {
@@ -371,6 +372,7 @@ export type ProductOrderByWithRelationInput = {
   technicalAssets?: Prisma.TechnicalAssetOrderByRelationAggregateInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentOrderByRelationAggregateInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryOrderByRelationAggregateInput;
+  partnerAccruals?: Prisma.PartnerAccrualOrderByRelationAggregateInput;
 };
 
 export type ProductWhereUniqueInput = Prisma.AtLeast<
@@ -425,6 +427,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     technicalAssets?: Prisma.TechnicalAssetListRelationFilter;
     technicalEnvironments?: Prisma.TechnicalEnvironmentListRelationFilter;
     operationalJournalEntries?: Prisma.OperationalJournalEntryListRelationFilter;
+    partnerAccruals?: Prisma.PartnerAccrualListRelationFilter;
   },
   'id'
 >;
@@ -532,6 +535,7 @@ export type ProductCreateInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateInput = {
@@ -569,6 +573,7 @@ export type ProductUncheckedCreateInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUpdateInput = {
@@ -616,6 +621,7 @@ export type ProductUpdateInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateInput = {
@@ -663,6 +669,7 @@ export type ProductUncheckedUpdateInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateManyInput = {
@@ -1309,6 +1316,34 @@ export type ProductUncheckedUpdateManyWithoutPmNestedInput = {
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
 };
 
+export type ProductCreateNestedOneWithoutPartnerAccrualsInput = {
+  create?: Prisma.XOR<
+    Prisma.ProductCreateWithoutPartnerAccrualsInput,
+    Prisma.ProductUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutPartnerAccrualsInput;
+  connect?: Prisma.ProductWhereUniqueInput;
+};
+
+export type ProductUpdateOneWithoutPartnerAccrualsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProductCreateWithoutPartnerAccrualsInput,
+    Prisma.ProductUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutPartnerAccrualsInput;
+  upsert?: Prisma.ProductUpsertWithoutPartnerAccrualsInput;
+  disconnect?: Prisma.ProductWhereInput | boolean;
+  delete?: Prisma.ProductWhereInput | boolean;
+  connect?: Prisma.ProductWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProductUpdateToOneWithWhereWithoutPartnerAccrualsInput,
+      Prisma.ProductUpdateWithoutPartnerAccrualsInput
+    >,
+    Prisma.ProductUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+};
+
 export type ProductCreateNestedOneWithoutTechnicalProfilesInput = {
   create?: Prisma.XOR<
     Prisma.ProductCreateWithoutTechnicalProfilesInput,
@@ -1421,6 +1456,7 @@ export type ProductCreateWithoutProjectInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutProjectInput = {
@@ -1457,6 +1493,7 @@ export type ProductUncheckedCreateWithoutProjectInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutProjectInput = {
@@ -1569,6 +1606,7 @@ export type ProductCreateWithoutExtensionsInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutExtensionsInput = {
@@ -1605,6 +1643,7 @@ export type ProductUncheckedCreateWithoutExtensionsInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutExtensionsInput = {
@@ -1679,6 +1718,7 @@ export type ProductUpdateWithoutExtensionsInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutExtensionsInput = {
@@ -1725,6 +1765,7 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutDealsLinkedInput = {
@@ -1761,6 +1802,7 @@ export type ProductCreateWithoutDealsLinkedInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutDealsLinkedInput = {
@@ -1797,6 +1839,7 @@ export type ProductUncheckedCreateWithoutDealsLinkedInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutDealsLinkedInput = {
@@ -1871,6 +1914,7 @@ export type ProductUpdateWithoutDealsLinkedInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutDealsLinkedInput = {
@@ -1917,6 +1961,7 @@ export type ProductUncheckedUpdateWithoutDealsLinkedInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutOrderInput = {
@@ -1953,6 +1998,7 @@ export type ProductCreateWithoutOrderInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutOrderInput = {
@@ -1989,6 +2035,7 @@ export type ProductUncheckedCreateWithoutOrderInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutOrderInput = {
@@ -2063,6 +2110,7 @@ export type ProductUpdateWithoutOrderInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutOrderInput = {
@@ -2109,6 +2157,7 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutOperationalJournalEntriesInput = {
@@ -2145,6 +2194,7 @@ export type ProductCreateWithoutOperationalJournalEntriesInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutOperationalJournalEntriesInput = {
@@ -2181,6 +2231,7 @@ export type ProductUncheckedCreateWithoutOperationalJournalEntriesInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutOperationalJournalEntriesInput = {
@@ -2255,6 +2306,7 @@ export type ProductUpdateWithoutOperationalJournalEntriesInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutOperationalJournalEntriesInput = {
@@ -2301,6 +2353,7 @@ export type ProductUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutBonusReleasesInput = {
@@ -2337,6 +2390,7 @@ export type ProductCreateWithoutBonusReleasesInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutBonusReleasesInput = {
@@ -2373,6 +2427,7 @@ export type ProductUncheckedCreateWithoutBonusReleasesInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutBonusReleasesInput = {
@@ -2447,6 +2502,7 @@ export type ProductUpdateWithoutBonusReleasesInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutBonusReleasesInput = {
@@ -2493,6 +2549,7 @@ export type ProductUncheckedUpdateWithoutBonusReleasesInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutProductBonusPoolsInput = {
@@ -2529,6 +2586,7 @@ export type ProductCreateWithoutProductBonusPoolsInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutProductBonusPoolsInput = {
@@ -2565,6 +2623,7 @@ export type ProductUncheckedCreateWithoutProductBonusPoolsInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutProductBonusPoolsInput = {
@@ -2639,6 +2698,7 @@ export type ProductUpdateWithoutProductBonusPoolsInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutProductBonusPoolsInput = {
@@ -2685,6 +2745,7 @@ export type ProductUncheckedUpdateWithoutProductBonusPoolsInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutWorkSpaceInput = {
@@ -2721,6 +2782,7 @@ export type ProductCreateWithoutWorkSpaceInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutWorkSpaceInput = {
@@ -2757,6 +2819,7 @@ export type ProductUncheckedCreateWithoutWorkSpaceInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutWorkSpaceInput = {
@@ -2831,6 +2894,7 @@ export type ProductUpdateWithoutWorkSpaceInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutWorkSpaceInput = {
@@ -2877,6 +2941,7 @@ export type ProductUncheckedUpdateWithoutWorkSpaceInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutTasksInput = {
@@ -2913,6 +2978,7 @@ export type ProductCreateWithoutTasksInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutTasksInput = {
@@ -2949,6 +3015,7 @@ export type ProductUncheckedCreateWithoutTasksInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutTasksInput = {
@@ -3023,6 +3090,7 @@ export type ProductUpdateWithoutTasksInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutTasksInput = {
@@ -3069,6 +3137,7 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutTicketsInput = {
@@ -3105,6 +3174,7 @@ export type ProductCreateWithoutTicketsInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutTicketsInput = {
@@ -3141,6 +3211,7 @@ export type ProductUncheckedCreateWithoutTicketsInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutTicketsInput = {
@@ -3215,6 +3286,7 @@ export type ProductUpdateWithoutTicketsInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutTicketsInput = {
@@ -3261,6 +3333,7 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutClientServiceRecordsInput = {
@@ -3297,6 +3370,7 @@ export type ProductCreateWithoutClientServiceRecordsInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutClientServiceRecordsInput = {
@@ -3333,6 +3407,7 @@ export type ProductUncheckedCreateWithoutClientServiceRecordsInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutClientServiceRecordsInput = {
@@ -3407,6 +3482,7 @@ export type ProductUpdateWithoutClientServiceRecordsInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutClientServiceRecordsInput = {
@@ -3453,6 +3529,7 @@ export type ProductUncheckedUpdateWithoutClientServiceRecordsInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutPmInput = {
@@ -3489,6 +3566,7 @@ export type ProductCreateWithoutPmInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutPmInput = {
@@ -3525,6 +3603,7 @@ export type ProductUncheckedCreateWithoutPmInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutPmInput = {
@@ -3565,6 +3644,202 @@ export type ProductUpdateManyWithWhereWithoutPmInput = {
   >;
 };
 
+export type ProductCreateWithoutPartnerAccrualsInput = {
+  id?: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  order?: Prisma.OrderCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+};
+
+export type ProductUncheckedCreateWithoutPartnerAccrualsInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+};
+
+export type ProductCreateOrConnectWithoutPartnerAccrualsInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutPartnerAccrualsInput,
+    Prisma.ProductUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+};
+
+export type ProductUpsertWithoutPartnerAccrualsInput = {
+  update: Prisma.XOR<
+    Prisma.ProductUpdateWithoutPartnerAccrualsInput,
+    Prisma.ProductUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutPartnerAccrualsInput,
+    Prisma.ProductUncheckedCreateWithoutPartnerAccrualsInput
+  >;
+  where?: Prisma.ProductWhereInput;
+};
+
+export type ProductUpdateToOneWithWhereWithoutPartnerAccrualsInput = {
+  where?: Prisma.ProductWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateWithoutPartnerAccrualsInput,
+    Prisma.ProductUncheckedUpdateWithoutPartnerAccrualsInput
+  >;
+};
+
+export type ProductUpdateWithoutPartnerAccrualsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateWithoutPartnerAccrualsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+};
+
 export type ProductCreateWithoutTechnicalProfilesInput = {
   id?: string;
   name: string;
@@ -3599,6 +3874,7 @@ export type ProductCreateWithoutTechnicalProfilesInput = {
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutTechnicalProfilesInput = {
@@ -3635,6 +3911,7 @@ export type ProductUncheckedCreateWithoutTechnicalProfilesInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutTechnicalProfilesInput = {
@@ -3709,6 +3986,7 @@ export type ProductUpdateWithoutTechnicalProfilesInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutTechnicalProfilesInput = {
@@ -3755,6 +4033,7 @@ export type ProductUncheckedUpdateWithoutTechnicalProfilesInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutTechnicalAssetsInput = {
@@ -3791,6 +4070,7 @@ export type ProductCreateWithoutTechnicalAssetsInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutTechnicalAssetsInput = {
@@ -3827,6 +4107,7 @@ export type ProductUncheckedCreateWithoutTechnicalAssetsInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutTechnicalAssetsInput = {
@@ -3901,6 +4182,7 @@ export type ProductUpdateWithoutTechnicalAssetsInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutTechnicalAssetsInput = {
@@ -3947,6 +4229,7 @@ export type ProductUncheckedUpdateWithoutTechnicalAssetsInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateWithoutTechnicalEnvironmentsInput = {
@@ -3983,6 +4266,7 @@ export type ProductCreateWithoutTechnicalEnvironmentsInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
   technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
 };
 
 export type ProductUncheckedCreateWithoutTechnicalEnvironmentsInput = {
@@ -4019,6 +4303,7 @@ export type ProductUncheckedCreateWithoutTechnicalEnvironmentsInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
   technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
 };
 
 export type ProductCreateOrConnectWithoutTechnicalEnvironmentsInput = {
@@ -4093,6 +4378,7 @@ export type ProductUpdateWithoutTechnicalEnvironmentsInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutTechnicalEnvironmentsInput = {
@@ -4139,6 +4425,7 @@ export type ProductUncheckedUpdateWithoutTechnicalEnvironmentsInput = {
   technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductCreateManyProjectInput = {
@@ -4208,6 +4495,7 @@ export type ProductUpdateWithoutProjectInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutProjectInput = {
@@ -4254,6 +4542,7 @@ export type ProductUncheckedUpdateWithoutProjectInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateManyWithoutProjectInput = {
@@ -4356,6 +4645,7 @@ export type ProductUpdateWithoutPmInput = {
   technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateWithoutPmInput = {
@@ -4402,6 +4692,7 @@ export type ProductUncheckedUpdateWithoutPmInput = {
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
 };
 
 export type ProductUncheckedUpdateManyWithoutPmInput = {
@@ -4453,6 +4744,7 @@ export type ProductCountOutputType = {
   technicalAssets: number;
   technicalEnvironments: number;
   operationalJournalEntries: number;
+  partnerAccruals: number;
 };
 
 export type ProductCountOutputTypeSelect<
@@ -4469,6 +4761,7 @@ export type ProductCountOutputTypeSelect<
   technicalAssets?: boolean | ProductCountOutputTypeCountTechnicalAssetsArgs;
   technicalEnvironments?: boolean | ProductCountOutputTypeCountTechnicalEnvironmentsArgs;
   operationalJournalEntries?: boolean | ProductCountOutputTypeCountOperationalJournalEntriesArgs;
+  partnerAccruals?: boolean | ProductCountOutputTypeCountPartnerAccrualsArgs;
 };
 
 /**
@@ -4582,6 +4875,15 @@ export type ProductCountOutputTypeCountOperationalJournalEntriesArgs<
   where?: Prisma.OperationalJournalEntryWhereInput;
 };
 
+/**
+ * ProductCountOutputType without action
+ */
+export type ProductCountOutputTypeCountPartnerAccrualsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.PartnerAccrualWhereInput;
+};
+
 export type ProductSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -4622,6 +4924,7 @@ export type ProductSelect<
     technicalAssets?: boolean | Prisma.Product$technicalAssetsArgs<ExtArgs>;
     technicalEnvironments?: boolean | Prisma.Product$technicalEnvironmentsArgs<ExtArgs>;
     operationalJournalEntries?: boolean | Prisma.Product$operationalJournalEntriesArgs<ExtArgs>;
+    partnerAccruals?: boolean | Prisma.Product$partnerAccrualsArgs<ExtArgs>;
     _count?: boolean | Prisma.ProductCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['product']
@@ -4757,6 +5060,7 @@ export type ProductInclude<
   technicalAssets?: boolean | Prisma.Product$technicalAssetsArgs<ExtArgs>;
   technicalEnvironments?: boolean | Prisma.Product$technicalEnvironmentsArgs<ExtArgs>;
   operationalJournalEntries?: boolean | Prisma.Product$operationalJournalEntriesArgs<ExtArgs>;
+  partnerAccruals?: boolean | Prisma.Product$partnerAccrualsArgs<ExtArgs>;
   _count?: boolean | Prisma.ProductCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type ProductIncludeCreateManyAndReturn<
@@ -4792,6 +5096,7 @@ export type $ProductPayload<
     technicalAssets: Prisma.$TechnicalAssetPayload<ExtArgs>[];
     technicalEnvironments: Prisma.$TechnicalEnvironmentPayload<ExtArgs>[];
     operationalJournalEntries: Prisma.$OperationalJournalEntryPayload<ExtArgs>[];
+    partnerAccruals: Prisma.$PartnerAccrualPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -5489,6 +5794,17 @@ export interface Prisma__ProductClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$OperationalJournalEntryPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  partnerAccruals<T extends Prisma.Product$partnerAccrualsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Product$partnerAccrualsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$PartnerAccrualPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -6340,6 +6656,34 @@ export type Product$operationalJournalEntriesArgs<
   distinct?:
     | Prisma.OperationalJournalEntryScalarFieldEnum
     | Prisma.OperationalJournalEntryScalarFieldEnum[];
+};
+
+/**
+ * Product.partnerAccruals
+ */
+export type Product$partnerAccrualsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the PartnerAccrual
+   */
+  select?: Prisma.PartnerAccrualSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the PartnerAccrual
+   */
+  omit?: Prisma.PartnerAccrualOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PartnerAccrualInclude<ExtArgs> | null;
+  where?: Prisma.PartnerAccrualWhereInput;
+  orderBy?:
+    | Prisma.PartnerAccrualOrderByWithRelationInput
+    | Prisma.PartnerAccrualOrderByWithRelationInput[];
+  cursor?: Prisma.PartnerAccrualWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.PartnerAccrualScalarFieldEnum | Prisma.PartnerAccrualScalarFieldEnum[];
 };
 
 /**
