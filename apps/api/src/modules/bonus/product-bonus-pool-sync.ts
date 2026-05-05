@@ -1,18 +1,12 @@
-import {
-  Decimal,
-  PrismaClient,
-  type BonusReleaseStatusEnum,
-  type ProductBonusPoolStatusEnum,
-} from '@nbos/database';
+import { Decimal, PrismaClient, type ProductBonusPoolStatusEnum } from '@nbos/database';
+import { BONUS_POOL_ZERO, decimalFrom } from './bonus-pool-decimal';
+import { tryCreateProportionalAutoReleases } from './product-bonus-pool-auto-release';
+import { sumPaymentsReceivedForOrder } from './order-received-payments-sum';
+import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
 
-const ZERO = new Decimal(0);
+export { decimalFrom } from './bonus-pool-decimal';
 
-/** Amounts in these release statuses count toward `ProductBonusPool.totalReleasedAmount`. */
-const RELEASE_STATUSES_FOR_POOL: BonusReleaseStatusEnum[] = [
-  'APPROVED',
-  'INCLUDED_IN_PAYROLL',
-  'PAID',
-];
+const ZERO = BONUS_POOL_ZERO;
 
 /**
  * Upserts `ProductBonusPool` for an order from `BonusEntry` rows (planned / paid proxy)
@@ -24,11 +18,18 @@ export async function syncProductBonusPoolForOrder(
 ): Promise<void> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { id: true, projectId: true, productId: true, extensionId: true },
+    select: {
+      id: true,
+      projectId: true,
+      productId: true,
+      extensionId: true,
+      product: { select: { status: true } },
+      extension: { select: { status: true } },
+    },
   });
   if (!order) return;
 
-  const [plannedAgg, paidAgg, releasedAgg] = await Promise.all([
+  const [plannedAgg, paidAgg, releasedAgg, received] = await Promise.all([
     prisma.bonusEntry.aggregate({
       where: { orderId },
       _sum: { amount: true },
@@ -39,18 +40,39 @@ export async function syncProductBonusPoolForOrder(
     }),
     prisma.bonusRelease.aggregate({
       where: {
-        status: { in: RELEASE_STATUSES_FOR_POOL },
+        status: { in: BONUS_RELEASE_COUNTING_STATUSES },
         bonusEntry: { orderId },
       },
       _sum: { amount: true },
     }),
+    sumPaymentsReceivedForOrder(prisma, orderId),
   ]);
 
   const planned = decimalFrom(plannedAgg._sum.amount);
   const paidProxy = decimalFrom(paidAgg._sum.amount);
-  const released = decimalFrom(releasedAgg._sum.amount);
+  let released = decimalFrom(releasedAgg._sum.amount);
+
+  const autoAdded = await tryCreateProportionalAutoReleases(prisma, {
+    order,
+    received,
+    released,
+  });
+
+  if (autoAdded) {
+    const again = await prisma.bonusRelease.aggregate({
+      where: {
+        status: { in: BONUS_RELEASE_COUNTING_STATUSES },
+        bonusEntry: { orderId },
+      },
+      _sum: { amount: true },
+    });
+    released = decimalFrom(again._sum.amount);
+  }
+
   const remaining = planned.minus(released);
   const poolStatus = derivePoolStatus(planned, released, remaining);
+  const availableFunding = Decimal.max(ZERO, received.minus(released));
+  const overFundingAmount = Decimal.max(ZERO, released.minus(received));
 
   await prisma.productBonusPool.upsert({
     where: { orderId },
@@ -63,8 +85,8 @@ export async function syncProductBonusPoolForOrder(
       totalReleasedAmount: released,
       totalPaidAmount: paidProxy,
       totalRemainingAmount: remaining,
-      availableFunding: ZERO,
-      overFundingAmount: ZERO,
+      availableFunding,
+      overFundingAmount,
       status: poolStatus,
     },
     update: {
@@ -75,15 +97,11 @@ export async function syncProductBonusPoolForOrder(
       totalReleasedAmount: released,
       totalPaidAmount: paidProxy,
       totalRemainingAmount: remaining,
+      availableFunding,
+      overFundingAmount,
       status: poolStatus,
     },
   });
-}
-
-export function decimalFrom(value: Decimal | number | string | null | undefined): Decimal {
-  if (value == null) return ZERO;
-  if (value instanceof Decimal) return value;
-  return new Decimal(value);
 }
 
 function derivePoolStatus(

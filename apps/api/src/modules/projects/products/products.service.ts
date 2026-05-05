@@ -26,6 +26,7 @@ import {
   requireDeliveryStage,
 } from '../delivery-lifecycle';
 import { buildProductDoneReadiness } from './product-done-readiness';
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 
 interface CreateProductDto {
   projectId: string;
@@ -352,6 +353,13 @@ export class ProductsService {
       data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
       include: { project: { select: { id: true, code: true, name: true } } },
     });
+    const linkedOrder = await this.prisma.order.findUnique({
+      where: { productId: id },
+      select: { id: true },
+    });
+    if (linkedOrder) {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id);
+    }
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 

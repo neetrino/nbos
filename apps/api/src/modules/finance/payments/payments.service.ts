@@ -2,6 +2,7 @@ import { Injectable, Inject, NotFoundException, BadRequestException } from '@nes
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import {
   getLatestPaymentDate,
   resolveInvoiceStatus,
@@ -174,6 +175,7 @@ export class PaymentsService {
 
     if (invoice.orderId) {
       await this.syncOrderStatus(invoice.orderId);
+      await syncProductBonusPoolForOrder(this.prisma, invoice.orderId);
     }
 
     const refreshed = await this.prisma.invoice.findUnique({
@@ -194,6 +196,7 @@ export class PaymentsService {
     await this.syncInvoiceStatus(payment.invoiceId);
     if (payment.invoice.orderId) {
       await this.syncOrderStatus(payment.invoice.orderId);
+      await syncProductBonusPoolForOrder(this.prisma, payment.invoice.orderId);
     }
   }
 

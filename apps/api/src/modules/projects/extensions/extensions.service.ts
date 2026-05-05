@@ -21,6 +21,7 @@ import {
   extensionLegacyStatusForStage,
   requireDeliveryStage,
 } from '../delivery-lifecycle';
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -313,6 +314,13 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    const linkedOrder = await this.prisma.order.findUnique({
+      where: { extensionId: id },
+      select: { id: true },
+    });
+    if (linkedOrder) {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id);
+    }
     return attachExtensionReadiness(updated);
   }
 

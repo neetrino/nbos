@@ -6,9 +6,9 @@ import {
   type BonusReleaseTypeEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { decimalFrom, syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
-
-const COUNTING_STATUSES: BonusReleaseStatusEnum[] = ['APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'];
+import { decimalFrom } from './bonus-pool-decimal';
+import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
+import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
 
 const REASON_REQUIRED_TYPES: BonusReleaseTypeEnum[] = [
   'EARLY',
@@ -149,7 +149,7 @@ export class BonusReleaseService {
     const agg = await this.prisma.bonusRelease.aggregate({
       where: {
         bonusEntryId: entry.id,
-        status: { in: [...COUNTING_STATUSES] },
+        status: { in: [...BONUS_RELEASE_COUNTING_STATUSES] },
       },
       _sum: { amount: true },
     });
