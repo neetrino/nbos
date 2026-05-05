@@ -31,6 +31,8 @@ describe('EmployeeWalletService', () => {
     prisma.bonusEntry.findMany.mockResolvedValue([
       {
         id: 'b1',
+        orderId: 'ord-1',
+        projectId: 'proj-1',
         type: 'SALES',
         status: 'EARNED',
         amount: new Decimal(10_000),
@@ -47,8 +49,23 @@ describe('EmployeeWalletService', () => {
         bonusEntryId: 'b1',
         amount: new Decimal(2000),
         status: 'PAID',
+        releaseType: 'AUTO',
         updatedAt: new Date('2026-01-15'),
         payrollRun: { payrollMonth: '2026-02' },
+      },
+    ]);
+    prisma.productBonusPool.findMany.mockResolvedValue([
+      {
+        orderId: 'ord-1',
+        availableFunding: new Decimal(50_000),
+        overFundingAmount: new Decimal(0),
+        totalPlannedAmount: new Decimal(10_000),
+        totalReleasedAmount: new Decimal(2000),
+        totalPaidAmount: new Decimal(2000),
+        totalRemainingAmount: new Decimal(8000),
+        status: 'PARTIALLY_RELEASED',
+        product: { name: 'Website' },
+        extension: null,
       },
     ]);
     prisma.salaryLine.findMany.mockResolvedValue([
@@ -57,26 +74,35 @@ describe('EmployeeWalletService', () => {
         payrollRunId: 'run-1',
         baseSalary: new Decimal(100_000),
         bonusesTotal: new Decimal(0),
+        adjustmentsTotal: new Decimal(0),
+        deductionsTotal: new Decimal(0),
         totalPayable: new Decimal(100_000),
         paidAmount: new Decimal(0),
         remainingAmount: new Decimal(100_000),
         status: 'APPROVED',
         payrollRun: { payrollMonth: '2026-03', status: 'APPROVED' },
-        expense: { id: 'ex1' },
+        expense: { id: 'ex1', expensePayments: [] },
       },
     ]);
 
     const snap = await service.getWallet('e1');
     expect(snap.employee.baseSalary).toBe('100000');
     expect(snap.bonuses).toHaveLength(1);
+    expect(snap.bonuses[0].productLabel).toBe('Website');
     expect(snap.bonuses[0].walletGroup).toBe('IN_PROGRESS');
     expect(snap.bonuses[0].releasedAmount).toBe('2000.00');
     expect(snap.bonuses[0].paidAmount).toBe('2000.00');
     expect(snap.bonuses[0].remainingAmount).toBe('8000.00');
     expect(snap.bonuses[0].payrollMonth).toBe('2026-02');
     expect(snap.bonuses[0].salesAccrualHint).toBe('Seller · Classic');
+    expect(snap.nextPayroll?.payrollMonth).toBe('2026-03');
+    expect(snap.nextPayroll?.payrollRunId).toBe('run-1');
     expect(snap.salaryHistory).toHaveLength(1);
     expect(snap.salaryHistory[0].expenseId).toBe('ex1');
     expect(snap.salaryHistory[0].payrollRunId).toBe('run-1');
+    expect(snap.projectBreakdown).toHaveLength(1);
+    expect(snap.projectBreakdown[0].order.code).toBe('O1');
+    expect(snap.projectBreakdown[0].productLabel).toBe('Website');
+    expect(snap.projectBreakdown[0].payoutState).toBe('PARTIAL');
   });
 });

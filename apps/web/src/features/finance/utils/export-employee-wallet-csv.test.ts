@@ -18,6 +18,7 @@ const bonusRow: EmployeeWalletBonusRow = {
   payrollMonth: '2026-05',
   orderPaymentType: 'CLASSIC',
   salesAccrualHint: 'Seller · Classic',
+  productLabel: 'Product Alpha',
   project: { code: 'P', name: 'Proj' },
   order: { code: 'O-1' },
   createdAt: '2026-04-01T00:00:00.000Z',
@@ -41,7 +42,9 @@ describe('buildWalletBonusesCsvContent', () => {
   it('includes header and bonus row', () => {
     const csv = buildWalletBonusesCsvContent([bonusRow]);
     expect(csv).toContain('walletGroup');
+    expect(csv).toContain('productLabel');
     expect(csv).toContain('NEXT_PAYROLL');
+    expect(csv).toContain('Product Alpha');
     expect(csv).toContain('Proj');
     const lines = csv.split('\r\n');
     expect(lines).toHaveLength(3);

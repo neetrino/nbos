@@ -1,5 +1,9 @@
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
-import type { EmployeeWalletBonusRow, EmployeeWalletSalaryRow } from '@/lib/api/me';
+import type {
+  EmployeeWalletBonusRow,
+  EmployeeWalletProjectBreakdownRow,
+  EmployeeWalletSalaryRow,
+} from '@/lib/api/me';
 
 const CSV_UTF8_BOM = '\uFEFF';
 
@@ -23,6 +27,7 @@ const BONUS_HEADERS = [
   'payrollMonth',
   'orderPaymentType',
   'salesAccrualHint',
+  'productLabel',
   'projectCode',
   'projectName',
   'orderCode',
@@ -49,6 +54,7 @@ export function buildWalletBonusesCsvContent(rows: EmployeeWalletBonusRow[]): st
         r.payrollMonth ?? '',
         r.orderPaymentType ?? '',
         r.salesAccrualHint ?? '',
+        r.productLabel,
         r.project.code,
         r.project.name,
         r.order.code,
@@ -171,5 +177,70 @@ export function downloadWalletSalaryCsv(
   triggerCsvDownload(
     content,
     `nbos-wallet-payroll-${meta.employeeId.slice(0, 8)}-${dateStamp}.csv`,
+  );
+}
+
+const PROJECT_BREAKDOWN_HEADERS = [
+  'orderId',
+  'projectId',
+  'projectCode',
+  'projectName',
+  'orderCode',
+  'productLabel',
+  'bonusTypesSummary',
+  'plannedBonus',
+  'releasedBonus',
+  'paidBonus',
+  'remainingBonus',
+  'fundingStatusLabels',
+  'poolAvailableFunding',
+  'poolOverFunding',
+  'entryStatusesSummary',
+  'payoutState',
+] as const;
+
+export function buildWalletProjectBreakdownCsvContent(
+  rows: EmployeeWalletProjectBreakdownRow[],
+): string {
+  const headerLine = PROJECT_BREAKDOWN_HEADERS.join(',');
+  if (rows.length === 0) {
+    return headerLine;
+  }
+  const body = rows
+    .map((r) =>
+      [
+        r.orderId,
+        r.projectId,
+        r.project.code,
+        r.project.name,
+        r.order.code,
+        r.productLabel,
+        r.bonusTypesSummary,
+        r.plannedBonus,
+        r.releasedBonus,
+        r.paidBonus,
+        r.remainingBonus,
+        r.fundingStatusLabels.join(' | '),
+        r.poolAvailableFunding ?? '',
+        r.poolOverFunding ?? '',
+        r.entryStatusesSummary,
+        r.payoutState,
+      ]
+        .map((c) => escapeCsvCell(String(c)))
+        .join(','),
+    )
+    .join('\r\n');
+  return `${headerLine}\r\n${body}`;
+}
+
+export function downloadWalletProjectBreakdownCsv(
+  rows: EmployeeWalletProjectBreakdownRow[],
+  meta: { employeeId: string },
+): void {
+  const content = buildWalletProjectBreakdownCsvContent(rows);
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  triggerCsvDownload(
+    content,
+    `nbos-wallet-project-breakdown-${meta.employeeId.slice(0, 8)}-${dateStamp}.csv`,
   );
 }

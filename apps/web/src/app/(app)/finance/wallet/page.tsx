@@ -75,8 +75,14 @@ export default function EmployeeWalletPage() {
 
   const bonusGroups = useMemo(() => (data ? groupBonuses(data.bonuses) : null), [data]);
 
-  const { bonusSubmitting, salarySubmitting, exportBonusesCsv, exportSalaryCsv } =
-    useEmployeeWalletCsvExport(data);
+  const {
+    bonusSubmitting,
+    salarySubmitting,
+    projectBreakdownSubmitting,
+    exportBonusesCsv,
+    exportSalaryCsv,
+    exportProjectBreakdownCsv,
+  } = useEmployeeWalletCsvExport(data);
 
   if (loading) {
     return (
@@ -142,6 +148,21 @@ export default function EmployeeWalletPage() {
             )}
             Payroll CSV
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={projectBreakdownSubmitting || data.projectBreakdown.length === 0}
+            onClick={() => exportProjectBreakdownCsv()}
+            aria-label="Export wallet project breakdown as UTF-8 CSV"
+          >
+            {projectBreakdownSubmitting ? (
+              <Loader2 size={14} className="mr-1.5 animate-spin" aria-hidden />
+            ) : (
+              <Download size={14} className="mr-1.5" aria-hidden />
+            )}
+            Projects CSV
+          </Button>
         </div>
       </PageHeader>
 
@@ -160,6 +181,106 @@ export default function EmployeeWalletPage() {
         <p className="text-muted-foreground mt-1 text-xs">
           Base salary from HR record (not a bank balance).
         </p>
+      </section>
+
+      <section className="border-border bg-card rounded-2xl border p-5">
+        <h2 className="text-foreground text-sm font-semibold">Next payroll</h2>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Earliest open payroll run (Draft → Paying) that includes your salary line. Not a bank
+          balance.
+        </p>
+        {data.nextPayroll ? (
+          <div className="mt-4 space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-foreground text-lg font-semibold tabular-nums">
+                  {data.nextPayroll.payrollMonth}
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  Run status: {data.nextPayroll.runStatus}
+                </p>
+              </div>
+              <Link
+                href={`/finance/payroll/${data.nextPayroll.payrollRunId}`}
+                className="text-primary text-xs font-medium hover:underline"
+              >
+                Open payroll run
+              </Link>
+            </div>
+            <dl className="grid gap-2 text-xs sm:grid-cols-2">
+              <div>
+                <dt className="text-muted-foreground">Base</dt>
+                <dd className="text-foreground font-medium tabular-nums">
+                  {formatAmount(parseAmount(data.nextPayroll.baseSalary))}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Bonuses (line)</dt>
+                <dd className="text-foreground font-medium tabular-nums">
+                  {formatAmount(parseAmount(data.nextPayroll.bonusesTotal))}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Adjustments</dt>
+                <dd className="text-foreground font-medium tabular-nums">
+                  {formatAmount(parseAmount(data.nextPayroll.adjustmentsTotal))}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Deductions</dt>
+                <dd className="text-foreground font-medium tabular-nums">
+                  {formatAmount(parseAmount(data.nextPayroll.deductionsTotal))}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Total payable</dt>
+                <dd className="text-foreground font-semibold tabular-nums">
+                  {formatAmount(parseAmount(data.nextPayroll.totalPayable))}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Paid / Remaining</dt>
+                <dd className="text-foreground font-medium tabular-nums">
+                  {formatAmount(parseAmount(data.nextPayroll.paidAmount))} /{' '}
+                  {formatAmount(parseAmount(data.nextPayroll.remainingAmount))}
+                </dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="text-muted-foreground">Salary line status</dt>
+                <dd className="text-foreground font-medium">{data.nextPayroll.lineStatus}</dd>
+              </div>
+            </dl>
+            {data.nextPayroll.expenseId ? (
+              <p className="text-muted-foreground text-xs">
+                Expense card:{' '}
+                <Link
+                  href={`/finance/expenses/${data.nextPayroll.expenseId}`}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Open
+                </Link>
+              </p>
+            ) : null}
+            {data.nextPayroll.partialPayments.length > 0 ? (
+              <div>
+                <h3 className="text-foreground mb-2 text-xs font-semibold">
+                  Outgoing payments (expense)
+                </h3>
+                <ul className="text-muted-foreground space-y-1 text-[11px]">
+                  {data.nextPayroll.partialPayments.map((p, idx) => (
+                    <li key={`${p.paymentDate}-${idx}`} className="tabular-nums">
+                      {p.paymentDate.slice(0, 10)} · {formatAmount(parseAmount(p.amount))}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <p className="text-muted-foreground mt-3 text-xs">
+            No open payroll run includes your line yet (or all your runs are closed).
+          </p>
+        )}
       </section>
 
       <section>
@@ -184,7 +305,10 @@ export default function EmployeeWalletPage() {
                   ) : (
                     rows.map((b) => (
                       <li key={b.id} className="border-border rounded-lg border p-2.5 text-xs">
-                        <div className="text-foreground font-medium">
+                        <div className="text-foreground leading-snug font-semibold">
+                          {b.productLabel}
+                        </div>
+                        <div className="text-muted-foreground mt-1 text-[11px]">
                           {b.project.code} · {b.order.code}
                         </div>
                         <div className="text-muted-foreground mt-0.5">{b.type}</div>
@@ -279,6 +403,90 @@ export default function EmployeeWalletPage() {
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
                       )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-foreground mb-3 text-sm font-semibold">Project breakdown</h2>
+        <p className="text-muted-foreground mb-3 text-xs leading-snug">
+          Per-order roll-up of your bonus entries with product pool funding context (read-only).
+        </p>
+        <div className="border-border overflow-x-auto rounded-xl border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Project</TableHead>
+                <TableHead>Order</TableHead>
+                <TableHead>Product scope</TableHead>
+                <TableHead>Bonus types</TableHead>
+                <TableHead className="text-right">Planned</TableHead>
+                <TableHead className="text-right">Released</TableHead>
+                <TableHead className="text-right">Paid</TableHead>
+                <TableHead className="text-right">Remaining</TableHead>
+                <TableHead>Funding</TableHead>
+                <TableHead className="text-right">Pool available</TableHead>
+                <TableHead>Payout</TableHead>
+                <TableHead>Entry status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.projectBreakdown.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={12}
+                    className="text-muted-foreground py-8 text-center text-sm"
+                  >
+                    No bonus orders yet.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                data.projectBreakdown.map((row) => (
+                  <TableRow key={row.orderId}>
+                    <TableCell>
+                      <Link
+                        href={`/projects/${row.projectId}`}
+                        className="text-primary text-xs font-medium hover:underline"
+                      >
+                        {row.project.code}
+                      </Link>
+                      <div className="text-muted-foreground mt-0.5 max-w-[10rem] truncate text-[11px]">
+                        {row.project.name}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs font-medium">{row.order.code}</TableCell>
+                    <TableCell className="max-w-[12rem] text-xs">{row.productLabel}</TableCell>
+                    <TableCell className="text-muted-foreground max-w-[8rem] text-[11px]">
+                      {row.bonusTypesSummary}
+                    </TableCell>
+                    <TableCell className="text-right text-xs tabular-nums">
+                      {formatAmount(parseAmount(row.plannedBonus))}
+                    </TableCell>
+                    <TableCell className="text-right text-xs tabular-nums">
+                      {formatAmount(parseAmount(row.releasedBonus))}
+                    </TableCell>
+                    <TableCell className="text-right text-xs tabular-nums">
+                      {formatAmount(parseAmount(row.paidBonus))}
+                    </TableCell>
+                    <TableCell className="text-right text-xs tabular-nums">
+                      {formatAmount(parseAmount(row.remainingBonus))}
+                    </TableCell>
+                    <TableCell className="max-w-[14rem] text-[11px] leading-snug">
+                      {row.fundingStatusLabels.join(' · ')}
+                    </TableCell>
+                    <TableCell className="text-right text-xs tabular-nums">
+                      {row.poolAvailableFunding != null
+                        ? formatAmount(parseAmount(row.poolAvailableFunding))
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="text-xs">{row.payoutState}</TableCell>
+                    <TableCell className="text-muted-foreground max-w-[10rem] text-[11px]">
+                      {row.entryStatusesSummary}
                     </TableCell>
                   </TableRow>
                 ))

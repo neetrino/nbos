@@ -2,7 +2,6 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Prisma, PrismaClient, type BonusStatusEnum, type Decimal } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import {
-  buildWalletReleaseRollups,
   plannedDecimalForEntry,
   type WalletReleaseRollup,
 } from './employee-wallet-bonus-release-rollups';
@@ -11,9 +10,33 @@ import {
   type WalletBonusPipelineGroup,
 } from './employee-wallet-bonus-group';
 import { employeeWalletSalesAccrualHint } from './employee-wallet-sales-hint';
+import { pickNextOpenPayrollSalaryLine } from './employee-wallet-next-payroll';
+import { loadWalletBonusLedgerContext } from './employee-wallet-ledger-context';
+import {
+  buildEmployeeWalletProjectBreakdown,
+  type EmployeeWalletProjectBreakdownRow,
+  type WalletPoolForBreakdown,
+  walletBonusScopeLabel,
+} from './employee-wallet-project-breakdown';
 
 const BONUS_FETCH_LIMIT = 200;
 const SALARY_LINE_FETCH_LIMIT = 48;
+
+const walletSalaryInclude = {
+  payrollRun: { select: { payrollMonth: true, status: true } },
+  expense: {
+    select: {
+      id: true,
+      expensePayments: {
+        orderBy: { paymentDate: 'desc' as const },
+        take: 24,
+        select: { paymentDate: true, amount: true },
+      },
+    },
+  },
+} as const;
+
+type WalletSalaryLineDb = Prisma.SalaryLineGetPayload<{ include: typeof walletSalaryInclude }>;
 
 const walletBonusInclude = {
   project: { select: { code: true, name: true } },
@@ -40,6 +63,8 @@ export interface EmployeeWalletBonusRow {
   payrollMonth: string | null;
   orderPaymentType: string | null;
   salesAccrualHint: string | null;
+  /** Product name, extension label, or order fallback (same source as project breakdown pool). */
+  productLabel: string;
   project: { code: string; name: string };
   order: { code: string };
   createdAt: string;
@@ -59,6 +84,24 @@ export interface EmployeeWalletSalaryRow {
   expenseId: string | null;
 }
 
+export interface EmployeeWalletNextPayroll {
+  salaryLineId: string;
+  payrollRunId: string;
+  payrollMonth: string;
+  runStatus: string;
+  baseSalary: string;
+  bonusesTotal: string;
+  adjustmentsTotal: string;
+  deductionsTotal: string;
+  totalPayable: string;
+  paidAmount: string;
+  remainingAmount: string;
+  lineStatus: string;
+  expenseId: string | null;
+  /** Expense outgoing payments linked to this salary line (partial payout dates). */
+  partialPayments: Array<{ paymentDate: string; amount: string }>;
+}
+
 export interface EmployeeWalletSnapshot {
   employee: {
     id: string;
@@ -70,6 +113,10 @@ export interface EmployeeWalletSnapshot {
     roleName: string;
   };
   bonuses: EmployeeWalletBonusRow[];
+  /** Nearest open payroll run that includes this employee (NBOS Next Payroll). */
+  nextPayroll: EmployeeWalletNextPayroll | null;
+  /** Per-order bonus roll-up + product pool funding (NBOS §5). */
+  projectBreakdown: EmployeeWalletProjectBreakdownRow[];
   salaryHistory: EmployeeWalletSalaryRow[];
 }
 
@@ -80,10 +127,34 @@ export class EmployeeWalletService {
   async getWallet(employeeId: string): Promise<EmployeeWalletSnapshot> {
     const employee = await this.loadEmployeeOrThrow(employeeId);
     const [bonusRows, salaryRows] = await this.loadBonusAndSalaryLines(employeeId);
-    const rollups = await this.buildRollupsForBonusEntries(bonusRows);
+    const { releaseRows, rollups, poolByOrder } = await loadWalletBonusLedgerContext(
+      this.prisma,
+      bonusRows.map((b) => ({ id: b.id, orderId: b.orderId, amount: b.amount })),
+    );
+    const nextLine = pickNextOpenPayrollSalaryLine(salaryRows);
     return {
       employee: this.toEmployeeBlock(employee),
-      bonuses: this.mapBonusRows(bonusRows, rollups),
+      bonuses: this.mapBonusRows(bonusRows, rollups, poolByOrder),
+      nextPayroll: this.mapNextPayroll(nextLine),
+      projectBreakdown: buildEmployeeWalletProjectBreakdown(
+        bonusRows.map((b) => ({
+          id: b.id,
+          orderId: b.orderId,
+          projectId: b.projectId,
+          type: b.type,
+          status: b.status,
+          amount: b.amount,
+          project: b.project,
+          order: b.order,
+        })),
+        rollups,
+        releaseRows.map((r) => ({
+          bonusEntryId: r.bonusEntryId,
+          releaseType: r.releaseType,
+          status: r.status,
+        })),
+        poolByOrder,
+      ),
       salaryHistory: this.mapSalaryRows(salaryRows),
     };
   }
@@ -119,33 +190,9 @@ export class EmployeeWalletService {
         where: { employeeId },
         take: SALARY_LINE_FETCH_LIMIT,
         orderBy: { createdAt: 'desc' },
-        include: {
-          payrollRun: { select: { payrollMonth: true, status: true } },
-          expense: { select: { id: true } },
-        },
+        include: walletSalaryInclude,
       }),
     ]);
-  }
-
-  private async buildRollupsForBonusEntries(bonusRows: WalletBonusEntryDb[]) {
-    const plannedByEntryId = new Map(
-      bonusRows.map((b) => [b.id, plannedDecimalForEntry(b.amount)] as const),
-    );
-    const entryIds = bonusRows.map((b) => b.id);
-    if (entryIds.length === 0) {
-      return buildWalletReleaseRollups(plannedByEntryId, []);
-    }
-    const releaseRows = await this.prisma.bonusRelease.findMany({
-      where: { bonusEntryId: { in: entryIds } },
-      select: {
-        bonusEntryId: true,
-        amount: true,
-        status: true,
-        updatedAt: true,
-        payrollRun: { select: { payrollMonth: true } },
-      },
-    });
-    return buildWalletReleaseRollups(plannedByEntryId, releaseRows);
   }
 
   private toEmployeeBlock(employee: {
@@ -171,13 +218,17 @@ export class EmployeeWalletService {
   private mapBonusRows(
     bonusRows: WalletBonusEntryDb[],
     rollups: Map<string, WalletReleaseRollup>,
+    poolByOrder: Map<string, WalletPoolForBreakdown>,
   ): EmployeeWalletBonusRow[] {
-    return bonusRows.map((b) => this.mapOneBonusRow(b, rollups.get(b.id)));
+    return bonusRows.map((b) =>
+      this.mapOneBonusRow(b, rollups.get(b.id), poolByOrder.get(b.orderId)),
+    );
   }
 
   private mapOneBonusRow(
     b: WalletBonusEntryDb,
     r: WalletReleaseRollup | undefined,
+    pool: WalletPoolForBreakdown | undefined,
   ): EmployeeWalletBonusRow {
     return {
       id: b.id,
@@ -196,20 +247,43 @@ export class EmployeeWalletService {
         b.salesBonusSlot,
         b.calculationSnapshot,
       ),
+      productLabel: walletBonusScopeLabel(pool, b.order.code),
       project: { code: b.project.code, name: b.project.name },
       order: { code: b.order.code },
       createdAt: b.createdAt.toISOString(),
     };
   }
 
-  private mapSalaryRows(
-    salaryRows: Prisma.SalaryLineGetPayload<{
-      include: {
-        payrollRun: { select: { payrollMonth: true; status: true } };
-        expense: { select: { id: true } };
-      };
-    }>[],
-  ): EmployeeWalletSalaryRow[] {
+  private mapNextPayroll(line: WalletSalaryLineDb | undefined): EmployeeWalletNextPayroll | null {
+    if (!line) {
+      return null;
+    }
+    const payments = line.expense?.expensePayments ?? [];
+    const partialPayments = [...payments]
+      .sort((a, b) => a.paymentDate.getTime() - b.paymentDate.getTime())
+      .map((p) => ({
+        paymentDate: p.paymentDate.toISOString(),
+        amount: p.amount.toString(),
+      }));
+    return {
+      salaryLineId: line.id,
+      payrollRunId: line.payrollRunId,
+      payrollMonth: line.payrollRun.payrollMonth,
+      runStatus: line.payrollRun.status,
+      baseSalary: line.baseSalary.toString(),
+      bonusesTotal: line.bonusesTotal.toString(),
+      adjustmentsTotal: line.adjustmentsTotal.toString(),
+      deductionsTotal: line.deductionsTotal.toString(),
+      totalPayable: line.totalPayable.toString(),
+      paidAmount: line.paidAmount.toString(),
+      remainingAmount: line.remainingAmount.toString(),
+      lineStatus: line.status,
+      expenseId: line.expense?.id ?? null,
+      partialPayments,
+    };
+  }
+
+  private mapSalaryRows(salaryRows: WalletSalaryLineDb[]): EmployeeWalletSalaryRow[] {
     return salaryRows.map((s) => ({
       id: s.id,
       payrollRunId: s.payrollRunId,

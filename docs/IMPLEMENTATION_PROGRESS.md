@@ -96,7 +96,7 @@
 - [ ] Finance: summary + scheduler без «старых» семантик статусов — M
 - [ ] Finance: уведомления/напоминания по правилам invoice card, не по legacy board — M
 - [ ] Finance: partial outgoing payments (expense/salary) если в каноне — M
-- [ ] Finance: Employee Wallet read-модель до полноты канона — M → частично: `GET /api/me/wallet` + UI — planned / released / paid / remaining по BonusRelease, месяц payroll на релизе, SALES tranche hint, copy для SUBSCRIPTION; CSV; без отдельного блока «Next Payroll» и сетки funding по проектам
+- [ ] Finance: Employee Wallet read-модель до полноты канона — M → частично: `GET /api/me/wallet` + UI — bonus rollups; **Next Payroll**; **Project breakdown** (агрегат по заказу, product pool funding labels, CSV); уведомления/события Wallet из канона — не срез
 - [ ] Partners: **UI ↔ API** выравнивание полей и DTO — M
 - [ ] Partners: **Commission Policy** по Deal Type — M
 - [ ] Partners: **Referral Terms** + фиксация % на сделке — M
