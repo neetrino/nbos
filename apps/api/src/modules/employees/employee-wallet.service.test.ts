@@ -44,16 +44,33 @@ describe('EmployeeWalletService', () => {
         createdAt: new Date('2026-01-01'),
       },
     ]);
-    prisma.bonusRelease.findMany.mockResolvedValue([
-      {
-        bonusEntryId: 'b1',
-        amount: new Decimal(2000),
-        status: 'PAID',
-        releaseType: 'AUTO',
-        updatedAt: new Date('2026-01-15'),
-        payrollRun: { payrollMonth: '2026-02' },
+    prisma.bonusRelease.findMany.mockImplementation(
+      async (args: { where?: Record<string, unknown> }) => {
+        if (args.where && 'bonusEntryId' in args.where) {
+          return [
+            {
+              bonusEntryId: 'b1',
+              amount: new Decimal(2000),
+              status: 'PAID',
+              releaseType: 'AUTO',
+              updatedAt: new Date('2026-01-15'),
+              payrollRun: { payrollMonth: '2026-02' },
+            },
+          ];
+        }
+        return [
+          {
+            id: 'rel-1',
+            status: 'PAID',
+            amount: new Decimal(2000),
+            updatedAt: new Date('2026-01-15'),
+            payrollRunId: 'run-pr',
+            payrollRun: { id: 'run-pr', payrollMonth: '2026-02' },
+            bonusEntry: { order: { code: 'O1' } },
+          },
+        ];
       },
-    ]);
+    );
     prisma.productBonusPool.findMany.mockResolvedValue([
       {
         orderId: 'ord-1',
@@ -104,5 +121,6 @@ describe('EmployeeWalletService', () => {
     expect(snap.projectBreakdown[0].order.code).toBe('O1');
     expect(snap.projectBreakdown[0].productLabel).toBe('Website');
     expect(snap.projectBreakdown[0].payoutState).toBe('PARTIAL');
+    expect(snap.activity.some((a) => a.kind === 'BONUS_RELEASE')).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { Prisma, PrismaClient, type BonusStatusEnum, type Decimal } from '@nbos/database';
+import { Prisma, PrismaClient, type Decimal } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { fetchWalletActivity } from './employee-wallet-activity';
 import {
   plannedDecimalForEntry,
   type WalletReleaseRollup,
@@ -9,15 +10,29 @@ import {
   mapBonusStatusToWalletGroup,
   type WalletBonusPipelineGroup,
 } from './employee-wallet-bonus-group';
-import { employeeWalletSalesAccrualHint } from './employee-wallet-sales-hint';
-import { pickNextOpenPayrollSalaryLine } from './employee-wallet-next-payroll';
 import { loadWalletBonusLedgerContext } from './employee-wallet-ledger-context';
+import { pickNextOpenPayrollSalaryLine } from './employee-wallet-next-payroll';
 import {
   buildEmployeeWalletProjectBreakdown,
   type EmployeeWalletProjectBreakdownRow,
   type WalletPoolForBreakdown,
   walletBonusScopeLabel,
 } from './employee-wallet-project-breakdown';
+import { employeeWalletSalesAccrualHint } from './employee-wallet-sales-hint';
+import type {
+  EmployeeWalletBonusRow,
+  EmployeeWalletNextPayroll,
+  EmployeeWalletSalaryRow,
+  EmployeeWalletSnapshot,
+} from './employee-wallet-snapshot.types';
+
+export type {
+  EmployeeWalletActivityItem,
+  EmployeeWalletBonusRow,
+  EmployeeWalletNextPayroll,
+  EmployeeWalletSalaryRow,
+  EmployeeWalletSnapshot,
+} from './employee-wallet-snapshot.types';
 
 const BONUS_FETCH_LIMIT = 200;
 const SALARY_LINE_FETCH_LIMIT = 48;
@@ -45,81 +60,6 @@ const walletBonusInclude = {
 
 type WalletBonusEntryDb = Prisma.BonusEntryGetPayload<{ include: typeof walletBonusInclude }>;
 
-export interface EmployeeWalletBonusRow {
-  id: string;
-  type: string;
-  status: BonusStatusEnum;
-  walletGroup: WalletBonusPipelineGroup;
-  /** Planned accrual on the bonus entry (NBOS). */
-  amount: string;
-  percent: string;
-  /** Sum of release amounts in APPROVED / INCLUDED_IN_PAYROLL / PAID. */
-  releasedAmount: string;
-  /** Sum of release amounts in PAID. */
-  paidAmount: string;
-  /** Planned minus paid releases, floored at zero. */
-  remainingAmount: string;
-  /** Payroll month when a release is on a run (latest qualifying). */
-  payrollMonth: string | null;
-  orderPaymentType: string | null;
-  salesAccrualHint: string | null;
-  /** Product name, extension label, or order fallback (same source as project breakdown pool). */
-  productLabel: string;
-  project: { code: string; name: string };
-  order: { code: string };
-  createdAt: string;
-}
-
-export interface EmployeeWalletSalaryRow {
-  id: string;
-  payrollRunId: string;
-  payrollMonth: string;
-  runStatus: string;
-  baseSalary: string;
-  bonusesTotal: string;
-  totalPayable: string;
-  paidAmount: string;
-  remainingAmount: string;
-  lineStatus: string;
-  expenseId: string | null;
-}
-
-export interface EmployeeWalletNextPayroll {
-  salaryLineId: string;
-  payrollRunId: string;
-  payrollMonth: string;
-  runStatus: string;
-  baseSalary: string;
-  bonusesTotal: string;
-  adjustmentsTotal: string;
-  deductionsTotal: string;
-  totalPayable: string;
-  paidAmount: string;
-  remainingAmount: string;
-  lineStatus: string;
-  expenseId: string | null;
-  /** Expense outgoing payments linked to this salary line (partial payout dates). */
-  partialPayments: Array<{ paymentDate: string; amount: string }>;
-}
-
-export interface EmployeeWalletSnapshot {
-  employee: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    position: string | null;
-    level: string | null;
-    baseSalary: string | null;
-    roleName: string;
-  };
-  bonuses: EmployeeWalletBonusRow[];
-  /** Nearest open payroll run that includes this employee (NBOS Next Payroll). */
-  nextPayroll: EmployeeWalletNextPayroll | null;
-  /** Per-order bonus roll-up + product pool funding (NBOS §5). */
-  projectBreakdown: EmployeeWalletProjectBreakdownRow[];
-  salaryHistory: EmployeeWalletSalaryRow[];
-}
-
 @Injectable()
 export class EmployeeWalletService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
@@ -127,10 +67,13 @@ export class EmployeeWalletService {
   async getWallet(employeeId: string): Promise<EmployeeWalletSnapshot> {
     const employee = await this.loadEmployeeOrThrow(employeeId);
     const [bonusRows, salaryRows] = await this.loadBonusAndSalaryLines(employeeId);
-    const { releaseRows, rollups, poolByOrder } = await loadWalletBonusLedgerContext(
-      this.prisma,
-      bonusRows.map((b) => ({ id: b.id, orderId: b.orderId, amount: b.amount })),
-    );
+    const [{ releaseRows, rollups, poolByOrder }, activity] = await Promise.all([
+      loadWalletBonusLedgerContext(
+        this.prisma,
+        bonusRows.map((b) => ({ id: b.id, orderId: b.orderId, amount: b.amount })),
+      ),
+      fetchWalletActivity(this.prisma, employeeId),
+    ]);
     const nextLine = pickNextOpenPayrollSalaryLine(salaryRows);
     return {
       employee: this.toEmployeeBlock(employee),
@@ -155,6 +98,7 @@ export class EmployeeWalletService {
         })),
         poolByOrder,
       ),
+      activity,
       salaryHistory: this.mapSalaryRows(salaryRows),
     };
   }

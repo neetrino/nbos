@@ -1,27 +1,28 @@
-import { api } from '../api';
+import type { BonusStatusEnum } from '@nbos/database';
 
-export type WalletBonusPipelineGroup =
-  | 'POTENTIAL'
-  | 'IN_PROGRESS'
-  | 'NEXT_PAYROLL'
-  | 'PAID'
-  | 'CORRECTIONS';
+import type { EmployeeWalletActivityItem } from './employee-wallet-activity';
+import type { WalletBonusPipelineGroup } from './employee-wallet-bonus-group';
+import type { EmployeeWalletProjectBreakdownRow } from './employee-wallet-project-breakdown';
 
 export interface EmployeeWalletBonusRow {
   id: string;
   type: string;
-  status: string;
+  status: BonusStatusEnum;
   walletGroup: WalletBonusPipelineGroup;
-  /** Planned amount on the bonus entry. */
+  /** Planned accrual on the bonus entry (NBOS). */
   amount: string;
   percent: string;
+  /** Sum of release amounts in APPROVED / INCLUDED_IN_PAYROLL / PAID. */
   releasedAmount: string;
+  /** Sum of release amounts in PAID. */
   paidAmount: string;
+  /** Planned minus paid releases, floored at zero. */
   remainingAmount: string;
+  /** Payroll month when a release is on a run (latest qualifying). */
   payrollMonth: string | null;
   orderPaymentType: string | null;
   salesAccrualHint: string | null;
-  /** Product / extension scope for this order (from bonus pool). */
+  /** Product name, extension label, or order fallback (same source as project breakdown pool). */
   productLabel: string;
   project: { code: string; name: string };
   order: { code: string };
@@ -42,35 +43,6 @@ export interface EmployeeWalletSalaryRow {
   expenseId: string | null;
 }
 
-export interface EmployeeWalletProjectBreakdownRow {
-  orderId: string;
-  projectId: string;
-  project: { code: string; name: string };
-  order: { code: string };
-  productLabel: string;
-  bonusTypesSummary: string;
-  plannedBonus: string;
-  releasedBonus: string;
-  paidBonus: string;
-  remainingBonus: string;
-  fundingStatusLabels: string[];
-  poolAvailableFunding: string | null;
-  poolOverFunding: string | null;
-  entryStatusesSummary: string;
-  payoutState: 'UNPAID' | 'PARTIAL' | 'PAID';
-}
-
-export type EmployeeWalletActivityKind = 'BONUS_RELEASE' | 'SALARY_PAYMENT' | 'PAYROLL_CLOSED';
-
-export interface EmployeeWalletActivityItem {
-  id: string;
-  kind: EmployeeWalletActivityKind;
-  occurredAt: string;
-  title: string;
-  detail: string | null;
-  linkHref: string | null;
-}
-
 export interface EmployeeWalletNextPayroll {
   salaryLineId: string;
   payrollRunId: string;
@@ -85,6 +57,7 @@ export interface EmployeeWalletNextPayroll {
   remainingAmount: string;
   lineStatus: string;
   expenseId: string | null;
+  /** Expense outgoing payments linked to this salary line (partial payout dates). */
   partialPayments: Array<{ paymentDate: string; amount: string }>;
 }
 
@@ -99,15 +72,13 @@ export interface EmployeeWalletSnapshot {
     roleName: string;
   };
   bonuses: EmployeeWalletBonusRow[];
+  /** Nearest open payroll run that includes this employee (NBOS Next Payroll). */
   nextPayroll: EmployeeWalletNextPayroll | null;
+  /** Per-order bonus roll-up + product pool funding (NBOS §5). */
   projectBreakdown: EmployeeWalletProjectBreakdownRow[];
+  /** Read-only timeline derived from bonus releases, salary payments, closed payrolls. */
   activity: EmployeeWalletActivityItem[];
   salaryHistory: EmployeeWalletSalaryRow[];
 }
 
-export const meApi = {
-  async getWallet(): Promise<EmployeeWalletSnapshot> {
-    const resp = await api.get<EmployeeWalletSnapshot>('/api/me/wallet');
-    return resp.data;
-  },
-};
+export type { EmployeeWalletActivityItem } from './employee-wallet-activity';
