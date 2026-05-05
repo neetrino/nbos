@@ -15,6 +15,10 @@ export function payrollRunsListPageTitle(): string {
   return 'Payroll';
 }
 
+export function salaryBoardPageTitle(): string {
+  return 'Salary board';
+}
+
 export function employeeWalletPageTitle(): string {
   return 'My wallet';
 }

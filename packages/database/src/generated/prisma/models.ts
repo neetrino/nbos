@@ -70,6 +70,8 @@ export type * from './models/DashboardPreference';
 export type * from './models/PersonalLink';
 export type * from './models/DashboardNote';
 export type * from './models/Partner';
+export type * from './models/PartnerReferralTerms';
+export type * from './models/PartnerCommissionPolicyRow';
 export type * from './models/MessengerChannel';
 export type * from './models/MessengerChannelMessage';
 export type * from './models/MessengerChannelMessageAttachment';

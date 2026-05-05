@@ -9,6 +9,18 @@ export interface DealInvoice {
   payments: Array<{ id: string; amount: number; paymentDate?: string }>;
 }
 
+export type PartnerReferralSourcePolicy = 'POLICY' | 'DEFAULT' | 'OVERRIDE';
+
+export interface PartnerReferralTerms {
+  id: string;
+  partnerPercent: number | string;
+  sourcePolicy: PartnerReferralSourcePolicy;
+  overrideReason: string | null;
+  dealType: string;
+  paymentType: string | null;
+  updatedAt: string;
+}
+
 export interface DealOrder {
   id: string;
   code: string;
@@ -85,6 +97,7 @@ export interface Deal {
   sourceContact: { id: string; firstName: string; lastName: string } | null;
   marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;
   marketingActivity: { id: string; title: string; channel: string; status: string } | null;
+  partnerReferralTerms?: PartnerReferralTerms | null;
 }
 
 export interface DealListData {
@@ -130,6 +143,10 @@ interface DealQueryParams {
 interface DealStatusOptions {
   overrideReason?: string | null;
 }
+
+export type PatchPartnerReferralTermsPayload =
+  | { mode: 'RESET' }
+  | { mode: 'OVERRIDE'; partnerPercent: number; overrideReason: string };
 
 export const dealsApi = {
   async getAll(params?: DealQueryParams): Promise<DealListData> {
@@ -186,6 +203,14 @@ export const dealsApi = {
       status,
       ...(options.overrideReason && { overrideReason: options.overrideReason }),
     });
+    return resp.data;
+  },
+
+  async patchPartnerReferralTerms(
+    id: string,
+    payload: PatchPartnerReferralTermsPayload,
+  ): Promise<Deal> {
+    const resp = await api.patch<Deal>(`/api/crm/deals/${id}/partner-referral-terms`, payload);
     return resp.data;
   },
 

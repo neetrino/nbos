@@ -23,6 +23,41 @@ export interface PayrollAuditTrailRow {
 
 export type SalaryLineStatus = 'PENDING' | 'APPROVED' | 'PARTIALLY_PAID' | 'PAID' | 'HELD';
 
+export interface SalaryBoardCell {
+  salaryLineId: string;
+  payrollRunId: string;
+  payrollMonth: string;
+  runStatus: PayrollRunStatus;
+  lineStatus: SalaryLineStatus;
+  totalPayable: string;
+  paidAmount: string;
+  remainingAmount: string;
+}
+
+export interface SalaryBoardColumn {
+  payrollMonth: string;
+  payrollRunId: string | null;
+  runStatus: PayrollRunStatus | null;
+}
+
+export interface SalaryBoardRow {
+  employee: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    position: string | null;
+  };
+  cells: (SalaryBoardCell | null)[];
+}
+
+export interface SalaryBoardResponse {
+  payrollMonthFrom: string;
+  payrollMonthTo: string;
+  months: string[];
+  columns: SalaryBoardColumn[];
+  rows: SalaryBoardRow[];
+}
+
 export interface PayrollRunListRow {
   id: string;
   payrollMonth: string;
@@ -110,6 +145,8 @@ export interface PayrollRunListParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+export type SalaryBoardParams = Pick<PayrollRunListParams, 'payrollMonthFrom' | 'payrollMonthTo'>;
+
 export interface PayrollRunStats {
   runCount: number;
   totals: {
@@ -143,6 +180,11 @@ export const payrollRunsApi = {
 
   async getStats(params?: PayrollRunStatsParams): Promise<PayrollRunStats> {
     const resp = await api.get<PayrollRunStats>('/api/payroll-runs/stats', { params });
+    return resp.data;
+  },
+
+  async getSalaryBoard(params?: SalaryBoardParams): Promise<SalaryBoardResponse> {
+    const resp = await api.get<SalaryBoardResponse>('/api/payroll-runs/salary-board', { params });
     return resp.data;
   },
 

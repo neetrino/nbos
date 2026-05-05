@@ -360,6 +360,16 @@ export type DashboardNote = Prisma.DashboardNoteModel;
  */
 export type Partner = Prisma.PartnerModel;
 /**
+ * Model PartnerReferralTerms
+ * Frozen partner % and snapshots for inbound referral deals (NBOS § Inbound Referral Flow).
+ */
+export type PartnerReferralTerms = Prisma.PartnerReferralTermsModel;
+/**
+ * Model PartnerCommissionPolicyRow
+ * Per–deal-type partner payout percent (NBOS § Partner Commission Policy). Null row → use `Partner.defaultPercent`.
+ */
+export type PartnerCommissionPolicyRow = Prisma.PartnerCommissionPolicyRowModel;
+/**
  * Model MessengerChannel
  *
  */

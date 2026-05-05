@@ -11,12 +11,14 @@ export interface PartnerContactSummary {
 export interface Partner {
   id: string;
   name: string;
-  type: string;
+  /** Partner tier (Prisma `Partner.type`): REGULAR | PREMIUM. */
+  level: string;
   direction: string;
   defaultPercent: string;
   status: string;
   contactId: string | null;
   createdAt: string;
+  updatedAt: string;
   contact?: PartnerContactSummary | null;
   _count?: { orders: number; subscriptions: number };
 }
@@ -27,17 +29,39 @@ export interface PartnerStats {
   avgPayoutPercent: number;
 }
 
+export type PartnerCommissionDealType = 'PRODUCT' | 'EXTENSION' | 'MAINTENANCE' | 'OUTSOURCE';
+
+export interface PartnerCommissionPolicyRow {
+  dealType: PartnerCommissionDealType;
+  /** Null → use `fallbackPercent` (partner default). */
+  percent: string | null;
+}
+
+export interface PartnerCommissionPolicy {
+  partnerId: string;
+  fallbackPercent: string;
+  rows: PartnerCommissionPolicyRow[];
+}
+
+export interface PutPartnerCommissionPolicyBody {
+  rows: Array<{ dealType: PartnerCommissionDealType; percent: number | null }>;
+}
+
 export interface PartnerListParams {
   page?: number;
   pageSize?: number;
   search?: string;
   status?: string;
+  level?: string;
+  /** @deprecated Prefer `level`. */
   type?: string;
   direction?: string;
 }
 
 export interface CreatePartnerPayload {
   name: string;
+  level?: string;
+  /** @deprecated Prefer `level`. */
   type?: string;
   direction?: string;
   defaultPercent?: number;
@@ -47,6 +71,8 @@ export interface CreatePartnerPayload {
 
 export interface UpdatePartnerPayload {
   name?: string;
+  level?: string;
+  /** @deprecated Prefer `level`. */
   type?: string;
   direction?: string;
   defaultPercent?: number;
@@ -76,6 +102,24 @@ export const partnersApi = {
   },
   async getStats(): Promise<PartnerStats> {
     const resp = await api.get<PartnerStats>('/api/partners/stats');
+    return resp.data;
+  },
+
+  async getCommissionPolicy(partnerId: string): Promise<PartnerCommissionPolicy> {
+    const resp = await api.get<PartnerCommissionPolicy>(
+      `/api/partners/${partnerId}/commission-policy`,
+    );
+    return resp.data;
+  },
+
+  async putCommissionPolicy(
+    partnerId: string,
+    body: PutPartnerCommissionPolicyBody,
+  ): Promise<PartnerCommissionPolicy> {
+    const resp = await api.put<PartnerCommissionPolicy>(
+      `/api/partners/${partnerId}/commission-policy`,
+      body,
+    );
     return resp.data;
   },
 };

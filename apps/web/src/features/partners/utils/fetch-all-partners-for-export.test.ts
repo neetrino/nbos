@@ -12,12 +12,13 @@ vi.mock('@/lib/api/partners', () => ({
 const mockPartner = (id: string): Partner => ({
   id,
   name: `N-${id}`,
-  type: 'REGULAR',
+  level: 'REGULAR',
   direction: 'OUTBOUND',
   defaultPercent: '5',
   status: 'ACTIVE',
   contactId: null,
   createdAt: '2026-04-01T00:00:00.000Z',
+  updatedAt: '2026-04-01T00:00:00.000Z',
 });
 
 describe('fetchAllPartnersForExport', () => {

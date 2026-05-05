@@ -158,6 +158,20 @@ describe('PayrollRunsService', () => {
     });
   });
 
+  describe('getSalaryBoard', () => {
+    it('returns an empty grid when no employees match', async () => {
+      prisma.employee.findMany.mockResolvedValue([]);
+      prisma.payrollRun.findMany.mockResolvedValue([]);
+      prisma.salaryLine.findMany.mockResolvedValue([]);
+      const result = await service.getSalaryBoard({
+        payrollMonthFrom: '2026-02',
+        payrollMonthTo: '2026-02',
+      });
+      expect(result.months).toEqual(['2026-02']);
+      expect(result.rows).toEqual([]);
+    });
+  });
+
   describe('findById', () => {
     it('throws NotFoundException when missing', async () => {
       await expect(service.findById('missing')).rejects.toThrow(NotFoundException);

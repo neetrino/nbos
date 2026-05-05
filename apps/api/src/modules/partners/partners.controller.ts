@@ -25,13 +25,25 @@ export class PartnersController {
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'status', required: false, type: String })
-  @ApiQuery({ name: 'type', required: false, type: String })
+  @ApiQuery({
+    name: 'level',
+    required: false,
+    type: String,
+    description: 'Partner tier: REGULAR | PREMIUM (Prisma `Partner.type`).',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    type: String,
+    description: 'Deprecated: use `level`. Same semantics as `level`.',
+  })
   @ApiQuery({ name: 'direction', required: false, type: String })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('level') level?: string,
     @Query('type') type?: string,
     @Query('direction') direction?: string,
   ) {
@@ -40,6 +52,7 @@ export class PartnersController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       search,
       status,
+      level,
       type,
       direction,
     });
@@ -49,6 +62,29 @@ export class PartnersController {
   @ApiOperation({ summary: 'Get partners statistics' })
   async getStats() {
     return this.partnersService.getStats();
+  }
+
+  @Get(':id/commission-policy')
+  @ApiOperation({
+    summary: 'Partner commission policy by deal type',
+    description:
+      'Returns all four deal types. `percent` is null when the partner falls back to `fallbackPercent` (`Partner.defaultPercent`).',
+  })
+  async getCommissionPolicy(@Param('id') id: string) {
+    return this.partnersService.getCommissionPolicy(id);
+  }
+
+  @Put(':id/commission-policy')
+  @ApiOperation({
+    summary: 'Replace partner commission policy rows',
+    description:
+      'Body must include all four deal types. Set `percent` to null to clear the override for that type (use partner default).',
+  })
+  async putCommissionPolicy(
+    @Param('id') id: string,
+    @Body() body: { rows: Array<{ dealType: string; percent: number | null }> },
+  ) {
+    return this.partnersService.putCommissionPolicy(id, body);
   }
 
   @Get(':id')
@@ -63,6 +99,8 @@ export class PartnersController {
     @Body()
     body: {
       name: string;
+      level?: string;
+      /** @deprecated Use `level`. */
       type?: string;
       direction?: string;
       defaultPercent?: number;
@@ -80,6 +118,8 @@ export class PartnersController {
     @Body()
     body: {
       name?: string;
+      level?: string;
+      /** @deprecated Use `level`. */
       type?: string;
       direction?: string;
       defaultPercent?: number;

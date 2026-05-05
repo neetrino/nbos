@@ -27,6 +27,7 @@ interface DealForValidation {
   sourceContactId: string | null;
   marketingAccountId: string | null;
   marketingActivityId: string | null;
+  partnerReferralTerms?: { id: string } | null;
 }
 
 interface ValidationError {
@@ -91,6 +92,19 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
         field: 'offerProof',
         message: 'Offer link, file URL, or screenshot URL is required at SEND_OFFER',
       });
+    }
+    if (deal.source === 'PARTNER') {
+      if (!deal.sourcePartnerId) {
+        errors.push({
+          field: 'sourcePartnerId',
+          message: 'Partner is required when source is Partner at SEND_OFFER',
+        });
+      } else if (!deal.partnerReferralTerms) {
+        errors.push({
+          field: 'partnerReferralTerms',
+          message: 'Partner referral terms must be synced before SEND_OFFER',
+        });
+      }
     }
   }
 

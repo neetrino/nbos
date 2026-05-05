@@ -179,6 +179,18 @@ describe('DealsService', () => {
         code: 'D-2026-0001',
         projectId: null,
         type: 'PRODUCT',
+        source: 'SALES',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
+      });
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0001',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'SALES',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
       });
 
       const result = await service.create(
@@ -213,6 +225,18 @@ describe('DealsService', () => {
         code: 'D-2026-0002',
         projectId: null,
         type: 'PRODUCT',
+        source: 'SALES',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
+      });
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0002',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'SALES',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
       });
 
       await service.create(
@@ -250,6 +274,20 @@ describe('DealsService', () => {
         code: 'D-2026-0003',
         projectId: null,
         type: 'PRODUCT',
+        source: 'CLIENT',
+        sourceDetail: 'OTHER',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
+      });
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0003',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'CLIENT',
+        sourceDetail: 'OTHER',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
       });
       vi.mocked(auditService.log).mockClear();
 
@@ -269,14 +307,21 @@ describe('DealsService', () => {
 
   describe('update', () => {
     it('updates deal on locked stage when attribution unchanged', async () => {
-      prisma.deal.findUnique.mockResolvedValue({
-        id: '1',
-        status: 'DISCUSS_NEEDS',
-        type: 'EXTENSION',
-        projectId: null,
-        existingProduct: null,
-        ...attribution,
-        name: 'Old',
+      let calls = 0;
+      prisma.deal.findUnique.mockImplementation(() => {
+        calls += 1;
+        const base = {
+          id: '1',
+          status: 'DISCUSS_NEEDS',
+          type: 'EXTENSION',
+          projectId: null,
+          existingProduct: null,
+          ...attribution,
+        };
+        if (calls === 1) {
+          return Promise.resolve({ ...base, name: 'Old' });
+        }
+        return Promise.resolve({ ...base, name: 'New' });
       });
       prisma.deal.update.mockResolvedValue({ id: '1', name: 'New', status: 'DISCUSS_NEEDS' });
 
@@ -303,13 +348,23 @@ describe('DealsService', () => {
     });
 
     it('allows clearing source on START_CONVERSATION', async () => {
-      prisma.deal.findUnique.mockResolvedValue({
-        id: '1',
-        status: 'START_CONVERSATION',
-        type: 'EXTENSION',
-        projectId: null,
-        existingProduct: null,
-        ...attribution,
+      let calls = 0;
+      prisma.deal.findUnique.mockImplementation(() => {
+        calls += 1;
+        const base = {
+          id: '1',
+          status: 'START_CONVERSATION',
+          type: 'EXTENSION',
+          projectId: null,
+          existingProduct: null,
+          ...attribution,
+        };
+        if (calls === 1) return Promise.resolve(base);
+        return Promise.resolve({
+          ...base,
+          source: null,
+          sourceDetail: null,
+        });
       });
       prisma.deal.update.mockResolvedValue({
         id: '1',
@@ -326,15 +381,19 @@ describe('DealsService', () => {
       prisma.employee.findUnique.mockImplementation(({ where }: { where: { id: string } }) =>
         Promise.resolve({ id: where.id }),
       );
-      prisma.deal.findUnique.mockResolvedValue({
-        id: '1',
-        status: 'START_CONVERSATION',
-        type: 'PRODUCT',
-        sellerId: 's-1',
-        sellerAssistantId: null,
-        projectId: null,
-        existingProduct: null,
-        ...attribution,
+      let assistantCalls = 0;
+      prisma.deal.findUnique.mockImplementation(() => {
+        assistantCalls += 1;
+        return Promise.resolve({
+          id: '1',
+          status: 'START_CONVERSATION',
+          type: 'PRODUCT',
+          sellerId: 's-1',
+          sellerAssistantId: assistantCalls === 1 ? null : 'asst-1',
+          projectId: null,
+          existingProduct: null,
+          ...attribution,
+        });
       });
       prisma.deal.update.mockResolvedValue({ id: '1', sellerAssistantId: 'asst-1' });
 
@@ -422,8 +481,9 @@ describe('DealsService', () => {
     });
 
     it('updates deal status for early stage (no gate)', async () => {
-      prisma.deal.findUnique.mockResolvedValue({
+      const before = {
         id: '1',
+        status: 'START_CONVERSATION',
         type: 'PRODUCT',
         amount: null,
         paymentType: null,
@@ -442,7 +502,12 @@ describe('DealsService', () => {
         contractSignedAt: null,
         contractFileUrl: null,
         ...attribution,
-      });
+      };
+      const after = { ...before, status: 'MEETING' };
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(before)
+        .mockResolvedValueOnce(before)
+        .mockResolvedValueOnce(after);
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'MEETING' });
       const result = await service.updateStatus('1', 'MEETING');
       expect(result.status).toBe('MEETING');
@@ -474,16 +539,13 @@ describe('DealsService', () => {
     });
 
     it('allows WON when all required fields present', async () => {
+      const base = completeProductDeal();
+      const won = { ...base, status: 'WON' as const };
       prisma.deal.findUnique
-        .mockResolvedValueOnce(completeProductDeal())
-        .mockResolvedValueOnce(completeProductDeal())
-        .mockResolvedValueOnce({
-          id: '1',
-          status: 'WON',
-          type: 'PRODUCT',
-          projectId: null,
-          existingProduct: null,
-        });
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(won)
+        .mockResolvedValueOnce(won);
       prisma.deal.update.mockResolvedValue({
         id: '1',
         status: 'WON',
@@ -529,16 +591,12 @@ describe('DealsService', () => {
         deadline: null,
         orders: [],
       };
+      const wonMaintenance = { ...maintenanceDeal, status: 'WON' as const };
       prisma.deal.findUnique
         .mockResolvedValueOnce(maintenanceDeal)
         .mockResolvedValueOnce(maintenanceDeal)
-        .mockResolvedValueOnce({
-          id: '1',
-          status: 'WON',
-          type: 'MAINTENANCE',
-          projectId: null,
-          existingProduct: null,
-        });
+        .mockResolvedValueOnce(wonMaintenance)
+        .mockResolvedValueOnce(wonMaintenance);
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'MAINTENANCE' });
 
       const result = await service.updateStatus('1', 'WON');
@@ -548,7 +606,13 @@ describe('DealsService', () => {
     });
 
     it('allows Owner or CEO override without marking invoices paid', async () => {
-      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+      const base = completeProductDeal('WAITING');
+      const won = { ...base, status: 'WON' as const };
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(won)
+        .mockResolvedValueOnce(won);
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'PRODUCT' });
 
       await service.updateStatus('1', 'WON', {

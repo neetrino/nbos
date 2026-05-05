@@ -8,6 +8,7 @@ import { SearchField } from '@/components/shared';
 import { employeesApi } from '@/lib/api/employees';
 import { contactsApi } from '@/lib/api/clients';
 import { partnersApi } from '@/lib/api/partners';
+import { getPartnerLevel } from '@/features/partners/constants/partners';
 import { marketingApi } from '@/lib/api/marketing';
 import type { Lead } from '@/lib/api/leads';
 import type { ApiFieldError } from '@/lib/api-errors';
@@ -192,7 +193,7 @@ export function LeadTransitionInlineEditor({
               return data.items.map((partner) => ({
                 value: partner.id,
                 label: partner.name,
-                subtitle: partner.type,
+                subtitle: getPartnerLevel(partner.level)?.label ?? partner.level,
               }));
             }}
           />

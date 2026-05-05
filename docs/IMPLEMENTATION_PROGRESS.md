@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-05 (Finance: Client Service Record financeLinks + UI)
+**Обновлено:** 2026-05-05 (Partners: commission policy + expense backlog type fix)
 
 ---
 
@@ -107,10 +107,10 @@
 - 🟢 [x] Finance: поля coverage на Invoice Card подписок + **Subscription Grid** (`coverage_start_month` / `count`, billing/create, rollup; `GET /api/finance/subscriptions/grid`; UI: матрица года, paid/pending/overdue/forecast/missed, итоги; ссылка на Invoice Card через `openInvoice`) — M
 - 🟢 [x] Finance: Expense Backlog — idempotent notification jobs по канону — M → `ExpenseBacklogRemindersService`: недельный дайджест открытого backlog (`DELAYED` + `backlogReason` + остаток по `ExpensePayment`) для `FINANCE_TEAM`; ежедневные напоминания по просроченному `dueDate`; `POST /api/scheduler/expense-backlog-reminders`; типы `finance.expense.backlog_weekly_digest` / `finance.expense.backlog_due_overdue` в `notification-rules.ts`. Внешняя доставка — по адаптерам; поля «дата пересмотра» On Hold — вне среза
 - 🟢 [x] Finance: Client Service Record — связи invoice / expense plan / expense / task — M → `GET/PUT/POST …/client-services/:id` (detail) отдаёт `financeLinks` (до 100 строк на тип): инвойсы с `moneyStatus`, планы, расходы, задачи через `TaskLink` + `ClientServiceRecord`; список по-прежнему `_count` only; UI: блок «Connections» в диалоге редактирования с ссылками на invoices/expenses/plans/tasks. Авто-создание expense/task после оплаты — вне среза (см. cleanup C5)
-- Payroll: полнота Salary Board / Payroll Run под `05-Bonus-and-Payroll` — M
-- Partners: **UI ↔ API** выравнивание полей и DTO — M
-- Partners: **Commission Policy** по Deal Type — M
-- Partners: **Referral Terms** + фиксация % на сделке — M
+- 🟢 [x] Payroll: полнота Salary Board / Payroll Run под `05-Bonus-and-Payroll` — M → `GET /api/payroll-runs/salary-board` (сотрудники не `TERMINATED` × месяцы `YYYY-MM`, ячейка = `SalaryLine` + статусы run/line); web `/finance/salary` (finance nav), ссылки: колонка → run, ячейка → `…/payroll/:id#salary-line-…`; деталь run: `id` на строке таблицы salary lines
+- 🟢 [x] Partners: **UI ↔ API** выравнивание полей и DTO — M → wire JSON: `level` (Prisma `Partner.type`, REGULAR/PREMIUM), `defaultPercent` строкой `0.00`, ISO `createdAt`/`updatedAt`; `GET /api/partners` фильтр `level` + deprecated `type`; create/update принимают `level` или legacy `type`; валидация enum на API; web: константы `PARTNER_LEVELS`, колонка Level, CSV `level`/`updatedAt`, CRM partner search subtitle; Partner Card / commission policy / accruals — в следующих строках Partners
+- 🟢 [x] Partners: **Commission Policy** по Deal Type — M → `PartnerCommissionPolicyRow` (`partner_id`, `deal_type` `DealTypeEnum`, `percent`); `GET/PUT /api/partners/:id/commission-policy` (ровно 4 типа; `percent: null` сбрасывает override → `Partner.defaultPercent`); валидация 0–100; web: карточка на `/partners/[id]`
+- 🟢 [x] Partners: **Referral Terms** + фиксация % на сделке — M → `PartnerReferralTerms` (`deal_id` unique, snapshots `deal_type` / `payment_type`, `partner_percent`, `source_policy` POLICY | DEFAULT | OVERRIDE, `override_reason`); авто-sync при create/update сделки (OVERRIDE не пересчитывает %); pre-sync перед stage move если Partner; WON gate для всех типов; `PATCH /api/crm/deals/:id/partner-referral-terms` (`RESET` | `OVERRIDE` + reason ≥3); web: блок в Deal sheet (Marketing) + `dealsApi.patchPartnerReferralTerms`
 - Partners: **Accrual / Balance / Payout Batch** + связь с Finance journal — L
 - Partners: outbound terms / service case разделение — M
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L

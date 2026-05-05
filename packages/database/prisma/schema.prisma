@@ -508,6 +508,7 @@ model Deal {
   orders            Order[]
   supportTickets    SupportTicket[]
   salesBonusEntries BonusEntry[]       @relation("DealSalesBonusEntries")
+  partnerReferralTerms PartnerReferralTerms?
 
   @@map("deals")
 }
@@ -2307,14 +2308,58 @@ model Partner {
   createdAt      DateTime             @default(now()) @map("created_at")
   updatedAt      DateTime             @updatedAt @map("updated_at")
 
-  contact                   Contact?                  @relation(fields: [contactId], references: [id])
+  contact                   Contact?                     @relation(fields: [contactId], references: [id])
   orders                    Order[]
   subscriptions             Subscription[]
-  leadsAsSource             Lead[]                    @relation("LeadSourcePartner")
-  dealsAsSource             Deal[]                    @relation("DealSourcePartner")
+  leadsAsSource             Lead[]                       @relation("LeadSourcePartner")
+  dealsAsSource             Deal[]                       @relation("DealSourcePartner")
   operationalJournalEntries OperationalJournalEntry[]
+  commissionPolicyRows      PartnerCommissionPolicyRow[]
+  partnerReferralTerms      PartnerReferralTerms[]
 
   @@map("partners")
+}
+
+enum PartnerReferralSourcePolicyEnum {
+  POLICY
+  DEFAULT
+  OVERRIDE
+}
+
+/// Frozen partner % and snapshots for inbound referral deals (NBOS § Inbound Referral Flow).
+model PartnerReferralTerms {
+  id             String                           @id @default(uuid())
+  dealId         String                           @unique @map("deal_id")
+  partnerId      String                           @map("partner_id")
+  dealType       DealTypeEnum                     @map("deal_type")
+  paymentType    PaymentTypeEnum?                 @map("payment_type")
+  partnerPercent Decimal                          @map("partner_percent") @db.Decimal(5, 2)
+  sourcePolicy   PartnerReferralSourcePolicyEnum  @map("source_policy")
+  overrideReason String?                          @map("override_reason") @db.Text
+  createdAt      DateTime                         @default(now()) @map("created_at")
+  updatedAt      DateTime                         @updatedAt @map("updated_at")
+
+  deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+
+  @@index([partnerId])
+  @@map("partner_referral_terms")
+}
+
+/// Per–deal-type partner payout percent (NBOS § Partner Commission Policy). Null row → use `Partner.defaultPercent`.
+model PartnerCommissionPolicyRow {
+  id        String       @id @default(uuid())
+  partnerId String       @map("partner_id")
+  dealType  DealTypeEnum @map("deal_type")
+  percent   Decimal      @db.Decimal(5, 2)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, dealType])
+  @@index([partnerId])
+  @@map("partner_commission_policy_rows")
 }
 
 // ─── INTERNAL MESSENGER (MVP) ─────────────────────────────

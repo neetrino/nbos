@@ -8,6 +8,7 @@ import { isDealAttributionLocked } from '@nbos/shared/constants';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
+import { DealPartnerReferralTermsSection } from './DealPartnerReferralTermsSection';
 
 interface DealMarketingSectionProps {
   deal: Deal;
@@ -16,6 +17,7 @@ interface DealMarketingSectionProps {
   searchContacts: SearchLoader;
   saveField: SaveField;
   saveMultipleFields: SaveMultipleFields;
+  onRefresh?: () => void;
 }
 
 export function DealMarketingSection({
@@ -25,6 +27,7 @@ export function DealMarketingSection({
   searchContacts,
   saveField,
   saveMultipleFields,
+  onRefresh,
 }: DealMarketingSectionProps) {
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
     deal.source === 'MARKETING',
@@ -145,6 +148,14 @@ export function DealMarketingSection({
             onClear={attributionLocked ? undefined : () => saveField('sourcePartnerId', null)}
           />
         )}
+
+        {deal.source === 'PARTNER' && deal.sourcePartnerId ? (
+          <DealPartnerReferralTermsSection
+            deal={deal}
+            attributionLocked={attributionLocked}
+            onTermsUpdated={onRefresh}
+          />
+        ) : null}
 
         {deal.source === 'CLIENT' && (
           <SearchField

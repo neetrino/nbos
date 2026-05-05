@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  PARTNER_TYPES,
+  PARTNER_LEVELS,
   PARTNER_DIRECTIONS,
   PARTNER_STATUSES,
   PARTNER_DEFAULT_PERCENT_MIN,
@@ -55,7 +55,7 @@ export function EditPartnerDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
-    type: 'REGULAR',
+    level: 'REGULAR',
     direction: 'INBOUND',
     defaultPercent: '',
     status: 'ACTIVE',
@@ -98,7 +98,7 @@ export function EditPartnerDialog({
     if (!open || !partner) return;
     setForm({
       name: partner.name,
-      type: partner.type,
+      level: partner.level,
       direction: partner.direction,
       defaultPercent: formatPartnerDefaultPercentForForm(partner.defaultPercent),
       status: partner.status,
@@ -119,7 +119,7 @@ export function EditPartnerDialog({
     try {
       const updated = await partnersApi.update(partner.id, {
         name: form.name.trim(),
-        type: form.type,
+        level: form.level,
         direction: form.direction,
         defaultPercent: pct,
         status: form.status,
@@ -167,18 +167,18 @@ export function EditPartnerDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Tier</Label>
+              <Label>Level</Label>
               <Select
-                value={form.type}
+                value={form.level}
                 onValueChange={(v) => {
-                  if (v) setForm({ ...form, type: v });
+                  if (v) setForm({ ...form, level: v });
                 }}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {PARTNER_TYPES.map((t) => (
+                  {PARTNER_LEVELS.map((t) => (
                     <SelectItem key={t.value} value={t.value}>
                       {t.label}
                     </SelectItem>

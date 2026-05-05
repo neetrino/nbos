@@ -14,10 +14,10 @@ import {
 } from '@/components/ui/table';
 import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import {
-  PARTNER_TYPES,
+  PARTNER_LEVELS,
   PARTNER_DIRECTIONS,
   PARTNER_STATUSES,
-  getPartnerType,
+  getPartnerLevel,
   getPartnerDirection,
   getPartnerStatus,
 } from '@/features/partners/constants/partners';
@@ -96,9 +96,9 @@ export default function PartnersPage() {
 
   const filterConfigs = [
     {
-      key: 'type',
-      label: 'Tier',
-      options: PARTNER_TYPES.map((t) => ({ value: t.value, label: t.label })),
+      key: 'level',
+      label: 'Level',
+      options: PARTNER_LEVELS.map((t) => ({ value: t.value, label: t.label })),
     },
     {
       key: 'direction',
@@ -183,7 +183,7 @@ export default function PartnersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Partner</TableHead>
-                <TableHead>Tier</TableHead>
+                <TableHead>Level</TableHead>
                 <TableHead>Direction</TableHead>
                 <TableHead>Default %</TableHead>
                 <TableHead>Orders</TableHead>
@@ -193,7 +193,7 @@ export default function PartnersPage() {
             </TableHeader>
             <TableBody>
               {partners.map((partner) => {
-                const tier = getPartnerType(partner.type);
+                const tier = getPartnerLevel(partner.level);
                 const dir = getPartnerDirection(partner.direction);
                 const st = getPartnerStatus(partner.status);
                 const orders = partner._count?.orders ?? 0;

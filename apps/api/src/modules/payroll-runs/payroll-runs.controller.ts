@@ -79,6 +79,29 @@ export class PayrollRunsController {
     });
   }
 
+  @Get('salary-board')
+  @ApiOperation({
+    summary: 'Salary Board grid (employees × payroll months)',
+    description:
+      'Returns active (non-terminated) employees as rows, calendar months in range as columns, and salary line cells when a payroll run exists for that month. Column headers link to payroll run detail; cells include `salaryLineId` for deep links. Default range: last 12 UTC months ending in the current month (or `payrollMonthTo` when provided). Max span: 36 months.',
+  })
+  @ApiQuery({
+    name: 'payrollMonthFrom',
+    required: false,
+    description: 'Inclusive YYYY-MM lower bound.',
+  })
+  @ApiQuery({
+    name: 'payrollMonthTo',
+    required: false,
+    description: 'Inclusive YYYY-MM upper bound.',
+  })
+  async getSalaryBoard(
+    @Query('payrollMonthFrom') payrollMonthFrom?: string,
+    @Query('payrollMonthTo') payrollMonthTo?: string,
+  ) {
+    return this.payrollRunsService.getSalaryBoard({ payrollMonthFrom, payrollMonthTo });
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get payroll run with salary lines',

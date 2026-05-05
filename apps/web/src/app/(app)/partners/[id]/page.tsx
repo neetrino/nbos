@@ -16,10 +16,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { EditPartnerDialog } from '@/features/partners/components/EditPartnerDialog';
+import { PartnerCommissionPolicyCard } from '@/features/partners/components/PartnerCommissionPolicyCard';
 import {
   getPartnerDirection,
   getPartnerStatus,
-  getPartnerType,
+  getPartnerLevel,
 } from '@/features/partners/constants/partners';
 import { partnerOrdersDrilldownHref } from '@/features/finance/constants/partner-orders-drilldown';
 import { partnerSubscriptionsDrilldownHref } from '@/features/finance/constants/subscription-partner-drilldown';
@@ -61,10 +62,7 @@ export default function PartnerDetailPage() {
     } catch (caught) {
       setPartner(null);
       setError(
-        getApiErrorMessage(
-          caught,
-          'Partner could not be loaded. It may have been removed.',
-        ),
+        getApiErrorMessage(caught, 'Partner could not be loaded. It may have been removed.'),
       );
     } finally {
       setLoading(false);
@@ -101,7 +99,7 @@ export default function PartnerDetailPage() {
     );
   }
 
-  const tier = getPartnerType(partner.type);
+  const tier = getPartnerLevel(partner.level);
   const dir = getPartnerDirection(partner.direction);
   const st = getPartnerStatus(partner.status);
   const orders = partner._count?.orders ?? 0;
@@ -122,6 +120,8 @@ export default function PartnerDetailPage() {
             <h1 className="text-foreground text-2xl font-semibold">{partner.name}</h1>
             <p className="text-muted-foreground mt-1 text-sm">
               Created {formatDate(partner.createdAt)}
+              {' · '}
+              Updated {formatDate(partner.updatedAt)}
             </p>
           </div>
         </div>
@@ -145,9 +145,9 @@ export default function PartnerDetailPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Tier</p>
+          <p className="text-muted-foreground text-xs">Level</p>
           <div className="mt-2">
-            {tier ? <StatusBadge label={tier.label} variant={tier.variant} /> : partner.type}
+            {tier ? <StatusBadge label={tier.label} variant={tier.variant} /> : partner.level}
           </div>
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
@@ -209,6 +209,8 @@ export default function PartnerDetailPage() {
           </p>
         </div>
       </div>
+
+      <PartnerCommissionPolicyCard partnerId={partner.id} />
 
       <div className="border-border bg-card rounded-xl border p-4">
         <p className="text-muted-foreground text-xs">Primary contact</p>

@@ -438,6 +438,8 @@ export const ModelName = {
   PersonalLink: 'PersonalLink',
   DashboardNote: 'DashboardNote',
   Partner: 'Partner',
+  PartnerReferralTerms: 'PartnerReferralTerms',
+  PartnerCommissionPolicyRow: 'PartnerCommissionPolicyRow',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
   MessengerChannelMessageAttachment: 'MessengerChannelMessageAttachment',
@@ -548,6 +550,8 @@ export type TypeMap<
       | 'personalLink'
       | 'dashboardNote'
       | 'partner'
+      | 'partnerReferralTerms'
+      | 'partnerCommissionPolicyRow'
       | 'messengerChannel'
       | 'messengerChannelMessage'
       | 'messengerChannelMessageAttachment'
@@ -5304,6 +5308,158 @@ export type TypeMap<
         };
       };
     };
+    PartnerReferralTerms: {
+      payload: Prisma.$PartnerReferralTermsPayload<ExtArgs>;
+      fields: Prisma.PartnerReferralTermsFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.PartnerReferralTermsFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.PartnerReferralTermsFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>;
+        };
+        findFirst: {
+          args: Prisma.PartnerReferralTermsFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.PartnerReferralTermsFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>;
+        };
+        findMany: {
+          args: Prisma.PartnerReferralTermsFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>[];
+        };
+        create: {
+          args: Prisma.PartnerReferralTermsCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>;
+        };
+        createMany: {
+          args: Prisma.PartnerReferralTermsCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.PartnerReferralTermsCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>[];
+        };
+        delete: {
+          args: Prisma.PartnerReferralTermsDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>;
+        };
+        update: {
+          args: Prisma.PartnerReferralTermsUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>;
+        };
+        deleteMany: {
+          args: Prisma.PartnerReferralTermsDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.PartnerReferralTermsUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.PartnerReferralTermsUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>[];
+        };
+        upsert: {
+          args: Prisma.PartnerReferralTermsUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerReferralTermsPayload>;
+        };
+        aggregate: {
+          args: Prisma.PartnerReferralTermsAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePartnerReferralTerms>;
+        };
+        groupBy: {
+          args: Prisma.PartnerReferralTermsGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.PartnerReferralTermsGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.PartnerReferralTermsCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.PartnerReferralTermsCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    PartnerCommissionPolicyRow: {
+      payload: Prisma.$PartnerCommissionPolicyRowPayload<ExtArgs>;
+      fields: Prisma.PartnerCommissionPolicyRowFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.PartnerCommissionPolicyRowFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.PartnerCommissionPolicyRowFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>;
+        };
+        findFirst: {
+          args: Prisma.PartnerCommissionPolicyRowFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.PartnerCommissionPolicyRowFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>;
+        };
+        findMany: {
+          args: Prisma.PartnerCommissionPolicyRowFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>[];
+        };
+        create: {
+          args: Prisma.PartnerCommissionPolicyRowCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>;
+        };
+        createMany: {
+          args: Prisma.PartnerCommissionPolicyRowCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.PartnerCommissionPolicyRowCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>[];
+        };
+        delete: {
+          args: Prisma.PartnerCommissionPolicyRowDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>;
+        };
+        update: {
+          args: Prisma.PartnerCommissionPolicyRowUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>;
+        };
+        deleteMany: {
+          args: Prisma.PartnerCommissionPolicyRowDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.PartnerCommissionPolicyRowUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.PartnerCommissionPolicyRowUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>[];
+        };
+        upsert: {
+          args: Prisma.PartnerCommissionPolicyRowUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PartnerCommissionPolicyRowPayload>;
+        };
+        aggregate: {
+          args: Prisma.PartnerCommissionPolicyRowAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePartnerCommissionPolicyRow>;
+        };
+        groupBy: {
+          args: Prisma.PartnerCommissionPolicyRowGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.PartnerCommissionPolicyRowGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.PartnerCommissionPolicyRowCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.PartnerCommissionPolicyRowCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     MessengerChannel: {
       payload: Prisma.$MessengerChannelPayload<ExtArgs>;
       fields: Prisma.MessengerChannelFieldRefs;
@@ -8585,6 +8741,34 @@ export const PartnerScalarFieldEnum = {
 export type PartnerScalarFieldEnum =
   (typeof PartnerScalarFieldEnum)[keyof typeof PartnerScalarFieldEnum];
 
+export const PartnerReferralTermsScalarFieldEnum = {
+  id: 'id',
+  dealId: 'dealId',
+  partnerId: 'partnerId',
+  dealType: 'dealType',
+  paymentType: 'paymentType',
+  partnerPercent: 'partnerPercent',
+  sourcePolicy: 'sourcePolicy',
+  overrideReason: 'overrideReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerReferralTermsScalarFieldEnum =
+  (typeof PartnerReferralTermsScalarFieldEnum)[keyof typeof PartnerReferralTermsScalarFieldEnum];
+
+export const PartnerCommissionPolicyRowScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  dealType: 'dealType',
+  percent: 'percent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerCommissionPolicyRowScalarFieldEnum =
+  (typeof PartnerCommissionPolicyRowScalarFieldEnum)[keyof typeof PartnerCommissionPolicyRowScalarFieldEnum];
+
 export const MessengerChannelScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -10478,6 +10662,22 @@ export type ListEnumPartnerStatusEnumFieldRefInput<$PrismaModel> = FieldRefInput
 >;
 
 /**
+ * Reference to a field of type 'PartnerReferralSourcePolicyEnum'
+ */
+export type EnumPartnerReferralSourcePolicyEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerReferralSourcePolicyEnum'
+>;
+
+/**
+ * Reference to a field of type 'PartnerReferralSourcePolicyEnum[]'
+ */
+export type ListEnumPartnerReferralSourcePolicyEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerReferralSourcePolicyEnum[]'
+>;
+
+/**
  * Reference to a field of type 'MessengerChannelType'
  */
 export type EnumMessengerChannelTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -11037,6 +11237,8 @@ export type GlobalOmitConfig = {
   personalLink?: Prisma.PersonalLinkOmit;
   dashboardNote?: Prisma.DashboardNoteOmit;
   partner?: Prisma.PartnerOmit;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsOmit;
+  partnerCommissionPolicyRow?: Prisma.PartnerCommissionPolicyRowOmit;
   messengerChannel?: Prisma.MessengerChannelOmit;
   messengerChannelMessage?: Prisma.MessengerChannelMessageOmit;
   messengerChannelMessageAttachment?: Prisma.MessengerChannelMessageAttachmentOmit;

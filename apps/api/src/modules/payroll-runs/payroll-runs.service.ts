@@ -39,10 +39,16 @@ import {
 } from './payroll-run-employee-wallet-notify';
 import { applyPayrollRunKpiPatch, type PatchPayrollRunBody } from './payroll-run-kpi-patch';
 import { sumPaymentsForPayrollMonthSuggestedSalesKpi } from './payroll-run-suggested-sales-actual';
+import {
+  querySalaryBoard,
+  type SalaryBoardQueryParams,
+  type SalaryBoardResponseDto,
+} from './payroll-salary-board';
 
 export type { PayrollRunListParams } from './payroll-run-list-queries';
 export type { PayrollRunStatsResult } from './payroll-run-list-stats';
 export type { PatchPayrollRunBody };
+export type { SalaryBoardQueryParams, SalaryBoardResponseDto } from './payroll-salary-board';
 
 export interface CreatePayrollRunBody {
   payrollMonth: string;
@@ -71,6 +77,11 @@ export class PayrollRunsService {
     params: Pick<PayrollRunListParams, 'status' | 'payrollMonthFrom' | 'payrollMonthTo'>,
   ): Promise<PayrollRunStatsResult> {
     return queryPayrollRunListStats(this.prisma, params);
+  }
+
+  /** NBOS Salary Board: employees × payroll months with salary line status and links to runs/lines. */
+  async getSalaryBoard(params: SalaryBoardQueryParams): Promise<SalaryBoardResponseDto> {
+    return querySalaryBoard(this.prisma, params);
   }
 
   async findById(id: string) {

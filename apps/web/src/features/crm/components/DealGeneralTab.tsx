@@ -156,6 +156,7 @@ export function DealGeneralTab({
           searchContacts={searchContacts}
           saveField={saveField}
           saveMultipleFields={saveMultipleFields}
+          onRefresh={onRefresh}
         />
         <DealContactTeamSection
           deal={deal}

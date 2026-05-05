@@ -3,7 +3,7 @@ import type { Partner } from '@/lib/api/partners';
 const CSV_HEADERS = [
   'id',
   'name',
-  'type',
+  'level',
   'direction',
   'defaultPercent',
   'status',
@@ -12,6 +12,7 @@ const CSV_HEADERS = [
   'ordersCount',
   'subscriptionsCount',
   'createdAt',
+  'updatedAt',
 ] as const;
 
 const CSV_UTF8_BOM = '\uFEFF';
@@ -35,7 +36,7 @@ function partnerToCsvCells(partner: Partner): string[] {
   const cells = [
     partner.id,
     partner.name,
-    partner.type,
+    partner.level,
     partner.direction,
     partner.defaultPercent,
     partner.status,
@@ -44,6 +45,7 @@ function partnerToCsvCells(partner: Partner): string[] {
     String(orders),
     String(subs),
     partner.createdAt,
+    partner.updatedAt,
   ];
   return cells.map((c) => escapeCsvCell(String(c)));
 }
@@ -66,6 +68,7 @@ function grandTotalPartnersCsvLine(rows: Partner[]): string {
     '',
     String(orders),
     String(subs),
+    '',
     '',
   ];
   return cells.map((c) => escapeCsvCell(String(c))).join(',');

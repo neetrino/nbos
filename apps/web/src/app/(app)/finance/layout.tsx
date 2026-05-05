@@ -14,6 +14,7 @@ import {
   Wallet,
   PieChart,
   FileChartColumn,
+  Grid3x3,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ const TABS = [
   { href: '/finance/client-services', label: 'Client services', icon: ServerCog },
   { href: '/finance/expenses', label: 'Expenses', icon: Receipt },
   { href: '/finance/payroll', label: 'Payroll', icon: Banknote },
+  { href: '/finance/salary', label: 'Salary board', icon: Grid3x3 },
   { href: '/finance/bonus-pools', label: 'Bonus pools', icon: PieChart },
   { href: '/finance/wallet', label: 'My wallet', icon: Wallet },
   { href: '/finance/reports', label: 'Reports', icon: FileChartColumn },

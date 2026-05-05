@@ -16,6 +16,13 @@ import { assertAttributionUpdateAllowed, type AttributionForValidation } from '.
 import { validateDealStageGate } from './deal-stage-gate';
 import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
 import { assertDealSellerRefs, validateDealCreate } from './deal-create-validation';
+import {
+  dealNeedsPartnerReferralTerms,
+  patchPartnerReferralTerms as persistPartnerReferralTerms,
+  syncPartnerReferralTermsForDeal,
+  type PartnerReferralTermsDealSnapshot,
+  type PatchPartnerReferralTermsBody,
+} from './partner-referral-terms.ops';
 
 @Injectable()
 export class DealsService {
@@ -147,7 +154,15 @@ export class DealsService {
         },
       });
     }
-    return this.attachHandoffReferences(deal);
+    await syncPartnerReferralTermsForDeal(this.prisma, deal.id, this.partnerTermsSnapshot(deal));
+    const withTerms = await this.prisma.deal.findUnique({
+      where: { id: deal.id },
+      include: dealCreateInclude,
+    });
+    if (!withTerms) {
+      throw new NotFoundException(`Deal ${deal.id} not found after create`);
+    }
+    return this.attachHandoffReferences(withTerms);
   }
 
   async update(id: string, data: UpdateDealDto) {
@@ -235,15 +250,33 @@ export class DealsService {
       },
       include: dealUpdateInclude,
     });
-    return this.attachHandoffReferences(deal);
+    await syncPartnerReferralTermsForDeal(this.prisma, id, this.partnerTermsSnapshot(deal));
+    const refreshed = await this.prisma.deal.findUnique({
+      where: { id },
+      include: dealUpdateInclude,
+    });
+    if (!refreshed) {
+      throw new NotFoundException(`Deal ${id} not found after update`);
+    }
+    return this.attachHandoffReferences(refreshed);
+  }
+
+  async patchPartnerReferralTerms(dealId: string, body: PatchPartnerReferralTermsBody) {
+    await persistPartnerReferralTerms(this.prisma, dealId, body);
+    return this.findById(dealId);
   }
 
   async updateStatus(id: string, status: string, override: DealWonOverrideContext = {}) {
-    const current = await this.findById(id);
+    let current = await this.findById(id);
     if (current.status === status) {
       return current;
     }
     this.assertStatusTransitionAllowed(current.status, status);
+
+    if (dealNeedsPartnerReferralTerms(current)) {
+      await syncPartnerReferralTermsForDeal(this.prisma, id, this.partnerTermsSnapshot(current));
+      current = await this.findById(id);
+    }
 
     validateDealStageGate(current, status);
     if (status === 'WON') {
@@ -323,6 +356,20 @@ export class DealsService {
     const nextNum = lastDeal ? parseInt(lastDeal.code.split('-')[2] ?? '0', 10) + 1 : 1;
 
     return `D-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private partnerTermsSnapshot(deal: {
+    source: string | null;
+    sourcePartnerId: string | null;
+    type: string;
+    paymentType: string | null;
+  }): PartnerReferralTermsDealSnapshot {
+    return {
+      source: deal.source,
+      sourcePartnerId: deal.sourcePartnerId,
+      type: deal.type as PartnerReferralTermsDealSnapshot['type'],
+      paymentType: deal.paymentType as PartnerReferralTermsDealSnapshot['paymentType'],
+    };
   }
 
   private appendOverrideNote(notes: string | null, reason: string): string {

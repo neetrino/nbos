@@ -22,7 +22,8 @@ interface BacklogRow {
   name: string;
   amount: unknown;
   dueDate: Date | null;
-  backlogReason: string;
+  /** Present for rows loaded with `backlogReason: { not: null }`; typed nullable for Prisma select. */
+  backlogReason: string | null;
   expensePayments: Array<{ amount: unknown }>;
 }
 

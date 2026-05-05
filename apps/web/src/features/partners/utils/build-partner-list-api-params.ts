@@ -16,7 +16,7 @@ export function buildPartnerListApiParams(
     search: input.search || undefined,
     status:
       input.filters.status && input.filters.status !== 'all' ? input.filters.status : undefined,
-    type: input.filters.type && input.filters.type !== 'all' ? input.filters.type : undefined,
+    level: input.filters.level && input.filters.level !== 'all' ? input.filters.level : undefined,
     direction:
       input.filters.direction && input.filters.direction !== 'all'
         ? input.filters.direction

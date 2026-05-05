@@ -889,6 +889,15 @@ export const PartnerStatusEnum = {
 
 export type PartnerStatusEnum = (typeof PartnerStatusEnum)[keyof typeof PartnerStatusEnum];
 
+export const PartnerReferralSourcePolicyEnum = {
+  POLICY: 'POLICY',
+  DEFAULT: 'DEFAULT',
+  OVERRIDE: 'OVERRIDE',
+} as const;
+
+export type PartnerReferralSourcePolicyEnum =
+  (typeof PartnerReferralSourcePolicyEnum)[keyof typeof PartnerReferralSourcePolicyEnum];
+
 export const MessengerChannelType = {
   PROJECT: 'PROJECT',
   GENERAL: 'GENERAL',
