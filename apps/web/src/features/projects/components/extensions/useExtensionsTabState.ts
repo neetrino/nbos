@@ -17,6 +17,7 @@ const EXTENSION_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA
 export interface ExtensionBlocker {
   extensionId: string;
   projectId: string;
+  productId: string;
   extensionName: string;
   message: string;
   errors: ApiFieldError[];
@@ -150,6 +151,7 @@ function toExtensionBlocker(error: unknown, extension: Extension): ExtensionBloc
     return {
       extensionId: extension.id,
       projectId: extension.projectId,
+      productId: extension.productId,
       extensionName: extension.name,
       message: error.message,
       errors: error.errors,
@@ -159,6 +161,7 @@ function toExtensionBlocker(error: unknown, extension: Extension): ExtensionBloc
   return {
     extensionId: extension.id,
     projectId: extension.projectId,
+    productId: extension.productId,
     extensionName: extension.name,
     message: 'Extension status could not be updated. Check readiness and try again.',
     errors: [],

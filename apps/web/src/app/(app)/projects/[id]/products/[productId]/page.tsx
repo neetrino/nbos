@@ -110,6 +110,10 @@ export default function ProductDetailPage() {
   }, [fetchProduct, fetchSiblings]);
 
   useEffect(() => {
+    setActiveTab(getInitialTab(searchParams.get('tab')));
+  }, [searchParams]);
+
+  useEffect(() => {
     if (activeTab === 'credentials' || activeTab === 'finance') {
       if (!projectData) fetchProjectData();
     }

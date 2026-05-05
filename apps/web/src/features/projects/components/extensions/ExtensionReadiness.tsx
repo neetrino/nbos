@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
+import { resolveExtensionStageGateActionHref } from '@/features/projects/utils/projects-hub-stage-gate-blocker-hrefs';
 import type { Extension, ExtensionReadinessIssue } from '@/lib/api/extensions';
 import type { ExtensionBlocker } from './useExtensionsTabState';
 
@@ -62,11 +63,15 @@ export function ExtensionBlockerPanel({
       <div className="mt-3 flex flex-wrap gap-2">
         {(actions.length > 0
           ? actions
-          : [{ key: 'extension-context', label: 'Open extension context' }]
+          : [{ key: 'extension-intake', label: 'Open extension on product' }]
         ).map((action) => (
           <Link
             key={action.key}
-            href={`/projects/${blocker.projectId}`}
+            href={resolveExtensionStageGateActionHref({
+              projectId: blocker.projectId,
+              productId: blocker.productId,
+              action,
+            })}
             className={buttonVariants({ variant: 'outline', size: 'sm' })}
           >
             {action.label}

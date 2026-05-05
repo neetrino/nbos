@@ -77,24 +77,42 @@ const CRM_ACTION_RULES = [
 const PRODUCT_ACTION_RULES = [
   {
     key: 'pm-intake',
-    label: 'Open PM intake',
+    label: 'Open product overview',
     target: 'project',
     fields: ['kickoffChecklist', 'description', 'deadline', 'order'],
   },
   {
-    key: 'delivery-context',
-    label: 'Open delivery context',
+    key: 'product-workspace-tasks',
+    label: 'Open Work Space',
     target: 'project',
-    fields: ['extensions', 'tasks', 'tickets'],
+    fields: ['tasks'],
+  },
+  {
+    key: 'product-support-tickets',
+    label: 'Open Tickets',
+    target: 'project',
+    fields: ['tickets'],
+  },
+  {
+    key: 'product-extensions',
+    label: 'Open Extensions',
+    target: 'project',
+    fields: ['extensions'],
   },
 ] as const;
 
 const EXTENSION_ACTION_RULES = [
   {
-    key: 'extension-readiness',
-    label: 'Open extension context',
+    key: 'extension-workspace-tasks',
+    label: 'Open Work Space',
     target: 'project',
-    fields: ['description', 'assignedTo', 'order', 'tasks'],
+    fields: ['tasks'],
+  },
+  {
+    key: 'extension-intake',
+    label: 'Open extension on product',
+    target: 'project',
+    fields: ['description', 'assignedTo', 'order'],
   },
 ] as const;
 
