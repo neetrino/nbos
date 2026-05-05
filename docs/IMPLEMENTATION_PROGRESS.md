@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-05 (блок 2: 🟢 для закрытых строк; Lead On Hold; Pending)
+**Обновлено:** 2026-05-05 (Wallet: in-app в прогрессе; убран неясный пункт про «все подписочные проекты»)
 
 ---
 
@@ -70,7 +70,7 @@
 
 ---
 
-## Блок 2 — Бэклог: делаем до полного канона + дельта (100 строк)
+## Блок 2 — Бэклог: делаем до полного канона + дельта (~99 строк)
 
 Каждая строка — отдельная задача. **Порядок глобальный:** сначала целостность домена и канона, затем интеграционный фонд (без банка), затем углубление модулей; **Support (глубокий SLA/overlay)** — после основной массы, как договорено; **ручная приёмка** после каждого логического блока.
 
@@ -86,7 +86,6 @@
 - 🟢 [x] Бонус: движок **независимых ставок** Seller/Assistant по `From` + Classic/Subscription база + snapshot + UI/БД политики — по `03-Bonus-Payroll-Logic.md` — L → `sales_bonus_policies` + миграция `20260505201000_sales_bonus_policy_and_accrual`; `SalesBonusAccrualService` (хук из `PaymentsService` при `PAID`); `GET/PATCH /api/bonus/sales-policies` (+ `:id` на PATCH); UI `/my-company/sales-bonus-policies`; **Подписка 2+:** `SUBSCRIPTION_RECURRING` + миграция `20260505250000_sales_bonus_subscription_recurring`, начисление с каждого последующего оплаченного инвойса (база = сумма инвойса), идемпотентность `sales_accrual_invoice_id`, дефолт ставок 0% до настройки в UI
 - 🟢 [x] Бонус: удалить legacy `HOLDBACK` / `holdbackPercent` / `holdbackReleaseDate` и заменить project-pools API/UI на **product-level roll-up** — M → миграция `20260505213000_bonus_remove_holdback_status_enum_trim`; `GET /api/bonus/products/pools` + `foldBonusProductPools` / `getProductPools`; UI `/finance/bonus-pools` + CSV `export-bonus-product-pools-csv`; таблица `**product_bonus_pools`** + sync; миграция `20260505230000_bonus_release_ledger` + `**bonus_releases**`; `GET/POST /api/bonus/entries/:entryId/releases`+`BonusReleaseService`; `totalReleasedAmount`из сумм релизов (APPROVED / INCLUDED_IN_PAYROLL / PAID);`POST /api/payroll-runs/:id/bonus-releases/attach`+`attachBonusReleasesToPayrollRun`(DRAFT/REVIEW →`SalaryLine.bonusesTotal`, статус релиза INCLUDED_IN_PAYROLL); `**availableFunding`/`overFundingAmount**`из суммы`Payment` по инвойсам заказа; **AUTO-релиз** пропорционально по `DELIVERY`/`PM`/`DESIGN` при `Product`/`Extension` **DONE** (`tryCreateProportionalAutoReleases`, хуки `PaymentsService` create/delete, `ProductsService.complete`, `ExtensionsService.complete`); синк `**BonusEntry.status`** с counting-релизами (`refreshBonusEntryStatusAfterReleasesChange`, конец `syncProductBonusPoolForOrder`); `**POST /api/payroll-runs/:id/bonus-releases/detach**` (откат INCLUDED→APPROVED + строки зарплаты); при **полной оплате** salary line из expense (`syncSalaryLinePaidFromExpenseLedger`) — `markPayrollBonusReleasesPaidForSalaryLine`: релизы **INCLUDED_IN_PAYROLL→PAID**, `BonusEntry`→**PAID** если сумма PAID-релизов ≥ planned, resync пула заказа; `**PATCH /api/bonus/entries/:entryId/releases/:releaseId`** (`patchForEntry`) — корректировка суммы **DRAFT**/**APPROVED** (AUTO→**CORRECTION** + reason, cap по entry); UI: bonus board → карточка → ledger (подпись SALES: classic / 1st invoice / month 2+ + CSV); **KPI к выплате:** `20260505240000_payroll_sales_kpi` — поля плана/факта на `PayrollRun`, `payroll_included_amount` на релизе, `PATCH /api/payroll-runs/:id`, коэффициент 100%/50%/0% для **SALES** при attach (пороги 70%/50% по канону); UI sales KPI на `/finance/payroll/[id]` + `includedBonusReleaseCount` в деталке run; подсказка факта: сумма `Payment` по `paymentDate` в UTC-месяце run (`kpiSalesActualSuggestedAmount` в `GET /api/payroll-runs/:id`) + кнопка подстановки в UI
 - 🟢 [x] Правило минимума первого платежа (10% classic / первый месяц subscription) — инвойс-логика — M → `assertFirstInvoiceMinimums` + `invoice-first-payment-minimums.constants.ts` в `InvoicesService.create`; тесты в `invoices-create.service.test.ts`
-- Единый вид/доска «все подписочные проекты» — M
 - Задачи: фильтр и контекст по **Order** внутри проекта — M
 - CRM: довести direct actions и create-flows где сейчас только «open target» — M
 - [🔴](https://emojinarium.com/ru/red-color/) Projects Hub: закрыть оставшиеся пункты cleanup (гейты QA/Transfer по задачам и др.) — M
@@ -96,7 +95,7 @@
 - Finance: summary + scheduler без «старых» семантик статусов — M
 - Finance: уведомления/напоминания по правилам invoice card, не по legacy board — M
 - Finance: partial outgoing payments (expense/salary) если в каноне — M
-- Finance: Employee Wallet read-модель до полноты канона — M → частично: wallet API/UI — rollups, Next Payroll, project breakdown, **Recent activity** (релизы/выплаты/closed payroll); push/in-app rules — вне среза
+- Finance: Employee Wallet read-модель до полноты канона — M → частично: wallet API/UI — rollups, Next Payroll, project breakdown, **Recent activity** (релизы/выплаты/closed payroll); **in-app** по событиям кошелька (`finance.wallet.*`, `notification-rules.ts` + хуки bonus/payroll/expense/payments/products/extensions); push/внешние каналы по тем же событиям — отдельно, если понадобятся
 - Partners: **UI ↔ API** выравнивание полей и DTO — M
 - Partners: **Commission Policy** по Deal Type — M
 - Partners: **Referral Terms** + фиксация % на сделке — M
