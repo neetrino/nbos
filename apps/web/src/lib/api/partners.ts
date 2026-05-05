@@ -109,6 +109,52 @@ export interface CancelPartnerPayoutBatchPayload {
   notes?: string;
 }
 
+export type PartnerServiceType = 'SEO' | 'SMM' | 'ADS' | 'OTHER';
+export type PartnerServicePaymentModel = 'ONE_TIME' | 'MONTHLY' | 'CUSTOM';
+export type PartnerServiceStatus = 'PENDING' | 'ACTIVE' | 'ON_HOLD' | 'CANCELLED' | 'COMPLETED';
+
+export interface PartnerServiceTerm {
+  id: string;
+  partnerId: string;
+  clientContactId: string | null;
+  clientCompanyId: string | null;
+  projectId: string | null;
+  serviceType: PartnerServiceType;
+  paymentModel: PartnerServicePaymentModel;
+  amount: string;
+  billingStartDate: string | null;
+  subscriptionId: string | null;
+  invoiceId: string | null;
+  status: PartnerServiceStatus;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePartnerServiceTermPayload {
+  projectId?: string | null;
+  clientContactId?: string | null;
+  clientCompanyId?: string | null;
+  serviceType: PartnerServiceType;
+  paymentModel: PartnerServicePaymentModel;
+  amount: number;
+  billingStartDate?: string;
+  status?: PartnerServiceStatus;
+  notes?: string;
+}
+
+export interface UpdatePartnerServiceTermPayload {
+  projectId?: string | null;
+  clientContactId?: string | null;
+  clientCompanyId?: string | null;
+  serviceType?: PartnerServiceType;
+  paymentModel?: PartnerServicePaymentModel;
+  amount?: number;
+  billingStartDate?: string | null;
+  status?: PartnerServiceStatus;
+  notes?: string;
+}
+
 export interface PartnerListParams {
   page?: number;
   pageSize?: number;
@@ -230,6 +276,46 @@ export const partnersApi = {
   ): Promise<PartnerPayoutBatch> {
     const resp = await api.post<PartnerPayoutBatch>(
       `/api/partners/${partnerId}/payout-batches/${batchId}/cancel`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async listServiceTerms(partnerId: string): Promise<PartnerServiceTerm[]> {
+    const resp = await api.get<PartnerServiceTerm[]>(`/api/partners/${partnerId}/service-terms`);
+    return resp.data;
+  },
+
+  async createServiceTerm(
+    partnerId: string,
+    body: CreatePartnerServiceTermPayload,
+  ): Promise<PartnerServiceTerm> {
+    const resp = await api.post<PartnerServiceTerm>(
+      `/api/partners/${partnerId}/service-terms`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async updateServiceTerm(
+    partnerId: string,
+    termId: string,
+    body: UpdatePartnerServiceTermPayload,
+  ): Promise<PartnerServiceTerm> {
+    const resp = await api.put<PartnerServiceTerm>(
+      `/api/partners/${partnerId}/service-terms/${termId}`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async createFinanceFromServiceTerm(
+    partnerId: string,
+    termId: string,
+    body: { dueDate?: string } = {},
+  ): Promise<PartnerServiceTerm> {
+    const resp = await api.post<PartnerServiceTerm>(
+      `/api/partners/${partnerId}/service-terms/${termId}/create-finance`,
       body,
     );
     return resp.data;

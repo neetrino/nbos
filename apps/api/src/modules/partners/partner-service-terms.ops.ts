@@ -57,6 +57,10 @@ export interface UpdatePartnerServiceTermInput {
   notes?: string;
 }
 
+export interface CreateFinanceFromServiceTermInput {
+  dueDate?: string;
+}
+
 const partnerServiceTermSelect = {
   id: true,
   partnerId: true,
@@ -173,6 +177,99 @@ export async function updatePartnerServiceTerm(
   return serializePartnerServiceTerm(updated);
 }
 
+export async function createFinanceFromPartnerServiceTerm(
+  prisma: InstanceType<typeof PrismaClient>,
+  partnerId: string,
+  termId: string,
+  input: CreateFinanceFromServiceTermInput = {},
+): Promise<PartnerServiceTermWireDto> {
+  const term = await prisma.partnerServiceTerm.findUnique({
+    where: { id: termId },
+    select: partnerServiceTermSelect,
+  });
+  if (!term || term.partnerId !== partnerId) {
+    throw new BadRequestException(`Partner service term ${termId} not found`);
+  }
+  if (term.status === 'CANCELLED' || term.status === 'COMPLETED') {
+    throw new BadRequestException(
+      'Cannot create finance links for cancelled/completed service terms',
+    );
+  }
+
+  if (term.paymentModel === 'MONTHLY') {
+    if (term.subscriptionId) {
+      throw new BadRequestException('Finance subscription is already linked to this service term');
+    }
+    if (!term.projectId) {
+      throw new BadRequestException(
+        'projectId is required to create a subscription from service term',
+      );
+    }
+
+    const startDate = term.billingStartDate ?? new Date();
+    const billingDay = startDate.getUTCDate();
+    const code = await generateSubscriptionCode(prisma);
+
+    const subscription = await prisma.subscription.create({
+      data: {
+        code,
+        projectId: term.projectId,
+        type: 'PARTNER_SERVICE',
+        amount: term.amount,
+        billingDay,
+        startDate,
+        status: 'ACTIVE',
+        partnerId: term.partnerId,
+      },
+      select: { id: true },
+    });
+
+    const updated = await prisma.partnerServiceTerm.update({
+      where: { id: term.id },
+      data: {
+        subscriptionId: subscription.id,
+        status: term.status === 'PENDING' ? 'ACTIVE' : term.status,
+      },
+      select: partnerServiceTermSelect,
+    });
+    return serializePartnerServiceTerm(updated);
+  }
+
+  if (term.invoiceId) {
+    throw new BadRequestException('Finance invoice is already linked to this service term');
+  }
+  if (!term.projectId) {
+    throw new BadRequestException('projectId is required to create an invoice from service term');
+  }
+
+  const dueDate = input.dueDate ? parseDate(input.dueDate, 'dueDate') : term.billingStartDate;
+  const code = await generateInvoiceCode(prisma);
+  const taxStatus = await resolveTaxStatusForPartnerServiceTerm(prisma, term.clientCompanyId);
+
+  const invoice = await prisma.invoice.create({
+    data: {
+      code,
+      projectId: term.projectId,
+      companyId: term.clientCompanyId,
+      amount: term.amount,
+      taxStatus,
+      type: 'SERVICE',
+      dueDate,
+    },
+    select: { id: true },
+  });
+
+  const updated = await prisma.partnerServiceTerm.update({
+    where: { id: term.id },
+    data: {
+      invoiceId: invoice.id,
+      status: term.status === 'PENDING' ? 'ACTIVE' : term.status,
+    },
+    select: partnerServiceTermSelect,
+  });
+  return serializePartnerServiceTerm(updated);
+}
+
 function parseServiceType(value: string): (typeof PARTNER_SERVICE_TYPES)[number] {
   const upper = value.toUpperCase();
   if (PARTNER_SERVICE_TYPES.includes(upper as (typeof PARTNER_SERVICE_TYPES)[number])) {
@@ -245,6 +342,43 @@ function normalizeNullableId(value: string | null | undefined): string | null {
 function normalizeNotes(value: string | undefined): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
+}
+
+async function generateInvoiceCode(prisma: InstanceType<typeof PrismaClient>): Promise<string> {
+  const year = new Date().getFullYear();
+  const last = await prisma.invoice.findFirst({
+    where: { code: { startsWith: `INV-${year}-` } },
+    orderBy: { code: 'desc' },
+    select: { code: true },
+  });
+  const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
+  return `INV-${year}-${String(nextNum).padStart(4, '0')}`;
+}
+
+async function generateSubscriptionCode(
+  prisma: InstanceType<typeof PrismaClient>,
+): Promise<string> {
+  const year = new Date().getFullYear();
+  const prefix = `SUB-${year}-`;
+  const last = await prisma.subscription.findFirst({
+    where: { code: { startsWith: prefix } },
+    orderBy: { code: 'desc' },
+    select: { code: true },
+  });
+  const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
+  return `${prefix}${String(nextNum).padStart(4, '0')}`;
+}
+
+async function resolveTaxStatusForPartnerServiceTerm(
+  prisma: InstanceType<typeof PrismaClient>,
+  clientCompanyId: string | null,
+): Promise<Prisma.InvoiceCreateInput['taxStatus']> {
+  if (!clientCompanyId) return 'TAX';
+  const company = await prisma.company.findUnique({
+    where: { id: clientCompanyId },
+    select: { taxStatus: true },
+  });
+  return (company?.taxStatus as Prisma.InvoiceCreateInput['taxStatus'] | undefined) ?? 'TAX';
 }
 
 function serializePartnerServiceTerm(row: PartnerServiceTermRow): PartnerServiceTermWireDto {

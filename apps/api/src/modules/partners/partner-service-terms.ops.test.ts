@@ -3,6 +3,7 @@ import { Decimal } from '@nbos/database';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import {
+  createFinanceFromPartnerServiceTerm,
   createPartnerServiceTerm,
   listPartnerServiceTerms,
   updatePartnerServiceTerm,
@@ -138,5 +139,109 @@ describe('partner service terms ops', () => {
     });
     expect(row.status).toBe('ACTIVE');
     expect(row.paymentModel).toBe('MONTHLY');
+  });
+
+  it('creates service invoice for one-time term and links invoiceId', async () => {
+    prisma.partnerServiceTerm.findUnique.mockResolvedValue({
+      id: 'pst-2',
+      partnerId: 'p1',
+      clientContactId: null,
+      clientCompanyId: 'co-1',
+      projectId: 'pr-1',
+      serviceType: 'SEO',
+      paymentModel: 'ONE_TIME',
+      amount: new Decimal('45000'),
+      billingStartDate: null,
+      subscriptionId: null,
+      invoiceId: null,
+      status: 'PENDING',
+      notes: null,
+      createdAt: new Date('2026-05-05T00:00:00.000Z'),
+      updatedAt: new Date('2026-05-05T00:00:00.000Z'),
+    });
+    prisma.invoice.findFirst.mockResolvedValue({ code: 'INV-2026-0007' });
+    prisma.company.findUnique.mockResolvedValue({ taxStatus: 'TAX' });
+    prisma.invoice.create.mockResolvedValue({ id: 'inv-new' });
+    prisma.partnerServiceTerm.update.mockResolvedValue({
+      id: 'pst-2',
+      partnerId: 'p1',
+      clientContactId: null,
+      clientCompanyId: 'co-1',
+      projectId: 'pr-1',
+      serviceType: 'SEO',
+      paymentModel: 'ONE_TIME',
+      amount: new Decimal('45000'),
+      billingStartDate: null,
+      subscriptionId: null,
+      invoiceId: 'inv-new',
+      status: 'ACTIVE',
+      notes: null,
+      createdAt: new Date('2026-05-05T00:00:00.000Z'),
+      updatedAt: new Date('2026-05-06T00:00:00.000Z'),
+    });
+
+    const row = await createFinanceFromPartnerServiceTerm(prisma as never, 'p1', 'pst-2', {});
+    expect(prisma.invoice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          projectId: 'pr-1',
+          type: 'SERVICE',
+          amount: new Decimal('45000'),
+        }),
+      }),
+    );
+    expect(row.invoiceId).toBe('inv-new');
+    expect(row.status).toBe('ACTIVE');
+  });
+
+  it('creates partner service subscription for monthly term and links subscriptionId', async () => {
+    prisma.partnerServiceTerm.findUnique.mockResolvedValue({
+      id: 'pst-3',
+      partnerId: 'p1',
+      clientContactId: null,
+      clientCompanyId: null,
+      projectId: 'pr-2',
+      serviceType: 'ADS',
+      paymentModel: 'MONTHLY',
+      amount: new Decimal('18000'),
+      billingStartDate: new Date('2026-06-15T00:00:00.000Z'),
+      subscriptionId: null,
+      invoiceId: null,
+      status: 'PENDING',
+      notes: null,
+      createdAt: new Date('2026-05-05T00:00:00.000Z'),
+      updatedAt: new Date('2026-05-05T00:00:00.000Z'),
+    });
+    prisma.subscription.findFirst.mockResolvedValue({ code: 'SUB-2026-0010' });
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-new' });
+    prisma.partnerServiceTerm.update.mockResolvedValue({
+      id: 'pst-3',
+      partnerId: 'p1',
+      clientContactId: null,
+      clientCompanyId: null,
+      projectId: 'pr-2',
+      serviceType: 'ADS',
+      paymentModel: 'MONTHLY',
+      amount: new Decimal('18000'),
+      billingStartDate: new Date('2026-06-15T00:00:00.000Z'),
+      subscriptionId: 'sub-new',
+      invoiceId: null,
+      status: 'ACTIVE',
+      notes: null,
+      createdAt: new Date('2026-05-05T00:00:00.000Z'),
+      updatedAt: new Date('2026-05-06T00:00:00.000Z'),
+    });
+
+    const row = await createFinanceFromPartnerServiceTerm(prisma as never, 'p1', 'pst-3', {});
+    expect(prisma.subscription.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          projectId: 'pr-2',
+          type: 'PARTNER_SERVICE',
+          partnerId: 'p1',
+        }),
+      }),
+    );
+    expect(row.subscriptionId).toBe('sub-new');
   });
 });

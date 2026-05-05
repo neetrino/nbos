@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-05 (Partners: outbound service terms + payout batches + PAR-02)
+**Обновлено:** 2026-05-05 (Partners: outbound services tab + create-from-terms + payouts)
 
 ---
 
@@ -131,7 +131,10 @@
   `PartnerServiceTerm` (partner/client/company/project links, service type, payment model, amount,
   billing start date, status, optional invoice/subscription links); API:
   `GET/POST /api/partners/:id/service-terms`, `PUT /api/partners/:id/service-terms/:termId`.
-  Дальше: web Outbound Services tab + Finance create-from-terms flow
+  **Срез 2 (web + finance materialization):** карточка `Outbound services` на Partner page
+  (list/create terms + action `Create finance`); API:
+  `POST /api/partners/:id/service-terms/:termId/create-finance` (MONTHLY -> `Subscription` type
+  `PARTNER_SERVICE`, ONE_TIME/CUSTOM -> `Invoice` type `SERVICE`, link back to term + status ACTIVE)
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
 - Reports: централизованные permissions на источники — M
 - Reports: XLSX/PDF экспорт, retry/cancel, история доставки расписаний — L

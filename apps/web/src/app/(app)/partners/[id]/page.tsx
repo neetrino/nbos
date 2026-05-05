@@ -18,6 +18,7 @@ import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { EditPartnerDialog } from '@/features/partners/components/EditPartnerDialog';
 import { PartnerAccrualsCard } from '@/features/partners/components/PartnerAccrualsCard';
 import { PartnerCommissionPolicyCard } from '@/features/partners/components/PartnerCommissionPolicyCard';
+import { PartnerOutboundServicesCard } from '@/features/partners/components/PartnerOutboundServicesCard';
 import {
   getPartnerDirection,
   getPartnerStatus,
@@ -216,6 +217,7 @@ export default function PartnerDetailPage() {
       <PartnerCommissionPolicyCard partnerId={partner.id} />
 
       <PartnerAccrualsCard partnerId={partner.id} reloadKey={accrualsReloadKey} />
+      <PartnerOutboundServicesCard partnerId={partner.id} reloadKey={accrualsReloadKey} />
 
       <div className="border-border bg-card rounded-xl border p-4">
         <p className="text-muted-foreground text-xs">Primary contact</p>

@@ -199,6 +199,18 @@ export class PartnersController {
     return this.partnersService.updatePartnerServiceTerm(id, termId, body);
   }
 
+  @Post(':id/service-terms/:termId/create-finance')
+  @ApiOperation({
+    summary: 'Create Finance invoice/subscription from outbound partner service terms',
+  })
+  async createFinanceFromPartnerServiceTerm(
+    @Param('id') id: string,
+    @Param('termId') termId: string,
+    @Body() body: { dueDate?: string },
+  ) {
+    return this.partnersService.createFinanceFromPartnerServiceTerm(id, termId, body);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get partner by ID' })
   async findOne(@Param('id') id: string) {
