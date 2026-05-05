@@ -2,12 +2,19 @@
 
 import { useState } from 'react';
 import type { DeliveryLifecycleProjection, FullProject } from '@/lib/api/projects';
+import { isStageGateApiError } from '@/lib/api-errors';
 import {
   DeliveryLifecycleActionDialog,
   type DeliveryLifecycleActionPayload,
 } from './DeliveryLifecycleActionDialog';
+import { DeliveryBoardStageGateBanner } from './delivery-board/DeliveryBoardStageGateBanner';
 import { ProjectDeliveryBoardCard } from './delivery-board/ProjectDeliveryBoardCard';
 import { runBoardAction, type BoardAction } from './delivery-board/project-delivery-board-actions';
+import {
+  toBoardStageGateBlocker,
+  toDeliveryBoardActionError,
+  type DeliveryBoardStageGateBlocker,
+} from './delivery-board/project-delivery-board-stage-gate';
 import type { ProductBoardTab } from './delivery-board/ProjectDeliveryBoardContextLinks';
 import { ProjectDeliveryBoardHeader } from './delivery-board/ProjectDeliveryBoardHeader';
 import {
@@ -44,6 +51,9 @@ export function ProjectDeliveryBoard({
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const [cancelItem, setCancelItem] = useState<DeliveryBoardItem | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [stageGateBlocker, setStageGateBlocker] = useState<DeliveryBoardStageGateBlocker | null>(
+    null,
+  );
   const boardItems = filterBoardItems(getBoardItems(project), kindFilter, statusFilter);
   const activeItems = getActiveBoardItems(boardItems);
   const closedItems = getClosedBoardItems(boardItems);
@@ -52,11 +62,16 @@ export function ProjectDeliveryBoard({
     const itemId = getItemId(item);
     setBusyItemId(itemId);
     setActionError(null);
+    setStageGateBlocker(null);
     try {
       await runBoardAction(item, action);
       await onRefresh();
     } catch (error) {
-      setActionError(toActionError(error, 'Delivery board action failed.'));
+      if (isStageGateApiError(error)) {
+        setStageGateBlocker(toBoardStageGateBlocker(item, project.id, error));
+      } else {
+        setActionError(toDeliveryBoardActionError(error, 'Delivery board action failed.'));
+      }
     } finally {
       setBusyItemId(null);
     }
@@ -67,12 +82,17 @@ export function ProjectDeliveryBoard({
     const item = cancelItem;
     setBusyItemId(getItemId(item));
     setActionError(null);
+    setStageGateBlocker(null);
     try {
       await runBoardAction(item, 'CANCEL', payload);
       setCancelItem(null);
       await onRefresh();
     } catch (error) {
-      setActionError(toActionError(error, 'Delivery item could not be cancelled.'));
+      if (isStageGateApiError(error)) {
+        setStageGateBlocker(toBoardStageGateBlocker(item, project.id, error));
+      } else {
+        setActionError(toDeliveryBoardActionError(error, 'Delivery item could not be cancelled.'));
+      }
     } finally {
       setBusyItemId(null);
     }
@@ -88,6 +108,12 @@ export function ProjectDeliveryBoard({
         onKindFilterChange={setKindFilter}
         onStatusFilterChange={setStatusFilter}
       />
+      {stageGateBlocker && (
+        <DeliveryBoardStageGateBanner
+          blocker={stageGateBlocker}
+          onDismiss={() => setStageGateBlocker(null)}
+        />
+      )}
       <div className="grid gap-3 xl:grid-cols-4">
         {ACTIVE_DELIVERY_STAGES.map((stage) => (
           <DeliveryStageColumn
@@ -119,6 +145,7 @@ export function ProjectDeliveryBoard({
           if (open) return;
           setCancelItem(null);
           setActionError(null);
+          setStageGateBlocker(null);
         }}
         onConfirm={handleCancelConfirm}
       />
@@ -260,8 +287,4 @@ function ClosedGroup({
       </div>
     </div>
   );
-}
-
-function toActionError(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
 }
