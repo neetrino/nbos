@@ -27,7 +27,14 @@ export interface Subscription {
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   partner?: { id: string; name: string } | null;
-  invoices: Array<{ id: string; code: string; status: string; amount: string }>;
+  invoices: Array<{
+    id: string;
+    code: string;
+    status: string;
+    amount: string;
+    coverageStartMonth?: string | null;
+    coverageMonthCount?: number | null;
+  }>;
   coverage?: SubscriptionCoverageSummary;
 }
 

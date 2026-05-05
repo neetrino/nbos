@@ -822,14 +822,6 @@ export type EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput = {
   set?: $Enums.ReportScheduleFrequencyEnum;
 };
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
-};
-
 export type ReportScheduleCreateNestedManyWithoutOwnerInput = {
   create?:
     | Prisma.XOR<

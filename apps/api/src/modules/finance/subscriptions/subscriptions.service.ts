@@ -93,6 +93,16 @@ export class SubscriptionsService {
           project: { select: { id: true, code: true, name: true } },
           partner: { select: { id: true, name: true } },
           _count: { select: { invoices: true } },
+          invoices: {
+            where: { type: 'SUBSCRIPTION' },
+            select: {
+              type: true,
+              amount: true,
+              coverageStartMonth: true,
+              coverageMonthCount: true,
+              payments: { select: { amount: true } },
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
@@ -102,7 +112,7 @@ export class SubscriptionsService {
     ]);
 
     return {
-      items: items.map(attachSubscriptionCoverage),
+      items: items.map((row) => attachSubscriptionCoverage(row)),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }

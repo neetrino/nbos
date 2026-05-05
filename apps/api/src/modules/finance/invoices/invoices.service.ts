@@ -20,6 +20,7 @@ import {
 } from './invoice-service-helpers';
 import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
 import { resolveInvoiceMoneyStatus } from './invoice-money-status';
+import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -138,6 +139,7 @@ export class InvoicesService {
     const code = await this.generateCode();
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
 
+    const due = data.dueDate ? new Date(data.dueDate) : undefined;
     const invoice = await this.prisma.invoice.create({
       data: {
         code,
@@ -149,7 +151,13 @@ export class InvoicesService {
         amount: data.amount,
         taxStatus,
         type: data.type as InvoiceTypeEnum,
-        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        dueDate: due,
+        ...(data.subscriptionId && data.type === 'SUBSCRIPTION'
+          ? {
+              coverageStartMonth: financeCalendarMonthKey(due ?? new Date()),
+              coverageMonthCount: 1,
+            }
+          : {}),
       },
     });
     return this.findById(invoice.id);

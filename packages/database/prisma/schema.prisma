@@ -607,6 +607,10 @@ model Invoice {
   type                  InvoiceTypeEnum
   status                InvoiceStatusEnum      @default(THIS_MONTH)
   moneyStatus           InvoiceMoneyStatusEnum @default(NEW) @map("money_status")
+  /// First month covered by this invoice (`YYYY-MM`, UTC calendar month). Subscription / prepayment invoices per `03-Subscriptions`.
+  coverageStartMonth    String?                @map("coverage_start_month") @db.VarChar(7)
+  /// Number of consecutive months covered starting at `coverageStartMonth` (e.g. 12 for yearly prepayment).
+  coverageMonthCount    Int?                   @map("coverage_month_count")
   dueDate               DateTime?              @map("due_date")
   paidDate              DateTime?              @map("paid_date")
   govInvoiceId          String?                @map("gov_invoice_id")

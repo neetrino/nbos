@@ -45,6 +45,8 @@ describe('BillingService', () => {
             taxStatus: 'TAX_FREE',
             type: 'SUBSCRIPTION',
             moneyStatus: 'NEW',
+            coverageStartMonth: '2026-03',
+            coverageMonthCount: 1,
           }),
         }),
       );

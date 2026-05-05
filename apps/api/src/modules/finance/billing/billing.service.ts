@@ -2,6 +2,7 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { subscriptionBillingPausedForLateDelivery } from './billing-subscription-delivery-pause';
+import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
 
 export interface BillingRunResult {
   generatedInvoices: number;
@@ -103,6 +104,7 @@ export class BillingService {
 
         const code = await this.generateInvoiceCode(now);
         const dueDate = new Date(now.getFullYear(), now.getMonth(), day + 14);
+        const coverageStartMonth = financeCalendarMonthKey(now);
 
         await this.prisma.invoice.create({
           data: {
@@ -114,6 +116,8 @@ export class BillingService {
             type: 'SUBSCRIPTION' as Prisma.InvoiceCreateInput['type'],
             dueDate,
             moneyStatus: 'NEW',
+            coverageStartMonth,
+            coverageMonthCount: 1,
           },
         });
 

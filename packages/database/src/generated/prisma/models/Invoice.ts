@@ -27,10 +27,12 @@ export type AggregateInvoice = {
 
 export type InvoiceAvgAggregateOutputType = {
   amount: runtime.Decimal | null;
+  coverageMonthCount: number | null;
 };
 
 export type InvoiceSumAggregateOutputType = {
   amount: runtime.Decimal | null;
+  coverageMonthCount: number | null;
 };
 
 export type InvoiceMinAggregateOutputType = {
@@ -46,6 +48,8 @@ export type InvoiceMinAggregateOutputType = {
   type: $Enums.InvoiceTypeEnum | null;
   status: $Enums.InvoiceStatusEnum | null;
   moneyStatus: $Enums.InvoiceMoneyStatusEnum | null;
+  coverageStartMonth: string | null;
+  coverageMonthCount: number | null;
   dueDate: Date | null;
   paidDate: Date | null;
   govInvoiceId: string | null;
@@ -67,6 +71,8 @@ export type InvoiceMaxAggregateOutputType = {
   type: $Enums.InvoiceTypeEnum | null;
   status: $Enums.InvoiceStatusEnum | null;
   moneyStatus: $Enums.InvoiceMoneyStatusEnum | null;
+  coverageStartMonth: string | null;
+  coverageMonthCount: number | null;
   dueDate: Date | null;
   paidDate: Date | null;
   govInvoiceId: string | null;
@@ -88,6 +94,8 @@ export type InvoiceCountAggregateOutputType = {
   type: number;
   status: number;
   moneyStatus: number;
+  coverageStartMonth: number;
+  coverageMonthCount: number;
   dueDate: number;
   paidDate: number;
   govInvoiceId: number;
@@ -99,10 +107,12 @@ export type InvoiceCountAggregateOutputType = {
 
 export type InvoiceAvgAggregateInputType = {
   amount?: true;
+  coverageMonthCount?: true;
 };
 
 export type InvoiceSumAggregateInputType = {
   amount?: true;
+  coverageMonthCount?: true;
 };
 
 export type InvoiceMinAggregateInputType = {
@@ -118,6 +128,8 @@ export type InvoiceMinAggregateInputType = {
   type?: true;
   status?: true;
   moneyStatus?: true;
+  coverageStartMonth?: true;
+  coverageMonthCount?: true;
   dueDate?: true;
   paidDate?: true;
   govInvoiceId?: true;
@@ -139,6 +151,8 @@ export type InvoiceMaxAggregateInputType = {
   type?: true;
   status?: true;
   moneyStatus?: true;
+  coverageStartMonth?: true;
+  coverageMonthCount?: true;
   dueDate?: true;
   paidDate?: true;
   govInvoiceId?: true;
@@ -160,6 +174,8 @@ export type InvoiceCountAggregateInputType = {
   type?: true;
   status?: true;
   moneyStatus?: true;
+  coverageStartMonth?: true;
+  coverageMonthCount?: true;
   dueDate?: true;
   paidDate?: true;
   govInvoiceId?: true;
@@ -269,6 +285,8 @@ export type InvoiceGroupByOutputType = {
   type: $Enums.InvoiceTypeEnum;
   status: $Enums.InvoiceStatusEnum;
   moneyStatus: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth: string | null;
+  coverageMonthCount: number | null;
   dueDate: Date | null;
   paidDate: Date | null;
   govInvoiceId: string | null;
@@ -315,6 +333,8 @@ export type InvoiceWhereInput = {
   type?: Prisma.EnumInvoiceTypeEnumFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
   moneyStatus?: Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'> | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.StringNullableFilter<'Invoice'> | string | null;
+  coverageMonthCount?: Prisma.IntNullableFilter<'Invoice'> | number | null;
   dueDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
   paidDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
   govInvoiceId?: Prisma.StringNullableFilter<'Invoice'> | string | null;
@@ -347,6 +367,8 @@ export type InvoiceOrderByWithRelationInput = {
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
+  coverageStartMonth?: Prisma.SortOrderInput | Prisma.SortOrder;
+  coverageMonthCount?: Prisma.SortOrderInput | Prisma.SortOrder;
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   paidDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -384,6 +406,8 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<
     moneyStatus?:
       | Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'>
       | $Enums.InvoiceMoneyStatusEnum;
+    coverageStartMonth?: Prisma.StringNullableFilter<'Invoice'> | string | null;
+    coverageMonthCount?: Prisma.IntNullableFilter<'Invoice'> | number | null;
     dueDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
     paidDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
     govInvoiceId?: Prisma.StringNullableFilter<'Invoice'> | string | null;
@@ -421,6 +445,8 @@ export type InvoiceOrderByWithAggregationInput = {
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
+  coverageStartMonth?: Prisma.SortOrderInput | Prisma.SortOrder;
+  coverageMonthCount?: Prisma.SortOrderInput | Prisma.SortOrder;
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   paidDate?: Prisma.SortOrderInput | Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -461,6 +487,8 @@ export type InvoiceScalarWhereWithAggregatesInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumWithAggregatesFilter<'Invoice'>
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.StringNullableWithAggregatesFilter<'Invoice'> | string | null;
+  coverageMonthCount?: Prisma.IntNullableWithAggregatesFilter<'Invoice'> | number | null;
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Invoice'> | Date | string | null;
   paidDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Invoice'> | Date | string | null;
   govInvoiceId?: Prisma.StringNullableWithAggregatesFilter<'Invoice'> | string | null;
@@ -478,6 +506,8 @@ export type InvoiceCreateInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -504,6 +534,8 @@ export type InvoiceUncheckedCreateInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -529,6 +561,8 @@ export type InvoiceUpdateInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -562,6 +596,8 @@ export type InvoiceUncheckedUpdateInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -584,6 +620,8 @@ export type InvoiceCreateManyInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -608,6 +646,8 @@ export type InvoiceUpdateManyMutationInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -636,6 +676,8 @@ export type InvoiceUncheckedUpdateManyInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -667,6 +709,8 @@ export type InvoiceCountOrderByAggregateInput = {
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
+  coverageStartMonth?: Prisma.SortOrder;
+  coverageMonthCount?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
   paidDate?: Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrder;
@@ -677,6 +721,7 @@ export type InvoiceCountOrderByAggregateInput = {
 
 export type InvoiceAvgOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
+  coverageMonthCount?: Prisma.SortOrder;
 };
 
 export type InvoiceMaxOrderByAggregateInput = {
@@ -692,6 +737,8 @@ export type InvoiceMaxOrderByAggregateInput = {
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
+  coverageStartMonth?: Prisma.SortOrder;
+  coverageMonthCount?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
   paidDate?: Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrder;
@@ -713,6 +760,8 @@ export type InvoiceMinOrderByAggregateInput = {
   type?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
+  coverageStartMonth?: Prisma.SortOrder;
+  coverageMonthCount?: Prisma.SortOrder;
   dueDate?: Prisma.SortOrder;
   paidDate?: Prisma.SortOrder;
   govInvoiceId?: Prisma.SortOrder;
@@ -723,6 +772,7 @@ export type InvoiceMinOrderByAggregateInput = {
 
 export type InvoiceSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
+  coverageMonthCount?: Prisma.SortOrder;
 };
 
 export type InvoiceScalarRelationFilter = {
@@ -912,6 +962,14 @@ export type EnumInvoiceStatusEnumFieldUpdateOperationsInput = {
 
 export type EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.InvoiceMoneyStatusEnum;
+};
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null;
+  increment?: number;
+  decrement?: number;
+  multiply?: number;
+  divide?: number;
 };
 
 export type InvoiceCreateNestedOneWithoutPaymentsInput = {
@@ -1121,6 +1179,8 @@ export type InvoiceCreateWithoutCompanyInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1145,6 +1205,8 @@ export type InvoiceUncheckedCreateWithoutCompanyInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1216,6 +1278,8 @@ export type InvoiceScalarWhereInput = {
   type?: Prisma.EnumInvoiceTypeEnumFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
   status?: Prisma.EnumInvoiceStatusEnumFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
   moneyStatus?: Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'> | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.StringNullableFilter<'Invoice'> | string | null;
+  coverageMonthCount?: Prisma.IntNullableFilter<'Invoice'> | number | null;
   dueDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
   paidDate?: Prisma.DateTimeNullableFilter<'Invoice'> | Date | string | null;
   govInvoiceId?: Prisma.StringNullableFilter<'Invoice'> | string | null;
@@ -1233,6 +1297,8 @@ export type InvoiceCreateWithoutOrderInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1257,6 +1323,8 @@ export type InvoiceUncheckedCreateWithoutOrderInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1316,6 +1384,8 @@ export type InvoiceCreateWithoutPaymentsInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1341,6 +1411,8 @@ export type InvoiceUncheckedCreateWithoutPaymentsInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1393,6 +1465,8 @@ export type InvoiceUpdateWithoutPaymentsInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1425,6 +1499,8 @@ export type InvoiceUncheckedUpdateWithoutPaymentsInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1442,6 +1518,8 @@ export type InvoiceCreateWithoutSubscriptionInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1466,6 +1544,8 @@ export type InvoiceUncheckedCreateWithoutSubscriptionInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1525,6 +1605,8 @@ export type InvoiceCreateWithoutClientServiceRecordInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1549,6 +1631,8 @@ export type InvoiceUncheckedCreateWithoutClientServiceRecordInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1613,6 +1697,8 @@ export type InvoiceCreateManyCompanyInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1637,6 +1723,8 @@ export type InvoiceUpdateWithoutCompanyInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1668,6 +1756,8 @@ export type InvoiceUncheckedUpdateWithoutCompanyInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1696,6 +1786,8 @@ export type InvoiceUncheckedUpdateManyWithoutCompanyInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1716,6 +1808,8 @@ export type InvoiceCreateManyOrderInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1740,6 +1834,8 @@ export type InvoiceUpdateWithoutOrderInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1771,6 +1867,8 @@ export type InvoiceUncheckedUpdateWithoutOrderInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1799,6 +1897,8 @@ export type InvoiceUncheckedUpdateManyWithoutOrderInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1819,6 +1919,8 @@ export type InvoiceCreateManySubscriptionInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1843,6 +1945,8 @@ export type InvoiceUpdateWithoutSubscriptionInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1874,6 +1978,8 @@ export type InvoiceUncheckedUpdateWithoutSubscriptionInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1902,6 +2008,8 @@ export type InvoiceUncheckedUpdateManyWithoutSubscriptionInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1922,6 +2030,8 @@ export type InvoiceCreateManyClientServiceRecordInput = {
   type: $Enums.InvoiceTypeEnum;
   status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   dueDate?: Date | string | null;
   paidDate?: Date | string | null;
   govInvoiceId?: string | null;
@@ -1946,6 +2056,8 @@ export type InvoiceUpdateWithoutClientServiceRecordInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1977,6 +2089,8 @@ export type InvoiceUncheckedUpdateWithoutClientServiceRecordInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2005,6 +2119,8 @@ export type InvoiceUncheckedUpdateManyWithoutClientServiceRecordInput = {
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
+  coverageStartMonth?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  coverageMonthCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   paidDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   govInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2064,6 +2180,8 @@ export type InvoiceSelect<
     type?: boolean;
     status?: boolean;
     moneyStatus?: boolean;
+    coverageStartMonth?: boolean;
+    coverageMonthCount?: boolean;
     dueDate?: boolean;
     paidDate?: boolean;
     govInvoiceId?: boolean;
@@ -2096,6 +2214,8 @@ export type InvoiceSelectCreateManyAndReturn<
     type?: boolean;
     status?: boolean;
     moneyStatus?: boolean;
+    coverageStartMonth?: boolean;
+    coverageMonthCount?: boolean;
     dueDate?: boolean;
     paidDate?: boolean;
     govInvoiceId?: boolean;
@@ -2126,6 +2246,8 @@ export type InvoiceSelectUpdateManyAndReturn<
     type?: boolean;
     status?: boolean;
     moneyStatus?: boolean;
+    coverageStartMonth?: boolean;
+    coverageMonthCount?: boolean;
     dueDate?: boolean;
     paidDate?: boolean;
     govInvoiceId?: boolean;
@@ -2153,6 +2275,8 @@ export type InvoiceSelectScalar = {
   type?: boolean;
   status?: boolean;
   moneyStatus?: boolean;
+  coverageStartMonth?: boolean;
+  coverageMonthCount?: boolean;
   dueDate?: boolean;
   paidDate?: boolean;
   govInvoiceId?: boolean;
@@ -2176,6 +2300,8 @@ export type InvoiceOmit<
   | 'type'
   | 'status'
   | 'moneyStatus'
+  | 'coverageStartMonth'
+  | 'coverageMonthCount'
   | 'dueDate'
   | 'paidDate'
   | 'govInvoiceId'
@@ -2236,6 +2362,14 @@ export type $InvoicePayload<
       type: $Enums.InvoiceTypeEnum;
       status: $Enums.InvoiceStatusEnum;
       moneyStatus: $Enums.InvoiceMoneyStatusEnum;
+      /**
+       * First month covered by this invoice (`YYYY-MM`, UTC calendar month). Subscription / prepayment invoices per `03-Subscriptions`.
+       */
+      coverageStartMonth: string | null;
+      /**
+       * Number of consecutive months covered starting at `coverageStartMonth` (e.g. 12 for yearly prepayment).
+       */
+      coverageMonthCount: number | null;
       dueDate: Date | null;
       paidDate: Date | null;
       govInvoiceId: string | null;
@@ -2863,6 +2997,8 @@ export interface InvoiceFieldRefs {
   readonly type: Prisma.FieldRef<'Invoice', 'InvoiceTypeEnum'>;
   readonly status: Prisma.FieldRef<'Invoice', 'InvoiceStatusEnum'>;
   readonly moneyStatus: Prisma.FieldRef<'Invoice', 'InvoiceMoneyStatusEnum'>;
+  readonly coverageStartMonth: Prisma.FieldRef<'Invoice', 'String'>;
+  readonly coverageMonthCount: Prisma.FieldRef<'Invoice', 'Int'>;
   readonly dueDate: Prisma.FieldRef<'Invoice', 'DateTime'>;
   readonly paidDate: Prisma.FieldRef<'Invoice', 'DateTime'>;
   readonly govInvoiceId: Prisma.FieldRef<'Invoice', 'String'>;
