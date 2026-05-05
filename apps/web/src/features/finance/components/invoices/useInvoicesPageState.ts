@@ -67,7 +67,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     setLoading,
     setMutationError,
   });
-  const handleStatusChange = useInvoiceStatusChange(invoices, setInvoices);
+  const handleMoneyStatusChange = useInvoiceMoneyStatusChange(invoices, setInvoices);
   const handlePaymentRecorded = usePaymentRecorder(
     fetchInvoices,
     setSelectedInvoice,
@@ -122,7 +122,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
       setSelectedInvoice(invoice);
       setSheetOpen(true);
     },
-    handleStatusChange,
+    handleMoneyStatusChange,
     handlePaymentRecorded,
     handleInvoiceCreated: fetchInvoices,
     invoiceListExportParams,
@@ -194,22 +194,24 @@ function useFetchInvoices({
   ]);
 }
 
-function useInvoiceStatusChange(
+function useInvoiceMoneyStatusChange(
   invoices: Invoice[],
   setInvoices: (updater: (current: Invoice[]) => Invoice[]) => void,
 ) {
   return useCallback(
-    async (id: string, status: string) => {
+    async (id: string, moneyStatus: string) => {
       const previousInvoices = invoices;
       setInvoices((current) =>
-        current.map((invoice) => (invoice.id === id ? { ...invoice, status } : invoice)),
+        current.map((invoice) => (invoice.id === id ? { ...invoice, moneyStatus } : invoice)),
       );
       try {
-        const updated = await invoicesApi.updateStatus(id, status);
+        const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
         setInvoices((current) => replaceInvoice(current, updated));
       } catch (caught) {
         setInvoices(() => previousInvoices);
-        toast.error(getApiErrorMessage(caught, 'Could not update invoice status. Try again.'));
+        toast.error(
+          getApiErrorMessage(caught, 'Could not update invoice money status. Try again.'),
+        );
       }
     },
     [invoices, setInvoices],

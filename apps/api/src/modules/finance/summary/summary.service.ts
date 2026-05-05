@@ -83,7 +83,7 @@ export class FinanceSummaryService {
         ...(createdAt ? { where: { createdAt } } : {}),
       }),
       this.prisma.invoice.groupBy({
-        by: ['status'],
+        by: ['moneyStatus'],
         ...(createdAt ? { where: { createdAt } } : {}),
         _count: true,
         _sum: { amount: true },
@@ -100,7 +100,7 @@ export class FinanceSummaryService {
     return {
       total,
       byStatus: byStatus.map((item) => ({
-        status: item.status,
+        status: item.moneyStatus,
         count: item._count,
         amount: item._sum.amount,
       })),

@@ -57,14 +57,26 @@ export interface UpcomingInvoiceItem {
 
 const MS_PER_DAY = 86_400_000;
 
-const INVOICE_STATUS_META: Record<string, { label: string; color: string }> = {
+/** Dashboard invoice donut: API `invoiceStatusItems[].status` is money layer. */
+const INVOICE_MONEY_DASHBOARD_ORDER = [
+  'NEW',
+  'AWAITING_PAYMENT',
+  'OVERDUE',
+  'ON_HOLD',
+  'PAID',
+  'CANCELLED',
+] as const;
+
+const INVOICE_MONEY_DASHBOARD_META: Record<
+  (typeof INVOICE_MONEY_DASHBOARD_ORDER)[number],
+  { label: string; color: string }
+> = {
+  NEW: { label: 'New', color: 'bg-blue-500' },
+  AWAITING_PAYMENT: { label: 'Awaiting payment', color: 'bg-violet-500' },
+  OVERDUE: { label: 'Overdue', color: 'bg-orange-500' },
+  ON_HOLD: { label: 'On hold', color: 'bg-gray-400' },
   PAID: { label: 'Paid', color: 'bg-emerald-500' },
-  WAITING: { label: 'Waiting', color: 'bg-violet-500' },
-  CREATE_INVOICE: { label: 'Create Invoice', color: 'bg-indigo-500' },
-  THIS_MONTH: { label: 'This Month', color: 'bg-blue-500' },
-  DELAYED: { label: 'Delayed', color: 'bg-orange-500' },
-  ON_HOLD: { label: 'On Hold', color: 'bg-gray-400' },
-  FAIL: { label: 'Fail', color: 'bg-red-500' },
+  CANCELLED: { label: 'Cancelled', color: 'bg-red-500' },
 };
 
 export function buildFinanceDashboardData(summary: FinanceDashboardSummary): FinanceDashboardData {
@@ -90,19 +102,18 @@ export function buildFinanceDashboardData(summary: FinanceDashboardSummary): Fin
 function buildInvoiceStatusItems(summary: FinanceDashboardSummary): InvoiceStatusItem[] {
   const totalInvoices = summary.invoiceStatusItems.reduce((sum, item) => sum + item.count, 0) || 1;
 
-  return Object.entries(INVOICE_STATUS_META)
-    .map(([status, meta]) => {
-      const statusGroup = summary.invoiceStatusItems.find((item) => item.status === status);
+  return INVOICE_MONEY_DASHBOARD_ORDER.map((status) => {
+    const meta = INVOICE_MONEY_DASHBOARD_META[status];
+    const statusGroup = summary.invoiceStatusItems.find((item) => item.status === status);
 
-      return {
-        label: meta.label,
-        count: statusGroup?.count ?? 0,
-        amount: toAmount(statusGroup?.amount),
-        color: meta.color,
-        pct: Math.round(((statusGroup?.count ?? 0) / totalInvoices) * 100),
-      };
-    })
-    .filter((item) => item.count > 0);
+    return {
+      label: meta.label,
+      count: statusGroup?.count ?? 0,
+      amount: toAmount(statusGroup?.amount),
+      color: meta.color,
+      pct: Math.round(((statusGroup?.count ?? 0) / totalInvoices) * 100),
+    };
+  }).filter((item) => item.count > 0);
 }
 
 function buildRecentPayments(summary: FinanceDashboardSummary): RecentPaymentItem[] {

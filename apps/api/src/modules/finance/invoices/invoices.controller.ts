@@ -25,6 +25,7 @@ export class InvoicesController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('status') status?: string,
+    @Query('moneyStatus') moneyStatus?: string,
     @Query('type') type?: string,
     @Query('projectId') projectId?: string,
     @Query('subscriptionId') subscriptionId?: string,
@@ -36,6 +37,7 @@ export class InvoicesController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       status,
+      moneyStatus,
       type,
       projectId,
       subscriptionId,
@@ -76,6 +78,12 @@ export class InvoicesController {
     },
   ) {
     return this.invoicesService.create(body);
+  }
+
+  @Patch(':id/money-status')
+  @ApiOperation({ summary: 'Update invoice money status (canonical card layer)' })
+  async updateMoneyStatus(@Param('id') id: string, @Body() body: { moneyStatus: string }) {
+    return this.invoicesService.updateMoneyStatus(id, body.moneyStatus);
   }
 
   @Patch(':id/status')

@@ -98,6 +98,22 @@ describe('InvoicesService', () => {
         }),
       );
     });
+
+    it('applies moneyStatus filter', async () => {
+      await service.findAll({ moneyStatus: 'OVERDUE' });
+
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            moneyStatus: 'OVERDUE',
+          }),
+        }),
+      );
+    });
+
+    it('rejects unknown moneyStatus filter', async () => {
+      await expect(service.findAll({ moneyStatus: 'nope' })).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('findById', () => {
@@ -278,6 +294,86 @@ describe('InvoicesService', () => {
     });
   });
 
+  describe('updateMoneyStatus', () => {
+    it('sets PAID money and companion legacy status when fully covered', async () => {
+      const paidDate = new Date('2026-04-12T00:00:00.000Z');
+      const fullPayments = [
+        { id: 'p1', amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+        { id: 'p2', amount: 40000, paymentDate: paidDate },
+      ];
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: '1',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          status: 'WAITING',
+          payments: fullPayments.map((p) => ({ amount: p.amount, paymentDate: p.paymentDate })),
+        })
+        .mockResolvedValueOnce(mockInvoiceFindByIdRow('1', { paidDate, payments: fullPayments }));
+      prisma.invoice.update.mockResolvedValue({});
+      await service.updateMoneyStatus('1', 'PAID');
+      expect(prisma.invoice.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'PAID',
+            moneyStatus: 'PAID',
+            paidDate,
+          }),
+        }),
+      );
+    });
+
+    it('sets OVERDUE money with DELAYED legacy companion', async () => {
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'ov-1',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          status: 'WAITING',
+          payments: [{ amount: 10000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('ov-1', {
+            status: 'DELAYED',
+            moneyStatus: 'OVERDUE',
+            payments: [
+              { id: 'p1', amount: 10000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+            ],
+            paidDate: null,
+          }),
+        );
+      prisma.invoice.update.mockResolvedValue({});
+      await service.updateMoneyStatus('ov-1', 'OVERDUE');
+      expect(prisma.invoice.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'DELAYED',
+            moneyStatus: 'OVERDUE',
+            paidDate: null,
+          }),
+        }),
+      );
+    });
+
+    it('rejects PAID money before invoice is fully covered by payments', async () => {
+      prisma.invoice.findUnique.mockResolvedValue({
+        id: 'manual-inv',
+        orderId: null,
+        amount: 100000,
+        dueDate: new Date('2026-04-20'),
+        status: 'WAITING',
+        payments: [{ amount: 40000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
+      });
+
+      await expect(service.updateMoneyStatus('manual-inv', 'PAID')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe('getStats', () => {
     it('returns stats structure', async () => {
       prisma.invoice.count.mockResolvedValue(5);
@@ -312,7 +408,7 @@ describe('InvoicesService', () => {
         1,
         expect.objectContaining({
           where: expect.objectContaining({
-            status: 'PAID',
+            moneyStatus: 'PAID',
             paidDate: expect.objectContaining({
               gte: expect.any(Date),
               lte: expect.any(Date),
@@ -346,7 +442,7 @@ describe('InvoicesService', () => {
         1,
         expect.objectContaining({
           where: expect.objectContaining({
-            status: 'PAID',
+            moneyStatus: 'PAID',
             subscriptionId: 'sub-abc',
           }),
         }),

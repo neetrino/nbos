@@ -20,6 +20,8 @@ export interface InvoiceListParams extends FinanceDateRangeParams {
   page?: number;
   pageSize?: number;
   status?: string;
+  /** Filter by canonical money layer (`Invoice.moneyStatus`). */
+  moneyStatus?: string;
   type?: string;
   projectId?: string;
   subscriptionId?: string;
@@ -271,6 +273,7 @@ export interface UpdateExpensePayload {
 
 export interface InvoiceStats {
   total: number;
+  /** Breakdown by `Invoice.moneyStatus` (values: NEW, AWAITING_PAYMENT, …). Field name kept for API shape. */
   byStatus: Array<{
     status: string;
     _count: number;
@@ -341,6 +344,7 @@ export interface FinanceDashboardSummary {
     monthlyRecurringRevenue: number | null;
     activeSubscriptions: number;
   };
+  /** Breakdown by `Invoice.moneyStatus` (`status` field is the money enum value). */
   invoiceStatusItems: Array<{
     status: string;
     count: number;
@@ -391,6 +395,12 @@ export const invoicesApi = {
   },
   async create(data: CreateInvoiceInput): Promise<Invoice> {
     const resp = await api.post<Invoice>('/api/finance/invoices', data);
+    return resp.data;
+  },
+  async updateMoneyStatus(id: string, moneyStatus: string): Promise<Invoice> {
+    const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}/money-status`, {
+      moneyStatus,
+    });
     return resp.data;
   },
   async updateStatus(id: string, status: string): Promise<Invoice> {

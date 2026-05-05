@@ -88,7 +88,7 @@ function InvoicesPageInner() {
         view={state.view}
         onRetry={state.fetchInvoices}
         onInvoiceClick={state.handleInvoiceClick}
-        onMove={(itemId, _from, toColumn) => state.handleStatusChange(itemId, toColumn)}
+        onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
       />
       <InvoiceSheet
         invoice={state.selectedInvoice}

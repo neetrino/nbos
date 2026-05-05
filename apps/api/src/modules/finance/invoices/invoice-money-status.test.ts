@@ -52,7 +52,7 @@ describe('resolveInvoiceMoneyStatus', () => {
     ).toBe('OVERDUE');
   });
 
-  it('maps FAIL and WAITING to AWAITING_PAYMENT when not overdue', () => {
+  it('maps FAIL to CANCELLED when not fully paid', () => {
     expect(
       resolveInvoiceMoneyStatus({
         legacyStatus: 'FAIL',
@@ -61,8 +61,10 @@ describe('resolveInvoiceMoneyStatus', () => {
         dueDate: new Date('2026-06-01T00:00:00.000Z'),
         now: NOW,
       }),
-    ).toBe('AWAITING_PAYMENT');
+    ).toBe('CANCELLED');
+  });
 
+  it('maps WAITING to AWAITING_PAYMENT when not overdue', () => {
     expect(
       resolveInvoiceMoneyStatus({
         legacyStatus: 'WAITING',

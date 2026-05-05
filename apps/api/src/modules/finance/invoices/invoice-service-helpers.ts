@@ -29,29 +29,35 @@ export async function getInvoiceStats(
   };
   const hasCreatedWhere = Object.keys(whereCreated).length > 0;
 
-  const [total, byStatus, totalRevenue, outstanding, overdue] = await Promise.all([
+  const [total, byMoney, totalRevenue, outstanding, overdue] = await Promise.all([
     hasCreatedWhere ? prisma.invoice.count({ where: whereCreated }) : prisma.invoice.count(),
     prisma.invoice.groupBy({
-      by: ['status'],
+      by: ['moneyStatus'],
       ...(hasCreatedWhere ? { where: whereCreated } : {}),
       _count: true,
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { status: 'PAID', ...sub, ...(paidDate ? { paidDate } : {}) },
+      where: { moneyStatus: 'PAID', ...sub, ...(paidDate ? { paidDate } : {}) },
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { status: { not: 'PAID' }, ...sub, ...(createdAt ? { createdAt } : {}) },
+      where: { moneyStatus: { not: 'PAID' }, ...sub, ...(createdAt ? { createdAt } : {}) },
       _count: true,
       _sum: { amount: true },
     }),
     prisma.invoice.aggregate({
-      where: { status: 'DELAYED', ...sub, ...(createdAt ? { createdAt } : {}) },
+      where: { moneyStatus: 'OVERDUE', ...sub, ...(createdAt ? { createdAt } : {}) },
       _count: true,
       _sum: { amount: true },
     }),
   ]);
+
+  const byStatus = byMoney.map((row) => ({
+    status: row.moneyStatus,
+    _count: row._count,
+    _sum: row._sum,
+  }));
 
   return {
     total,

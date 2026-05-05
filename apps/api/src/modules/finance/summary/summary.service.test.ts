@@ -40,9 +40,9 @@ describe('FinanceSummaryService', () => {
   it('returns finance dashboard summary from aggregate sources', async () => {
     prisma.invoice.count.mockResolvedValue(6);
     prisma.invoice.groupBy.mockResolvedValue([
-      { status: 'PAID', _count: 3, _sum: { amount: 120000 } },
-      { status: 'DELAYED', _count: 1, _sum: { amount: 15000 } },
-      { status: 'WAITING', _count: 2, _sum: { amount: 30000 } },
+      { moneyStatus: 'PAID', _count: 3, _sum: { amount: 120000 } },
+      { moneyStatus: 'OVERDUE', _count: 1, _sum: { amount: 15000 } },
+      { moneyStatus: 'AWAITING_PAYMENT', _count: 2, _sum: { amount: 30000 } },
     ]);
     prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: 120000 } });
     prisma.expense.findMany.mockResolvedValue([
@@ -127,8 +127,8 @@ describe('FinanceSummaryService', () => {
     });
     expect(result.invoiceStatusItems).toEqual([
       { status: 'PAID', count: 3, amount: 120000 },
-      { status: 'DELAYED', count: 1, amount: 15000 },
-      { status: 'WAITING', count: 2, amount: 30000 },
+      { status: 'OVERDUE', count: 1, amount: 15000 },
+      { status: 'AWAITING_PAYMENT', count: 2, amount: 30000 },
     ]);
     expect(result.invoiceCards).toEqual({
       outstanding: { count: 2, amount: 45000 },

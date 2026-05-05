@@ -20,6 +20,10 @@ export function buildInvoiceListApiParams(
     search: input.search || undefined,
     status:
       input.filters.status && input.filters.status !== 'all' ? input.filters.status : undefined,
+    moneyStatus:
+      input.filters.moneyStatus && input.filters.moneyStatus !== 'all'
+        ? input.filters.moneyStatus
+        : undefined,
     type: input.filters.type && input.filters.type !== 'all' ? input.filters.type : undefined,
     subscriptionId: input.subscriptionIdFromUrl || undefined,
     ...periodParams,
