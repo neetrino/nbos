@@ -135,10 +135,25 @@ export type Expense = Prisma.ExpenseModel;
  */
 export type ExpensePayment = Prisma.ExpensePaymentModel;
 /**
+ * Model SalesBonusPolicy
+ * Editable Seller / Assistant rates by CRM `From` and order payment model (NBOS § sales bonus).
+ */
+export type SalesBonusPolicy = Prisma.SalesBonusPolicyModel;
+/**
  * Model BonusEntry
  *
  */
 export type BonusEntry = Prisma.BonusEntryModel;
+/**
+ * Model BonusRelease
+ * NBOS Bonus Release — amount earmarked for a payroll run (see `03-Bonus-Payroll-Logic.md`).
+ */
+export type BonusRelease = Prisma.BonusReleaseModel;
+/**
+ * Model ProductBonusPool
+ * NBOS Product Bonus Pool ledger row (one per `Order` that has bonus lines). Release events (`BonusRelease`) — follow-up.
+ */
+export type ProductBonusPool = Prisma.ProductBonusPoolModel;
 /**
  * Model PayrollRun
  *

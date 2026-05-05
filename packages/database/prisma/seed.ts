@@ -1371,8 +1371,6 @@ async function main() {
       percent: 3,
       status: 'EARNED',
       kpiGatePassed: true,
-      holdbackPercent: 20,
-      holdbackReleaseDate: new Date('2026-05-01'),
       payoutMonth: new Date('2026-04-01'),
     },
   });

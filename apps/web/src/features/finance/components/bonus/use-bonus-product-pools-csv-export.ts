@@ -2,11 +2,11 @@
 
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { downloadBonusProjectPoolsCsv } from '@/features/finance/utils/export-bonus-project-pools-csv';
+import { downloadBonusProductPoolsCsv } from '@/features/finance/utils/export-bonus-product-pools-csv';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import type { BonusProjectPoolRow } from '@/lib/api/bonus';
+import type { BonusProductPoolRow } from '@/lib/api/bonus';
 
-export function useBonusProjectPoolsCsvExport(rows: BonusProjectPoolRow[]) {
+export function useBonusProductPoolsCsvExport(rows: BonusProductPoolRow[]) {
   const [exportCsvSubmitting, setExportCsvSubmitting] = useState(false);
 
   const handleExportCsv = useCallback(() => {
@@ -16,9 +16,9 @@ export function useBonusProjectPoolsCsvExport(rows: BonusProjectPoolRow[]) {
     }
     setExportCsvSubmitting(true);
     try {
-      downloadBonusProjectPoolsCsv(rows);
+      downloadBonusProductPoolsCsv(rows);
       toast.success(
-        `Exported ${rows.length} project roll-up${rows.length === 1 ? '' : 's'} (UTF-8 CSV)`,
+        `Exported ${rows.length} product pool roll-up${rows.length === 1 ? '' : 's'} (UTF-8 CSV)`,
       );
     } catch (caught) {
       toast.error(getApiErrorMessage(caught, 'Could not export bonus pool CSV.'));

@@ -65,7 +65,6 @@ describe('Constants', () => {
     expect(BONUS_PERCENTAGES.SALES.COLD_CALL).toBe(10);
     expect(BONUS_PERCENTAGES.DELIVERY.CUSTOM_CODE).toBe(15);
     expect(BONUS_PERCENTAGES.PARTNER_DEFAULT).toBe(30);
-    expect(BONUS_PERCENTAGES.HOLDBACK).toBe(20);
   });
 
   it('TASK_STATUSES includes NEW and DONE', () => {

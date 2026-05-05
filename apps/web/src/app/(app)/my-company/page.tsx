@@ -7,6 +7,7 @@ import {
   Building2,
   ClipboardList,
   Network,
+  Percent,
   RefreshCcw,
   ShieldCheck,
   Target,
@@ -47,6 +48,13 @@ const MY_COMPANY_SECTIONS = [
     href: '/my-company/compensation',
     description: 'Compensation profiles, bonus policies, and payroll-facing rules.',
     icon: BadgeDollarSign,
+  },
+  {
+    title: 'Sales bonus policies',
+    href: '/my-company/sales-bonus-policies',
+    description:
+      'Seller and assistant rates by From category and Classic vs subscription first invoice.',
+    icon: Percent,
   },
   {
     title: 'KPI / Scorecard',

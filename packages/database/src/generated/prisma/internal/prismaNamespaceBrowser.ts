@@ -66,7 +66,10 @@ export const ModelName = {
   ExpensePlan: 'ExpensePlan',
   Expense: 'Expense',
   ExpensePayment: 'ExpensePayment',
+  SalesBonusPolicy: 'SalesBonusPolicy',
   BonusEntry: 'BonusEntry',
+  BonusRelease: 'BonusRelease',
+  ProductBonusPool: 'ProductBonusPool',
   PayrollRun: 'PayrollRun',
   SalaryLine: 'SalaryLine',
   WorkSpace: 'WorkSpace',
@@ -521,18 +524,34 @@ export const ExpensePaymentScalarFieldEnum = {
 export type ExpensePaymentScalarFieldEnum =
   (typeof ExpensePaymentScalarFieldEnum)[keyof typeof ExpensePaymentScalarFieldEnum];
 
+export const SalesBonusPolicyScalarFieldEnum = {
+  id: 'id',
+  fromCategory: 'fromCategory',
+  paymentModel: 'paymentModel',
+  sellerPercent: 'sellerPercent',
+  assistantPercent: 'assistantPercent',
+  effectiveFrom: 'effectiveFrom',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type SalesBonusPolicyScalarFieldEnum =
+  (typeof SalesBonusPolicyScalarFieldEnum)[keyof typeof SalesBonusPolicyScalarFieldEnum];
+
 export const BonusEntryScalarFieldEnum = {
   id: 'id',
   employeeId: 'employeeId',
   orderId: 'orderId',
   projectId: 'projectId',
+  dealId: 'dealId',
+  salesBonusSlot: 'salesBonusSlot',
+  calculationSnapshot: 'calculationSnapshot',
   type: 'type',
   amount: 'amount',
   percent: 'percent',
   status: 'status',
   kpiGatePassed: 'kpiGatePassed',
-  holdbackPercent: 'holdbackPercent',
-  holdbackReleaseDate: 'holdbackReleaseDate',
   payoutMonth: 'payoutMonth',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -540,6 +559,46 @@ export const BonusEntryScalarFieldEnum = {
 
 export type BonusEntryScalarFieldEnum =
   (typeof BonusEntryScalarFieldEnum)[keyof typeof BonusEntryScalarFieldEnum];
+
+export const BonusReleaseScalarFieldEnum = {
+  id: 'id',
+  bonusEntryId: 'bonusEntryId',
+  payrollRunId: 'payrollRunId',
+  employeeId: 'employeeId',
+  projectId: 'projectId',
+  productId: 'productId',
+  extensionId: 'extensionId',
+  amount: 'amount',
+  releaseType: 'releaseType',
+  reason: 'reason',
+  approvedById: 'approvedById',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type BonusReleaseScalarFieldEnum =
+  (typeof BonusReleaseScalarFieldEnum)[keyof typeof BonusReleaseScalarFieldEnum];
+
+export const ProductBonusPoolScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  projectId: 'projectId',
+  productId: 'productId',
+  extensionId: 'extensionId',
+  totalPlannedAmount: 'totalPlannedAmount',
+  totalReleasedAmount: 'totalReleasedAmount',
+  totalPaidAmount: 'totalPaidAmount',
+  totalRemainingAmount: 'totalRemainingAmount',
+  availableFunding: 'availableFunding',
+  overFundingAmount: 'overFundingAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductBonusPoolScalarFieldEnum =
+  (typeof ProductBonusPoolScalarFieldEnum)[keyof typeof ProductBonusPoolScalarFieldEnum];
 
 export const PayrollRunScalarFieldEnum = {
   id: 'id',

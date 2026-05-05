@@ -18,8 +18,6 @@ function row(
     percent: '5',
     status: 'ACTIVE',
     kpiGatePassed: null,
-    holdbackPercent: null,
-    holdbackReleaseDate: null,
     payoutMonth: null,
     createdAt: '',
     updatedAt: '',

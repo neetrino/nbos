@@ -349,6 +349,8 @@ export type EmployeeWhereInput = {
   tasksAssigned?: Prisma.TaskListRelationFilter;
   ticketsAssigned?: Prisma.SupportTicketListRelationFilter;
   bonusEntries?: Prisma.BonusEntryListRelationFilter;
+  bonusReleases?: Prisma.BonusReleaseListRelationFilter;
+  bonusReleasesApproved?: Prisma.BonusReleaseListRelationFilter;
   payrollRunsCreated?: Prisma.PayrollRunListRelationFilter;
   payrollRunsApproved?: Prisma.PayrollRunListRelationFilter;
   salaryLines?: Prisma.SalaryLineListRelationFilter;
@@ -419,6 +421,8 @@ export type EmployeeOrderByWithRelationInput = {
   tasksAssigned?: Prisma.TaskOrderByRelationAggregateInput;
   ticketsAssigned?: Prisma.SupportTicketOrderByRelationAggregateInput;
   bonusEntries?: Prisma.BonusEntryOrderByRelationAggregateInput;
+  bonusReleases?: Prisma.BonusReleaseOrderByRelationAggregateInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseOrderByRelationAggregateInput;
   payrollRunsCreated?: Prisma.PayrollRunOrderByRelationAggregateInput;
   payrollRunsApproved?: Prisma.PayrollRunOrderByRelationAggregateInput;
   salaryLines?: Prisma.SalaryLineOrderByRelationAggregateInput;
@@ -496,6 +500,8 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
     tasksAssigned?: Prisma.TaskListRelationFilter;
     ticketsAssigned?: Prisma.SupportTicketListRelationFilter;
     bonusEntries?: Prisma.BonusEntryListRelationFilter;
+    bonusReleases?: Prisma.BonusReleaseListRelationFilter;
+    bonusReleasesApproved?: Prisma.BonusReleaseListRelationFilter;
     payrollRunsCreated?: Prisma.PayrollRunListRelationFilter;
     payrollRunsApproved?: Prisma.PayrollRunListRelationFilter;
     salaryLines?: Prisma.SalaryLineListRelationFilter;
@@ -636,6 +642,8 @@ export type EmployeeCreateInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -699,6 +707,8 @@ export type EmployeeUncheckedCreateInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -771,6 +781,8 @@ export type EmployeeUpdateInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -843,6 +855,8 @@ export type EmployeeUncheckedUpdateInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -1327,6 +1341,60 @@ export type EmployeeUpdateOneRequiredWithoutBonusEntriesNestedInput = {
       Prisma.EmployeeUpdateWithoutBonusEntriesInput
     >,
     Prisma.EmployeeUncheckedUpdateWithoutBonusEntriesInput
+  >;
+};
+
+export type EmployeeCreateNestedOneWithoutBonusReleasesInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutBonusReleasesInput,
+    Prisma.EmployeeUncheckedCreateWithoutBonusReleasesInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutBonusReleasesInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeCreateNestedOneWithoutBonusReleasesApprovedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutBonusReleasesApprovedInput,
+    Prisma.EmployeeUncheckedCreateWithoutBonusReleasesApprovedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutBonusReleasesApprovedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeUpdateOneRequiredWithoutBonusReleasesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutBonusReleasesInput,
+    Prisma.EmployeeUncheckedCreateWithoutBonusReleasesInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutBonusReleasesInput;
+  upsert?: Prisma.EmployeeUpsertWithoutBonusReleasesInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutBonusReleasesInput,
+      Prisma.EmployeeUpdateWithoutBonusReleasesInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutBonusReleasesInput
+  >;
+};
+
+export type EmployeeUpdateOneWithoutBonusReleasesApprovedNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutBonusReleasesApprovedInput,
+    Prisma.EmployeeUncheckedCreateWithoutBonusReleasesApprovedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutBonusReleasesApprovedInput;
+  upsert?: Prisma.EmployeeUpsertWithoutBonusReleasesApprovedInput;
+  disconnect?: Prisma.EmployeeWhereInput | boolean;
+  delete?: Prisma.EmployeeWhereInput | boolean;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutBonusReleasesApprovedInput,
+      Prisma.EmployeeUpdateWithoutBonusReleasesApprovedInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutBonusReleasesApprovedInput
   >;
 };
 
@@ -2258,6 +2326,8 @@ export type EmployeeCreateWithoutProductsManagingInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -2320,6 +2390,8 @@ export type EmployeeUncheckedCreateWithoutProductsManagingInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -2419,6 +2491,8 @@ export type EmployeeUpdateWithoutProductsManagingInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -2490,6 +2564,8 @@ export type EmployeeUncheckedUpdateWithoutProductsManagingInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -2552,6 +2628,8 @@ export type EmployeeCreateWithoutExtensionsAssignedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -2614,6 +2692,8 @@ export type EmployeeUncheckedCreateWithoutExtensionsAssignedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -2713,6 +2793,8 @@ export type EmployeeUpdateWithoutExtensionsAssignedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -2784,6 +2866,8 @@ export type EmployeeUncheckedUpdateWithoutExtensionsAssignedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -2847,6 +2931,8 @@ export type EmployeeCreateWithoutMarketingAccountsOwnedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -2909,6 +2995,8 @@ export type EmployeeUncheckedCreateWithoutMarketingAccountsOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -3008,6 +3096,8 @@ export type EmployeeUpdateWithoutMarketingAccountsOwnedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -3079,6 +3169,8 @@ export type EmployeeUncheckedUpdateWithoutMarketingAccountsOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -3141,6 +3233,8 @@ export type EmployeeCreateWithoutMarketingActivitiesOwnedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -3203,6 +3297,8 @@ export type EmployeeUncheckedCreateWithoutMarketingActivitiesOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -3302,6 +3398,8 @@ export type EmployeeUpdateWithoutMarketingActivitiesOwnedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -3373,6 +3471,8 @@ export type EmployeeUncheckedUpdateWithoutMarketingActivitiesOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -3434,6 +3534,8 @@ export type EmployeeCreateWithoutLeadsAssignedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -3496,6 +3598,8 @@ export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -3595,6 +3699,8 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -3666,6 +3772,8 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -3728,6 +3836,8 @@ export type EmployeeCreateWithoutDealsSellingInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -3790,6 +3900,8 @@ export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -3860,6 +3972,8 @@ export type EmployeeCreateWithoutDealsAsSellerAssistantInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -3922,6 +4036,8 @@ export type EmployeeUncheckedCreateWithoutDealsAsSellerAssistantInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -3992,6 +4108,8 @@ export type EmployeeCreateWithoutDealsPMInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -4054,6 +4172,8 @@ export type EmployeeUncheckedCreateWithoutDealsPMInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -4153,6 +4273,8 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -4224,6 +4346,8 @@ export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -4315,6 +4439,8 @@ export type EmployeeUpdateWithoutDealsAsSellerAssistantInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -4386,6 +4512,8 @@ export type EmployeeUncheckedUpdateWithoutDealsAsSellerAssistantInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -4477,6 +4605,8 @@ export type EmployeeUpdateWithoutDealsPMInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -4548,6 +4678,8 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -4610,6 +4742,8 @@ export type EmployeeCreateWithoutPaymentsConfirmedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -4672,6 +4806,8 @@ export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -4771,6 +4907,8 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -4842,6 +4980,8 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -4904,6 +5044,8 @@ export type EmployeeCreateWithoutBonusEntriesInput = {
   tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -4966,6 +5108,8 @@ export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
   tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -5065,6 +5209,8 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
   tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -5136,6 +5282,612 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
   tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeCreateWithoutBonusReleasesInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeUncheckedCreateWithoutBonusReleasesInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeCreateOrConnectWithoutBonusReleasesInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutBonusReleasesInput,
+    Prisma.EmployeeUncheckedCreateWithoutBonusReleasesInput
+  >;
+};
+
+export type EmployeeCreateWithoutBonusReleasesApprovedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeUncheckedCreateWithoutBonusReleasesApprovedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
+};
+
+export type EmployeeCreateOrConnectWithoutBonusReleasesApprovedInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutBonusReleasesApprovedInput,
+    Prisma.EmployeeUncheckedCreateWithoutBonusReleasesApprovedInput
+  >;
+};
+
+export type EmployeeUpsertWithoutBonusReleasesInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutBonusReleasesInput,
+    Prisma.EmployeeUncheckedUpdateWithoutBonusReleasesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutBonusReleasesInput,
+    Prisma.EmployeeUncheckedCreateWithoutBonusReleasesInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutBonusReleasesInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutBonusReleasesInput,
+    Prisma.EmployeeUncheckedUpdateWithoutBonusReleasesInput
+  >;
+};
+
+export type EmployeeUpdateWithoutBonusReleasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutBonusReleasesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUpsertWithoutBonusReleasesApprovedInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutBonusReleasesApprovedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutBonusReleasesApprovedInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutBonusReleasesApprovedInput,
+    Prisma.EmployeeUncheckedCreateWithoutBonusReleasesApprovedInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutBonusReleasesApprovedInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutBonusReleasesApprovedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutBonusReleasesApprovedInput
+  >;
+};
+
+export type EmployeeUpdateWithoutBonusReleasesApprovedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutBonusReleasesApprovedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -5199,6 +5951,8 @@ export type EmployeeCreateWithoutPayrollRunsCreatedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
@@ -5261,6 +6015,8 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsCreatedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
@@ -5331,6 +6087,8 @@ export type EmployeeCreateWithoutPayrollRunsApprovedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
@@ -5393,6 +6151,8 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsApprovedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
@@ -5492,6 +6252,8 @@ export type EmployeeUpdateWithoutPayrollRunsCreatedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
@@ -5563,6 +6325,8 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsCreatedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
@@ -5654,6 +6418,8 @@ export type EmployeeUpdateWithoutPayrollRunsApprovedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
@@ -5725,6 +6491,8 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsApprovedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
@@ -5787,6 +6555,8 @@ export type EmployeeCreateWithoutSalaryLinesInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
@@ -5849,6 +6619,8 @@ export type EmployeeUncheckedCreateWithoutSalaryLinesInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
@@ -5948,6 +6720,8 @@ export type EmployeeUpdateWithoutSalaryLinesInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
@@ -6019,6 +6793,8 @@ export type EmployeeUncheckedUpdateWithoutSalaryLinesInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
@@ -6080,6 +6856,8 @@ export type EmployeeCreateWithoutTasksCreatedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -6142,6 +6920,8 @@ export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -6212,6 +6992,8 @@ export type EmployeeCreateWithoutTasksAssignedInput = {
   tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -6274,6 +7056,8 @@ export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
   tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -6373,6 +7157,8 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -6444,6 +7230,8 @@ export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -6535,6 +7323,8 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
   tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -6606,6 +7396,8 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
   tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -6669,6 +7461,8 @@ export type EmployeeCreateWithoutReportExportJobsRequestedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -6731,6 +7525,8 @@ export type EmployeeUncheckedCreateWithoutReportExportJobsRequestedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -6830,6 +7626,8 @@ export type EmployeeUpdateWithoutReportExportJobsRequestedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -6901,6 +7699,8 @@ export type EmployeeUncheckedUpdateWithoutReportExportJobsRequestedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -6963,6 +7763,8 @@ export type EmployeeCreateWithoutReportSchedulesOwnedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -7025,6 +7827,8 @@ export type EmployeeUncheckedCreateWithoutReportSchedulesOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -7124,6 +7928,8 @@ export type EmployeeUpdateWithoutReportSchedulesOwnedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -7195,6 +8001,8 @@ export type EmployeeUncheckedUpdateWithoutReportSchedulesOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -7257,6 +8065,8 @@ export type EmployeeCreateWithoutSavedReportViewsInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -7319,6 +8129,8 @@ export type EmployeeUncheckedCreateWithoutSavedReportViewsInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -7418,6 +8230,8 @@ export type EmployeeUpdateWithoutSavedReportViewsInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -7489,6 +8303,8 @@ export type EmployeeUncheckedUpdateWithoutSavedReportViewsInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -7551,6 +8367,8 @@ export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -7613,6 +8431,8 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -7683,6 +8503,8 @@ export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -7745,6 +8567,8 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -7844,6 +8668,8 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -7915,6 +8741,8 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -8006,6 +8834,8 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -8077,6 +8907,8 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -8138,6 +8970,8 @@ export type EmployeeCreateWithoutTicketsAssignedInput = {
   tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -8200,6 +9034,8 @@ export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
   tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -8299,6 +9135,8 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
   tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -8370,6 +9208,8 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
   tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -8433,6 +9273,8 @@ export type EmployeeCreateWithoutCredentialsOwnedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -8495,6 +9337,8 @@ export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -8594,6 +9438,8 @@ export type EmployeeUpdateWithoutCredentialsOwnedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -8665,6 +9511,8 @@ export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -8726,6 +9574,8 @@ export type EmployeeCreateWithoutDepartmentsInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -8788,6 +9638,8 @@ export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -8887,6 +9739,8 @@ export type EmployeeUpdateWithoutDepartmentsInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -8958,6 +9812,8 @@ export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -9020,6 +9876,8 @@ export type EmployeeCreateWithoutRoleInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -9082,6 +9940,8 @@ export type EmployeeUncheckedCreateWithoutRoleInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -9218,6 +10078,8 @@ export type EmployeeCreateWithoutInvitationsSentInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -9280,6 +10142,8 @@ export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -9350,6 +10214,8 @@ export type EmployeeCreateWithoutInvitationReceivedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -9412,6 +10278,8 @@ export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -9511,6 +10379,8 @@ export type EmployeeUpdateWithoutInvitationsSentInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -9582,6 +10452,8 @@ export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -9673,6 +10545,8 @@ export type EmployeeUpdateWithoutInvitationReceivedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -9744,6 +10618,8 @@ export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -9806,6 +10682,8 @@ export type EmployeeCreateWithoutDashboardPreferenceInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -9868,6 +10746,8 @@ export type EmployeeUncheckedCreateWithoutDashboardPreferenceInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -9967,6 +10847,8 @@ export type EmployeeUpdateWithoutDashboardPreferenceInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -10038,6 +10920,8 @@ export type EmployeeUncheckedUpdateWithoutDashboardPreferenceInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -10100,6 +10984,8 @@ export type EmployeeCreateWithoutPersonalLinksInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -10162,6 +11048,8 @@ export type EmployeeUncheckedCreateWithoutPersonalLinksInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -10261,6 +11149,8 @@ export type EmployeeUpdateWithoutPersonalLinksInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -10332,6 +11222,8 @@ export type EmployeeUncheckedUpdateWithoutPersonalLinksInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -10394,6 +11286,8 @@ export type EmployeeCreateWithoutDashboardNotesInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -10456,6 +11350,8 @@ export type EmployeeUncheckedCreateWithoutDashboardNotesInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -10555,6 +11451,8 @@ export type EmployeeUpdateWithoutDashboardNotesInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -10626,6 +11524,8 @@ export type EmployeeUncheckedUpdateWithoutDashboardNotesInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -10688,6 +11588,8 @@ export type EmployeeCreateWithoutMessengerChannelMessagesSentInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -10750,6 +11652,8 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelMessagesSentInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -10849,6 +11753,8 @@ export type EmployeeUpdateWithoutMessengerChannelMessagesSentInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -10920,6 +11826,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelMessagesSentInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -10982,6 +11890,8 @@ export type EmployeeCreateWithoutMessengerChannelAttachmentsInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -11044,6 +11954,8 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelAttachmentsInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -11143,6 +12055,8 @@ export type EmployeeUpdateWithoutMessengerChannelAttachmentsInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -11214,6 +12128,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelAttachmentsInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -11276,6 +12192,8 @@ export type EmployeeCreateWithoutMessengerChannelReadStatesInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -11338,6 +12256,8 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelReadStatesInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -11437,6 +12357,8 @@ export type EmployeeUpdateWithoutMessengerChannelReadStatesInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -11508,6 +12430,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelReadStatesInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -11570,6 +12494,8 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsAInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -11632,6 +12558,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsAInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -11702,6 +12630,8 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsBInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -11764,6 +12694,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsBInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -11863,6 +12795,8 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsAInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -11934,6 +12868,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsAInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -12025,6 +12961,8 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsBInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -12096,6 +13034,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsBInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -12158,6 +13098,8 @@ export type EmployeeCreateWithoutMessengerDirectMessagesSentInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -12220,6 +13162,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectMessagesSentInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -12319,6 +13263,8 @@ export type EmployeeUpdateWithoutMessengerDirectMessagesSentInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -12390,6 +13336,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectMessagesSentInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -12452,6 +13400,8 @@ export type EmployeeCreateWithoutMessengerDirectAttachmentsInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -12514,6 +13464,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectAttachmentsInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -12613,6 +13565,8 @@ export type EmployeeUpdateWithoutMessengerDirectAttachmentsInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -12684,6 +13638,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectAttachmentsInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -12746,6 +13702,8 @@ export type EmployeeCreateWithoutMessengerDmThreadReadStatesInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -12808,6 +13766,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadReadStatesInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -12907,6 +13867,8 @@ export type EmployeeUpdateWithoutMessengerDmThreadReadStatesInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -12978,6 +13940,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadReadStatesInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -13040,6 +14004,8 @@ export type EmployeeCreateWithoutMailAccountsOwnedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -13102,6 +14068,8 @@ export type EmployeeUncheckedCreateWithoutMailAccountsOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -13172,6 +14140,8 @@ export type EmployeeCreateWithoutMailAccountsCreatedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -13234,6 +14204,8 @@ export type EmployeeUncheckedCreateWithoutMailAccountsCreatedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -13333,6 +14305,8 @@ export type EmployeeUpdateWithoutMailAccountsOwnedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -13404,6 +14378,8 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsOwnedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -13495,6 +14471,8 @@ export type EmployeeUpdateWithoutMailAccountsCreatedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -13566,6 +14544,8 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsCreatedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -13628,6 +14608,8 @@ export type EmployeeCreateWithoutMailDeliveryLogsActedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -13690,6 +14672,8 @@ export type EmployeeUncheckedCreateWithoutMailDeliveryLogsActedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -13789,6 +14773,8 @@ export type EmployeeUpdateWithoutMailDeliveryLogsActedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -13860,6 +14846,8 @@ export type EmployeeUncheckedUpdateWithoutMailDeliveryLogsActedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -13922,6 +14910,8 @@ export type EmployeeCreateWithoutInAppNotificationsReceivedInput = {
   tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
@@ -13984,6 +14974,8 @@ export type EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput = {
   tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
   bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
   salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
@@ -14083,6 +15075,8 @@ export type EmployeeUpdateWithoutInAppNotificationsReceivedInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -14154,6 +15148,8 @@ export type EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -14246,6 +15242,8 @@ export type EmployeeUpdateWithoutRoleInput = {
   tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
@@ -14317,6 +15315,8 @@ export type EmployeeUncheckedUpdateWithoutRoleInput = {
   tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
   ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
   bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
   payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
   payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
   salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
@@ -14395,6 +15395,8 @@ export type EmployeeCountOutputType = {
   tasksAssigned: number;
   ticketsAssigned: number;
   bonusEntries: number;
+  bonusReleases: number;
+  bonusReleasesApproved: number;
   payrollRunsCreated: number;
   payrollRunsApproved: number;
   salaryLines: number;
@@ -14438,6 +15440,8 @@ export type EmployeeCountOutputTypeSelect<
   tasksAssigned?: boolean | EmployeeCountOutputTypeCountTasksAssignedArgs;
   ticketsAssigned?: boolean | EmployeeCountOutputTypeCountTicketsAssignedArgs;
   bonusEntries?: boolean | EmployeeCountOutputTypeCountBonusEntriesArgs;
+  bonusReleases?: boolean | EmployeeCountOutputTypeCountBonusReleasesArgs;
+  bonusReleasesApproved?: boolean | EmployeeCountOutputTypeCountBonusReleasesApprovedArgs;
   payrollRunsCreated?: boolean | EmployeeCountOutputTypeCountPayrollRunsCreatedArgs;
   payrollRunsApproved?: boolean | EmployeeCountOutputTypeCountPayrollRunsApprovedArgs;
   salaryLines?: boolean | EmployeeCountOutputTypeCountSalaryLinesArgs;
@@ -14592,6 +15596,24 @@ export type EmployeeCountOutputTypeCountBonusEntriesArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   where?: Prisma.BonusEntryWhereInput;
+};
+
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountBonusReleasesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.BonusReleaseWhereInput;
+};
+
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountBonusReleasesApprovedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.BonusReleaseWhereInput;
 };
 
 /**
@@ -14865,6 +15887,8 @@ export type EmployeeSelect<
     tasksAssigned?: boolean | Prisma.Employee$tasksAssignedArgs<ExtArgs>;
     ticketsAssigned?: boolean | Prisma.Employee$ticketsAssignedArgs<ExtArgs>;
     bonusEntries?: boolean | Prisma.Employee$bonusEntriesArgs<ExtArgs>;
+    bonusReleases?: boolean | Prisma.Employee$bonusReleasesArgs<ExtArgs>;
+    bonusReleasesApproved?: boolean | Prisma.Employee$bonusReleasesApprovedArgs<ExtArgs>;
     payrollRunsCreated?: boolean | Prisma.Employee$payrollRunsCreatedArgs<ExtArgs>;
     payrollRunsApproved?: boolean | Prisma.Employee$payrollRunsApprovedArgs<ExtArgs>;
     salaryLines?: boolean | Prisma.Employee$salaryLinesArgs<ExtArgs>;
@@ -15028,6 +16052,8 @@ export type EmployeeInclude<
   tasksAssigned?: boolean | Prisma.Employee$tasksAssignedArgs<ExtArgs>;
   ticketsAssigned?: boolean | Prisma.Employee$ticketsAssignedArgs<ExtArgs>;
   bonusEntries?: boolean | Prisma.Employee$bonusEntriesArgs<ExtArgs>;
+  bonusReleases?: boolean | Prisma.Employee$bonusReleasesArgs<ExtArgs>;
+  bonusReleasesApproved?: boolean | Prisma.Employee$bonusReleasesApprovedArgs<ExtArgs>;
   payrollRunsCreated?: boolean | Prisma.Employee$payrollRunsCreatedArgs<ExtArgs>;
   payrollRunsApproved?: boolean | Prisma.Employee$payrollRunsApprovedArgs<ExtArgs>;
   salaryLines?: boolean | Prisma.Employee$salaryLinesArgs<ExtArgs>;
@@ -15089,6 +16115,8 @@ export type $EmployeePayload<
     tasksAssigned: Prisma.$TaskPayload<ExtArgs>[];
     ticketsAssigned: Prisma.$SupportTicketPayload<ExtArgs>[];
     bonusEntries: Prisma.$BonusEntryPayload<ExtArgs>[];
+    bonusReleases: Prisma.$BonusReleasePayload<ExtArgs>[];
+    bonusReleasesApproved: Prisma.$BonusReleasePayload<ExtArgs>[];
     payrollRunsCreated: Prisma.$PayrollRunPayload<ExtArgs>[];
     payrollRunsApproved: Prisma.$PayrollRunPayload<ExtArgs>[];
     salaryLines: Prisma.$SalaryLinePayload<ExtArgs>[];
@@ -15785,6 +16813,28 @@ export interface Prisma__EmployeeClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$BonusEntryPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  bonusReleases<T extends Prisma.Employee$bonusReleasesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$bonusReleasesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$BonusReleasePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  bonusReleasesApproved<T extends Prisma.Employee$bonusReleasesApprovedArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$bonusReleasesApprovedArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$BonusReleasePayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -16904,6 +17954,62 @@ export type Employee$bonusEntriesArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.BonusEntryScalarFieldEnum | Prisma.BonusEntryScalarFieldEnum[];
+};
+
+/**
+ * Employee.bonusReleases
+ */
+export type Employee$bonusReleasesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the BonusRelease
+   */
+  select?: Prisma.BonusReleaseSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the BonusRelease
+   */
+  omit?: Prisma.BonusReleaseOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BonusReleaseInclude<ExtArgs> | null;
+  where?: Prisma.BonusReleaseWhereInput;
+  orderBy?:
+    | Prisma.BonusReleaseOrderByWithRelationInput
+    | Prisma.BonusReleaseOrderByWithRelationInput[];
+  cursor?: Prisma.BonusReleaseWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.BonusReleaseScalarFieldEnum | Prisma.BonusReleaseScalarFieldEnum[];
+};
+
+/**
+ * Employee.bonusReleasesApproved
+ */
+export type Employee$bonusReleasesApprovedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the BonusRelease
+   */
+  select?: Prisma.BonusReleaseSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the BonusRelease
+   */
+  omit?: Prisma.BonusReleaseOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BonusReleaseInclude<ExtArgs> | null;
+  where?: Prisma.BonusReleaseWhereInput;
+  orderBy?:
+    | Prisma.BonusReleaseOrderByWithRelationInput
+    | Prisma.BonusReleaseOrderByWithRelationInput[];
+  cursor?: Prisma.BonusReleaseWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.BonusReleaseScalarFieldEnum | Prisma.BonusReleaseScalarFieldEnum[];
 };
 
 /**

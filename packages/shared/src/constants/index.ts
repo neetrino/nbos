@@ -93,7 +93,6 @@ export const BONUS_STATUSES = [
   'EARNED',
   'PENDING_ELIGIBILITY',
   'VESTED',
-  'HOLDBACK',
   'ACTIVE',
   'PAID',
   'CLAWBACK',
@@ -254,5 +253,4 @@ export const BONUS_PERCENTAGES = {
     CUSTOM_CODE: 15,
   },
   PARTNER_DEFAULT: 30,
-  HOLDBACK: 20,
 } as const;

@@ -1260,6 +1260,75 @@ export type EnumExpenseBacklogReasonEnumNullableWithAggregatesFilter<$PrismaMode
   _max?: Prisma.NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel>;
 };
 
+export type EnumLeadSourceEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.LeadSourceEnum | Prisma.EnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumLeadSourceEnumFilter<$PrismaModel> | $Enums.LeadSourceEnum;
+};
+
+export type EnumSalesBonusPaymentModelEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SalesBonusPaymentModelEnum
+    | Prisma.EnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.SalesBonusPaymentModelEnum[]
+    | Prisma.ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.SalesBonusPaymentModelEnum[]
+    | Prisma.ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumSalesBonusPaymentModelEnumFilter<$PrismaModel>
+    | $Enums.SalesBonusPaymentModelEnum;
+};
+
+export type EnumLeadSourceEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LeadSourceEnum | Prisma.EnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumLeadSourceEnumWithAggregatesFilter<$PrismaModel> | $Enums.LeadSourceEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumLeadSourceEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumLeadSourceEnumFilter<$PrismaModel>;
+};
+
+export type EnumSalesBonusPaymentModelEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SalesBonusPaymentModelEnum
+    | Prisma.EnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.SalesBonusPaymentModelEnum[]
+    | Prisma.ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.SalesBonusPaymentModelEnum[]
+    | Prisma.ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumSalesBonusPaymentModelEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.SalesBonusPaymentModelEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSalesBonusPaymentModelEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSalesBonusPaymentModelEnumFilter<$PrismaModel>;
+};
+
+export type EnumSalesBonusSlotEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SalesBonusSlotEnum
+    | Prisma.EnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SalesBonusSlotEnum[]
+    | Prisma.ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SalesBonusSlotEnum[]
+    | Prisma.ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSalesBonusSlotEnumNullableFilter<$PrismaModel>
+    | $Enums.SalesBonusSlotEnum
+    | null;
+};
+
 export type EnumBonusTypeEnumFilter<$PrismaModel = never> = {
   equals?: $Enums.BonusTypeEnum | Prisma.EnumBonusTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.BonusTypeEnum[] | Prisma.ListEnumBonusTypeEnumFieldRefInput<$PrismaModel>;
@@ -1277,6 +1346,28 @@ export type EnumBonusStatusEnumFilter<$PrismaModel = never> = {
 export type BoolNullableFilter<$PrismaModel = never> = {
   equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel> | null;
   not?: Prisma.NestedBoolNullableFilter<$PrismaModel> | boolean | null;
+};
+
+export type EnumSalesBonusSlotEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SalesBonusSlotEnum
+    | Prisma.EnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SalesBonusSlotEnum[]
+    | Prisma.ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SalesBonusSlotEnum[]
+    | Prisma.ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSalesBonusSlotEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.SalesBonusSlotEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSalesBonusSlotEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSalesBonusSlotEnumNullableFilter<$PrismaModel>;
 };
 
 export type EnumBonusTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
@@ -1305,6 +1396,97 @@ export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _min?: Prisma.NestedBoolNullableFilter<$PrismaModel>;
   _max?: Prisma.NestedBoolNullableFilter<$PrismaModel>;
+};
+
+export type EnumBonusReleaseTypeEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.BonusReleaseTypeEnum | Prisma.EnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.BonusReleaseTypeEnum[]
+    | Prisma.ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.BonusReleaseTypeEnum[]
+    | Prisma.ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumBonusReleaseTypeEnumFilter<$PrismaModel> | $Enums.BonusReleaseTypeEnum;
+};
+
+export type EnumBonusReleaseStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.BonusReleaseStatusEnum
+    | Prisma.EnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.BonusReleaseStatusEnum[]
+    | Prisma.ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.BonusReleaseStatusEnum[]
+    | Prisma.ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumBonusReleaseStatusEnumFilter<$PrismaModel> | $Enums.BonusReleaseStatusEnum;
+};
+
+export type EnumBonusReleaseTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BonusReleaseTypeEnum | Prisma.EnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.BonusReleaseTypeEnum[]
+    | Prisma.ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.BonusReleaseTypeEnum[]
+    | Prisma.ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumBonusReleaseTypeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.BonusReleaseTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumBonusReleaseTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumBonusReleaseTypeEnumFilter<$PrismaModel>;
+};
+
+export type EnumBonusReleaseStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.BonusReleaseStatusEnum
+    | Prisma.EnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.BonusReleaseStatusEnum[]
+    | Prisma.ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.BonusReleaseStatusEnum[]
+    | Prisma.ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumBonusReleaseStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.BonusReleaseStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumBonusReleaseStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumBonusReleaseStatusEnumFilter<$PrismaModel>;
+};
+
+export type EnumProductBonusPoolStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ProductBonusPoolStatusEnum
+    | Prisma.EnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ProductBonusPoolStatusEnum[]
+    | Prisma.ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ProductBonusPoolStatusEnum[]
+    | Prisma.ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumProductBonusPoolStatusEnumFilter<$PrismaModel>
+    | $Enums.ProductBonusPoolStatusEnum;
+};
+
+export type EnumProductBonusPoolStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ProductBonusPoolStatusEnum
+    | Prisma.EnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ProductBonusPoolStatusEnum[]
+    | Prisma.ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ProductBonusPoolStatusEnum[]
+    | Prisma.ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumProductBonusPoolStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ProductBonusPoolStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumProductBonusPoolStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumProductBonusPoolStatusEnumFilter<$PrismaModel>;
 };
 
 export type EnumPayrollRunStatusEnumFilter<$PrismaModel = never> = {
@@ -4488,6 +4670,75 @@ export type NestedEnumExpenseBacklogReasonEnumNullableWithAggregatesFilter<$Pris
   _max?: Prisma.NestedEnumExpenseBacklogReasonEnumNullableFilter<$PrismaModel>;
 };
 
+export type NestedEnumLeadSourceEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.LeadSourceEnum | Prisma.EnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumLeadSourceEnumFilter<$PrismaModel> | $Enums.LeadSourceEnum;
+};
+
+export type NestedEnumSalesBonusPaymentModelEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SalesBonusPaymentModelEnum
+    | Prisma.EnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.SalesBonusPaymentModelEnum[]
+    | Prisma.ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.SalesBonusPaymentModelEnum[]
+    | Prisma.ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumSalesBonusPaymentModelEnumFilter<$PrismaModel>
+    | $Enums.SalesBonusPaymentModelEnum;
+};
+
+export type NestedEnumLeadSourceEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.LeadSourceEnum | Prisma.EnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.LeadSourceEnum[] | Prisma.ListEnumLeadSourceEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumLeadSourceEnumWithAggregatesFilter<$PrismaModel> | $Enums.LeadSourceEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumLeadSourceEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumLeadSourceEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumSalesBonusPaymentModelEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SalesBonusPaymentModelEnum
+    | Prisma.EnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.SalesBonusPaymentModelEnum[]
+    | Prisma.ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.SalesBonusPaymentModelEnum[]
+    | Prisma.ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumSalesBonusPaymentModelEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.SalesBonusPaymentModelEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSalesBonusPaymentModelEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSalesBonusPaymentModelEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumSalesBonusSlotEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SalesBonusSlotEnum
+    | Prisma.EnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SalesBonusSlotEnum[]
+    | Prisma.ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SalesBonusSlotEnum[]
+    | Prisma.ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSalesBonusSlotEnumNullableFilter<$PrismaModel>
+    | $Enums.SalesBonusSlotEnum
+    | null;
+};
+
 export type NestedEnumBonusTypeEnumFilter<$PrismaModel = never> = {
   equals?: $Enums.BonusTypeEnum | Prisma.EnumBonusTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.BonusTypeEnum[] | Prisma.ListEnumBonusTypeEnumFieldRefInput<$PrismaModel>;
@@ -4505,6 +4756,28 @@ export type NestedEnumBonusStatusEnumFilter<$PrismaModel = never> = {
 export type NestedBoolNullableFilter<$PrismaModel = never> = {
   equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel> | null;
   not?: Prisma.NestedBoolNullableFilter<$PrismaModel> | boolean | null;
+};
+
+export type NestedEnumSalesBonusSlotEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SalesBonusSlotEnum
+    | Prisma.EnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SalesBonusSlotEnum[]
+    | Prisma.ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SalesBonusSlotEnum[]
+    | Prisma.ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSalesBonusSlotEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.SalesBonusSlotEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSalesBonusSlotEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSalesBonusSlotEnumNullableFilter<$PrismaModel>;
 };
 
 export type NestedEnumBonusTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
@@ -4533,6 +4806,97 @@ export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _min?: Prisma.NestedBoolNullableFilter<$PrismaModel>;
   _max?: Prisma.NestedBoolNullableFilter<$PrismaModel>;
+};
+
+export type NestedEnumBonusReleaseTypeEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.BonusReleaseTypeEnum | Prisma.EnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.BonusReleaseTypeEnum[]
+    | Prisma.ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.BonusReleaseTypeEnum[]
+    | Prisma.ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumBonusReleaseTypeEnumFilter<$PrismaModel> | $Enums.BonusReleaseTypeEnum;
+};
+
+export type NestedEnumBonusReleaseStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.BonusReleaseStatusEnum
+    | Prisma.EnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.BonusReleaseStatusEnum[]
+    | Prisma.ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.BonusReleaseStatusEnum[]
+    | Prisma.ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumBonusReleaseStatusEnumFilter<$PrismaModel> | $Enums.BonusReleaseStatusEnum;
+};
+
+export type NestedEnumBonusReleaseTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BonusReleaseTypeEnum | Prisma.EnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.BonusReleaseTypeEnum[]
+    | Prisma.ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.BonusReleaseTypeEnum[]
+    | Prisma.ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumBonusReleaseTypeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.BonusReleaseTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumBonusReleaseTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumBonusReleaseTypeEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumBonusReleaseStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.BonusReleaseStatusEnum
+    | Prisma.EnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.BonusReleaseStatusEnum[]
+    | Prisma.ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.BonusReleaseStatusEnum[]
+    | Prisma.ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumBonusReleaseStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.BonusReleaseStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumBonusReleaseStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumBonusReleaseStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumProductBonusPoolStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ProductBonusPoolStatusEnum
+    | Prisma.EnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ProductBonusPoolStatusEnum[]
+    | Prisma.ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ProductBonusPoolStatusEnum[]
+    | Prisma.ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumProductBonusPoolStatusEnumFilter<$PrismaModel>
+    | $Enums.ProductBonusPoolStatusEnum;
+};
+
+export type NestedEnumProductBonusPoolStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.ProductBonusPoolStatusEnum
+    | Prisma.EnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.ProductBonusPoolStatusEnum[]
+    | Prisma.ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.ProductBonusPoolStatusEnum[]
+    | Prisma.ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumProductBonusPoolStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.ProductBonusPoolStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumProductBonusPoolStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumProductBonusPoolStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumPayrollRunStatusEnumFilter<$PrismaModel = never> = {

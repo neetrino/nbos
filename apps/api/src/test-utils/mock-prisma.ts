@@ -69,14 +69,23 @@ export function createMockPrisma() {
     marketingAccount: createModelMock(),
     marketingActivity: createModelMock(),
     marketingCrmWhereOption: createModelMock(),
+    salesBonusPolicy: createModelMock(),
+    productBonusPool: createModelMock(),
+    bonusRelease: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
     $transaction: vi.fn(),
   };
 
-  prisma.$transaction.mockImplementation(async (fn: (tx: typeof prisma) => Promise<unknown>) =>
-    fn(prisma),
-  );
+  prisma.$transaction.mockImplementation(async (arg: unknown) => {
+    if (Array.isArray(arg)) {
+      return Promise.all(arg);
+    }
+    if (typeof arg === 'function') {
+      return (arg as (tx: typeof prisma) => Promise<unknown>)(prisma);
+    }
+    return undefined;
+  });
 
   return prisma;
 }

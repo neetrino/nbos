@@ -18,6 +18,7 @@ import {
   resolveInvoiceTaxStatus,
   syncInvoiceOrderStatus,
 } from './invoice-service-helpers';
+import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -117,6 +118,11 @@ export class InvoicesService {
 
   async create(data: CreateInvoiceDto) {
     this.assertCreateInvoiceInput(data);
+    await assertFirstInvoiceMinimums(this.prisma, {
+      orderId: data.orderId,
+      subscriptionId: data.subscriptionId,
+      amount: data.amount,
+    });
     const code = await this.generateCode();
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
 

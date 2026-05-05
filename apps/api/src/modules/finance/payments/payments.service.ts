@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
 import {
   getLatestPaymentDate,
   resolveInvoiceStatus,
@@ -31,6 +32,7 @@ export class PaymentsService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly salesBonusAccrual: SalesBonusAccrualService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -172,6 +174,14 @@ export class PaymentsService {
 
     if (invoice.orderId) {
       await this.syncOrderStatus(invoice.orderId);
+    }
+
+    const refreshed = await this.prisma.invoice.findUnique({
+      where: { id: data.invoiceId },
+      select: { status: true },
+    });
+    if (refreshed?.status === 'PAID') {
+      await this.salesBonusAccrual.onInvoicePaid(data.invoiceId);
     }
 
     return this.findById(created.id);

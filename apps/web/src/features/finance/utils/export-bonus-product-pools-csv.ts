@@ -1,7 +1,12 @@
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
-import type { BonusProjectPoolRow } from '@/lib/api/bonus';
+import type { BonusProductPoolRow } from '@/lib/api/bonus';
 
 const CSV_HEADERS = [
+  'poolKey',
+  'poolKind',
+  'anchorOrderId',
+  'poolName',
+  'orderCode',
   'projectId',
   'projectCode',
   'projectName',
@@ -10,6 +15,11 @@ const CSV_HEADERS = [
   'sumPaidAmount',
   'sumClawbackAmount',
   'sumTotalAmount',
+  'ledgerPlannedAmount',
+  'ledgerReleasedAmount',
+  'ledgerRemainingAmount',
+  'ledgerAvailableFunding',
+  'ledgerPoolStatus',
 ] as const;
 
 const CSV_UTF8_BOM = '\uFEFF';
@@ -21,8 +31,13 @@ function escapeCsvCell(value: string): string {
   return value;
 }
 
-function rowToCsvCells(row: BonusProjectPoolRow): string[] {
+function rowToCsvCells(row: BonusProductPoolRow): string[] {
   const cells = [
+    row.poolKey,
+    row.poolKind,
+    row.anchorOrderId,
+    row.poolName,
+    row.orderCode,
     row.projectId,
     row.projectCode,
     row.projectName,
@@ -31,11 +46,16 @@ function rowToCsvCells(row: BonusProjectPoolRow): string[] {
     row.sumPaidAmount,
     row.sumClawbackAmount,
     row.sumTotalAmount,
+    row.ledgerPlannedAmount ?? '',
+    row.ledgerReleasedAmount ?? '',
+    row.ledgerRemainingAmount ?? '',
+    row.ledgerAvailableFunding ?? '',
+    row.ledgerPoolStatus ?? '',
   ];
   return cells.map((c) => escapeCsvCell(String(c)));
 }
 
-function grandTotalCsvLine(rows: BonusProjectPoolRow[]): string {
+function grandTotalCsvLine(rows: BonusProductPoolRow[]): string {
   const entrySum = rows.reduce((acc, r) => acc + r.entryCount, 0);
   const pipeline = sumMoneyStringsMajorUnits(rows.map((r) => r.sumPipelineAmount)).toFixed(2);
   const paid = sumMoneyStringsMajorUnits(rows.map((r) => r.sumPaidAmount)).toFixed(2);
@@ -44,17 +64,27 @@ function grandTotalCsvLine(rows: BonusProjectPoolRow[]): string {
   const cells = [
     '_grand_total',
     '—',
-    `All projects (${rows.length})`,
+    '—',
+    `All pools (${rows.length})`,
+    '—',
+    '—',
+    '—',
+    '—',
     String(entrySum),
     pipeline,
     paid,
     clawback,
     total,
+    '',
+    '',
+    '',
+    '',
+    '',
   ];
   return cells.map((c) => escapeCsvCell(String(c))).join(',');
 }
 
-export function buildBonusProjectPoolsCsvContent(rows: BonusProjectPoolRow[]): string {
+export function buildBonusProductPoolsCsvContent(rows: BonusProductPoolRow[]): string {
   const headerLine = CSV_HEADERS.join(',');
   if (rows.length === 0) {
     return headerLine;
@@ -76,8 +106,8 @@ function triggerCsvDownload(csvBodyWithoutBom: string, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-export function downloadBonusProjectPoolsCsv(rows: BonusProjectPoolRow[]): void {
-  const content = buildBonusProjectPoolsCsvContent(rows);
+export function downloadBonusProductPoolsCsv(rows: BonusProductPoolRow[]): void {
+  const content = buildBonusProductPoolsCsvContent(rows);
   const dateStamp = new Date().toISOString().slice(0, 10);
-  triggerCsvDownload(content, `nbos-bonus-project-pools-${dateStamp}.csv`);
+  triggerCsvDownload(content, `nbos-bonus-product-pools-${dateStamp}.csv`);
 }

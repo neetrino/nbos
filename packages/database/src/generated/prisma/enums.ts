@@ -344,18 +344,64 @@ export const BonusTypeEnum = {
 
 export type BonusTypeEnum = (typeof BonusTypeEnum)[keyof typeof BonusTypeEnum];
 
+export const SalesBonusPaymentModelEnum = {
+  CLASSIC: 'CLASSIC',
+  SUBSCRIPTION_FIRST_MONTH: 'SUBSCRIPTION_FIRST_MONTH',
+} as const;
+
+export type SalesBonusPaymentModelEnum =
+  (typeof SalesBonusPaymentModelEnum)[keyof typeof SalesBonusPaymentModelEnum];
+
+export const SalesBonusSlotEnum = {
+  SELLER: 'SELLER',
+  ASSISTANT: 'ASSISTANT',
+} as const;
+
+export type SalesBonusSlotEnum = (typeof SalesBonusSlotEnum)[keyof typeof SalesBonusSlotEnum];
+
 export const BonusStatusEnum = {
   INCOMING: 'INCOMING',
   EARNED: 'EARNED',
   PENDING_ELIGIBILITY: 'PENDING_ELIGIBILITY',
   VESTED: 'VESTED',
-  HOLDBACK: 'HOLDBACK',
   ACTIVE: 'ACTIVE',
   PAID: 'PAID',
   CLAWBACK: 'CLAWBACK',
 } as const;
 
 export type BonusStatusEnum = (typeof BonusStatusEnum)[keyof typeof BonusStatusEnum];
+
+export const BonusReleaseTypeEnum = {
+  AUTO: 'AUTO',
+  MANUAL: 'MANUAL',
+  EARLY: 'EARLY',
+  EXTRA: 'EXTRA',
+  OVER_FUNDING: 'OVER_FUNDING',
+  CORRECTION: 'CORRECTION',
+} as const;
+
+export type BonusReleaseTypeEnum = (typeof BonusReleaseTypeEnum)[keyof typeof BonusReleaseTypeEnum];
+
+export const BonusReleaseStatusEnum = {
+  DRAFT: 'DRAFT',
+  APPROVED: 'APPROVED',
+  INCLUDED_IN_PAYROLL: 'INCLUDED_IN_PAYROLL',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export type BonusReleaseStatusEnum =
+  (typeof BonusReleaseStatusEnum)[keyof typeof BonusReleaseStatusEnum];
+
+export const ProductBonusPoolStatusEnum = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  PARTIALLY_RELEASED: 'PARTIALLY_RELEASED',
+  CLOSED: 'CLOSED',
+} as const;
+
+export type ProductBonusPoolStatusEnum =
+  (typeof ProductBonusPoolStatusEnum)[keyof typeof ProductBonusPoolStatusEnum];
 
 export const PayrollRunStatusEnum = {
   DRAFT: 'DRAFT',

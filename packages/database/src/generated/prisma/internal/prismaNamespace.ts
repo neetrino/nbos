@@ -393,7 +393,10 @@ export const ModelName = {
   ExpensePlan: 'ExpensePlan',
   Expense: 'Expense',
   ExpensePayment: 'ExpensePayment',
+  SalesBonusPolicy: 'SalesBonusPolicy',
   BonusEntry: 'BonusEntry',
+  BonusRelease: 'BonusRelease',
+  ProductBonusPool: 'ProductBonusPool',
   PayrollRun: 'PayrollRun',
   SalaryLine: 'SalaryLine',
   WorkSpace: 'WorkSpace',
@@ -498,7 +501,10 @@ export type TypeMap<
       | 'expensePlan'
       | 'expense'
       | 'expensePayment'
+      | 'salesBonusPolicy'
       | 'bonusEntry'
+      | 'bonusRelease'
+      | 'productBonusPool'
       | 'payrollRun'
       | 'salaryLine'
       | 'workSpace'
@@ -1912,6 +1918,82 @@ export type TypeMap<
         };
       };
     };
+    SalesBonusPolicy: {
+      payload: Prisma.$SalesBonusPolicyPayload<ExtArgs>;
+      fields: Prisma.SalesBonusPolicyFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.SalesBonusPolicyFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.SalesBonusPolicyFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>;
+        };
+        findFirst: {
+          args: Prisma.SalesBonusPolicyFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.SalesBonusPolicyFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>;
+        };
+        findMany: {
+          args: Prisma.SalesBonusPolicyFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>[];
+        };
+        create: {
+          args: Prisma.SalesBonusPolicyCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>;
+        };
+        createMany: {
+          args: Prisma.SalesBonusPolicyCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.SalesBonusPolicyCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>[];
+        };
+        delete: {
+          args: Prisma.SalesBonusPolicyDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>;
+        };
+        update: {
+          args: Prisma.SalesBonusPolicyUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>;
+        };
+        deleteMany: {
+          args: Prisma.SalesBonusPolicyDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.SalesBonusPolicyUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.SalesBonusPolicyUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>[];
+        };
+        upsert: {
+          args: Prisma.SalesBonusPolicyUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SalesBonusPolicyPayload>;
+        };
+        aggregate: {
+          args: Prisma.SalesBonusPolicyAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSalesBonusPolicy>;
+        };
+        groupBy: {
+          args: Prisma.SalesBonusPolicyGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.SalesBonusPolicyGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.SalesBonusPolicyCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.SalesBonusPolicyCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     BonusEntry: {
       payload: Prisma.$BonusEntryPayload<ExtArgs>;
       fields: Prisma.BonusEntryFieldRefs;
@@ -1983,6 +2065,158 @@ export type TypeMap<
         count: {
           args: Prisma.BonusEntryCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.BonusEntryCountAggregateOutputType> | number;
+        };
+      };
+    };
+    BonusRelease: {
+      payload: Prisma.$BonusReleasePayload<ExtArgs>;
+      fields: Prisma.BonusReleaseFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.BonusReleaseFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.BonusReleaseFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>;
+        };
+        findFirst: {
+          args: Prisma.BonusReleaseFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.BonusReleaseFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>;
+        };
+        findMany: {
+          args: Prisma.BonusReleaseFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>[];
+        };
+        create: {
+          args: Prisma.BonusReleaseCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>;
+        };
+        createMany: {
+          args: Prisma.BonusReleaseCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.BonusReleaseCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>[];
+        };
+        delete: {
+          args: Prisma.BonusReleaseDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>;
+        };
+        update: {
+          args: Prisma.BonusReleaseUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>;
+        };
+        deleteMany: {
+          args: Prisma.BonusReleaseDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.BonusReleaseUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.BonusReleaseUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>[];
+        };
+        upsert: {
+          args: Prisma.BonusReleaseUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BonusReleasePayload>;
+        };
+        aggregate: {
+          args: Prisma.BonusReleaseAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBonusRelease>;
+        };
+        groupBy: {
+          args: Prisma.BonusReleaseGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.BonusReleaseGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.BonusReleaseCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.BonusReleaseCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ProductBonusPool: {
+      payload: Prisma.$ProductBonusPoolPayload<ExtArgs>;
+      fields: Prisma.ProductBonusPoolFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ProductBonusPoolFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ProductBonusPoolFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>;
+        };
+        findFirst: {
+          args: Prisma.ProductBonusPoolFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ProductBonusPoolFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>;
+        };
+        findMany: {
+          args: Prisma.ProductBonusPoolFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>[];
+        };
+        create: {
+          args: Prisma.ProductBonusPoolCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>;
+        };
+        createMany: {
+          args: Prisma.ProductBonusPoolCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ProductBonusPoolCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>[];
+        };
+        delete: {
+          args: Prisma.ProductBonusPoolDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>;
+        };
+        update: {
+          args: Prisma.ProductBonusPoolUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ProductBonusPoolDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ProductBonusPoolUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ProductBonusPoolUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>[];
+        };
+        upsert: {
+          args: Prisma.ProductBonusPoolUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductBonusPoolPayload>;
+        };
+        aggregate: {
+          args: Prisma.ProductBonusPoolAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProductBonusPool>;
+        };
+        groupBy: {
+          args: Prisma.ProductBonusPoolGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ProductBonusPoolGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ProductBonusPoolCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ProductBonusPoolCountAggregateOutputType>
+            | number;
         };
       };
     };
@@ -7369,18 +7603,34 @@ export const ExpensePaymentScalarFieldEnum = {
 export type ExpensePaymentScalarFieldEnum =
   (typeof ExpensePaymentScalarFieldEnum)[keyof typeof ExpensePaymentScalarFieldEnum];
 
+export const SalesBonusPolicyScalarFieldEnum = {
+  id: 'id',
+  fromCategory: 'fromCategory',
+  paymentModel: 'paymentModel',
+  sellerPercent: 'sellerPercent',
+  assistantPercent: 'assistantPercent',
+  effectiveFrom: 'effectiveFrom',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type SalesBonusPolicyScalarFieldEnum =
+  (typeof SalesBonusPolicyScalarFieldEnum)[keyof typeof SalesBonusPolicyScalarFieldEnum];
+
 export const BonusEntryScalarFieldEnum = {
   id: 'id',
   employeeId: 'employeeId',
   orderId: 'orderId',
   projectId: 'projectId',
+  dealId: 'dealId',
+  salesBonusSlot: 'salesBonusSlot',
+  calculationSnapshot: 'calculationSnapshot',
   type: 'type',
   amount: 'amount',
   percent: 'percent',
   status: 'status',
   kpiGatePassed: 'kpiGatePassed',
-  holdbackPercent: 'holdbackPercent',
-  holdbackReleaseDate: 'holdbackReleaseDate',
   payoutMonth: 'payoutMonth',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -7388,6 +7638,46 @@ export const BonusEntryScalarFieldEnum = {
 
 export type BonusEntryScalarFieldEnum =
   (typeof BonusEntryScalarFieldEnum)[keyof typeof BonusEntryScalarFieldEnum];
+
+export const BonusReleaseScalarFieldEnum = {
+  id: 'id',
+  bonusEntryId: 'bonusEntryId',
+  payrollRunId: 'payrollRunId',
+  employeeId: 'employeeId',
+  projectId: 'projectId',
+  productId: 'productId',
+  extensionId: 'extensionId',
+  amount: 'amount',
+  releaseType: 'releaseType',
+  reason: 'reason',
+  approvedById: 'approvedById',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type BonusReleaseScalarFieldEnum =
+  (typeof BonusReleaseScalarFieldEnum)[keyof typeof BonusReleaseScalarFieldEnum];
+
+export const ProductBonusPoolScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  projectId: 'projectId',
+  productId: 'productId',
+  extensionId: 'extensionId',
+  totalPlannedAmount: 'totalPlannedAmount',
+  totalReleasedAmount: 'totalReleasedAmount',
+  totalPaidAmount: 'totalPaidAmount',
+  totalRemainingAmount: 'totalRemainingAmount',
+  availableFunding: 'availableFunding',
+  overFundingAmount: 'overFundingAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductBonusPoolScalarFieldEnum =
+  (typeof ProductBonusPoolScalarFieldEnum)[keyof typeof ProductBonusPoolScalarFieldEnum];
 
 export const PayrollRunScalarFieldEnum = {
   id: 'id',
@@ -9109,6 +9399,38 @@ export type ListEnumExpenseBacklogReasonEnumFieldRefInput<$PrismaModel> = FieldR
 >;
 
 /**
+ * Reference to a field of type 'SalesBonusPaymentModelEnum'
+ */
+export type EnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'SalesBonusPaymentModelEnum'
+>;
+
+/**
+ * Reference to a field of type 'SalesBonusPaymentModelEnum[]'
+ */
+export type ListEnumSalesBonusPaymentModelEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'SalesBonusPaymentModelEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'SalesBonusSlotEnum'
+ */
+export type EnumSalesBonusSlotEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'SalesBonusSlotEnum'
+>;
+
+/**
+ * Reference to a field of type 'SalesBonusSlotEnum[]'
+ */
+export type ListEnumSalesBonusSlotEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'SalesBonusSlotEnum[]'
+>;
+
+/**
  * Reference to a field of type 'BonusTypeEnum'
  */
 export type EnumBonusTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -9138,6 +9460,54 @@ export type EnumBonusStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type ListEnumBonusStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'BonusStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'BonusReleaseTypeEnum'
+ */
+export type EnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'BonusReleaseTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'BonusReleaseTypeEnum[]'
+ */
+export type ListEnumBonusReleaseTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'BonusReleaseTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'BonusReleaseStatusEnum'
+ */
+export type EnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'BonusReleaseStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'BonusReleaseStatusEnum[]'
+ */
+export type ListEnumBonusReleaseStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'BonusReleaseStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ProductBonusPoolStatusEnum'
+ */
+export type EnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductBonusPoolStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'ProductBonusPoolStatusEnum[]'
+ */
+export type ListEnumProductBonusPoolStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductBonusPoolStatusEnum[]'
 >;
 
 /**
@@ -10337,7 +10707,10 @@ export type GlobalOmitConfig = {
   expensePlan?: Prisma.ExpensePlanOmit;
   expense?: Prisma.ExpenseOmit;
   expensePayment?: Prisma.ExpensePaymentOmit;
+  salesBonusPolicy?: Prisma.SalesBonusPolicyOmit;
   bonusEntry?: Prisma.BonusEntryOmit;
+  bonusRelease?: Prisma.BonusReleaseOmit;
+  productBonusPool?: Prisma.ProductBonusPoolOmit;
   payrollRun?: Prisma.PayrollRunOmit;
   salaryLine?: Prisma.SalaryLineOmit;
   workSpace?: Prisma.WorkSpaceOmit;
