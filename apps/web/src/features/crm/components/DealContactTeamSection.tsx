@@ -8,12 +8,14 @@ import type { SaveField, SearchLoader } from './deal-general-tab.types';
 interface DealContactTeamSectionProps {
   deal: Deal;
   searchContacts: SearchLoader;
+  searchEmployees: SearchLoader;
   saveField: SaveField;
 }
 
 export function DealContactTeamSection({
   deal,
   searchContacts,
+  searchEmployees,
   saveField,
 }: DealContactTeamSectionProps) {
   return (
@@ -33,12 +35,27 @@ export function DealContactTeamSection({
           onSave={(value) => saveField('contactId', value)}
         />
 
-        <InlineField
+        <SearchField
           label="Seller"
-          value={deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : ''}
+          value={deal.seller?.id ?? null}
           displayValue={deal.seller ? <SellerDisplay deal={deal} /> : undefined}
-          editable={false}
+          placeholder="Select seller…"
           icon={<Building2 size={12} />}
+          onSearch={searchEmployees}
+          onSave={(value) => saveField('sellerId', value)}
+        />
+
+        <SearchField
+          label="Sales assistant"
+          value={deal.sellerAssistant?.id ?? null}
+          displayValue={
+            deal.sellerAssistant ? <AssistantDisplay assistant={deal.sellerAssistant} /> : undefined
+          }
+          placeholder="Optional — search employee…"
+          icon={<Building2 size={12} />}
+          onSearch={searchEmployees}
+          onSave={(value) => saveField('sellerAssistantId', value)}
+          onClear={() => saveField('sellerAssistantId', null)}
         />
 
         <InlineField
@@ -87,6 +104,20 @@ function SellerDisplay({ deal }: { deal: Deal }) {
       </div>
       <span className="text-foreground text-sm font-medium">
         {deal.seller.firstName} {deal.seller.lastName}
+      </span>
+    </div>
+  );
+}
+
+function AssistantDisplay({ assistant }: { assistant: NonNullable<Deal['sellerAssistant']> }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-50 text-xs font-bold text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
+        {assistant.firstName[0]}
+        {assistant.lastName[0]}
+      </div>
+      <span className="text-foreground text-sm font-medium">
+        {assistant.firstName} {assistant.lastName}
       </span>
     </div>
   );

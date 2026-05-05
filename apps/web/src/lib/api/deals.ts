@@ -49,6 +49,7 @@ export interface Deal {
   projectId: string | null;
   taxStatus?: string;
   companyId?: string | null;
+  sellerAssistantId?: string | null;
   company?: { id: string; name: string } | null;
   source: string | null;
   sourceDetail: string | null;
@@ -77,6 +78,7 @@ export interface Deal {
   lead: { id: string; code: string; contactName: string } | null;
   contact: { id: string; firstName: string; lastName: string; email: string | null };
   seller: { id: string; firstName: string; lastName: string };
+  sellerAssistant?: { id: string; firstName: string; lastName: string } | null;
   orders: DealOrder[];
   handoff?: DealHandoffReferences;
   sourcePartner: { id: string; name: string; defaultPercent?: number | string | null } | null;
@@ -148,6 +150,7 @@ export const dealsApi = {
     amount?: number;
     paymentType?: string;
     sellerId: string;
+    sellerAssistantId?: string | null;
     source?: string;
     sourceDetail?: string;
     sourcePartnerId?: string;

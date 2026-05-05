@@ -47,6 +47,7 @@ export type DealMinAggregateOutputType = {
   paymentType: $Enums.PaymentTypeEnum | null;
   taxStatus: $Enums.TaxStatus | null;
   sellerId: string | null;
+  sellerAssistantId: string | null;
   source: $Enums.LeadSourceEnum | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;
@@ -85,6 +86,7 @@ export type DealMaxAggregateOutputType = {
   paymentType: $Enums.PaymentTypeEnum | null;
   taxStatus: $Enums.TaxStatus | null;
   sellerId: string | null;
+  sellerAssistantId: string | null;
   source: $Enums.LeadSourceEnum | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;
@@ -123,6 +125,7 @@ export type DealCountAggregateOutputType = {
   paymentType: number;
   taxStatus: number;
   sellerId: number;
+  sellerAssistantId: number;
   source: number;
   sourceDetail: number;
   sourcePartnerId: number;
@@ -170,6 +173,7 @@ export type DealMinAggregateInputType = {
   paymentType?: true;
   taxStatus?: true;
   sellerId?: true;
+  sellerAssistantId?: true;
   source?: true;
   sourceDetail?: true;
   sourcePartnerId?: true;
@@ -208,6 +212,7 @@ export type DealMaxAggregateInputType = {
   paymentType?: true;
   taxStatus?: true;
   sellerId?: true;
+  sellerAssistantId?: true;
   source?: true;
   sourceDetail?: true;
   sourcePartnerId?: true;
@@ -246,6 +251,7 @@ export type DealCountAggregateInputType = {
   paymentType?: true;
   taxStatus?: true;
   sellerId?: true;
+  sellerAssistantId?: true;
   source?: true;
   sourceDetail?: true;
   sourcePartnerId?: true;
@@ -372,6 +378,7 @@ export type DealGroupByOutputType = {
   paymentType: $Enums.PaymentTypeEnum | null;
   taxStatus: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId: string | null;
   source: $Enums.LeadSourceEnum | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;
@@ -436,6 +443,7 @@ export type DealWhereInput = {
   paymentType?: Prisma.EnumPaymentTypeEnumNullableFilter<'Deal'> | $Enums.PaymentTypeEnum | null;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Deal'> | $Enums.TaxStatus;
   sellerId?: Prisma.StringFilter<'Deal'> | string;
+  sellerAssistantId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   source?: Prisma.EnumLeadSourceEnumNullableFilter<'Deal'> | $Enums.LeadSourceEnum | null;
   sourceDetail?: Prisma.StringNullableFilter<'Deal'> | string | null;
   sourcePartnerId?: Prisma.StringNullableFilter<'Deal'> | string | null;
@@ -465,6 +473,10 @@ export type DealWhereInput = {
   contact?: Prisma.XOR<Prisma.ContactScalarRelationFilter, Prisma.ContactWhereInput>;
   company?: Prisma.XOR<Prisma.CompanyNullableScalarRelationFilter, Prisma.CompanyWhereInput> | null;
   seller?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
+  sellerAssistant?: Prisma.XOR<
+    Prisma.EmployeeNullableScalarRelationFilter,
+    Prisma.EmployeeWhereInput
+  > | null;
   pm?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
   existingProduct?: Prisma.XOR<
     Prisma.ProductNullableScalarRelationFilter,
@@ -504,6 +516,7 @@ export type DealOrderByWithRelationInput = {
   paymentType?: Prisma.SortOrderInput | Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
+  sellerAssistantId?: Prisma.SortOrderInput | Prisma.SortOrder;
   source?: Prisma.SortOrderInput | Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrderInput | Prisma.SortOrder;
   sourcePartnerId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -530,6 +543,7 @@ export type DealOrderByWithRelationInput = {
   contact?: Prisma.ContactOrderByWithRelationInput;
   company?: Prisma.CompanyOrderByWithRelationInput;
   seller?: Prisma.EmployeeOrderByWithRelationInput;
+  sellerAssistant?: Prisma.EmployeeOrderByWithRelationInput;
   pm?: Prisma.EmployeeOrderByWithRelationInput;
   existingProduct?: Prisma.ProductOrderByWithRelationInput;
   sourcePartner?: Prisma.PartnerOrderByWithRelationInput;
@@ -564,6 +578,7 @@ export type DealWhereUniqueInput = Prisma.AtLeast<
     paymentType?: Prisma.EnumPaymentTypeEnumNullableFilter<'Deal'> | $Enums.PaymentTypeEnum | null;
     taxStatus?: Prisma.EnumTaxStatusFilter<'Deal'> | $Enums.TaxStatus;
     sellerId?: Prisma.StringFilter<'Deal'> | string;
+    sellerAssistantId?: Prisma.StringNullableFilter<'Deal'> | string | null;
     source?: Prisma.EnumLeadSourceEnumNullableFilter<'Deal'> | $Enums.LeadSourceEnum | null;
     sourceDetail?: Prisma.StringNullableFilter<'Deal'> | string | null;
     sourcePartnerId?: Prisma.StringNullableFilter<'Deal'> | string | null;
@@ -596,6 +611,10 @@ export type DealWhereUniqueInput = Prisma.AtLeast<
       Prisma.CompanyWhereInput
     > | null;
     seller?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>;
+    sellerAssistant?: Prisma.XOR<
+      Prisma.EmployeeNullableScalarRelationFilter,
+      Prisma.EmployeeWhereInput
+    > | null;
     pm?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
     existingProduct?: Prisma.XOR<
       Prisma.ProductNullableScalarRelationFilter,
@@ -637,6 +656,7 @@ export type DealOrderByWithAggregationInput = {
   paymentType?: Prisma.SortOrderInput | Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
+  sellerAssistantId?: Prisma.SortOrderInput | Prisma.SortOrder;
   source?: Prisma.SortOrderInput | Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrderInput | Prisma.SortOrder;
   sourcePartnerId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -692,6 +712,7 @@ export type DealScalarWhereWithAggregatesInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusWithAggregatesFilter<'Deal'> | $Enums.TaxStatus;
   sellerId?: Prisma.StringWithAggregatesFilter<'Deal'> | string;
+  sellerAssistantId?: Prisma.StringNullableWithAggregatesFilter<'Deal'> | string | null;
   source?:
     | Prisma.EnumLeadSourceEnumNullableWithAggregatesFilter<'Deal'>
     | $Enums.LeadSourceEnum
@@ -752,6 +773,7 @@ export type DealCreateInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -776,6 +798,7 @@ export type DealUncheckedCreateInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -847,6 +870,7 @@ export type DealUpdateInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -880,6 +904,7 @@ export type DealUncheckedUpdateInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -926,6 +951,7 @@ export type DealCreateManyInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -1016,6 +1042,7 @@ export type DealUncheckedUpdateManyInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -1075,6 +1102,7 @@ export type DealCountOrderByAggregateInput = {
   paymentType?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
+  sellerAssistantId?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrder;
   sourcePartnerId?: Prisma.SortOrder;
@@ -1117,6 +1145,7 @@ export type DealMaxOrderByAggregateInput = {
   paymentType?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
+  sellerAssistantId?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrder;
   sourcePartnerId?: Prisma.SortOrder;
@@ -1155,6 +1184,7 @@ export type DealMinOrderByAggregateInput = {
   paymentType?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   sellerId?: Prisma.SortOrder;
+  sellerAssistantId?: Prisma.SortOrder;
   source?: Prisma.SortOrder;
   sourceDetail?: Prisma.SortOrder;
   sourcePartnerId?: Prisma.SortOrder;
@@ -1833,6 +1863,21 @@ export type DealCreateNestedManyWithoutSellerInput = {
   connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
 };
 
+export type DealCreateNestedManyWithoutSellerAssistantInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DealCreateWithoutSellerAssistantInput,
+        Prisma.DealUncheckedCreateWithoutSellerAssistantInput
+      >
+    | Prisma.DealCreateWithoutSellerAssistantInput[]
+    | Prisma.DealUncheckedCreateWithoutSellerAssistantInput[];
+  connectOrCreate?:
+    | Prisma.DealCreateOrConnectWithoutSellerAssistantInput
+    | Prisma.DealCreateOrConnectWithoutSellerAssistantInput[];
+  createMany?: Prisma.DealCreateManySellerAssistantInputEnvelope;
+  connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+};
+
 export type DealCreateNestedManyWithoutPmInput = {
   create?:
     | Prisma.XOR<Prisma.DealCreateWithoutPmInput, Prisma.DealUncheckedCreateWithoutPmInput>
@@ -1854,6 +1899,21 @@ export type DealUncheckedCreateNestedManyWithoutSellerInput = {
     | Prisma.DealCreateOrConnectWithoutSellerInput
     | Prisma.DealCreateOrConnectWithoutSellerInput[];
   createMany?: Prisma.DealCreateManySellerInputEnvelope;
+  connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+};
+
+export type DealUncheckedCreateNestedManyWithoutSellerAssistantInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DealCreateWithoutSellerAssistantInput,
+        Prisma.DealUncheckedCreateWithoutSellerAssistantInput
+      >
+    | Prisma.DealCreateWithoutSellerAssistantInput[]
+    | Prisma.DealUncheckedCreateWithoutSellerAssistantInput[];
+  connectOrCreate?:
+    | Prisma.DealCreateOrConnectWithoutSellerAssistantInput
+    | Prisma.DealCreateOrConnectWithoutSellerAssistantInput[];
+  createMany?: Prisma.DealCreateManySellerAssistantInputEnvelope;
   connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
 };
 
@@ -1891,6 +1951,34 @@ export type DealUpdateManyWithoutSellerNestedInput = {
   updateMany?:
     | Prisma.DealUpdateManyWithWhereWithoutSellerInput
     | Prisma.DealUpdateManyWithWhereWithoutSellerInput[];
+  deleteMany?: Prisma.DealScalarWhereInput | Prisma.DealScalarWhereInput[];
+};
+
+export type DealUpdateManyWithoutSellerAssistantNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DealCreateWithoutSellerAssistantInput,
+        Prisma.DealUncheckedCreateWithoutSellerAssistantInput
+      >
+    | Prisma.DealCreateWithoutSellerAssistantInput[]
+    | Prisma.DealUncheckedCreateWithoutSellerAssistantInput[];
+  connectOrCreate?:
+    | Prisma.DealCreateOrConnectWithoutSellerAssistantInput
+    | Prisma.DealCreateOrConnectWithoutSellerAssistantInput[];
+  upsert?:
+    | Prisma.DealUpsertWithWhereUniqueWithoutSellerAssistantInput
+    | Prisma.DealUpsertWithWhereUniqueWithoutSellerAssistantInput[];
+  createMany?: Prisma.DealCreateManySellerAssistantInputEnvelope;
+  set?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  disconnect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  delete?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  update?:
+    | Prisma.DealUpdateWithWhereUniqueWithoutSellerAssistantInput
+    | Prisma.DealUpdateWithWhereUniqueWithoutSellerAssistantInput[];
+  updateMany?:
+    | Prisma.DealUpdateManyWithWhereWithoutSellerAssistantInput
+    | Prisma.DealUpdateManyWithWhereWithoutSellerAssistantInput[];
   deleteMany?: Prisma.DealScalarWhereInput | Prisma.DealScalarWhereInput[];
 };
 
@@ -1941,6 +2029,34 @@ export type DealUncheckedUpdateManyWithoutSellerNestedInput = {
   updateMany?:
     | Prisma.DealUpdateManyWithWhereWithoutSellerInput
     | Prisma.DealUpdateManyWithWhereWithoutSellerInput[];
+  deleteMany?: Prisma.DealScalarWhereInput | Prisma.DealScalarWhereInput[];
+};
+
+export type DealUncheckedUpdateManyWithoutSellerAssistantNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DealCreateWithoutSellerAssistantInput,
+        Prisma.DealUncheckedCreateWithoutSellerAssistantInput
+      >
+    | Prisma.DealCreateWithoutSellerAssistantInput[]
+    | Prisma.DealUncheckedCreateWithoutSellerAssistantInput[];
+  connectOrCreate?:
+    | Prisma.DealCreateOrConnectWithoutSellerAssistantInput
+    | Prisma.DealCreateOrConnectWithoutSellerAssistantInput[];
+  upsert?:
+    | Prisma.DealUpsertWithWhereUniqueWithoutSellerAssistantInput
+    | Prisma.DealUpsertWithWhereUniqueWithoutSellerAssistantInput[];
+  createMany?: Prisma.DealCreateManySellerAssistantInputEnvelope;
+  set?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  disconnect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  delete?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  connect?: Prisma.DealWhereUniqueInput | Prisma.DealWhereUniqueInput[];
+  update?:
+    | Prisma.DealUpdateWithWhereUniqueWithoutSellerAssistantInput
+    | Prisma.DealUpdateWithWhereUniqueWithoutSellerAssistantInput[];
+  updateMany?:
+    | Prisma.DealUpdateManyWithWhereWithoutSellerAssistantInput
+    | Prisma.DealUpdateManyWithWhereWithoutSellerAssistantInput[];
   deleteMany?: Prisma.DealScalarWhereInput | Prisma.DealScalarWhereInput[];
 };
 
@@ -2084,6 +2200,7 @@ export type DealCreateWithoutContactInput = {
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -2107,6 +2224,7 @@ export type DealUncheckedCreateWithoutContactInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -2176,6 +2294,7 @@ export type DealCreateWithoutSourceContactInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -2199,6 +2318,7 @@ export type DealUncheckedCreateWithoutSourceContactInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -2288,6 +2408,7 @@ export type DealScalarWhereInput = {
   paymentType?: Prisma.EnumPaymentTypeEnumNullableFilter<'Deal'> | $Enums.PaymentTypeEnum | null;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Deal'> | $Enums.TaxStatus;
   sellerId?: Prisma.StringFilter<'Deal'> | string;
+  sellerAssistantId?: Prisma.StringNullableFilter<'Deal'> | string | null;
   source?: Prisma.EnumLeadSourceEnumNullableFilter<'Deal'> | $Enums.LeadSourceEnum | null;
   sourceDetail?: Prisma.StringNullableFilter<'Deal'> | string | null;
   sourcePartnerId?: Prisma.StringNullableFilter<'Deal'> | string | null;
@@ -2372,6 +2493,7 @@ export type DealCreateWithoutCompanyInput = {
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -2395,6 +2517,7 @@ export type DealUncheckedCreateWithoutCompanyInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -2492,6 +2615,7 @@ export type DealCreateWithoutExistingProductInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
@@ -2515,6 +2639,7 @@ export type DealUncheckedCreateWithoutExistingProductInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -2611,6 +2736,7 @@ export type DealCreateWithoutMarketingAccountInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -2634,6 +2760,7 @@ export type DealUncheckedCreateWithoutMarketingAccountInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -2730,6 +2857,7 @@ export type DealCreateWithoutMarketingActivityInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -2753,6 +2881,7 @@ export type DealUncheckedCreateWithoutMarketingActivityInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -2848,6 +2977,7 @@ export type DealCreateWithoutLeadInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -2871,6 +3001,7 @@ export type DealUncheckedCreateWithoutLeadInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -2957,6 +3088,7 @@ export type DealUpdateWithoutLeadInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -2989,6 +3121,7 @@ export type DealUncheckedUpdateWithoutLeadInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -3051,6 +3184,7 @@ export type DealCreateWithoutOrdersInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -3074,6 +3208,7 @@ export type DealUncheckedCreateWithoutOrdersInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -3172,6 +3307,7 @@ export type DealUpdateWithoutOrdersInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -3204,6 +3340,7 @@ export type DealUncheckedUpdateWithoutOrdersInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -3265,6 +3402,7 @@ export type DealCreateWithoutSupportTicketsInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -3288,6 +3426,7 @@ export type DealUncheckedCreateWithoutSupportTicketsInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -3386,6 +3525,7 @@ export type DealUpdateWithoutSupportTicketsInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -3418,6 +3558,7 @@ export type DealUncheckedUpdateWithoutSupportTicketsInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -3478,6 +3619,7 @@ export type DealCreateWithoutSellerInput = {
   lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
@@ -3501,6 +3643,7 @@ export type DealUncheckedCreateWithoutSellerInput = {
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -3540,6 +3683,99 @@ export type DealCreateManySellerInputEnvelope = {
   skipDuplicates?: boolean;
 };
 
+export type DealCreateWithoutSellerAssistantInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  projectId?: string | null;
+  type: $Enums.DealTypeEnum;
+  status?: $Enums.DealStatusEnum;
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
+  source?: $Enums.LeadSourceEnum | null;
+  sourceDetail?: string | null;
+  notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
+  productType?: string | null;
+  deadline?: Date | string | null;
+  offerSentAt?: Date | string | null;
+  offerLink?: string | null;
+  offerFileUrl?: string | null;
+  offerScreenshotUrl?: string | null;
+  responseDueAt?: Date | string | null;
+  contractSignedAt?: Date | string | null;
+  contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  lead?: Prisma.LeadCreateNestedOneWithoutDealInput;
+  contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
+  seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
+  existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
+  sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
+  sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
+  marketingAccount?: Prisma.MarketingAccountCreateNestedOneWithoutDealsInput;
+  marketingActivity?: Prisma.MarketingActivityCreateNestedOneWithoutDealsInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutDealInput;
+  supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutExtensionDealInput;
+};
+
+export type DealUncheckedCreateWithoutSellerAssistantInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  leadId?: string | null;
+  contactId: string;
+  projectId?: string | null;
+  companyId?: string | null;
+  type: $Enums.DealTypeEnum;
+  status?: $Enums.DealStatusEnum;
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
+  sellerId: string;
+  source?: $Enums.LeadSourceEnum | null;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
+  marketingAccountId?: string | null;
+  marketingActivityId?: string | null;
+  notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
+  productType?: string | null;
+  pmId?: string | null;
+  deadline?: Date | string | null;
+  existingProductId?: string | null;
+  offerSentAt?: Date | string | null;
+  offerLink?: string | null;
+  offerFileUrl?: string | null;
+  offerScreenshotUrl?: string | null;
+  responseDueAt?: Date | string | null;
+  contractSignedAt?: Date | string | null;
+  contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDealInput;
+  supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutExtensionDealInput;
+};
+
+export type DealCreateOrConnectWithoutSellerAssistantInput = {
+  where: Prisma.DealWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.DealCreateWithoutSellerAssistantInput,
+    Prisma.DealUncheckedCreateWithoutSellerAssistantInput
+  >;
+};
+
+export type DealCreateManySellerAssistantInputEnvelope = {
+  data: Prisma.DealCreateManySellerAssistantInput | Prisma.DealCreateManySellerAssistantInput[];
+  skipDuplicates?: boolean;
+};
+
 export type DealCreateWithoutPmInput = {
   id?: string;
   code: string;
@@ -3570,6 +3806,7 @@ export type DealCreateWithoutPmInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourcePartner?: Prisma.PartnerCreateNestedOneWithoutDealsAsSourceInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
@@ -3593,6 +3830,7 @@ export type DealUncheckedCreateWithoutPmInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -3656,6 +3894,34 @@ export type DealUpdateManyWithWhereWithoutSellerInput = {
   >;
 };
 
+export type DealUpsertWithWhereUniqueWithoutSellerAssistantInput = {
+  where: Prisma.DealWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.DealUpdateWithoutSellerAssistantInput,
+    Prisma.DealUncheckedUpdateWithoutSellerAssistantInput
+  >;
+  create: Prisma.XOR<
+    Prisma.DealCreateWithoutSellerAssistantInput,
+    Prisma.DealUncheckedCreateWithoutSellerAssistantInput
+  >;
+};
+
+export type DealUpdateWithWhereUniqueWithoutSellerAssistantInput = {
+  where: Prisma.DealWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.DealUpdateWithoutSellerAssistantInput,
+    Prisma.DealUncheckedUpdateWithoutSellerAssistantInput
+  >;
+};
+
+export type DealUpdateManyWithWhereWithoutSellerAssistantInput = {
+  where: Prisma.DealScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.DealUpdateManyMutationInput,
+    Prisma.DealUncheckedUpdateManyWithoutSellerAssistantInput
+  >;
+};
+
 export type DealUpsertWithWhereUniqueWithoutPmInput = {
   where: Prisma.DealWhereUniqueInput;
   update: Prisma.XOR<Prisma.DealUpdateWithoutPmInput, Prisma.DealUncheckedUpdateWithoutPmInput>;
@@ -3705,6 +3971,7 @@ export type DealCreateWithoutSourcePartnerInput = {
   contact: Prisma.ContactCreateNestedOneWithoutDealsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutDealsInput;
   seller: Prisma.EmployeeCreateNestedOneWithoutDealsSellingInput;
+  sellerAssistant?: Prisma.EmployeeCreateNestedOneWithoutDealsAsSellerAssistantInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutDealsPMInput;
   existingProduct?: Prisma.ProductCreateNestedOneWithoutDealsLinkedInput;
   sourceContact?: Prisma.ContactCreateNestedOneWithoutDealsAsSourceInput;
@@ -3728,6 +3995,7 @@ export type DealUncheckedCreateWithoutSourcePartnerInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourceContactId?: string | null;
@@ -3807,6 +4075,7 @@ export type DealCreateManyContactInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -3845,6 +4114,7 @@ export type DealCreateManySourceContactInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -3912,6 +4182,7 @@ export type DealUpdateWithoutContactInput = {
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -3944,6 +4215,7 @@ export type DealUncheckedUpdateWithoutContactInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -3998,6 +4270,7 @@ export type DealUncheckedUpdateManyWithoutContactInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4073,6 +4346,7 @@ export type DealUpdateWithoutSourceContactInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -4105,6 +4379,7 @@ export type DealUncheckedUpdateWithoutSourceContactInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4159,6 +4434,7 @@ export type DealUncheckedUpdateManyWithoutSourceContactInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4201,6 +4477,7 @@ export type DealCreateManyCompanyInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -4269,6 +4546,7 @@ export type DealUpdateWithoutCompanyInput = {
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -4301,6 +4579,7 @@ export type DealUncheckedUpdateWithoutCompanyInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4355,6 +4634,7 @@ export type DealUncheckedUpdateManyWithoutCompanyInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4399,6 +4679,7 @@ export type DealCreateManyExistingProductInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -4467,6 +4748,7 @@ export type DealUpdateWithoutExistingProductInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
@@ -4499,6 +4781,7 @@ export type DealUncheckedUpdateWithoutExistingProductInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4553,6 +4836,7 @@ export type DealUncheckedUpdateManyWithoutExistingProductInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4596,6 +4880,7 @@ export type DealCreateManyMarketingAccountInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -4664,6 +4949,7 @@ export type DealUpdateWithoutMarketingAccountInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -4696,6 +4982,7 @@ export type DealUncheckedUpdateWithoutMarketingAccountInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4750,6 +5037,7 @@ export type DealUncheckedUpdateManyWithoutMarketingAccountInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4793,6 +5081,7 @@ export type DealCreateManyMarketingActivityInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -4861,6 +5150,7 @@ export type DealUpdateWithoutMarketingActivityInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -4893,6 +5183,7 @@ export type DealUncheckedUpdateWithoutMarketingActivityInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4947,6 +5238,7 @@ export type DealUncheckedUpdateManyWithoutMarketingActivityInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -4989,6 +5281,45 @@ export type DealCreateManySellerInput = {
   amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
+  sellerAssistantId?: string | null;
+  source?: $Enums.LeadSourceEnum | null;
+  sourceDetail?: string | null;
+  sourcePartnerId?: string | null;
+  sourceContactId?: string | null;
+  marketingAccountId?: string | null;
+  marketingActivityId?: string | null;
+  notes?: string | null;
+  productCategory?: $Enums.ProductCategoryEnum | null;
+  productType?: string | null;
+  pmId?: string | null;
+  deadline?: Date | string | null;
+  existingProductId?: string | null;
+  offerSentAt?: Date | string | null;
+  offerLink?: string | null;
+  offerFileUrl?: string | null;
+  offerScreenshotUrl?: string | null;
+  responseDueAt?: Date | string | null;
+  contractSignedAt?: Date | string | null;
+  contractFileUrl?: string | null;
+  maintenanceStartAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type DealCreateManySellerAssistantInput = {
+  id?: string;
+  code: string;
+  name?: string | null;
+  leadId?: string | null;
+  contactId: string;
+  projectId?: string | null;
+  companyId?: string | null;
+  type: $Enums.DealTypeEnum;
+  status?: $Enums.DealStatusEnum;
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  paymentType?: $Enums.PaymentTypeEnum | null;
+  taxStatus?: $Enums.TaxStatus;
+  sellerId: string;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -5027,6 +5358,7 @@ export type DealCreateManyPmInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourcePartnerId?: string | null;
@@ -5094,6 +5426,7 @@ export type DealUpdateWithoutSellerInput = {
   lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
@@ -5126,6 +5459,7 @@ export type DealUncheckedUpdateWithoutSellerInput = {
     | $Enums.PaymentTypeEnum
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -5180,6 +5514,170 @@ export type DealUncheckedUpdateManyWithoutSellerInput = {
     | $Enums.PaymentTypeEnum
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  source?:
+    | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
+    | $Enums.LeadSourceEnum
+    | null;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  marketingAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  marketingActivityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
+  productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  existingProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  offerSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  offerLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  offerFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  offerScreenshotUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type DealUpdateWithoutSellerAssistantInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
+  amount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  paymentType?:
+    | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
+    | $Enums.PaymentTypeEnum
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  source?:
+    | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
+    | $Enums.LeadSourceEnum
+    | null;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
+  productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  offerSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  offerLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  offerFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  offerScreenshotUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  lead?: Prisma.LeadUpdateOneWithoutDealNestedInput;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
+  seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
+  existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
+  sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
+  sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
+  marketingAccount?: Prisma.MarketingAccountUpdateOneWithoutDealsNestedInput;
+  marketingActivity?: Prisma.MarketingActivityUpdateOneWithoutDealsNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutDealNestedInput;
+  supportTickets?: Prisma.SupportTicketUpdateManyWithoutExtensionDealNestedInput;
+};
+
+export type DealUncheckedUpdateWithoutSellerAssistantInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
+  amount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  paymentType?:
+    | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
+    | $Enums.PaymentTypeEnum
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  source?:
+    | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
+    | $Enums.LeadSourceEnum
+    | null;
+  sourceDetail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourcePartnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sourceContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  marketingAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  marketingActivityId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productCategory?:
+    | Prisma.NullableEnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum
+    | null;
+  productType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  existingProductId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  offerSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  offerLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  offerFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  offerScreenshotUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  responseDueAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contractSignedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contractFileUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  maintenanceStartAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutDealNestedInput;
+  supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutExtensionDealNestedInput;
+};
+
+export type DealUncheckedUpdateManyWithoutSellerAssistantInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  leadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  status?: Prisma.EnumDealStatusEnumFieldUpdateOperationsInput | $Enums.DealStatusEnum;
+  amount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  paymentType?:
+    | Prisma.NullableEnumPaymentTypeEnumFieldUpdateOperationsInput
+    | $Enums.PaymentTypeEnum
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -5255,6 +5753,7 @@ export type DealUpdateWithoutPmInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourcePartner?: Prisma.PartnerUpdateOneWithoutDealsAsSourceNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
@@ -5287,6 +5786,7 @@ export type DealUncheckedUpdateWithoutPmInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -5341,6 +5841,7 @@ export type DealUncheckedUpdateManyWithoutPmInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -5384,6 +5885,7 @@ export type DealCreateManySourcePartnerInput = {
   paymentType?: $Enums.PaymentTypeEnum | null;
   taxStatus?: $Enums.TaxStatus;
   sellerId: string;
+  sellerAssistantId?: string | null;
   source?: $Enums.LeadSourceEnum | null;
   sourceDetail?: string | null;
   sourceContactId?: string | null;
@@ -5452,6 +5954,7 @@ export type DealUpdateWithoutSourcePartnerInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutDealsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutDealsNestedInput;
   seller?: Prisma.EmployeeUpdateOneRequiredWithoutDealsSellingNestedInput;
+  sellerAssistant?: Prisma.EmployeeUpdateOneWithoutDealsAsSellerAssistantNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutDealsPMNestedInput;
   existingProduct?: Prisma.ProductUpdateOneWithoutDealsLinkedNestedInput;
   sourceContact?: Prisma.ContactUpdateOneWithoutDealsAsSourceNestedInput;
@@ -5484,6 +5987,7 @@ export type DealUncheckedUpdateWithoutSourcePartnerInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -5538,6 +6042,7 @@ export type DealUncheckedUpdateManyWithoutSourcePartnerInput = {
     | null;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   sellerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  sellerAssistantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   source?:
     | Prisma.NullableEnumLeadSourceEnumFieldUpdateOperationsInput
     | $Enums.LeadSourceEnum
@@ -5630,6 +6135,7 @@ export type DealSelect<
     paymentType?: boolean;
     taxStatus?: boolean;
     sellerId?: boolean;
+    sellerAssistantId?: boolean;
     source?: boolean;
     sourceDetail?: boolean;
     sourcePartnerId?: boolean;
@@ -5656,6 +6162,7 @@ export type DealSelect<
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
     company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
     seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
+    sellerAssistant?: boolean | Prisma.Deal$sellerAssistantArgs<ExtArgs>;
     pm?: boolean | Prisma.Deal$pmArgs<ExtArgs>;
     existingProduct?: boolean | Prisma.Deal$existingProductArgs<ExtArgs>;
     sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
@@ -5686,6 +6193,7 @@ export type DealSelectCreateManyAndReturn<
     paymentType?: boolean;
     taxStatus?: boolean;
     sellerId?: boolean;
+    sellerAssistantId?: boolean;
     source?: boolean;
     sourceDetail?: boolean;
     sourcePartnerId?: boolean;
@@ -5712,6 +6220,7 @@ export type DealSelectCreateManyAndReturn<
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
     company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
     seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
+    sellerAssistant?: boolean | Prisma.Deal$sellerAssistantArgs<ExtArgs>;
     pm?: boolean | Prisma.Deal$pmArgs<ExtArgs>;
     existingProduct?: boolean | Prisma.Deal$existingProductArgs<ExtArgs>;
     sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
@@ -5739,6 +6248,7 @@ export type DealSelectUpdateManyAndReturn<
     paymentType?: boolean;
     taxStatus?: boolean;
     sellerId?: boolean;
+    sellerAssistantId?: boolean;
     source?: boolean;
     sourceDetail?: boolean;
     sourcePartnerId?: boolean;
@@ -5765,6 +6275,7 @@ export type DealSelectUpdateManyAndReturn<
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
     company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
     seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
+    sellerAssistant?: boolean | Prisma.Deal$sellerAssistantArgs<ExtArgs>;
     pm?: boolean | Prisma.Deal$pmArgs<ExtArgs>;
     existingProduct?: boolean | Prisma.Deal$existingProductArgs<ExtArgs>;
     sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
@@ -5789,6 +6300,7 @@ export type DealSelectScalar = {
   paymentType?: boolean;
   taxStatus?: boolean;
   sellerId?: boolean;
+  sellerAssistantId?: boolean;
   source?: boolean;
   sourceDetail?: boolean;
   sourcePartnerId?: boolean;
@@ -5829,6 +6341,7 @@ export type DealOmit<
   | 'paymentType'
   | 'taxStatus'
   | 'sellerId'
+  | 'sellerAssistantId'
   | 'source'
   | 'sourceDetail'
   | 'sourcePartnerId'
@@ -5860,6 +6373,7 @@ export type DealInclude<
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
   company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
   seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
+  sellerAssistant?: boolean | Prisma.Deal$sellerAssistantArgs<ExtArgs>;
   pm?: boolean | Prisma.Deal$pmArgs<ExtArgs>;
   existingProduct?: boolean | Prisma.Deal$existingProductArgs<ExtArgs>;
   sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
@@ -5877,6 +6391,7 @@ export type DealIncludeCreateManyAndReturn<
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
   company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
   seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
+  sellerAssistant?: boolean | Prisma.Deal$sellerAssistantArgs<ExtArgs>;
   pm?: boolean | Prisma.Deal$pmArgs<ExtArgs>;
   existingProduct?: boolean | Prisma.Deal$existingProductArgs<ExtArgs>;
   sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
@@ -5891,6 +6406,7 @@ export type DealIncludeUpdateManyAndReturn<
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
   company?: boolean | Prisma.Deal$companyArgs<ExtArgs>;
   seller?: boolean | Prisma.EmployeeDefaultArgs<ExtArgs>;
+  sellerAssistant?: boolean | Prisma.Deal$sellerAssistantArgs<ExtArgs>;
   pm?: boolean | Prisma.Deal$pmArgs<ExtArgs>;
   existingProduct?: boolean | Prisma.Deal$existingProductArgs<ExtArgs>;
   sourcePartner?: boolean | Prisma.Deal$sourcePartnerArgs<ExtArgs>;
@@ -5908,6 +6424,7 @@ export type $DealPayload<
     contact: Prisma.$ContactPayload<ExtArgs>;
     company: Prisma.$CompanyPayload<ExtArgs> | null;
     seller: Prisma.$EmployeePayload<ExtArgs>;
+    sellerAssistant: Prisma.$EmployeePayload<ExtArgs> | null;
     pm: Prisma.$EmployeePayload<ExtArgs> | null;
     existingProduct: Prisma.$ProductPayload<ExtArgs> | null;
     sourcePartner: Prisma.$PartnerPayload<ExtArgs> | null;
@@ -5932,6 +6449,7 @@ export type $DealPayload<
       paymentType: $Enums.PaymentTypeEnum | null;
       taxStatus: $Enums.TaxStatus;
       sellerId: string;
+      sellerAssistantId: string | null;
       source: $Enums.LeadSourceEnum | null;
       sourceDetail: string | null;
       sourcePartnerId: string | null;
@@ -6518,6 +7036,19 @@ export interface Prisma__DealClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  sellerAssistant<T extends Prisma.Deal$sellerAssistantArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Deal$sellerAssistantArgs<ExtArgs>>,
+  ): Prisma.Prisma__EmployeeClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$EmployeePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   pm<T extends Prisma.Deal$pmArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Deal$pmArgs<ExtArgs>>,
   ): Prisma.Prisma__EmployeeClient<
@@ -6662,6 +7193,7 @@ export interface DealFieldRefs {
   readonly paymentType: Prisma.FieldRef<'Deal', 'PaymentTypeEnum'>;
   readonly taxStatus: Prisma.FieldRef<'Deal', 'TaxStatus'>;
   readonly sellerId: Prisma.FieldRef<'Deal', 'String'>;
+  readonly sellerAssistantId: Prisma.FieldRef<'Deal', 'String'>;
   readonly source: Prisma.FieldRef<'Deal', 'LeadSourceEnum'>;
   readonly sourceDetail: Prisma.FieldRef<'Deal', 'String'>;
   readonly sourcePartnerId: Prisma.FieldRef<'Deal', 'String'>;
@@ -7146,6 +7678,27 @@ export type Deal$companyArgs<
    */
   include?: Prisma.CompanyInclude<ExtArgs> | null;
   where?: Prisma.CompanyWhereInput;
+};
+
+/**
+ * Deal.sellerAssistant
+ */
+export type Deal$sellerAssistantArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeWhereInput;
 };
 
 /**

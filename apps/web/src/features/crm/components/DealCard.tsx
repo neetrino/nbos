@@ -99,14 +99,32 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        {deal.lead ? (
-          <div className="text-muted-foreground flex items-center gap-1 text-[10px]">
-            <Link2 size={10} />
-            <span>{deal.lead.code}</span>
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex shrink-0 -space-x-1.5">
+            <span
+              className="ring-card relative flex h-7 w-7 items-center justify-center rounded-full bg-amber-50 text-[10px] font-bold text-amber-700 ring-2 dark:bg-amber-950/40 dark:text-amber-300"
+              title={`Seller: ${deal.seller.firstName} ${deal.seller.lastName}`}
+            >
+              {deal.seller.firstName[0]}
+              {deal.seller.lastName[0]}
+            </span>
+            {deal.sellerAssistant && (
+              <span
+                className="ring-card relative flex h-7 w-7 items-center justify-center rounded-full bg-violet-50 text-[10px] font-bold text-violet-700 ring-2 dark:bg-violet-950/40 dark:text-violet-300"
+                title={`Assistant: ${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`}
+              >
+                {deal.sellerAssistant.firstName[0]}
+                {deal.sellerAssistant.lastName[0]}
+              </span>
+            )}
           </div>
-        ) : (
-          <span />
-        )}
+          {deal.lead ? (
+            <div className="text-muted-foreground flex min-w-0 items-center gap-1 text-[10px]">
+              <Link2 size={10} className="shrink-0" />
+              <span className="truncate">{deal.lead.code}</span>
+            </div>
+          ) : null}
+        </div>
         {deal.paymentType && (
           <StatusBadge
             label={deal.paymentType.replace(/_/g, ' ')}

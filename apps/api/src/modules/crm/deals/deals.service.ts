@@ -15,7 +15,7 @@ import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
 import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
-import { validateDealCreate } from './deal-create-validation';
+import { assertDealSellerRefs, validateDealCreate } from './deal-create-validation';
 
 @Injectable()
 export class DealsService {
@@ -109,6 +109,7 @@ export class DealsService {
         taxStatus: (data.taxStatus as Prisma.DealCreateInput['taxStatus']) ?? 'TAX',
         companyId: data.companyId ?? undefined,
         sellerId: data.sellerId,
+        sellerAssistantId: data.sellerAssistantId?.trim() || undefined,
         source: data.source as Prisma.DealCreateInput['source'],
         sourceDetail: data.sourceDetail,
         sourcePartnerId: data.sourcePartnerId,
@@ -161,6 +162,16 @@ export class DealsService {
       locked: attributionLocked,
     });
 
+    const nextSellerId = data.sellerId ?? existing.sellerId;
+    const nextAssistantId =
+      data.sellerAssistantId !== undefined ? data.sellerAssistantId : existing.sellerAssistantId;
+    if (data.sellerId !== undefined || data.sellerAssistantId !== undefined) {
+      await assertDealSellerRefs(this.prisma, {
+        sellerId: nextSellerId,
+        sellerAssistantId: nextAssistantId,
+      });
+    }
+
     const deal = await this.prisma.deal.update({
       where: { id },
       data: {
@@ -173,6 +184,10 @@ export class DealsService {
         }),
         ...(data.taxStatus && { taxStatus: data.taxStatus as Prisma.DealUpdateInput['taxStatus'] }),
         ...(data.companyId !== undefined && { companyId: data.companyId }),
+        ...(data.sellerId !== undefined && { sellerId: data.sellerId }),
+        ...(data.sellerAssistantId !== undefined && {
+          sellerAssistantId: data.sellerAssistantId,
+        }),
         ...(data.contactId && { contactId: data.contactId }),
         ...(data.projectId !== undefined && { projectId: data.projectId }),
         ...(data.source !== undefined && {

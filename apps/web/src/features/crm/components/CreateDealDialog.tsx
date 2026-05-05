@@ -58,6 +58,7 @@ export function CreateDealDialog({
     amount: '',
     paymentType: 'CLASSIC',
     sellerId: '',
+    sellerAssistantId: '',
     source: 'MARKETING',
     sourceDetail: '',
     attributionOption: '',
@@ -117,6 +118,7 @@ export function CreateDealDialog({
         amount: form.amount ? Number(form.amount) : undefined,
         paymentType: form.paymentType || undefined,
         sellerId: form.sellerId,
+        sellerAssistantId: form.sellerAssistantId.trim() || undefined,
         source: form.source,
         sourceDetail: form.sourceDetail || undefined,
         marketingAccountId:
@@ -271,13 +273,23 @@ export function CreateDealDialog({
             />
           </div>
 
-          <div>
-            <Label>Seller ID *</Label>
-            <Input
-              value={form.sellerId}
-              onChange={(e) => setForm({ ...form, sellerId: e.target.value })}
-              placeholder="Seller employee ID"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Seller ID *</Label>
+              <Input
+                value={form.sellerId}
+                onChange={(e) => setForm({ ...form, sellerId: e.target.value })}
+                placeholder="Seller employee ID"
+              />
+            </div>
+            <div>
+              <Label>Sales assistant ID</Label>
+              <Input
+                value={form.sellerAssistantId}
+                onChange={(e) => setForm({ ...form, sellerAssistantId: e.target.value })}
+                placeholder="Optional"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">

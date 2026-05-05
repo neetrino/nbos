@@ -358,6 +358,7 @@ export const DealScalarFieldEnum = {
   paymentType: 'paymentType',
   taxStatus: 'taxStatus',
   sellerId: 'sellerId',
+  sellerAssistantId: 'sellerAssistantId',
   source: 'source',
   sourceDetail: 'sourceDetail',
   sourcePartnerId: 'sourcePartnerId',

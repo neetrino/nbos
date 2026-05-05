@@ -78,6 +78,7 @@ export class DealsController {
       taxStatus?: string;
       companyId?: string | null;
       sellerId: string;
+      sellerAssistantId?: string | null;
       projectId?: string;
       source?: string;
       sourceDetail?: string | null;
@@ -113,6 +114,8 @@ export class DealsController {
       taxStatus?: string;
       companyId?: string | null;
       contactId?: string;
+      sellerId?: string;
+      sellerAssistantId?: string | null;
       projectId?: string | null;
       source?: string;
       sourceDetail?: string | null;

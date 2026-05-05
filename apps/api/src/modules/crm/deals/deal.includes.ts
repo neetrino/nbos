@@ -8,6 +8,7 @@ export const dealListInclude = {
   contact: { select: { id: true, firstName: true, lastName: true, email: true } },
   company: { select: companySummarySelect },
   seller: { select: userSummarySelect },
+  sellerAssistant: { select: userSummarySelect },
   pm: { select: userSummarySelect },
   orders: {
     select: {
@@ -57,6 +58,7 @@ export const dealDetailInclude = {
 export const dealCreateInclude = {
   contact: { select: { id: true, firstName: true, lastName: true } },
   seller: { select: userSummarySelect },
+  sellerAssistant: { select: userSummarySelect },
   marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
   marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
 } as const;

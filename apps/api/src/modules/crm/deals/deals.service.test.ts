@@ -165,6 +165,12 @@ describe('DealsService', () => {
   });
 
   describe('create', () => {
+    beforeEach(() => {
+      prisma.employee.findUnique.mockImplementation(({ where }: { where: { id: string } }) =>
+        Promise.resolve({ id: where.id }),
+      );
+    });
+
     it('generates code and creates direct deal with audit', async () => {
       prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
       prisma.deal.findFirst.mockResolvedValue(null);
@@ -314,6 +320,31 @@ describe('DealsService', () => {
 
       const result = await service.update('1', { source: null, sourceDetail: null });
       expect(result.source).toBeNull();
+    });
+
+    it('persists sellerAssistantId when employee exists', async () => {
+      prisma.employee.findUnique.mockImplementation(({ where }: { where: { id: string } }) =>
+        Promise.resolve({ id: where.id }),
+      );
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        status: 'START_CONVERSATION',
+        type: 'PRODUCT',
+        sellerId: 's-1',
+        sellerAssistantId: null,
+        projectId: null,
+        existingProduct: null,
+        ...attribution,
+      });
+      prisma.deal.update.mockResolvedValue({ id: '1', sellerAssistantId: 'asst-1' });
+
+      await service.update('1', { sellerAssistantId: 'asst-1' });
+
+      expect(prisma.deal.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ sellerAssistantId: 'asst-1' }),
+        }),
+      );
     });
   });
 

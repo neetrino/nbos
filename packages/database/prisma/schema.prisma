@@ -461,6 +461,7 @@ model Deal {
   paymentType         PaymentTypeEnum?     @map("payment_type")
   taxStatus           TaxStatus            @default(TAX) @map("tax_status")
   sellerId            String               @map("seller_id")
+  sellerAssistantId   String?              @map("seller_assistant_id")
   source              LeadSourceEnum?
   sourceDetail        String?              @map("source_detail")
   sourcePartnerId     String?              @map("source_partner_id")
@@ -488,6 +489,7 @@ model Deal {
   contact           Contact            @relation(fields: [contactId], references: [id])
   company           Company?           @relation(fields: [companyId], references: [id])
   seller            Employee           @relation("DealSeller", fields: [sellerId], references: [id])
+  sellerAssistant   Employee?          @relation("DealSellerAssistant", fields: [sellerAssistantId], references: [id])
   pm                Employee?          @relation("DealPM", fields: [pmId], references: [id])
   existingProduct   Product?           @relation("DealExistingProduct", fields: [existingProductId], references: [id])
   sourcePartner     Partner?           @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
@@ -1956,6 +1958,7 @@ model Employee {
   extensionsAssigned       Extension[]             @relation("ExtensionAssignee")
   leadsAssigned            Lead[]                  @relation("LeadAssignee")
   dealsSelling             Deal[]                  @relation("DealSeller")
+  dealsAsSellerAssistant   Deal[]                  @relation("DealSellerAssistant")
   dealsPM                  Deal[]                  @relation("DealPM")
   paymentsConfirmed        Payment[]               @relation("PaymentConfirmer")
   tasksCreated             Task[]                  @relation("TaskCreator")

@@ -21,9 +21,48 @@ export async function validateDealCreate(
     });
   }
 
+  await assertDealSellerRefs(prisma, {
+    sellerId: data.sellerId,
+    sellerAssistantId: data.sellerAssistantId ?? null,
+  });
+
   const hasPriorLead = Boolean(data.leadId?.trim());
   if (!hasPriorLead) {
     assertDirectDealFields(data);
+  }
+}
+
+export async function assertDealSellerRefs(
+  prisma: InstanceType<typeof PrismaClient>,
+  refs: { sellerId: string; sellerAssistantId: string | null | undefined },
+): Promise<void> {
+  const seller = await prisma.employee.findUnique({
+    where: { id: refs.sellerId },
+    select: { id: true },
+  });
+  if (!seller) {
+    throw new BadRequestException({
+      statusCode: 400,
+      code: 'SELLER_NOT_FOUND',
+      message: `Employee ${refs.sellerId} was not found.`,
+      errors: [{ field: 'sellerId', message: 'Unknown seller id' }],
+    });
+  }
+
+  const assistantId = refs.sellerAssistantId?.trim();
+  if (!assistantId) return;
+
+  const assistant = await prisma.employee.findUnique({
+    where: { id: assistantId },
+    select: { id: true },
+  });
+  if (!assistant) {
+    throw new BadRequestException({
+      statusCode: 400,
+      code: 'SELLER_ASSISTANT_NOT_FOUND',
+      message: `Employee ${assistantId} was not found.`,
+      errors: [{ field: 'sellerAssistantId', message: 'Unknown sales assistant id' }],
+    });
   }
 }
 
