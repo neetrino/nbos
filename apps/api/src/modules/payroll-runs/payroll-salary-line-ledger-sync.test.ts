@@ -21,6 +21,7 @@ function buildPrismaMock(payments: { amount: Decimal }[]) {
       findUnique: vi.fn().mockResolvedValue({
         id: 'sl1',
         payrollRunId: 'pr1',
+        employeeId: 'emp1',
         totalPayable: new Decimal(100),
       }),
       update: salaryLineUpdate,
@@ -31,6 +32,9 @@ function buildPrismaMock(payments: { amount: Decimal }[]) {
         id: 'ex1',
         expensePayments: payments,
       }),
+    },
+    bonusRelease: {
+      findMany: vi.fn().mockResolvedValue([]),
     },
     payrollRun: { update: payrollRunUpdate },
     _salaryLineUpdate: salaryLineUpdate,

@@ -1,5 +1,6 @@
 import { Decimal, type PrismaClient, type SalaryLineStatusEnum } from '@nbos/database';
 import { sumExpensePaymentAmounts } from '../expenses/expense-payment-rollup';
+import { markPayrollBonusReleasesPaidForSalaryLine } from './payroll-bonus-release-paid-mark';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 
 export function resolveSalaryLineStatus(
@@ -28,7 +29,7 @@ export async function syncSalaryLinePaidFromExpenseLedger(
 ): Promise<void> {
   const salaryLine = await prisma.salaryLine.findUnique({
     where: { expenseId },
-    select: { id: true, payrollRunId: true, totalPayable: true },
+    select: { id: true, payrollRunId: true, employeeId: true, totalPayable: true },
   });
   if (!salaryLine) {
     return;
@@ -56,4 +57,11 @@ export async function syncSalaryLinePaidFromExpenseLedger(
   });
 
   await recalculatePayrollRunTotalsFromSalaryLines(prisma, salaryLine.payrollRunId);
+
+  if (status === 'PAID') {
+    await markPayrollBonusReleasesPaidForSalaryLine(prisma, {
+      payrollRunId: salaryLine.payrollRunId,
+      employeeId: salaryLine.employeeId,
+    });
+  }
 }

@@ -22,12 +22,27 @@ export async function refreshBonusEntryStatusAfterReleasesChange(
 ): Promise<void> {
   const entry = await db.bonusEntry.findUnique({
     where: { id: bonusEntryId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, amount: true },
   });
   if (!entry) {
     return;
   }
   if (TERMINAL_ENTRY_STATUSES.includes(entry.status)) {
+    return;
+  }
+
+  const paidAgg = await db.bonusRelease.aggregate({
+    where: { bonusEntryId, status: 'PAID' },
+    _sum: { amount: true },
+  });
+  const paidReleased = decimalFrom(paidAgg._sum.amount);
+  const planned = decimalFrom(entry.amount);
+
+  if (planned.gt(0) && paidReleased.gte(planned)) {
+    await db.bonusEntry.update({
+      where: { id: bonusEntryId },
+      data: { status: 'PAID' },
+    });
     return;
   }
 
