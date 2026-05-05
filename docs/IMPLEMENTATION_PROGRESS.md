@@ -70,9 +70,9 @@
 
 ---
 
-## Блок 2 — Бэклог: делаем до полного канона + дельта (~99 строк)
+## Блок 2 — Бэклог до полного канона, разбитый по готовности
 
-Каждая строка — отдельная задача. **Порядок глобальный:** сначала целостность домена и канона, затем интеграционный фонд (без банка), затем углубление модулей; **Support (глубокий SLA/overlay)** — после основной массы, как договорено; **ручная приёмка** после каждого логического блока.
+Каждая строка — отдельная задача. **Порядок глобальный:** сначала делаем то, что можно закрывать сейчас без внешних поставщиков и кредов; затем внутренний фонд интеграций; после этого — внешние каналы и миграция. **Support (глубокий SLA/overlay)** — после основной массы, как договорено; **ручная приёмка** после каждого логического блока.
 
 **🟢 Уже сделано:** у таких строк в начале стоит **🟢** (и чекбокс `[x]`) — быстро видно, что срез уже в репозитории/каноне.
 
@@ -89,6 +89,11 @@
 - 🟢 [x] Задачи: фильтр и контекст по **Order** внутри проекта — M → `GET /api/tasks?projectId&orderId`, `task-project-list-filter.ops.ts` / `task-find-all-paginated.op.ts`; карточка Tasks на `/projects/[id]`, query `taskOrder`, `TaskSheet` + `resolveTaskOrderContext`
 - 🟢 [x] CRM: direct actions (вкладки/секции) + create invoice из gate popup; lead inline «Jump to» — M → `blocker-actions` (`resolveDealSheetIntentFromBlockerAction`, `resolveLeadSheetSectionFromErrors`), секции `crm-sheet-section-ids`, `DealSheet`/`LeadSheet` `blockerNavigation`, `TransitionBlockerDialog` inline-only кнопки, deals `Create invoice`
 - 🟢 **Projects Hub (delivery):** не одна «магическая» задача, а **чеклист выравнивания** экранов продукта/борда/гейтов с каноном: например, система **не даёт** перевести продукт в **QA** или **Transfer**, пока по нему висят **открытые связанные задачи**; перед **Done** проверяются оплата, заказ, приёмка клиента и т.д. Полный перечень и статусы — в `[06-Projects-Hub-Cleanup-Register.md](NBOS/02-Modules/02-Projects-Hub/06-Projects-Hub-Cleanup-Register.md)` и closure gate Phase 4. **Срез:** deep links из панелей блокеров Product/Extension stage gate → вкладки продукта; **Delivery Board** при `STAGE_GATE_VALIDATION` показывает баннер с полями + те же shortcuts (`DeliveryBoardStageGateBanner`, `project-delivery-board-stage-gate.ts`). — M
+
+### Блок 2A — Реализуем сейчас: внутренний канон без внешних факторов
+
+Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
+
 - Clients: сверка `05-Clients-Process-Flow` с UI/API, закрыть разрывы — M
 - Finance: **Operational Journal**, period close, связь агрегатов с журналом — L
 - Finance: перестройка UI вокруг Invoice Card / планов расходов / досок канона — L
@@ -96,29 +101,29 @@
 - Finance: уведомления/напоминания по правилам invoice card, не по legacy board — M
 - Finance: partial outgoing payments (expense/salary) если в каноне — M
 - Finance: Employee Wallet read-модель до полноты канона — M → частично: wallet API/UI — rollups, Next Payroll, project breakdown, **Recent activity** (релизы/выплаты/closed payroll); **in-app** по событиям кошелька (`finance.wallet.`\*, `notification-rules.ts` + хуки bonus/payroll/expense/payments/products/extensions); push/внешние каналы по тем же событиям — отдельно, если понадобятся
+- Finance: заменить legacy `InvoiceStatusEnum` на модель Invoice Card целиком — L
+- Finance: поля coverage подписок и сетка под канон — M
+- Finance: Expense Backlog автоматизация и уведомления по канону — M
+- Finance: Client Service Record — полнота связей invoice/expense/task — M
+- Payroll: полнота Salary Board / Payroll Run под `05-Bonus-and-Payroll` — M
 - Partners: **UI ↔ API** выравнивание полей и DTO — M
 - Partners: **Commission Policy** по Deal Type — M
 - Partners: **Referral Terms** + фиксация % на сделке — M
 - Partners: **Accrual / Balance / Payout Batch** + связь с Finance journal — L
+- Partners: outbound terms / service case разделение — M
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
 - Reports: централизованные permissions на источники — M
 - Reports: XLSX/PDF экспорт, retry/cancel, история доставки расписаний — L
 - Reports: data-quality предупреждения из Marketing и кросс-модульных проекций — M
-- Integration foundation: `IntegrationProvider` реестр, статусы, аудит, контракт адаптера — L
-- Admin UI: страница статусов интеграций и required setup — M
-- Telegram: internal notification channel по канону + явные env/токены — M
-- Messenger: **ExternalChannelAdapter** контракт + очереди send/receive — L
-- WAHA / WhatsApp Web path: health, send, webhook receive, вложения через Drive — L
-- Google: OAuth link scope для Mail/Calendar/Drive **как в каноне** (без банка) — M
-- Google Calendar **sync** (если остаётся в каноне как цель этапа) — L
-- Google Workspace Documents **v2 sync** по `20-Documents/05-` — L
-- Mail: лимиты первичного импорта + retry policy (зафиксировать и реализовать) — M
 - Marketing: глубина Board / Attribution Review / popup polish из cleanup — M
-- Marketing: внешние Ads API только после кредов — отдельный срез после фонда — L
+- Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S
+- Marketing: List.am ↔ Finance Expense Plan связь до UX канона — S
+- CRM: Offer attachment и deal-required fields — глубина если не закрыта — M
 - Tasks: выравнивание статусов/enum под канон — M
 - Tasks: шаблоны повторяющихся задач (не Reports) — M
+- Projects Hub: linked orders block Transfer→Done — проверка гейтов — M
 - Drive: массовые операции / lifecycle из cleanup — M
-- Documents: избранное и расширенная RBAC секций при необходимости канона — M
+- Documents: политика retention/export cleanup согласована и внедрена — M
 - Credentials: step-up на reveal/copy/export + high-risk уведомления — M
 - Credentials: довести list API / health metadata (cleanup PARTIAL) — S
 - Notifications: **пользовательские настройки** каналов/типов событий — M
@@ -126,60 +131,76 @@
 - My Company: Compensation / SOP / KPI Scorecard до глубины канона — L
 - My Company / header: My Account вне Settings везде — S
 - Technical Infrastructure: связи со Support и мониторинг baseline — M
+- Technical: Deploy records + backup policies по канону — M
 - Settings: integration registry + системные списки для новых интеграций — M
-- Dashboard: production кэш/refresh виджетов при появлении требований — S
 - RBAC: entity-level глубина где канон требует — M
-- Документировать для владельца: **какие env/ключи** нужны по каждой интеграции (кроме банка) — S
 - Закрыть открытые пункты `00-Technical-Decisions-By-Module.md` по мере срезов (FX, dedup notifications, Drive retention, …) — M
 - Support: **reopen** как событие/переход, убрать `REOPENED` как постоянный enum при необходимости — M
 - Support: waiting overlay (client / third party / escalated) — M
 - Support: change-control представление отдельно от основного потока — M
 - Support: SLA pause / breach / escalation оркестрация — L
 - Support: связь Ticket → Technical asset / environment — M
-- Support: связь с external messenger conversation — M
 - Support: resolution requirements + auto-close после Extension Done где канон — M
 - Support: product-context в UI create/filter — M
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
-- Ручная приёмка блока «интеграции» — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
 - Ручная приёмка блока «Support глубина» — S
 - Обновить cleanup registers статусами по мере закрытия срезов — S
 - Синхронизировать `docs/дожать до 100% описанного.md` или заменить ссылкой на этот файл — S
+- Регрессионные тесты на критичные гейты после крупных срезов — M
+- Производительность: тяжёлые отчёты только через очередь (контроль) — S
+- Messenger: поиск/история PostgreSQL — доработка UX при объёме — S
+- Web: E2E smoke для критичных flow (замена разовому precheck) — L
+- Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S
+
+### Блок 2B — Внутренний фонд интеграций: можно готовить сейчас, без внешних кредов
+
+Эти задачи не подключают реальные внешние сервисы. Они создают безопасный каркас: реестр, статусы, аудит, адаптеры, required setup и документацию для владельца.
+
+- Integration foundation: `IntegrationProvider` реестр, статусы, аудит, контракт адаптера — L
+- Admin UI: страница статусов интеграций и required setup — M
+- Messenger: **ExternalChannelAdapter** контракт + очереди send/receive — L
+- Mail: лимиты первичного импорта + retry policy — сначала зафиксировать лимиты, затем реализовать — M
+- Mail: многопровайдерность и health dashboard без реального внешнего sync — M
+- Calendar: внутренний sync-контракт и слои до внешнего Google sync — M
+- Settings: required setup / системные списки для интеграций — M
+- Документировать для владельца: **какие env/ключи** нужны по каждой интеграции (кроме банка) — S
+- Аудит: покрыть новые интеграционные события — M
+- Документация runbook на отказ интеграции (fallback вручную) — M
+- API: rate limits на публичные integration webhooks — S
+- Ручная приёмка блока «интеграционный фонд» — S
+
+### Блок 2C — Внешние факторы: делать только после кредов / аккаунтов / infra
+
+Не держать эти строки в активной ежедневной очереди. Возвращать в работу, когда есть токены, доступы, тестовые аккаунты или подтверждённая инфраструктура.
+
+- Telegram: internal notification channel по канону + явные env/токены — M
+- WAHA / WhatsApp Web path: health, send, webhook receive, вложения через Drive — L
+- Google: OAuth link scope для Mail/Calendar/Drive **как в каноне** (без банка) — M
+- Google Calendar **sync** — только если подтверждён как цель текущего этапа — L
+- Google Workspace Documents **v2 sync** по `20-Documents/05-` — L
+- Marketing: внешние Ads API только после кредов — отдельный срез после фонда — L
+- Support: связь с external messenger conversation — M
+- Technical: webhooks GitHub / репозиторий links как интеграция — M
+- Observability: связка инцидентов Sentry ↔ Support ticket — M
+- Автоматизация сценариев по `docs/NBOS/06-Integrations/05-Automation-Scenarios.md` где зафиксировано в каноне — M
+- Ручная приёмка блока «внешние интеграции» — S
+
+### Блок 2D — Не активная очередь сейчас: после core или только при явном решении
+
+Эти пункты не удалены из продукта, но не должны мешать закрывать текущий канон. Поднимать их только после блока 2A/2B или когда владелец явно возвращает в scope.
+
 - Bitrix: **только после** пунктов выше — mapping register + dry-run контракт — L
 - Bitrix: импорт Contacts/Companies (CSV или API) — после mapping — L
 - Bitrix: остальные сущности по `07-Migration/` — L
-- Регрессионные тесты на критичные гейты после крупных срезов — M
-- Производительность: тяжёлые отчёты только через очередь (контроль) — S
-- Аудит: покрыть новые интеграционные события — M
-- Документация runbook на отказ интеграции (fallback вручную) — M
-- Finance: заменить legacy `InvoiceStatusEnum` на модель Invoice Card целиком — L
-- Finance: поля coverage подписок и сетка под канон — M
-- Finance: автоматический bonus release после Done продукта + override — M
-- Finance: Expense Backlog автоматизация и уведомления по канону — M
-- Finance: Client Service Record — полнота связей invoice/expense/task — M
-- Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S
-- Marketing: List.am ↔ Finance Expense Plan связь до UX канона — S
-- CRM: Offer attachment и deal-required fields — глубина если не закрыта — M
-- Projects Hub: linked orders block Transfer→Done — проверка гейтов — M
-- Calendar: внешние слои после внутреннего sync-контракта — M
-- Messenger: поиск/история PostgreSQL — доработка UX при объёме — S
-- Mail: многопровайдерность и health dashboard — M
-- Technical: Deploy records + backup policies по канону — M
-- Technical: webhooks GitHub / репозиторий links как интеграция — M
-- API: rate limits на публичные integration webhooks — S
-- Web: E2E smoke для критичных flow (замена разовому precheck) — L
-- i18n: глубина UI по `20-i18n` если вошло в scope продукта — L
-- Observability: связка инцидентов Sentry ↔ Support ticket — M
-- Documents: политика retention/export cleanup согласована и внедрена — M
+- Dashboard: production кэш/refresh виджетов при появлении требований — S
+- Documents: избранное и расширенная RBAC секций при необходимости канона — M
 - Drive: дедупликация/квоты если канон потребует — M
-- Partners: outbound terms / service case разделение — M
-- Payroll: полнота Salary Board / Payroll Run под `05-Bonus-and-Payroll` — M
-- Автоматизация сценариев по `docs/NBOS/06-Integrations/05-Automation-Scenarios.md` где зафиксировано в каноне — M
-- Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S
+- i18n: глубина UI по `20-i18n` если вошло в scope продукта — L
 
-### Блок 2 — Pending (очередь сразу после закрытия чеклиста блока 2)
+### Блок 2P — Pending / временно заблокировано
 
-**Назначение:** сюда переносятся только пункты, по которым работа **уже начата**, но срез **нельзя закрыть сейчас** — с явной причиной, блокером и условием возврата в работу. Обычные невыполненные строки выше **не дублировать**: это просто «очередь ещё не дошла».
+**Назначение:** сюда переносятся только пункты, по которым работа **уже начата**, но срез **нельзя закрыть сейчас** — с явной причиной, блокером и условием возврата в работу. Обычные невыполненные строки из 2A/2B/2C/2D **не дублировать**: это просто «очередь ещё не дошла».
 
 **Правило:** ни одна микро-задача из блока 2 не снимается «в никуда»: либо `[x]` в чеклисте, либо строка здесь до разблокировки.
 
@@ -197,7 +218,6 @@
 - **Production cutover Bitrix → NBOS** и параллельная эксплуатация — после готовности функционала.
 - **Полный** encrypted migration credentials из Bitrix — поздний этап миграции.
 - **Incremental sync** Bitrix во время переходного периода — после первого импорта.
-- **Meta / Facebook / Instagram** lead ads API без утверждённых business-кредов — позже.
 - **Гос. электронный счёт-фактура / интеграция с государственными реестрами** — после отдельного решения.
 - **AI writing assistant** в Documents — вне core.
 - **Collaborative live cursors** в Documents — вне core.
@@ -219,11 +239,11 @@
 
 ## Текущий фокус (кратко)
 
-| Поле           | Значение                                              |
-| -------------- | ----------------------------------------------------- |
-| Режим          | Закрытие **блока 2** сверху вниз + приёмка            |
-| Исключения     | Банк; Bitrix cutover последним                        |
-| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md` |
+| Поле           | Значение                                                  |
+| -------------- | --------------------------------------------------------- |
+| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей |
+| Исключения     | Банк; Bitrix mapping/import/cutover после core            |
+| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`     |
 
 ---
 
