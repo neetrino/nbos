@@ -86,6 +86,7 @@ export class InvoicesService {
         include: {
           order: { select: { id: true, code: true } },
           company: { select: { id: true, name: true } },
+          project: { select: { id: true, name: true } },
           payments: { select: { id: true, amount: true, paymentDate: true } },
           _count: { select: { payments: true } },
         },
@@ -109,6 +110,7 @@ export class InvoicesService {
         order: true,
         subscription: true,
         company: true,
+        project: true,
         payments: true,
       },
     });

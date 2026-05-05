@@ -1,4 +1,4 @@
-import { FileText, Building2, Clock, User, FolderKanban, Shield } from 'lucide-react';
+import { FileText, Building2, Clock, User, FolderKanban, Shield, Repeat } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from '@/components/shared';
 import { getInvoiceStage, formatAmount } from '@/features/finance/constants/finance';
@@ -49,6 +49,7 @@ export function InvoiceDetailsSection({ invoice }: { invoice: InvoiceSheetInvoic
         <div className="text-muted-foreground">Status</div>
         <div>{stage && <StatusBadge label={stage.label} variant={stage.variant} />}</div>
         <InvoiceTaxStatusRow taxStatus={invoice.taxStatus} />
+        <OfficialInvoiceRow invoice={invoice} />
         <InvoiceDueDateRow invoice={invoice} />
         <InvoicePaidDateRow paidDate={invoice.paidDate} />
         <DateRow label="Created" date={invoice.createdAt} />
@@ -78,6 +79,9 @@ export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceShee
           />
         )}
         {invoice.order && <LinkedEntity icon={FileText} label="Order" value={invoice.order.code} />}
+        {invoice.subscriptionId && (
+          <LinkedEntity icon={Repeat} label="Subscription" value={invoice.subscriptionId} />
+        )}
       </div>
     </section>
   );
@@ -127,6 +131,17 @@ function InvoiceTaxStatusRow({ taxStatus }: { taxStatus: string }) {
         <Shield size={13} className="text-muted-foreground" />
         {taxStatus === 'TAX' ? 'Tax Payer' : 'Tax-Free'}
       </div>
+    </>
+  );
+}
+
+function OfficialInvoiceRow({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  if (invoice.taxStatus !== 'TAX' && !invoice.govInvoiceId) return null;
+
+  return (
+    <>
+      <div className="text-muted-foreground">Official Invoice</div>
+      <div className="font-medium">{invoice.govInvoiceId ?? 'Request not recorded'}</div>
     </>
   );
 }
