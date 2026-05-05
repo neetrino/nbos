@@ -49,6 +49,9 @@ describe('PaymentsService', () => {
   const partnerAccrualClassic = {
     tryInboundClassicAfterClientPayment: vi.fn().mockResolvedValue(undefined),
   };
+  const partnerAccrualSubscription = {
+    tryInboundSubscriptionAfterClientPayment: vi.fn().mockResolvedValue(undefined),
+  };
   let notifications: NotificationService;
 
   beforeEach(() => {
@@ -56,6 +59,7 @@ describe('PaymentsService', () => {
     salesBonusAccrual.onInvoicePaid.mockClear();
     operationalJournal.appendCashPaymentLine.mockClear();
     partnerAccrualClassic.tryInboundClassicAfterClientPayment.mockClear();
+    partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment.mockClear();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     service = new PaymentsService(
       prisma as never,
@@ -63,6 +67,7 @@ describe('PaymentsService', () => {
       notifications,
       operationalJournal as never,
       partnerAccrualClassic as never,
+      partnerAccrualSubscription as never,
     );
   });
 
@@ -184,6 +189,9 @@ describe('PaymentsService', () => {
       });
       expect(salesBonusAccrual.onInvoicePaid).not.toHaveBeenCalled();
       expect(partnerAccrualClassic.tryInboundClassicAfterClientPayment).not.toHaveBeenCalled();
+      expect(
+        partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment,
+      ).not.toHaveBeenCalled();
     });
 
     it('marks invoice and order as paid when coverage reaches total amount', async () => {
@@ -242,6 +250,12 @@ describe('PaymentsService', () => {
         paymentId: '2',
         invoiceId: 'inv1',
       });
+      expect(
+        partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment,
+      ).toHaveBeenCalledWith({
+        invoiceId: 'inv1',
+        paymentId: '2',
+      });
     });
 
     it('marks unpaid overdue invoice as delayed after payment sync if still not fully covered', async () => {
@@ -285,6 +299,9 @@ describe('PaymentsService', () => {
         data: { status: 'PARTIALLY_PAID' },
       });
       expect(salesBonusAccrual.onInvoicePaid).not.toHaveBeenCalled();
+      expect(
+        partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment,
+      ).not.toHaveBeenCalled();
     });
 
     it('rejects payment that exceeds remaining invoice balance', async () => {

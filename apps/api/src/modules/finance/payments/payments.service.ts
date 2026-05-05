@@ -13,6 +13,7 @@ import {
 import { resolveInvoiceMoneyStatus } from '../invoices/invoice-money-status';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
+import { PartnerAccrualSubscriptionService } from '../partner-accrual/partner-accrual-subscription.service';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -41,6 +42,7 @@ export class PaymentsService {
     private readonly notifications: NotificationService,
     private readonly operationalJournal: OperationalJournalService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -218,6 +220,10 @@ export class PaymentsService {
     });
     if (refreshed?.status === 'PAID') {
       await this.salesBonusAccrual.onInvoicePaid(data.invoiceId);
+      await this.partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment({
+        invoiceId: data.invoiceId,
+        paymentId: created.id,
+      });
     }
 
     return this.findById(created.id);
