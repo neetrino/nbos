@@ -85,6 +85,40 @@ export interface BonusProductPoolRow {
   ledgerPoolStatus: string | null;
 }
 
+/** Matches Prisma `BonusReleaseTypeEnum`. */
+export type BonusReleaseType =
+  | 'AUTO'
+  | 'MANUAL'
+  | 'EARLY'
+  | 'EXTRA'
+  | 'OVER_FUNDING'
+  | 'CORRECTION';
+
+/** Matches Prisma `BonusReleaseStatusEnum`. */
+export type BonusReleaseStatus =
+  | 'DRAFT'
+  | 'APPROVED'
+  | 'INCLUDED_IN_PAYROLL'
+  | 'PAID'
+  | 'CANCELLED';
+
+export interface BonusReleaseRow {
+  id: string;
+  bonusEntryId: string;
+  payrollRunId: string | null;
+  employeeId: string;
+  projectId: string;
+  productId: string | null;
+  extensionId: string | null;
+  amount: string;
+  releaseType: BonusReleaseType;
+  reason: string | null;
+  approvedById: string | null;
+  status: BonusReleaseStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface BonusListQueryParams {
   page?: number;
   pageSize?: number;
@@ -155,6 +189,23 @@ export const bonusesApi = {
 
   async getProductPools(): Promise<BonusProductPoolRow[]> {
     const resp = await api.get<BonusProductPoolRow[]>('/api/bonus/products/pools');
+    return resp.data;
+  },
+
+  async listReleasesForEntry(entryId: string): Promise<BonusReleaseRow[]> {
+    const resp = await api.get<BonusReleaseRow[]>(`/api/bonus/entries/${entryId}/releases`);
+    return resp.data;
+  },
+
+  async patchRelease(
+    entryId: string,
+    releaseId: string,
+    body: { amount: number; reason: string; approvedById?: string },
+  ): Promise<BonusReleaseRow> {
+    const resp = await api.patch<BonusReleaseRow>(
+      `/api/bonus/entries/${entryId}/releases/${releaseId}`,
+      body,
+    );
     return resp.data;
   },
 };

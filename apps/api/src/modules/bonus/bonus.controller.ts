@@ -110,6 +110,28 @@ export class BonusController {
     });
   }
 
+  @Patch('entries/:entryId/releases/:releaseId')
+  @ApiOperation({
+    summary:
+      'Adjust an APPROVED/DRAFT release amount (e.g. override proportional AUTO split); refreshes pool',
+  })
+  async patchBonusRelease(
+    @Param('entryId') entryId: string,
+    @Param('releaseId') releaseId: string,
+    @Body()
+    body: {
+      amount: number;
+      reason: string;
+      approvedById?: string;
+    },
+  ) {
+    return this.bonusReleaseService.patchForEntry(entryId, releaseId, {
+      amount: body.amount,
+      reason: body.reason,
+      approvedById: body.approvedById,
+    });
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get bonus entry by ID' })
   async findOne(@Param('id') id: string) {

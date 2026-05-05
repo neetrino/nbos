@@ -107,4 +107,122 @@ describe('BonusReleaseService', () => {
     expect(prisma.bonusRelease.create).toHaveBeenCalled();
     expect(prisma.productBonusPool.upsert).toHaveBeenCalled();
   });
+
+  it('patchForEntry throws when release belongs to another entry', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.findUnique.mockResolvedValue({
+      id: 'r1',
+      bonusEntryId: 'other',
+      amount: new Decimal(10),
+      status: 'APPROVED',
+      releaseType: 'AUTO',
+    });
+    await expect(service.patchForEntry('be1', 'r1', { amount: 5, reason: 'x' })).rejects.toThrow(
+      NotFoundException,
+    );
+  });
+
+  it('patchForEntry rejects INCLUDED_IN_PAYROLL releases', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.findUnique.mockResolvedValue({
+      id: 'r1',
+      bonusEntryId: 'be1',
+      amount: new Decimal(10),
+      status: 'INCLUDED_IN_PAYROLL',
+      releaseType: 'AUTO',
+    });
+    await expect(service.patchForEntry('be1', 'r1', { amount: 5, reason: 'x' })).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('patchForEntry rejects unchanged amount', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.findUnique.mockResolvedValue({
+      id: 'r1',
+      bonusEntryId: 'be1',
+      amount: new Decimal(10),
+      status: 'APPROVED',
+      releaseType: 'MANUAL',
+    });
+    await expect(service.patchForEntry('be1', 'r1', { amount: 10, reason: 'x' })).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('patchForEntry rejects empty reason', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.findUnique.mockResolvedValue({
+      id: 'r1',
+      bonusEntryId: 'be1',
+      amount: new Decimal(10),
+      status: 'APPROVED',
+      releaseType: 'MANUAL',
+    });
+    await expect(service.patchForEntry('be1', 'r1', { amount: 20, reason: '   ' })).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('patchForEntry rejects when new total exceeds entry cap', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.findUnique.mockResolvedValue({
+      id: 'r1',
+      bonusEntryId: 'be1',
+      amount: new Decimal(10),
+      status: 'APPROVED',
+      releaseType: 'MANUAL',
+    });
+    prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(80) } });
+    await expect(
+      service.patchForEntry('be1', 'r1', { amount: 30, reason: 'too much' }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('patchForEntry requires approver for OVER_FUNDING', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.findUnique.mockResolvedValue({
+      id: 'r1',
+      bonusEntryId: 'be1',
+      amount: new Decimal(10),
+      status: 'APPROVED',
+      releaseType: 'OVER_FUNDING',
+    });
+    await expect(service.patchForEntry('be1', 'r1', { amount: 20, reason: 'ceo' })).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('patchForEntry updates AUTO to CORRECTION and syncs pool', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.findUnique.mockResolvedValue({
+      id: 'r1',
+      bonusEntryId: 'be1',
+      amount: new Decimal(100),
+      status: 'APPROVED',
+      releaseType: 'AUTO',
+    });
+    prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(0) } });
+    prisma.bonusRelease.update.mockResolvedValue({
+      id: 'r1',
+      releaseType: 'CORRECTION',
+    } as never);
+    prisma.order.findUnique.mockResolvedValue(null);
+
+    const out = await service.patchForEntry('be1', 'r1', {
+      amount: 50,
+      reason: 'rebalance per CEO',
+    });
+
+    expect(out.releaseType).toBe('CORRECTION');
+    expect(prisma.bonusRelease.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'r1' },
+        data: expect.objectContaining({
+          releaseType: 'CORRECTION',
+          reason: 'rebalance per CEO',
+        }),
+      }),
+    );
+  });
 });

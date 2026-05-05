@@ -13,6 +13,7 @@ import {
 } from '@/features/finance/constants/bonus-board';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { BonusEntryListRow, BonusStatus, BonusType } from '@/lib/api/bonus';
+import { cn } from '@/lib/utils';
 
 export function employeeDisplayName(employee: BonusEntryListRow['employee']): string {
   return `${employee.firstName} ${employee.lastName}`.trim();
@@ -98,12 +99,34 @@ export function SummaryCard({
   );
 }
 
-export function BonusCard({ row }: { row: BonusEntryListRow }) {
+export function BonusCard({
+  row,
+  onOpenReleases,
+}: {
+  row: BonusEntryListRow;
+  onOpenReleases?: (entry: BonusEntryListRow) => void;
+}) {
   const typeCfg = BONUS_BOARD_TYPE_CONFIG[row.type];
   const project = projectLabel(row.project);
 
   return (
-    <div className="group border-border bg-card rounded-xl border p-3.5 transition-all hover:shadow-md">
+    <div
+      className={cn(
+        'group border-border bg-card rounded-xl border p-3.5 transition-all hover:shadow-md',
+        onOpenReleases &&
+          'focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none',
+      )}
+      role={onOpenReleases ? 'button' : undefined}
+      tabIndex={onOpenReleases ? 0 : undefined}
+      onClick={() => onOpenReleases?.(row)}
+      onKeyDown={(e) => {
+        if (!onOpenReleases) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onOpenReleases(row);
+        }
+      }}
+    >
       <div className="flex items-start justify-between">
         <div className="text-foreground flex items-center gap-1.5 text-sm font-medium">
           <User size={12} className="text-muted-foreground" />
@@ -127,6 +150,12 @@ export function BonusCard({ row }: { row: BonusEntryListRow }) {
           {project}
         </div>
       )}
+
+      {onOpenReleases ? (
+        <p className="text-muted-foreground border-border mt-2.5 border-t pt-2 text-[10px]">
+          Open release ledger — adjust APPROVED / DRAFT amounts before payroll.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -227,7 +256,13 @@ export function BonusBoardToolbar({
   );
 }
 
-export function BonusBoardColumns({ filtered }: { filtered: BonusEntryListRow[] }) {
+export function BonusBoardColumns({
+  filtered,
+  onOpenReleases,
+}: {
+  filtered: BonusEntryListRow[];
+  onOpenReleases?: (entry: BonusEntryListRow) => void;
+}) {
   const columns = BONUS_BOARD_STATUSES.map((status) => ({
     ...status,
     bonuses: filtered.filter((b) => b.status === status.key),
@@ -250,7 +285,7 @@ export function BonusBoardColumns({ filtered }: { filtered: BonusEntryListRow[] 
             </div>
             <div className="space-y-3">
               {column.bonuses.map((bonus) => (
-                <BonusCard key={bonus.id} row={bonus} />
+                <BonusCard key={bonus.id} row={bonus} onOpenReleases={onOpenReleases} />
               ))}
               {column.bonuses.length === 0 && (
                 <div className="border-border rounded-xl border border-dashed p-8 text-center">

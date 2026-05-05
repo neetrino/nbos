@@ -26,6 +26,13 @@ export interface CreateBonusReleaseInput {
   status?: BonusReleaseStatusEnum;
 }
 
+/** Finance override of an editable release amount (NBOS: adjust auto split before payroll). */
+export interface PatchBonusReleaseInput {
+  amount: number;
+  reason: string;
+  approvedById?: string;
+}
+
 type BonusEntryForRelease = {
   id: string;
   employeeId: string;
@@ -85,6 +92,63 @@ export class BonusReleaseService {
     await syncProductBonusPoolForOrder(this.prisma, entry.orderId);
     this.logger.log({ msg: 'bonus_release_created', id: created.id, bonusEntryId: entry.id });
     return created;
+  }
+
+  async patchForEntry(bonusEntryId: string, releaseId: string, input: PatchBonusReleaseInput) {
+    const entry = await this.loadEntryForRelease(bonusEntryId);
+    const release = await this.prisma.bonusRelease.findUnique({
+      where: { id: releaseId },
+      select: {
+        id: true,
+        bonusEntryId: true,
+        amount: true,
+        status: true,
+        releaseType: true,
+      },
+    });
+    if (!release || release.bonusEntryId !== bonusEntryId) {
+      throw new NotFoundException(`Bonus release ${releaseId} not found for this entry`);
+    }
+    if (release.status !== 'DRAFT' && release.status !== 'APPROVED') {
+      throw new BadRequestException('Only DRAFT or APPROVED releases can be adjusted');
+    }
+    this.validateAmount(input.amount);
+    const reason = input.reason?.trim() ?? '';
+    if (reason.length === 0) {
+      throw new BadRequestException('reason is required when adjusting a bonus release');
+    }
+    const currentAmt = decimalFrom(release.amount);
+    const nextAmt = new Decimal(input.amount);
+    if (currentAmt.equals(nextAmt)) {
+      throw new BadRequestException('amount is unchanged');
+    }
+    let nextType: BonusReleaseTypeEnum = release.releaseType;
+    if (release.releaseType === 'AUTO') {
+      nextType = 'CORRECTION';
+    }
+    if (nextType === 'OVER_FUNDING') {
+      const a = input.approvedById?.trim() ?? '';
+      if (a.length === 0) {
+        throw new BadRequestException(
+          'approvedById is required when adjusting an OVER_FUNDING release',
+        );
+      }
+    }
+    await this.assertWithinEntryCapOnUpdate(entry, release.id, input.amount, nextType);
+
+    const updated = await this.prisma.bonusRelease.update({
+      where: { id: releaseId },
+      data: {
+        amount: nextAmt,
+        releaseType: nextType,
+        reason,
+        approvedById: normalizeOptionalText(input.approvedById),
+      },
+    });
+
+    await syncProductBonusPoolForOrder(this.prisma, entry.orderId);
+    this.logger.log({ msg: 'bonus_release_patched', id: releaseId, bonusEntryId: entry.id });
+    return updated;
   }
 
   private async loadEntryForRelease(bonusEntryId: string): Promise<BonusEntryForRelease> {
@@ -156,6 +220,32 @@ export class BonusReleaseService {
     const prior = decimalFrom(agg._sum.amount);
     const cap = new Decimal(entry.amount);
     if (prior.plus(addAmount).gt(cap)) {
+      throw new BadRequestException(
+        'Release amount exceeds remaining planned amount for this bonus entry',
+      );
+    }
+  }
+
+  private async assertWithinEntryCapOnUpdate(
+    entry: BonusEntryForRelease,
+    releaseId: string,
+    newAmount: number,
+    releaseType: BonusReleaseTypeEnum,
+  ): Promise<void> {
+    if (releaseType === 'EXTRA' || releaseType === 'OVER_FUNDING') {
+      return;
+    }
+    const agg = await this.prisma.bonusRelease.aggregate({
+      where: {
+        bonusEntryId: entry.id,
+        id: { not: releaseId },
+        status: { in: [...BONUS_RELEASE_COUNTING_STATUSES] },
+      },
+      _sum: { amount: true },
+    });
+    const priorOthers = decimalFrom(agg._sum.amount);
+    const cap = new Decimal(entry.amount);
+    if (priorOthers.plus(newAmount).gt(cap)) {
       throw new BadRequestException(
         'Release amount exceeds remaining planned amount for this bonus entry',
       );
