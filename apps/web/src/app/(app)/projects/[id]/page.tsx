@@ -15,6 +15,7 @@ import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
 import { ProjectInfoCard } from '@/features/projects/components/ProjectInfoCard';
 import { ProjectIntakePanel } from '@/features/projects/components/ProjectIntakePanel';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
+import { ProjectTasksSection } from '@/features/projects/components/ProjectTasksSection';
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
@@ -84,6 +85,8 @@ export default function ProjectDetailPage() {
         }
         onRefresh={fetchProject}
       />
+
+      <ProjectTasksSection projectId={project.id} orders={project.orders} />
 
       <ProjectProductsSection
         project={project}

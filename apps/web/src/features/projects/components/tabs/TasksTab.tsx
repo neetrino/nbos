@@ -1,34 +1,94 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { LayoutGrid, List, AlertTriangle, Play, Check, RotateCcw } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared';
 import { tasksApi, type Task } from '@/lib/api/tasks';
+import type { ProjectOrder } from '@/lib/api/projects';
 import { getTaskStatus, getTaskPriority } from '@/features/tasks/constants/tasks';
+import { resolveTaskOrderContext } from '@/features/tasks/utils/task-order-context';
+import { TaskSheet } from '@/features/tasks/components/TaskSheet';
+import { ProjectTaskKanbanCard } from './ProjectTaskKanbanCard';
+
+const TASK_ORDER_QUERY = 'taskOrder';
+const ALL_ORDERS_VALUE = 'all';
 
 interface TasksTabProps {
   projectId: string;
+  orders: Pick<ProjectOrder, 'id' | 'code'>[];
 }
 
 const KANBAN_COLUMNS = ['NEW', 'IN_PROGRESS', 'DONE', 'DEFERRED'];
 
-export function TasksTab({ projectId }: TasksTabProps) {
+export function TasksTab({ projectId, orders }: TasksTabProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const orderFromUrl = searchParams.get(TASK_ORDER_QUERY);
+
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sheetTaskId, setSheetTaskId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const validOrderIds = useMemo(() => new Set(orders.map((o) => o.id)), [orders]);
+
+  const selectedOrderFilter = useMemo(() => {
+    if (!orderFromUrl || !validOrderIds.has(orderFromUrl)) {
+      return ALL_ORDERS_VALUE;
+    }
+    return orderFromUrl;
+  }, [orderFromUrl, validOrderIds]);
+
+  const setOrderFilter = useCallback(
+    (value: string) => {
+      const next = new URLSearchParams(searchParams.toString());
+      if (value === ALL_ORDERS_VALUE) {
+        next.delete(TASK_ORDER_QUERY);
+      } else {
+        next.set(TASK_ORDER_QUERY, value);
+      }
+      const q = next.toString();
+      router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    if (orderFromUrl && orders.length > 0 && !validOrderIds.has(orderFromUrl)) {
+      setOrderFilter(ALL_ORDERS_VALUE);
+    }
+  }, [orderFromUrl, orders.length, validOrderIds, setOrderFilter]);
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await tasksApi.getByEntity('PROJECT', projectId);
-      setTasks(data);
+      const orderId = selectedOrderFilter === ALL_ORDERS_VALUE ? undefined : selectedOrderFilter;
+      const data = await tasksApi.getAll({
+        projectId,
+        orderId,
+        pageSize: 200,
+        sortBy: 'updatedAt',
+        sortOrder: 'desc',
+      });
+      setTasks(data.items);
     } catch {
       setTasks([]);
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, selectedOrderFilter]);
 
   useEffect(() => {
     fetchTasks();
@@ -43,6 +103,11 @@ export function TasksTab({ projectId }: TasksTabProps) {
     }
   };
 
+  const openTask = (taskId: string) => {
+    setSheetTaskId(taskId);
+    setSheetOpen(true);
+  };
+
   const activeTasks = tasks.filter((t) => t.status !== 'CANCELLED');
   const doneTasks = tasks.filter((t) => t.status === 'DONE').length;
   const totalActive = activeTasks.length;
@@ -54,14 +119,42 @@ export function TasksTab({ projectId }: TasksTabProps) {
   if (tasks.length === 0) {
     return (
       <div className="text-muted-foreground py-12 text-center text-sm">
-        No tasks linked to this project yet.
+        {selectedOrderFilter === ALL_ORDERS_VALUE
+          ? 'No tasks in this project yet.'
+          : 'No tasks for this order in this project.'}
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1.5">
+          {orders.length > 0 && (
+            <div className="max-w-xs space-y-1">
+              <Label className="text-muted-foreground text-xs">Order</Label>
+              <Select
+                value={selectedOrderFilter}
+                onValueChange={(v) => {
+                  if (v === null) return;
+                  setOrderFilter(v);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All orders" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_ORDERS_VALUE}>All orders</SelectItem>
+                  {orders.map((o) => (
+                    <SelectItem key={o.id} value={o.id}>
+                      {o.code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium">
             {doneTasks}/{totalActive} completed
@@ -72,24 +165,24 @@ export function TasksTab({ projectId }: TasksTabProps) {
               style={{ width: `${totalActive > 0 ? (doneTasks / totalActive) * 100 : 0}%` }}
             />
           </div>
-        </div>
-        <div className="border-border flex rounded-lg border">
-          <Button
-            variant={view === 'kanban' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('kanban')}
-            className="rounded-r-none"
-          >
-            <LayoutGrid size={14} />
-          </Button>
-          <Button
-            variant={view === 'list' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('list')}
-            className="rounded-l-none"
-          >
-            <List size={14} />
-          </Button>
+          <div className="border-border flex rounded-lg border">
+            <Button
+              variant={view === 'kanban' ? 'secondary' : 'ghost'}
+              size="icon-sm"
+              onClick={() => setView('kanban')}
+              className="rounded-r-none"
+            >
+              <LayoutGrid size={14} />
+            </Button>
+            <Button
+              variant={view === 'list' ? 'secondary' : 'ghost'}
+              size="icon-sm"
+              onClick={() => setView('list')}
+              className="rounded-l-none"
+            >
+              <List size={14} />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -113,66 +206,14 @@ export function TasksTab({ projectId }: TasksTabProps) {
                   </span>
                 </div>
                 <div className="space-y-2">
-                  {colTasks.map((task) => {
-                    const pr = getTaskPriority(task.priority);
-                    return (
-                      <div key={task.id} className="bg-card border-border rounded-lg border p-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-xs leading-tight font-medium">{task.title}</p>
-                          {task.priority === 'CRITICAL' && (
-                            <AlertTriangle size={12} className="shrink-0 text-red-500" />
-                          )}
-                        </div>
-                        <div className="text-muted-foreground mt-2 flex items-center gap-2 text-[10px]">
-                          <span>{task.code}</span>
-                          {pr && <StatusBadge label={pr.label} variant={pr.variant} />}
-                        </div>
-                        {task.assignee && (
-                          <div className="mt-2 flex items-center gap-1.5">
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[8px] font-bold text-blue-700">
-                              {task.assignee.firstName[0]}
-                              {task.assignee.lastName[0]}
-                            </div>
-                            <span className="text-muted-foreground text-[10px]">
-                              {task.assignee.firstName}
-                            </span>
-                          </div>
-                        )}
-                        <div className="mt-2 flex gap-1">
-                          {task.status === 'NEW' && (
-                            <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              onClick={() => handleAction(task.id, 'start')}
-                              title="Start"
-                            >
-                              <Play size={10} />
-                            </Button>
-                          )}
-                          {task.status === 'IN_PROGRESS' && (
-                            <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              onClick={() => handleAction(task.id, 'complete')}
-                              title="Complete"
-                            >
-                              <Check size={10} />
-                            </Button>
-                          )}
-                          {task.status === 'DONE' && (
-                            <Button
-                              size="icon-sm"
-                              variant="ghost"
-                              onClick={() => handleAction(task.id, 'reopen')}
-                              title="Reopen"
-                            >
-                              <RotateCcw size={10} />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {colTasks.map((task) => (
+                    <ProjectTaskKanbanCard
+                      key={task.id}
+                      task={task}
+                      onOpen={() => openTask(task.id)}
+                      onAction={handleAction}
+                    />
+                  ))}
                 </div>
               </div>
             );
@@ -184,6 +225,7 @@ export function TasksTab({ projectId }: TasksTabProps) {
             <thead className="bg-muted/50">
               <tr>
                 <th className="px-4 py-2 text-left font-medium">Task</th>
+                <th className="px-4 py-2 text-left font-medium">Order</th>
                 <th className="px-4 py-2 text-left font-medium">Status</th>
                 <th className="px-4 py-2 text-left font-medium">Priority</th>
                 <th className="px-4 py-2 text-left font-medium">Assignee</th>
@@ -194,11 +236,26 @@ export function TasksTab({ projectId }: TasksTabProps) {
               {activeTasks.map((task) => {
                 const st = getTaskStatus(task.status);
                 const pr = getTaskPriority(task.priority);
+                const orderCtx = resolveTaskOrderContext(task);
                 return (
-                  <tr key={task.id} className="border-border border-t">
+                  <tr
+                    key={task.id}
+                    className="border-border hover:bg-muted/40 cursor-pointer border-t"
+                    onClick={() => openTask(task.id)}
+                  >
                     <td className="px-4 py-2">
                       <p className="font-medium">{task.title}</p>
                       <p className="text-muted-foreground text-xs">{task.code}</p>
+                    </td>
+                    <td className="text-muted-foreground px-4 py-2 text-xs">
+                      {orderCtx ? (
+                        <span>
+                          <span className="text-foreground font-medium">{orderCtx.orderCode}</span>
+                          <span className="block">{orderCtx.scopeLabel}</span>
+                        </span>
+                      ) : (
+                        '\u2014'
+                      )}
                     </td>
                     <td className="px-4 py-2">
                       {st && <StatusBadge label={st.label} variant={st.variant} />}
@@ -221,6 +278,13 @@ export function TasksTab({ projectId }: TasksTabProps) {
           </table>
         </div>
       )}
+
+      <TaskSheet
+        taskId={sheetTaskId}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onUpdate={(t) => setTasks((prev) => prev.map((x) => (x.id === t.id ? t : x)))}
+      />
     </div>
   );
 }

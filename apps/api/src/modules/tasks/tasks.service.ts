@@ -8,6 +8,8 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './task-completion-rules';
+import { taskFindAllPaginated } from './task-find-all-paginated.op';
+import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 
 interface CreateTaskDto {
   title: string;
@@ -58,87 +60,31 @@ interface TaskQueryParams {
   hasParent?: boolean;
   entityType?: string;
   entityId?: string;
+  /** When set, restricts tasks to this project (delivery + workspace + PROJECT links). */
+  projectId?: string;
+  /** Requires `projectId`. Keeps tasks tied to this order only. */
+  orderId?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
-
-const TASK_INCLUDE = {
-  creator: { select: { id: true, firstName: true, lastName: true } },
-  assignee: { select: { id: true, firstName: true, lastName: true } },
-  links: true,
-  checklists: { include: { items: { orderBy: { sortOrder: 'asc' as const } } } },
-  subtasks: {
-    select: { id: true, code: true, title: true, status: true, assigneeId: true },
-    orderBy: { createdAt: 'asc' as const },
-  },
-  _count: { select: { subtasks: true, checklists: true } },
-} satisfies Prisma.TaskInclude;
 
 @Injectable()
 export class TasksService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: TaskQueryParams) {
-    const {
-      page = 1,
-      pageSize = 20,
-      status,
-      priority,
-      assigneeId,
-      creatorId,
-      parentId,
-      hasParent,
-      entityType,
-      entityId,
-      search,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-    } = params;
-
-    const where: Prisma.TaskWhereInput = {};
-    if (status) where.status = status as TaskStatusEnum;
-    if (priority) where.priority = priority as TaskPriorityEnum;
-    if (assigneeId) where.assigneeId = assigneeId;
-    if (creatorId) where.creatorId = creatorId;
-    if (params.workspaceId) where.workspaceId = params.workspaceId;
-    if (params.planningStatus) {
-      where.planningStatus = params.planningStatus as Prisma.TaskWhereInput['planningStatus'];
-    }
-    if (parentId) where.parentId = parentId;
-    if (hasParent === false) where.parentId = null;
-    if (entityType && entityId) {
-      where.links = { some: { entityType, entityId } };
-    }
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    const [items, total] = await Promise.all([
-      this.prisma.task.findMany({
-        where,
-        include: TASK_INCLUDE,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.task.count({ where }),
-    ]);
-
-    return {
-      items,
-      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
-    };
+    return taskFindAllPaginated(this.prisma, params, {
+      base: TASK_INCLUDE,
+      projectScoped: TASK_DETAIL_INCLUDE,
+    });
   }
 
   async findById(id: string) {
     const task = await this.prisma.task.findUnique({
       where: { id },
       include: {
-        ...TASK_INCLUDE,
+        ...TASK_DETAIL_INCLUDE,
         parent: { select: { id: true, code: true, title: true } },
       },
     });
@@ -149,7 +95,7 @@ export class TasksService {
   async findByEntity(entityType: string, entityId: string) {
     return this.prisma.task.findMany({
       where: { links: { some: { entityType, entityId } } },
-      include: TASK_INCLUDE,
+      include: TASK_DETAIL_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -187,7 +133,7 @@ export class TasksService {
           },
         }),
       },
-      include: TASK_INCLUDE,
+      include: TASK_DETAIL_INCLUDE,
     });
     return task;
   }
@@ -224,7 +170,7 @@ export class TasksService {
           completionRules: this.parseCompletionRules(data.completionRules),
         }),
       },
-      include: TASK_INCLUDE,
+      include: TASK_DETAIL_INCLUDE,
     });
   }
 
@@ -237,7 +183,7 @@ export class TasksService {
     return this.prisma.task.update({
       where: { id },
       data: { status: 'IN_PROGRESS' as TaskStatusEnum },
-      include: TASK_INCLUDE,
+      include: TASK_DETAIL_INCLUDE,
     });
   }
 
@@ -257,7 +203,7 @@ export class TasksService {
         status: 'DONE' as TaskStatusEnum,
         completedAt: new Date(),
       },
-      include: TASK_INCLUDE,
+      include: TASK_DETAIL_INCLUDE,
     });
   }
 
@@ -270,7 +216,7 @@ export class TasksService {
         status: 'NEW' as TaskStatusEnum,
         completedAt: null,
       },
-      include: TASK_INCLUDE,
+      include: TASK_DETAIL_INCLUDE,
     });
   }
 
@@ -280,7 +226,7 @@ export class TasksService {
     return this.prisma.task.update({
       where: { id },
       data: { status: 'DEFERRED' as TaskStatusEnum },
-      include: TASK_INCLUDE,
+      include: TASK_DETAIL_INCLUDE,
     });
   }
 

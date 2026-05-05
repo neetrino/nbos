@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TasksService } from './tasks.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('TasksService', () => {
   let service: TasksService;
@@ -29,10 +29,27 @@ describe('TasksService', () => {
       });
       expect(prisma.task.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
-            workspaceId: 'ws-1',
-            planningStatus: 'BACKLOG',
-          }),
+          where: {
+            AND: expect.arrayContaining([{ workspaceId: 'ws-1' }, { planningStatus: 'BACKLOG' }]),
+          },
+        }),
+      );
+    });
+
+    it('rejects orderId without projectId', async () => {
+      await expect(service.findAll({ orderId: 'ord-1' })).rejects.toThrow(BadRequestException);
+    });
+
+    it('validates order belongs to project when both ids are set', async () => {
+      prisma.order.findUnique.mockResolvedValue({ projectId: 'p1' });
+      await service.findAll({ projectId: 'p1', orderId: 'ord-1', pageSize: 50 });
+      expect(prisma.order.findUnique).toHaveBeenCalledWith({
+        where: { id: 'ord-1' },
+        select: { projectId: true },
+      });
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({ product: expect.anything() }),
         }),
       );
     });
