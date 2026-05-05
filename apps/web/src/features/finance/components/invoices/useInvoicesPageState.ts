@@ -22,10 +22,12 @@ interface RecordPaymentInput {
 
 interface UseInvoicesPageStateOptions {
   subscriptionIdFromUrl?: string | null;
+  openInvoiceIdFromUrl?: string | null;
 }
 
 export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const subscriptionIdFromUrl = options?.subscriptionIdFromUrl?.trim() || null;
+  const openInvoiceIdFromUrl = options?.openInvoiceIdFromUrl?.trim() || null;
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,6 +77,25 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   useEffect(() => {
     fetchInvoices();
   }, [fetchInvoices]);
+
+  useEffect(() => {
+    if (!openInvoiceIdFromUrl) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const inv = await invoicesApi.getById(openInvoiceIdFromUrl);
+        if (!cancelled) {
+          setSelectedInvoice(inv);
+          setSheetOpen(true);
+        }
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Could not open invoice from link.'));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openInvoiceIdFromUrl]);
 
   return {
     invoices,

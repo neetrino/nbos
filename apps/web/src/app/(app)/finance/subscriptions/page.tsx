@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { FilterBar, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { subscriptionsListPageTitle } from '@/features/finance/constants/finance
 import { PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-partner-drilldown';
 import { usePartnerFilterOptions } from '@/features/finance/hooks/usePartnerFilterOptions';
 import { SubscriptionsPageContent } from '@/features/finance/components/subscriptions/SubscriptionsPageContent';
+import { useSubscriptionGrid } from '@/features/finance/components/subscriptions/use-subscription-grid';
 import { SubscriptionsPageHeader } from '@/features/finance/components/subscriptions/SubscriptionsPageHeader';
 import { SubscriptionStatsCards } from '@/features/finance/components/subscriptions/SubscriptionStatsCards';
 import { useSubscriptionsCsvExport } from '@/features/finance/components/subscriptions/use-subscriptions-csv-export';
@@ -24,6 +25,13 @@ function SubscriptionsPageInner() {
   const partnerIdFromUrl = searchParams.get(PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY);
 
   const page = useSubscriptionsPageState({ partnerIdFromUrl });
+  const [gridYear, setGridYear] = useState(() => new Date().getFullYear());
+  const subscriptionGrid = useSubscriptionGrid({
+    year: gridYear,
+    search: page.search,
+    filters: page.filtersForBar,
+    partnerIdFromUrl: partnerIdFromUrl?.trim() || null,
+  });
   const { exportCsvSubmitting, handleExportCsv } = useSubscriptionsCsvExport(
     page.subscriptionListExportParams,
   );
@@ -147,6 +155,12 @@ function SubscriptionsPageInner() {
       ) : null}
 
       <SubscriptionsPageContent
+        gridYear={gridYear}
+        onGridYearChange={setGridYear}
+        gridPayload={subscriptionGrid.data}
+        gridLoading={subscriptionGrid.loading}
+        gridError={subscriptionGrid.error}
+        onGridRetry={subscriptionGrid.retry}
         subscriptions={page.subscriptions}
         loading={page.loading}
         error={page.error}

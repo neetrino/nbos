@@ -8,6 +8,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { assertSubscriptionStatus, attachSubscriptionCoverage } from './subscription-coverage';
+import { buildSubscriptionGridPayload } from './subscription-grid';
 import { assertSubscriptionStatusTransition } from './subscription-status-transitions';
 
 interface CreateSubscriptionDto {
@@ -49,12 +50,73 @@ interface SubscriptionStatsParams {
   partnerId?: string;
 }
 
+interface SubscriptionGridParams {
+  year: number;
+  projectId?: string;
+  partnerId?: string;
+  status?: string;
+  type?: string;
+  search?: string;
+}
+
 @Injectable()
 export class SubscriptionsService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
   ) {}
+
+  async getGrid(params: SubscriptionGridParams) {
+    const { year, projectId, partnerId, status, type, search } = params;
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999);
+
+    const andParts: Prisma.SubscriptionWhereInput[] = [
+      { startDate: { lte: yearEnd } },
+      { OR: [{ endDate: null }, { endDate: { gte: yearStart } }] },
+    ];
+
+    if (projectId) andParts.push({ projectId });
+    if (status) andParts.push({ status: status as SubscriptionStatusEnum });
+    if (type) andParts.push({ type: type as SubscriptionTypeEnum });
+    if (search) {
+      andParts.push({
+        OR: [
+          { code: { contains: search, mode: 'insensitive' } },
+          { project: { name: { contains: search, mode: 'insensitive' } } },
+        ],
+      });
+    }
+
+    const partnerClause = this.subscriptionPartnerWhere(partnerId);
+    if (Object.keys(partnerClause).length > 0) {
+      andParts.push(partnerClause);
+    }
+
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { AND: andParts },
+      include: {
+        project: { select: { id: true, name: true } },
+        invoices: {
+          where: { type: 'SUBSCRIPTION' },
+          select: {
+            id: true,
+            type: true,
+            amount: true,
+            dueDate: true,
+            coverageStartMonth: true,
+            coverageMonthCount: true,
+            createdAt: true,
+            payments: { select: { amount: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+      orderBy: { project: { name: 'asc' } },
+    });
+
+    return buildSubscriptionGridPayload(subscriptions, year, new Date());
+  }
 
   async findAll(params: SubscriptionQueryParams) {
     const {

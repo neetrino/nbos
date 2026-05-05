@@ -1,5 +1,5 @@
 import type { FinanceDateRangeParams } from '@/lib/api/finance-common';
-import type { SubscriptionListParams } from '@/lib/api/subscriptions';
+import type { SubscriptionGridQueryParams, SubscriptionListParams } from '@/lib/api/subscriptions';
 
 function resolveSubscriptionPartnerId(params: {
   filters: Record<string, string>;
@@ -30,6 +30,23 @@ export function buildSubscriptionListApiParams(
       params.filters.status && params.filters.status !== 'all' ? params.filters.status : undefined,
     partnerId: resolveSubscriptionPartnerId(params),
     ...periodParams,
+  };
+}
+
+/** Params for `GET /api/finance/subscriptions/grid` (year + same filters as list, no date paging). */
+export function buildSubscriptionGridQueryParams(params: {
+  year: number;
+  search: string;
+  filters: Record<string, string>;
+  partnerIdFromUrl: string | null;
+}): SubscriptionGridQueryParams {
+  return {
+    year: params.year,
+    search: params.search || undefined,
+    type: params.filters.type && params.filters.type !== 'all' ? params.filters.type : undefined,
+    status:
+      params.filters.status && params.filters.status !== 'all' ? params.filters.status : undefined,
+    partnerId: resolveSubscriptionPartnerId(params),
   };
 }
 

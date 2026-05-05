@@ -5,6 +5,11 @@ export type { CreateInvoiceInput } from './finance-create';
 export type {
   Subscription,
   SubscriptionCoverageSummary,
+  SubscriptionGridCell,
+  SubscriptionGridCellKind,
+  SubscriptionGridPayload,
+  SubscriptionGridQueryParams,
+  SubscriptionGridRow,
   SubscriptionStats,
   SubscriptionStatsQueryParams,
   UpdateSubscriptionPayload,

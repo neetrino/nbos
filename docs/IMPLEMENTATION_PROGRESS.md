@@ -103,8 +103,7 @@
 - 🟢 [x] Finance: Employee Wallet read-модель до полноты канона — M → **частично, код сверён с `08-Employee-Wallet`:** `GET /me/wallet` + `EmployeeWalletService` — bonus pipeline по группам, Next Payroll с `partialPayments` из `ExpensePayment`, `salaryHistory`, `projectBreakdown`, `activity`; UI `/finance/wallet` + CSV export. **in-app** типы `finance.wallet.*` в `notification-rules.ts`, хуки в bonus/payroll/expense/payments/products/extensions. **Не закрыто до полного канона:** отдельного `Compensation Profile` в Prisma нет — блок «текущие условия» = `Employee.baseSalary` + роль/уровень/должность, без KPI/bonus policy narrative и даты профиля из канона; push/Telegram/email по тем же событиям — вне scope
 - 🟢 [x] Finance: Invoice Card `money_status` (колонка + backfill + синхронизация при платежах, ручной смене статуса, billing, overdue cron) + минимальный UI — M (**срез 1**)
 - Finance: снять legacy `InvoiceStatusEnum` после миграции фильтров/канбана/дашборда на `money_status` — L (**срез 2**)
-- 🟢 [x] Finance: поля coverage на Invoice Card подписок (`coverage_start_month`, `coverage_month_count`), billing/create, rollup в списке подписок — M (**срез 1**; UI Subscription Grid матрица — отдельно)
-- Finance: Subscription Grid (матрица месяцев по канону) — M
+- 🟢 [x] Finance: поля coverage на Invoice Card подписок + **Subscription Grid** (`coverage_start_month` / `count`, billing/create, rollup; `GET /api/finance/subscriptions/grid`; UI: матрица года, paid/pending/overdue/forecast/missed, итоги; ссылка на Invoice Card через `openInvoice`) — M
 - Finance: Expense Backlog автоматизация и уведомления по канону — M
 - Finance: Client Service Record — полнота связей invoice/expense/task — M
 - Payroll: полнота Salary Board / Payroll Run под `05-Bonus-and-Payroll` — M
