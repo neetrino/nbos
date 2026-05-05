@@ -11,6 +11,16 @@ export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
   { eventType: 'finance.wallet.payroll_created', category: 'informational', priority: 'normal' },
   { eventType: 'finance.wallet.payroll_closed', category: 'informational', priority: 'normal' },
   { eventType: 'finance.wallet.salary_payment', category: 'informational', priority: 'normal' },
+  {
+    eventType: 'finance.invoice.official_request_due',
+    category: 'action_required',
+    priority: 'high',
+  },
+  {
+    eventType: 'finance.invoice.payment_reminder_due',
+    category: 'action_required',
+    priority: 'high',
+  },
   { eventType: 'task.overdue', category: 'action_required', priority: 'high' },
   { eventType: 'finance.overdue', category: 'action_required', priority: 'high' },
   { eventType: 'mail.health_degraded', category: 'system_health', priority: 'high' },

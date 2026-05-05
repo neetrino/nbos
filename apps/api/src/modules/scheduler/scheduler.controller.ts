@@ -29,6 +29,17 @@ export class SchedulerController {
     return this.schedulerService.markOverdueInvoices();
   }
 
+  @Post('invoice-card-reminders')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Create due Invoice Card reminder notification jobs (external cron)',
+    description:
+      'Creates idempotent NotificationEvent/NotificationJob records from Invoice Card rules. It does not send external client messages.',
+  })
+  async runInvoiceCardReminders() {
+    return this.schedulerService.runInvoiceCardReminders();
+  }
+
   @Post('expense-plan-auto-due')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

@@ -137,11 +137,18 @@ Runtime сейчас использует старые статусы:
 - official invoice request is an internal block: `tax_status`, `request_sent`, `sent_at`, `cancelled_at`;
 - notifications are automation rules, not invoice stages.
 
+Done slice:
+
+- `InvoiceCardRemindersService` creates idempotent `NotificationEvent` / `NotificationJob` records
+  for due Invoice Card reminders, without external client sends.
+- Reminder rules skip `ON_HOLD`, `notificationsEnabled = false`, and Tax payment reminders when the
+  current runtime has no official invoice marker.
+
 Будущий refactor:
 
 - заменить old invoice status enum;
 - вынести official invoice request fields из stage workflow;
-- обновить scheduler/reminder logic;
+- finish scheduler/reminder logic after real official invoice request fields and channel templates land;
 - обновить invoice board UI;
 - обновить finance summary calculations.
 
