@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +13,7 @@ import {
   type KanbanColumn,
 } from '@/components/shared';
 import { LeadCard } from '@/features/crm/components/LeadCard';
-import { LeadSheet } from '@/features/crm/components/LeadSheet';
+import { LeadSheet, type LeadSheetBlockerNavigation } from '@/features/crm/components/LeadSheet';
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import { LeadTransitionInlineEditor } from '@/features/crm/components/LeadTransitionInlineEditor';
@@ -29,7 +29,10 @@ import {
   isStageGateApiError,
   type ApiFieldError,
 } from '@/lib/api-errors';
-import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
+import {
+  resolveBlockerDirectActions,
+  resolveLeadSheetSectionFromErrors,
+} from '@/features/shared/blocker-actions';
 import {
   Table,
   TableHeader,
@@ -75,6 +78,10 @@ export default function LeadsPipelinePage() {
   const [pendingTransition, setPendingTransition] = useState<PendingLeadTransition | null>(null);
   const [inlineSaving, setInlineSaving] = useState(false);
   const [blockerEditorRevision, setBlockerEditorRevision] = useState(0);
+  const [leadBlockerNav, setLeadBlockerNav] = useState<LeadSheetBlockerNavigation | null>(null);
+  const leadNavTokenRef = useRef(0);
+
+  const clearLeadBlockerNav = useCallback(() => setLeadBlockerNav(null), []);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -104,6 +111,7 @@ export default function LeadsPipelinePage() {
 
     if (options?.openFull) {
       setSelectedLead(lead);
+      setLeadBlockerNav(null);
       setSheetOpen(true);
     }
 
@@ -210,11 +218,27 @@ export default function LeadsPipelinePage() {
     await handleStatusChange(id, status);
   };
 
+  const openLeadFromBlocker = useCallback(
+    (options?: { keepBlockerDialogOpen?: boolean }) => {
+      if (!transitionBlocker) return;
+      const currentLead =
+        leads.find((lead) => lead.id === transitionBlocker.item.id) ?? transitionBlocker.item;
+      setSelectedLead(currentLead);
+      leadNavTokenRef.current += 1;
+      setLeadBlockerNav({
+        token: leadNavTokenRef.current,
+        sectionId: resolveLeadSheetSectionFromErrors(transitionBlocker.errors),
+      });
+      setSheetOpen(true);
+      if (!options?.keepBlockerDialogOpen) {
+        setTransitionBlocker(null);
+      }
+    },
+    [leads, transitionBlocker],
+  );
+
   const handleOpenBlockedLead = () => {
-    if (!transitionBlocker) return;
-    const currentLead = leads.find((lead) => lead.id === transitionBlocker.item.id);
-    setSelectedLead(currentLead ?? transitionBlocker.item);
-    setSheetOpen(true);
+    openLeadFromBlocker({ keepBlockerDialogOpen: true });
   };
 
   const blockerActions = transitionBlocker
@@ -222,7 +246,7 @@ export default function LeadsPipelinePage() {
         (action) => ({
           key: action.key,
           label: action.label,
-          onClick: handleOpenBlockedLead,
+          onClick: () => openLeadFromBlocker({ keepBlockerDialogOpen: true }),
         }),
       )
     : [];
@@ -328,6 +352,7 @@ export default function LeadsPipelinePage() {
 
   const handleCardClick = (lead: Lead) => {
     setSelectedLead(lead);
+    setLeadBlockerNav(null);
     setSheetOpen(true);
   };
 
@@ -507,6 +532,8 @@ export default function LeadsPipelinePage() {
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
         onDelete={handleDelete}
+        blockerNavigation={leadBlockerNav}
+        onBlockerNavigationConsumed={clearLeadBlockerNav}
       />
 
       <TransitionBlockerDialog

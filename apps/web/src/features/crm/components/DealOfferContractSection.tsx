@@ -5,6 +5,7 @@ import { InlineField } from '@/components/shared';
 import type { Deal } from '@/lib/api/deals';
 import type { SaveField } from './deal-general-tab.types';
 import { formatDate, toDateInputValue } from './deal-general-tab.helpers';
+import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 
 interface DealOfferContractSectionProps {
   deal: Deal;
@@ -13,7 +14,10 @@ interface DealOfferContractSectionProps {
 
 export function DealOfferContractSection({ deal, saveField }: DealOfferContractSectionProps) {
   return (
-    <section className="rounded-2xl border border-stone-100 bg-gradient-to-br from-blue-50/40 to-white p-5 dark:border-stone-800 dark:from-blue-950/10 dark:to-transparent">
+    <section
+      id={DEAL_SHEET_SECTION.OFFER_CONTRACT}
+      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-blue-50/40 to-white p-5 dark:border-stone-800 dark:from-blue-950/10 dark:to-transparent"
+    >
       <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
         <FileText size={12} />
         Offer & Contract

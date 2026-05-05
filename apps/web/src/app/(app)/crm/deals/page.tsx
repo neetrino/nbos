@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Plus, RefreshCcw, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,7 @@ import {
   type KanbanColumn,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
-import { DealSheet } from '@/features/crm/components/DealSheet';
+import { DealSheet, type DealSheetBlockerNavigation } from '@/features/crm/components/DealSheet';
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import {
@@ -33,7 +33,11 @@ import {
   isBusinessTransitionApiError,
   isStageGateApiError,
 } from '@/lib/api-errors';
-import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
+import {
+  resolveBlockerDirectActions,
+  resolveDealSheetIntentFromBlockerAction,
+  type DealSheetBlockerIntent,
+} from '@/features/shared/blocker-actions';
 import {
   Table,
   TableHeader,
@@ -70,6 +74,15 @@ export default function DealsPipelinePage() {
     null,
   );
   const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
+  const [dealBlockerNav, setDealBlockerNav] = useState<DealSheetBlockerNavigation | null>(null);
+  const dealNavTokenRef = useRef(0);
+
+  const pushDealBlockerNav = useCallback((intent: DealSheetBlockerIntent) => {
+    dealNavTokenRef.current += 1;
+    setDealBlockerNav({ token: dealNavTokenRef.current, intent });
+  }, []);
+
+  const clearDealBlockerNav = useCallback(() => setDealBlockerNav(null), []);
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
@@ -170,11 +183,27 @@ export default function DealsPipelinePage() {
     await handleStatusChange(id, status);
   };
 
+  const openDealFromBlocker = useCallback(
+    (intent?: DealSheetBlockerIntent, options?: { keepBlockerDialogOpen?: boolean }) => {
+      if (!transitionBlocker) return;
+      const currentDeal =
+        deals.find((deal) => deal.id === transitionBlocker.item.id) ?? transitionBlocker.item;
+      setSelectedDeal(currentDeal);
+      if (intent) {
+        pushDealBlockerNav(intent);
+      } else {
+        setDealBlockerNav(null);
+      }
+      setSheetOpen(true);
+      if (!options?.keepBlockerDialogOpen) {
+        setTransitionBlocker(null);
+      }
+    },
+    [deals, transitionBlocker, pushDealBlockerNav],
+  );
+
   const handleOpenBlockedDeal = () => {
-    if (!transitionBlocker) return;
-    const currentDeal = deals.find((deal) => deal.id === transitionBlocker.item.id);
-    setSelectedDeal(currentDeal ?? transitionBlocker.item);
-    setSheetOpen(true);
+    openDealFromBlocker(undefined, { keepBlockerDialogOpen: true });
   };
 
   const blockerActions = transitionBlocker
@@ -182,10 +211,25 @@ export default function DealsPipelinePage() {
         (action) => ({
           key: action.key,
           label: action.label,
-          onClick: handleOpenBlockedDeal,
+          onClick: () => {
+            const intent = resolveDealSheetIntentFromBlockerAction(
+              action,
+              transitionBlocker.errors,
+            );
+            openDealFromBlocker(intent);
+          },
         }),
       )
     : [];
+
+  const hasInvoiceOrPaymentGate = useMemo(
+    () =>
+      transitionBlocker?.errors.some((error) => {
+        const field = error.field.toLowerCase();
+        return field.includes('invoice') || field.includes('payment');
+      }) ?? false,
+    [transitionBlocker],
+  );
 
   const handleRetryBlockedMove = async () => {
     const blocker = transitionBlocker;
@@ -240,12 +284,14 @@ export default function DealsPipelinePage() {
 
   const handleCardClick = (deal: Deal) => {
     setSelectedDeal(deal);
+    clearDealBlockerNav();
     setSheetOpen(true);
   };
 
   const handleOpenDealById = async (id: string) => {
     const existingDeal = deals.find((deal) => deal.id === id);
     setSelectedDeal(existingDeal ?? null);
+    clearDealBlockerNav();
     setSheetOpen(true);
     const fullDeal = await dealsApi.getById(id);
     setSelectedDeal(fullDeal);
@@ -437,6 +483,8 @@ export default function DealsPipelinePage() {
         onDelete={handleDelete}
         onRefresh={fetchDeals}
         onOpenDeal={handleOpenDealById}
+        blockerNavigation={dealBlockerNav}
+        onBlockerNavigationConsumed={clearDealBlockerNav}
       />
 
       <TransitionBlockerDialog
@@ -451,6 +499,18 @@ export default function DealsPipelinePage() {
         onRetry={handleRetryBlockedMove}
         directActions={blockerActions}
         onOverride={handleOverrideBlockedMove}
+        businessActionLabel={hasInvoiceOrPaymentGate ? 'Create invoice' : undefined}
+        onBusinessAction={
+          hasInvoiceOrPaymentGate
+            ? () =>
+                openDealFromBlocker(
+                  { kind: 'invoice-tab-expand-create' },
+                  {
+                    keepBlockerDialogOpen: true,
+                  },
+                )
+            : undefined
+        }
       />
 
       <StageTransitionConfirmDialog

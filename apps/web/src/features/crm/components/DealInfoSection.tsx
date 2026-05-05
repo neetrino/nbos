@@ -23,6 +23,7 @@ import {
 import type { Deal } from '@/lib/api/deals';
 import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
 import { formatDate, TAX_STATUS_OPTIONS, toDateInputValue } from './deal-general-tab.helpers';
+import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 
 interface DealInfoSectionProps {
   deal: Deal;
@@ -57,7 +58,10 @@ export function DealInfoSection({
   const isExtension = deal.type === 'EXTENSION';
 
   return (
-    <section className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent">
+    <section
+      id={DEAL_SHEET_SECTION.INFO}
+      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent"
+    >
       <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
         <Tag size={12} />
         Deal Info

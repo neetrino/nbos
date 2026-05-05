@@ -7,6 +7,7 @@ import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import { isDealAttributionLocked } from '@nbos/shared/constants';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
+import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 
 interface DealMarketingSectionProps {
   deal: Deal;
@@ -34,7 +35,10 @@ export function DealMarketingSection({
   const attributionLocked = isDealAttributionLocked(deal.status);
 
   return (
-    <section className="rounded-2xl border border-stone-100 bg-gradient-to-br from-violet-50/40 to-white p-5 dark:border-stone-800 dark:from-violet-950/10 dark:to-transparent">
+    <section
+      id={DEAL_SHEET_SECTION.MARKETING}
+      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-violet-50/40 to-white p-5 dark:border-stone-800 dark:from-violet-950/10 dark:to-transparent"
+    >
       <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
         <Megaphone size={12} />
         Marketing

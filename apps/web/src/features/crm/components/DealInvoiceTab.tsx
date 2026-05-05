@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Plus, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
@@ -24,9 +24,15 @@ const INVOICE_STATUS_VARIANT: Record<
 interface DealInvoiceTabProps {
   deal: Deal;
   onRefresh?: () => void;
+  /** Increment (e.g. from parent) to open the create-invoice form when the tab is shown. */
+  expandCreateFormNonce?: number;
 }
 
-export function DealInvoiceTab({ deal, onRefresh }: DealInvoiceTabProps) {
+export function DealInvoiceTab({
+  deal,
+  onRefresh,
+  expandCreateFormNonce = 0,
+}: DealInvoiceTabProps) {
   const [showForm, setShowForm] = useState(false);
   const [invoiceAmount, setInvoiceAmount] = useState('');
   const [creating, setCreating] = useState(false);
@@ -36,6 +42,12 @@ export function DealInvoiceTab({ deal, onRefresh }: DealInvoiceTabProps) {
   );
 
   const firstOrder = deal.orders?.[0];
+
+  useEffect(() => {
+    if (expandCreateFormNonce > 0 && firstOrder) {
+      setShowForm(true);
+    }
+  }, [expandCreateFormNonce, firstOrder]);
 
   const handleCreate = async () => {
     const amount = Number(invoiceAmount);

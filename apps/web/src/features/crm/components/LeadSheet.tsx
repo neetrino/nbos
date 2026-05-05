@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Phone,
   Mail,
@@ -33,13 +33,21 @@ import type { Lead } from '@/lib/api/leads';
 import { partnersApi } from '@/lib/api/partners';
 import { contactsApi } from '@/lib/api/clients';
 import { marketingApi } from '@/lib/api/marketing';
-import { useCallback } from 'react';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
+import {
+  LEAD_SHEET_SECTION,
+  type LeadSheetSectionId,
+} from '@/features/shared/crm-sheet-section-ids';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
   { value: 'history', label: 'History', icon: History },
 ] as const;
+
+export interface LeadSheetBlockerNavigation {
+  token: number;
+  sectionId: LeadSheetSectionId;
+}
 
 interface LeadSheetProps {
   lead: Lead | null;
@@ -49,6 +57,8 @@ interface LeadSheetProps {
   onStatusChange: (id: string, status: string) => Promise<void>;
   onConvertToDeal?: (lead: Lead) => void;
   onDelete?: (id: string) => void;
+  blockerNavigation?: LeadSheetBlockerNavigation | null;
+  onBlockerNavigationConsumed?: () => void;
 }
 
 export function LeadSheet({
@@ -59,11 +69,29 @@ export function LeadSheet({
   onStatusChange,
   onConvertToDeal,
   onDelete,
+  blockerNavigation = null,
+  onBlockerNavigationConsumed,
 }: LeadSheetProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const scrollToLeadSection = useCallback((sectionId: LeadSheetSectionId) => {
+    setActiveTab('general');
+    requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open || !blockerNavigation) return;
+    const { sectionId } = blockerNavigation;
+    queueMicrotask(() => {
+      scrollToLeadSection(sectionId);
+      onBlockerNavigationConsumed?.();
+    });
+  }, [open, blockerNavigation, scrollToLeadSection, onBlockerNavigationConsumed]);
 
   useEffect(() => {
     if (editingName && nameInputRef.current) {
@@ -191,6 +219,11 @@ export function LeadSheet({
                 saveFields={saveFields}
                 onConvertToDeal={onConvertToDeal}
                 isTerminal={isTerminal}
+                sectionIds={{
+                  contact: LEAD_SHEET_SECTION.CONTACT,
+                  marketing: LEAD_SHEET_SECTION.MARKETING,
+                  assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
+                }}
               />
             )}
             {activeTab === 'history' && (
@@ -241,9 +274,20 @@ interface LeadGeneralContentProps {
   saveFields: (fields: Record<string, string | null>) => Promise<void>;
   onConvertToDeal?: (lead: Lead) => void;
   isTerminal: boolean;
+  sectionIds: {
+    contact: LeadSheetSectionId;
+    marketing: LeadSheetSectionId;
+    assignment: LeadSheetSectionId;
+  };
 }
 
-function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneralContentProps) {
+function LeadGeneralContent({
+  lead,
+  source,
+  saveField,
+  saveFields,
+  sectionIds,
+}: LeadGeneralContentProps) {
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
     lead.source === 'MARKETING',
   );
@@ -292,7 +336,7 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
   return (
     <div className="space-y-8">
       {/* Contact Information */}
-      <div>
+      <div id={sectionIds.contact}>
         <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
           <User size={13} />
           Contact Information
@@ -350,7 +394,7 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
       </div>
 
       {/* Marketing */}
-      <div>
+      <div id={sectionIds.marketing}>
         <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
           <Megaphone size={13} />
           Marketing
@@ -501,7 +545,7 @@ function LeadGeneralContent({ lead, source, saveField, saveFields }: LeadGeneral
       </div>
 
       {/* Assignment */}
-      <div>
+      <div id={sectionIds.assignment}>
         <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
           <User size={13} />
           Assignment

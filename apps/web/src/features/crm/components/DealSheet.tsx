@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,6 +12,7 @@ import { DealInvoiceTab } from './DealInvoiceTab';
 import { DealCallsTab } from './DealCallsTab';
 import { DealTasksTab } from './DealTasksTab';
 import type { Deal } from '@/lib/api/deals';
+import type { DealSheetBlockerIntent } from '@/features/shared/blocker-actions';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -20,6 +21,11 @@ const TABS = [
   { value: 'task', label: 'Task', icon: CheckSquare },
   { value: 'calls', label: 'Calls', icon: Phone },
 ] as const;
+
+export interface DealSheetBlockerNavigation {
+  token: number;
+  intent: DealSheetBlockerIntent;
+}
 
 interface DealSheetProps {
   deal: Deal | null;
@@ -30,6 +36,9 @@ interface DealSheetProps {
   onDelete?: (id: string) => void;
   onRefresh?: () => void;
   onOpenDeal?: (id: string) => void;
+  /** One-shot navigation from CRM stage gate shortcuts; consumed via callback. */
+  blockerNavigation?: DealSheetBlockerNavigation | null;
+  onBlockerNavigationConsumed?: () => void;
 }
 
 export function DealSheet({
@@ -41,11 +50,41 @@ export function DealSheet({
   onDelete,
   onRefresh,
   onOpenDeal,
+  blockerNavigation = null,
+  onBlockerNavigationConsumed,
 }: DealSheetProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
+  const [invoiceCreateNonce, setInvoiceCreateNonce] = useState(0);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const applyBlockerIntent = useCallback((intent: DealSheetBlockerIntent) => {
+    if (intent.kind === 'tab') {
+      setActiveTab(intent.tab);
+      return;
+    }
+    if (intent.kind === 'general-section') {
+      setActiveTab('general');
+      requestAnimationFrame(() => {
+        document
+          .getElementById(intent.sectionId)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return;
+    }
+    setActiveTab('invoice');
+    setInvoiceCreateNonce((previous) => previous + 1);
+  }, []);
+
+  useEffect(() => {
+    if (!open || !blockerNavigation) return;
+    const { intent } = blockerNavigation;
+    queueMicrotask(() => {
+      applyBlockerIntent(intent);
+      onBlockerNavigationConsumed?.();
+    });
+  }, [open, blockerNavigation, applyBlockerIntent, onBlockerNavigationConsumed]);
 
   useEffect(() => {
     if (editingName && nameInputRef.current) {
@@ -161,7 +200,13 @@ export function DealSheet({
               />
             )}
             {activeTab === 'history' && <DealHistoryTab />}
-            {activeTab === 'invoice' && <DealInvoiceTab deal={deal} onRefresh={onRefresh} />}
+            {activeTab === 'invoice' && (
+              <DealInvoiceTab
+                deal={deal}
+                onRefresh={onRefresh}
+                expandCreateFormNonce={invoiceCreateNonce}
+              />
+            )}
             {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
             {activeTab === 'calls' && <DealCallsTab />}
           </div>
