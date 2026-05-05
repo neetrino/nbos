@@ -855,178 +855,6 @@ export type PartnerAccrualSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
 };
 
-export type PartnerAccrualCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerAccrualCreateWithoutProjectInput,
-        Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.PartnerAccrualCreateWithoutProjectInput[]
-    | Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.PartnerAccrualCreateManyProjectInputEnvelope;
-  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-};
-
-export type PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerAccrualCreateWithoutProjectInput,
-        Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.PartnerAccrualCreateWithoutProjectInput[]
-    | Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.PartnerAccrualCreateManyProjectInputEnvelope;
-  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-};
-
-export type PartnerAccrualUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerAccrualCreateWithoutProjectInput,
-        Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.PartnerAccrualCreateWithoutProjectInput[]
-    | Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.PartnerAccrualCreateManyProjectInputEnvelope;
-  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  update?:
-    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProjectInput
-    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
-};
-
-export type PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerAccrualCreateWithoutProjectInput,
-        Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.PartnerAccrualCreateWithoutProjectInput[]
-    | Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.PartnerAccrualCreateManyProjectInputEnvelope;
-  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  update?:
-    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProjectInput
-    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
-};
-
-export type PartnerAccrualCreateNestedManyWithoutProductInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerAccrualCreateWithoutProductInput,
-        Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
-      >
-    | Prisma.PartnerAccrualCreateWithoutProductInput[]
-    | Prisma.PartnerAccrualUncheckedCreateWithoutProductInput[];
-  connectOrCreate?:
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput[];
-  createMany?: Prisma.PartnerAccrualCreateManyProductInputEnvelope;
-  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-};
-
-export type PartnerAccrualUncheckedCreateNestedManyWithoutProductInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerAccrualCreateWithoutProductInput,
-        Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
-      >
-    | Prisma.PartnerAccrualCreateWithoutProductInput[]
-    | Prisma.PartnerAccrualUncheckedCreateWithoutProductInput[];
-  connectOrCreate?:
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput[];
-  createMany?: Prisma.PartnerAccrualCreateManyProductInputEnvelope;
-  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-};
-
-export type PartnerAccrualUpdateManyWithoutProductNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerAccrualCreateWithoutProductInput,
-        Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
-      >
-    | Prisma.PartnerAccrualCreateWithoutProductInput[]
-    | Prisma.PartnerAccrualUncheckedCreateWithoutProductInput[];
-  connectOrCreate?:
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput[];
-  upsert?:
-    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProductInput
-    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProductInput[];
-  createMany?: Prisma.PartnerAccrualCreateManyProductInputEnvelope;
-  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  update?:
-    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProductInput
-    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProductInput[];
-  updateMany?:
-    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProductInput
-    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProductInput[];
-  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
-};
-
-export type PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerAccrualCreateWithoutProductInput,
-        Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
-      >
-    | Prisma.PartnerAccrualCreateWithoutProductInput[]
-    | Prisma.PartnerAccrualUncheckedCreateWithoutProductInput[];
-  connectOrCreate?:
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput
-    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput[];
-  upsert?:
-    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProductInput
-    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProductInput[];
-  createMany?: Prisma.PartnerAccrualCreateManyProductInputEnvelope;
-  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
-  update?:
-    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProductInput
-    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProductInput[];
-  updateMany?:
-    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProductInput
-    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProductInput[];
-  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
-};
-
 export type PartnerAccrualCreateNestedManyWithoutOrderInput = {
   create?:
     | Prisma.XOR<
@@ -1603,212 +1431,176 @@ export type PartnerAccrualUncheckedUpdateManyWithoutPayoutBatchNestedInput = {
   deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
 };
 
-export type PartnerAccrualCreateWithoutProjectInput = {
-  id?: string;
-  dealType: $Enums.DealTypeEnum;
-  paymentType: $Enums.PaymentTypeEnum;
-  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  partner: Prisma.PartnerCreateNestedOneWithoutPartnerAccrualsInput;
-  referralTerms: Prisma.PartnerReferralTermsCreateNestedOneWithoutPartnerAccrualsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutPartnerAccrualsInput;
-  order: Prisma.OrderCreateNestedOneWithoutPartnerAccrualsInput;
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
-  invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
-  payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
-  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
+export type PartnerAccrualCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutProjectInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutProjectInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyProjectInputEnvelope;
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
 };
 
-export type PartnerAccrualUncheckedCreateWithoutProjectInput = {
-  id?: string;
-  partnerId: string;
-  referralTermsId: string;
-  productId?: string | null;
-  orderId: string;
-  subscriptionId?: string | null;
-  invoiceId?: string | null;
-  paymentId: string;
-  payoutBatchId?: string | null;
-  dealType: $Enums.DealTypeEnum;
-  paymentType: $Enums.PaymentTypeEnum;
-  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
+export type PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutProjectInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutProjectInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyProjectInputEnvelope;
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
 };
 
-export type PartnerAccrualCreateOrConnectWithoutProjectInput = {
-  where: Prisma.PartnerAccrualWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.PartnerAccrualCreateWithoutProjectInput,
-    Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
-  >;
+export type PartnerAccrualUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutProjectInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutProjectInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyProjectInputEnvelope;
+  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProjectInput
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
 };
 
-export type PartnerAccrualCreateManyProjectInputEnvelope = {
-  data: Prisma.PartnerAccrualCreateManyProjectInput | Prisma.PartnerAccrualCreateManyProjectInput[];
-  skipDuplicates?: boolean;
+export type PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutProjectInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutProjectInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyProjectInputEnvelope;
+  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProjectInput
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
 };
 
-export type PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.PartnerAccrualWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.PartnerAccrualUpdateWithoutProjectInput,
-    Prisma.PartnerAccrualUncheckedUpdateWithoutProjectInput
-  >;
-  create: Prisma.XOR<
-    Prisma.PartnerAccrualCreateWithoutProjectInput,
-    Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
-  >;
+export type PartnerAccrualCreateNestedManyWithoutProductInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutProductInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutProductInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutProductInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyProductInputEnvelope;
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
 };
 
-export type PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.PartnerAccrualWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.PartnerAccrualUpdateWithoutProjectInput,
-    Prisma.PartnerAccrualUncheckedUpdateWithoutProjectInput
-  >;
+export type PartnerAccrualUncheckedCreateNestedManyWithoutProductInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutProductInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutProductInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutProductInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyProductInputEnvelope;
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
 };
 
-export type PartnerAccrualUpdateManyWithWhereWithoutProjectInput = {
-  where: Prisma.PartnerAccrualScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.PartnerAccrualUpdateManyMutationInput,
-    Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectInput
-  >;
+export type PartnerAccrualUpdateManyWithoutProductNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutProductInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutProductInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutProductInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput[];
+  upsert?:
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProductInput
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProductInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyProductInputEnvelope;
+  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProductInput
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProductInput[];
+  updateMany?:
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProductInput
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProductInput[];
+  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
 };
 
-export type PartnerAccrualScalarWhereInput = {
-  AND?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
-  OR?: Prisma.PartnerAccrualScalarWhereInput[];
-  NOT?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
-  id?: Prisma.StringFilter<'PartnerAccrual'> | string;
-  partnerId?: Prisma.StringFilter<'PartnerAccrual'> | string;
-  referralTermsId?: Prisma.StringFilter<'PartnerAccrual'> | string;
-  projectId?: Prisma.StringFilter<'PartnerAccrual'> | string;
-  productId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
-  orderId?: Prisma.StringFilter<'PartnerAccrual'> | string;
-  subscriptionId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
-  invoiceId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
-  paymentId?: Prisma.StringFilter<'PartnerAccrual'> | string;
-  payoutBatchId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
-  dealType?: Prisma.EnumDealTypeEnumFilter<'PartnerAccrual'> | $Enums.DealTypeEnum;
-  paymentType?: Prisma.EnumPaymentTypeEnumFilter<'PartnerAccrual'> | $Enums.PaymentTypeEnum;
-  baseAmount?:
-    | Prisma.DecimalFilter<'PartnerAccrual'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFilter<'PartnerAccrual'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  amount?:
-    | Prisma.DecimalFilter<'PartnerAccrual'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumPartnerAccrualStatusEnumFilter<'PartnerAccrual'>
-    | $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Prisma.DateTimeNullableFilter<'PartnerAccrual'> | Date | string | null;
-  createdAt?: Prisma.DateTimeFilter<'PartnerAccrual'> | Date | string;
-  updatedAt?: Prisma.DateTimeFilter<'PartnerAccrual'> | Date | string;
-};
-
-export type PartnerAccrualCreateWithoutProductInput = {
-  id?: string;
-  dealType: $Enums.DealTypeEnum;
-  paymentType: $Enums.PaymentTypeEnum;
-  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  partner: Prisma.PartnerCreateNestedOneWithoutPartnerAccrualsInput;
-  referralTerms: Prisma.PartnerReferralTermsCreateNestedOneWithoutPartnerAccrualsInput;
-  project: Prisma.ProjectCreateNestedOneWithoutPartnerAccrualsInput;
-  order: Prisma.OrderCreateNestedOneWithoutPartnerAccrualsInput;
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
-  invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
-  payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
-  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
-};
-
-export type PartnerAccrualUncheckedCreateWithoutProductInput = {
-  id?: string;
-  partnerId: string;
-  referralTermsId: string;
-  projectId: string;
-  orderId: string;
-  subscriptionId?: string | null;
-  invoiceId?: string | null;
-  paymentId: string;
-  payoutBatchId?: string | null;
-  dealType: $Enums.DealTypeEnum;
-  paymentType: $Enums.PaymentTypeEnum;
-  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type PartnerAccrualCreateOrConnectWithoutProductInput = {
-  where: Prisma.PartnerAccrualWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.PartnerAccrualCreateWithoutProductInput,
-    Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type PartnerAccrualCreateManyProductInputEnvelope = {
-  data: Prisma.PartnerAccrualCreateManyProductInput | Prisma.PartnerAccrualCreateManyProductInput[];
-  skipDuplicates?: boolean;
-};
-
-export type PartnerAccrualUpsertWithWhereUniqueWithoutProductInput = {
-  where: Prisma.PartnerAccrualWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.PartnerAccrualUpdateWithoutProductInput,
-    Prisma.PartnerAccrualUncheckedUpdateWithoutProductInput
-  >;
-  create: Prisma.XOR<
-    Prisma.PartnerAccrualCreateWithoutProductInput,
-    Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type PartnerAccrualUpdateWithWhereUniqueWithoutProductInput = {
-  where: Prisma.PartnerAccrualWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.PartnerAccrualUpdateWithoutProductInput,
-    Prisma.PartnerAccrualUncheckedUpdateWithoutProductInput
-  >;
-};
-
-export type PartnerAccrualUpdateManyWithWhereWithoutProductInput = {
-  where: Prisma.PartnerAccrualScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.PartnerAccrualUpdateManyMutationInput,
-    Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductInput
-  >;
+export type PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerAccrualCreateWithoutProductInput,
+        Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
+      >
+    | Prisma.PartnerAccrualCreateWithoutProductInput[]
+    | Prisma.PartnerAccrualUncheckedCreateWithoutProductInput[];
+  connectOrCreate?:
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput
+    | Prisma.PartnerAccrualCreateOrConnectWithoutProductInput[];
+  upsert?:
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProductInput
+    | Prisma.PartnerAccrualUpsertWithWhereUniqueWithoutProductInput[];
+  createMany?: Prisma.PartnerAccrualCreateManyProductInputEnvelope;
+  set?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  disconnect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  delete?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  connect?: Prisma.PartnerAccrualWhereUniqueInput | Prisma.PartnerAccrualWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProductInput
+    | Prisma.PartnerAccrualUpdateWithWhereUniqueWithoutProductInput[];
+  updateMany?:
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProductInput
+    | Prisma.PartnerAccrualUpdateManyWithWhereWithoutProductInput[];
+  deleteMany?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
 };
 
 export type PartnerAccrualCreateWithoutOrderInput = {
@@ -1892,6 +1684,48 @@ export type PartnerAccrualUpdateManyWithWhereWithoutOrderInput = {
     Prisma.PartnerAccrualUpdateManyMutationInput,
     Prisma.PartnerAccrualUncheckedUpdateManyWithoutOrderInput
   >;
+};
+
+export type PartnerAccrualScalarWhereInput = {
+  AND?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
+  OR?: Prisma.PartnerAccrualScalarWhereInput[];
+  NOT?: Prisma.PartnerAccrualScalarWhereInput | Prisma.PartnerAccrualScalarWhereInput[];
+  id?: Prisma.StringFilter<'PartnerAccrual'> | string;
+  partnerId?: Prisma.StringFilter<'PartnerAccrual'> | string;
+  referralTermsId?: Prisma.StringFilter<'PartnerAccrual'> | string;
+  projectId?: Prisma.StringFilter<'PartnerAccrual'> | string;
+  productId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
+  orderId?: Prisma.StringFilter<'PartnerAccrual'> | string;
+  subscriptionId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
+  invoiceId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
+  paymentId?: Prisma.StringFilter<'PartnerAccrual'> | string;
+  payoutBatchId?: Prisma.StringNullableFilter<'PartnerAccrual'> | string | null;
+  dealType?: Prisma.EnumDealTypeEnumFilter<'PartnerAccrual'> | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFilter<'PartnerAccrual'> | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFilter<'PartnerAccrual'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFilter<'PartnerAccrual'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFilter<'PartnerAccrual'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFilter<'PartnerAccrual'>
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.DateTimeNullableFilter<'PartnerAccrual'> | Date | string | null;
+  createdAt?: Prisma.DateTimeFilter<'PartnerAccrual'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'PartnerAccrual'> | Date | string;
 };
 
 export type PartnerAccrualCreateWithoutInvoiceInput = {
@@ -2461,7 +2295,28 @@ export type PartnerAccrualUpdateManyWithWhereWithoutPayoutBatchInput = {
   >;
 };
 
-export type PartnerAccrualCreateManyProjectInput = {
+export type PartnerAccrualCreateWithoutProjectInput = {
+  id?: string;
+  dealType: $Enums.DealTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  partner: Prisma.PartnerCreateNestedOneWithoutPartnerAccrualsInput;
+  referralTerms: Prisma.PartnerReferralTermsCreateNestedOneWithoutPartnerAccrualsInput;
+  product?: Prisma.ProductCreateNestedOneWithoutPartnerAccrualsInput;
+  order: Prisma.OrderCreateNestedOneWithoutPartnerAccrualsInput;
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
+  payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
+};
+
+export type PartnerAccrualUncheckedCreateWithoutProjectInput = {
   id?: string;
   partnerId: string;
   referralTermsId: string;
@@ -2482,121 +2337,69 @@ export type PartnerAccrualCreateManyProjectInput = {
   updatedAt?: Date | string;
 };
 
-export type PartnerAccrualUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
-  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
-  baseAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
-  referralTerms?: Prisma.PartnerReferralTermsUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutPartnerAccrualsNestedInput;
-  order?: Prisma.OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
-  subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
-  invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
-  payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
-  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
+export type PartnerAccrualCreateOrConnectWithoutProjectInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerAccrualCreateWithoutProjectInput,
+    Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
+  >;
 };
 
-export type PartnerAccrualUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
-  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
-  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
-  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
-  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
-  baseAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type PartnerAccrualCreateManyProjectInputEnvelope = {
+  data: Prisma.PartnerAccrualCreateManyProjectInput | Prisma.PartnerAccrualCreateManyProjectInput[];
+  skipDuplicates?: boolean;
 };
 
-export type PartnerAccrualUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
-  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
-  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
-  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
-  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
-  baseAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type PartnerAccrualUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateWithoutProjectInput,
+    Prisma.PartnerAccrualUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerAccrualCreateWithoutProjectInput,
+    Prisma.PartnerAccrualUncheckedCreateWithoutProjectInput
+  >;
 };
 
-export type PartnerAccrualCreateManyProductInput = {
+export type PartnerAccrualUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateWithoutProjectInput,
+    Prisma.PartnerAccrualUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type PartnerAccrualUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.PartnerAccrualScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateManyMutationInput,
+    Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
+export type PartnerAccrualCreateWithoutProductInput = {
+  id?: string;
+  dealType: $Enums.DealTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  partner: Prisma.PartnerCreateNestedOneWithoutPartnerAccrualsInput;
+  referralTerms: Prisma.PartnerReferralTermsCreateNestedOneWithoutPartnerAccrualsInput;
+  project: Prisma.ProjectCreateNestedOneWithoutPartnerAccrualsInput;
+  order: Prisma.OrderCreateNestedOneWithoutPartnerAccrualsInput;
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerAccrualsInput;
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerAccrualsInput;
+  payment: Prisma.PaymentCreateNestedOneWithoutPartnerAccrualInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutAccrualsInput;
+};
+
+export type PartnerAccrualUncheckedCreateWithoutProductInput = {
   id?: string;
   partnerId: string;
   referralTermsId: string;
@@ -2617,118 +2420,45 @@ export type PartnerAccrualCreateManyProductInput = {
   updatedAt?: Date | string;
 };
 
-export type PartnerAccrualUpdateWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
-  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
-  baseAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
-  referralTerms?: Prisma.PartnerReferralTermsUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
-  order?: Prisma.OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
-  subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
-  invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
-  payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
-  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
+export type PartnerAccrualCreateOrConnectWithoutProductInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerAccrualCreateWithoutProductInput,
+    Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
+  >;
 };
 
-export type PartnerAccrualUncheckedUpdateWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
-  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
-  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
-  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
-  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
-  baseAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type PartnerAccrualCreateManyProductInputEnvelope = {
+  data: Prisma.PartnerAccrualCreateManyProductInput | Prisma.PartnerAccrualCreateManyProductInput[];
+  skipDuplicates?: boolean;
 };
 
-export type PartnerAccrualUncheckedUpdateManyWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
-  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
-  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
-  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
-  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
-  baseAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerAccrualStatusEnum;
-  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type PartnerAccrualUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateWithoutProductInput,
+    Prisma.PartnerAccrualUncheckedUpdateWithoutProductInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerAccrualCreateWithoutProductInput,
+    Prisma.PartnerAccrualUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type PartnerAccrualUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.PartnerAccrualWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateWithoutProductInput,
+    Prisma.PartnerAccrualUncheckedUpdateWithoutProductInput
+  >;
+};
+
+export type PartnerAccrualUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.PartnerAccrualScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerAccrualUpdateManyMutationInput,
+    Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductInput
+  >;
 };
 
 export type PartnerAccrualCreateManyOrderInput = {
@@ -3513,6 +3243,276 @@ export type PartnerAccrualUncheckedUpdateManyWithoutPayoutBatchInput = {
   subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerAccrualCreateManyProjectInput = {
+  id?: string;
+  partnerId: string;
+  referralTermsId: string;
+  productId?: string | null;
+  orderId: string;
+  subscriptionId?: string | null;
+  invoiceId?: string | null;
+  paymentId: string;
+  payoutBatchId?: string | null;
+  dealType: $Enums.DealTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerAccrualUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  referralTerms?: Prisma.PartnerReferralTermsUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutPartnerAccrualsNestedInput;
+  order?: Prisma.OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
+  invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
+  payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
+};
+
+export type PartnerAccrualUncheckedUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerAccrualUncheckedUpdateManyWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerAccrualCreateManyProductInput = {
+  id?: string;
+  partnerId: string;
+  referralTermsId: string;
+  projectId: string;
+  orderId: string;
+  subscriptionId?: string | null;
+  invoiceId?: string | null;
+  paymentId: string;
+  payoutBatchId?: string | null;
+  dealType: $Enums.DealTypeEnum;
+  paymentType: $Enums.PaymentTypeEnum;
+  baseAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerAccrualUpdateWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  referralTerms?: Prisma.PartnerReferralTermsUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  order?: Prisma.OrderUpdateOneRequiredWithoutPartnerAccrualsNestedInput;
+  subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerAccrualsNestedInput;
+  invoice?: Prisma.InvoiceUpdateOneWithoutPartnerAccrualsNestedInput;
+  payment?: Prisma.PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput;
+  payoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutAccrualsNestedInput;
+};
+
+export type PartnerAccrualUncheckedUpdateWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
+  paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
+  baseAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumPartnerAccrualStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAccrualStatusEnum;
+  eligibleAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerAccrualUncheckedUpdateManyWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  referralTermsId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  paymentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payoutBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   dealType?: Prisma.EnumDealTypeEnumFieldUpdateOperationsInput | $Enums.DealTypeEnum;
   paymentType?: Prisma.EnumPaymentTypeEnumFieldUpdateOperationsInput | $Enums.PaymentTypeEnum;
   baseAmount?:

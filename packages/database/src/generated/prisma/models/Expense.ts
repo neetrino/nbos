@@ -748,89 +748,89 @@ export type ExpenseNullableScalarRelationFilter = {
   isNot?: Prisma.ExpenseWhereInput | null;
 };
 
-export type ExpenseCreateNestedManyWithoutProjectInput = {
+export type ExpenseCreateNestedManyWithoutClientServiceRecordInput = {
   create?:
     | Prisma.XOR<
-        Prisma.ExpenseCreateWithoutProjectInput,
-        Prisma.ExpenseUncheckedCreateWithoutProjectInput
+        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
       >
-    | Prisma.ExpenseCreateWithoutProjectInput[]
-    | Prisma.ExpenseUncheckedCreateWithoutProjectInput[];
+    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
   connectOrCreate?:
-    | Prisma.ExpenseCreateOrConnectWithoutProjectInput
-    | Prisma.ExpenseCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.ExpenseCreateManyProjectInputEnvelope;
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
+  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
   connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
 };
 
-export type ExpenseUncheckedCreateNestedManyWithoutProjectInput = {
+export type ExpenseUncheckedCreateNestedManyWithoutClientServiceRecordInput = {
   create?:
     | Prisma.XOR<
-        Prisma.ExpenseCreateWithoutProjectInput,
-        Prisma.ExpenseUncheckedCreateWithoutProjectInput
+        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
       >
-    | Prisma.ExpenseCreateWithoutProjectInput[]
-    | Prisma.ExpenseUncheckedCreateWithoutProjectInput[];
+    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
   connectOrCreate?:
-    | Prisma.ExpenseCreateOrConnectWithoutProjectInput
-    | Prisma.ExpenseCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.ExpenseCreateManyProjectInputEnvelope;
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
+  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
   connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
 };
 
-export type ExpenseUpdateManyWithoutProjectNestedInput = {
+export type ExpenseUpdateManyWithoutClientServiceRecordNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.ExpenseCreateWithoutProjectInput,
-        Prisma.ExpenseUncheckedCreateWithoutProjectInput
+        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
       >
-    | Prisma.ExpenseCreateWithoutProjectInput[]
-    | Prisma.ExpenseUncheckedCreateWithoutProjectInput[];
+    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
   connectOrCreate?:
-    | Prisma.ExpenseCreateOrConnectWithoutProjectInput
-    | Prisma.ExpenseCreateOrConnectWithoutProjectInput[];
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
   upsert?:
-    | Prisma.ExpenseUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.ExpenseUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.ExpenseCreateManyProjectInputEnvelope;
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput[];
+  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
   set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
   disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
   delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
   connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
   update?:
-    | Prisma.ExpenseUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.ExpenseUpdateWithWhereUniqueWithoutProjectInput[];
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput[];
   updateMany?:
-    | Prisma.ExpenseUpdateManyWithWhereWithoutProjectInput
-    | Prisma.ExpenseUpdateManyWithWhereWithoutProjectInput[];
+    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput[];
   deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
 };
 
-export type ExpenseUncheckedUpdateManyWithoutProjectNestedInput = {
+export type ExpenseUncheckedUpdateManyWithoutClientServiceRecordNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.ExpenseCreateWithoutProjectInput,
-        Prisma.ExpenseUncheckedCreateWithoutProjectInput
+        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
       >
-    | Prisma.ExpenseCreateWithoutProjectInput[]
-    | Prisma.ExpenseUncheckedCreateWithoutProjectInput[];
+    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
   connectOrCreate?:
-    | Prisma.ExpenseCreateOrConnectWithoutProjectInput
-    | Prisma.ExpenseCreateOrConnectWithoutProjectInput[];
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
+    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
   upsert?:
-    | Prisma.ExpenseUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.ExpenseUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.ExpenseCreateManyProjectInputEnvelope;
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput[];
+  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
   set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
   disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
   delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
   connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
   update?:
-    | Prisma.ExpenseUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.ExpenseUpdateWithWhereUniqueWithoutProjectInput[];
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput[];
   updateMany?:
-    | Prisma.ExpenseUpdateManyWithWhereWithoutProjectInput
-    | Prisma.ExpenseUpdateManyWithWhereWithoutProjectInput[];
+    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput
+    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput[];
   deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
 };
 
@@ -986,92 +986,6 @@ export type ExpenseUpdateOneWithoutSalaryLineNestedInput = {
   >;
 };
 
-export type ExpenseCreateNestedManyWithoutClientServiceRecordInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
-        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
-      >
-    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
-    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
-  connectOrCreate?:
-    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
-    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
-  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
-  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-};
-
-export type ExpenseUncheckedCreateNestedManyWithoutClientServiceRecordInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
-        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
-      >
-    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
-    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
-  connectOrCreate?:
-    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
-    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
-  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
-  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-};
-
-export type ExpenseUpdateManyWithoutClientServiceRecordNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
-        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
-      >
-    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
-    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
-  connectOrCreate?:
-    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
-    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
-  upsert?:
-    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput
-    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput[];
-  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
-  set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-  disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-  delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-  update?:
-    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput
-    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput[];
-  updateMany?:
-    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput
-    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput[];
-  deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
-};
-
-export type ExpenseUncheckedUpdateManyWithoutClientServiceRecordNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ExpenseCreateWithoutClientServiceRecordInput,
-        Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
-      >
-    | Prisma.ExpenseCreateWithoutClientServiceRecordInput[]
-    | Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput[];
-  connectOrCreate?:
-    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput
-    | Prisma.ExpenseCreateOrConnectWithoutClientServiceRecordInput[];
-  upsert?:
-    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput
-    | Prisma.ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput[];
-  createMany?: Prisma.ExpenseCreateManyClientServiceRecordInputEnvelope;
-  set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-  disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-  delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
-  update?:
-    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput
-    | Prisma.ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput[];
-  updateMany?:
-    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput
-    | Prisma.ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput[];
-  deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
-};
-
 export type ExpenseCreateNestedOneWithoutPartnerPayoutBatchInput = {
   create?: Prisma.XOR<
     Prisma.ExpenseCreateWithoutPartnerPayoutBatchInput,
@@ -1100,7 +1014,93 @@ export type ExpenseUpdateOneWithoutPartnerPayoutBatchNestedInput = {
   >;
 };
 
-export type ExpenseCreateWithoutProjectInput = {
+export type ExpenseCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutProjectInput,
+        Prisma.ExpenseUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.ExpenseCreateWithoutProjectInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutProjectInput
+    | Prisma.ExpenseCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.ExpenseCreateManyProjectInputEnvelope;
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+};
+
+export type ExpenseUncheckedCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutProjectInput,
+        Prisma.ExpenseUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.ExpenseCreateWithoutProjectInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutProjectInput
+    | Prisma.ExpenseCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.ExpenseCreateManyProjectInputEnvelope;
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+};
+
+export type ExpenseUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutProjectInput,
+        Prisma.ExpenseUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.ExpenseCreateWithoutProjectInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutProjectInput
+    | Prisma.ExpenseCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.ExpenseCreateManyProjectInputEnvelope;
+  set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  update?:
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.ExpenseUpdateManyWithWhereWithoutProjectInput
+    | Prisma.ExpenseUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
+};
+
+export type ExpenseUncheckedUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExpenseCreateWithoutProjectInput,
+        Prisma.ExpenseUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.ExpenseCreateWithoutProjectInput[]
+    | Prisma.ExpenseUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.ExpenseCreateOrConnectWithoutProjectInput
+    | Prisma.ExpenseCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.ExpenseUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.ExpenseCreateManyProjectInputEnvelope;
+  set?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  disconnect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  delete?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  connect?: Prisma.ExpenseWhereUniqueInput | Prisma.ExpenseWhereUniqueInput[];
+  update?:
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.ExpenseUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.ExpenseUpdateManyWithWhereWithoutProjectInput
+    | Prisma.ExpenseUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[];
+};
+
+export type ExpenseCreateWithoutClientServiceRecordInput = {
   id?: string;
   type: $Enums.ExpenseTypeEnum;
   category: $Enums.ExpenseCategoryEnum;
@@ -1115,14 +1115,14 @@ export type ExpenseCreateWithoutProjectInput = {
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  project?: Prisma.ProjectCreateNestedOneWithoutExpensesInput;
   expensePlan?: Prisma.ExpensePlanCreateNestedOneWithoutExpensesInput;
-  clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutExpensesInput;
   expensePayments?: Prisma.ExpensePaymentCreateNestedManyWithoutExpenseInput;
   salaryLine?: Prisma.SalaryLineCreateNestedOneWithoutExpenseInput;
   partnerPayoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutExpenseInput;
 };
 
-export type ExpenseUncheckedCreateWithoutProjectInput = {
+export type ExpenseUncheckedCreateWithoutClientServiceRecordInput = {
   id?: string;
   type: $Enums.ExpenseTypeEnum;
   category: $Enums.ExpenseCategoryEnum;
@@ -1131,8 +1131,8 @@ export type ExpenseUncheckedCreateWithoutProjectInput = {
   frequency?: $Enums.ExpenseFrequency;
   dueDate?: Date | string | null;
   status?: $Enums.ExpenseStatusEnum;
+  projectId?: string | null;
   expensePlanId?: string | null;
-  clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
   backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
@@ -1144,44 +1144,46 @@ export type ExpenseUncheckedCreateWithoutProjectInput = {
   partnerPayoutBatch?: Prisma.PartnerPayoutBatchUncheckedCreateNestedOneWithoutExpenseInput;
 };
 
-export type ExpenseCreateOrConnectWithoutProjectInput = {
+export type ExpenseCreateOrConnectWithoutClientServiceRecordInput = {
   where: Prisma.ExpenseWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.ExpenseCreateWithoutProjectInput,
-    Prisma.ExpenseUncheckedCreateWithoutProjectInput
+    Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+    Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
   >;
 };
 
-export type ExpenseCreateManyProjectInputEnvelope = {
-  data: Prisma.ExpenseCreateManyProjectInput | Prisma.ExpenseCreateManyProjectInput[];
+export type ExpenseCreateManyClientServiceRecordInputEnvelope = {
+  data:
+    | Prisma.ExpenseCreateManyClientServiceRecordInput
+    | Prisma.ExpenseCreateManyClientServiceRecordInput[];
   skipDuplicates?: boolean;
 };
 
-export type ExpenseUpsertWithWhereUniqueWithoutProjectInput = {
+export type ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput = {
   where: Prisma.ExpenseWhereUniqueInput;
   update: Prisma.XOR<
-    Prisma.ExpenseUpdateWithoutProjectInput,
-    Prisma.ExpenseUncheckedUpdateWithoutProjectInput
+    Prisma.ExpenseUpdateWithoutClientServiceRecordInput,
+    Prisma.ExpenseUncheckedUpdateWithoutClientServiceRecordInput
   >;
   create: Prisma.XOR<
-    Prisma.ExpenseCreateWithoutProjectInput,
-    Prisma.ExpenseUncheckedCreateWithoutProjectInput
+    Prisma.ExpenseCreateWithoutClientServiceRecordInput,
+    Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
   >;
 };
 
-export type ExpenseUpdateWithWhereUniqueWithoutProjectInput = {
+export type ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput = {
   where: Prisma.ExpenseWhereUniqueInput;
   data: Prisma.XOR<
-    Prisma.ExpenseUpdateWithoutProjectInput,
-    Prisma.ExpenseUncheckedUpdateWithoutProjectInput
+    Prisma.ExpenseUpdateWithoutClientServiceRecordInput,
+    Prisma.ExpenseUncheckedUpdateWithoutClientServiceRecordInput
   >;
 };
 
-export type ExpenseUpdateManyWithWhereWithoutProjectInput = {
+export type ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput = {
   where: Prisma.ExpenseScalarWhereInput;
   data: Prisma.XOR<
     Prisma.ExpenseUpdateManyMutationInput,
-    Prisma.ExpenseUncheckedUpdateManyWithoutProjectInput
+    Prisma.ExpenseUncheckedUpdateManyWithoutClientServiceRecordInput
   >;
 };
 
@@ -1565,93 +1567,6 @@ export type ExpenseUncheckedUpdateWithoutSalaryLineInput = {
   partnerPayoutBatch?: Prisma.PartnerPayoutBatchUncheckedUpdateOneWithoutExpenseNestedInput;
 };
 
-export type ExpenseCreateWithoutClientServiceRecordInput = {
-  id?: string;
-  type: $Enums.ExpenseTypeEnum;
-  category: $Enums.ExpenseCategoryEnum;
-  name: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  frequency?: $Enums.ExpenseFrequency;
-  dueDate?: Date | string | null;
-  status?: $Enums.ExpenseStatusEnum;
-  isPassThrough?: boolean;
-  taxStatus?: $Enums.TaxStatus;
-  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  project?: Prisma.ProjectCreateNestedOneWithoutExpensesInput;
-  expensePlan?: Prisma.ExpensePlanCreateNestedOneWithoutExpensesInput;
-  expensePayments?: Prisma.ExpensePaymentCreateNestedManyWithoutExpenseInput;
-  salaryLine?: Prisma.SalaryLineCreateNestedOneWithoutExpenseInput;
-  partnerPayoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutExpenseInput;
-};
-
-export type ExpenseUncheckedCreateWithoutClientServiceRecordInput = {
-  id?: string;
-  type: $Enums.ExpenseTypeEnum;
-  category: $Enums.ExpenseCategoryEnum;
-  name: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  frequency?: $Enums.ExpenseFrequency;
-  dueDate?: Date | string | null;
-  status?: $Enums.ExpenseStatusEnum;
-  projectId?: string | null;
-  expensePlanId?: string | null;
-  isPassThrough?: boolean;
-  taxStatus?: $Enums.TaxStatus;
-  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  expensePayments?: Prisma.ExpensePaymentUncheckedCreateNestedManyWithoutExpenseInput;
-  salaryLine?: Prisma.SalaryLineUncheckedCreateNestedOneWithoutExpenseInput;
-  partnerPayoutBatch?: Prisma.PartnerPayoutBatchUncheckedCreateNestedOneWithoutExpenseInput;
-};
-
-export type ExpenseCreateOrConnectWithoutClientServiceRecordInput = {
-  where: Prisma.ExpenseWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ExpenseCreateWithoutClientServiceRecordInput,
-    Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
-  >;
-};
-
-export type ExpenseCreateManyClientServiceRecordInputEnvelope = {
-  data:
-    | Prisma.ExpenseCreateManyClientServiceRecordInput
-    | Prisma.ExpenseCreateManyClientServiceRecordInput[];
-  skipDuplicates?: boolean;
-};
-
-export type ExpenseUpsertWithWhereUniqueWithoutClientServiceRecordInput = {
-  where: Prisma.ExpenseWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.ExpenseUpdateWithoutClientServiceRecordInput,
-    Prisma.ExpenseUncheckedUpdateWithoutClientServiceRecordInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ExpenseCreateWithoutClientServiceRecordInput,
-    Prisma.ExpenseUncheckedCreateWithoutClientServiceRecordInput
-  >;
-};
-
-export type ExpenseUpdateWithWhereUniqueWithoutClientServiceRecordInput = {
-  where: Prisma.ExpenseWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.ExpenseUpdateWithoutClientServiceRecordInput,
-    Prisma.ExpenseUncheckedUpdateWithoutClientServiceRecordInput
-  >;
-};
-
-export type ExpenseUpdateManyWithWhereWithoutClientServiceRecordInput = {
-  where: Prisma.ExpenseScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.ExpenseUpdateManyMutationInput,
-    Prisma.ExpenseUncheckedUpdateManyWithoutClientServiceRecordInput
-  >;
-};
-
 export type ExpenseCreateWithoutPartnerPayoutBatchInput = {
   id?: string;
   type: $Enums.ExpenseTypeEnum;
@@ -1784,7 +1699,29 @@ export type ExpenseUncheckedUpdateWithoutPartnerPayoutBatchInput = {
   salaryLine?: Prisma.SalaryLineUncheckedUpdateOneWithoutExpenseNestedInput;
 };
 
-export type ExpenseCreateManyProjectInput = {
+export type ExpenseCreateWithoutProjectInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  expensePlan?: Prisma.ExpensePlanCreateNestedOneWithoutExpensesInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordCreateNestedOneWithoutExpensesInput;
+  expensePayments?: Prisma.ExpensePaymentCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineCreateNestedOneWithoutExpenseInput;
+  partnerPayoutBatch?: Prisma.PartnerPayoutBatchCreateNestedOneWithoutExpenseInput;
+};
+
+export type ExpenseUncheckedCreateWithoutProjectInput = {
   id?: string;
   type: $Enums.ExpenseTypeEnum;
   category: $Enums.ExpenseCategoryEnum;
@@ -1801,9 +1738,72 @@ export type ExpenseCreateManyProjectInput = {
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  expensePayments?: Prisma.ExpensePaymentUncheckedCreateNestedManyWithoutExpenseInput;
+  salaryLine?: Prisma.SalaryLineUncheckedCreateNestedOneWithoutExpenseInput;
+  partnerPayoutBatch?: Prisma.PartnerPayoutBatchUncheckedCreateNestedOneWithoutExpenseInput;
 };
 
-export type ExpenseUpdateWithoutProjectInput = {
+export type ExpenseCreateOrConnectWithoutProjectInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutProjectInput,
+    Prisma.ExpenseUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type ExpenseCreateManyProjectInputEnvelope = {
+  data: Prisma.ExpenseCreateManyProjectInput | Prisma.ExpenseCreateManyProjectInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ExpenseUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutProjectInput,
+    Prisma.ExpenseUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExpenseCreateWithoutProjectInput,
+    Prisma.ExpenseUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type ExpenseUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.ExpenseWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ExpenseUpdateWithoutProjectInput,
+    Prisma.ExpenseUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type ExpenseUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.ExpenseScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExpenseUpdateManyMutationInput,
+    Prisma.ExpenseUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
+export type ExpenseCreateManyClientServiceRecordInput = {
+  id?: string;
+  type: $Enums.ExpenseTypeEnum;
+  category: $Enums.ExpenseCategoryEnum;
+  name: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  frequency?: $Enums.ExpenseFrequency;
+  dueDate?: Date | string | null;
+  status?: $Enums.ExpenseStatusEnum;
+  projectId?: string | null;
+  expensePlanId?: string | null;
+  isPassThrough?: boolean;
+  taxStatus?: $Enums.TaxStatus;
+  backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ExpenseUpdateWithoutClientServiceRecordInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
   category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
@@ -1826,14 +1826,14 @@ export type ExpenseUpdateWithoutProjectInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneWithoutExpensesNestedInput;
   expensePlan?: Prisma.ExpensePlanUpdateOneWithoutExpensesNestedInput;
-  clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutExpensesNestedInput;
   expensePayments?: Prisma.ExpensePaymentUpdateManyWithoutExpenseNestedInput;
   salaryLine?: Prisma.SalaryLineUpdateOneWithoutExpenseNestedInput;
   partnerPayoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutExpenseNestedInput;
 };
 
-export type ExpenseUncheckedUpdateWithoutProjectInput = {
+export type ExpenseUncheckedUpdateWithoutClientServiceRecordInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
   category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
@@ -1847,8 +1847,8 @@ export type ExpenseUncheckedUpdateWithoutProjectInput = {
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   backlogReason?:
@@ -1863,7 +1863,7 @@ export type ExpenseUncheckedUpdateWithoutProjectInput = {
   partnerPayoutBatch?: Prisma.PartnerPayoutBatchUncheckedUpdateOneWithoutExpenseNestedInput;
 };
 
-export type ExpenseUncheckedUpdateManyWithoutProjectInput = {
+export type ExpenseUncheckedUpdateManyWithoutClientServiceRecordInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
   category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
@@ -1877,8 +1877,8 @@ export type ExpenseUncheckedUpdateManyWithoutProjectInput = {
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   backlogReason?:
@@ -1996,7 +1996,7 @@ export type ExpenseUncheckedUpdateManyWithoutExpensePlanInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type ExpenseCreateManyClientServiceRecordInput = {
+export type ExpenseCreateManyProjectInput = {
   id?: string;
   type: $Enums.ExpenseTypeEnum;
   category: $Enums.ExpenseCategoryEnum;
@@ -2005,8 +2005,8 @@ export type ExpenseCreateManyClientServiceRecordInput = {
   frequency?: $Enums.ExpenseFrequency;
   dueDate?: Date | string | null;
   status?: $Enums.ExpenseStatusEnum;
-  projectId?: string | null;
   expensePlanId?: string | null;
+  clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: $Enums.TaxStatus;
   backlogReason?: $Enums.ExpenseBacklogReasonEnum | null;
@@ -2015,7 +2015,7 @@ export type ExpenseCreateManyClientServiceRecordInput = {
   updatedAt?: Date | string;
 };
 
-export type ExpenseUpdateWithoutClientServiceRecordInput = {
+export type ExpenseUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
   category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
@@ -2038,14 +2038,14 @@ export type ExpenseUpdateWithoutClientServiceRecordInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  project?: Prisma.ProjectUpdateOneWithoutExpensesNestedInput;
   expensePlan?: Prisma.ExpensePlanUpdateOneWithoutExpensesNestedInput;
+  clientServiceRecord?: Prisma.ClientServiceRecordUpdateOneWithoutExpensesNestedInput;
   expensePayments?: Prisma.ExpensePaymentUpdateManyWithoutExpenseNestedInput;
   salaryLine?: Prisma.SalaryLineUpdateOneWithoutExpenseNestedInput;
   partnerPayoutBatch?: Prisma.PartnerPayoutBatchUpdateOneWithoutExpenseNestedInput;
 };
 
-export type ExpenseUncheckedUpdateWithoutClientServiceRecordInput = {
+export type ExpenseUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
   category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
@@ -2059,8 +2059,8 @@ export type ExpenseUncheckedUpdateWithoutClientServiceRecordInput = {
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   backlogReason?:
@@ -2075,7 +2075,7 @@ export type ExpenseUncheckedUpdateWithoutClientServiceRecordInput = {
   partnerPayoutBatch?: Prisma.PartnerPayoutBatchUncheckedUpdateOneWithoutExpenseNestedInput;
 };
 
-export type ExpenseUncheckedUpdateManyWithoutClientServiceRecordInput = {
+export type ExpenseUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   type?: Prisma.EnumExpenseTypeEnumFieldUpdateOperationsInput | $Enums.ExpenseTypeEnum;
   category?: Prisma.EnumExpenseCategoryEnumFieldUpdateOperationsInput | $Enums.ExpenseCategoryEnum;
@@ -2089,8 +2089,8 @@ export type ExpenseUncheckedUpdateManyWithoutClientServiceRecordInput = {
   frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   status?: Prisma.EnumExpenseStatusEnumFieldUpdateOperationsInput | $Enums.ExpenseStatusEnum;
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   expensePlanId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   isPassThrough?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   backlogReason?:

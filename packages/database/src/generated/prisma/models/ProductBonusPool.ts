@@ -758,16 +758,6 @@ export type ProductBonusPoolUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type ProductBonusPoolListRelationFilter = {
-  every?: Prisma.ProductBonusPoolWhereInput;
-  some?: Prisma.ProductBonusPoolWhereInput;
-  none?: Prisma.ProductBonusPoolWhereInput;
-};
-
-export type ProductBonusPoolOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
-};
-
 export type ProductBonusPoolNullableScalarRelationFilter = {
   is?: Prisma.ProductBonusPoolWhereInput | null;
   isNot?: Prisma.ProductBonusPoolWhereInput | null;
@@ -840,6 +830,76 @@ export type ProductBonusPoolSumOrderByAggregateInput = {
   totalRemainingAmount?: Prisma.SortOrder;
   availableFunding?: Prisma.SortOrder;
   overFundingAmount?: Prisma.SortOrder;
+};
+
+export type ProductBonusPoolListRelationFilter = {
+  every?: Prisma.ProductBonusPoolWhereInput;
+  some?: Prisma.ProductBonusPoolWhereInput;
+  none?: Prisma.ProductBonusPoolWhereInput;
+};
+
+export type ProductBonusPoolOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
+};
+
+export type ProductBonusPoolCreateNestedOneWithoutOrderInput = {
+  create?: Prisma.XOR<
+    Prisma.ProductBonusPoolCreateWithoutOrderInput,
+    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
+  >;
+  connectOrCreate?: Prisma.ProductBonusPoolCreateOrConnectWithoutOrderInput;
+  connect?: Prisma.ProductBonusPoolWhereUniqueInput;
+};
+
+export type ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput = {
+  create?: Prisma.XOR<
+    Prisma.ProductBonusPoolCreateWithoutOrderInput,
+    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
+  >;
+  connectOrCreate?: Prisma.ProductBonusPoolCreateOrConnectWithoutOrderInput;
+  connect?: Prisma.ProductBonusPoolWhereUniqueInput;
+};
+
+export type ProductBonusPoolUpdateOneWithoutOrderNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProductBonusPoolCreateWithoutOrderInput,
+    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
+  >;
+  connectOrCreate?: Prisma.ProductBonusPoolCreateOrConnectWithoutOrderInput;
+  upsert?: Prisma.ProductBonusPoolUpsertWithoutOrderInput;
+  disconnect?: Prisma.ProductBonusPoolWhereInput | boolean;
+  delete?: Prisma.ProductBonusPoolWhereInput | boolean;
+  connect?: Prisma.ProductBonusPoolWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProductBonusPoolUpdateToOneWithWhereWithoutOrderInput,
+      Prisma.ProductBonusPoolUpdateWithoutOrderInput
+    >,
+    Prisma.ProductBonusPoolUncheckedUpdateWithoutOrderInput
+  >;
+};
+
+export type ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProductBonusPoolCreateWithoutOrderInput,
+    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
+  >;
+  connectOrCreate?: Prisma.ProductBonusPoolCreateOrConnectWithoutOrderInput;
+  upsert?: Prisma.ProductBonusPoolUpsertWithoutOrderInput;
+  disconnect?: Prisma.ProductBonusPoolWhereInput | boolean;
+  delete?: Prisma.ProductBonusPoolWhereInput | boolean;
+  connect?: Prisma.ProductBonusPoolWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProductBonusPoolUpdateToOneWithWhereWithoutOrderInput,
+      Prisma.ProductBonusPoolUpdateWithoutOrderInput
+    >,
+    Prisma.ProductBonusPoolUncheckedUpdateWithoutOrderInput
+  >;
+};
+
+export type EnumProductBonusPoolStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ProductBonusPoolStatusEnum;
 };
 
 export type ProductBonusPoolCreateNestedManyWithoutProjectInput = {
@@ -1100,64 +1160,160 @@ export type ProductBonusPoolUncheckedUpdateManyWithoutExtensionNestedInput = {
   deleteMany?: Prisma.ProductBonusPoolScalarWhereInput | Prisma.ProductBonusPoolScalarWhereInput[];
 };
 
-export type ProductBonusPoolCreateNestedOneWithoutOrderInput = {
-  create?: Prisma.XOR<
-    Prisma.ProductBonusPoolCreateWithoutOrderInput,
-    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
-  >;
-  connectOrCreate?: Prisma.ProductBonusPoolCreateOrConnectWithoutOrderInput;
-  connect?: Prisma.ProductBonusPoolWhereUniqueInput;
+export type ProductBonusPoolCreateWithoutOrderInput = {
+  id?: string;
+  totalPlannedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalReleasedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPaidAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalRemainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  availableFunding?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  overFundingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.ProductBonusPoolStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutProductBonusPoolsInput;
+  product?: Prisma.ProductCreateNestedOneWithoutProductBonusPoolsInput;
+  extension?: Prisma.ExtensionCreateNestedOneWithoutProductBonusPoolsInput;
 };
 
-export type ProductBonusPoolUncheckedCreateNestedOneWithoutOrderInput = {
-  create?: Prisma.XOR<
-    Prisma.ProductBonusPoolCreateWithoutOrderInput,
-    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
-  >;
-  connectOrCreate?: Prisma.ProductBonusPoolCreateOrConnectWithoutOrderInput;
-  connect?: Prisma.ProductBonusPoolWhereUniqueInput;
+export type ProductBonusPoolUncheckedCreateWithoutOrderInput = {
+  id?: string;
+  projectId: string;
+  productId?: string | null;
+  extensionId?: string | null;
+  totalPlannedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalReleasedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPaidAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalRemainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  availableFunding?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  overFundingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.ProductBonusPoolStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
-export type ProductBonusPoolUpdateOneWithoutOrderNestedInput = {
-  create?: Prisma.XOR<
+export type ProductBonusPoolCreateOrConnectWithoutOrderInput = {
+  where: Prisma.ProductBonusPoolWhereUniqueInput;
+  create: Prisma.XOR<
     Prisma.ProductBonusPoolCreateWithoutOrderInput,
     Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
   >;
-  connectOrCreate?: Prisma.ProductBonusPoolCreateOrConnectWithoutOrderInput;
-  upsert?: Prisma.ProductBonusPoolUpsertWithoutOrderInput;
-  disconnect?: Prisma.ProductBonusPoolWhereInput | boolean;
-  delete?: Prisma.ProductBonusPoolWhereInput | boolean;
-  connect?: Prisma.ProductBonusPoolWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProductBonusPoolUpdateToOneWithWhereWithoutOrderInput,
-      Prisma.ProductBonusPoolUpdateWithoutOrderInput
-    >,
+};
+
+export type ProductBonusPoolUpsertWithoutOrderInput = {
+  update: Prisma.XOR<
+    Prisma.ProductBonusPoolUpdateWithoutOrderInput,
+    Prisma.ProductBonusPoolUncheckedUpdateWithoutOrderInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProductBonusPoolCreateWithoutOrderInput,
+    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
+  >;
+  where?: Prisma.ProductBonusPoolWhereInput;
+};
+
+export type ProductBonusPoolUpdateToOneWithWhereWithoutOrderInput = {
+  where?: Prisma.ProductBonusPoolWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProductBonusPoolUpdateWithoutOrderInput,
     Prisma.ProductBonusPoolUncheckedUpdateWithoutOrderInput
   >;
 };
 
-export type ProductBonusPoolUncheckedUpdateOneWithoutOrderNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ProductBonusPoolCreateWithoutOrderInput,
-    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
-  >;
-  connectOrCreate?: Prisma.ProductBonusPoolCreateOrConnectWithoutOrderInput;
-  upsert?: Prisma.ProductBonusPoolUpsertWithoutOrderInput;
-  disconnect?: Prisma.ProductBonusPoolWhereInput | boolean;
-  delete?: Prisma.ProductBonusPoolWhereInput | boolean;
-  connect?: Prisma.ProductBonusPoolWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProductBonusPoolUpdateToOneWithWhereWithoutOrderInput,
-      Prisma.ProductBonusPoolUpdateWithoutOrderInput
-    >,
-    Prisma.ProductBonusPoolUncheckedUpdateWithoutOrderInput
-  >;
+export type ProductBonusPoolUpdateWithoutOrderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  totalPlannedAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalReleasedAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalPaidAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalRemainingAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  availableFunding?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  overFundingAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumProductBonusPoolStatusEnumFieldUpdateOperationsInput
+    | $Enums.ProductBonusPoolStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutProductBonusPoolsNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutProductBonusPoolsNestedInput;
+  extension?: Prisma.ExtensionUpdateOneWithoutProductBonusPoolsNestedInput;
 };
 
-export type EnumProductBonusPoolStatusEnumFieldUpdateOperationsInput = {
-  set?: $Enums.ProductBonusPoolStatusEnum;
+export type ProductBonusPoolUncheckedUpdateWithoutOrderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  totalPlannedAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalReleasedAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalPaidAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalRemainingAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  availableFunding?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  overFundingAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?:
+    | Prisma.EnumProductBonusPoolStatusEnumFieldUpdateOperationsInput
+    | $Enums.ProductBonusPoolStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type ProductBonusPoolCreateWithoutProjectInput = {
@@ -1435,162 +1591,6 @@ export type ProductBonusPoolUpdateManyWithWhereWithoutExtensionInput = {
     Prisma.ProductBonusPoolUpdateManyMutationInput,
     Prisma.ProductBonusPoolUncheckedUpdateManyWithoutExtensionInput
   >;
-};
-
-export type ProductBonusPoolCreateWithoutOrderInput = {
-  id?: string;
-  totalPlannedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalReleasedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPaidAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalRemainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  availableFunding?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  overFundingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.ProductBonusPoolStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  project: Prisma.ProjectCreateNestedOneWithoutProductBonusPoolsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutProductBonusPoolsInput;
-  extension?: Prisma.ExtensionCreateNestedOneWithoutProductBonusPoolsInput;
-};
-
-export type ProductBonusPoolUncheckedCreateWithoutOrderInput = {
-  id?: string;
-  projectId: string;
-  productId?: string | null;
-  extensionId?: string | null;
-  totalPlannedAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalReleasedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPaidAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalRemainingAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  availableFunding?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  overFundingAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.ProductBonusPoolStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type ProductBonusPoolCreateOrConnectWithoutOrderInput = {
-  where: Prisma.ProductBonusPoolWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProductBonusPoolCreateWithoutOrderInput,
-    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
-  >;
-};
-
-export type ProductBonusPoolUpsertWithoutOrderInput = {
-  update: Prisma.XOR<
-    Prisma.ProductBonusPoolUpdateWithoutOrderInput,
-    Prisma.ProductBonusPoolUncheckedUpdateWithoutOrderInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProductBonusPoolCreateWithoutOrderInput,
-    Prisma.ProductBonusPoolUncheckedCreateWithoutOrderInput
-  >;
-  where?: Prisma.ProductBonusPoolWhereInput;
-};
-
-export type ProductBonusPoolUpdateToOneWithWhereWithoutOrderInput = {
-  where?: Prisma.ProductBonusPoolWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProductBonusPoolUpdateWithoutOrderInput,
-    Prisma.ProductBonusPoolUncheckedUpdateWithoutOrderInput
-  >;
-};
-
-export type ProductBonusPoolUpdateWithoutOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  totalPlannedAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalReleasedAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalPaidAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalRemainingAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  availableFunding?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  overFundingAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumProductBonusPoolStatusEnumFieldUpdateOperationsInput
-    | $Enums.ProductBonusPoolStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutProductBonusPoolsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutProductBonusPoolsNestedInput;
-  extension?: Prisma.ExtensionUpdateOneWithoutProductBonusPoolsNestedInput;
-};
-
-export type ProductBonusPoolUncheckedUpdateWithoutOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  totalPlannedAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalReleasedAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalPaidAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalRemainingAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  availableFunding?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  overFundingAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?:
-    | Prisma.EnumProductBonusPoolStatusEnumFieldUpdateOperationsInput
-    | $Enums.ProductBonusPoolStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type ProductBonusPoolCreateManyProjectInput = {

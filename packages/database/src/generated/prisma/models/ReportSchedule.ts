@@ -711,6 +711,16 @@ export type ReportScheduleUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+export type ReportScheduleListRelationFilter = {
+  every?: Prisma.ReportScheduleWhereInput;
+  some?: Prisma.ReportScheduleWhereInput;
+  none?: Prisma.ReportScheduleWhereInput;
+};
+
+export type ReportScheduleOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
+};
+
 export type ReportScheduleCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   reportKey?: Prisma.SortOrder;
@@ -793,33 +803,6 @@ export type ReportScheduleMinOrderByAggregateInput = {
 export type ReportScheduleSumOrderByAggregateInput = {
   dayOfWeek?: Prisma.SortOrder;
   dayOfMonth?: Prisma.SortOrder;
-};
-
-export type ReportScheduleListRelationFilter = {
-  every?: Prisma.ReportScheduleWhereInput;
-  some?: Prisma.ReportScheduleWhereInput;
-  none?: Prisma.ReportScheduleWhereInput;
-};
-
-export type ReportScheduleOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
-};
-
-export type ReportScheduleCreaterecipientEmailsInput = {
-  set: string[];
-};
-
-export type EnumReportScheduleStatusEnumFieldUpdateOperationsInput = {
-  set?: $Enums.ReportScheduleStatusEnum;
-};
-
-export type ReportScheduleUpdaterecipientEmailsInput = {
-  set?: string[];
-  push?: string | string[];
-};
-
-export type EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput = {
-  set?: $Enums.ReportScheduleFrequencyEnum;
 };
 
 export type ReportScheduleCreateNestedManyWithoutOwnerInput = {
@@ -906,6 +889,23 @@ export type ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput = {
     | Prisma.ReportScheduleUpdateManyWithWhereWithoutOwnerInput
     | Prisma.ReportScheduleUpdateManyWithWhereWithoutOwnerInput[];
   deleteMany?: Prisma.ReportScheduleScalarWhereInput | Prisma.ReportScheduleScalarWhereInput[];
+};
+
+export type ReportScheduleCreaterecipientEmailsInput = {
+  set: string[];
+};
+
+export type EnumReportScheduleStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ReportScheduleStatusEnum;
+};
+
+export type ReportScheduleUpdaterecipientEmailsInput = {
+  set?: string[];
+  push?: string | string[];
+};
+
+export type EnumReportScheduleFrequencyEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ReportScheduleFrequencyEnum;
 };
 
 export type ReportScheduleCreateWithoutOwnerInput = {

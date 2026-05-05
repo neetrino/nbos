@@ -904,6 +904,16 @@ export type PayrollRunUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+export type PayrollRunListRelationFilter = {
+  every?: Prisma.PayrollRunWhereInput;
+  some?: Prisma.PayrollRunWhereInput;
+  none?: Prisma.PayrollRunWhereInput;
+};
+
+export type PayrollRunOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
+};
+
 export type PayrollRunNullableScalarRelationFilter = {
   is?: Prisma.PayrollRunWhereInput | null;
   isNot?: Prisma.PayrollRunWhereInput | null;
@@ -994,74 +1004,6 @@ export type PayrollRunSumOrderByAggregateInput = {
 export type PayrollRunScalarRelationFilter = {
   is?: Prisma.PayrollRunWhereInput;
   isNot?: Prisma.PayrollRunWhereInput;
-};
-
-export type PayrollRunListRelationFilter = {
-  every?: Prisma.PayrollRunWhereInput;
-  some?: Prisma.PayrollRunWhereInput;
-  none?: Prisma.PayrollRunWhereInput;
-};
-
-export type PayrollRunOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
-};
-
-export type PayrollRunCreateNestedOneWithoutBonusReleasesInput = {
-  create?: Prisma.XOR<
-    Prisma.PayrollRunCreateWithoutBonusReleasesInput,
-    Prisma.PayrollRunUncheckedCreateWithoutBonusReleasesInput
-  >;
-  connectOrCreate?: Prisma.PayrollRunCreateOrConnectWithoutBonusReleasesInput;
-  connect?: Prisma.PayrollRunWhereUniqueInput;
-};
-
-export type PayrollRunUpdateOneWithoutBonusReleasesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.PayrollRunCreateWithoutBonusReleasesInput,
-    Prisma.PayrollRunUncheckedCreateWithoutBonusReleasesInput
-  >;
-  connectOrCreate?: Prisma.PayrollRunCreateOrConnectWithoutBonusReleasesInput;
-  upsert?: Prisma.PayrollRunUpsertWithoutBonusReleasesInput;
-  disconnect?: Prisma.PayrollRunWhereInput | boolean;
-  delete?: Prisma.PayrollRunWhereInput | boolean;
-  connect?: Prisma.PayrollRunWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.PayrollRunUpdateToOneWithWhereWithoutBonusReleasesInput,
-      Prisma.PayrollRunUpdateWithoutBonusReleasesInput
-    >,
-    Prisma.PayrollRunUncheckedUpdateWithoutBonusReleasesInput
-  >;
-};
-
-export type EnumPayrollRunStatusEnumFieldUpdateOperationsInput = {
-  set?: $Enums.PayrollRunStatusEnum;
-};
-
-export type PayrollRunCreateNestedOneWithoutSalaryLinesInput = {
-  create?: Prisma.XOR<
-    Prisma.PayrollRunCreateWithoutSalaryLinesInput,
-    Prisma.PayrollRunUncheckedCreateWithoutSalaryLinesInput
-  >;
-  connectOrCreate?: Prisma.PayrollRunCreateOrConnectWithoutSalaryLinesInput;
-  connect?: Prisma.PayrollRunWhereUniqueInput;
-};
-
-export type PayrollRunUpdateOneRequiredWithoutSalaryLinesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.PayrollRunCreateWithoutSalaryLinesInput,
-    Prisma.PayrollRunUncheckedCreateWithoutSalaryLinesInput
-  >;
-  connectOrCreate?: Prisma.PayrollRunCreateOrConnectWithoutSalaryLinesInput;
-  upsert?: Prisma.PayrollRunUpsertWithoutSalaryLinesInput;
-  connect?: Prisma.PayrollRunWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.PayrollRunUpdateToOneWithWhereWithoutSalaryLinesInput,
-      Prisma.PayrollRunUpdateWithoutSalaryLinesInput
-    >,
-    Prisma.PayrollRunUncheckedUpdateWithoutSalaryLinesInput
-  >;
 };
 
 export type PayrollRunCreateNestedManyWithoutCreatedByInput = {
@@ -1234,6 +1176,295 @@ export type PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput = {
     | Prisma.PayrollRunUpdateManyWithWhereWithoutApprovedByInput
     | Prisma.PayrollRunUpdateManyWithWhereWithoutApprovedByInput[];
   deleteMany?: Prisma.PayrollRunScalarWhereInput | Prisma.PayrollRunScalarWhereInput[];
+};
+
+export type PayrollRunCreateNestedOneWithoutBonusReleasesInput = {
+  create?: Prisma.XOR<
+    Prisma.PayrollRunCreateWithoutBonusReleasesInput,
+    Prisma.PayrollRunUncheckedCreateWithoutBonusReleasesInput
+  >;
+  connectOrCreate?: Prisma.PayrollRunCreateOrConnectWithoutBonusReleasesInput;
+  connect?: Prisma.PayrollRunWhereUniqueInput;
+};
+
+export type PayrollRunUpdateOneWithoutBonusReleasesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.PayrollRunCreateWithoutBonusReleasesInput,
+    Prisma.PayrollRunUncheckedCreateWithoutBonusReleasesInput
+  >;
+  connectOrCreate?: Prisma.PayrollRunCreateOrConnectWithoutBonusReleasesInput;
+  upsert?: Prisma.PayrollRunUpsertWithoutBonusReleasesInput;
+  disconnect?: Prisma.PayrollRunWhereInput | boolean;
+  delete?: Prisma.PayrollRunWhereInput | boolean;
+  connect?: Prisma.PayrollRunWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.PayrollRunUpdateToOneWithWhereWithoutBonusReleasesInput,
+      Prisma.PayrollRunUpdateWithoutBonusReleasesInput
+    >,
+    Prisma.PayrollRunUncheckedUpdateWithoutBonusReleasesInput
+  >;
+};
+
+export type EnumPayrollRunStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.PayrollRunStatusEnum;
+};
+
+export type PayrollRunCreateNestedOneWithoutSalaryLinesInput = {
+  create?: Prisma.XOR<
+    Prisma.PayrollRunCreateWithoutSalaryLinesInput,
+    Prisma.PayrollRunUncheckedCreateWithoutSalaryLinesInput
+  >;
+  connectOrCreate?: Prisma.PayrollRunCreateOrConnectWithoutSalaryLinesInput;
+  connect?: Prisma.PayrollRunWhereUniqueInput;
+};
+
+export type PayrollRunUpdateOneRequiredWithoutSalaryLinesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.PayrollRunCreateWithoutSalaryLinesInput,
+    Prisma.PayrollRunUncheckedCreateWithoutSalaryLinesInput
+  >;
+  connectOrCreate?: Prisma.PayrollRunCreateOrConnectWithoutSalaryLinesInput;
+  upsert?: Prisma.PayrollRunUpsertWithoutSalaryLinesInput;
+  connect?: Prisma.PayrollRunWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.PayrollRunUpdateToOneWithWhereWithoutSalaryLinesInput,
+      Prisma.PayrollRunUpdateWithoutSalaryLinesInput
+    >,
+    Prisma.PayrollRunUncheckedUpdateWithoutSalaryLinesInput
+  >;
+};
+
+export type PayrollRunCreateWithoutCreatedByInput = {
+  id?: string;
+  payrollMonth: string;
+  status?: $Enums.PayrollRunStatusEnum;
+  totalBaseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalBonuses?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalAdjustments?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  approvedAt?: Date | string | null;
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  approvedBy?: Prisma.EmployeeCreateNestedOneWithoutPayrollRunsApprovedInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutPayrollRunInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutPayrollRunInput;
+};
+
+export type PayrollRunUncheckedCreateWithoutCreatedByInput = {
+  id?: string;
+  payrollMonth: string;
+  status?: $Enums.PayrollRunStatusEnum;
+  totalBaseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalBonuses?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalAdjustments?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  approvedById?: string | null;
+  approvedAt?: Date | string | null;
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutPayrollRunInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutPayrollRunInput;
+};
+
+export type PayrollRunCreateOrConnectWithoutCreatedByInput = {
+  where: Prisma.PayrollRunWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PayrollRunCreateWithoutCreatedByInput,
+    Prisma.PayrollRunUncheckedCreateWithoutCreatedByInput
+  >;
+};
+
+export type PayrollRunCreateManyCreatedByInputEnvelope = {
+  data: Prisma.PayrollRunCreateManyCreatedByInput | Prisma.PayrollRunCreateManyCreatedByInput[];
+  skipDuplicates?: boolean;
+};
+
+export type PayrollRunCreateWithoutApprovedByInput = {
+  id?: string;
+  payrollMonth: string;
+  status?: $Enums.PayrollRunStatusEnum;
+  totalBaseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalBonuses?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalAdjustments?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  approvedAt?: Date | string | null;
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  createdBy?: Prisma.EmployeeCreateNestedOneWithoutPayrollRunsCreatedInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutPayrollRunInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutPayrollRunInput;
+};
+
+export type PayrollRunUncheckedCreateWithoutApprovedByInput = {
+  id?: string;
+  payrollMonth: string;
+  status?: $Enums.PayrollRunStatusEnum;
+  totalBaseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalBonuses?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalAdjustments?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  createdById?: string | null;
+  approvedAt?: Date | string | null;
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutPayrollRunInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutPayrollRunInput;
+};
+
+export type PayrollRunCreateOrConnectWithoutApprovedByInput = {
+  where: Prisma.PayrollRunWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PayrollRunCreateWithoutApprovedByInput,
+    Prisma.PayrollRunUncheckedCreateWithoutApprovedByInput
+  >;
+};
+
+export type PayrollRunCreateManyApprovedByInputEnvelope = {
+  data: Prisma.PayrollRunCreateManyApprovedByInput | Prisma.PayrollRunCreateManyApprovedByInput[];
+  skipDuplicates?: boolean;
+};
+
+export type PayrollRunUpsertWithWhereUniqueWithoutCreatedByInput = {
+  where: Prisma.PayrollRunWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PayrollRunUpdateWithoutCreatedByInput,
+    Prisma.PayrollRunUncheckedUpdateWithoutCreatedByInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PayrollRunCreateWithoutCreatedByInput,
+    Prisma.PayrollRunUncheckedCreateWithoutCreatedByInput
+  >;
+};
+
+export type PayrollRunUpdateWithWhereUniqueWithoutCreatedByInput = {
+  where: Prisma.PayrollRunWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PayrollRunUpdateWithoutCreatedByInput,
+    Prisma.PayrollRunUncheckedUpdateWithoutCreatedByInput
+  >;
+};
+
+export type PayrollRunUpdateManyWithWhereWithoutCreatedByInput = {
+  where: Prisma.PayrollRunScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PayrollRunUpdateManyMutationInput,
+    Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByInput
+  >;
+};
+
+export type PayrollRunScalarWhereInput = {
+  AND?: Prisma.PayrollRunScalarWhereInput | Prisma.PayrollRunScalarWhereInput[];
+  OR?: Prisma.PayrollRunScalarWhereInput[];
+  NOT?: Prisma.PayrollRunScalarWhereInput | Prisma.PayrollRunScalarWhereInput[];
+  id?: Prisma.StringFilter<'PayrollRun'> | string;
+  payrollMonth?: Prisma.StringFilter<'PayrollRun'> | string;
+  status?: Prisma.EnumPayrollRunStatusEnumFilter<'PayrollRun'> | $Enums.PayrollRunStatusEnum;
+  totalBaseSalary?:
+    | Prisma.DecimalFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalBonuses?:
+    | Prisma.DecimalFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalAdjustments?:
+    | Prisma.DecimalFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalDeductions?:
+    | Prisma.DecimalFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalPayable?:
+    | Prisma.DecimalFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  totalPaid?:
+    | Prisma.DecimalFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  kpiSalesPlanAmount?:
+    | Prisma.DecimalNullableFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  kpiSalesActualAmount?:
+    | Prisma.DecimalNullableFilter<'PayrollRun'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  createdById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
+  approvedById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
+  approvedAt?: Prisma.DateTimeNullableFilter<'PayrollRun'> | Date | string | null;
+  closedAt?: Prisma.DateTimeNullableFilter<'PayrollRun'> | Date | string | null;
+  createdAt?: Prisma.DateTimeFilter<'PayrollRun'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'PayrollRun'> | Date | string;
+};
+
+export type PayrollRunUpsertWithWhereUniqueWithoutApprovedByInput = {
+  where: Prisma.PayrollRunWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PayrollRunUpdateWithoutApprovedByInput,
+    Prisma.PayrollRunUncheckedUpdateWithoutApprovedByInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PayrollRunCreateWithoutApprovedByInput,
+    Prisma.PayrollRunUncheckedCreateWithoutApprovedByInput
+  >;
+};
+
+export type PayrollRunUpdateWithWhereUniqueWithoutApprovedByInput = {
+  where: Prisma.PayrollRunWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PayrollRunUpdateWithoutApprovedByInput,
+    Prisma.PayrollRunUncheckedUpdateWithoutApprovedByInput
+  >;
+};
+
+export type PayrollRunUpdateManyWithWhereWithoutApprovedByInput = {
+  where: Prisma.PayrollRunScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PayrollRunUpdateManyMutationInput,
+    Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByInput
+  >;
 };
 
 export type PayrollRunCreateWithoutBonusReleasesInput = {
@@ -1626,237 +1857,6 @@ export type PayrollRunUncheckedUpdateWithoutSalaryLinesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutPayrollRunNestedInput;
-};
-
-export type PayrollRunCreateWithoutCreatedByInput = {
-  id?: string;
-  payrollMonth: string;
-  status?: $Enums.PayrollRunStatusEnum;
-  totalBaseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalBonuses?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalAdjustments?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  approvedAt?: Date | string | null;
-  closedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  approvedBy?: Prisma.EmployeeCreateNestedOneWithoutPayrollRunsApprovedInput;
-  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutPayrollRunInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutPayrollRunInput;
-};
-
-export type PayrollRunUncheckedCreateWithoutCreatedByInput = {
-  id?: string;
-  payrollMonth: string;
-  status?: $Enums.PayrollRunStatusEnum;
-  totalBaseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalBonuses?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalAdjustments?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  approvedById?: string | null;
-  approvedAt?: Date | string | null;
-  closedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutPayrollRunInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutPayrollRunInput;
-};
-
-export type PayrollRunCreateOrConnectWithoutCreatedByInput = {
-  where: Prisma.PayrollRunWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.PayrollRunCreateWithoutCreatedByInput,
-    Prisma.PayrollRunUncheckedCreateWithoutCreatedByInput
-  >;
-};
-
-export type PayrollRunCreateManyCreatedByInputEnvelope = {
-  data: Prisma.PayrollRunCreateManyCreatedByInput | Prisma.PayrollRunCreateManyCreatedByInput[];
-  skipDuplicates?: boolean;
-};
-
-export type PayrollRunCreateWithoutApprovedByInput = {
-  id?: string;
-  payrollMonth: string;
-  status?: $Enums.PayrollRunStatusEnum;
-  totalBaseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalBonuses?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalAdjustments?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  approvedAt?: Date | string | null;
-  closedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  createdBy?: Prisma.EmployeeCreateNestedOneWithoutPayrollRunsCreatedInput;
-  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutPayrollRunInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutPayrollRunInput;
-};
-
-export type PayrollRunUncheckedCreateWithoutApprovedByInput = {
-  id?: string;
-  payrollMonth: string;
-  status?: $Enums.PayrollRunStatusEnum;
-  totalBaseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalBonuses?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalAdjustments?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalDeductions?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPayable?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  totalPaid?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  kpiSalesPlanAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  kpiSalesActualAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  createdById?: string | null;
-  approvedAt?: Date | string | null;
-  closedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutPayrollRunInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutPayrollRunInput;
-};
-
-export type PayrollRunCreateOrConnectWithoutApprovedByInput = {
-  where: Prisma.PayrollRunWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.PayrollRunCreateWithoutApprovedByInput,
-    Prisma.PayrollRunUncheckedCreateWithoutApprovedByInput
-  >;
-};
-
-export type PayrollRunCreateManyApprovedByInputEnvelope = {
-  data: Prisma.PayrollRunCreateManyApprovedByInput | Prisma.PayrollRunCreateManyApprovedByInput[];
-  skipDuplicates?: boolean;
-};
-
-export type PayrollRunUpsertWithWhereUniqueWithoutCreatedByInput = {
-  where: Prisma.PayrollRunWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.PayrollRunUpdateWithoutCreatedByInput,
-    Prisma.PayrollRunUncheckedUpdateWithoutCreatedByInput
-  >;
-  create: Prisma.XOR<
-    Prisma.PayrollRunCreateWithoutCreatedByInput,
-    Prisma.PayrollRunUncheckedCreateWithoutCreatedByInput
-  >;
-};
-
-export type PayrollRunUpdateWithWhereUniqueWithoutCreatedByInput = {
-  where: Prisma.PayrollRunWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.PayrollRunUpdateWithoutCreatedByInput,
-    Prisma.PayrollRunUncheckedUpdateWithoutCreatedByInput
-  >;
-};
-
-export type PayrollRunUpdateManyWithWhereWithoutCreatedByInput = {
-  where: Prisma.PayrollRunScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.PayrollRunUpdateManyMutationInput,
-    Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByInput
-  >;
-};
-
-export type PayrollRunScalarWhereInput = {
-  AND?: Prisma.PayrollRunScalarWhereInput | Prisma.PayrollRunScalarWhereInput[];
-  OR?: Prisma.PayrollRunScalarWhereInput[];
-  NOT?: Prisma.PayrollRunScalarWhereInput | Prisma.PayrollRunScalarWhereInput[];
-  id?: Prisma.StringFilter<'PayrollRun'> | string;
-  payrollMonth?: Prisma.StringFilter<'PayrollRun'> | string;
-  status?: Prisma.EnumPayrollRunStatusEnumFilter<'PayrollRun'> | $Enums.PayrollRunStatusEnum;
-  totalBaseSalary?:
-    | Prisma.DecimalFilter<'PayrollRun'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalBonuses?:
-    | Prisma.DecimalFilter<'PayrollRun'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalAdjustments?:
-    | Prisma.DecimalFilter<'PayrollRun'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalDeductions?:
-    | Prisma.DecimalFilter<'PayrollRun'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalPayable?:
-    | Prisma.DecimalFilter<'PayrollRun'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  totalPaid?:
-    | Prisma.DecimalFilter<'PayrollRun'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  kpiSalesPlanAmount?:
-    | Prisma.DecimalNullableFilter<'PayrollRun'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  kpiSalesActualAmount?:
-    | Prisma.DecimalNullableFilter<'PayrollRun'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  createdById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
-  approvedById?: Prisma.StringNullableFilter<'PayrollRun'> | string | null;
-  approvedAt?: Prisma.DateTimeNullableFilter<'PayrollRun'> | Date | string | null;
-  closedAt?: Prisma.DateTimeNullableFilter<'PayrollRun'> | Date | string | null;
-  createdAt?: Prisma.DateTimeFilter<'PayrollRun'> | Date | string;
-  updatedAt?: Prisma.DateTimeFilter<'PayrollRun'> | Date | string;
-};
-
-export type PayrollRunUpsertWithWhereUniqueWithoutApprovedByInput = {
-  where: Prisma.PayrollRunWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.PayrollRunUpdateWithoutApprovedByInput,
-    Prisma.PayrollRunUncheckedUpdateWithoutApprovedByInput
-  >;
-  create: Prisma.XOR<
-    Prisma.PayrollRunCreateWithoutApprovedByInput,
-    Prisma.PayrollRunUncheckedCreateWithoutApprovedByInput
-  >;
-};
-
-export type PayrollRunUpdateWithWhereUniqueWithoutApprovedByInput = {
-  where: Prisma.PayrollRunWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.PayrollRunUpdateWithoutApprovedByInput,
-    Prisma.PayrollRunUncheckedUpdateWithoutApprovedByInput
-  >;
-};
-
-export type PayrollRunUpdateManyWithWhereWithoutApprovedByInput = {
-  where: Prisma.PayrollRunScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.PayrollRunUpdateManyMutationInput,
-    Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByInput
-  >;
 };
 
 export type PayrollRunCreateManyCreatedByInput = {

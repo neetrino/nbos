@@ -672,6 +672,10 @@ export type EnumDocumentListScopeEnumFieldUpdateOperationsInput = {
   set?: $Enums.DocumentListScopeEnum;
 };
 
+export type EnumFileVisibilityEnumFieldUpdateOperationsInput = {
+  set?: $Enums.FileVisibilityEnum;
+};
+
 export type DocumentSectionUpdateOneWithoutChildrenNestedInput = {
   create?: Prisma.XOR<
     Prisma.DocumentSectionCreateWithoutChildrenInput,

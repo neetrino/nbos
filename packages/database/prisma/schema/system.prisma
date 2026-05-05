@@ -1,0 +1,16 @@
+// ─── SYSTEM LISTS (reference data: product types, deal types, etc.) ───
+
+model SystemListOption {
+  id        String   @id @default(uuid())
+  listKey   String   @map("list_key")
+  code      String
+  label     String
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([listKey, code])
+  @@index([listKey])
+  @@map("system_list_options")
+}

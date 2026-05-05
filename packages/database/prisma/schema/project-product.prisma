@@ -1,0 +1,216 @@
+// ─── PROJECT & PRODUCT ────────────────────────────────────
+
+model Project {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  contactId   String   @map("contact_id")
+  companyId   String?  @map("company_id")
+  description String?
+  isArchived  Boolean  @default(false) @map("is_archived")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  contact                   Contact                       @relation(fields: [contactId], references: [id])
+  company                   Company?                      @relation(fields: [companyId], references: [id])
+  products                  Product[]
+  extensions                Extension[]
+  orders                    Order[]
+  subscriptions             Subscription[]
+  workSpaces                WorkSpace[]
+  credentials               Credential[]
+  domains                   Domain[]
+  tickets                   SupportTicket[]
+  expenses                  Expense[]
+  expensePlans              ExpensePlan[]
+  clientServiceRecords      ClientServiceRecord[]
+  bonusEntries              BonusEntry[]
+  bonusReleases             BonusRelease[]
+  productBonusPools         ProductBonusPool[]
+  auditLogs                 AuditLog[]
+  kickoffChecklistItems     ProjectKickoffChecklistItem[]
+  technicalProfiles         ProductTechnicalProfile[]
+  technicalAssets           TechnicalAsset[]
+  technicalEnvironments     TechnicalEnvironment[]
+  operationalJournalEntries OperationalJournalEntry[]
+  partnerAccruals           PartnerAccrual[]
+  partnerServiceTerms       PartnerServiceTerm[]
+
+  @@map("projects")
+}
+
+model ProjectKickoffChecklistItem {
+  id          String    @id @default(uuid())
+  projectId   String    @map("project_id")
+  key         String
+  title       String
+  isRequired  Boolean   @default(true) @map("is_required")
+  isChecked   Boolean   @default(false) @map("is_checked")
+  note        String?
+  checkedAt   DateTime? @map("checked_at")
+  checkedById String?   @map("checked_by_id")
+  sortOrder   Int       @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, key])
+  @@index([projectId])
+  @@map("project_kickoff_checklist_items")
+}
+
+enum ProductCategoryEnum {
+  CODE
+  WORDPRESS
+  SHOPIFY
+  MARKETING
+  OTHER
+}
+
+enum ProductTypeEnum {
+  BUSINESS_CARD_WEBSITE
+  COMPANY_WEBSITE
+  MOBILE_APP
+  WEB_APP
+  CRM
+  ECOMMERCE
+  SAAS
+  LANDING
+  ERP
+  LOGO
+  BRANDING
+  DESIGN
+  SEO
+  PPC
+  SMM
+  OTHER
+}
+
+enum ProductStatusEnum {
+  NEW
+  CREATING
+  DEVELOPMENT
+  QA
+  TRANSFER
+  ON_HOLD
+  DONE
+  LOST
+}
+
+enum DeliveryStageEnum {
+  STARTING
+  DEVELOPMENT
+  QA
+  TRANSFER
+}
+
+enum DeliveryWorkStatusEnum {
+  ACTIVE
+  ON_HOLD
+}
+
+enum DeliveryResolutionEnum {
+  DONE
+  CANCELLED
+}
+
+model Product {
+  id                   String                  @id @default(uuid())
+  projectId            String                  @map("project_id")
+  name                 String
+  productCategory      ProductCategoryEnum     @map("product_category")
+  productType          ProductTypeEnum         @map("product_type")
+  status               ProductStatusEnum       @default(NEW)
+  deliveryStage        DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
+  deliveryWorkStatus   DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")
+  deliveryResolution   DeliveryResolutionEnum? @map("delivery_resolution")
+  onHoldReason         String?                 @map("on_hold_reason")
+  onHoldUntil          DateTime?               @map("on_hold_until")
+  cancellationReason   String?                 @map("cancellation_reason")
+  clientAcceptedAt     DateTime?               @map("client_accepted_at")
+  clientAcceptedBy     String?                 @map("client_accepted_by")
+  clientAcceptanceNote String?                 @map("client_acceptance_note")
+  pmId                 String?                 @map("pm_id")
+  deadline             DateTime?
+  description          String?
+  checklistTemplateId  String?                 @map("checklist_template_id")
+  createdAt            DateTime                @default(now()) @map("created_at")
+  updatedAt            DateTime                @updatedAt @map("updated_at")
+
+  project                   Project                   @relation(fields: [projectId], references: [id])
+  pm                        Employee?                 @relation("ProductPM", fields: [pmId], references: [id])
+  order                     Order?
+  extensions                Extension[]
+  tasks                     Task[]
+  workSpace                 WorkSpace?
+  tickets                   SupportTicket[]
+  clientServiceRecords      ClientServiceRecord[]
+  dealsLinked               Deal[]                    @relation("DealExistingProduct")
+  productBonusPools         ProductBonusPool[]
+  bonusReleases             BonusRelease[]
+  technicalProfiles         ProductTechnicalProfile[]
+  technicalAssets           TechnicalAsset[]
+  technicalEnvironments     TechnicalEnvironment[]
+  operationalJournalEntries OperationalJournalEntry[]
+  partnerAccruals           PartnerAccrual[]
+
+  @@index([deliveryStage])
+  @@index([deliveryWorkStatus])
+  @@index([deliveryResolution])
+  @@index([onHoldUntil])
+  @@index([clientAcceptedAt])
+  @@map("products")
+}
+
+enum ExtensionSizeEnum {
+  MICRO
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ExtensionStatusEnum {
+  NEW
+  DEVELOPMENT
+  QA
+  TRANSFER
+  DONE
+  LOST
+}
+
+model Extension {
+  id                 String                  @id @default(uuid())
+  projectId          String                  @map("project_id")
+  productId          String                  @map("product_id")
+  name               String
+  size               ExtensionSizeEnum       @default(SMALL)
+  status             ExtensionStatusEnum     @default(NEW)
+  deliveryStage      DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
+  deliveryWorkStatus DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")
+  deliveryResolution DeliveryResolutionEnum? @map("delivery_resolution")
+  onHoldReason       String?                 @map("on_hold_reason")
+  onHoldUntil        DateTime?               @map("on_hold_until")
+  cancellationReason String?                 @map("cancellation_reason")
+  assignedTo         String?                 @map("assigned_to")
+  deadline           DateTime?
+  description        String?
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime                @updatedAt @map("updated_at")
+
+  project           Project            @relation(fields: [projectId], references: [id])
+  product           Product            @relation(fields: [productId], references: [id])
+  assignee          Employee?          @relation("ExtensionAssignee", fields: [assignedTo], references: [id])
+  order             Order?
+  productBonusPools ProductBonusPool[]
+  bonusReleases     BonusRelease[]
+  tasks             Task[]
+  workSpace         WorkSpace?
+
+  @@index([deliveryStage])
+  @@index([deliveryWorkStatus])
+  @@index([deliveryResolution])
+  @@index([onHoldUntil])
+  @@index([deadline])
+  @@map("extensions")
+}

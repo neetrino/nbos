@@ -1,5 +1,8 @@
 {
   "name": "@nbos/database",
+  "prisma": {
+    "schema": "prisma/schema"
+  },
   "version": "0.0.1",
   "private": true,
   "license": "MIT",

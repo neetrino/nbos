@@ -5,7 +5,7 @@ import { defineConfig, env } from 'prisma/config';
 config({ path: path.resolve(__dirname, '../../.env.local') });
 
 export default defineConfig({
-  schema: path.join(__dirname, 'prisma', 'schema.prisma'),
+  schema: path.join(__dirname, 'prisma', 'schema'),
   datasource: {
     url: env('DIRECT_URL'),
   },

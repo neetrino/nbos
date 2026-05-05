@@ -48,17 +48,35 @@ export const JsonNull = runtime.JsonNull;
 export const AnyNull = runtime.AnyNull;
 
 export const ModelName = {
+  AuditLog: 'AuditLog',
+  CalendarMeeting: 'CalendarMeeting',
+  PersonalCalendarEvent: 'PersonalCalendarEvent',
+  ClientServiceRecord: 'ClientServiceRecord',
   Contact: 'Contact',
   Company: 'Company',
-  Project: 'Project',
-  ProjectKickoffChecklistItem: 'ProjectKickoffChecklistItem',
-  Product: 'Product',
-  Extension: 'Extension',
+  Credential: 'Credential',
+  Domain: 'Domain',
   MarketingAccount: 'MarketingAccount',
   MarketingActivity: 'MarketingActivity',
   MarketingCrmWhereOption: 'MarketingCrmWhereOption',
   Lead: 'Lead',
   Deal: 'Deal',
+  DocumentSection: 'DocumentSection',
+  ExternalDocumentLink: 'ExternalDocumentLink',
+  Document: 'Document',
+  DocumentTag: 'DocumentTag',
+  DocumentTagOnDocument: 'DocumentTagOnDocument',
+  DocumentAttachment: 'DocumentAttachment',
+  DocumentActivityEvent: 'DocumentActivityEvent',
+  FileAsset: 'FileAsset',
+  FileVersion: 'FileVersion',
+  FileLink: 'FileLink',
+  FileAuditEvent: 'FileAuditEvent',
+  FileUploadSession: 'FileUploadSession',
+  Employee: 'Employee',
+  DashboardPreference: 'DashboardPreference',
+  PersonalLink: 'PersonalLink',
+  DashboardNote: 'DashboardNote',
   Order: 'Order',
   Invoice: 'Invoice',
   Payment: 'Payment',
@@ -74,48 +92,13 @@ export const ModelName = {
   ProductBonusPool: 'ProductBonusPool',
   PayrollRun: 'PayrollRun',
   SalaryLine: 'SalaryLine',
-  WorkSpace: 'WorkSpace',
-  Task: 'Task',
-  TaskLink: 'TaskLink',
-  TaskChecklist: 'TaskChecklist',
-  TaskChecklistItem: 'TaskChecklistItem',
-  FileAsset: 'FileAsset',
-  FileVersion: 'FileVersion',
-  FileLink: 'FileLink',
-  FileAuditEvent: 'FileAuditEvent',
-  FileUploadSession: 'FileUploadSession',
-  ReportExportJob: 'ReportExportJob',
-  ReportSchedule: 'ReportSchedule',
-  SavedReportView: 'SavedReportView',
-  DocumentSection: 'DocumentSection',
-  ExternalDocumentLink: 'ExternalDocumentLink',
-  Document: 'Document',
-  DocumentTag: 'DocumentTag',
-  DocumentTagOnDocument: 'DocumentTagOnDocument',
-  DocumentAttachment: 'DocumentAttachment',
-  DocumentActivityEvent: 'DocumentActivityEvent',
-  TaskBoardStage: 'TaskBoardStage',
-  RecurringTaskTemplate: 'RecurringTaskTemplate',
-  SupportTicket: 'SupportTicket',
-  Credential: 'Credential',
-  Domain: 'Domain',
-  ClientServiceRecord: 'ClientServiceRecord',
-  Department: 'Department',
-  EmployeeDepartment: 'EmployeeDepartment',
-  Role: 'Role',
-  Permission: 'Permission',
-  RolePermission: 'RolePermission',
-  Invitation: 'Invitation',
-  Employee: 'Employee',
-  DashboardPreference: 'DashboardPreference',
-  PersonalLink: 'PersonalLink',
-  DashboardNote: 'DashboardNote',
-  Partner: 'Partner',
-  PartnerReferralTerms: 'PartnerReferralTerms',
-  PartnerCommissionPolicyRow: 'PartnerCommissionPolicyRow',
-  PartnerAccrual: 'PartnerAccrual',
-  PartnerPayoutBatch: 'PartnerPayoutBatch',
-  PartnerServiceTerm: 'PartnerServiceTerm',
+  MailAccount: 'MailAccount',
+  MailProviderConnection: 'MailProviderConnection',
+  EmailThread: 'EmailThread',
+  EmailMessage: 'EmailMessage',
+  EmailAttachment: 'EmailAttachment',
+  MailDeliveryLog: 'MailDeliveryLog',
+  EmailRecipient: 'EmailRecipient',
   MessengerChannel: 'MessengerChannel',
   MessengerChannelMessage: 'MessengerChannelMessage',
   MessengerChannelMessageAttachment: 'MessengerChannelMessageAttachment',
@@ -124,25 +107,42 @@ export const ModelName = {
   MessengerDirectMessage: 'MessengerDirectMessage',
   MessengerDirectMessageAttachment: 'MessengerDirectMessageAttachment',
   MessengerDirectThreadReadState: 'MessengerDirectThreadReadState',
-  MailAccount: 'MailAccount',
-  MailProviderConnection: 'MailProviderConnection',
-  EmailThread: 'EmailThread',
-  EmailMessage: 'EmailMessage',
-  EmailAttachment: 'EmailAttachment',
-  MailDeliveryLog: 'MailDeliveryLog',
-  EmailRecipient: 'EmailRecipient',
   InAppNotification: 'InAppNotification',
   NotificationEvent: 'NotificationEvent',
   NotificationRule: 'NotificationRule',
   NotificationJob: 'NotificationJob',
   NotificationDelivery: 'NotificationDelivery',
+  Partner: 'Partner',
+  PartnerReferralTerms: 'PartnerReferralTerms',
+  PartnerCommissionPolicyRow: 'PartnerCommissionPolicyRow',
+  PartnerAccrual: 'PartnerAccrual',
+  PartnerPayoutBatch: 'PartnerPayoutBatch',
+  PartnerServiceTerm: 'PartnerServiceTerm',
+  Project: 'Project',
+  ProjectKickoffChecklistItem: 'ProjectKickoffChecklistItem',
+  Product: 'Product',
+  Extension: 'Extension',
+  Department: 'Department',
+  EmployeeDepartment: 'EmployeeDepartment',
+  Role: 'Role',
+  Permission: 'Permission',
+  RolePermission: 'RolePermission',
+  Invitation: 'Invitation',
+  ReportExportJob: 'ReportExportJob',
+  ReportSchedule: 'ReportSchedule',
+  SavedReportView: 'SavedReportView',
+  SupportTicket: 'SupportTicket',
+  SystemListOption: 'SystemListOption',
+  WorkSpace: 'WorkSpace',
+  Task: 'Task',
+  TaskLink: 'TaskLink',
+  TaskChecklist: 'TaskChecklist',
+  TaskChecklistItem: 'TaskChecklistItem',
+  TaskBoardStage: 'TaskBoardStage',
+  RecurringTaskTemplate: 'RecurringTaskTemplate',
   ProductTechnicalProfile: 'ProductTechnicalProfile',
   TechnicalAsset: 'TechnicalAsset',
   TechnicalEnvironment: 'TechnicalEnvironment',
-  CalendarMeeting: 'CalendarMeeting',
-  PersonalCalendarEvent: 'PersonalCalendarEvent',
-  AuditLog: 'AuditLog',
-  SystemListOption: 'SystemListOption',
 } as const;
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -160,6 +160,88 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 
 export type TransactionIsolationLevel =
   (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  action: 'action',
+  userId: 'userId',
+  changes: 'changes',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt',
+} as const;
+
+export type AuditLogScalarFieldEnum =
+  (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum];
+
+export const CalendarMeetingScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  meetingType: 'meetingType',
+  locationType: 'locationType',
+  locationOrLink: 'locationOrLink',
+  agenda: 'agenda',
+  outcomeNotes: 'outcomeNotes',
+  status: 'status',
+  internalParticipantIds: 'internalParticipantIds',
+  externalParticipants: 'externalParticipants',
+  projectId: 'projectId',
+  productId: 'productId',
+  dealId: 'dealId',
+  contactId: 'contactId',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type CalendarMeetingScalarFieldEnum =
+  (typeof CalendarMeetingScalarFieldEnum)[keyof typeof CalendarMeetingScalarFieldEnum];
+
+export const PersonalCalendarEventScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  title: 'title',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  isAllDay: 'isAllDay',
+  notes: 'notes',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PersonalCalendarEventScalarFieldEnum =
+  (typeof PersonalCalendarEventScalarFieldEnum)[keyof typeof PersonalCalendarEventScalarFieldEnum];
+
+export const ClientServiceRecordScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  type: 'type',
+  name: 'name',
+  provider: 'provider',
+  providerAccountId: 'providerAccountId',
+  status: 'status',
+  billingModel: 'billingModel',
+  pricingModel: 'pricingModel',
+  frequency: 'frequency',
+  ourCost: 'ourCost',
+  clientCharge: 'clientCharge',
+  taxStatus: 'taxStatus',
+  notificationsEnabled: 'notificationsEnabled',
+  startDate: 'startDate',
+  renewalDate: 'renewalDate',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ClientServiceRecordScalarFieldEnum =
+  (typeof ClientServiceRecordScalarFieldEnum)[keyof typeof ClientServiceRecordScalarFieldEnum];
 
 export const ContactScalarFieldEnum = {
   id: 'id',
@@ -194,88 +276,59 @@ export const CompanyScalarFieldEnum = {
 export type CompanyScalarFieldEnum =
   (typeof CompanyScalarFieldEnum)[keyof typeof CompanyScalarFieldEnum];
 
-export const ProjectScalarFieldEnum = {
-  id: 'id',
-  code: 'code',
-  name: 'name',
-  contactId: 'contactId',
-  companyId: 'companyId',
-  description: 'description',
-  isArchived: 'isArchived',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ProjectScalarFieldEnum =
-  (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
-
-export const ProjectKickoffChecklistItemScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  key: 'key',
-  title: 'title',
-  isRequired: 'isRequired',
-  isChecked: 'isChecked',
-  note: 'note',
-  checkedAt: 'checkedAt',
-  checkedById: 'checkedById',
-  sortOrder: 'sortOrder',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ProjectKickoffChecklistItemScalarFieldEnum =
-  (typeof ProjectKickoffChecklistItemScalarFieldEnum)[keyof typeof ProjectKickoffChecklistItemScalarFieldEnum];
-
-export const ProductScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  name: 'name',
-  productCategory: 'productCategory',
-  productType: 'productType',
-  status: 'status',
-  deliveryStage: 'deliveryStage',
-  deliveryWorkStatus: 'deliveryWorkStatus',
-  deliveryResolution: 'deliveryResolution',
-  onHoldReason: 'onHoldReason',
-  onHoldUntil: 'onHoldUntil',
-  cancellationReason: 'cancellationReason',
-  clientAcceptedAt: 'clientAcceptedAt',
-  clientAcceptedBy: 'clientAcceptedBy',
-  clientAcceptanceNote: 'clientAcceptanceNote',
-  pmId: 'pmId',
-  deadline: 'deadline',
-  description: 'description',
-  checklistTemplateId: 'checklistTemplateId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ProductScalarFieldEnum =
-  (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
-
-export const ExtensionScalarFieldEnum = {
+export const CredentialScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
   productId: 'productId',
+  domainId: 'domainId',
+  clientServiceRecordId: 'clientServiceRecordId',
+  departmentId: 'departmentId',
+  ownerId: 'ownerId',
+  category: 'category',
+  credentialType: 'credentialType',
+  criticality: 'criticality',
+  environment: 'environment',
+  provider: 'provider',
   name: 'name',
-  size: 'size',
-  status: 'status',
-  deliveryStage: 'deliveryStage',
-  deliveryWorkStatus: 'deliveryWorkStatus',
-  deliveryResolution: 'deliveryResolution',
-  onHoldReason: 'onHoldReason',
-  onHoldUntil: 'onHoldUntil',
-  cancellationReason: 'cancellationReason',
-  assignedTo: 'assignedTo',
-  deadline: 'deadline',
-  description: 'description',
+  url: 'url',
+  login: 'login',
+  password: 'password',
+  apiKey: 'apiKey',
+  envData: 'envData',
+  phone: 'phone',
+  notes: 'notes',
+  publicNotes: 'publicNotes',
+  secureNotes: 'secureNotes',
+  lastRotatedAt: 'lastRotatedAt',
+  nextRotationAt: 'nextRotationAt',
+  rotationOwnerId: 'rotationOwnerId',
+  accessLevel: 'accessLevel',
+  allowedEmployees: 'allowedEmployees',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
 
-export type ExtensionScalarFieldEnum =
-  (typeof ExtensionScalarFieldEnum)[keyof typeof ExtensionScalarFieldEnum];
+export type CredentialScalarFieldEnum =
+  (typeof CredentialScalarFieldEnum)[keyof typeof CredentialScalarFieldEnum];
+
+export const DomainScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  domainName: 'domainName',
+  provider: 'provider',
+  purchaseDate: 'purchaseDate',
+  expiryDate: 'expiryDate',
+  renewalCost: 'renewalCost',
+  clientCharge: 'clientCharge',
+  autoRenew: 'autoRenew',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DomainScalarFieldEnum =
+  (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum];
 
 export const MarketingAccountScalarFieldEnum = {
   id: 'id',
@@ -394,6 +447,285 @@ export const DealScalarFieldEnum = {
 } as const;
 
 export type DealScalarFieldEnum = (typeof DealScalarFieldEnum)[keyof typeof DealScalarFieldEnum];
+
+export const DocumentSectionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  parentId: 'parentId',
+  icon: 'icon',
+  sortOrder: 'sortOrder',
+  defaultListScope: 'defaultListScope',
+  defaultVisibility: 'defaultVisibility',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DocumentSectionScalarFieldEnum =
+  (typeof DocumentSectionScalarFieldEnum)[keyof typeof DocumentSectionScalarFieldEnum];
+
+export const ExternalDocumentLinkScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  url: 'url',
+  externalId: 'externalId',
+  title: 'title',
+  mimeType: 'mimeType',
+  lastSyncedAt: 'lastSyncedAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ExternalDocumentLinkScalarFieldEnum =
+  (typeof ExternalDocumentLinkScalarFieldEnum)[keyof typeof ExternalDocumentLinkScalarFieldEnum];
+
+export const DocumentScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  title: 'title',
+  slug: 'slug',
+  description: 'description',
+  sectionId: 'sectionId',
+  parentId: 'parentId',
+  status: 'status',
+  ownerId: 'ownerId',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  publishedById: 'publishedById',
+  publishedAt: 'publishedAt',
+  archivedAt: 'archivedAt',
+  contentJson: 'contentJson',
+  contentHtml: 'contentHtml',
+  plainText: 'plainText',
+  coverFileAssetId: 'coverFileAssetId',
+  externalDocumentLinkId: 'externalDocumentLinkId',
+  visibility: 'visibility',
+  contentStorage: 'contentStorage',
+  contentObjectKey: 'contentObjectKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  listScopeOverride: 'listScopeOverride',
+} as const;
+
+export type DocumentScalarFieldEnum =
+  (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum];
+
+export const DocumentTagScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  color: 'color',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentTagScalarFieldEnum =
+  (typeof DocumentTagScalarFieldEnum)[keyof typeof DocumentTagScalarFieldEnum];
+
+export const DocumentTagOnDocumentScalarFieldEnum = {
+  documentId: 'documentId',
+  tagId: 'tagId',
+  assignedAt: 'assignedAt',
+} as const;
+
+export type DocumentTagOnDocumentScalarFieldEnum =
+  (typeof DocumentTagOnDocumentScalarFieldEnum)[keyof typeof DocumentTagOnDocumentScalarFieldEnum];
+
+export const DocumentAttachmentScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  fileAssetId: 'fileAssetId',
+  purpose: 'purpose',
+  sortOrder: 'sortOrder',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentAttachmentScalarFieldEnum =
+  (typeof DocumentAttachmentScalarFieldEnum)[keyof typeof DocumentAttachmentScalarFieldEnum];
+
+export const DocumentActivityEventScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  actorId: 'actorId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+} as const;
+
+export type DocumentActivityEventScalarFieldEnum =
+  (typeof DocumentActivityEventScalarFieldEnum)[keyof typeof DocumentActivityEventScalarFieldEnum];
+
+export const FileAssetScalarFieldEnum = {
+  id: 'id',
+  displayName: 'displayName',
+  originalName: 'originalName',
+  fileType: 'fileType',
+  purpose: 'purpose',
+  sourceModule: 'sourceModule',
+  ownerId: 'ownerId',
+  createdById: 'createdById',
+  status: 'status',
+  visibility: 'visibility',
+  confidentiality: 'confidentiality',
+  storageProvider: 'storageProvider',
+  storageKey: 'storageKey',
+  externalUrl: 'externalUrl',
+  mimeType: 'mimeType',
+  sizeBytes: 'sizeBytes',
+  checksum: 'checksum',
+  currentVersionId: 'currentVersionId',
+  retentionPolicy: 'retentionPolicy',
+  deletedAt: 'deletedAt',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type FileAssetScalarFieldEnum =
+  (typeof FileAssetScalarFieldEnum)[keyof typeof FileAssetScalarFieldEnum];
+
+export const FileVersionScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  versionNumber: 'versionNumber',
+  storageKey: 'storageKey',
+  uploadedById: 'uploadedById',
+  uploadedAt: 'uploadedAt',
+  changeNote: 'changeNote',
+  sizeBytes: 'sizeBytes',
+  checksum: 'checksum',
+  isCurrent: 'isCurrent',
+} as const;
+
+export type FileVersionScalarFieldEnum =
+  (typeof FileVersionScalarFieldEnum)[keyof typeof FileVersionScalarFieldEnum];
+
+export const FileLinkScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  linkType: 'linkType',
+  purposeOverride: 'purposeOverride',
+  isPrimary: 'isPrimary',
+  linkedById: 'linkedById',
+  linkedAt: 'linkedAt',
+  unlinkedAt: 'unlinkedAt',
+} as const;
+
+export type FileLinkScalarFieldEnum =
+  (typeof FileLinkScalarFieldEnum)[keyof typeof FileLinkScalarFieldEnum];
+
+export const FileAuditEventScalarFieldEnum = {
+  id: 'id',
+  fileAssetId: 'fileAssetId',
+  actorId: 'actorId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+} as const;
+
+export type FileAuditEventScalarFieldEnum =
+  (typeof FileAuditEventScalarFieldEnum)[keyof typeof FileAuditEventScalarFieldEnum];
+
+export const FileUploadSessionScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  storageKey: 'storageKey',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  displayName: 'displayName',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  purpose: 'purpose',
+  sourceModule: 'sourceModule',
+  visibility: 'visibility',
+  confidentiality: 'confidentiality',
+  linkType: 'linkType',
+  createdById: 'createdById',
+  fileAssetId: 'fileAssetId',
+  expiresAt: 'expiresAt',
+  failedReason: 'failedReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type FileUploadSessionScalarFieldEnum =
+  (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum];
+
+export const EmployeeScalarFieldEnum = {
+  id: 'id',
+  passwordHash: 'passwordHash',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  email: 'email',
+  phone: 'phone',
+  telegram: 'telegram',
+  avatar: 'avatar',
+  birthday: 'birthday',
+  notes: 'notes',
+  position: 'position',
+  roleId: 'roleId',
+  level: 'level',
+  baseSalary: 'baseSalary',
+  workSchedule: 'workSchedule',
+  hireDate: 'hireDate',
+  fireDate: 'fireDate',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type EmployeeScalarFieldEnum =
+  (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum];
+
+export const DashboardPreferenceScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  pinnedActionOrder: 'pinnedActionOrder',
+  hiddenPinnedActions: 'hiddenPinnedActions',
+  visibleWidgets: 'visibleWidgets',
+  hiddenWidgets: 'hiddenWidgets',
+  compactWidgets: 'compactWidgets',
+  defaultDashboardMode: 'defaultDashboardMode',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type DashboardPreferenceScalarFieldEnum =
+  (typeof DashboardPreferenceScalarFieldEnum)[keyof typeof DashboardPreferenceScalarFieldEnum];
+
+export const PersonalLinkScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  label: 'label',
+  url: 'url',
+  placement: 'placement',
+  openInNewTab: 'openInNewTab',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PersonalLinkScalarFieldEnum =
+  (typeof PersonalLinkScalarFieldEnum)[keyof typeof PersonalLinkScalarFieldEnum];
+
+export const DashboardNoteScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  content: 'content',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DashboardNoteScalarFieldEnum =
+  (typeof DashboardNoteScalarFieldEnum)[keyof typeof DashboardNoteScalarFieldEnum];
 
 export const OrderScalarFieldEnum = {
   id: 'id',
@@ -697,845 +1029,6 @@ export const SalaryLineScalarFieldEnum = {
 export type SalaryLineScalarFieldEnum =
   (typeof SalaryLineScalarFieldEnum)[keyof typeof SalaryLineScalarFieldEnum];
 
-export const WorkSpaceScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  productId: 'productId',
-  extensionId: 'extensionId',
-  name: 'name',
-  type: 'type',
-  scrumEnabled: 'scrumEnabled',
-  description: 'description',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type WorkSpaceScalarFieldEnum =
-  (typeof WorkSpaceScalarFieldEnum)[keyof typeof WorkSpaceScalarFieldEnum];
-
-export const TaskScalarFieldEnum = {
-  id: 'id',
-  code: 'code',
-  title: 'title',
-  description: 'description',
-  productId: 'productId',
-  extensionId: 'extensionId',
-  workspaceId: 'workspaceId',
-  creatorId: 'creatorId',
-  assigneeId: 'assigneeId',
-  coAssignees: 'coAssignees',
-  observers: 'observers',
-  status: 'status',
-  planningStatus: 'planningStatus',
-  priority: 'priority',
-  startDate: 'startDate',
-  dueDate: 'dueDate',
-  completedAt: 'completedAt',
-  completionRules: 'completionRules',
-  parentId: 'parentId',
-  kanbanStageId: 'kanbanStageId',
-  myPlanStageId: 'myPlanStageId',
-  myPlanSortOrder: 'myPlanSortOrder',
-  workspaceSortOrder: 'workspaceSortOrder',
-  chatId: 'chatId',
-  isRecurring: 'isRecurring',
-  templateTaskId: 'templateTaskId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum];
-
-export const TaskLinkScalarFieldEnum = {
-  id: 'id',
-  taskId: 'taskId',
-  entityType: 'entityType',
-  entityId: 'entityId',
-  createdAt: 'createdAt',
-} as const;
-
-export type TaskLinkScalarFieldEnum =
-  (typeof TaskLinkScalarFieldEnum)[keyof typeof TaskLinkScalarFieldEnum];
-
-export const TaskChecklistScalarFieldEnum = {
-  id: 'id',
-  taskId: 'taskId',
-  title: 'title',
-  createdAt: 'createdAt',
-} as const;
-
-export type TaskChecklistScalarFieldEnum =
-  (typeof TaskChecklistScalarFieldEnum)[keyof typeof TaskChecklistScalarFieldEnum];
-
-export const TaskChecklistItemScalarFieldEnum = {
-  id: 'id',
-  checklistId: 'checklistId',
-  text: 'text',
-  checked: 'checked',
-  sortOrder: 'sortOrder',
-} as const;
-
-export type TaskChecklistItemScalarFieldEnum =
-  (typeof TaskChecklistItemScalarFieldEnum)[keyof typeof TaskChecklistItemScalarFieldEnum];
-
-export const FileAssetScalarFieldEnum = {
-  id: 'id',
-  displayName: 'displayName',
-  originalName: 'originalName',
-  fileType: 'fileType',
-  purpose: 'purpose',
-  sourceModule: 'sourceModule',
-  ownerId: 'ownerId',
-  createdById: 'createdById',
-  status: 'status',
-  visibility: 'visibility',
-  confidentiality: 'confidentiality',
-  storageProvider: 'storageProvider',
-  storageKey: 'storageKey',
-  externalUrl: 'externalUrl',
-  mimeType: 'mimeType',
-  sizeBytes: 'sizeBytes',
-  checksum: 'checksum',
-  currentVersionId: 'currentVersionId',
-  retentionPolicy: 'retentionPolicy',
-  deletedAt: 'deletedAt',
-  archivedAt: 'archivedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type FileAssetScalarFieldEnum =
-  (typeof FileAssetScalarFieldEnum)[keyof typeof FileAssetScalarFieldEnum];
-
-export const FileVersionScalarFieldEnum = {
-  id: 'id',
-  fileAssetId: 'fileAssetId',
-  versionNumber: 'versionNumber',
-  storageKey: 'storageKey',
-  uploadedById: 'uploadedById',
-  uploadedAt: 'uploadedAt',
-  changeNote: 'changeNote',
-  sizeBytes: 'sizeBytes',
-  checksum: 'checksum',
-  isCurrent: 'isCurrent',
-} as const;
-
-export type FileVersionScalarFieldEnum =
-  (typeof FileVersionScalarFieldEnum)[keyof typeof FileVersionScalarFieldEnum];
-
-export const FileLinkScalarFieldEnum = {
-  id: 'id',
-  fileAssetId: 'fileAssetId',
-  entityType: 'entityType',
-  entityId: 'entityId',
-  linkType: 'linkType',
-  purposeOverride: 'purposeOverride',
-  isPrimary: 'isPrimary',
-  linkedById: 'linkedById',
-  linkedAt: 'linkedAt',
-  unlinkedAt: 'unlinkedAt',
-} as const;
-
-export type FileLinkScalarFieldEnum =
-  (typeof FileLinkScalarFieldEnum)[keyof typeof FileLinkScalarFieldEnum];
-
-export const FileAuditEventScalarFieldEnum = {
-  id: 'id',
-  fileAssetId: 'fileAssetId',
-  actorId: 'actorId',
-  action: 'action',
-  metadata: 'metadata',
-  createdAt: 'createdAt',
-} as const;
-
-export type FileAuditEventScalarFieldEnum =
-  (typeof FileAuditEventScalarFieldEnum)[keyof typeof FileAuditEventScalarFieldEnum];
-
-export const FileUploadSessionScalarFieldEnum = {
-  id: 'id',
-  status: 'status',
-  storageKey: 'storageKey',
-  entityType: 'entityType',
-  entityId: 'entityId',
-  displayName: 'displayName',
-  originalName: 'originalName',
-  mimeType: 'mimeType',
-  purpose: 'purpose',
-  sourceModule: 'sourceModule',
-  visibility: 'visibility',
-  confidentiality: 'confidentiality',
-  linkType: 'linkType',
-  createdById: 'createdById',
-  fileAssetId: 'fileAssetId',
-  expiresAt: 'expiresAt',
-  failedReason: 'failedReason',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type FileUploadSessionScalarFieldEnum =
-  (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum];
-
-export const ReportExportJobScalarFieldEnum = {
-  id: 'id',
-  reportKey: 'reportKey',
-  reportTitle: 'reportTitle',
-  ownerModule: 'ownerModule',
-  format: 'format',
-  status: 'status',
-  requestedById: 'requestedById',
-  filters: 'filters',
-  fileAssetId: 'fileAssetId',
-  errorMessage: 'errorMessage',
-  queuedAt: 'queuedAt',
-  startedAt: 'startedAt',
-  completedAt: 'completedAt',
-  failedAt: 'failedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ReportExportJobScalarFieldEnum =
-  (typeof ReportExportJobScalarFieldEnum)[keyof typeof ReportExportJobScalarFieldEnum];
-
-export const ReportScheduleScalarFieldEnum = {
-  id: 'id',
-  reportKey: 'reportKey',
-  reportTitle: 'reportTitle',
-  ownerModule: 'ownerModule',
-  format: 'format',
-  status: 'status',
-  ownerId: 'ownerId',
-  recipientEmails: 'recipientEmails',
-  scheduleLabel: 'scheduleLabel',
-  filters: 'filters',
-  frequency: 'frequency',
-  timezone: 'timezone',
-  timeOfDay: 'timeOfDay',
-  startDate: 'startDate',
-  dayOfWeek: 'dayOfWeek',
-  dayOfMonth: 'dayOfMonth',
-  nextRunAt: 'nextRunAt',
-  lastRunAt: 'lastRunAt',
-  lastExportJobId: 'lastExportJobId',
-  lastFailureAt: 'lastFailureAt',
-  failureReason: 'failureReason',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ReportScheduleScalarFieldEnum =
-  (typeof ReportScheduleScalarFieldEnum)[keyof typeof ReportScheduleScalarFieldEnum];
-
-export const SavedReportViewScalarFieldEnum = {
-  id: 'id',
-  reportKey: 'reportKey',
-  reportTitle: 'reportTitle',
-  ownerModule: 'ownerModule',
-  name: 'name',
-  filters: 'filters',
-  ownerId: 'ownerId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type SavedReportViewScalarFieldEnum =
-  (typeof SavedReportViewScalarFieldEnum)[keyof typeof SavedReportViewScalarFieldEnum];
-
-export const DocumentSectionScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  slug: 'slug',
-  description: 'description',
-  parentId: 'parentId',
-  icon: 'icon',
-  sortOrder: 'sortOrder',
-  defaultListScope: 'defaultListScope',
-  defaultVisibility: 'defaultVisibility',
-  createdById: 'createdById',
-  updatedById: 'updatedById',
-  archivedAt: 'archivedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type DocumentSectionScalarFieldEnum =
-  (typeof DocumentSectionScalarFieldEnum)[keyof typeof DocumentSectionScalarFieldEnum];
-
-export const ExternalDocumentLinkScalarFieldEnum = {
-  id: 'id',
-  provider: 'provider',
-  url: 'url',
-  externalId: 'externalId',
-  title: 'title',
-  mimeType: 'mimeType',
-  lastSyncedAt: 'lastSyncedAt',
-  createdById: 'createdById',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ExternalDocumentLinkScalarFieldEnum =
-  (typeof ExternalDocumentLinkScalarFieldEnum)[keyof typeof ExternalDocumentLinkScalarFieldEnum];
-
-export const DocumentScalarFieldEnum = {
-  id: 'id',
-  type: 'type',
-  title: 'title',
-  slug: 'slug',
-  description: 'description',
-  sectionId: 'sectionId',
-  parentId: 'parentId',
-  status: 'status',
-  ownerId: 'ownerId',
-  createdById: 'createdById',
-  updatedById: 'updatedById',
-  publishedById: 'publishedById',
-  publishedAt: 'publishedAt',
-  archivedAt: 'archivedAt',
-  contentJson: 'contentJson',
-  contentHtml: 'contentHtml',
-  plainText: 'plainText',
-  coverFileAssetId: 'coverFileAssetId',
-  externalDocumentLinkId: 'externalDocumentLinkId',
-  visibility: 'visibility',
-  contentStorage: 'contentStorage',
-  contentObjectKey: 'contentObjectKey',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  listScopeOverride: 'listScopeOverride',
-} as const;
-
-export type DocumentScalarFieldEnum =
-  (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum];
-
-export const DocumentTagScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  slug: 'slug',
-  color: 'color',
-  createdAt: 'createdAt',
-} as const;
-
-export type DocumentTagScalarFieldEnum =
-  (typeof DocumentTagScalarFieldEnum)[keyof typeof DocumentTagScalarFieldEnum];
-
-export const DocumentTagOnDocumentScalarFieldEnum = {
-  documentId: 'documentId',
-  tagId: 'tagId',
-  assignedAt: 'assignedAt',
-} as const;
-
-export type DocumentTagOnDocumentScalarFieldEnum =
-  (typeof DocumentTagOnDocumentScalarFieldEnum)[keyof typeof DocumentTagOnDocumentScalarFieldEnum];
-
-export const DocumentAttachmentScalarFieldEnum = {
-  id: 'id',
-  documentId: 'documentId',
-  fileAssetId: 'fileAssetId',
-  purpose: 'purpose',
-  sortOrder: 'sortOrder',
-  createdById: 'createdById',
-  createdAt: 'createdAt',
-} as const;
-
-export type DocumentAttachmentScalarFieldEnum =
-  (typeof DocumentAttachmentScalarFieldEnum)[keyof typeof DocumentAttachmentScalarFieldEnum];
-
-export const DocumentActivityEventScalarFieldEnum = {
-  id: 'id',
-  documentId: 'documentId',
-  actorId: 'actorId',
-  action: 'action',
-  metadata: 'metadata',
-  createdAt: 'createdAt',
-} as const;
-
-export type DocumentActivityEventScalarFieldEnum =
-  (typeof DocumentActivityEventScalarFieldEnum)[keyof typeof DocumentActivityEventScalarFieldEnum];
-
-export const TaskBoardStageScalarFieldEnum = {
-  id: 'id',
-  ownerId: 'ownerId',
-  boardType: 'boardType',
-  title: 'title',
-  color: 'color',
-  sortOrder: 'sortOrder',
-  isDefault: 'isDefault',
-  createdAt: 'createdAt',
-} as const;
-
-export type TaskBoardStageScalarFieldEnum =
-  (typeof TaskBoardStageScalarFieldEnum)[keyof typeof TaskBoardStageScalarFieldEnum];
-
-export const RecurringTaskTemplateScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  description: 'description',
-  assigneeId: 'assigneeId',
-  creatorId: 'creatorId',
-  priority: 'priority',
-  frequency: 'frequency',
-  interval: 'interval',
-  daysOfWeek: 'daysOfWeek',
-  dayOfMonth: 'dayOfMonth',
-  startDate: 'startDate',
-  endDate: 'endDate',
-  dueDateOffset: 'dueDateOffset',
-  isActive: 'isActive',
-  lastCreatedAt: 'lastCreatedAt',
-  nextCreateAt: 'nextCreateAt',
-  checklistData: 'checklistData',
-  linksData: 'linksData',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type RecurringTaskTemplateScalarFieldEnum =
-  (typeof RecurringTaskTemplateScalarFieldEnum)[keyof typeof RecurringTaskTemplateScalarFieldEnum];
-
-export const SupportTicketScalarFieldEnum = {
-  id: 'id',
-  code: 'code',
-  projectId: 'projectId',
-  productId: 'productId',
-  contactId: 'contactId',
-  extensionDealId: 'extensionDealId',
-  category: 'category',
-  priority: 'priority',
-  status: 'status',
-  coverageDecision: 'coverageDecision',
-  title: 'title',
-  description: 'description',
-  billable: 'billable',
-  assignedTo: 'assignedTo',
-  slaResponseDeadline: 'slaResponseDeadline',
-  slaResolveDeadline: 'slaResolveDeadline',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type SupportTicketScalarFieldEnum =
-  (typeof SupportTicketScalarFieldEnum)[keyof typeof SupportTicketScalarFieldEnum];
-
-export const CredentialScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  productId: 'productId',
-  domainId: 'domainId',
-  clientServiceRecordId: 'clientServiceRecordId',
-  departmentId: 'departmentId',
-  ownerId: 'ownerId',
-  category: 'category',
-  credentialType: 'credentialType',
-  criticality: 'criticality',
-  environment: 'environment',
-  provider: 'provider',
-  name: 'name',
-  url: 'url',
-  login: 'login',
-  password: 'password',
-  apiKey: 'apiKey',
-  envData: 'envData',
-  phone: 'phone',
-  notes: 'notes',
-  publicNotes: 'publicNotes',
-  secureNotes: 'secureNotes',
-  lastRotatedAt: 'lastRotatedAt',
-  nextRotationAt: 'nextRotationAt',
-  rotationOwnerId: 'rotationOwnerId',
-  accessLevel: 'accessLevel',
-  allowedEmployees: 'allowedEmployees',
-  archivedAt: 'archivedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type CredentialScalarFieldEnum =
-  (typeof CredentialScalarFieldEnum)[keyof typeof CredentialScalarFieldEnum];
-
-export const DomainScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  domainName: 'domainName',
-  provider: 'provider',
-  purchaseDate: 'purchaseDate',
-  expiryDate: 'expiryDate',
-  renewalCost: 'renewalCost',
-  clientCharge: 'clientCharge',
-  autoRenew: 'autoRenew',
-  status: 'status',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type DomainScalarFieldEnum =
-  (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum];
-
-export const ClientServiceRecordScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  productId: 'productId',
-  type: 'type',
-  name: 'name',
-  provider: 'provider',
-  providerAccountId: 'providerAccountId',
-  status: 'status',
-  billingModel: 'billingModel',
-  pricingModel: 'pricingModel',
-  frequency: 'frequency',
-  ourCost: 'ourCost',
-  clientCharge: 'clientCharge',
-  taxStatus: 'taxStatus',
-  notificationsEnabled: 'notificationsEnabled',
-  startDate: 'startDate',
-  renewalDate: 'renewalDate',
-  notes: 'notes',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type ClientServiceRecordScalarFieldEnum =
-  (typeof ClientServiceRecordScalarFieldEnum)[keyof typeof ClientServiceRecordScalarFieldEnum];
-
-export const DepartmentScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  slug: 'slug',
-  description: 'description',
-  parentId: 'parentId',
-  sortOrder: 'sortOrder',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type DepartmentScalarFieldEnum =
-  (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum];
-
-export const EmployeeDepartmentScalarFieldEnum = {
-  id: 'id',
-  employeeId: 'employeeId',
-  departmentId: 'departmentId',
-  deptRole: 'deptRole',
-  isPrimary: 'isPrimary',
-  joinedAt: 'joinedAt',
-} as const;
-
-export type EmployeeDepartmentScalarFieldEnum =
-  (typeof EmployeeDepartmentScalarFieldEnum)[keyof typeof EmployeeDepartmentScalarFieldEnum];
-
-export const RoleScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  slug: 'slug',
-  description: 'description',
-  level: 'level',
-  isSystem: 'isSystem',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum];
-
-export const PermissionScalarFieldEnum = {
-  id: 'id',
-  module: 'module',
-  action: 'action',
-  description: 'description',
-} as const;
-
-export type PermissionScalarFieldEnum =
-  (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum];
-
-export const RolePermissionScalarFieldEnum = {
-  id: 'id',
-  roleId: 'roleId',
-  permissionId: 'permissionId',
-  scope: 'scope',
-} as const;
-
-export type RolePermissionScalarFieldEnum =
-  (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum];
-
-export const InvitationScalarFieldEnum = {
-  id: 'id',
-  email: 'email',
-  roleId: 'roleId',
-  departmentId: 'departmentId',
-  invitedById: 'invitedById',
-  status: 'status',
-  token: 'token',
-  expiresAt: 'expiresAt',
-  employeeId: 'employeeId',
-  createdAt: 'createdAt',
-} as const;
-
-export type InvitationScalarFieldEnum =
-  (typeof InvitationScalarFieldEnum)[keyof typeof InvitationScalarFieldEnum];
-
-export const EmployeeScalarFieldEnum = {
-  id: 'id',
-  passwordHash: 'passwordHash',
-  firstName: 'firstName',
-  lastName: 'lastName',
-  email: 'email',
-  phone: 'phone',
-  telegram: 'telegram',
-  avatar: 'avatar',
-  birthday: 'birthday',
-  notes: 'notes',
-  position: 'position',
-  roleId: 'roleId',
-  level: 'level',
-  baseSalary: 'baseSalary',
-  workSchedule: 'workSchedule',
-  hireDate: 'hireDate',
-  fireDate: 'fireDate',
-  status: 'status',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type EmployeeScalarFieldEnum =
-  (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum];
-
-export const DashboardPreferenceScalarFieldEnum = {
-  id: 'id',
-  employeeId: 'employeeId',
-  pinnedActionOrder: 'pinnedActionOrder',
-  hiddenPinnedActions: 'hiddenPinnedActions',
-  visibleWidgets: 'visibleWidgets',
-  hiddenWidgets: 'hiddenWidgets',
-  compactWidgets: 'compactWidgets',
-  defaultDashboardMode: 'defaultDashboardMode',
-  updatedAt: 'updatedAt',
-  createdAt: 'createdAt',
-} as const;
-
-export type DashboardPreferenceScalarFieldEnum =
-  (typeof DashboardPreferenceScalarFieldEnum)[keyof typeof DashboardPreferenceScalarFieldEnum];
-
-export const PersonalLinkScalarFieldEnum = {
-  id: 'id',
-  ownerId: 'ownerId',
-  label: 'label',
-  url: 'url',
-  placement: 'placement',
-  openInNewTab: 'openInNewTab',
-  sortOrder: 'sortOrder',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type PersonalLinkScalarFieldEnum =
-  (typeof PersonalLinkScalarFieldEnum)[keyof typeof PersonalLinkScalarFieldEnum];
-
-export const DashboardNoteScalarFieldEnum = {
-  id: 'id',
-  ownerId: 'ownerId',
-  content: 'content',
-  sortOrder: 'sortOrder',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type DashboardNoteScalarFieldEnum =
-  (typeof DashboardNoteScalarFieldEnum)[keyof typeof DashboardNoteScalarFieldEnum];
-
-export const PartnerScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  type: 'type',
-  direction: 'direction',
-  defaultPercent: 'defaultPercent',
-  status: 'status',
-  contactId: 'contactId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type PartnerScalarFieldEnum =
-  (typeof PartnerScalarFieldEnum)[keyof typeof PartnerScalarFieldEnum];
-
-export const PartnerReferralTermsScalarFieldEnum = {
-  id: 'id',
-  dealId: 'dealId',
-  partnerId: 'partnerId',
-  dealType: 'dealType',
-  paymentType: 'paymentType',
-  partnerPercent: 'partnerPercent',
-  sourcePolicy: 'sourcePolicy',
-  overrideReason: 'overrideReason',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type PartnerReferralTermsScalarFieldEnum =
-  (typeof PartnerReferralTermsScalarFieldEnum)[keyof typeof PartnerReferralTermsScalarFieldEnum];
-
-export const PartnerCommissionPolicyRowScalarFieldEnum = {
-  id: 'id',
-  partnerId: 'partnerId',
-  dealType: 'dealType',
-  percent: 'percent',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type PartnerCommissionPolicyRowScalarFieldEnum =
-  (typeof PartnerCommissionPolicyRowScalarFieldEnum)[keyof typeof PartnerCommissionPolicyRowScalarFieldEnum];
-
-export const PartnerAccrualScalarFieldEnum = {
-  id: 'id',
-  partnerId: 'partnerId',
-  referralTermsId: 'referralTermsId',
-  projectId: 'projectId',
-  productId: 'productId',
-  orderId: 'orderId',
-  subscriptionId: 'subscriptionId',
-  invoiceId: 'invoiceId',
-  paymentId: 'paymentId',
-  payoutBatchId: 'payoutBatchId',
-  dealType: 'dealType',
-  paymentType: 'paymentType',
-  baseAmount: 'baseAmount',
-  percent: 'percent',
-  amount: 'amount',
-  status: 'status',
-  eligibleAt: 'eligibleAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type PartnerAccrualScalarFieldEnum =
-  (typeof PartnerAccrualScalarFieldEnum)[keyof typeof PartnerAccrualScalarFieldEnum];
-
-export const PartnerPayoutBatchScalarFieldEnum = {
-  id: 'id',
-  partnerId: 'partnerId',
-  totalAmount: 'totalAmount',
-  status: 'status',
-  payoutDate: 'payoutDate',
-  expenseId: 'expenseId',
-  approvedBy: 'approvedBy',
-  notes: 'notes',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type PartnerPayoutBatchScalarFieldEnum =
-  (typeof PartnerPayoutBatchScalarFieldEnum)[keyof typeof PartnerPayoutBatchScalarFieldEnum];
-
-export const PartnerServiceTermScalarFieldEnum = {
-  id: 'id',
-  partnerId: 'partnerId',
-  clientContactId: 'clientContactId',
-  clientCompanyId: 'clientCompanyId',
-  projectId: 'projectId',
-  serviceType: 'serviceType',
-  paymentModel: 'paymentModel',
-  amount: 'amount',
-  billingStartDate: 'billingStartDate',
-  subscriptionId: 'subscriptionId',
-  invoiceId: 'invoiceId',
-  status: 'status',
-  notes: 'notes',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type PartnerServiceTermScalarFieldEnum =
-  (typeof PartnerServiceTermScalarFieldEnum)[keyof typeof PartnerServiceTermScalarFieldEnum];
-
-export const MessengerChannelScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  projectId: 'projectId',
-  type: 'type',
-  createdAt: 'createdAt',
-} as const;
-
-export type MessengerChannelScalarFieldEnum =
-  (typeof MessengerChannelScalarFieldEnum)[keyof typeof MessengerChannelScalarFieldEnum];
-
-export const MessengerChannelMessageScalarFieldEnum = {
-  id: 'id',
-  channelId: 'channelId',
-  senderId: 'senderId',
-  senderNameSnapshot: 'senderNameSnapshot',
-  content: 'content',
-  editedAt: 'editedAt',
-  createdAt: 'createdAt',
-} as const;
-
-export type MessengerChannelMessageScalarFieldEnum =
-  (typeof MessengerChannelMessageScalarFieldEnum)[keyof typeof MessengerChannelMessageScalarFieldEnum];
-
-export const MessengerChannelMessageAttachmentScalarFieldEnum = {
-  id: 'id',
-  messageId: 'messageId',
-  fileAssetId: 'fileAssetId',
-  attachedById: 'attachedById',
-  createdAt: 'createdAt',
-} as const;
-
-export type MessengerChannelMessageAttachmentScalarFieldEnum =
-  (typeof MessengerChannelMessageAttachmentScalarFieldEnum)[keyof typeof MessengerChannelMessageAttachmentScalarFieldEnum];
-
-export const MessengerChannelReadStateScalarFieldEnum = {
-  id: 'id',
-  channelId: 'channelId',
-  employeeId: 'employeeId',
-  lastReadAt: 'lastReadAt',
-} as const;
-
-export type MessengerChannelReadStateScalarFieldEnum =
-  (typeof MessengerChannelReadStateScalarFieldEnum)[keyof typeof MessengerChannelReadStateScalarFieldEnum];
-
-export const MessengerDirectThreadScalarFieldEnum = {
-  id: 'id',
-  participantAId: 'participantAId',
-  participantBId: 'participantBId',
-  createdAt: 'createdAt',
-} as const;
-
-export type MessengerDirectThreadScalarFieldEnum =
-  (typeof MessengerDirectThreadScalarFieldEnum)[keyof typeof MessengerDirectThreadScalarFieldEnum];
-
-export const MessengerDirectMessageScalarFieldEnum = {
-  id: 'id',
-  threadId: 'threadId',
-  senderId: 'senderId',
-  senderNameSnapshot: 'senderNameSnapshot',
-  content: 'content',
-  editedAt: 'editedAt',
-  createdAt: 'createdAt',
-} as const;
-
-export type MessengerDirectMessageScalarFieldEnum =
-  (typeof MessengerDirectMessageScalarFieldEnum)[keyof typeof MessengerDirectMessageScalarFieldEnum];
-
-export const MessengerDirectMessageAttachmentScalarFieldEnum = {
-  id: 'id',
-  messageId: 'messageId',
-  fileAssetId: 'fileAssetId',
-  attachedById: 'attachedById',
-  createdAt: 'createdAt',
-} as const;
-
-export type MessengerDirectMessageAttachmentScalarFieldEnum =
-  (typeof MessengerDirectMessageAttachmentScalarFieldEnum)[keyof typeof MessengerDirectMessageAttachmentScalarFieldEnum];
-
-export const MessengerDirectThreadReadStateScalarFieldEnum = {
-  id: 'id',
-  threadId: 'threadId',
-  employeeId: 'employeeId',
-  lastReadAt: 'lastReadAt',
-} as const;
-
-export type MessengerDirectThreadReadStateScalarFieldEnum =
-  (typeof MessengerDirectThreadReadStateScalarFieldEnum)[keyof typeof MessengerDirectThreadReadStateScalarFieldEnum];
-
 export const MailAccountScalarFieldEnum = {
   id: 'id',
   ownerEmployeeId: 'ownerEmployeeId',
@@ -1657,6 +1150,95 @@ export const EmailRecipientScalarFieldEnum = {
 export type EmailRecipientScalarFieldEnum =
   (typeof EmailRecipientScalarFieldEnum)[keyof typeof EmailRecipientScalarFieldEnum];
 
+export const MessengerChannelScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  projectId: 'projectId',
+  type: 'type',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerChannelScalarFieldEnum =
+  (typeof MessengerChannelScalarFieldEnum)[keyof typeof MessengerChannelScalarFieldEnum];
+
+export const MessengerChannelMessageScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  senderId: 'senderId',
+  senderNameSnapshot: 'senderNameSnapshot',
+  content: 'content',
+  editedAt: 'editedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerChannelMessageScalarFieldEnum =
+  (typeof MessengerChannelMessageScalarFieldEnum)[keyof typeof MessengerChannelMessageScalarFieldEnum];
+
+export const MessengerChannelMessageAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileAssetId: 'fileAssetId',
+  attachedById: 'attachedById',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerChannelMessageAttachmentScalarFieldEnum =
+  (typeof MessengerChannelMessageAttachmentScalarFieldEnum)[keyof typeof MessengerChannelMessageAttachmentScalarFieldEnum];
+
+export const MessengerChannelReadStateScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  employeeId: 'employeeId',
+  lastReadAt: 'lastReadAt',
+} as const;
+
+export type MessengerChannelReadStateScalarFieldEnum =
+  (typeof MessengerChannelReadStateScalarFieldEnum)[keyof typeof MessengerChannelReadStateScalarFieldEnum];
+
+export const MessengerDirectThreadScalarFieldEnum = {
+  id: 'id',
+  participantAId: 'participantAId',
+  participantBId: 'participantBId',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerDirectThreadScalarFieldEnum =
+  (typeof MessengerDirectThreadScalarFieldEnum)[keyof typeof MessengerDirectThreadScalarFieldEnum];
+
+export const MessengerDirectMessageScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  senderId: 'senderId',
+  senderNameSnapshot: 'senderNameSnapshot',
+  content: 'content',
+  editedAt: 'editedAt',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerDirectMessageScalarFieldEnum =
+  (typeof MessengerDirectMessageScalarFieldEnum)[keyof typeof MessengerDirectMessageScalarFieldEnum];
+
+export const MessengerDirectMessageAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  fileAssetId: 'fileAssetId',
+  attachedById: 'attachedById',
+  createdAt: 'createdAt',
+} as const;
+
+export type MessengerDirectMessageAttachmentScalarFieldEnum =
+  (typeof MessengerDirectMessageAttachmentScalarFieldEnum)[keyof typeof MessengerDirectMessageAttachmentScalarFieldEnum];
+
+export const MessengerDirectThreadReadStateScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  employeeId: 'employeeId',
+  lastReadAt: 'lastReadAt',
+} as const;
+
+export type MessengerDirectThreadReadStateScalarFieldEnum =
+  (typeof MessengerDirectThreadReadStateScalarFieldEnum)[keyof typeof MessengerDirectThreadReadStateScalarFieldEnum];
+
 export const InAppNotificationScalarFieldEnum = {
   id: 'id',
   recipientEmployeeId: 'recipientEmployeeId',
@@ -1743,6 +1325,494 @@ export const NotificationDeliveryScalarFieldEnum = {
 export type NotificationDeliveryScalarFieldEnum =
   (typeof NotificationDeliveryScalarFieldEnum)[keyof typeof NotificationDeliveryScalarFieldEnum];
 
+export const PartnerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  direction: 'direction',
+  defaultPercent: 'defaultPercent',
+  status: 'status',
+  contactId: 'contactId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerScalarFieldEnum =
+  (typeof PartnerScalarFieldEnum)[keyof typeof PartnerScalarFieldEnum];
+
+export const PartnerReferralTermsScalarFieldEnum = {
+  id: 'id',
+  dealId: 'dealId',
+  partnerId: 'partnerId',
+  dealType: 'dealType',
+  paymentType: 'paymentType',
+  partnerPercent: 'partnerPercent',
+  sourcePolicy: 'sourcePolicy',
+  overrideReason: 'overrideReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerReferralTermsScalarFieldEnum =
+  (typeof PartnerReferralTermsScalarFieldEnum)[keyof typeof PartnerReferralTermsScalarFieldEnum];
+
+export const PartnerCommissionPolicyRowScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  dealType: 'dealType',
+  percent: 'percent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerCommissionPolicyRowScalarFieldEnum =
+  (typeof PartnerCommissionPolicyRowScalarFieldEnum)[keyof typeof PartnerCommissionPolicyRowScalarFieldEnum];
+
+export const PartnerAccrualScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  referralTermsId: 'referralTermsId',
+  projectId: 'projectId',
+  productId: 'productId',
+  orderId: 'orderId',
+  subscriptionId: 'subscriptionId',
+  invoiceId: 'invoiceId',
+  paymentId: 'paymentId',
+  payoutBatchId: 'payoutBatchId',
+  dealType: 'dealType',
+  paymentType: 'paymentType',
+  baseAmount: 'baseAmount',
+  percent: 'percent',
+  amount: 'amount',
+  status: 'status',
+  eligibleAt: 'eligibleAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerAccrualScalarFieldEnum =
+  (typeof PartnerAccrualScalarFieldEnum)[keyof typeof PartnerAccrualScalarFieldEnum];
+
+export const PartnerPayoutBatchScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  totalAmount: 'totalAmount',
+  status: 'status',
+  payoutDate: 'payoutDate',
+  expenseId: 'expenseId',
+  approvedBy: 'approvedBy',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerPayoutBatchScalarFieldEnum =
+  (typeof PartnerPayoutBatchScalarFieldEnum)[keyof typeof PartnerPayoutBatchScalarFieldEnum];
+
+export const PartnerServiceTermScalarFieldEnum = {
+  id: 'id',
+  partnerId: 'partnerId',
+  clientContactId: 'clientContactId',
+  clientCompanyId: 'clientCompanyId',
+  projectId: 'projectId',
+  serviceType: 'serviceType',
+  paymentModel: 'paymentModel',
+  amount: 'amount',
+  billingStartDate: 'billingStartDate',
+  subscriptionId: 'subscriptionId',
+  invoiceId: 'invoiceId',
+  status: 'status',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type PartnerServiceTermScalarFieldEnum =
+  (typeof PartnerServiceTermScalarFieldEnum)[keyof typeof PartnerServiceTermScalarFieldEnum];
+
+export const ProjectScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  contactId: 'contactId',
+  companyId: 'companyId',
+  description: 'description',
+  isArchived: 'isArchived',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProjectScalarFieldEnum =
+  (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
+
+export const ProjectKickoffChecklistItemScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  key: 'key',
+  title: 'title',
+  isRequired: 'isRequired',
+  isChecked: 'isChecked',
+  note: 'note',
+  checkedAt: 'checkedAt',
+  checkedById: 'checkedById',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProjectKickoffChecklistItemScalarFieldEnum =
+  (typeof ProjectKickoffChecklistItemScalarFieldEnum)[keyof typeof ProjectKickoffChecklistItemScalarFieldEnum];
+
+export const ProductScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  productCategory: 'productCategory',
+  productType: 'productType',
+  status: 'status',
+  deliveryStage: 'deliveryStage',
+  deliveryWorkStatus: 'deliveryWorkStatus',
+  deliveryResolution: 'deliveryResolution',
+  onHoldReason: 'onHoldReason',
+  onHoldUntil: 'onHoldUntil',
+  cancellationReason: 'cancellationReason',
+  clientAcceptedAt: 'clientAcceptedAt',
+  clientAcceptedBy: 'clientAcceptedBy',
+  clientAcceptanceNote: 'clientAcceptanceNote',
+  pmId: 'pmId',
+  deadline: 'deadline',
+  description: 'description',
+  checklistTemplateId: 'checklistTemplateId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductScalarFieldEnum =
+  (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
+
+export const ExtensionScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  name: 'name',
+  size: 'size',
+  status: 'status',
+  deliveryStage: 'deliveryStage',
+  deliveryWorkStatus: 'deliveryWorkStatus',
+  deliveryResolution: 'deliveryResolution',
+  onHoldReason: 'onHoldReason',
+  onHoldUntil: 'onHoldUntil',
+  cancellationReason: 'cancellationReason',
+  assignedTo: 'assignedTo',
+  deadline: 'deadline',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ExtensionScalarFieldEnum =
+  (typeof ExtensionScalarFieldEnum)[keyof typeof ExtensionScalarFieldEnum];
+
+export const DepartmentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  parentId: 'parentId',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DepartmentScalarFieldEnum =
+  (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum];
+
+export const EmployeeDepartmentScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  departmentId: 'departmentId',
+  deptRole: 'deptRole',
+  isPrimary: 'isPrimary',
+  joinedAt: 'joinedAt',
+} as const;
+
+export type EmployeeDepartmentScalarFieldEnum =
+  (typeof EmployeeDepartmentScalarFieldEnum)[keyof typeof EmployeeDepartmentScalarFieldEnum];
+
+export const RoleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  level: 'level',
+  isSystem: 'isSystem',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum];
+
+export const PermissionScalarFieldEnum = {
+  id: 'id',
+  module: 'module',
+  action: 'action',
+  description: 'description',
+} as const;
+
+export type PermissionScalarFieldEnum =
+  (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum];
+
+export const RolePermissionScalarFieldEnum = {
+  id: 'id',
+  roleId: 'roleId',
+  permissionId: 'permissionId',
+  scope: 'scope',
+} as const;
+
+export type RolePermissionScalarFieldEnum =
+  (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum];
+
+export const InvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  roleId: 'roleId',
+  departmentId: 'departmentId',
+  invitedById: 'invitedById',
+  status: 'status',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  employeeId: 'employeeId',
+  createdAt: 'createdAt',
+} as const;
+
+export type InvitationScalarFieldEnum =
+  (typeof InvitationScalarFieldEnum)[keyof typeof InvitationScalarFieldEnum];
+
+export const ReportExportJobScalarFieldEnum = {
+  id: 'id',
+  reportKey: 'reportKey',
+  reportTitle: 'reportTitle',
+  ownerModule: 'ownerModule',
+  format: 'format',
+  status: 'status',
+  requestedById: 'requestedById',
+  filters: 'filters',
+  fileAssetId: 'fileAssetId',
+  errorMessage: 'errorMessage',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  failedAt: 'failedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ReportExportJobScalarFieldEnum =
+  (typeof ReportExportJobScalarFieldEnum)[keyof typeof ReportExportJobScalarFieldEnum];
+
+export const ReportScheduleScalarFieldEnum = {
+  id: 'id',
+  reportKey: 'reportKey',
+  reportTitle: 'reportTitle',
+  ownerModule: 'ownerModule',
+  format: 'format',
+  status: 'status',
+  ownerId: 'ownerId',
+  recipientEmails: 'recipientEmails',
+  scheduleLabel: 'scheduleLabel',
+  filters: 'filters',
+  frequency: 'frequency',
+  timezone: 'timezone',
+  timeOfDay: 'timeOfDay',
+  startDate: 'startDate',
+  dayOfWeek: 'dayOfWeek',
+  dayOfMonth: 'dayOfMonth',
+  nextRunAt: 'nextRunAt',
+  lastRunAt: 'lastRunAt',
+  lastExportJobId: 'lastExportJobId',
+  lastFailureAt: 'lastFailureAt',
+  failureReason: 'failureReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ReportScheduleScalarFieldEnum =
+  (typeof ReportScheduleScalarFieldEnum)[keyof typeof ReportScheduleScalarFieldEnum];
+
+export const SavedReportViewScalarFieldEnum = {
+  id: 'id',
+  reportKey: 'reportKey',
+  reportTitle: 'reportTitle',
+  ownerModule: 'ownerModule',
+  name: 'name',
+  filters: 'filters',
+  ownerId: 'ownerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type SavedReportViewScalarFieldEnum =
+  (typeof SavedReportViewScalarFieldEnum)[keyof typeof SavedReportViewScalarFieldEnum];
+
+export const SupportTicketScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  projectId: 'projectId',
+  productId: 'productId',
+  contactId: 'contactId',
+  extensionDealId: 'extensionDealId',
+  category: 'category',
+  priority: 'priority',
+  status: 'status',
+  coverageDecision: 'coverageDecision',
+  title: 'title',
+  description: 'description',
+  billable: 'billable',
+  assignedTo: 'assignedTo',
+  slaResponseDeadline: 'slaResponseDeadline',
+  slaResolveDeadline: 'slaResolveDeadline',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type SupportTicketScalarFieldEnum =
+  (typeof SupportTicketScalarFieldEnum)[keyof typeof SupportTicketScalarFieldEnum];
+
+export const SystemListOptionScalarFieldEnum = {
+  id: 'id',
+  listKey: 'listKey',
+  code: 'code',
+  label: 'label',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type SystemListOptionScalarFieldEnum =
+  (typeof SystemListOptionScalarFieldEnum)[keyof typeof SystemListOptionScalarFieldEnum];
+
+export const WorkSpaceScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  extensionId: 'extensionId',
+  name: 'name',
+  type: 'type',
+  scrumEnabled: 'scrumEnabled',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type WorkSpaceScalarFieldEnum =
+  (typeof WorkSpaceScalarFieldEnum)[keyof typeof WorkSpaceScalarFieldEnum];
+
+export const TaskScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  title: 'title',
+  description: 'description',
+  productId: 'productId',
+  extensionId: 'extensionId',
+  workspaceId: 'workspaceId',
+  creatorId: 'creatorId',
+  assigneeId: 'assigneeId',
+  coAssignees: 'coAssignees',
+  observers: 'observers',
+  status: 'status',
+  planningStatus: 'planningStatus',
+  priority: 'priority',
+  startDate: 'startDate',
+  dueDate: 'dueDate',
+  completedAt: 'completedAt',
+  completionRules: 'completionRules',
+  parentId: 'parentId',
+  kanbanStageId: 'kanbanStageId',
+  myPlanStageId: 'myPlanStageId',
+  myPlanSortOrder: 'myPlanSortOrder',
+  workspaceSortOrder: 'workspaceSortOrder',
+  chatId: 'chatId',
+  isRecurring: 'isRecurring',
+  templateTaskId: 'templateTaskId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum];
+
+export const TaskLinkScalarFieldEnum = {
+  id: 'id',
+  taskId: 'taskId',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  createdAt: 'createdAt',
+} as const;
+
+export type TaskLinkScalarFieldEnum =
+  (typeof TaskLinkScalarFieldEnum)[keyof typeof TaskLinkScalarFieldEnum];
+
+export const TaskChecklistScalarFieldEnum = {
+  id: 'id',
+  taskId: 'taskId',
+  title: 'title',
+  createdAt: 'createdAt',
+} as const;
+
+export type TaskChecklistScalarFieldEnum =
+  (typeof TaskChecklistScalarFieldEnum)[keyof typeof TaskChecklistScalarFieldEnum];
+
+export const TaskChecklistItemScalarFieldEnum = {
+  id: 'id',
+  checklistId: 'checklistId',
+  text: 'text',
+  checked: 'checked',
+  sortOrder: 'sortOrder',
+} as const;
+
+export type TaskChecklistItemScalarFieldEnum =
+  (typeof TaskChecklistItemScalarFieldEnum)[keyof typeof TaskChecklistItemScalarFieldEnum];
+
+export const TaskBoardStageScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  boardType: 'boardType',
+  title: 'title',
+  color: 'color',
+  sortOrder: 'sortOrder',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt',
+} as const;
+
+export type TaskBoardStageScalarFieldEnum =
+  (typeof TaskBoardStageScalarFieldEnum)[keyof typeof TaskBoardStageScalarFieldEnum];
+
+export const RecurringTaskTemplateScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  assigneeId: 'assigneeId',
+  creatorId: 'creatorId',
+  priority: 'priority',
+  frequency: 'frequency',
+  interval: 'interval',
+  daysOfWeek: 'daysOfWeek',
+  dayOfMonth: 'dayOfMonth',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  dueDateOffset: 'dueDateOffset',
+  isActive: 'isActive',
+  lastCreatedAt: 'lastCreatedAt',
+  nextCreateAt: 'nextCreateAt',
+  checklistData: 'checklistData',
+  linksData: 'linksData',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type RecurringTaskTemplateScalarFieldEnum =
+  (typeof RecurringTaskTemplateScalarFieldEnum)[keyof typeof RecurringTaskTemplateScalarFieldEnum];
+
 export const ProductTechnicalProfileScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
@@ -1805,76 +1875,6 @@ export const TechnicalEnvironmentScalarFieldEnum = {
 
 export type TechnicalEnvironmentScalarFieldEnum =
   (typeof TechnicalEnvironmentScalarFieldEnum)[keyof typeof TechnicalEnvironmentScalarFieldEnum];
-
-export const CalendarMeetingScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  startsAt: 'startsAt',
-  endsAt: 'endsAt',
-  meetingType: 'meetingType',
-  locationType: 'locationType',
-  locationOrLink: 'locationOrLink',
-  agenda: 'agenda',
-  outcomeNotes: 'outcomeNotes',
-  status: 'status',
-  internalParticipantIds: 'internalParticipantIds',
-  externalParticipants: 'externalParticipants',
-  projectId: 'projectId',
-  productId: 'productId',
-  dealId: 'dealId',
-  contactId: 'contactId',
-  createdById: 'createdById',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type CalendarMeetingScalarFieldEnum =
-  (typeof CalendarMeetingScalarFieldEnum)[keyof typeof CalendarMeetingScalarFieldEnum];
-
-export const PersonalCalendarEventScalarFieldEnum = {
-  id: 'id',
-  ownerId: 'ownerId',
-  title: 'title',
-  startsAt: 'startsAt',
-  endsAt: 'endsAt',
-  isAllDay: 'isAllDay',
-  notes: 'notes',
-  status: 'status',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type PersonalCalendarEventScalarFieldEnum =
-  (typeof PersonalCalendarEventScalarFieldEnum)[keyof typeof PersonalCalendarEventScalarFieldEnum];
-
-export const AuditLogScalarFieldEnum = {
-  id: 'id',
-  projectId: 'projectId',
-  entityType: 'entityType',
-  entityId: 'entityId',
-  action: 'action',
-  userId: 'userId',
-  changes: 'changes',
-  ipAddress: 'ipAddress',
-  createdAt: 'createdAt',
-} as const;
-
-export type AuditLogScalarFieldEnum =
-  (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum];
-
-export const SystemListOptionScalarFieldEnum = {
-  id: 'id',
-  listKey: 'listKey',
-  code: 'code',
-  label: 'label',
-  sortOrder: 'sortOrder',
-  isActive: 'isActive',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-} as const;
-
-export type SystemListOptionScalarFieldEnum =
-  (typeof SystemListOptionScalarFieldEnum)[keyof typeof SystemListOptionScalarFieldEnum];
 
 export const SortOrder = {
   asc: 'asc',

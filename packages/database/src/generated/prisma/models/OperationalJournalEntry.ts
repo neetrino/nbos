@@ -1067,55 +1067,55 @@ export type OperationalJournalEntryUncheckedUpdateManyWithoutCompanyNestedInput 
     | Prisma.OperationalJournalEntryScalarWhereInput[];
 };
 
-export type OperationalJournalEntryCreateNestedManyWithoutProjectInput = {
+export type OperationalJournalEntryCreateNestedManyWithoutEmployeeInput = {
   create?:
     | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutProjectInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+        Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
       >
-    | Prisma.OperationalJournalEntryCreateWithoutProjectInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryCreateWithoutEmployeeInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput[];
   connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyProjectInputEnvelope;
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyEmployeeInputEnvelope;
   connect?:
     | Prisma.OperationalJournalEntryWhereUniqueInput
     | Prisma.OperationalJournalEntryWhereUniqueInput[];
 };
 
-export type OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput = {
+export type OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput = {
   create?:
     | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutProjectInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+        Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
       >
-    | Prisma.OperationalJournalEntryCreateWithoutProjectInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryCreateWithoutEmployeeInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput[];
   connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyProjectInputEnvelope;
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyEmployeeInputEnvelope;
   connect?:
     | Prisma.OperationalJournalEntryWhereUniqueInput
     | Prisma.OperationalJournalEntryWhereUniqueInput[];
 };
 
-export type OperationalJournalEntryUpdateManyWithoutProjectNestedInput = {
+export type OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutProjectInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+        Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
       >
-    | Prisma.OperationalJournalEntryCreateWithoutProjectInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryCreateWithoutEmployeeInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput[];
   connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput[];
   upsert?:
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyProjectInputEnvelope;
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyEmployeeInputEnvelope;
   set?:
     | Prisma.OperationalJournalEntryWhereUniqueInput
     | Prisma.OperationalJournalEntryWhereUniqueInput[];
@@ -1129,31 +1129,31 @@ export type OperationalJournalEntryUpdateManyWithoutProjectNestedInput = {
     | Prisma.OperationalJournalEntryWhereUniqueInput
     | Prisma.OperationalJournalEntryWhereUniqueInput[];
   update?:
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput[];
   updateMany?:
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput[];
   deleteMany?:
     | Prisma.OperationalJournalEntryScalarWhereInput
     | Prisma.OperationalJournalEntryScalarWhereInput[];
 };
 
-export type OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput = {
+export type OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutProjectInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+        Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
       >
-    | Prisma.OperationalJournalEntryCreateWithoutProjectInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryCreateWithoutEmployeeInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput[];
   connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput[];
   upsert?:
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyProjectInputEnvelope;
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyEmployeeInputEnvelope;
   set?:
     | Prisma.OperationalJournalEntryWhereUniqueInput
     | Prisma.OperationalJournalEntryWhereUniqueInput[];
@@ -1167,121 +1167,11 @@ export type OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput 
     | Prisma.OperationalJournalEntryWhereUniqueInput
     | Prisma.OperationalJournalEntryWhereUniqueInput[];
   update?:
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput[];
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput[];
   updateMany?:
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?:
-    | Prisma.OperationalJournalEntryScalarWhereInput
-    | Prisma.OperationalJournalEntryScalarWhereInput[];
-};
-
-export type OperationalJournalEntryCreateNestedManyWithoutProductInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutProductInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutProductInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyProductInputEnvelope;
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-};
-
-export type OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutProductInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutProductInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyProductInputEnvelope;
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-};
-
-export type OperationalJournalEntryUpdateManyWithoutProductNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutProductInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutProductInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput[];
-  upsert?:
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyProductInputEnvelope;
-  set?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  disconnect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  delete?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  update?:
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput[];
-  updateMany?:
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProductInput
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProductInput[];
-  deleteMany?:
-    | Prisma.OperationalJournalEntryScalarWhereInput
-    | Prisma.OperationalJournalEntryScalarWhereInput[];
-};
-
-export type OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutProductInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutProductInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput[];
-  upsert?:
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyProductInputEnvelope;
-  set?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  disconnect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  delete?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  update?:
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput[];
-  updateMany?:
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProductInput
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProductInput[];
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput[];
   deleteMany?:
     | Prisma.OperationalJournalEntryScalarWhereInput
     | Prisma.OperationalJournalEntryScalarWhereInput[];
@@ -1519,226 +1409,6 @@ export type EnumJournalLineStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.JournalLineStatusEnum;
 };
 
-export type OperationalJournalEntryCreateNestedManyWithoutDepartmentInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutDepartmentInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyDepartmentInputEnvelope;
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-};
-
-export type OperationalJournalEntryUncheckedCreateNestedManyWithoutDepartmentInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutDepartmentInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyDepartmentInputEnvelope;
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-};
-
-export type OperationalJournalEntryUpdateManyWithoutDepartmentNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutDepartmentInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput[];
-  upsert?:
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyDepartmentInputEnvelope;
-  set?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  disconnect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  delete?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  update?:
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput[];
-  updateMany?:
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput[];
-  deleteMany?:
-    | Prisma.OperationalJournalEntryScalarWhereInput
-    | Prisma.OperationalJournalEntryScalarWhereInput[];
-};
-
-export type OperationalJournalEntryUncheckedUpdateManyWithoutDepartmentNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutDepartmentInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput[];
-  upsert?:
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyDepartmentInputEnvelope;
-  set?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  disconnect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  delete?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  update?:
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput[];
-  updateMany?:
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput[];
-  deleteMany?:
-    | Prisma.OperationalJournalEntryScalarWhereInput
-    | Prisma.OperationalJournalEntryScalarWhereInput[];
-};
-
-export type OperationalJournalEntryCreateNestedManyWithoutEmployeeInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutEmployeeInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyEmployeeInputEnvelope;
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-};
-
-export type OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutEmployeeInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyEmployeeInputEnvelope;
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-};
-
-export type OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutEmployeeInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput[];
-  upsert?:
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyEmployeeInputEnvelope;
-  set?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  disconnect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  delete?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  update?:
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput[];
-  updateMany?:
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput[];
-  deleteMany?:
-    | Prisma.OperationalJournalEntryScalarWhereInput
-    | Prisma.OperationalJournalEntryScalarWhereInput[];
-};
-
-export type OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
-        Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
-      >
-    | Prisma.OperationalJournalEntryCreateWithoutEmployeeInput[]
-    | Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput[];
-  connectOrCreate?:
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryCreateOrConnectWithoutEmployeeInput[];
-  upsert?:
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput[];
-  createMany?: Prisma.OperationalJournalEntryCreateManyEmployeeInputEnvelope;
-  set?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  disconnect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  delete?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  connect?:
-    | Prisma.OperationalJournalEntryWhereUniqueInput
-    | Prisma.OperationalJournalEntryWhereUniqueInput[];
-  update?:
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput[];
-  updateMany?:
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput
-    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput[];
-  deleteMany?:
-    | Prisma.OperationalJournalEntryScalarWhereInput
-    | Prisma.OperationalJournalEntryScalarWhereInput[];
-};
-
 export type OperationalJournalEntryCreateNestedManyWithoutPartnerInput = {
   create?:
     | Prisma.XOR<
@@ -1844,6 +1514,336 @@ export type OperationalJournalEntryUncheckedUpdateManyWithoutPartnerNestedInput 
   updateMany?:
     | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutPartnerInput
     | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutPartnerInput[];
+  deleteMany?:
+    | Prisma.OperationalJournalEntryScalarWhereInput
+    | Prisma.OperationalJournalEntryScalarWhereInput[];
+};
+
+export type OperationalJournalEntryCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutProjectInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutProjectInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyProjectInputEnvelope;
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+};
+
+export type OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutProjectInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutProjectInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyProjectInputEnvelope;
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+};
+
+export type OperationalJournalEntryUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutProjectInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutProjectInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyProjectInputEnvelope;
+  set?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  disconnect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  delete?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  update?:
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?:
+    | Prisma.OperationalJournalEntryScalarWhereInput
+    | Prisma.OperationalJournalEntryScalarWhereInput[];
+};
+
+export type OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutProjectInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutProjectInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyProjectInputEnvelope;
+  set?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  disconnect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  delete?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  update?:
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?:
+    | Prisma.OperationalJournalEntryScalarWhereInput
+    | Prisma.OperationalJournalEntryScalarWhereInput[];
+};
+
+export type OperationalJournalEntryCreateNestedManyWithoutProductInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutProductInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutProductInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyProductInputEnvelope;
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+};
+
+export type OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutProductInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutProductInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyProductInputEnvelope;
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+};
+
+export type OperationalJournalEntryUpdateManyWithoutProductNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutProductInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutProductInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput[];
+  upsert?:
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyProductInputEnvelope;
+  set?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  disconnect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  delete?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  update?:
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput[];
+  updateMany?:
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProductInput
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProductInput[];
+  deleteMany?:
+    | Prisma.OperationalJournalEntryScalarWhereInput
+    | Prisma.OperationalJournalEntryScalarWhereInput[];
+};
+
+export type OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutProductInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutProductInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutProductInput[];
+  upsert?:
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyProductInputEnvelope;
+  set?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  disconnect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  delete?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  update?:
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput[];
+  updateMany?:
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProductInput
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutProductInput[];
+  deleteMany?:
+    | Prisma.OperationalJournalEntryScalarWhereInput
+    | Prisma.OperationalJournalEntryScalarWhereInput[];
+};
+
+export type OperationalJournalEntryCreateNestedManyWithoutDepartmentInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutDepartmentInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyDepartmentInputEnvelope;
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+};
+
+export type OperationalJournalEntryUncheckedCreateNestedManyWithoutDepartmentInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutDepartmentInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyDepartmentInputEnvelope;
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+};
+
+export type OperationalJournalEntryUpdateManyWithoutDepartmentNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutDepartmentInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput[];
+  upsert?:
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyDepartmentInputEnvelope;
+  set?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  disconnect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  delete?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  update?:
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput[];
+  updateMany?:
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput[];
+  deleteMany?:
+    | Prisma.OperationalJournalEntryScalarWhereInput
+    | Prisma.OperationalJournalEntryScalarWhereInput[];
+};
+
+export type OperationalJournalEntryUncheckedUpdateManyWithoutDepartmentNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
+        Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
+      >
+    | Prisma.OperationalJournalEntryCreateWithoutDepartmentInput[]
+    | Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput[];
+  connectOrCreate?:
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryCreateOrConnectWithoutDepartmentInput[];
+  upsert?:
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput[];
+  createMany?: Prisma.OperationalJournalEntryCreateManyDepartmentInputEnvelope;
+  set?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  disconnect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  delete?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  connect?:
+    | Prisma.OperationalJournalEntryWhereUniqueInput
+    | Prisma.OperationalJournalEntryWhereUniqueInput[];
+  update?:
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput[];
+  updateMany?:
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput
+    | Prisma.OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput[];
   deleteMany?:
     | Prisma.OperationalJournalEntryScalarWhereInput
     | Prisma.OperationalJournalEntryScalarWhereInput[];
@@ -1993,98 +1993,7 @@ export type OperationalJournalEntryScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<'OperationalJournalEntry'> | Date | string;
 };
 
-export type OperationalJournalEntryCreateWithoutProjectInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  postingPeriod: Prisma.FinancePostingPeriodCreateNestedOneWithoutJournalEntriesInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutOperationalJournalEntriesInput;
-  product?: Prisma.ProductCreateNestedOneWithoutOperationalJournalEntriesInput;
-  order?: Prisma.OrderCreateNestedOneWithoutOperationalJournalEntriesInput;
-  employee?: Prisma.EmployeeCreateNestedOneWithoutOperationalJournalEntriesInput;
-  department?: Prisma.DepartmentCreateNestedOneWithoutOperationalJournalEntriesInput;
-  partner?: Prisma.PartnerCreateNestedOneWithoutOperationalJournalEntriesInput;
-};
-
-export type OperationalJournalEntryUncheckedCreateWithoutProjectInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId: string;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  companyId?: string | null;
-  productId?: string | null;
-  orderId?: string | null;
-  employeeId?: string | null;
-  departmentId?: string | null;
-  partnerId?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type OperationalJournalEntryCreateOrConnectWithoutProjectInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.OperationalJournalEntryCreateWithoutProjectInput,
-    Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type OperationalJournalEntryCreateManyProjectInputEnvelope = {
-  data:
-    | Prisma.OperationalJournalEntryCreateManyProjectInput
-    | Prisma.OperationalJournalEntryCreateManyProjectInput[];
-  skipDuplicates?: boolean;
-};
-
-export type OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateWithoutProjectInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateWithoutProjectInput
-  >;
-  create: Prisma.XOR<
-    Prisma.OperationalJournalEntryCreateWithoutProjectInput,
-    Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateWithoutProjectInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateWithoutProjectInput
-  >;
-};
-
-export type OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput = {
-  where: Prisma.OperationalJournalEntryScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateManyMutationInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectInput
-  >;
-};
-
-export type OperationalJournalEntryCreateWithoutProductInput = {
+export type OperationalJournalEntryCreateWithoutEmployeeInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   currency?: string;
@@ -2102,13 +2011,13 @@ export type OperationalJournalEntryCreateWithoutProductInput = {
   postingPeriod: Prisma.FinancePostingPeriodCreateNestedOneWithoutJournalEntriesInput;
   company?: Prisma.CompanyCreateNestedOneWithoutOperationalJournalEntriesInput;
   project?: Prisma.ProjectCreateNestedOneWithoutOperationalJournalEntriesInput;
+  product?: Prisma.ProductCreateNestedOneWithoutOperationalJournalEntriesInput;
   order?: Prisma.OrderCreateNestedOneWithoutOperationalJournalEntriesInput;
-  employee?: Prisma.EmployeeCreateNestedOneWithoutOperationalJournalEntriesInput;
   department?: Prisma.DepartmentCreateNestedOneWithoutOperationalJournalEntriesInput;
   partner?: Prisma.PartnerCreateNestedOneWithoutOperationalJournalEntriesInput;
 };
 
-export type OperationalJournalEntryUncheckedCreateWithoutProductInput = {
+export type OperationalJournalEntryUncheckedCreateWithoutEmployeeInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   currency?: string;
@@ -2124,54 +2033,54 @@ export type OperationalJournalEntryUncheckedCreateWithoutProductInput = {
   status?: $Enums.JournalLineStatusEnum;
   companyId?: string | null;
   projectId?: string | null;
+  productId?: string | null;
   orderId?: string | null;
-  employeeId?: string | null;
   departmentId?: string | null;
   partnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
 
-export type OperationalJournalEntryCreateOrConnectWithoutProductInput = {
+export type OperationalJournalEntryCreateOrConnectWithoutEmployeeInput = {
   where: Prisma.OperationalJournalEntryWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.OperationalJournalEntryCreateWithoutProductInput,
-    Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
+    Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
+    Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
   >;
 };
 
-export type OperationalJournalEntryCreateManyProductInputEnvelope = {
+export type OperationalJournalEntryCreateManyEmployeeInputEnvelope = {
   data:
-    | Prisma.OperationalJournalEntryCreateManyProductInput
-    | Prisma.OperationalJournalEntryCreateManyProductInput[];
+    | Prisma.OperationalJournalEntryCreateManyEmployeeInput
+    | Prisma.OperationalJournalEntryCreateManyEmployeeInput[];
   skipDuplicates?: boolean;
 };
 
-export type OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput = {
+export type OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput = {
   where: Prisma.OperationalJournalEntryWhereUniqueInput;
   update: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateWithoutProductInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateWithoutProductInput
+    Prisma.OperationalJournalEntryUpdateWithoutEmployeeInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateWithoutEmployeeInput
   >;
   create: Prisma.XOR<
-    Prisma.OperationalJournalEntryCreateWithoutProductInput,
-    Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
+    Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
+    Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
   >;
 };
 
-export type OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput = {
+export type OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput = {
   where: Prisma.OperationalJournalEntryWhereUniqueInput;
   data: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateWithoutProductInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateWithoutProductInput
+    Prisma.OperationalJournalEntryUpdateWithoutEmployeeInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateWithoutEmployeeInput
   >;
 };
 
-export type OperationalJournalEntryUpdateManyWithWhereWithoutProductInput = {
+export type OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput = {
   where: Prisma.OperationalJournalEntryScalarWhereInput;
   data: Prisma.XOR<
     Prisma.OperationalJournalEntryUpdateManyMutationInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductInput
+    Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeInput
   >;
 };
 
@@ -2357,188 +2266,6 @@ export type OperationalJournalEntryUpdateManyWithWhereWithoutPostingPeriodInput 
   >;
 };
 
-export type OperationalJournalEntryCreateWithoutDepartmentInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  postingPeriod: Prisma.FinancePostingPeriodCreateNestedOneWithoutJournalEntriesInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutOperationalJournalEntriesInput;
-  project?: Prisma.ProjectCreateNestedOneWithoutOperationalJournalEntriesInput;
-  product?: Prisma.ProductCreateNestedOneWithoutOperationalJournalEntriesInput;
-  order?: Prisma.OrderCreateNestedOneWithoutOperationalJournalEntriesInput;
-  employee?: Prisma.EmployeeCreateNestedOneWithoutOperationalJournalEntriesInput;
-  partner?: Prisma.PartnerCreateNestedOneWithoutOperationalJournalEntriesInput;
-};
-
-export type OperationalJournalEntryUncheckedCreateWithoutDepartmentInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId: string;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  companyId?: string | null;
-  projectId?: string | null;
-  productId?: string | null;
-  orderId?: string | null;
-  employeeId?: string | null;
-  partnerId?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type OperationalJournalEntryCreateOrConnectWithoutDepartmentInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
-    Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
-  >;
-};
-
-export type OperationalJournalEntryCreateManyDepartmentInputEnvelope = {
-  data:
-    | Prisma.OperationalJournalEntryCreateManyDepartmentInput
-    | Prisma.OperationalJournalEntryCreateManyDepartmentInput[];
-  skipDuplicates?: boolean;
-};
-
-export type OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateWithoutDepartmentInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateWithoutDepartmentInput
-  >;
-  create: Prisma.XOR<
-    Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
-    Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
-  >;
-};
-
-export type OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateWithoutDepartmentInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateWithoutDepartmentInput
-  >;
-};
-
-export type OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput = {
-  where: Prisma.OperationalJournalEntryScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateManyMutationInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutDepartmentInput
-  >;
-};
-
-export type OperationalJournalEntryCreateWithoutEmployeeInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  postingPeriod: Prisma.FinancePostingPeriodCreateNestedOneWithoutJournalEntriesInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutOperationalJournalEntriesInput;
-  project?: Prisma.ProjectCreateNestedOneWithoutOperationalJournalEntriesInput;
-  product?: Prisma.ProductCreateNestedOneWithoutOperationalJournalEntriesInput;
-  order?: Prisma.OrderCreateNestedOneWithoutOperationalJournalEntriesInput;
-  department?: Prisma.DepartmentCreateNestedOneWithoutOperationalJournalEntriesInput;
-  partner?: Prisma.PartnerCreateNestedOneWithoutOperationalJournalEntriesInput;
-};
-
-export type OperationalJournalEntryUncheckedCreateWithoutEmployeeInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId: string;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  companyId?: string | null;
-  projectId?: string | null;
-  productId?: string | null;
-  orderId?: string | null;
-  departmentId?: string | null;
-  partnerId?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type OperationalJournalEntryCreateOrConnectWithoutEmployeeInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
-    Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
-  >;
-};
-
-export type OperationalJournalEntryCreateManyEmployeeInputEnvelope = {
-  data:
-    | Prisma.OperationalJournalEntryCreateManyEmployeeInput
-    | Prisma.OperationalJournalEntryCreateManyEmployeeInput[];
-  skipDuplicates?: boolean;
-};
-
-export type OperationalJournalEntryUpsertWithWhereUniqueWithoutEmployeeInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateWithoutEmployeeInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateWithoutEmployeeInput
-  >;
-  create: Prisma.XOR<
-    Prisma.OperationalJournalEntryCreateWithoutEmployeeInput,
-    Prisma.OperationalJournalEntryUncheckedCreateWithoutEmployeeInput
-  >;
-};
-
-export type OperationalJournalEntryUpdateWithWhereUniqueWithoutEmployeeInput = {
-  where: Prisma.OperationalJournalEntryWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateWithoutEmployeeInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateWithoutEmployeeInput
-  >;
-};
-
-export type OperationalJournalEntryUpdateManyWithWhereWithoutEmployeeInput = {
-  where: Prisma.OperationalJournalEntryScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.OperationalJournalEntryUpdateManyMutationInput,
-    Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeInput
-  >;
-};
-
 export type OperationalJournalEntryCreateWithoutPartnerInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -2627,6 +2354,279 @@ export type OperationalJournalEntryUpdateManyWithWhereWithoutPartnerInput = {
   data: Prisma.XOR<
     Prisma.OperationalJournalEntryUpdateManyMutationInput,
     Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutPartnerInput
+  >;
+};
+
+export type OperationalJournalEntryCreateWithoutProjectInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  postingPeriod: Prisma.FinancePostingPeriodCreateNestedOneWithoutJournalEntriesInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutOperationalJournalEntriesInput;
+  product?: Prisma.ProductCreateNestedOneWithoutOperationalJournalEntriesInput;
+  order?: Prisma.OrderCreateNestedOneWithoutOperationalJournalEntriesInput;
+  employee?: Prisma.EmployeeCreateNestedOneWithoutOperationalJournalEntriesInput;
+  department?: Prisma.DepartmentCreateNestedOneWithoutOperationalJournalEntriesInput;
+  partner?: Prisma.PartnerCreateNestedOneWithoutOperationalJournalEntriesInput;
+};
+
+export type OperationalJournalEntryUncheckedCreateWithoutProjectInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId: string;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  companyId?: string | null;
+  productId?: string | null;
+  orderId?: string | null;
+  employeeId?: string | null;
+  departmentId?: string | null;
+  partnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type OperationalJournalEntryCreateOrConnectWithoutProjectInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.OperationalJournalEntryCreateWithoutProjectInput,
+    Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type OperationalJournalEntryCreateManyProjectInputEnvelope = {
+  data:
+    | Prisma.OperationalJournalEntryCreateManyProjectInput
+    | Prisma.OperationalJournalEntryCreateManyProjectInput[];
+  skipDuplicates?: boolean;
+};
+
+export type OperationalJournalEntryUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateWithoutProjectInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.OperationalJournalEntryCreateWithoutProjectInput,
+    Prisma.OperationalJournalEntryUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type OperationalJournalEntryUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateWithoutProjectInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type OperationalJournalEntryUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.OperationalJournalEntryScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateManyMutationInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
+export type OperationalJournalEntryCreateWithoutProductInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  postingPeriod: Prisma.FinancePostingPeriodCreateNestedOneWithoutJournalEntriesInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutOperationalJournalEntriesInput;
+  project?: Prisma.ProjectCreateNestedOneWithoutOperationalJournalEntriesInput;
+  order?: Prisma.OrderCreateNestedOneWithoutOperationalJournalEntriesInput;
+  employee?: Prisma.EmployeeCreateNestedOneWithoutOperationalJournalEntriesInput;
+  department?: Prisma.DepartmentCreateNestedOneWithoutOperationalJournalEntriesInput;
+  partner?: Prisma.PartnerCreateNestedOneWithoutOperationalJournalEntriesInput;
+};
+
+export type OperationalJournalEntryUncheckedCreateWithoutProductInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId: string;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  companyId?: string | null;
+  projectId?: string | null;
+  orderId?: string | null;
+  employeeId?: string | null;
+  departmentId?: string | null;
+  partnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type OperationalJournalEntryCreateOrConnectWithoutProductInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.OperationalJournalEntryCreateWithoutProductInput,
+    Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type OperationalJournalEntryCreateManyProductInputEnvelope = {
+  data:
+    | Prisma.OperationalJournalEntryCreateManyProductInput
+    | Prisma.OperationalJournalEntryCreateManyProductInput[];
+  skipDuplicates?: boolean;
+};
+
+export type OperationalJournalEntryUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateWithoutProductInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateWithoutProductInput
+  >;
+  create: Prisma.XOR<
+    Prisma.OperationalJournalEntryCreateWithoutProductInput,
+    Prisma.OperationalJournalEntryUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type OperationalJournalEntryUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateWithoutProductInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateWithoutProductInput
+  >;
+};
+
+export type OperationalJournalEntryUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.OperationalJournalEntryScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateManyMutationInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductInput
+  >;
+};
+
+export type OperationalJournalEntryCreateWithoutDepartmentInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  postingPeriod: Prisma.FinancePostingPeriodCreateNestedOneWithoutJournalEntriesInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutOperationalJournalEntriesInput;
+  project?: Prisma.ProjectCreateNestedOneWithoutOperationalJournalEntriesInput;
+  product?: Prisma.ProductCreateNestedOneWithoutOperationalJournalEntriesInput;
+  order?: Prisma.OrderCreateNestedOneWithoutOperationalJournalEntriesInput;
+  employee?: Prisma.EmployeeCreateNestedOneWithoutOperationalJournalEntriesInput;
+  partner?: Prisma.PartnerCreateNestedOneWithoutOperationalJournalEntriesInput;
+};
+
+export type OperationalJournalEntryUncheckedCreateWithoutDepartmentInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId: string;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  companyId?: string | null;
+  projectId?: string | null;
+  productId?: string | null;
+  orderId?: string | null;
+  employeeId?: string | null;
+  partnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type OperationalJournalEntryCreateOrConnectWithoutDepartmentInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
+    Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
+  >;
+};
+
+export type OperationalJournalEntryCreateManyDepartmentInputEnvelope = {
+  data:
+    | Prisma.OperationalJournalEntryCreateManyDepartmentInput
+    | Prisma.OperationalJournalEntryCreateManyDepartmentInput[];
+  skipDuplicates?: boolean;
+};
+
+export type OperationalJournalEntryUpsertWithWhereUniqueWithoutDepartmentInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateWithoutDepartmentInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateWithoutDepartmentInput
+  >;
+  create: Prisma.XOR<
+    Prisma.OperationalJournalEntryCreateWithoutDepartmentInput,
+    Prisma.OperationalJournalEntryUncheckedCreateWithoutDepartmentInput
+  >;
+};
+
+export type OperationalJournalEntryUpdateWithWhereUniqueWithoutDepartmentInput = {
+  where: Prisma.OperationalJournalEntryWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateWithoutDepartmentInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateWithoutDepartmentInput
+  >;
+};
+
+export type OperationalJournalEntryUpdateManyWithWhereWithoutDepartmentInput = {
+  where: Prisma.OperationalJournalEntryScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.OperationalJournalEntryUpdateManyMutationInput,
+    Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutDepartmentInput
   >;
 };
 
@@ -2789,166 +2789,7 @@ export type OperationalJournalEntryUncheckedUpdateManyWithoutCompanyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type OperationalJournalEntryCreateManyProjectInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId: string;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  companyId?: string | null;
-  productId?: string | null;
-  orderId?: string | null;
-  employeeId?: string | null;
-  departmentId?: string | null;
-  partnerId?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type OperationalJournalEntryUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  postingPeriod?: Prisma.FinancePostingPeriodUpdateOneRequiredWithoutJournalEntriesNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  order?: Prisma.OrderUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  employee?: Prisma.EmployeeUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  department?: Prisma.DepartmentUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  partner?: Prisma.PartnerUpdateOneWithoutOperationalJournalEntriesNestedInput;
-};
-
-export type OperationalJournalEntryUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type OperationalJournalEntryUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type OperationalJournalEntryCreateManyProductInput = {
+export type OperationalJournalEntryCreateManyEmployeeInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   currency?: string;
@@ -2964,15 +2805,15 @@ export type OperationalJournalEntryCreateManyProductInput = {
   status?: $Enums.JournalLineStatusEnum;
   companyId?: string | null;
   projectId?: string | null;
+  productId?: string | null;
   orderId?: string | null;
-  employeeId?: string | null;
   departmentId?: string | null;
   partnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
 
-export type OperationalJournalEntryUpdateWithoutProductInput = {
+export type OperationalJournalEntryUpdateWithoutEmployeeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   amount?:
     | Prisma.DecimalFieldUpdateOperationsInput
@@ -3011,13 +2852,13 @@ export type OperationalJournalEntryUpdateWithoutProductInput = {
   postingPeriod?: Prisma.FinancePostingPeriodUpdateOneRequiredWithoutJournalEntriesNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutOperationalJournalEntriesNestedInput;
   project?: Prisma.ProjectUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutOperationalJournalEntriesNestedInput;
   order?: Prisma.OrderUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  employee?: Prisma.EmployeeUpdateOneWithoutOperationalJournalEntriesNestedInput;
   department?: Prisma.DepartmentUpdateOneWithoutOperationalJournalEntriesNestedInput;
   partner?: Prisma.PartnerUpdateOneWithoutOperationalJournalEntriesNestedInput;
 };
 
-export type OperationalJournalEntryUncheckedUpdateWithoutProductInput = {
+export type OperationalJournalEntryUncheckedUpdateWithoutEmployeeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   amount?:
     | Prisma.DecimalFieldUpdateOperationsInput
@@ -3054,15 +2895,15 @@ export type OperationalJournalEntryUncheckedUpdateWithoutProductInput = {
     | $Enums.JournalLineStatusEnum;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type OperationalJournalEntryUncheckedUpdateManyWithoutProductInput = {
+export type OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   amount?:
     | Prisma.DecimalFieldUpdateOperationsInput
@@ -3099,8 +2940,8 @@ export type OperationalJournalEntryUncheckedUpdateManyWithoutProductInput = {
     | $Enums.JournalLineStatusEnum;
   companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3425,324 +3266,6 @@ export type OperationalJournalEntryUncheckedUpdateManyWithoutPostingPeriodInput 
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type OperationalJournalEntryCreateManyDepartmentInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId: string;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  companyId?: string | null;
-  projectId?: string | null;
-  productId?: string | null;
-  orderId?: string | null;
-  employeeId?: string | null;
-  partnerId?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type OperationalJournalEntryUpdateWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  postingPeriod?: Prisma.FinancePostingPeriodUpdateOneRequiredWithoutJournalEntriesNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  project?: Prisma.ProjectUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  order?: Prisma.OrderUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  employee?: Prisma.EmployeeUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  partner?: Prisma.PartnerUpdateOneWithoutOperationalJournalEntriesNestedInput;
-};
-
-export type OperationalJournalEntryUncheckedUpdateWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type OperationalJournalEntryUncheckedUpdateManyWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type OperationalJournalEntryCreateManyEmployeeInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  currency?: string;
-  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  bookedAt: Date | string;
-  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId: string;
-  idempotencyKey: string;
-  sourceType: $Enums.JournalSourceTypeEnum;
-  sourceId: string;
-  description?: string | null;
-  status?: $Enums.JournalLineStatusEnum;
-  companyId?: string | null;
-  projectId?: string | null;
-  productId?: string | null;
-  orderId?: string | null;
-  departmentId?: string | null;
-  partnerId?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type OperationalJournalEntryUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  postingPeriod?: Prisma.FinancePostingPeriodUpdateOneRequiredWithoutJournalEntriesNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  project?: Prisma.ProjectUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  order?: Prisma.OrderUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  department?: Prisma.DepartmentUpdateOneWithoutOperationalJournalEntriesNestedInput;
-  partner?: Prisma.PartnerUpdateOneWithoutOperationalJournalEntriesNestedInput;
-};
-
-export type OperationalJournalEntryUncheckedUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  currency?: Prisma.StringFieldUpdateOperationsInput | string;
-  fxRateApplied?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  functionalAmount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  recognitionBasis?:
-    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
-    | $Enums.JournalRecognitionBasisEnum;
-  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
-  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
-  sourceType?:
-    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
-    | $Enums.JournalSourceTypeEnum;
-  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
-    | $Enums.JournalLineStatusEnum;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
 export type OperationalJournalEntryCreateManyPartnerInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -3898,6 +3421,483 @@ export type OperationalJournalEntryUncheckedUpdateManyWithoutPartnerInput = {
   orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type OperationalJournalEntryCreateManyProjectInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId: string;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  companyId?: string | null;
+  productId?: string | null;
+  orderId?: string | null;
+  employeeId?: string | null;
+  departmentId?: string | null;
+  partnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type OperationalJournalEntryUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  postingPeriod?: Prisma.FinancePostingPeriodUpdateOneRequiredWithoutJournalEntriesNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  employee?: Prisma.EmployeeUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  department?: Prisma.DepartmentUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  partner?: Prisma.PartnerUpdateOneWithoutOperationalJournalEntriesNestedInput;
+};
+
+export type OperationalJournalEntryUncheckedUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type OperationalJournalEntryUncheckedUpdateManyWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type OperationalJournalEntryCreateManyProductInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId: string;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  companyId?: string | null;
+  projectId?: string | null;
+  orderId?: string | null;
+  employeeId?: string | null;
+  departmentId?: string | null;
+  partnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type OperationalJournalEntryUpdateWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  postingPeriod?: Prisma.FinancePostingPeriodUpdateOneRequiredWithoutJournalEntriesNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  project?: Prisma.ProjectUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  employee?: Prisma.EmployeeUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  department?: Prisma.DepartmentUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  partner?: Prisma.PartnerUpdateOneWithoutOperationalJournalEntriesNestedInput;
+};
+
+export type OperationalJournalEntryUncheckedUpdateWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type OperationalJournalEntryUncheckedUpdateManyWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type OperationalJournalEntryCreateManyDepartmentInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  currency?: string;
+  fxRateApplied?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  functionalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  bookedAt: Date | string;
+  recognitionBasis: $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId: string;
+  idempotencyKey: string;
+  sourceType: $Enums.JournalSourceTypeEnum;
+  sourceId: string;
+  description?: string | null;
+  status?: $Enums.JournalLineStatusEnum;
+  companyId?: string | null;
+  projectId?: string | null;
+  productId?: string | null;
+  orderId?: string | null;
+  employeeId?: string | null;
+  partnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type OperationalJournalEntryUpdateWithoutDepartmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  postingPeriod?: Prisma.FinancePostingPeriodUpdateOneRequiredWithoutJournalEntriesNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  project?: Prisma.ProjectUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  employee?: Prisma.EmployeeUpdateOneWithoutOperationalJournalEntriesNestedInput;
+  partner?: Prisma.PartnerUpdateOneWithoutOperationalJournalEntriesNestedInput;
+};
+
+export type OperationalJournalEntryUncheckedUpdateWithoutDepartmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type OperationalJournalEntryUncheckedUpdateManyWithoutDepartmentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  currency?: Prisma.StringFieldUpdateOperationsInput | string;
+  fxRateApplied?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  functionalAmount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  bookedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  recognitionBasis?:
+    | Prisma.EnumJournalRecognitionBasisEnumFieldUpdateOperationsInput
+    | $Enums.JournalRecognitionBasisEnum;
+  postingPeriodId?: Prisma.StringFieldUpdateOperationsInput | string;
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string;
+  sourceType?:
+    | Prisma.EnumJournalSourceTypeEnumFieldUpdateOperationsInput
+    | $Enums.JournalSourceTypeEnum;
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumJournalLineStatusEnumFieldUpdateOperationsInput
+    | $Enums.JournalLineStatusEnum;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  orderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };

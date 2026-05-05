@@ -776,6 +776,16 @@ export type FileAssetUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+export type FileAssetNullableScalarRelationFilter = {
+  is?: Prisma.FileAssetWhereInput | null;
+  isNot?: Prisma.FileAssetWhereInput | null;
+};
+
+export type FileAssetScalarRelationFilter = {
+  is?: Prisma.FileAssetWhereInput;
+  isNot?: Prisma.FileAssetWhereInput;
+};
+
 export type FileAssetCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   displayName?: Prisma.SortOrder;
@@ -862,14 +872,58 @@ export type FileAssetSumOrderByAggregateInput = {
   sizeBytes?: Prisma.SortOrder;
 };
 
-export type FileAssetScalarRelationFilter = {
-  is?: Prisma.FileAssetWhereInput;
-  isNot?: Prisma.FileAssetWhereInput;
+export type FileAssetCreateNestedOneWithoutDocumentCoversInput = {
+  create?: Prisma.XOR<
+    Prisma.FileAssetCreateWithoutDocumentCoversInput,
+    Prisma.FileAssetUncheckedCreateWithoutDocumentCoversInput
+  >;
+  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutDocumentCoversInput;
+  connect?: Prisma.FileAssetWhereUniqueInput;
 };
 
-export type FileAssetNullableScalarRelationFilter = {
-  is?: Prisma.FileAssetWhereInput | null;
-  isNot?: Prisma.FileAssetWhereInput | null;
+export type FileAssetUpdateOneWithoutDocumentCoversNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.FileAssetCreateWithoutDocumentCoversInput,
+    Prisma.FileAssetUncheckedCreateWithoutDocumentCoversInput
+  >;
+  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutDocumentCoversInput;
+  upsert?: Prisma.FileAssetUpsertWithoutDocumentCoversInput;
+  disconnect?: Prisma.FileAssetWhereInput | boolean;
+  delete?: Prisma.FileAssetWhereInput | boolean;
+  connect?: Prisma.FileAssetWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.FileAssetUpdateToOneWithWhereWithoutDocumentCoversInput,
+      Prisma.FileAssetUpdateWithoutDocumentCoversInput
+    >,
+    Prisma.FileAssetUncheckedUpdateWithoutDocumentCoversInput
+  >;
+};
+
+export type FileAssetCreateNestedOneWithoutDocumentAttachmentsInput = {
+  create?: Prisma.XOR<
+    Prisma.FileAssetCreateWithoutDocumentAttachmentsInput,
+    Prisma.FileAssetUncheckedCreateWithoutDocumentAttachmentsInput
+  >;
+  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutDocumentAttachmentsInput;
+  connect?: Prisma.FileAssetWhereUniqueInput;
+};
+
+export type FileAssetUpdateOneRequiredWithoutDocumentAttachmentsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.FileAssetCreateWithoutDocumentAttachmentsInput,
+    Prisma.FileAssetUncheckedCreateWithoutDocumentAttachmentsInput
+  >;
+  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutDocumentAttachmentsInput;
+  upsert?: Prisma.FileAssetUpsertWithoutDocumentAttachmentsInput;
+  connect?: Prisma.FileAssetWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.FileAssetUpdateToOneWithWhereWithoutDocumentAttachmentsInput,
+      Prisma.FileAssetUpdateWithoutDocumentAttachmentsInput
+    >,
+    Prisma.FileAssetUncheckedUpdateWithoutDocumentAttachmentsInput
+  >;
 };
 
 export type EnumFileAssetTypeEnumFieldUpdateOperationsInput = {
@@ -882,10 +936,6 @@ export type NullableEnumFilePurposeEnumFieldUpdateOperationsInput = {
 
 export type EnumFileAssetStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.FileAssetStatusEnum;
-};
-
-export type EnumFileVisibilityEnumFieldUpdateOperationsInput = {
-  set?: $Enums.FileVisibilityEnum;
 };
 
 export type EnumFileConfidentialityEnumFieldUpdateOperationsInput = {
@@ -982,85 +1032,29 @@ export type FileAssetUpdateOneRequiredWithoutAuditEventsNestedInput = {
   >;
 };
 
-export type FileAssetCreateNestedOneWithoutReportExportJobsInput = {
+export type FileAssetCreateNestedOneWithoutEmailAttachmentsInput = {
   create?: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutReportExportJobsInput,
-    Prisma.FileAssetUncheckedCreateWithoutReportExportJobsInput
+    Prisma.FileAssetCreateWithoutEmailAttachmentsInput,
+    Prisma.FileAssetUncheckedCreateWithoutEmailAttachmentsInput
   >;
-  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutReportExportJobsInput;
+  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutEmailAttachmentsInput;
   connect?: Prisma.FileAssetWhereUniqueInput;
 };
 
-export type FileAssetUpdateOneWithoutReportExportJobsNestedInput = {
+export type FileAssetUpdateOneRequiredWithoutEmailAttachmentsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutReportExportJobsInput,
-    Prisma.FileAssetUncheckedCreateWithoutReportExportJobsInput
+    Prisma.FileAssetCreateWithoutEmailAttachmentsInput,
+    Prisma.FileAssetUncheckedCreateWithoutEmailAttachmentsInput
   >;
-  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutReportExportJobsInput;
-  upsert?: Prisma.FileAssetUpsertWithoutReportExportJobsInput;
-  disconnect?: Prisma.FileAssetWhereInput | boolean;
-  delete?: Prisma.FileAssetWhereInput | boolean;
+  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutEmailAttachmentsInput;
+  upsert?: Prisma.FileAssetUpsertWithoutEmailAttachmentsInput;
   connect?: Prisma.FileAssetWhereUniqueInput;
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.FileAssetUpdateToOneWithWhereWithoutReportExportJobsInput,
-      Prisma.FileAssetUpdateWithoutReportExportJobsInput
+      Prisma.FileAssetUpdateToOneWithWhereWithoutEmailAttachmentsInput,
+      Prisma.FileAssetUpdateWithoutEmailAttachmentsInput
     >,
-    Prisma.FileAssetUncheckedUpdateWithoutReportExportJobsInput
-  >;
-};
-
-export type FileAssetCreateNestedOneWithoutDocumentCoversInput = {
-  create?: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutDocumentCoversInput,
-    Prisma.FileAssetUncheckedCreateWithoutDocumentCoversInput
-  >;
-  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutDocumentCoversInput;
-  connect?: Prisma.FileAssetWhereUniqueInput;
-};
-
-export type FileAssetUpdateOneWithoutDocumentCoversNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutDocumentCoversInput,
-    Prisma.FileAssetUncheckedCreateWithoutDocumentCoversInput
-  >;
-  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutDocumentCoversInput;
-  upsert?: Prisma.FileAssetUpsertWithoutDocumentCoversInput;
-  disconnect?: Prisma.FileAssetWhereInput | boolean;
-  delete?: Prisma.FileAssetWhereInput | boolean;
-  connect?: Prisma.FileAssetWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.FileAssetUpdateToOneWithWhereWithoutDocumentCoversInput,
-      Prisma.FileAssetUpdateWithoutDocumentCoversInput
-    >,
-    Prisma.FileAssetUncheckedUpdateWithoutDocumentCoversInput
-  >;
-};
-
-export type FileAssetCreateNestedOneWithoutDocumentAttachmentsInput = {
-  create?: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutDocumentAttachmentsInput,
-    Prisma.FileAssetUncheckedCreateWithoutDocumentAttachmentsInput
-  >;
-  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutDocumentAttachmentsInput;
-  connect?: Prisma.FileAssetWhereUniqueInput;
-};
-
-export type FileAssetUpdateOneRequiredWithoutDocumentAttachmentsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutDocumentAttachmentsInput,
-    Prisma.FileAssetUncheckedCreateWithoutDocumentAttachmentsInput
-  >;
-  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutDocumentAttachmentsInput;
-  upsert?: Prisma.FileAssetUpsertWithoutDocumentAttachmentsInput;
-  connect?: Prisma.FileAssetWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.FileAssetUpdateToOneWithWhereWithoutDocumentAttachmentsInput,
-      Prisma.FileAssetUpdateWithoutDocumentAttachmentsInput
-    >,
-    Prisma.FileAssetUncheckedUpdateWithoutDocumentAttachmentsInput
+    Prisma.FileAssetUncheckedUpdateWithoutEmailAttachmentsInput
   >;
 };
 
@@ -1116,30 +1110,388 @@ export type FileAssetUpdateOneRequiredWithoutMessengerDirectAttachmentsNestedInp
   >;
 };
 
-export type FileAssetCreateNestedOneWithoutEmailAttachmentsInput = {
+export type FileAssetCreateNestedOneWithoutReportExportJobsInput = {
   create?: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutEmailAttachmentsInput,
-    Prisma.FileAssetUncheckedCreateWithoutEmailAttachmentsInput
+    Prisma.FileAssetCreateWithoutReportExportJobsInput,
+    Prisma.FileAssetUncheckedCreateWithoutReportExportJobsInput
   >;
-  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutEmailAttachmentsInput;
+  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutReportExportJobsInput;
   connect?: Prisma.FileAssetWhereUniqueInput;
 };
 
-export type FileAssetUpdateOneRequiredWithoutEmailAttachmentsNestedInput = {
+export type FileAssetUpdateOneWithoutReportExportJobsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutEmailAttachmentsInput,
-    Prisma.FileAssetUncheckedCreateWithoutEmailAttachmentsInput
+    Prisma.FileAssetCreateWithoutReportExportJobsInput,
+    Prisma.FileAssetUncheckedCreateWithoutReportExportJobsInput
   >;
-  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutEmailAttachmentsInput;
-  upsert?: Prisma.FileAssetUpsertWithoutEmailAttachmentsInput;
+  connectOrCreate?: Prisma.FileAssetCreateOrConnectWithoutReportExportJobsInput;
+  upsert?: Prisma.FileAssetUpsertWithoutReportExportJobsInput;
+  disconnect?: Prisma.FileAssetWhereInput | boolean;
+  delete?: Prisma.FileAssetWhereInput | boolean;
   connect?: Prisma.FileAssetWhereUniqueInput;
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.FileAssetUpdateToOneWithWhereWithoutEmailAttachmentsInput,
-      Prisma.FileAssetUpdateWithoutEmailAttachmentsInput
+      Prisma.FileAssetUpdateToOneWithWhereWithoutReportExportJobsInput,
+      Prisma.FileAssetUpdateWithoutReportExportJobsInput
     >,
-    Prisma.FileAssetUncheckedUpdateWithoutEmailAttachmentsInput
+    Prisma.FileAssetUncheckedUpdateWithoutReportExportJobsInput
   >;
+};
+
+export type FileAssetCreateWithoutDocumentCoversInput = {
+  id?: string;
+  displayName: string;
+  originalName?: string | null;
+  fileType: $Enums.FileAssetTypeEnum;
+  purpose?: $Enums.FilePurposeEnum | null;
+  sourceModule?: string | null;
+  ownerId?: string | null;
+  createdById?: string | null;
+  status?: $Enums.FileAssetStatusEnum;
+  visibility?: $Enums.FileVisibilityEnum;
+  confidentiality?: $Enums.FileConfidentialityEnum;
+  storageProvider?: $Enums.FileStorageProviderEnum;
+  storageKey?: string | null;
+  externalUrl?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: bigint | number | null;
+  checksum?: string | null;
+  currentVersionId?: string | null;
+  retentionPolicy?: string | null;
+  deletedAt?: Date | string | null;
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  versions?: Prisma.FileVersionCreateNestedManyWithoutFileAssetInput;
+  links?: Prisma.FileLinkCreateNestedManyWithoutFileAssetInput;
+  auditEvents?: Prisma.FileAuditEventCreateNestedManyWithoutFileAssetInput;
+  documentAttachments?: Prisma.DocumentAttachmentCreateNestedManyWithoutFileAssetInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutFileAssetInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutFileAssetInput;
+  emailAttachments?: Prisma.EmailAttachmentCreateNestedManyWithoutFileAssetInput;
+  reportExportJobs?: Prisma.ReportExportJobCreateNestedManyWithoutFileAssetInput;
+};
+
+export type FileAssetUncheckedCreateWithoutDocumentCoversInput = {
+  id?: string;
+  displayName: string;
+  originalName?: string | null;
+  fileType: $Enums.FileAssetTypeEnum;
+  purpose?: $Enums.FilePurposeEnum | null;
+  sourceModule?: string | null;
+  ownerId?: string | null;
+  createdById?: string | null;
+  status?: $Enums.FileAssetStatusEnum;
+  visibility?: $Enums.FileVisibilityEnum;
+  confidentiality?: $Enums.FileConfidentialityEnum;
+  storageProvider?: $Enums.FileStorageProviderEnum;
+  storageKey?: string | null;
+  externalUrl?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: bigint | number | null;
+  checksum?: string | null;
+  currentVersionId?: string | null;
+  retentionPolicy?: string | null;
+  deletedAt?: Date | string | null;
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  versions?: Prisma.FileVersionUncheckedCreateNestedManyWithoutFileAssetInput;
+  links?: Prisma.FileLinkUncheckedCreateNestedManyWithoutFileAssetInput;
+  auditEvents?: Prisma.FileAuditEventUncheckedCreateNestedManyWithoutFileAssetInput;
+  documentAttachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
+  emailAttachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
+  reportExportJobs?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutFileAssetInput;
+};
+
+export type FileAssetCreateOrConnectWithoutDocumentCoversInput = {
+  where: Prisma.FileAssetWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.FileAssetCreateWithoutDocumentCoversInput,
+    Prisma.FileAssetUncheckedCreateWithoutDocumentCoversInput
+  >;
+};
+
+export type FileAssetUpsertWithoutDocumentCoversInput = {
+  update: Prisma.XOR<
+    Prisma.FileAssetUpdateWithoutDocumentCoversInput,
+    Prisma.FileAssetUncheckedUpdateWithoutDocumentCoversInput
+  >;
+  create: Prisma.XOR<
+    Prisma.FileAssetCreateWithoutDocumentCoversInput,
+    Prisma.FileAssetUncheckedCreateWithoutDocumentCoversInput
+  >;
+  where?: Prisma.FileAssetWhereInput;
+};
+
+export type FileAssetUpdateToOneWithWhereWithoutDocumentCoversInput = {
+  where?: Prisma.FileAssetWhereInput;
+  data: Prisma.XOR<
+    Prisma.FileAssetUpdateWithoutDocumentCoversInput,
+    Prisma.FileAssetUncheckedUpdateWithoutDocumentCoversInput
+  >;
+};
+
+export type FileAssetUpdateWithoutDocumentCoversInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string;
+  originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  fileType?: Prisma.EnumFileAssetTypeEnumFieldUpdateOperationsInput | $Enums.FileAssetTypeEnum;
+  purpose?:
+    | Prisma.NullableEnumFilePurposeEnumFieldUpdateOperationsInput
+    | $Enums.FilePurposeEnum
+    | null;
+  sourceModule?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumFileAssetStatusEnumFieldUpdateOperationsInput | $Enums.FileAssetStatusEnum;
+  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
+  confidentiality?:
+    | Prisma.EnumFileConfidentialityEnumFieldUpdateOperationsInput
+    | $Enums.FileConfidentialityEnum;
+  storageProvider?:
+    | Prisma.EnumFileStorageProviderEnumFieldUpdateOperationsInput
+    | $Enums.FileStorageProviderEnum;
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  externalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sizeBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  currentVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  retentionPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  versions?: Prisma.FileVersionUpdateManyWithoutFileAssetNestedInput;
+  links?: Prisma.FileLinkUpdateManyWithoutFileAssetNestedInput;
+  auditEvents?: Prisma.FileAuditEventUpdateManyWithoutFileAssetNestedInput;
+  documentAttachments?: Prisma.DocumentAttachmentUpdateManyWithoutFileAssetNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
+  emailAttachments?: Prisma.EmailAttachmentUpdateManyWithoutFileAssetNestedInput;
+  reportExportJobs?: Prisma.ReportExportJobUpdateManyWithoutFileAssetNestedInput;
+};
+
+export type FileAssetUncheckedUpdateWithoutDocumentCoversInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string;
+  originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  fileType?: Prisma.EnumFileAssetTypeEnumFieldUpdateOperationsInput | $Enums.FileAssetTypeEnum;
+  purpose?:
+    | Prisma.NullableEnumFilePurposeEnumFieldUpdateOperationsInput
+    | $Enums.FilePurposeEnum
+    | null;
+  sourceModule?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumFileAssetStatusEnumFieldUpdateOperationsInput | $Enums.FileAssetStatusEnum;
+  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
+  confidentiality?:
+    | Prisma.EnumFileConfidentialityEnumFieldUpdateOperationsInput
+    | $Enums.FileConfidentialityEnum;
+  storageProvider?:
+    | Prisma.EnumFileStorageProviderEnumFieldUpdateOperationsInput
+    | $Enums.FileStorageProviderEnum;
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  externalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sizeBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  currentVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  retentionPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  versions?: Prisma.FileVersionUncheckedUpdateManyWithoutFileAssetNestedInput;
+  links?: Prisma.FileLinkUncheckedUpdateManyWithoutFileAssetNestedInput;
+  auditEvents?: Prisma.FileAuditEventUncheckedUpdateManyWithoutFileAssetNestedInput;
+  documentAttachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
+  emailAttachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
+  reportExportJobs?: Prisma.ReportExportJobUncheckedUpdateManyWithoutFileAssetNestedInput;
+};
+
+export type FileAssetCreateWithoutDocumentAttachmentsInput = {
+  id?: string;
+  displayName: string;
+  originalName?: string | null;
+  fileType: $Enums.FileAssetTypeEnum;
+  purpose?: $Enums.FilePurposeEnum | null;
+  sourceModule?: string | null;
+  ownerId?: string | null;
+  createdById?: string | null;
+  status?: $Enums.FileAssetStatusEnum;
+  visibility?: $Enums.FileVisibilityEnum;
+  confidentiality?: $Enums.FileConfidentialityEnum;
+  storageProvider?: $Enums.FileStorageProviderEnum;
+  storageKey?: string | null;
+  externalUrl?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: bigint | number | null;
+  checksum?: string | null;
+  currentVersionId?: string | null;
+  retentionPolicy?: string | null;
+  deletedAt?: Date | string | null;
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  versions?: Prisma.FileVersionCreateNestedManyWithoutFileAssetInput;
+  links?: Prisma.FileLinkCreateNestedManyWithoutFileAssetInput;
+  auditEvents?: Prisma.FileAuditEventCreateNestedManyWithoutFileAssetInput;
+  documentCovers?: Prisma.DocumentCreateNestedManyWithoutCoverFileAssetInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutFileAssetInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutFileAssetInput;
+  emailAttachments?: Prisma.EmailAttachmentCreateNestedManyWithoutFileAssetInput;
+  reportExportJobs?: Prisma.ReportExportJobCreateNestedManyWithoutFileAssetInput;
+};
+
+export type FileAssetUncheckedCreateWithoutDocumentAttachmentsInput = {
+  id?: string;
+  displayName: string;
+  originalName?: string | null;
+  fileType: $Enums.FileAssetTypeEnum;
+  purpose?: $Enums.FilePurposeEnum | null;
+  sourceModule?: string | null;
+  ownerId?: string | null;
+  createdById?: string | null;
+  status?: $Enums.FileAssetStatusEnum;
+  visibility?: $Enums.FileVisibilityEnum;
+  confidentiality?: $Enums.FileConfidentialityEnum;
+  storageProvider?: $Enums.FileStorageProviderEnum;
+  storageKey?: string | null;
+  externalUrl?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: bigint | number | null;
+  checksum?: string | null;
+  currentVersionId?: string | null;
+  retentionPolicy?: string | null;
+  deletedAt?: Date | string | null;
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  versions?: Prisma.FileVersionUncheckedCreateNestedManyWithoutFileAssetInput;
+  links?: Prisma.FileLinkUncheckedCreateNestedManyWithoutFileAssetInput;
+  auditEvents?: Prisma.FileAuditEventUncheckedCreateNestedManyWithoutFileAssetInput;
+  documentCovers?: Prisma.DocumentUncheckedCreateNestedManyWithoutCoverFileAssetInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
+  emailAttachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
+  reportExportJobs?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutFileAssetInput;
+};
+
+export type FileAssetCreateOrConnectWithoutDocumentAttachmentsInput = {
+  where: Prisma.FileAssetWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.FileAssetCreateWithoutDocumentAttachmentsInput,
+    Prisma.FileAssetUncheckedCreateWithoutDocumentAttachmentsInput
+  >;
+};
+
+export type FileAssetUpsertWithoutDocumentAttachmentsInput = {
+  update: Prisma.XOR<
+    Prisma.FileAssetUpdateWithoutDocumentAttachmentsInput,
+    Prisma.FileAssetUncheckedUpdateWithoutDocumentAttachmentsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.FileAssetCreateWithoutDocumentAttachmentsInput,
+    Prisma.FileAssetUncheckedCreateWithoutDocumentAttachmentsInput
+  >;
+  where?: Prisma.FileAssetWhereInput;
+};
+
+export type FileAssetUpdateToOneWithWhereWithoutDocumentAttachmentsInput = {
+  where?: Prisma.FileAssetWhereInput;
+  data: Prisma.XOR<
+    Prisma.FileAssetUpdateWithoutDocumentAttachmentsInput,
+    Prisma.FileAssetUncheckedUpdateWithoutDocumentAttachmentsInput
+  >;
+};
+
+export type FileAssetUpdateWithoutDocumentAttachmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string;
+  originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  fileType?: Prisma.EnumFileAssetTypeEnumFieldUpdateOperationsInput | $Enums.FileAssetTypeEnum;
+  purpose?:
+    | Prisma.NullableEnumFilePurposeEnumFieldUpdateOperationsInput
+    | $Enums.FilePurposeEnum
+    | null;
+  sourceModule?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumFileAssetStatusEnumFieldUpdateOperationsInput | $Enums.FileAssetStatusEnum;
+  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
+  confidentiality?:
+    | Prisma.EnumFileConfidentialityEnumFieldUpdateOperationsInput
+    | $Enums.FileConfidentialityEnum;
+  storageProvider?:
+    | Prisma.EnumFileStorageProviderEnumFieldUpdateOperationsInput
+    | $Enums.FileStorageProviderEnum;
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  externalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sizeBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  currentVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  retentionPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  versions?: Prisma.FileVersionUpdateManyWithoutFileAssetNestedInput;
+  links?: Prisma.FileLinkUpdateManyWithoutFileAssetNestedInput;
+  auditEvents?: Prisma.FileAuditEventUpdateManyWithoutFileAssetNestedInput;
+  documentCovers?: Prisma.DocumentUpdateManyWithoutCoverFileAssetNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
+  emailAttachments?: Prisma.EmailAttachmentUpdateManyWithoutFileAssetNestedInput;
+  reportExportJobs?: Prisma.ReportExportJobUpdateManyWithoutFileAssetNestedInput;
+};
+
+export type FileAssetUncheckedUpdateWithoutDocumentAttachmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string;
+  originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  fileType?: Prisma.EnumFileAssetTypeEnumFieldUpdateOperationsInput | $Enums.FileAssetTypeEnum;
+  purpose?:
+    | Prisma.NullableEnumFilePurposeEnumFieldUpdateOperationsInput
+    | $Enums.FilePurposeEnum
+    | null;
+  sourceModule?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumFileAssetStatusEnumFieldUpdateOperationsInput | $Enums.FileAssetStatusEnum;
+  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
+  confidentiality?:
+    | Prisma.EnumFileConfidentialityEnumFieldUpdateOperationsInput
+    | $Enums.FileConfidentialityEnum;
+  storageProvider?:
+    | Prisma.EnumFileStorageProviderEnumFieldUpdateOperationsInput
+    | $Enums.FileStorageProviderEnum;
+  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  externalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sizeBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  currentVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  retentionPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  versions?: Prisma.FileVersionUncheckedUpdateManyWithoutFileAssetNestedInput;
+  links?: Prisma.FileLinkUncheckedUpdateManyWithoutFileAssetNestedInput;
+  auditEvents?: Prisma.FileAuditEventUncheckedUpdateManyWithoutFileAssetNestedInput;
+  documentCovers?: Prisma.DocumentUncheckedUpdateManyWithoutCoverFileAssetNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
+  emailAttachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
+  reportExportJobs?: Prisma.ReportExportJobUncheckedUpdateManyWithoutFileAssetNestedInput;
 };
 
 export type FileAssetCreateWithoutVersionsInput = {
@@ -1676,7 +2028,7 @@ export type FileAssetUncheckedUpdateWithoutAuditEventsInput = {
   reportExportJobs?: Prisma.ReportExportJobUncheckedUpdateManyWithoutFileAssetNestedInput;
 };
 
-export type FileAssetCreateWithoutReportExportJobsInput = {
+export type FileAssetCreateWithoutEmailAttachmentsInput = {
   id?: string;
   displayName: string;
   originalName?: string | null;
@@ -1707,10 +2059,10 @@ export type FileAssetCreateWithoutReportExportJobsInput = {
   documentAttachments?: Prisma.DocumentAttachmentCreateNestedManyWithoutFileAssetInput;
   messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutFileAssetInput;
   messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutFileAssetInput;
-  emailAttachments?: Prisma.EmailAttachmentCreateNestedManyWithoutFileAssetInput;
+  reportExportJobs?: Prisma.ReportExportJobCreateNestedManyWithoutFileAssetInput;
 };
 
-export type FileAssetUncheckedCreateWithoutReportExportJobsInput = {
+export type FileAssetUncheckedCreateWithoutEmailAttachmentsInput = {
   id?: string;
   displayName: string;
   originalName?: string | null;
@@ -1741,38 +2093,38 @@ export type FileAssetUncheckedCreateWithoutReportExportJobsInput = {
   documentAttachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
   messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
   messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  emailAttachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
+  reportExportJobs?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutFileAssetInput;
 };
 
-export type FileAssetCreateOrConnectWithoutReportExportJobsInput = {
+export type FileAssetCreateOrConnectWithoutEmailAttachmentsInput = {
   where: Prisma.FileAssetWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutReportExportJobsInput,
-    Prisma.FileAssetUncheckedCreateWithoutReportExportJobsInput
+    Prisma.FileAssetCreateWithoutEmailAttachmentsInput,
+    Prisma.FileAssetUncheckedCreateWithoutEmailAttachmentsInput
   >;
 };
 
-export type FileAssetUpsertWithoutReportExportJobsInput = {
+export type FileAssetUpsertWithoutEmailAttachmentsInput = {
   update: Prisma.XOR<
-    Prisma.FileAssetUpdateWithoutReportExportJobsInput,
-    Prisma.FileAssetUncheckedUpdateWithoutReportExportJobsInput
+    Prisma.FileAssetUpdateWithoutEmailAttachmentsInput,
+    Prisma.FileAssetUncheckedUpdateWithoutEmailAttachmentsInput
   >;
   create: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutReportExportJobsInput,
-    Prisma.FileAssetUncheckedCreateWithoutReportExportJobsInput
+    Prisma.FileAssetCreateWithoutEmailAttachmentsInput,
+    Prisma.FileAssetUncheckedCreateWithoutEmailAttachmentsInput
   >;
   where?: Prisma.FileAssetWhereInput;
 };
 
-export type FileAssetUpdateToOneWithWhereWithoutReportExportJobsInput = {
+export type FileAssetUpdateToOneWithWhereWithoutEmailAttachmentsInput = {
   where?: Prisma.FileAssetWhereInput;
   data: Prisma.XOR<
-    Prisma.FileAssetUpdateWithoutReportExportJobsInput,
-    Prisma.FileAssetUncheckedUpdateWithoutReportExportJobsInput
+    Prisma.FileAssetUpdateWithoutEmailAttachmentsInput,
+    Prisma.FileAssetUncheckedUpdateWithoutEmailAttachmentsInput
   >;
 };
 
-export type FileAssetUpdateWithoutReportExportJobsInput = {
+export type FileAssetUpdateWithoutEmailAttachmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   displayName?: Prisma.StringFieldUpdateOperationsInput | string;
   originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1810,10 +2162,10 @@ export type FileAssetUpdateWithoutReportExportJobsInput = {
   documentAttachments?: Prisma.DocumentAttachmentUpdateManyWithoutFileAssetNestedInput;
   messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
   messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
-  emailAttachments?: Prisma.EmailAttachmentUpdateManyWithoutFileAssetNestedInput;
+  reportExportJobs?: Prisma.ReportExportJobUpdateManyWithoutFileAssetNestedInput;
 };
 
-export type FileAssetUncheckedUpdateWithoutReportExportJobsInput = {
+export type FileAssetUncheckedUpdateWithoutEmailAttachmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   displayName?: Prisma.StringFieldUpdateOperationsInput | string;
   originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1851,362 +2203,6 @@ export type FileAssetUncheckedUpdateWithoutReportExportJobsInput = {
   documentAttachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
   messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
   messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-  emailAttachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-};
-
-export type FileAssetCreateWithoutDocumentCoversInput = {
-  id?: string;
-  displayName: string;
-  originalName?: string | null;
-  fileType: $Enums.FileAssetTypeEnum;
-  purpose?: $Enums.FilePurposeEnum | null;
-  sourceModule?: string | null;
-  ownerId?: string | null;
-  createdById?: string | null;
-  status?: $Enums.FileAssetStatusEnum;
-  visibility?: $Enums.FileVisibilityEnum;
-  confidentiality?: $Enums.FileConfidentialityEnum;
-  storageProvider?: $Enums.FileStorageProviderEnum;
-  storageKey?: string | null;
-  externalUrl?: string | null;
-  mimeType?: string | null;
-  sizeBytes?: bigint | number | null;
-  checksum?: string | null;
-  currentVersionId?: string | null;
-  retentionPolicy?: string | null;
-  deletedAt?: Date | string | null;
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  versions?: Prisma.FileVersionCreateNestedManyWithoutFileAssetInput;
-  links?: Prisma.FileLinkCreateNestedManyWithoutFileAssetInput;
-  auditEvents?: Prisma.FileAuditEventCreateNestedManyWithoutFileAssetInput;
-  documentAttachments?: Prisma.DocumentAttachmentCreateNestedManyWithoutFileAssetInput;
-  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutFileAssetInput;
-  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutFileAssetInput;
-  emailAttachments?: Prisma.EmailAttachmentCreateNestedManyWithoutFileAssetInput;
-  reportExportJobs?: Prisma.ReportExportJobCreateNestedManyWithoutFileAssetInput;
-};
-
-export type FileAssetUncheckedCreateWithoutDocumentCoversInput = {
-  id?: string;
-  displayName: string;
-  originalName?: string | null;
-  fileType: $Enums.FileAssetTypeEnum;
-  purpose?: $Enums.FilePurposeEnum | null;
-  sourceModule?: string | null;
-  ownerId?: string | null;
-  createdById?: string | null;
-  status?: $Enums.FileAssetStatusEnum;
-  visibility?: $Enums.FileVisibilityEnum;
-  confidentiality?: $Enums.FileConfidentialityEnum;
-  storageProvider?: $Enums.FileStorageProviderEnum;
-  storageKey?: string | null;
-  externalUrl?: string | null;
-  mimeType?: string | null;
-  sizeBytes?: bigint | number | null;
-  checksum?: string | null;
-  currentVersionId?: string | null;
-  retentionPolicy?: string | null;
-  deletedAt?: Date | string | null;
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  versions?: Prisma.FileVersionUncheckedCreateNestedManyWithoutFileAssetInput;
-  links?: Prisma.FileLinkUncheckedCreateNestedManyWithoutFileAssetInput;
-  auditEvents?: Prisma.FileAuditEventUncheckedCreateNestedManyWithoutFileAssetInput;
-  documentAttachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  emailAttachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  reportExportJobs?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutFileAssetInput;
-};
-
-export type FileAssetCreateOrConnectWithoutDocumentCoversInput = {
-  where: Prisma.FileAssetWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutDocumentCoversInput,
-    Prisma.FileAssetUncheckedCreateWithoutDocumentCoversInput
-  >;
-};
-
-export type FileAssetUpsertWithoutDocumentCoversInput = {
-  update: Prisma.XOR<
-    Prisma.FileAssetUpdateWithoutDocumentCoversInput,
-    Prisma.FileAssetUncheckedUpdateWithoutDocumentCoversInput
-  >;
-  create: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutDocumentCoversInput,
-    Prisma.FileAssetUncheckedCreateWithoutDocumentCoversInput
-  >;
-  where?: Prisma.FileAssetWhereInput;
-};
-
-export type FileAssetUpdateToOneWithWhereWithoutDocumentCoversInput = {
-  where?: Prisma.FileAssetWhereInput;
-  data: Prisma.XOR<
-    Prisma.FileAssetUpdateWithoutDocumentCoversInput,
-    Prisma.FileAssetUncheckedUpdateWithoutDocumentCoversInput
-  >;
-};
-
-export type FileAssetUpdateWithoutDocumentCoversInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  displayName?: Prisma.StringFieldUpdateOperationsInput | string;
-  originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  fileType?: Prisma.EnumFileAssetTypeEnumFieldUpdateOperationsInput | $Enums.FileAssetTypeEnum;
-  purpose?:
-    | Prisma.NullableEnumFilePurposeEnumFieldUpdateOperationsInput
-    | $Enums.FilePurposeEnum
-    | null;
-  sourceModule?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumFileAssetStatusEnumFieldUpdateOperationsInput | $Enums.FileAssetStatusEnum;
-  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
-  confidentiality?:
-    | Prisma.EnumFileConfidentialityEnumFieldUpdateOperationsInput
-    | $Enums.FileConfidentialityEnum;
-  storageProvider?:
-    | Prisma.EnumFileStorageProviderEnumFieldUpdateOperationsInput
-    | $Enums.FileStorageProviderEnum;
-  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  externalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  sizeBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
-  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  currentVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  retentionPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  versions?: Prisma.FileVersionUpdateManyWithoutFileAssetNestedInput;
-  links?: Prisma.FileLinkUpdateManyWithoutFileAssetNestedInput;
-  auditEvents?: Prisma.FileAuditEventUpdateManyWithoutFileAssetNestedInput;
-  documentAttachments?: Prisma.DocumentAttachmentUpdateManyWithoutFileAssetNestedInput;
-  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
-  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
-  emailAttachments?: Prisma.EmailAttachmentUpdateManyWithoutFileAssetNestedInput;
-  reportExportJobs?: Prisma.ReportExportJobUpdateManyWithoutFileAssetNestedInput;
-};
-
-export type FileAssetUncheckedUpdateWithoutDocumentCoversInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  displayName?: Prisma.StringFieldUpdateOperationsInput | string;
-  originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  fileType?: Prisma.EnumFileAssetTypeEnumFieldUpdateOperationsInput | $Enums.FileAssetTypeEnum;
-  purpose?:
-    | Prisma.NullableEnumFilePurposeEnumFieldUpdateOperationsInput
-    | $Enums.FilePurposeEnum
-    | null;
-  sourceModule?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumFileAssetStatusEnumFieldUpdateOperationsInput | $Enums.FileAssetStatusEnum;
-  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
-  confidentiality?:
-    | Prisma.EnumFileConfidentialityEnumFieldUpdateOperationsInput
-    | $Enums.FileConfidentialityEnum;
-  storageProvider?:
-    | Prisma.EnumFileStorageProviderEnumFieldUpdateOperationsInput
-    | $Enums.FileStorageProviderEnum;
-  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  externalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  sizeBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
-  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  currentVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  retentionPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  versions?: Prisma.FileVersionUncheckedUpdateManyWithoutFileAssetNestedInput;
-  links?: Prisma.FileLinkUncheckedUpdateManyWithoutFileAssetNestedInput;
-  auditEvents?: Prisma.FileAuditEventUncheckedUpdateManyWithoutFileAssetNestedInput;
-  documentAttachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-  emailAttachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-  reportExportJobs?: Prisma.ReportExportJobUncheckedUpdateManyWithoutFileAssetNestedInput;
-};
-
-export type FileAssetCreateWithoutDocumentAttachmentsInput = {
-  id?: string;
-  displayName: string;
-  originalName?: string | null;
-  fileType: $Enums.FileAssetTypeEnum;
-  purpose?: $Enums.FilePurposeEnum | null;
-  sourceModule?: string | null;
-  ownerId?: string | null;
-  createdById?: string | null;
-  status?: $Enums.FileAssetStatusEnum;
-  visibility?: $Enums.FileVisibilityEnum;
-  confidentiality?: $Enums.FileConfidentialityEnum;
-  storageProvider?: $Enums.FileStorageProviderEnum;
-  storageKey?: string | null;
-  externalUrl?: string | null;
-  mimeType?: string | null;
-  sizeBytes?: bigint | number | null;
-  checksum?: string | null;
-  currentVersionId?: string | null;
-  retentionPolicy?: string | null;
-  deletedAt?: Date | string | null;
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  versions?: Prisma.FileVersionCreateNestedManyWithoutFileAssetInput;
-  links?: Prisma.FileLinkCreateNestedManyWithoutFileAssetInput;
-  auditEvents?: Prisma.FileAuditEventCreateNestedManyWithoutFileAssetInput;
-  documentCovers?: Prisma.DocumentCreateNestedManyWithoutCoverFileAssetInput;
-  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutFileAssetInput;
-  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutFileAssetInput;
-  emailAttachments?: Prisma.EmailAttachmentCreateNestedManyWithoutFileAssetInput;
-  reportExportJobs?: Prisma.ReportExportJobCreateNestedManyWithoutFileAssetInput;
-};
-
-export type FileAssetUncheckedCreateWithoutDocumentAttachmentsInput = {
-  id?: string;
-  displayName: string;
-  originalName?: string | null;
-  fileType: $Enums.FileAssetTypeEnum;
-  purpose?: $Enums.FilePurposeEnum | null;
-  sourceModule?: string | null;
-  ownerId?: string | null;
-  createdById?: string | null;
-  status?: $Enums.FileAssetStatusEnum;
-  visibility?: $Enums.FileVisibilityEnum;
-  confidentiality?: $Enums.FileConfidentialityEnum;
-  storageProvider?: $Enums.FileStorageProviderEnum;
-  storageKey?: string | null;
-  externalUrl?: string | null;
-  mimeType?: string | null;
-  sizeBytes?: bigint | number | null;
-  checksum?: string | null;
-  currentVersionId?: string | null;
-  retentionPolicy?: string | null;
-  deletedAt?: Date | string | null;
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  versions?: Prisma.FileVersionUncheckedCreateNestedManyWithoutFileAssetInput;
-  links?: Prisma.FileLinkUncheckedCreateNestedManyWithoutFileAssetInput;
-  auditEvents?: Prisma.FileAuditEventUncheckedCreateNestedManyWithoutFileAssetInput;
-  documentCovers?: Prisma.DocumentUncheckedCreateNestedManyWithoutCoverFileAssetInput;
-  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  emailAttachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  reportExportJobs?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutFileAssetInput;
-};
-
-export type FileAssetCreateOrConnectWithoutDocumentAttachmentsInput = {
-  where: Prisma.FileAssetWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutDocumentAttachmentsInput,
-    Prisma.FileAssetUncheckedCreateWithoutDocumentAttachmentsInput
-  >;
-};
-
-export type FileAssetUpsertWithoutDocumentAttachmentsInput = {
-  update: Prisma.XOR<
-    Prisma.FileAssetUpdateWithoutDocumentAttachmentsInput,
-    Prisma.FileAssetUncheckedUpdateWithoutDocumentAttachmentsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutDocumentAttachmentsInput,
-    Prisma.FileAssetUncheckedCreateWithoutDocumentAttachmentsInput
-  >;
-  where?: Prisma.FileAssetWhereInput;
-};
-
-export type FileAssetUpdateToOneWithWhereWithoutDocumentAttachmentsInput = {
-  where?: Prisma.FileAssetWhereInput;
-  data: Prisma.XOR<
-    Prisma.FileAssetUpdateWithoutDocumentAttachmentsInput,
-    Prisma.FileAssetUncheckedUpdateWithoutDocumentAttachmentsInput
-  >;
-};
-
-export type FileAssetUpdateWithoutDocumentAttachmentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  displayName?: Prisma.StringFieldUpdateOperationsInput | string;
-  originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  fileType?: Prisma.EnumFileAssetTypeEnumFieldUpdateOperationsInput | $Enums.FileAssetTypeEnum;
-  purpose?:
-    | Prisma.NullableEnumFilePurposeEnumFieldUpdateOperationsInput
-    | $Enums.FilePurposeEnum
-    | null;
-  sourceModule?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumFileAssetStatusEnumFieldUpdateOperationsInput | $Enums.FileAssetStatusEnum;
-  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
-  confidentiality?:
-    | Prisma.EnumFileConfidentialityEnumFieldUpdateOperationsInput
-    | $Enums.FileConfidentialityEnum;
-  storageProvider?:
-    | Prisma.EnumFileStorageProviderEnumFieldUpdateOperationsInput
-    | $Enums.FileStorageProviderEnum;
-  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  externalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  sizeBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
-  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  currentVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  retentionPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  versions?: Prisma.FileVersionUpdateManyWithoutFileAssetNestedInput;
-  links?: Prisma.FileLinkUpdateManyWithoutFileAssetNestedInput;
-  auditEvents?: Prisma.FileAuditEventUpdateManyWithoutFileAssetNestedInput;
-  documentCovers?: Prisma.DocumentUpdateManyWithoutCoverFileAssetNestedInput;
-  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
-  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
-  emailAttachments?: Prisma.EmailAttachmentUpdateManyWithoutFileAssetNestedInput;
-  reportExportJobs?: Prisma.ReportExportJobUpdateManyWithoutFileAssetNestedInput;
-};
-
-export type FileAssetUncheckedUpdateWithoutDocumentAttachmentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  displayName?: Prisma.StringFieldUpdateOperationsInput | string;
-  originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  fileType?: Prisma.EnumFileAssetTypeEnumFieldUpdateOperationsInput | $Enums.FileAssetTypeEnum;
-  purpose?:
-    | Prisma.NullableEnumFilePurposeEnumFieldUpdateOperationsInput
-    | $Enums.FilePurposeEnum
-    | null;
-  sourceModule?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumFileAssetStatusEnumFieldUpdateOperationsInput | $Enums.FileAssetStatusEnum;
-  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
-  confidentiality?:
-    | Prisma.EnumFileConfidentialityEnumFieldUpdateOperationsInput
-    | $Enums.FileConfidentialityEnum;
-  storageProvider?:
-    | Prisma.EnumFileStorageProviderEnumFieldUpdateOperationsInput
-    | $Enums.FileStorageProviderEnum;
-  storageKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  externalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  mimeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  sizeBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null;
-  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  currentVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  retentionPolicy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  versions?: Prisma.FileVersionUncheckedUpdateManyWithoutFileAssetNestedInput;
-  links?: Prisma.FileLinkUncheckedUpdateManyWithoutFileAssetNestedInput;
-  auditEvents?: Prisma.FileAuditEventUncheckedUpdateManyWithoutFileAssetNestedInput;
-  documentCovers?: Prisma.DocumentUncheckedUpdateManyWithoutCoverFileAssetNestedInput;
-  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-  emailAttachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
   reportExportJobs?: Prisma.ReportExportJobUncheckedUpdateManyWithoutFileAssetNestedInput;
 };
 
@@ -2566,7 +2562,7 @@ export type FileAssetUncheckedUpdateWithoutMessengerDirectAttachmentsInput = {
   reportExportJobs?: Prisma.ReportExportJobUncheckedUpdateManyWithoutFileAssetNestedInput;
 };
 
-export type FileAssetCreateWithoutEmailAttachmentsInput = {
+export type FileAssetCreateWithoutReportExportJobsInput = {
   id?: string;
   displayName: string;
   originalName?: string | null;
@@ -2597,10 +2593,10 @@ export type FileAssetCreateWithoutEmailAttachmentsInput = {
   documentAttachments?: Prisma.DocumentAttachmentCreateNestedManyWithoutFileAssetInput;
   messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutFileAssetInput;
   messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutFileAssetInput;
-  reportExportJobs?: Prisma.ReportExportJobCreateNestedManyWithoutFileAssetInput;
+  emailAttachments?: Prisma.EmailAttachmentCreateNestedManyWithoutFileAssetInput;
 };
 
-export type FileAssetUncheckedCreateWithoutEmailAttachmentsInput = {
+export type FileAssetUncheckedCreateWithoutReportExportJobsInput = {
   id?: string;
   displayName: string;
   originalName?: string | null;
@@ -2631,38 +2627,38 @@ export type FileAssetUncheckedCreateWithoutEmailAttachmentsInput = {
   documentAttachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
   messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
   messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
-  reportExportJobs?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutFileAssetInput;
+  emailAttachments?: Prisma.EmailAttachmentUncheckedCreateNestedManyWithoutFileAssetInput;
 };
 
-export type FileAssetCreateOrConnectWithoutEmailAttachmentsInput = {
+export type FileAssetCreateOrConnectWithoutReportExportJobsInput = {
   where: Prisma.FileAssetWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutEmailAttachmentsInput,
-    Prisma.FileAssetUncheckedCreateWithoutEmailAttachmentsInput
+    Prisma.FileAssetCreateWithoutReportExportJobsInput,
+    Prisma.FileAssetUncheckedCreateWithoutReportExportJobsInput
   >;
 };
 
-export type FileAssetUpsertWithoutEmailAttachmentsInput = {
+export type FileAssetUpsertWithoutReportExportJobsInput = {
   update: Prisma.XOR<
-    Prisma.FileAssetUpdateWithoutEmailAttachmentsInput,
-    Prisma.FileAssetUncheckedUpdateWithoutEmailAttachmentsInput
+    Prisma.FileAssetUpdateWithoutReportExportJobsInput,
+    Prisma.FileAssetUncheckedUpdateWithoutReportExportJobsInput
   >;
   create: Prisma.XOR<
-    Prisma.FileAssetCreateWithoutEmailAttachmentsInput,
-    Prisma.FileAssetUncheckedCreateWithoutEmailAttachmentsInput
+    Prisma.FileAssetCreateWithoutReportExportJobsInput,
+    Prisma.FileAssetUncheckedCreateWithoutReportExportJobsInput
   >;
   where?: Prisma.FileAssetWhereInput;
 };
 
-export type FileAssetUpdateToOneWithWhereWithoutEmailAttachmentsInput = {
+export type FileAssetUpdateToOneWithWhereWithoutReportExportJobsInput = {
   where?: Prisma.FileAssetWhereInput;
   data: Prisma.XOR<
-    Prisma.FileAssetUpdateWithoutEmailAttachmentsInput,
-    Prisma.FileAssetUncheckedUpdateWithoutEmailAttachmentsInput
+    Prisma.FileAssetUpdateWithoutReportExportJobsInput,
+    Prisma.FileAssetUncheckedUpdateWithoutReportExportJobsInput
   >;
 };
 
-export type FileAssetUpdateWithoutEmailAttachmentsInput = {
+export type FileAssetUpdateWithoutReportExportJobsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   displayName?: Prisma.StringFieldUpdateOperationsInput | string;
   originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2700,10 +2696,10 @@ export type FileAssetUpdateWithoutEmailAttachmentsInput = {
   documentAttachments?: Prisma.DocumentAttachmentUpdateManyWithoutFileAssetNestedInput;
   messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
   messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutFileAssetNestedInput;
-  reportExportJobs?: Prisma.ReportExportJobUpdateManyWithoutFileAssetNestedInput;
+  emailAttachments?: Prisma.EmailAttachmentUpdateManyWithoutFileAssetNestedInput;
 };
 
-export type FileAssetUncheckedUpdateWithoutEmailAttachmentsInput = {
+export type FileAssetUncheckedUpdateWithoutReportExportJobsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   displayName?: Prisma.StringFieldUpdateOperationsInput | string;
   originalName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2741,7 +2737,7 @@ export type FileAssetUncheckedUpdateWithoutEmailAttachmentsInput = {
   documentAttachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
   messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
   messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
-  reportExportJobs?: Prisma.ReportExportJobUncheckedUpdateManyWithoutFileAssetNestedInput;
+  emailAttachments?: Prisma.EmailAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput;
 };
 
 /**

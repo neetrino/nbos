@@ -557,16 +557,6 @@ export type SubscriptionUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type SubscriptionListRelationFilter = {
-  every?: Prisma.SubscriptionWhereInput;
-  some?: Prisma.SubscriptionWhereInput;
-  none?: Prisma.SubscriptionWhereInput;
-};
-
-export type SubscriptionOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
-};
-
 export type SubscriptionNullableScalarRelationFilter = {
   is?: Prisma.SubscriptionWhereInput | null;
   isNot?: Prisma.SubscriptionWhereInput | null;
@@ -630,90 +620,14 @@ export type SubscriptionSumOrderByAggregateInput = {
   billingDay?: Prisma.SortOrder;
 };
 
-export type SubscriptionCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SubscriptionCreateWithoutProjectInput,
-        Prisma.SubscriptionUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.SubscriptionCreateWithoutProjectInput[]
-    | Prisma.SubscriptionUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput
-    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.SubscriptionCreateManyProjectInputEnvelope;
-  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+export type SubscriptionListRelationFilter = {
+  every?: Prisma.SubscriptionWhereInput;
+  some?: Prisma.SubscriptionWhereInput;
+  none?: Prisma.SubscriptionWhereInput;
 };
 
-export type SubscriptionUncheckedCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SubscriptionCreateWithoutProjectInput,
-        Prisma.SubscriptionUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.SubscriptionCreateWithoutProjectInput[]
-    | Prisma.SubscriptionUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput
-    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.SubscriptionCreateManyProjectInputEnvelope;
-  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-};
-
-export type SubscriptionUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SubscriptionCreateWithoutProjectInput,
-        Prisma.SubscriptionUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.SubscriptionCreateWithoutProjectInput[]
-    | Prisma.SubscriptionUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput
-    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.SubscriptionUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.SubscriptionUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.SubscriptionCreateManyProjectInputEnvelope;
-  set?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-  disconnect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-  delete?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-  update?:
-    | Prisma.SubscriptionUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.SubscriptionUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.SubscriptionUpdateManyWithWhereWithoutProjectInput
-    | Prisma.SubscriptionUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[];
-};
-
-export type SubscriptionUncheckedUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SubscriptionCreateWithoutProjectInput,
-        Prisma.SubscriptionUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.SubscriptionCreateWithoutProjectInput[]
-    | Prisma.SubscriptionUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput
-    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.SubscriptionUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.SubscriptionUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.SubscriptionCreateManyProjectInputEnvelope;
-  set?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-  disconnect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-  delete?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
-  update?:
-    | Prisma.SubscriptionUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.SubscriptionUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.SubscriptionUpdateManyWithWhereWithoutProjectInput
-    | Prisma.SubscriptionUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[];
+export type SubscriptionOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
 };
 
 export type SubscriptionCreateNestedOneWithoutInvoicesInput = {
@@ -894,105 +808,90 @@ export type SubscriptionUpdateOneWithoutPartnerServiceTermsNestedInput = {
   >;
 };
 
-export type SubscriptionCreateWithoutProjectInput = {
-  id?: string;
-  code: string;
-  type: $Enums.SubscriptionTypeEnum;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  billingDay: number;
-  taxStatus?: $Enums.TaxStatus;
-  startDate: Date | string;
-  endDate?: Date | string | null;
-  status?: $Enums.SubscriptionStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  partner?: Prisma.PartnerCreateNestedOneWithoutSubscriptionsInput;
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput;
-  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutSubscriptionInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutSubscriptionInput;
+export type SubscriptionCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SubscriptionCreateWithoutProjectInput,
+        Prisma.SubscriptionUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.SubscriptionCreateWithoutProjectInput[]
+    | Prisma.SubscriptionUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput
+    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.SubscriptionCreateManyProjectInputEnvelope;
+  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
 };
 
-export type SubscriptionUncheckedCreateWithoutProjectInput = {
-  id?: string;
-  code: string;
-  type: $Enums.SubscriptionTypeEnum;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  billingDay: number;
-  taxStatus?: $Enums.TaxStatus;
-  startDate: Date | string;
-  endDate?: Date | string | null;
-  status?: $Enums.SubscriptionStatusEnum;
-  partnerId?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutSubscriptionInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutSubscriptionInput;
+export type SubscriptionUncheckedCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SubscriptionCreateWithoutProjectInput,
+        Prisma.SubscriptionUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.SubscriptionCreateWithoutProjectInput[]
+    | Prisma.SubscriptionUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput
+    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.SubscriptionCreateManyProjectInputEnvelope;
+  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
 };
 
-export type SubscriptionCreateOrConnectWithoutProjectInput = {
-  where: Prisma.SubscriptionWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutProjectInput,
-    Prisma.SubscriptionUncheckedCreateWithoutProjectInput
-  >;
+export type SubscriptionUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SubscriptionCreateWithoutProjectInput,
+        Prisma.SubscriptionUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.SubscriptionCreateWithoutProjectInput[]
+    | Prisma.SubscriptionUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput
+    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.SubscriptionUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.SubscriptionUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.SubscriptionCreateManyProjectInputEnvelope;
+  set?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+  disconnect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+  delete?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+  update?:
+    | Prisma.SubscriptionUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.SubscriptionUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.SubscriptionUpdateManyWithWhereWithoutProjectInput
+    | Prisma.SubscriptionUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[];
 };
 
-export type SubscriptionCreateManyProjectInputEnvelope = {
-  data: Prisma.SubscriptionCreateManyProjectInput | Prisma.SubscriptionCreateManyProjectInput[];
-  skipDuplicates?: boolean;
-};
-
-export type SubscriptionUpsertWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.SubscriptionWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutProjectInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutProjectInput
-  >;
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutProjectInput,
-    Prisma.SubscriptionUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type SubscriptionUpdateWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.SubscriptionWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutProjectInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutProjectInput
-  >;
-};
-
-export type SubscriptionUpdateManyWithWhereWithoutProjectInput = {
-  where: Prisma.SubscriptionScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateManyMutationInput,
-    Prisma.SubscriptionUncheckedUpdateManyWithoutProjectInput
-  >;
-};
-
-export type SubscriptionScalarWhereInput = {
-  AND?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[];
-  OR?: Prisma.SubscriptionScalarWhereInput[];
-  NOT?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[];
-  id?: Prisma.StringFilter<'Subscription'> | string;
-  code?: Prisma.StringFilter<'Subscription'> | string;
-  projectId?: Prisma.StringFilter<'Subscription'> | string;
-  type?: Prisma.EnumSubscriptionTypeEnumFilter<'Subscription'> | $Enums.SubscriptionTypeEnum;
-  amount?:
-    | Prisma.DecimalFilter<'Subscription'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  billingDay?: Prisma.IntFilter<'Subscription'> | number;
-  taxStatus?: Prisma.EnumTaxStatusFilter<'Subscription'> | $Enums.TaxStatus;
-  startDate?: Prisma.DateTimeFilter<'Subscription'> | Date | string;
-  endDate?: Prisma.DateTimeNullableFilter<'Subscription'> | Date | string | null;
-  status?: Prisma.EnumSubscriptionStatusEnumFilter<'Subscription'> | $Enums.SubscriptionStatusEnum;
-  partnerId?: Prisma.StringNullableFilter<'Subscription'> | string | null;
-  createdAt?: Prisma.DateTimeFilter<'Subscription'> | Date | string;
-  updatedAt?: Prisma.DateTimeFilter<'Subscription'> | Date | string;
+export type SubscriptionUncheckedUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SubscriptionCreateWithoutProjectInput,
+        Prisma.SubscriptionUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.SubscriptionCreateWithoutProjectInput[]
+    | Prisma.SubscriptionUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput
+    | Prisma.SubscriptionCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.SubscriptionUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.SubscriptionUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.SubscriptionCreateManyProjectInputEnvelope;
+  set?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+  disconnect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+  delete?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[];
+  update?:
+    | Prisma.SubscriptionUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.SubscriptionUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.SubscriptionUpdateManyWithWhereWithoutProjectInput
+    | Prisma.SubscriptionUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[];
 };
 
 export type SubscriptionCreateWithoutInvoicesInput = {
@@ -1184,6 +1083,30 @@ export type SubscriptionUpdateManyWithWhereWithoutPartnerInput = {
     Prisma.SubscriptionUpdateManyMutationInput,
     Prisma.SubscriptionUncheckedUpdateManyWithoutPartnerInput
   >;
+};
+
+export type SubscriptionScalarWhereInput = {
+  AND?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[];
+  OR?: Prisma.SubscriptionScalarWhereInput[];
+  NOT?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[];
+  id?: Prisma.StringFilter<'Subscription'> | string;
+  code?: Prisma.StringFilter<'Subscription'> | string;
+  projectId?: Prisma.StringFilter<'Subscription'> | string;
+  type?: Prisma.EnumSubscriptionTypeEnumFilter<'Subscription'> | $Enums.SubscriptionTypeEnum;
+  amount?:
+    | Prisma.DecimalFilter<'Subscription'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingDay?: Prisma.IntFilter<'Subscription'> | number;
+  taxStatus?: Prisma.EnumTaxStatusFilter<'Subscription'> | $Enums.TaxStatus;
+  startDate?: Prisma.DateTimeFilter<'Subscription'> | Date | string;
+  endDate?: Prisma.DateTimeNullableFilter<'Subscription'> | Date | string | null;
+  status?: Prisma.EnumSubscriptionStatusEnumFilter<'Subscription'> | $Enums.SubscriptionStatusEnum;
+  partnerId?: Prisma.StringNullableFilter<'Subscription'> | string | null;
+  createdAt?: Prisma.DateTimeFilter<'Subscription'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Subscription'> | Date | string;
 };
 
 export type SubscriptionCreateWithoutPartnerAccrualsInput = {
@@ -1414,7 +1337,25 @@ export type SubscriptionUncheckedUpdateWithoutPartnerServiceTermsInput = {
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutSubscriptionNestedInput;
 };
 
-export type SubscriptionCreateManyProjectInput = {
+export type SubscriptionCreateWithoutProjectInput = {
+  id?: string;
+  code: string;
+  type: $Enums.SubscriptionTypeEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  billingDay: number;
+  taxStatus?: $Enums.TaxStatus;
+  startDate: Date | string;
+  endDate?: Date | string | null;
+  status?: $Enums.SubscriptionStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  partner?: Prisma.PartnerCreateNestedOneWithoutSubscriptionsInput;
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutSubscriptionInput;
+};
+
+export type SubscriptionUncheckedCreateWithoutProjectInput = {
   id?: string;
   code: string;
   type: $Enums.SubscriptionTypeEnum;
@@ -1427,78 +1368,50 @@ export type SubscriptionCreateManyProjectInput = {
   partnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutSubscriptionInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutSubscriptionInput;
 };
 
-export type SubscriptionUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumSubscriptionTypeEnumFieldUpdateOperationsInput | $Enums.SubscriptionTypeEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  billingDay?: Prisma.IntFieldUpdateOperationsInput | number;
-  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
-  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  status?:
-    | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  partner?: Prisma.PartnerUpdateOneWithoutSubscriptionsNestedInput;
-  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutSubscriptionNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutSubscriptionNestedInput;
+export type SubscriptionCreateOrConnectWithoutProjectInput = {
+  where: Prisma.SubscriptionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutProjectInput,
+    Prisma.SubscriptionUncheckedCreateWithoutProjectInput
+  >;
 };
 
-export type SubscriptionUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumSubscriptionTypeEnumFieldUpdateOperationsInput | $Enums.SubscriptionTypeEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  billingDay?: Prisma.IntFieldUpdateOperationsInput | number;
-  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
-  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  status?:
-    | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatusEnum;
-  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutSubscriptionNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutSubscriptionNestedInput;
+export type SubscriptionCreateManyProjectInputEnvelope = {
+  data: Prisma.SubscriptionCreateManyProjectInput | Prisma.SubscriptionCreateManyProjectInput[];
+  skipDuplicates?: boolean;
 };
 
-export type SubscriptionUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumSubscriptionTypeEnumFieldUpdateOperationsInput | $Enums.SubscriptionTypeEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  billingDay?: Prisma.IntFieldUpdateOperationsInput | number;
-  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
-  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  status?:
-    | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatusEnum;
-  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type SubscriptionUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.SubscriptionWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutProjectInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutProjectInput,
+    Prisma.SubscriptionUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type SubscriptionUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.SubscriptionWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutProjectInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type SubscriptionUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.SubscriptionScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateManyMutationInput,
+    Prisma.SubscriptionUncheckedUpdateManyWithoutProjectInput
+  >;
 };
 
 export type SubscriptionCreateManyPartnerInput = {
@@ -1584,6 +1497,93 @@ export type SubscriptionUncheckedUpdateManyWithoutPartnerInput = {
   status?:
     | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
     | $Enums.SubscriptionStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type SubscriptionCreateManyProjectInput = {
+  id?: string;
+  code: string;
+  type: $Enums.SubscriptionTypeEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  billingDay: number;
+  taxStatus?: $Enums.TaxStatus;
+  startDate: Date | string;
+  endDate?: Date | string | null;
+  status?: $Enums.SubscriptionStatusEnum;
+  partnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type SubscriptionUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumSubscriptionTypeEnumFieldUpdateOperationsInput | $Enums.SubscriptionTypeEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingDay?: Prisma.IntFieldUpdateOperationsInput | number;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?:
+    | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partner?: Prisma.PartnerUpdateOneWithoutSubscriptionsNestedInput;
+  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutSubscriptionNestedInput;
+};
+
+export type SubscriptionUncheckedUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumSubscriptionTypeEnumFieldUpdateOperationsInput | $Enums.SubscriptionTypeEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingDay?: Prisma.IntFieldUpdateOperationsInput | number;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?:
+    | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatusEnum;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutSubscriptionNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutSubscriptionNestedInput;
+};
+
+export type SubscriptionUncheckedUpdateManyWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumSubscriptionTypeEnumFieldUpdateOperationsInput | $Enums.SubscriptionTypeEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingDay?: Prisma.IntFieldUpdateOperationsInput | number;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?:
+    | Prisma.EnumSubscriptionStatusEnumFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatusEnum;
+  partnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };

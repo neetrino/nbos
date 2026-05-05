@@ -893,100 +893,6 @@ export type PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyNestedInput
     | Prisma.PartnerServiceTermScalarWhereInput[];
 };
 
-export type PartnerServiceTermCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerServiceTermCreateWithoutProjectInput,
-        Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.PartnerServiceTermCreateWithoutProjectInput[]
-    | Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput
-    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.PartnerServiceTermCreateManyProjectInputEnvelope;
-  connect?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
-};
-
-export type PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerServiceTermCreateWithoutProjectInput,
-        Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.PartnerServiceTermCreateWithoutProjectInput[]
-    | Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput
-    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.PartnerServiceTermCreateManyProjectInputEnvelope;
-  connect?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
-};
-
-export type PartnerServiceTermUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerServiceTermCreateWithoutProjectInput,
-        Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.PartnerServiceTermCreateWithoutProjectInput[]
-    | Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput
-    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.PartnerServiceTermCreateManyProjectInputEnvelope;
-  set?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
-  disconnect?:
-    | Prisma.PartnerServiceTermWhereUniqueInput
-    | Prisma.PartnerServiceTermWhereUniqueInput[];
-  delete?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
-  connect?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
-  update?:
-    | Prisma.PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.PartnerServiceTermUpdateManyWithWhereWithoutProjectInput
-    | Prisma.PartnerServiceTermUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?:
-    | Prisma.PartnerServiceTermScalarWhereInput
-    | Prisma.PartnerServiceTermScalarWhereInput[];
-};
-
-export type PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PartnerServiceTermCreateWithoutProjectInput,
-        Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.PartnerServiceTermCreateWithoutProjectInput[]
-    | Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput
-    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.PartnerServiceTermCreateManyProjectInputEnvelope;
-  set?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
-  disconnect?:
-    | Prisma.PartnerServiceTermWhereUniqueInput
-    | Prisma.PartnerServiceTermWhereUniqueInput[];
-  delete?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
-  connect?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
-  update?:
-    | Prisma.PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.PartnerServiceTermUpdateManyWithWhereWithoutProjectInput
-    | Prisma.PartnerServiceTermUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?:
-    | Prisma.PartnerServiceTermScalarWhereInput
-    | Prisma.PartnerServiceTermScalarWhereInput[];
-};
-
 export type PartnerServiceTermCreateNestedManyWithoutInvoiceInput = {
   create?:
     | Prisma.XOR<
@@ -1281,6 +1187,100 @@ export type EnumPartnerServiceStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.PartnerServiceStatusEnum;
 };
 
+export type PartnerServiceTermCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerServiceTermCreateWithoutProjectInput,
+        Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.PartnerServiceTermCreateWithoutProjectInput[]
+    | Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput
+    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.PartnerServiceTermCreateManyProjectInputEnvelope;
+  connect?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
+};
+
+export type PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerServiceTermCreateWithoutProjectInput,
+        Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.PartnerServiceTermCreateWithoutProjectInput[]
+    | Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput
+    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.PartnerServiceTermCreateManyProjectInputEnvelope;
+  connect?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
+};
+
+export type PartnerServiceTermUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerServiceTermCreateWithoutProjectInput,
+        Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.PartnerServiceTermCreateWithoutProjectInput[]
+    | Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput
+    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.PartnerServiceTermCreateManyProjectInputEnvelope;
+  set?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
+  disconnect?:
+    | Prisma.PartnerServiceTermWhereUniqueInput
+    | Prisma.PartnerServiceTermWhereUniqueInput[];
+  delete?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
+  connect?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.PartnerServiceTermUpdateManyWithWhereWithoutProjectInput
+    | Prisma.PartnerServiceTermUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?:
+    | Prisma.PartnerServiceTermScalarWhereInput
+    | Prisma.PartnerServiceTermScalarWhereInput[];
+};
+
+export type PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerServiceTermCreateWithoutProjectInput,
+        Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.PartnerServiceTermCreateWithoutProjectInput[]
+    | Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput
+    | Prisma.PartnerServiceTermCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.PartnerServiceTermCreateManyProjectInputEnvelope;
+  set?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
+  disconnect?:
+    | Prisma.PartnerServiceTermWhereUniqueInput
+    | Prisma.PartnerServiceTermWhereUniqueInput[];
+  delete?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
+  connect?: Prisma.PartnerServiceTermWhereUniqueInput | Prisma.PartnerServiceTermWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.PartnerServiceTermUpdateManyWithWhereWithoutProjectInput
+    | Prisma.PartnerServiceTermUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?:
+    | Prisma.PartnerServiceTermScalarWhereInput
+    | Prisma.PartnerServiceTermScalarWhereInput[];
+};
+
 export type PartnerServiceTermCreateWithoutClientContactInput = {
   id?: string;
   serviceType: $Enums.PartnerServiceTypeEnum;
@@ -1464,83 +1464,6 @@ export type PartnerServiceTermUpdateManyWithWhereWithoutClientCompanyInput = {
   data: Prisma.XOR<
     Prisma.PartnerServiceTermUpdateManyMutationInput,
     Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyInput
-  >;
-};
-
-export type PartnerServiceTermCreateWithoutProjectInput = {
-  id?: string;
-  serviceType: $Enums.PartnerServiceTypeEnum;
-  paymentModel: $Enums.PartnerServicePaymentModelEnum;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  billingStartDate?: Date | string | null;
-  status?: $Enums.PartnerServiceStatusEnum;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  partner: Prisma.PartnerCreateNestedOneWithoutPartnerServiceTermsInput;
-  clientContact?: Prisma.ContactCreateNestedOneWithoutPartnerServiceTermsInput;
-  clientCompany?: Prisma.CompanyCreateNestedOneWithoutPartnerServiceTermsInput;
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerServiceTermsInput;
-  invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerServiceTermsInput;
-};
-
-export type PartnerServiceTermUncheckedCreateWithoutProjectInput = {
-  id?: string;
-  partnerId: string;
-  clientContactId?: string | null;
-  clientCompanyId?: string | null;
-  serviceType: $Enums.PartnerServiceTypeEnum;
-  paymentModel: $Enums.PartnerServicePaymentModelEnum;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  billingStartDate?: Date | string | null;
-  subscriptionId?: string | null;
-  invoiceId?: string | null;
-  status?: $Enums.PartnerServiceStatusEnum;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type PartnerServiceTermCreateOrConnectWithoutProjectInput = {
-  where: Prisma.PartnerServiceTermWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.PartnerServiceTermCreateWithoutProjectInput,
-    Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type PartnerServiceTermCreateManyProjectInputEnvelope = {
-  data:
-    | Prisma.PartnerServiceTermCreateManyProjectInput
-    | Prisma.PartnerServiceTermCreateManyProjectInput[];
-  skipDuplicates?: boolean;
-};
-
-export type PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.PartnerServiceTermWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.PartnerServiceTermUpdateWithoutProjectInput,
-    Prisma.PartnerServiceTermUncheckedUpdateWithoutProjectInput
-  >;
-  create: Prisma.XOR<
-    Prisma.PartnerServiceTermCreateWithoutProjectInput,
-    Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.PartnerServiceTermWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.PartnerServiceTermUpdateWithoutProjectInput,
-    Prisma.PartnerServiceTermUncheckedUpdateWithoutProjectInput
-  >;
-};
-
-export type PartnerServiceTermUpdateManyWithWhereWithoutProjectInput = {
-  where: Prisma.PartnerServiceTermScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.PartnerServiceTermUpdateManyMutationInput,
-    Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectInput
   >;
 };
 
@@ -1775,6 +1698,83 @@ export type PartnerServiceTermUpdateManyWithWhereWithoutPartnerInput = {
   >;
 };
 
+export type PartnerServiceTermCreateWithoutProjectInput = {
+  id?: string;
+  serviceType: $Enums.PartnerServiceTypeEnum;
+  paymentModel: $Enums.PartnerServicePaymentModelEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  billingStartDate?: Date | string | null;
+  status?: $Enums.PartnerServiceStatusEnum;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  partner: Prisma.PartnerCreateNestedOneWithoutPartnerServiceTermsInput;
+  clientContact?: Prisma.ContactCreateNestedOneWithoutPartnerServiceTermsInput;
+  clientCompany?: Prisma.CompanyCreateNestedOneWithoutPartnerServiceTermsInput;
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutPartnerServiceTermsInput;
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutPartnerServiceTermsInput;
+};
+
+export type PartnerServiceTermUncheckedCreateWithoutProjectInput = {
+  id?: string;
+  partnerId: string;
+  clientContactId?: string | null;
+  clientCompanyId?: string | null;
+  serviceType: $Enums.PartnerServiceTypeEnum;
+  paymentModel: $Enums.PartnerServicePaymentModelEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  billingStartDate?: Date | string | null;
+  subscriptionId?: string | null;
+  invoiceId?: string | null;
+  status?: $Enums.PartnerServiceStatusEnum;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerServiceTermCreateOrConnectWithoutProjectInput = {
+  where: Prisma.PartnerServiceTermWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerServiceTermCreateWithoutProjectInput,
+    Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type PartnerServiceTermCreateManyProjectInputEnvelope = {
+  data:
+    | Prisma.PartnerServiceTermCreateManyProjectInput
+    | Prisma.PartnerServiceTermCreateManyProjectInput[];
+  skipDuplicates?: boolean;
+};
+
+export type PartnerServiceTermUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.PartnerServiceTermWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PartnerServiceTermUpdateWithoutProjectInput,
+    Prisma.PartnerServiceTermUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerServiceTermCreateWithoutProjectInput,
+    Prisma.PartnerServiceTermUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type PartnerServiceTermUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.PartnerServiceTermWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PartnerServiceTermUpdateWithoutProjectInput,
+    Prisma.PartnerServiceTermUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type PartnerServiceTermUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.PartnerServiceTermScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerServiceTermUpdateManyMutationInput,
+    Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
 export type PartnerServiceTermCreateManyClientContactInput = {
   id?: string;
   partnerId: string;
@@ -1954,107 +1954,6 @@ export type PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyInput = {
   partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
   clientContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  serviceType?:
-    | Prisma.EnumPartnerServiceTypeEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServiceTypeEnum;
-  paymentModel?:
-    | Prisma.EnumPartnerServicePaymentModelEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServicePaymentModelEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  billingStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumPartnerServiceStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServiceStatusEnum;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type PartnerServiceTermCreateManyProjectInput = {
-  id?: string;
-  partnerId: string;
-  clientContactId?: string | null;
-  clientCompanyId?: string | null;
-  serviceType: $Enums.PartnerServiceTypeEnum;
-  paymentModel: $Enums.PartnerServicePaymentModelEnum;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  billingStartDate?: Date | string | null;
-  subscriptionId?: string | null;
-  invoiceId?: string | null;
-  status?: $Enums.PartnerServiceStatusEnum;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type PartnerServiceTermUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  serviceType?:
-    | Prisma.EnumPartnerServiceTypeEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServiceTypeEnum;
-  paymentModel?:
-    | Prisma.EnumPartnerServicePaymentModelEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServicePaymentModelEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  billingStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  status?:
-    | Prisma.EnumPartnerServiceStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServiceStatusEnum;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerServiceTermsNestedInput;
-  clientContact?: Prisma.ContactUpdateOneWithoutPartnerServiceTermsNestedInput;
-  clientCompany?: Prisma.CompanyUpdateOneWithoutPartnerServiceTermsNestedInput;
-  subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerServiceTermsNestedInput;
-  invoice?: Prisma.InvoiceUpdateOneWithoutPartnerServiceTermsNestedInput;
-};
-
-export type PartnerServiceTermUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
-  clientContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  clientCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  serviceType?:
-    | Prisma.EnumPartnerServiceTypeEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServiceTypeEnum;
-  paymentModel?:
-    | Prisma.EnumPartnerServicePaymentModelEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServicePaymentModelEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  billingStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumPartnerServiceStatusEnumFieldUpdateOperationsInput
-    | $Enums.PartnerServiceStatusEnum;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type PartnerServiceTermUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
-  clientContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  clientCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   serviceType?:
     | Prisma.EnumPartnerServiceTypeEnumFieldUpdateOperationsInput
     | $Enums.PartnerServiceTypeEnum;
@@ -2358,6 +2257,107 @@ export type PartnerServiceTermUncheckedUpdateManyWithoutPartnerInput = {
   clientContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  serviceType?:
+    | Prisma.EnumPartnerServiceTypeEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServiceTypeEnum;
+  paymentModel?:
+    | Prisma.EnumPartnerServicePaymentModelEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServicePaymentModelEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumPartnerServiceStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServiceStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerServiceTermCreateManyProjectInput = {
+  id?: string;
+  partnerId: string;
+  clientContactId?: string | null;
+  clientCompanyId?: string | null;
+  serviceType: $Enums.PartnerServiceTypeEnum;
+  paymentModel: $Enums.PartnerServicePaymentModelEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  billingStartDate?: Date | string | null;
+  subscriptionId?: string | null;
+  invoiceId?: string | null;
+  status?: $Enums.PartnerServiceStatusEnum;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerServiceTermUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  serviceType?:
+    | Prisma.EnumPartnerServiceTypeEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServiceTypeEnum;
+  paymentModel?:
+    | Prisma.EnumPartnerServicePaymentModelEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServicePaymentModelEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?:
+    | Prisma.EnumPartnerServiceStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServiceStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partner?: Prisma.PartnerUpdateOneRequiredWithoutPartnerServiceTermsNestedInput;
+  clientContact?: Prisma.ContactUpdateOneWithoutPartnerServiceTermsNestedInput;
+  clientCompany?: Prisma.CompanyUpdateOneWithoutPartnerServiceTermsNestedInput;
+  subscription?: Prisma.SubscriptionUpdateOneWithoutPartnerServiceTermsNestedInput;
+  invoice?: Prisma.InvoiceUpdateOneWithoutPartnerServiceTermsNestedInput;
+};
+
+export type PartnerServiceTermUncheckedUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  clientContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  serviceType?:
+    | Prisma.EnumPartnerServiceTypeEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServiceTypeEnum;
+  paymentModel?:
+    | Prisma.EnumPartnerServicePaymentModelEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServicePaymentModelEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  billingStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  subscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumPartnerServiceStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerServiceStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerServiceTermUncheckedUpdateManyWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  partnerId?: Prisma.StringFieldUpdateOperationsInput | string;
+  clientContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientCompanyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   serviceType?:
     | Prisma.EnumPartnerServiceTypeEnumFieldUpdateOperationsInput
     | $Enums.PartnerServiceTypeEnum;

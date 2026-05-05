@@ -1,0 +1,78 @@
+// ─── CALENDAR ─────────────────────────────────────────────
+
+enum CalendarMeetingType {
+  SALES_CALL
+  OFFER_PRESENTATION
+  DEMO
+  KICKOFF
+  SUPPORT_CALL
+  MAINTENANCE_CALL
+  OTHER
+}
+
+enum CalendarLocationType {
+  ONLINE
+  OFFLINE
+}
+
+enum CalendarMeetingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PersonalCalendarEventStatus {
+  ACTIVE
+  CANCELLED
+}
+
+model CalendarMeeting {
+  id                     String                @id @default(uuid())
+  title                  String
+  startsAt               DateTime              @map("starts_at")
+  endsAt                 DateTime              @map("ends_at")
+  meetingType            CalendarMeetingType   @map("meeting_type")
+  locationType           CalendarLocationType  @map("location_type")
+  locationOrLink         String?               @map("location_or_link")
+  agenda                 String?
+  outcomeNotes           String?               @map("outcome_notes")
+  status                 CalendarMeetingStatus @default(SCHEDULED)
+  internalParticipantIds String[]              @default([]) @map("internal_participant_ids")
+  externalParticipants   Json?                 @map("external_participants")
+  projectId              String?               @map("project_id")
+  productId              String?               @map("product_id")
+  dealId                 String?               @map("deal_id")
+  contactId              String?               @map("contact_id")
+  createdById            String                @map("created_by_id")
+  createdAt              DateTime              @default(now()) @map("created_at")
+  updatedAt              DateTime              @updatedAt @map("updated_at")
+
+  @@index([startsAt])
+  @@index([endsAt])
+  @@index([status])
+  @@index([createdById])
+  @@index([projectId])
+  @@index([productId])
+  @@index([dealId])
+  @@map("calendar_meetings")
+}
+
+model PersonalCalendarEvent {
+  id        String                      @id @default(uuid())
+  ownerId   String                      @map("owner_id")
+  title     String
+  startsAt  DateTime                    @map("starts_at")
+  endsAt    DateTime                    @map("ends_at")
+  isAllDay  Boolean                     @default(false) @map("is_all_day")
+  notes     String?
+  status    PersonalCalendarEventStatus @default(ACTIVE)
+  createdAt DateTime                    @default(now()) @map("created_at")
+  updatedAt DateTime                    @updatedAt @map("updated_at")
+
+  @@index([ownerId])
+  @@index([startsAt])
+  @@index([endsAt])
+  @@index([status])
+  @@map("personal_calendar_events")
+}

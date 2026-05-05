@@ -483,34 +483,6 @@ export type DepartmentScalarRelationFilter = {
   isNot?: Prisma.DepartmentWhereInput;
 };
 
-export type DepartmentCreateNestedOneWithoutOperationalJournalEntriesInput = {
-  create?: Prisma.XOR<
-    Prisma.DepartmentCreateWithoutOperationalJournalEntriesInput,
-    Prisma.DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput
-  >;
-  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutOperationalJournalEntriesInput;
-  connect?: Prisma.DepartmentWhereUniqueInput;
-};
-
-export type DepartmentUpdateOneWithoutOperationalJournalEntriesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.DepartmentCreateWithoutOperationalJournalEntriesInput,
-    Prisma.DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput
-  >;
-  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutOperationalJournalEntriesInput;
-  upsert?: Prisma.DepartmentUpsertWithoutOperationalJournalEntriesInput;
-  disconnect?: Prisma.DepartmentWhereInput | boolean;
-  delete?: Prisma.DepartmentWhereInput | boolean;
-  connect?: Prisma.DepartmentWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.DepartmentUpdateToOneWithWhereWithoutOperationalJournalEntriesInput,
-      Prisma.DepartmentUpdateWithoutOperationalJournalEntriesInput
-    >,
-    Prisma.DepartmentUncheckedUpdateWithoutOperationalJournalEntriesInput
-  >;
-};
-
 export type DepartmentCreateNestedOneWithoutCredentialsInput = {
   create?: Prisma.XOR<
     Prisma.DepartmentCreateWithoutCredentialsInput,
@@ -536,6 +508,34 @@ export type DepartmentUpdateOneWithoutCredentialsNestedInput = {
       Prisma.DepartmentUpdateWithoutCredentialsInput
     >,
     Prisma.DepartmentUncheckedUpdateWithoutCredentialsInput
+  >;
+};
+
+export type DepartmentCreateNestedOneWithoutOperationalJournalEntriesInput = {
+  create?: Prisma.XOR<
+    Prisma.DepartmentCreateWithoutOperationalJournalEntriesInput,
+    Prisma.DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput
+  >;
+  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutOperationalJournalEntriesInput;
+  connect?: Prisma.DepartmentWhereUniqueInput;
+};
+
+export type DepartmentUpdateOneWithoutOperationalJournalEntriesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.DepartmentCreateWithoutOperationalJournalEntriesInput,
+    Prisma.DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput
+  >;
+  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutOperationalJournalEntriesInput;
+  upsert?: Prisma.DepartmentUpsertWithoutOperationalJournalEntriesInput;
+  disconnect?: Prisma.DepartmentWhereInput | boolean;
+  delete?: Prisma.DepartmentWhereInput | boolean;
+  connect?: Prisma.DepartmentWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.DepartmentUpdateToOneWithWhereWithoutOperationalJournalEntriesInput,
+      Prisma.DepartmentUpdateWithoutOperationalJournalEntriesInput
+    >,
+    Prisma.DepartmentUncheckedUpdateWithoutOperationalJournalEntriesInput
   >;
 };
 
@@ -707,94 +707,6 @@ export type DepartmentUpdateOneWithoutInvitationsNestedInput = {
   >;
 };
 
-export type DepartmentCreateWithoutOperationalJournalEntriesInput = {
-  id?: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  sortOrder?: number;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  parent?: Prisma.DepartmentCreateNestedOneWithoutChildrenInput;
-  children?: Prisma.DepartmentCreateNestedManyWithoutParentInput;
-  members?: Prisma.EmployeeDepartmentCreateNestedManyWithoutDepartmentInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutDepartmentInput;
-  invitations?: Prisma.InvitationCreateNestedManyWithoutDepartmentInput;
-};
-
-export type DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput = {
-  id?: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  parentId?: string | null;
-  sortOrder?: number;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  children?: Prisma.DepartmentUncheckedCreateNestedManyWithoutParentInput;
-  members?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutDepartmentInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutDepartmentInput;
-  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutDepartmentInput;
-};
-
-export type DepartmentCreateOrConnectWithoutOperationalJournalEntriesInput = {
-  where: Prisma.DepartmentWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.DepartmentCreateWithoutOperationalJournalEntriesInput,
-    Prisma.DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput
-  >;
-};
-
-export type DepartmentUpsertWithoutOperationalJournalEntriesInput = {
-  update: Prisma.XOR<
-    Prisma.DepartmentUpdateWithoutOperationalJournalEntriesInput,
-    Prisma.DepartmentUncheckedUpdateWithoutOperationalJournalEntriesInput
-  >;
-  create: Prisma.XOR<
-    Prisma.DepartmentCreateWithoutOperationalJournalEntriesInput,
-    Prisma.DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput
-  >;
-  where?: Prisma.DepartmentWhereInput;
-};
-
-export type DepartmentUpdateToOneWithWhereWithoutOperationalJournalEntriesInput = {
-  where?: Prisma.DepartmentWhereInput;
-  data: Prisma.XOR<
-    Prisma.DepartmentUpdateWithoutOperationalJournalEntriesInput,
-    Prisma.DepartmentUncheckedUpdateWithoutOperationalJournalEntriesInput
-  >;
-};
-
-export type DepartmentUpdateWithoutOperationalJournalEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  slug?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  parent?: Prisma.DepartmentUpdateOneWithoutChildrenNestedInput;
-  children?: Prisma.DepartmentUpdateManyWithoutParentNestedInput;
-  members?: Prisma.EmployeeDepartmentUpdateManyWithoutDepartmentNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutDepartmentNestedInput;
-  invitations?: Prisma.InvitationUpdateManyWithoutDepartmentNestedInput;
-};
-
-export type DepartmentUncheckedUpdateWithoutOperationalJournalEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  slug?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  children?: Prisma.DepartmentUncheckedUpdateManyWithoutParentNestedInput;
-  members?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutDepartmentNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutDepartmentNestedInput;
-  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutDepartmentNestedInput;
-};
-
 export type DepartmentCreateWithoutCredentialsInput = {
   id?: string;
   name: string;
@@ -881,6 +793,94 @@ export type DepartmentUncheckedUpdateWithoutCredentialsInput = {
   members?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutDepartmentNestedInput;
   invitations?: Prisma.InvitationUncheckedUpdateManyWithoutDepartmentNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutDepartmentNestedInput;
+};
+
+export type DepartmentCreateWithoutOperationalJournalEntriesInput = {
+  id?: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  sortOrder?: number;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  parent?: Prisma.DepartmentCreateNestedOneWithoutChildrenInput;
+  children?: Prisma.DepartmentCreateNestedManyWithoutParentInput;
+  members?: Prisma.EmployeeDepartmentCreateNestedManyWithoutDepartmentInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutDepartmentInput;
+  invitations?: Prisma.InvitationCreateNestedManyWithoutDepartmentInput;
+};
+
+export type DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput = {
+  id?: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  parentId?: string | null;
+  sortOrder?: number;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  children?: Prisma.DepartmentUncheckedCreateNestedManyWithoutParentInput;
+  members?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutDepartmentInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutDepartmentInput;
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutDepartmentInput;
+};
+
+export type DepartmentCreateOrConnectWithoutOperationalJournalEntriesInput = {
+  where: Prisma.DepartmentWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.DepartmentCreateWithoutOperationalJournalEntriesInput,
+    Prisma.DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput
+  >;
+};
+
+export type DepartmentUpsertWithoutOperationalJournalEntriesInput = {
+  update: Prisma.XOR<
+    Prisma.DepartmentUpdateWithoutOperationalJournalEntriesInput,
+    Prisma.DepartmentUncheckedUpdateWithoutOperationalJournalEntriesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.DepartmentCreateWithoutOperationalJournalEntriesInput,
+    Prisma.DepartmentUncheckedCreateWithoutOperationalJournalEntriesInput
+  >;
+  where?: Prisma.DepartmentWhereInput;
+};
+
+export type DepartmentUpdateToOneWithWhereWithoutOperationalJournalEntriesInput = {
+  where?: Prisma.DepartmentWhereInput;
+  data: Prisma.XOR<
+    Prisma.DepartmentUpdateWithoutOperationalJournalEntriesInput,
+    Prisma.DepartmentUncheckedUpdateWithoutOperationalJournalEntriesInput
+  >;
+};
+
+export type DepartmentUpdateWithoutOperationalJournalEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  parent?: Prisma.DepartmentUpdateOneWithoutChildrenNestedInput;
+  children?: Prisma.DepartmentUpdateManyWithoutParentNestedInput;
+  members?: Prisma.EmployeeDepartmentUpdateManyWithoutDepartmentNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutDepartmentNestedInput;
+  invitations?: Prisma.InvitationUpdateManyWithoutDepartmentNestedInput;
+};
+
+export type DepartmentUncheckedUpdateWithoutOperationalJournalEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  children?: Prisma.DepartmentUncheckedUpdateManyWithoutParentNestedInput;
+  members?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutDepartmentNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutDepartmentNestedInput;
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutDepartmentNestedInput;
 };
 
 export type DepartmentCreateWithoutChildrenInput = {

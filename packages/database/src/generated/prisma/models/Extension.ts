@@ -635,6 +635,11 @@ export type ExtensionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder;
 };
 
+export type ExtensionNullableScalarRelationFilter = {
+  is?: Prisma.ExtensionWhereInput | null;
+  isNot?: Prisma.ExtensionWhereInput | null;
+};
+
 export type ExtensionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
@@ -695,9 +700,174 @@ export type ExtensionMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder;
 };
 
-export type ExtensionNullableScalarRelationFilter = {
-  is?: Prisma.ExtensionWhereInput | null;
-  isNot?: Prisma.ExtensionWhereInput | null;
+export type ExtensionCreateNestedManyWithoutAssigneeInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExtensionCreateWithoutAssigneeInput,
+        Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
+      >
+    | Prisma.ExtensionCreateWithoutAssigneeInput[]
+    | Prisma.ExtensionUncheckedCreateWithoutAssigneeInput[];
+  connectOrCreate?:
+    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
+    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
+  createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
+  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+};
+
+export type ExtensionUncheckedCreateNestedManyWithoutAssigneeInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExtensionCreateWithoutAssigneeInput,
+        Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
+      >
+    | Prisma.ExtensionCreateWithoutAssigneeInput[]
+    | Prisma.ExtensionUncheckedCreateWithoutAssigneeInput[];
+  connectOrCreate?:
+    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
+    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
+  createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
+  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+};
+
+export type ExtensionUpdateManyWithoutAssigneeNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExtensionCreateWithoutAssigneeInput,
+        Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
+      >
+    | Prisma.ExtensionCreateWithoutAssigneeInput[]
+    | Prisma.ExtensionUncheckedCreateWithoutAssigneeInput[];
+  connectOrCreate?:
+    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
+    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
+  upsert?:
+    | Prisma.ExtensionUpsertWithWhereUniqueWithoutAssigneeInput
+    | Prisma.ExtensionUpsertWithWhereUniqueWithoutAssigneeInput[];
+  createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
+  set?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  disconnect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  delete?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  update?:
+    | Prisma.ExtensionUpdateWithWhereUniqueWithoutAssigneeInput
+    | Prisma.ExtensionUpdateWithWhereUniqueWithoutAssigneeInput[];
+  updateMany?:
+    | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput
+    | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput[];
+  deleteMany?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
+};
+
+export type ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExtensionCreateWithoutAssigneeInput,
+        Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
+      >
+    | Prisma.ExtensionCreateWithoutAssigneeInput[]
+    | Prisma.ExtensionUncheckedCreateWithoutAssigneeInput[];
+  connectOrCreate?:
+    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
+    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
+  upsert?:
+    | Prisma.ExtensionUpsertWithWhereUniqueWithoutAssigneeInput
+    | Prisma.ExtensionUpsertWithWhereUniqueWithoutAssigneeInput[];
+  createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
+  set?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  disconnect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  delete?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  update?:
+    | Prisma.ExtensionUpdateWithWhereUniqueWithoutAssigneeInput
+    | Prisma.ExtensionUpdateWithWhereUniqueWithoutAssigneeInput[];
+  updateMany?:
+    | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput
+    | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput[];
+  deleteMany?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
+};
+
+export type ExtensionCreateNestedOneWithoutOrderInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutOrderInput,
+    Prisma.ExtensionUncheckedCreateWithoutOrderInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutOrderInput;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+};
+
+export type ExtensionUpdateOneWithoutOrderNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutOrderInput,
+    Prisma.ExtensionUncheckedCreateWithoutOrderInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutOrderInput;
+  upsert?: Prisma.ExtensionUpsertWithoutOrderInput;
+  disconnect?: Prisma.ExtensionWhereInput | boolean;
+  delete?: Prisma.ExtensionWhereInput | boolean;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ExtensionUpdateToOneWithWhereWithoutOrderInput,
+      Prisma.ExtensionUpdateWithoutOrderInput
+    >,
+    Prisma.ExtensionUncheckedUpdateWithoutOrderInput
+  >;
+};
+
+export type ExtensionCreateNestedOneWithoutBonusReleasesInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutBonusReleasesInput,
+    Prisma.ExtensionUncheckedCreateWithoutBonusReleasesInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutBonusReleasesInput;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+};
+
+export type ExtensionUpdateOneWithoutBonusReleasesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutBonusReleasesInput,
+    Prisma.ExtensionUncheckedCreateWithoutBonusReleasesInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutBonusReleasesInput;
+  upsert?: Prisma.ExtensionUpsertWithoutBonusReleasesInput;
+  disconnect?: Prisma.ExtensionWhereInput | boolean;
+  delete?: Prisma.ExtensionWhereInput | boolean;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ExtensionUpdateToOneWithWhereWithoutBonusReleasesInput,
+      Prisma.ExtensionUpdateWithoutBonusReleasesInput
+    >,
+    Prisma.ExtensionUncheckedUpdateWithoutBonusReleasesInput
+  >;
+};
+
+export type ExtensionCreateNestedOneWithoutProductBonusPoolsInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutProductBonusPoolsInput,
+    Prisma.ExtensionUncheckedCreateWithoutProductBonusPoolsInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutProductBonusPoolsInput;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+};
+
+export type ExtensionUpdateOneWithoutProductBonusPoolsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutProductBonusPoolsInput,
+    Prisma.ExtensionUncheckedCreateWithoutProductBonusPoolsInput
+  >;
+  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutProductBonusPoolsInput;
+  upsert?: Prisma.ExtensionUpsertWithoutProductBonusPoolsInput;
+  disconnect?: Prisma.ExtensionWhereInput | boolean;
+  delete?: Prisma.ExtensionWhereInput | boolean;
+  connect?: Prisma.ExtensionWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ExtensionUpdateToOneWithWhereWithoutProductBonusPoolsInput,
+      Prisma.ExtensionUpdateWithoutProductBonusPoolsInput
+    >,
+    Prisma.ExtensionUncheckedUpdateWithoutProductBonusPoolsInput
+  >;
 };
 
 export type ExtensionCreateNestedManyWithoutProjectInput = {
@@ -880,90 +1050,6 @@ export type EnumExtensionStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.ExtensionStatusEnum;
 };
 
-export type ExtensionCreateNestedOneWithoutOrderInput = {
-  create?: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutOrderInput,
-    Prisma.ExtensionUncheckedCreateWithoutOrderInput
-  >;
-  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutOrderInput;
-  connect?: Prisma.ExtensionWhereUniqueInput;
-};
-
-export type ExtensionUpdateOneWithoutOrderNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutOrderInput,
-    Prisma.ExtensionUncheckedCreateWithoutOrderInput
-  >;
-  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutOrderInput;
-  upsert?: Prisma.ExtensionUpsertWithoutOrderInput;
-  disconnect?: Prisma.ExtensionWhereInput | boolean;
-  delete?: Prisma.ExtensionWhereInput | boolean;
-  connect?: Prisma.ExtensionWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ExtensionUpdateToOneWithWhereWithoutOrderInput,
-      Prisma.ExtensionUpdateWithoutOrderInput
-    >,
-    Prisma.ExtensionUncheckedUpdateWithoutOrderInput
-  >;
-};
-
-export type ExtensionCreateNestedOneWithoutBonusReleasesInput = {
-  create?: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutBonusReleasesInput,
-    Prisma.ExtensionUncheckedCreateWithoutBonusReleasesInput
-  >;
-  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutBonusReleasesInput;
-  connect?: Prisma.ExtensionWhereUniqueInput;
-};
-
-export type ExtensionUpdateOneWithoutBonusReleasesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutBonusReleasesInput,
-    Prisma.ExtensionUncheckedCreateWithoutBonusReleasesInput
-  >;
-  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutBonusReleasesInput;
-  upsert?: Prisma.ExtensionUpsertWithoutBonusReleasesInput;
-  disconnect?: Prisma.ExtensionWhereInput | boolean;
-  delete?: Prisma.ExtensionWhereInput | boolean;
-  connect?: Prisma.ExtensionWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ExtensionUpdateToOneWithWhereWithoutBonusReleasesInput,
-      Prisma.ExtensionUpdateWithoutBonusReleasesInput
-    >,
-    Prisma.ExtensionUncheckedUpdateWithoutBonusReleasesInput
-  >;
-};
-
-export type ExtensionCreateNestedOneWithoutProductBonusPoolsInput = {
-  create?: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutProductBonusPoolsInput,
-    Prisma.ExtensionUncheckedCreateWithoutProductBonusPoolsInput
-  >;
-  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutProductBonusPoolsInput;
-  connect?: Prisma.ExtensionWhereUniqueInput;
-};
-
-export type ExtensionUpdateOneWithoutProductBonusPoolsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutProductBonusPoolsInput,
-    Prisma.ExtensionUncheckedCreateWithoutProductBonusPoolsInput
-  >;
-  connectOrCreate?: Prisma.ExtensionCreateOrConnectWithoutProductBonusPoolsInput;
-  upsert?: Prisma.ExtensionUpsertWithoutProductBonusPoolsInput;
-  disconnect?: Prisma.ExtensionWhereInput | boolean;
-  delete?: Prisma.ExtensionWhereInput | boolean;
-  connect?: Prisma.ExtensionWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ExtensionUpdateToOneWithWhereWithoutProductBonusPoolsInput,
-      Prisma.ExtensionUpdateWithoutProductBonusPoolsInput
-    >,
-    Prisma.ExtensionUncheckedUpdateWithoutProductBonusPoolsInput
-  >;
-};
-
 export type ExtensionCreateNestedOneWithoutWorkSpaceInput = {
   create?: Prisma.XOR<
     Prisma.ExtensionCreateWithoutWorkSpaceInput,
@@ -1020,93 +1106,7 @@ export type ExtensionUpdateOneWithoutTasksNestedInput = {
   >;
 };
 
-export type ExtensionCreateNestedManyWithoutAssigneeInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ExtensionCreateWithoutAssigneeInput,
-        Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
-      >
-    | Prisma.ExtensionCreateWithoutAssigneeInput[]
-    | Prisma.ExtensionUncheckedCreateWithoutAssigneeInput[];
-  connectOrCreate?:
-    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
-    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
-  createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
-  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-};
-
-export type ExtensionUncheckedCreateNestedManyWithoutAssigneeInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ExtensionCreateWithoutAssigneeInput,
-        Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
-      >
-    | Prisma.ExtensionCreateWithoutAssigneeInput[]
-    | Prisma.ExtensionUncheckedCreateWithoutAssigneeInput[];
-  connectOrCreate?:
-    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
-    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
-  createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
-  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-};
-
-export type ExtensionUpdateManyWithoutAssigneeNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ExtensionCreateWithoutAssigneeInput,
-        Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
-      >
-    | Prisma.ExtensionCreateWithoutAssigneeInput[]
-    | Prisma.ExtensionUncheckedCreateWithoutAssigneeInput[];
-  connectOrCreate?:
-    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
-    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
-  upsert?:
-    | Prisma.ExtensionUpsertWithWhereUniqueWithoutAssigneeInput
-    | Prisma.ExtensionUpsertWithWhereUniqueWithoutAssigneeInput[];
-  createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
-  set?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-  disconnect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-  delete?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-  update?:
-    | Prisma.ExtensionUpdateWithWhereUniqueWithoutAssigneeInput
-    | Prisma.ExtensionUpdateWithWhereUniqueWithoutAssigneeInput[];
-  updateMany?:
-    | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput
-    | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput[];
-  deleteMany?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
-};
-
-export type ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ExtensionCreateWithoutAssigneeInput,
-        Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
-      >
-    | Prisma.ExtensionCreateWithoutAssigneeInput[]
-    | Prisma.ExtensionUncheckedCreateWithoutAssigneeInput[];
-  connectOrCreate?:
-    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
-    | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
-  upsert?:
-    | Prisma.ExtensionUpsertWithWhereUniqueWithoutAssigneeInput
-    | Prisma.ExtensionUpsertWithWhereUniqueWithoutAssigneeInput[];
-  createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
-  set?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-  disconnect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-  delete?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
-  update?:
-    | Prisma.ExtensionUpdateWithWhereUniqueWithoutAssigneeInput
-    | Prisma.ExtensionUpdateWithWhereUniqueWithoutAssigneeInput[];
-  updateMany?:
-    | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput
-    | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput[];
-  deleteMany?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
-};
-
-export type ExtensionCreateWithoutProjectInput = {
+export type ExtensionCreateWithoutAssigneeInput = {
   id?: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
@@ -1121,8 +1121,8 @@ export type ExtensionCreateWithoutProjectInput = {
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
-  assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
@@ -1130,8 +1130,9 @@ export type ExtensionCreateWithoutProjectInput = {
   workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
 };
 
-export type ExtensionUncheckedCreateWithoutProjectInput = {
+export type ExtensionUncheckedCreateWithoutAssigneeInput = {
   id?: string;
+  projectId: string;
   productId: string;
   name: string;
   size?: $Enums.ExtensionSizeEnum;
@@ -1142,7 +1143,6 @@ export type ExtensionUncheckedCreateWithoutProjectInput = {
   onHoldReason?: string | null;
   onHoldUntil?: Date | string | null;
   cancellationReason?: string | null;
-  assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   createdAt?: Date | string;
@@ -1154,44 +1154,44 @@ export type ExtensionUncheckedCreateWithoutProjectInput = {
   workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
-export type ExtensionCreateOrConnectWithoutProjectInput = {
+export type ExtensionCreateOrConnectWithoutAssigneeInput = {
   where: Prisma.ExtensionWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutProjectInput,
-    Prisma.ExtensionUncheckedCreateWithoutProjectInput
+    Prisma.ExtensionCreateWithoutAssigneeInput,
+    Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
   >;
 };
 
-export type ExtensionCreateManyProjectInputEnvelope = {
-  data: Prisma.ExtensionCreateManyProjectInput | Prisma.ExtensionCreateManyProjectInput[];
+export type ExtensionCreateManyAssigneeInputEnvelope = {
+  data: Prisma.ExtensionCreateManyAssigneeInput | Prisma.ExtensionCreateManyAssigneeInput[];
   skipDuplicates?: boolean;
 };
 
-export type ExtensionUpsertWithWhereUniqueWithoutProjectInput = {
+export type ExtensionUpsertWithWhereUniqueWithoutAssigneeInput = {
   where: Prisma.ExtensionWhereUniqueInput;
   update: Prisma.XOR<
-    Prisma.ExtensionUpdateWithoutProjectInput,
-    Prisma.ExtensionUncheckedUpdateWithoutProjectInput
+    Prisma.ExtensionUpdateWithoutAssigneeInput,
+    Prisma.ExtensionUncheckedUpdateWithoutAssigneeInput
   >;
   create: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutProjectInput,
-    Prisma.ExtensionUncheckedCreateWithoutProjectInput
+    Prisma.ExtensionCreateWithoutAssigneeInput,
+    Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
   >;
 };
 
-export type ExtensionUpdateWithWhereUniqueWithoutProjectInput = {
+export type ExtensionUpdateWithWhereUniqueWithoutAssigneeInput = {
   where: Prisma.ExtensionWhereUniqueInput;
   data: Prisma.XOR<
-    Prisma.ExtensionUpdateWithoutProjectInput,
-    Prisma.ExtensionUncheckedUpdateWithoutProjectInput
+    Prisma.ExtensionUpdateWithoutAssigneeInput,
+    Prisma.ExtensionUncheckedUpdateWithoutAssigneeInput
   >;
 };
 
-export type ExtensionUpdateManyWithWhereWithoutProjectInput = {
+export type ExtensionUpdateManyWithWhereWithoutAssigneeInput = {
   where: Prisma.ExtensionScalarWhereInput;
   data: Prisma.XOR<
     Prisma.ExtensionUpdateManyMutationInput,
-    Prisma.ExtensionUncheckedUpdateManyWithoutProjectInput
+    Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeInput
   >;
 };
 
@@ -1224,95 +1224,6 @@ export type ExtensionScalarWhereInput = {
   description?: Prisma.StringNullableFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
-};
-
-export type ExtensionCreateWithoutProductInput = {
-  id?: string;
-  name: string;
-  size?: $Enums.ExtensionSizeEnum;
-  status?: $Enums.ExtensionStatusEnum;
-  deliveryStage?: $Enums.DeliveryStageEnum | null;
-  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
-  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
-  onHoldReason?: string | null;
-  onHoldUntil?: Date | string | null;
-  cancellationReason?: string | null;
-  deadline?: Date | string | null;
-  description?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
-  order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
-  tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
-  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
-};
-
-export type ExtensionUncheckedCreateWithoutProductInput = {
-  id?: string;
-  projectId: string;
-  name: string;
-  size?: $Enums.ExtensionSizeEnum;
-  status?: $Enums.ExtensionStatusEnum;
-  deliveryStage?: $Enums.DeliveryStageEnum | null;
-  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
-  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
-  onHoldReason?: string | null;
-  onHoldUntil?: Date | string | null;
-  cancellationReason?: string | null;
-  assignedTo?: string | null;
-  deadline?: Date | string | null;
-  description?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutExtensionInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutExtensionInput;
-  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
-  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
-};
-
-export type ExtensionCreateOrConnectWithoutProductInput = {
-  where: Prisma.ExtensionWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutProductInput,
-    Prisma.ExtensionUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type ExtensionCreateManyProductInputEnvelope = {
-  data: Prisma.ExtensionCreateManyProductInput | Prisma.ExtensionCreateManyProductInput[];
-  skipDuplicates?: boolean;
-};
-
-export type ExtensionUpsertWithWhereUniqueWithoutProductInput = {
-  where: Prisma.ExtensionWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.ExtensionUpdateWithoutProductInput,
-    Prisma.ExtensionUncheckedUpdateWithoutProductInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutProductInput,
-    Prisma.ExtensionUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type ExtensionUpdateWithWhereUniqueWithoutProductInput = {
-  where: Prisma.ExtensionWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.ExtensionUpdateWithoutProductInput,
-    Prisma.ExtensionUncheckedUpdateWithoutProductInput
-  >;
-};
-
-export type ExtensionUpdateManyWithWhereWithoutProductInput = {
-  where: Prisma.ExtensionScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.ExtensionUpdateManyMutationInput,
-    Prisma.ExtensionUncheckedUpdateManyWithoutProductInput
-  >;
 };
 
 export type ExtensionCreateWithoutOrderInput = {
@@ -1735,6 +1646,184 @@ export type ExtensionUncheckedUpdateWithoutProductBonusPoolsInput = {
   workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
+export type ExtensionCreateWithoutProjectInput = {
+  id?: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
+};
+
+export type ExtensionUncheckedCreateWithoutProjectInput = {
+  id?: string;
+  productId: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  assignedTo?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutExtensionInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutExtensionInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
+};
+
+export type ExtensionCreateOrConnectWithoutProjectInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutProjectInput,
+    Prisma.ExtensionUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type ExtensionCreateManyProjectInputEnvelope = {
+  data: Prisma.ExtensionCreateManyProjectInput | Prisma.ExtensionCreateManyProjectInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ExtensionUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutProjectInput,
+    Prisma.ExtensionUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutProjectInput,
+    Prisma.ExtensionUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type ExtensionUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutProjectInput,
+    Prisma.ExtensionUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type ExtensionUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.ExtensionScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExtensionUpdateManyMutationInput,
+    Prisma.ExtensionUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
+export type ExtensionCreateWithoutProductInput = {
+  id?: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
+};
+
+export type ExtensionUncheckedCreateWithoutProductInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  assignedTo?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutExtensionInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutExtensionInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
+};
+
+export type ExtensionCreateOrConnectWithoutProductInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutProductInput,
+    Prisma.ExtensionUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type ExtensionCreateManyProductInputEnvelope = {
+  data: Prisma.ExtensionCreateManyProductInput | Prisma.ExtensionCreateManyProductInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ExtensionUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutProductInput,
+    Prisma.ExtensionUncheckedUpdateWithoutProductInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutProductInput,
+    Prisma.ExtensionUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type ExtensionUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutProductInput,
+    Prisma.ExtensionUncheckedUpdateWithoutProductInput
+  >;
+};
+
+export type ExtensionUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.ExtensionScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExtensionUpdateManyMutationInput,
+    Prisma.ExtensionUncheckedUpdateManyWithoutProductInput
+  >;
+};
+
 export type ExtensionCreateWithoutWorkSpaceInput = {
   id?: string;
   name: string;
@@ -2015,31 +2104,7 @@ export type ExtensionUncheckedUpdateWithoutTasksInput = {
   workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
-export type ExtensionCreateWithoutAssigneeInput = {
-  id?: string;
-  name: string;
-  size?: $Enums.ExtensionSizeEnum;
-  status?: $Enums.ExtensionStatusEnum;
-  deliveryStage?: $Enums.DeliveryStageEnum | null;
-  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
-  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
-  onHoldReason?: string | null;
-  onHoldUntil?: Date | string | null;
-  cancellationReason?: string | null;
-  deadline?: Date | string | null;
-  description?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
-  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
-  order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
-  tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
-  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
-};
-
-export type ExtensionUncheckedCreateWithoutAssigneeInput = {
+export type ExtensionCreateManyAssigneeInput = {
   id?: string;
   projectId: string;
   productId: string;
@@ -2056,52 +2121,97 @@ export type ExtensionUncheckedCreateWithoutAssigneeInput = {
   description?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutExtensionInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutExtensionInput;
-  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
-  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
 };
 
-export type ExtensionCreateOrConnectWithoutAssigneeInput = {
-  where: Prisma.ExtensionWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutAssigneeInput,
-    Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
-  >;
+export type ExtensionUpdateWithoutAssigneeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
 };
 
-export type ExtensionCreateManyAssigneeInputEnvelope = {
-  data: Prisma.ExtensionCreateManyAssigneeInput | Prisma.ExtensionCreateManyAssigneeInput[];
-  skipDuplicates?: boolean;
+export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutExtensionNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutExtensionNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
 };
 
-export type ExtensionUpsertWithWhereUniqueWithoutAssigneeInput = {
-  where: Prisma.ExtensionWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.ExtensionUpdateWithoutAssigneeInput,
-    Prisma.ExtensionUncheckedUpdateWithoutAssigneeInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ExtensionCreateWithoutAssigneeInput,
-    Prisma.ExtensionUncheckedCreateWithoutAssigneeInput
-  >;
-};
-
-export type ExtensionUpdateWithWhereUniqueWithoutAssigneeInput = {
-  where: Prisma.ExtensionWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.ExtensionUpdateWithoutAssigneeInput,
-    Prisma.ExtensionUncheckedUpdateWithoutAssigneeInput
-  >;
-};
-
-export type ExtensionUpdateManyWithWhereWithoutAssigneeInput = {
-  where: Prisma.ExtensionScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.ExtensionUpdateManyMutationInput,
-    Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeInput
-  >;
+export type ExtensionUncheckedUpdateManyWithoutAssigneeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type ExtensionCreateManyProjectInput = {
@@ -2318,116 +2428,6 @@ export type ExtensionUncheckedUpdateManyWithoutProductInput = {
   onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type ExtensionCreateManyAssigneeInput = {
-  id?: string;
-  projectId: string;
-  productId: string;
-  name: string;
-  size?: $Enums.ExtensionSizeEnum;
-  status?: $Enums.ExtensionStatusEnum;
-  deliveryStage?: $Enums.DeliveryStageEnum | null;
-  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
-  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
-  onHoldReason?: string | null;
-  onHoldUntil?: Date | string | null;
-  cancellationReason?: string | null;
-  deadline?: Date | string | null;
-  description?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type ExtensionUpdateWithoutAssigneeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
-  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
-  deliveryStage?:
-    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryStageEnum
-    | null;
-  deliveryWorkStatus?:
-    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryWorkStatusEnum;
-  deliveryResolution?:
-    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryResolutionEnum
-    | null;
-  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
-  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
-  order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
-  tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
-  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
-};
-
-export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
-  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
-  deliveryStage?:
-    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryStageEnum
-    | null;
-  deliveryWorkStatus?:
-    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryWorkStatusEnum;
-  deliveryResolution?:
-    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryResolutionEnum
-    | null;
-  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutExtensionNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutExtensionNestedInput;
-  tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
-  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
-};
-
-export type ExtensionUncheckedUpdateManyWithoutAssigneeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
-  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
-  deliveryStage?:
-    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryStageEnum
-    | null;
-  deliveryWorkStatus?:
-    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryWorkStatusEnum;
-  deliveryResolution?:
-    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
-    | $Enums.DeliveryResolutionEnum
-    | null;
-  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;

@@ -1,0 +1,135 @@
+// ─── EMPLOYEES ────────────────────────────────────────────
+
+enum EmployeeLevelEnum {
+  JUNIOR
+  MIDDLE
+  SENIOR
+  LEAD
+  HEAD
+}
+
+enum EmployeeStatusEnum {
+  ACTIVE
+  PROBATION
+  ON_LEAVE
+  TERMINATED
+}
+
+model Employee {
+  id           String               @id @default(uuid())
+  passwordHash String?              @map("password_hash")
+  firstName    String               @map("first_name")
+  lastName     String               @map("last_name")
+  email        String               @unique
+  phone        String?
+  telegram     String?
+  avatar       String?
+  birthday     DateTime?
+  notes        String?
+  position     String?
+  roleId       String               @map("role_id")
+  role         Role                 @relation(fields: [roleId], references: [id])
+  departments  EmployeeDepartment[]
+  level        EmployeeLevelEnum?
+  baseSalary   Decimal?             @map("base_salary") @db.Decimal(12, 2)
+  workSchedule Json?                @map("work_schedule")
+  hireDate     DateTime?            @map("hire_date")
+  fireDate     DateTime?            @map("fire_date")
+  status       EmployeeStatusEnum   @default(PROBATION)
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  productsManaging         Product[]               @relation("ProductPM")
+  extensionsAssigned       Extension[]             @relation("ExtensionAssignee")
+  leadsAssigned            Lead[]                  @relation("LeadAssignee")
+  dealsSelling             Deal[]                  @relation("DealSeller")
+  dealsAsSellerAssistant   Deal[]                  @relation("DealSellerAssistant")
+  dealsPM                  Deal[]                  @relation("DealPM")
+  paymentsConfirmed        Payment[]               @relation("PaymentConfirmer")
+  tasksCreated             Task[]                  @relation("TaskCreator")
+  tasksAssigned            Task[]                  @relation("TaskAssignee")
+  ticketsAssigned          SupportTicket[]         @relation("TicketAssignee")
+  bonusEntries             BonusEntry[]
+  bonusReleases            BonusRelease[]          @relation("BonusReleaseEmployee")
+  bonusReleasesApproved    BonusRelease[]          @relation("BonusReleaseApprover")
+  payrollRunsCreated       PayrollRun[]            @relation("PayrollRunCreator")
+  payrollRunsApproved      PayrollRun[]            @relation("PayrollRunApprover")
+  salaryLines              SalaryLine[]
+  recurringTasksCreated    RecurringTaskTemplate[] @relation("RecurringTaskCreator")
+  recurringTasksAssigned   RecurringTaskTemplate[] @relation("RecurringTaskAssignee")
+  invitationsSent          Invitation[]            @relation("InvitedBy")
+  invitationReceived       Invitation?             @relation("InvitationEmployee")
+  credentialsOwned         Credential[]            @relation("CredentialOwner")
+  marketingAccountsOwned   MarketingAccount[]      @relation("MarketingAccountOwner")
+  marketingActivitiesOwned MarketingActivity[]     @relation("MarketingActivityOwner")
+
+  messengerChannelMessagesSent MessengerChannelMessage[]           @relation("MessengerChannelMessageSender")
+  messengerDirectMessagesSent  MessengerDirectMessage[]            @relation("MessengerDirectMessageSender")
+  messengerChannelAttachments  MessengerChannelMessageAttachment[] @relation("MessengerChannelAttachmentActor")
+  messengerDirectAttachments   MessengerDirectMessageAttachment[]  @relation("MessengerDirectAttachmentActor")
+  messengerDmThreadsAsA        MessengerDirectThread[]             @relation("MessengerDmThreadParticipantA")
+  messengerDmThreadsAsB        MessengerDirectThread[]             @relation("MessengerDmThreadParticipantB")
+  messengerChannelReadStates   MessengerChannelReadState[]
+  messengerDmThreadReadStates  MessengerDirectThreadReadState[]
+  mailAccountsOwned            MailAccount[]                       @relation("MailAccountOwner")
+  mailAccountsCreated          MailAccount[]                       @relation("MailAccountCreatedBy")
+  mailDeliveryLogsActed        MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
+  inAppNotificationsReceived   InAppNotification[]
+  dashboardPreference          DashboardPreference?
+  reportExportJobsRequested    ReportExportJob[]
+  reportSchedulesOwned         ReportSchedule[]
+  savedReportViews             SavedReportView[]
+  personalLinks                PersonalLink[]
+  dashboardNotes               DashboardNote[]
+  operationalJournalEntries    OperationalJournalEntry[]
+
+  @@map("employees")
+}
+
+model DashboardPreference {
+  id                   String   @id @default(uuid())
+  employeeId           String   @unique @map("employee_id")
+  pinnedActionOrder    String[] @map("pinned_action_order")
+  hiddenPinnedActions  String[] @map("hidden_pinned_actions")
+  visibleWidgets       String[] @map("visible_widgets")
+  hiddenWidgets        String[] @map("hidden_widgets")
+  compactWidgets       String[] @map("compact_widgets")
+  defaultDashboardMode String   @default("control_center") @map("default_dashboard_mode")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("dashboard_preferences")
+}
+
+model PersonalLink {
+  id           String   @id @default(uuid())
+  ownerId      String   @map("owner_id")
+  label        String
+  url          String
+  placement    String[] @default(["SIDEBAR"])
+  openInNewTab Boolean  @default(false) @map("open_in_new_tab")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  owner Employee @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, sortOrder])
+  @@map("personal_links")
+}
+
+model DashboardNote {
+  id        String   @id @default(uuid())
+  ownerId   String   @map("owner_id")
+  content   String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner Employee @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, sortOrder])
+  @@map("dashboard_notes")
+}

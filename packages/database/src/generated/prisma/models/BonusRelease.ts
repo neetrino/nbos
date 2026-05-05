@@ -728,6 +728,358 @@ export type BonusReleaseSumOrderByAggregateInput = {
   payrollIncludedAmount?: Prisma.SortOrder;
 };
 
+export type BonusReleaseCreateNestedManyWithoutEmployeeInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutEmployeeInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
+      >
+    | Prisma.BonusReleaseCreateWithoutEmployeeInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput[];
+  createMany?: Prisma.BonusReleaseCreateManyEmployeeInputEnvelope;
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+};
+
+export type BonusReleaseCreateNestedManyWithoutApprovedByInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutApprovedByInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
+      >
+    | Prisma.BonusReleaseCreateWithoutApprovedByInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput[];
+  createMany?: Prisma.BonusReleaseCreateManyApprovedByInputEnvelope;
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+};
+
+export type BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutEmployeeInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
+      >
+    | Prisma.BonusReleaseCreateWithoutEmployeeInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput[];
+  createMany?: Prisma.BonusReleaseCreateManyEmployeeInputEnvelope;
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+};
+
+export type BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutApprovedByInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
+      >
+    | Prisma.BonusReleaseCreateWithoutApprovedByInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput[];
+  createMany?: Prisma.BonusReleaseCreateManyApprovedByInputEnvelope;
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+};
+
+export type BonusReleaseUpdateManyWithoutEmployeeNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutEmployeeInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
+      >
+    | Prisma.BonusReleaseCreateWithoutEmployeeInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput[];
+  upsert?:
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput[];
+  createMany?: Prisma.BonusReleaseCreateManyEmployeeInputEnvelope;
+  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  update?:
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput[];
+  updateMany?:
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutEmployeeInput
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutEmployeeInput[];
+  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
+};
+
+export type BonusReleaseUpdateManyWithoutApprovedByNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutApprovedByInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
+      >
+    | Prisma.BonusReleaseCreateWithoutApprovedByInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput[];
+  upsert?:
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput[];
+  createMany?: Prisma.BonusReleaseCreateManyApprovedByInputEnvelope;
+  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  update?:
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput[];
+  updateMany?:
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutApprovedByInput
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutApprovedByInput[];
+  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
+};
+
+export type BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutEmployeeInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
+      >
+    | Prisma.BonusReleaseCreateWithoutEmployeeInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput[];
+  upsert?:
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput[];
+  createMany?: Prisma.BonusReleaseCreateManyEmployeeInputEnvelope;
+  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  update?:
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput[];
+  updateMany?:
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutEmployeeInput
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutEmployeeInput[];
+  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
+};
+
+export type BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutApprovedByInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
+      >
+    | Prisma.BonusReleaseCreateWithoutApprovedByInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput[];
+  upsert?:
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput[];
+  createMany?: Prisma.BonusReleaseCreateManyApprovedByInputEnvelope;
+  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  update?:
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput[];
+  updateMany?:
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutApprovedByInput
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutApprovedByInput[];
+  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
+};
+
+export type BonusReleaseCreateNestedManyWithoutBonusEntryInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutBonusEntryInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput
+      >
+    | Prisma.BonusReleaseCreateWithoutBonusEntryInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput[];
+  createMany?: Prisma.BonusReleaseCreateManyBonusEntryInputEnvelope;
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+};
+
+export type BonusReleaseUncheckedCreateNestedManyWithoutBonusEntryInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutBonusEntryInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput
+      >
+    | Prisma.BonusReleaseCreateWithoutBonusEntryInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput[];
+  createMany?: Prisma.BonusReleaseCreateManyBonusEntryInputEnvelope;
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+};
+
+export type BonusReleaseUpdateManyWithoutBonusEntryNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutBonusEntryInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput
+      >
+    | Prisma.BonusReleaseCreateWithoutBonusEntryInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput[];
+  upsert?:
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutBonusEntryInput
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutBonusEntryInput[];
+  createMany?: Prisma.BonusReleaseCreateManyBonusEntryInputEnvelope;
+  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  update?:
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutBonusEntryInput
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutBonusEntryInput[];
+  updateMany?:
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput[];
+  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
+};
+
+export type BonusReleaseUncheckedUpdateManyWithoutBonusEntryNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutBonusEntryInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput
+      >
+    | Prisma.BonusReleaseCreateWithoutBonusEntryInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput[];
+  upsert?:
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutBonusEntryInput
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutBonusEntryInput[];
+  createMany?: Prisma.BonusReleaseCreateManyBonusEntryInputEnvelope;
+  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  update?:
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutBonusEntryInput
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutBonusEntryInput[];
+  updateMany?:
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput[];
+  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
+};
+
+export type EnumBonusReleaseTypeEnumFieldUpdateOperationsInput = {
+  set?: $Enums.BonusReleaseTypeEnum;
+};
+
+export type EnumBonusReleaseStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.BonusReleaseStatusEnum;
+};
+
+export type BonusReleaseCreateNestedManyWithoutPayrollRunInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutPayrollRunInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput
+      >
+    | Prisma.BonusReleaseCreateWithoutPayrollRunInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput[];
+  createMany?: Prisma.BonusReleaseCreateManyPayrollRunInputEnvelope;
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+};
+
+export type BonusReleaseUncheckedCreateNestedManyWithoutPayrollRunInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutPayrollRunInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput
+      >
+    | Prisma.BonusReleaseCreateWithoutPayrollRunInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput[];
+  createMany?: Prisma.BonusReleaseCreateManyPayrollRunInputEnvelope;
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+};
+
+export type BonusReleaseUpdateManyWithoutPayrollRunNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutPayrollRunInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput
+      >
+    | Prisma.BonusReleaseCreateWithoutPayrollRunInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput[];
+  upsert?:
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutPayrollRunInput
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutPayrollRunInput[];
+  createMany?: Prisma.BonusReleaseCreateManyPayrollRunInputEnvelope;
+  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  update?:
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutPayrollRunInput
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutPayrollRunInput[];
+  updateMany?:
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput[];
+  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
+};
+
+export type BonusReleaseUncheckedUpdateManyWithoutPayrollRunNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusReleaseCreateWithoutPayrollRunInput,
+        Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput
+      >
+    | Prisma.BonusReleaseCreateWithoutPayrollRunInput[]
+    | Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput[];
+  connectOrCreate?:
+    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput
+    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput[];
+  upsert?:
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutPayrollRunInput
+    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutPayrollRunInput[];
+  createMany?: Prisma.BonusReleaseCreateManyPayrollRunInputEnvelope;
+  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
+  update?:
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutPayrollRunInput
+    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutPayrollRunInput[];
+  updateMany?:
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput
+    | Prisma.BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput[];
+  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
+};
+
 export type BonusReleaseCreateNestedManyWithoutProjectInput = {
   create?:
     | Prisma.XOR<
@@ -986,359 +1338,7 @@ export type BonusReleaseUncheckedUpdateManyWithoutExtensionNestedInput = {
   deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
 };
 
-export type BonusReleaseCreateNestedManyWithoutBonusEntryInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutBonusEntryInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput
-      >
-    | Prisma.BonusReleaseCreateWithoutBonusEntryInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput[];
-  createMany?: Prisma.BonusReleaseCreateManyBonusEntryInputEnvelope;
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-};
-
-export type BonusReleaseUncheckedCreateNestedManyWithoutBonusEntryInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutBonusEntryInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput
-      >
-    | Prisma.BonusReleaseCreateWithoutBonusEntryInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput[];
-  createMany?: Prisma.BonusReleaseCreateManyBonusEntryInputEnvelope;
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-};
-
-export type BonusReleaseUpdateManyWithoutBonusEntryNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutBonusEntryInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput
-      >
-    | Prisma.BonusReleaseCreateWithoutBonusEntryInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput[];
-  upsert?:
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutBonusEntryInput
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutBonusEntryInput[];
-  createMany?: Prisma.BonusReleaseCreateManyBonusEntryInputEnvelope;
-  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  update?:
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutBonusEntryInput
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutBonusEntryInput[];
-  updateMany?:
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput[];
-  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
-};
-
-export type BonusReleaseUncheckedUpdateManyWithoutBonusEntryNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutBonusEntryInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput
-      >
-    | Prisma.BonusReleaseCreateWithoutBonusEntryInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutBonusEntryInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutBonusEntryInput[];
-  upsert?:
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutBonusEntryInput
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutBonusEntryInput[];
-  createMany?: Prisma.BonusReleaseCreateManyBonusEntryInputEnvelope;
-  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  update?:
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutBonusEntryInput
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutBonusEntryInput[];
-  updateMany?:
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutBonusEntryInput[];
-  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
-};
-
-export type EnumBonusReleaseTypeEnumFieldUpdateOperationsInput = {
-  set?: $Enums.BonusReleaseTypeEnum;
-};
-
-export type EnumBonusReleaseStatusEnumFieldUpdateOperationsInput = {
-  set?: $Enums.BonusReleaseStatusEnum;
-};
-
-export type BonusReleaseCreateNestedManyWithoutPayrollRunInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutPayrollRunInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput
-      >
-    | Prisma.BonusReleaseCreateWithoutPayrollRunInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput[];
-  createMany?: Prisma.BonusReleaseCreateManyPayrollRunInputEnvelope;
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-};
-
-export type BonusReleaseUncheckedCreateNestedManyWithoutPayrollRunInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutPayrollRunInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput
-      >
-    | Prisma.BonusReleaseCreateWithoutPayrollRunInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput[];
-  createMany?: Prisma.BonusReleaseCreateManyPayrollRunInputEnvelope;
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-};
-
-export type BonusReleaseUpdateManyWithoutPayrollRunNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutPayrollRunInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput
-      >
-    | Prisma.BonusReleaseCreateWithoutPayrollRunInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput[];
-  upsert?:
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutPayrollRunInput
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutPayrollRunInput[];
-  createMany?: Prisma.BonusReleaseCreateManyPayrollRunInputEnvelope;
-  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  update?:
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutPayrollRunInput
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutPayrollRunInput[];
-  updateMany?:
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput[];
-  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
-};
-
-export type BonusReleaseUncheckedUpdateManyWithoutPayrollRunNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutPayrollRunInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput
-      >
-    | Prisma.BonusReleaseCreateWithoutPayrollRunInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutPayrollRunInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutPayrollRunInput[];
-  upsert?:
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutPayrollRunInput
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutPayrollRunInput[];
-  createMany?: Prisma.BonusReleaseCreateManyPayrollRunInputEnvelope;
-  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  update?:
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutPayrollRunInput
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutPayrollRunInput[];
-  updateMany?:
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput[];
-  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
-};
-
-export type BonusReleaseCreateNestedManyWithoutEmployeeInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutEmployeeInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
-      >
-    | Prisma.BonusReleaseCreateWithoutEmployeeInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput[];
-  createMany?: Prisma.BonusReleaseCreateManyEmployeeInputEnvelope;
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-};
-
-export type BonusReleaseCreateNestedManyWithoutApprovedByInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutApprovedByInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
-      >
-    | Prisma.BonusReleaseCreateWithoutApprovedByInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput[];
-  createMany?: Prisma.BonusReleaseCreateManyApprovedByInputEnvelope;
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-};
-
-export type BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutEmployeeInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
-      >
-    | Prisma.BonusReleaseCreateWithoutEmployeeInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput[];
-  createMany?: Prisma.BonusReleaseCreateManyEmployeeInputEnvelope;
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-};
-
-export type BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutApprovedByInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
-      >
-    | Prisma.BonusReleaseCreateWithoutApprovedByInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput[];
-  createMany?: Prisma.BonusReleaseCreateManyApprovedByInputEnvelope;
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-};
-
-export type BonusReleaseUpdateManyWithoutEmployeeNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutEmployeeInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
-      >
-    | Prisma.BonusReleaseCreateWithoutEmployeeInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput[];
-  upsert?:
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput[];
-  createMany?: Prisma.BonusReleaseCreateManyEmployeeInputEnvelope;
-  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  update?:
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput[];
-  updateMany?:
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutEmployeeInput
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutEmployeeInput[];
-  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
-};
-
-export type BonusReleaseUpdateManyWithoutApprovedByNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutApprovedByInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
-      >
-    | Prisma.BonusReleaseCreateWithoutApprovedByInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput[];
-  upsert?:
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput[];
-  createMany?: Prisma.BonusReleaseCreateManyApprovedByInputEnvelope;
-  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  update?:
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput[];
-  updateMany?:
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutApprovedByInput
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutApprovedByInput[];
-  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
-};
-
-export type BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutEmployeeInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
-      >
-    | Prisma.BonusReleaseCreateWithoutEmployeeInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutEmployeeInput[];
-  upsert?:
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput[];
-  createMany?: Prisma.BonusReleaseCreateManyEmployeeInputEnvelope;
-  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  update?:
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput[];
-  updateMany?:
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutEmployeeInput
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutEmployeeInput[];
-  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
-};
-
-export type BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusReleaseCreateWithoutApprovedByInput,
-        Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
-      >
-    | Prisma.BonusReleaseCreateWithoutApprovedByInput[]
-    | Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput[];
-  connectOrCreate?:
-    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput
-    | Prisma.BonusReleaseCreateOrConnectWithoutApprovedByInput[];
-  upsert?:
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput
-    | Prisma.BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput[];
-  createMany?: Prisma.BonusReleaseCreateManyApprovedByInputEnvelope;
-  set?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  disconnect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  delete?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  connect?: Prisma.BonusReleaseWhereUniqueInput | Prisma.BonusReleaseWhereUniqueInput[];
-  update?:
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput
-    | Prisma.BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput[];
-  updateMany?:
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutApprovedByInput
-    | Prisma.BonusReleaseUpdateManyWithWhereWithoutApprovedByInput[];
-  deleteMany?: Prisma.BonusReleaseScalarWhereInput | Prisma.BonusReleaseScalarWhereInput[];
-};
-
-export type BonusReleaseCreateWithoutProjectInput = {
+export type BonusReleaseCreateWithoutEmployeeInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -1349,17 +1349,17 @@ export type BonusReleaseCreateWithoutProjectInput = {
   updatedAt?: Date | string;
   bonusEntry: Prisma.BonusEntryCreateNestedOneWithoutBonusReleasesInput;
   payrollRun?: Prisma.PayrollRunCreateNestedOneWithoutBonusReleasesInput;
-  employee: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesInput;
+  project: Prisma.ProjectCreateNestedOneWithoutBonusReleasesInput;
   product?: Prisma.ProductCreateNestedOneWithoutBonusReleasesInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutBonusReleasesInput;
   approvedBy?: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesApprovedInput;
 };
 
-export type BonusReleaseUncheckedCreateWithoutProjectInput = {
+export type BonusReleaseUncheckedCreateWithoutEmployeeInput = {
   id?: string;
   bonusEntryId: string;
   payrollRunId?: string | null;
-  employeeId: string;
+  projectId: string;
   productId?: string | null;
   extensionId?: string | null;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -1372,44 +1372,93 @@ export type BonusReleaseUncheckedCreateWithoutProjectInput = {
   updatedAt?: Date | string;
 };
 
-export type BonusReleaseCreateOrConnectWithoutProjectInput = {
+export type BonusReleaseCreateOrConnectWithoutEmployeeInput = {
   where: Prisma.BonusReleaseWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutProjectInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutProjectInput
+    Prisma.BonusReleaseCreateWithoutEmployeeInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
   >;
 };
 
-export type BonusReleaseCreateManyProjectInputEnvelope = {
-  data: Prisma.BonusReleaseCreateManyProjectInput | Prisma.BonusReleaseCreateManyProjectInput[];
+export type BonusReleaseCreateManyEmployeeInputEnvelope = {
+  data: Prisma.BonusReleaseCreateManyEmployeeInput | Prisma.BonusReleaseCreateManyEmployeeInput[];
   skipDuplicates?: boolean;
 };
 
-export type BonusReleaseUpsertWithWhereUniqueWithoutProjectInput = {
+export type BonusReleaseCreateWithoutApprovedByInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  bonusEntry: Prisma.BonusEntryCreateNestedOneWithoutBonusReleasesInput;
+  payrollRun?: Prisma.PayrollRunCreateNestedOneWithoutBonusReleasesInput;
+  employee: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesInput;
+  project: Prisma.ProjectCreateNestedOneWithoutBonusReleasesInput;
+  product?: Prisma.ProductCreateNestedOneWithoutBonusReleasesInput;
+  extension?: Prisma.ExtensionCreateNestedOneWithoutBonusReleasesInput;
+};
+
+export type BonusReleaseUncheckedCreateWithoutApprovedByInput = {
+  id?: string;
+  bonusEntryId: string;
+  payrollRunId?: string | null;
+  employeeId: string;
+  projectId: string;
+  productId?: string | null;
+  extensionId?: string | null;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type BonusReleaseCreateOrConnectWithoutApprovedByInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.BonusReleaseCreateWithoutApprovedByInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
+  >;
+};
+
+export type BonusReleaseCreateManyApprovedByInputEnvelope = {
+  data:
+    | Prisma.BonusReleaseCreateManyApprovedByInput
+    | Prisma.BonusReleaseCreateManyApprovedByInput[];
+  skipDuplicates?: boolean;
+};
+
+export type BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput = {
   where: Prisma.BonusReleaseWhereUniqueInput;
   update: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutProjectInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutProjectInput
+    Prisma.BonusReleaseUpdateWithoutEmployeeInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutEmployeeInput
   >;
   create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutProjectInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutProjectInput
+    Prisma.BonusReleaseCreateWithoutEmployeeInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
   >;
 };
 
-export type BonusReleaseUpdateWithWhereUniqueWithoutProjectInput = {
+export type BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput = {
   where: Prisma.BonusReleaseWhereUniqueInput;
   data: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutProjectInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutProjectInput
+    Prisma.BonusReleaseUpdateWithoutEmployeeInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutEmployeeInput
   >;
 };
 
-export type BonusReleaseUpdateManyWithWhereWithoutProjectInput = {
+export type BonusReleaseUpdateManyWithWhereWithoutEmployeeInput = {
   where: Prisma.BonusReleaseScalarWhereInput;
   data: Prisma.XOR<
     Prisma.BonusReleaseUpdateManyMutationInput,
-    Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectInput
+    Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeInput
   >;
 };
 
@@ -1445,153 +1494,31 @@ export type BonusReleaseScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<'BonusRelease'> | Date | string;
 };
 
-export type BonusReleaseCreateWithoutProductInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  bonusEntry: Prisma.BonusEntryCreateNestedOneWithoutBonusReleasesInput;
-  payrollRun?: Prisma.PayrollRunCreateNestedOneWithoutBonusReleasesInput;
-  employee: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesInput;
-  project: Prisma.ProjectCreateNestedOneWithoutBonusReleasesInput;
-  extension?: Prisma.ExtensionCreateNestedOneWithoutBonusReleasesInput;
-  approvedBy?: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesApprovedInput;
-};
-
-export type BonusReleaseUncheckedCreateWithoutProductInput = {
-  id?: string;
-  bonusEntryId: string;
-  payrollRunId?: string | null;
-  employeeId: string;
-  projectId: string;
-  extensionId?: string | null;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  approvedById?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type BonusReleaseCreateOrConnectWithoutProductInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutProductInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type BonusReleaseCreateManyProductInputEnvelope = {
-  data: Prisma.BonusReleaseCreateManyProductInput | Prisma.BonusReleaseCreateManyProductInput[];
-  skipDuplicates?: boolean;
-};
-
-export type BonusReleaseUpsertWithWhereUniqueWithoutProductInput = {
+export type BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput = {
   where: Prisma.BonusReleaseWhereUniqueInput;
   update: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutProductInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutProductInput
+    Prisma.BonusReleaseUpdateWithoutApprovedByInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutApprovedByInput
   >;
   create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutProductInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutProductInput
+    Prisma.BonusReleaseCreateWithoutApprovedByInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
   >;
 };
 
-export type BonusReleaseUpdateWithWhereUniqueWithoutProductInput = {
+export type BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput = {
   where: Prisma.BonusReleaseWhereUniqueInput;
   data: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutProductInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutProductInput
+    Prisma.BonusReleaseUpdateWithoutApprovedByInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutApprovedByInput
   >;
 };
 
-export type BonusReleaseUpdateManyWithWhereWithoutProductInput = {
+export type BonusReleaseUpdateManyWithWhereWithoutApprovedByInput = {
   where: Prisma.BonusReleaseScalarWhereInput;
   data: Prisma.XOR<
     Prisma.BonusReleaseUpdateManyMutationInput,
-    Prisma.BonusReleaseUncheckedUpdateManyWithoutProductInput
-  >;
-};
-
-export type BonusReleaseCreateWithoutExtensionInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  bonusEntry: Prisma.BonusEntryCreateNestedOneWithoutBonusReleasesInput;
-  payrollRun?: Prisma.PayrollRunCreateNestedOneWithoutBonusReleasesInput;
-  employee: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesInput;
-  project: Prisma.ProjectCreateNestedOneWithoutBonusReleasesInput;
-  product?: Prisma.ProductCreateNestedOneWithoutBonusReleasesInput;
-  approvedBy?: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesApprovedInput;
-};
-
-export type BonusReleaseUncheckedCreateWithoutExtensionInput = {
-  id?: string;
-  bonusEntryId: string;
-  payrollRunId?: string | null;
-  employeeId: string;
-  projectId: string;
-  productId?: string | null;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  approvedById?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type BonusReleaseCreateOrConnectWithoutExtensionInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutExtensionInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutExtensionInput
-  >;
-};
-
-export type BonusReleaseCreateManyExtensionInputEnvelope = {
-  data: Prisma.BonusReleaseCreateManyExtensionInput | Prisma.BonusReleaseCreateManyExtensionInput[];
-  skipDuplicates?: boolean;
-};
-
-export type BonusReleaseUpsertWithWhereUniqueWithoutExtensionInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutExtensionInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutExtensionInput
-  >;
-  create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutExtensionInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutExtensionInput
-  >;
-};
-
-export type BonusReleaseUpdateWithWhereUniqueWithoutExtensionInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutExtensionInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutExtensionInput
-  >;
-};
-
-export type BonusReleaseUpdateManyWithWhereWithoutExtensionInput = {
-  where: Prisma.BonusReleaseScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.BonusReleaseUpdateManyMutationInput,
-    Prisma.BonusReleaseUncheckedUpdateManyWithoutExtensionInput
+    Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByInput
   >;
 };
 
@@ -1749,7 +1676,7 @@ export type BonusReleaseUpdateManyWithWhereWithoutPayrollRunInput = {
   >;
 };
 
-export type BonusReleaseCreateWithoutEmployeeInput = {
+export type BonusReleaseCreateWithoutProjectInput = {
   id?: string;
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -1760,13 +1687,221 @@ export type BonusReleaseCreateWithoutEmployeeInput = {
   updatedAt?: Date | string;
   bonusEntry: Prisma.BonusEntryCreateNestedOneWithoutBonusReleasesInput;
   payrollRun?: Prisma.PayrollRunCreateNestedOneWithoutBonusReleasesInput;
-  project: Prisma.ProjectCreateNestedOneWithoutBonusReleasesInput;
+  employee: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesInput;
   product?: Prisma.ProductCreateNestedOneWithoutBonusReleasesInput;
   extension?: Prisma.ExtensionCreateNestedOneWithoutBonusReleasesInput;
   approvedBy?: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesApprovedInput;
 };
 
-export type BonusReleaseUncheckedCreateWithoutEmployeeInput = {
+export type BonusReleaseUncheckedCreateWithoutProjectInput = {
+  id?: string;
+  bonusEntryId: string;
+  payrollRunId?: string | null;
+  employeeId: string;
+  productId?: string | null;
+  extensionId?: string | null;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  approvedById?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type BonusReleaseCreateOrConnectWithoutProjectInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.BonusReleaseCreateWithoutProjectInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type BonusReleaseCreateManyProjectInputEnvelope = {
+  data: Prisma.BonusReleaseCreateManyProjectInput | Prisma.BonusReleaseCreateManyProjectInput[];
+  skipDuplicates?: boolean;
+};
+
+export type BonusReleaseUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.BonusReleaseUpdateWithoutProjectInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.BonusReleaseCreateWithoutProjectInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type BonusReleaseUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.BonusReleaseUpdateWithoutProjectInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type BonusReleaseUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.BonusReleaseScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.BonusReleaseUpdateManyMutationInput,
+    Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
+export type BonusReleaseCreateWithoutProductInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  bonusEntry: Prisma.BonusEntryCreateNestedOneWithoutBonusReleasesInput;
+  payrollRun?: Prisma.PayrollRunCreateNestedOneWithoutBonusReleasesInput;
+  employee: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesInput;
+  project: Prisma.ProjectCreateNestedOneWithoutBonusReleasesInput;
+  extension?: Prisma.ExtensionCreateNestedOneWithoutBonusReleasesInput;
+  approvedBy?: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesApprovedInput;
+};
+
+export type BonusReleaseUncheckedCreateWithoutProductInput = {
+  id?: string;
+  bonusEntryId: string;
+  payrollRunId?: string | null;
+  employeeId: string;
+  projectId: string;
+  extensionId?: string | null;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  approvedById?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type BonusReleaseCreateOrConnectWithoutProductInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.BonusReleaseCreateWithoutProductInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type BonusReleaseCreateManyProductInputEnvelope = {
+  data: Prisma.BonusReleaseCreateManyProductInput | Prisma.BonusReleaseCreateManyProductInput[];
+  skipDuplicates?: boolean;
+};
+
+export type BonusReleaseUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.BonusReleaseUpdateWithoutProductInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutProductInput
+  >;
+  create: Prisma.XOR<
+    Prisma.BonusReleaseCreateWithoutProductInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type BonusReleaseUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.BonusReleaseUpdateWithoutProductInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutProductInput
+  >;
+};
+
+export type BonusReleaseUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.BonusReleaseScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.BonusReleaseUpdateManyMutationInput,
+    Prisma.BonusReleaseUncheckedUpdateManyWithoutProductInput
+  >;
+};
+
+export type BonusReleaseCreateWithoutExtensionInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  bonusEntry: Prisma.BonusEntryCreateNestedOneWithoutBonusReleasesInput;
+  payrollRun?: Prisma.PayrollRunCreateNestedOneWithoutBonusReleasesInput;
+  employee: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesInput;
+  project: Prisma.ProjectCreateNestedOneWithoutBonusReleasesInput;
+  product?: Prisma.ProductCreateNestedOneWithoutBonusReleasesInput;
+  approvedBy?: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesApprovedInput;
+};
+
+export type BonusReleaseUncheckedCreateWithoutExtensionInput = {
+  id?: string;
+  bonusEntryId: string;
+  payrollRunId?: string | null;
+  employeeId: string;
+  projectId: string;
+  productId?: string | null;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  approvedById?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type BonusReleaseCreateOrConnectWithoutExtensionInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.BonusReleaseCreateWithoutExtensionInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutExtensionInput
+  >;
+};
+
+export type BonusReleaseCreateManyExtensionInputEnvelope = {
+  data: Prisma.BonusReleaseCreateManyExtensionInput | Prisma.BonusReleaseCreateManyExtensionInput[];
+  skipDuplicates?: boolean;
+};
+
+export type BonusReleaseUpsertWithWhereUniqueWithoutExtensionInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.BonusReleaseUpdateWithoutExtensionInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutExtensionInput
+  >;
+  create: Prisma.XOR<
+    Prisma.BonusReleaseCreateWithoutExtensionInput,
+    Prisma.BonusReleaseUncheckedCreateWithoutExtensionInput
+  >;
+};
+
+export type BonusReleaseUpdateWithWhereUniqueWithoutExtensionInput = {
+  where: Prisma.BonusReleaseWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.BonusReleaseUpdateWithoutExtensionInput,
+    Prisma.BonusReleaseUncheckedUpdateWithoutExtensionInput
+  >;
+};
+
+export type BonusReleaseUpdateManyWithWhereWithoutExtensionInput = {
+  where: Prisma.BonusReleaseScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.BonusReleaseUpdateManyMutationInput,
+    Prisma.BonusReleaseUncheckedUpdateManyWithoutExtensionInput
+  >;
+};
+
+export type BonusReleaseCreateManyEmployeeInput = {
   id?: string;
   bonusEntryId: string;
   payrollRunId?: string | null;
@@ -1783,37 +1918,7 @@ export type BonusReleaseUncheckedCreateWithoutEmployeeInput = {
   updatedAt?: Date | string;
 };
 
-export type BonusReleaseCreateOrConnectWithoutEmployeeInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutEmployeeInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
-  >;
-};
-
-export type BonusReleaseCreateManyEmployeeInputEnvelope = {
-  data: Prisma.BonusReleaseCreateManyEmployeeInput | Prisma.BonusReleaseCreateManyEmployeeInput[];
-  skipDuplicates?: boolean;
-};
-
-export type BonusReleaseCreateWithoutApprovedByInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  bonusEntry: Prisma.BonusEntryCreateNestedOneWithoutBonusReleasesInput;
-  payrollRun?: Prisma.PayrollRunCreateNestedOneWithoutBonusReleasesInput;
-  employee: Prisma.EmployeeCreateNestedOneWithoutBonusReleasesInput;
-  project: Prisma.ProjectCreateNestedOneWithoutBonusReleasesInput;
-  product?: Prisma.ProductCreateNestedOneWithoutBonusReleasesInput;
-  extension?: Prisma.ExtensionCreateNestedOneWithoutBonusReleasesInput;
-};
-
-export type BonusReleaseUncheckedCreateWithoutApprovedByInput = {
+export type BonusReleaseCreateManyApprovedByInput = {
   id?: string;
   bonusEntryId: string;
   payrollRunId?: string | null;
@@ -1830,75 +1935,422 @@ export type BonusReleaseUncheckedCreateWithoutApprovedByInput = {
   updatedAt?: Date | string;
 };
 
-export type BonusReleaseCreateOrConnectWithoutApprovedByInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutApprovedByInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
-  >;
+export type BonusReleaseUpdateWithoutEmployeeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  bonusEntry?: Prisma.BonusEntryUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  payrollRun?: Prisma.PayrollRunUpdateOneWithoutBonusReleasesNestedInput;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutBonusReleasesNestedInput;
+  extension?: Prisma.ExtensionUpdateOneWithoutBonusReleasesNestedInput;
+  approvedBy?: Prisma.EmployeeUpdateOneWithoutBonusReleasesApprovedNestedInput;
 };
 
-export type BonusReleaseCreateManyApprovedByInputEnvelope = {
-  data:
-    | Prisma.BonusReleaseCreateManyApprovedByInput
-    | Prisma.BonusReleaseCreateManyApprovedByInput[];
-  skipDuplicates?: boolean;
+export type BonusReleaseUncheckedUpdateWithoutEmployeeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type BonusReleaseUpsertWithWhereUniqueWithoutEmployeeInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutEmployeeInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutEmployeeInput
-  >;
-  create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutEmployeeInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutEmployeeInput
-  >;
+export type BonusReleaseUncheckedUpdateManyWithoutEmployeeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type BonusReleaseUpdateWithWhereUniqueWithoutEmployeeInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutEmployeeInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutEmployeeInput
-  >;
+export type BonusReleaseUpdateWithoutApprovedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  bonusEntry?: Prisma.BonusEntryUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  payrollRun?: Prisma.PayrollRunUpdateOneWithoutBonusReleasesNestedInput;
+  employee?: Prisma.EmployeeUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutBonusReleasesNestedInput;
+  extension?: Prisma.ExtensionUpdateOneWithoutBonusReleasesNestedInput;
 };
 
-export type BonusReleaseUpdateManyWithWhereWithoutEmployeeInput = {
-  where: Prisma.BonusReleaseScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.BonusReleaseUpdateManyMutationInput,
-    Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeInput
-  >;
+export type BonusReleaseUncheckedUpdateWithoutApprovedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type BonusReleaseUpsertWithWhereUniqueWithoutApprovedByInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutApprovedByInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutApprovedByInput
-  >;
-  create: Prisma.XOR<
-    Prisma.BonusReleaseCreateWithoutApprovedByInput,
-    Prisma.BonusReleaseUncheckedCreateWithoutApprovedByInput
-  >;
+export type BonusReleaseUncheckedUpdateManyWithoutApprovedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
+  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type BonusReleaseUpdateWithWhereUniqueWithoutApprovedByInput = {
-  where: Prisma.BonusReleaseWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.BonusReleaseUpdateWithoutApprovedByInput,
-    Prisma.BonusReleaseUncheckedUpdateWithoutApprovedByInput
-  >;
+export type BonusReleaseCreateManyBonusEntryInput = {
+  id?: string;
+  payrollRunId?: string | null;
+  employeeId: string;
+  projectId: string;
+  productId?: string | null;
+  extensionId?: string | null;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  approvedById?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
-export type BonusReleaseUpdateManyWithWhereWithoutApprovedByInput = {
-  where: Prisma.BonusReleaseScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.BonusReleaseUpdateManyMutationInput,
-    Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByInput
-  >;
+export type BonusReleaseUpdateWithoutBonusEntryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  payrollRun?: Prisma.PayrollRunUpdateOneWithoutBonusReleasesNestedInput;
+  employee?: Prisma.EmployeeUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutBonusReleasesNestedInput;
+  extension?: Prisma.ExtensionUpdateOneWithoutBonusReleasesNestedInput;
+  approvedBy?: Prisma.EmployeeUpdateOneWithoutBonusReleasesApprovedNestedInput;
+};
+
+export type BonusReleaseUncheckedUpdateWithoutBonusEntryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type BonusReleaseUncheckedUpdateManyWithoutBonusEntryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type BonusReleaseCreateManyPayrollRunInput = {
+  id?: string;
+  bonusEntryId: string;
+  employeeId: string;
+  projectId: string;
+  productId?: string | null;
+  extensionId?: string | null;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  releaseType: $Enums.BonusReleaseTypeEnum;
+  reason?: string | null;
+  approvedById?: string | null;
+  status?: $Enums.BonusReleaseStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type BonusReleaseUpdateWithoutPayrollRunInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  bonusEntry?: Prisma.BonusEntryUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  employee?: Prisma.EmployeeUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusReleasesNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutBonusReleasesNestedInput;
+  extension?: Prisma.ExtensionUpdateOneWithoutBonusReleasesNestedInput;
+  approvedBy?: Prisma.EmployeeUpdateOneWithoutBonusReleasesApprovedNestedInput;
+};
+
+export type BonusReleaseUncheckedUpdateWithoutPayrollRunInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
+  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type BonusReleaseUncheckedUpdateManyWithoutPayrollRunInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
+  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  payrollIncludedAmount?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  releaseType?:
+    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseTypeEnum;
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
+    | $Enums.BonusReleaseStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type BonusReleaseCreateManyProjectInput = {
@@ -2233,458 +2685,6 @@ export type BonusReleaseUncheckedUpdateManyWithoutExtensionInput = {
     | $Enums.BonusReleaseTypeEnum;
   reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type BonusReleaseCreateManyBonusEntryInput = {
-  id?: string;
-  payrollRunId?: string | null;
-  employeeId: string;
-  projectId: string;
-  productId?: string | null;
-  extensionId?: string | null;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  approvedById?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type BonusReleaseUpdateWithoutBonusEntryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  payrollRun?: Prisma.PayrollRunUpdateOneWithoutBonusReleasesNestedInput;
-  employee?: Prisma.EmployeeUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutBonusReleasesNestedInput;
-  extension?: Prisma.ExtensionUpdateOneWithoutBonusReleasesNestedInput;
-  approvedBy?: Prisma.EmployeeUpdateOneWithoutBonusReleasesApprovedNestedInput;
-};
-
-export type BonusReleaseUncheckedUpdateWithoutBonusEntryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type BonusReleaseUncheckedUpdateManyWithoutBonusEntryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type BonusReleaseCreateManyPayrollRunInput = {
-  id?: string;
-  bonusEntryId: string;
-  employeeId: string;
-  projectId: string;
-  productId?: string | null;
-  extensionId?: string | null;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  approvedById?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type BonusReleaseUpdateWithoutPayrollRunInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  bonusEntry?: Prisma.BonusEntryUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  employee?: Prisma.EmployeeUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutBonusReleasesNestedInput;
-  extension?: Prisma.ExtensionUpdateOneWithoutBonusReleasesNestedInput;
-  approvedBy?: Prisma.EmployeeUpdateOneWithoutBonusReleasesApprovedNestedInput;
-};
-
-export type BonusReleaseUncheckedUpdateWithoutPayrollRunInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type BonusReleaseUncheckedUpdateManyWithoutPayrollRunInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type BonusReleaseCreateManyEmployeeInput = {
-  id?: string;
-  bonusEntryId: string;
-  payrollRunId?: string | null;
-  projectId: string;
-  productId?: string | null;
-  extensionId?: string | null;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  approvedById?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type BonusReleaseCreateManyApprovedByInput = {
-  id?: string;
-  bonusEntryId: string;
-  payrollRunId?: string | null;
-  employeeId: string;
-  projectId: string;
-  productId?: string | null;
-  extensionId?: string | null;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  payrollIncludedAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  releaseType: $Enums.BonusReleaseTypeEnum;
-  reason?: string | null;
-  status?: $Enums.BonusReleaseStatusEnum;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type BonusReleaseUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  bonusEntry?: Prisma.BonusEntryUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  payrollRun?: Prisma.PayrollRunUpdateOneWithoutBonusReleasesNestedInput;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutBonusReleasesNestedInput;
-  extension?: Prisma.ExtensionUpdateOneWithoutBonusReleasesNestedInput;
-  approvedBy?: Prisma.EmployeeUpdateOneWithoutBonusReleasesApprovedNestedInput;
-};
-
-export type BonusReleaseUncheckedUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
-  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type BonusReleaseUncheckedUpdateManyWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
-  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  approvedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type BonusReleaseUpdateWithoutApprovedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  bonusEntry?: Prisma.BonusEntryUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  payrollRun?: Prisma.PayrollRunUpdateOneWithoutBonusReleasesNestedInput;
-  employee?: Prisma.EmployeeUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusReleasesNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutBonusReleasesNestedInput;
-  extension?: Prisma.ExtensionUpdateOneWithoutBonusReleasesNestedInput;
-};
-
-export type BonusReleaseUncheckedUpdateWithoutApprovedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
-  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?:
-    | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseStatusEnum;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type BonusReleaseUncheckedUpdateManyWithoutApprovedByInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  bonusEntryId?: Prisma.StringFieldUpdateOperationsInput | string;
-  payrollRunId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  payrollIncludedAmount?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  releaseType?:
-    | Prisma.EnumBonusReleaseTypeEnumFieldUpdateOperationsInput
-    | $Enums.BonusReleaseTypeEnum;
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?:
     | Prisma.EnumBonusReleaseStatusEnumFieldUpdateOperationsInput
     | $Enums.BonusReleaseStatusEnum;

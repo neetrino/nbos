@@ -513,92 +513,6 @@ export type PaymentScalarRelationFilter = {
   isNot?: Prisma.PaymentWhereInput;
 };
 
-export type PaymentCreateNestedManyWithoutInvoiceInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PaymentCreateWithoutInvoiceInput,
-        Prisma.PaymentUncheckedCreateWithoutInvoiceInput
-      >
-    | Prisma.PaymentCreateWithoutInvoiceInput[]
-    | Prisma.PaymentUncheckedCreateWithoutInvoiceInput[];
-  connectOrCreate?:
-    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput
-    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput[];
-  createMany?: Prisma.PaymentCreateManyInvoiceInputEnvelope;
-  connect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-};
-
-export type PaymentUncheckedCreateNestedManyWithoutInvoiceInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PaymentCreateWithoutInvoiceInput,
-        Prisma.PaymentUncheckedCreateWithoutInvoiceInput
-      >
-    | Prisma.PaymentCreateWithoutInvoiceInput[]
-    | Prisma.PaymentUncheckedCreateWithoutInvoiceInput[];
-  connectOrCreate?:
-    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput
-    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput[];
-  createMany?: Prisma.PaymentCreateManyInvoiceInputEnvelope;
-  connect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-};
-
-export type PaymentUpdateManyWithoutInvoiceNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PaymentCreateWithoutInvoiceInput,
-        Prisma.PaymentUncheckedCreateWithoutInvoiceInput
-      >
-    | Prisma.PaymentCreateWithoutInvoiceInput[]
-    | Prisma.PaymentUncheckedCreateWithoutInvoiceInput[];
-  connectOrCreate?:
-    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput
-    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput[];
-  upsert?:
-    | Prisma.PaymentUpsertWithWhereUniqueWithoutInvoiceInput
-    | Prisma.PaymentUpsertWithWhereUniqueWithoutInvoiceInput[];
-  createMany?: Prisma.PaymentCreateManyInvoiceInputEnvelope;
-  set?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-  disconnect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-  delete?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-  connect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-  update?:
-    | Prisma.PaymentUpdateWithWhereUniqueWithoutInvoiceInput
-    | Prisma.PaymentUpdateWithWhereUniqueWithoutInvoiceInput[];
-  updateMany?:
-    | Prisma.PaymentUpdateManyWithWhereWithoutInvoiceInput
-    | Prisma.PaymentUpdateManyWithWhereWithoutInvoiceInput[];
-  deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
-};
-
-export type PaymentUncheckedUpdateManyWithoutInvoiceNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PaymentCreateWithoutInvoiceInput,
-        Prisma.PaymentUncheckedCreateWithoutInvoiceInput
-      >
-    | Prisma.PaymentCreateWithoutInvoiceInput[]
-    | Prisma.PaymentUncheckedCreateWithoutInvoiceInput[];
-  connectOrCreate?:
-    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput
-    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput[];
-  upsert?:
-    | Prisma.PaymentUpsertWithWhereUniqueWithoutInvoiceInput
-    | Prisma.PaymentUpsertWithWhereUniqueWithoutInvoiceInput[];
-  createMany?: Prisma.PaymentCreateManyInvoiceInputEnvelope;
-  set?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-  disconnect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-  delete?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-  connect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
-  update?:
-    | Prisma.PaymentUpdateWithWhereUniqueWithoutInvoiceInput
-    | Prisma.PaymentUpdateWithWhereUniqueWithoutInvoiceInput[];
-  updateMany?:
-    | Prisma.PaymentUpdateManyWithWhereWithoutInvoiceInput
-    | Prisma.PaymentUpdateManyWithWhereWithoutInvoiceInput[];
-  deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
-};
-
 export type PaymentCreateNestedManyWithoutConfirmerInput = {
   create?:
     | Prisma.XOR<
@@ -685,6 +599,92 @@ export type PaymentUncheckedUpdateManyWithoutConfirmerNestedInput = {
   deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
 };
 
+export type PaymentCreateNestedManyWithoutInvoiceInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PaymentCreateWithoutInvoiceInput,
+        Prisma.PaymentUncheckedCreateWithoutInvoiceInput
+      >
+    | Prisma.PaymentCreateWithoutInvoiceInput[]
+    | Prisma.PaymentUncheckedCreateWithoutInvoiceInput[];
+  connectOrCreate?:
+    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput
+    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput[];
+  createMany?: Prisma.PaymentCreateManyInvoiceInputEnvelope;
+  connect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+};
+
+export type PaymentUncheckedCreateNestedManyWithoutInvoiceInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PaymentCreateWithoutInvoiceInput,
+        Prisma.PaymentUncheckedCreateWithoutInvoiceInput
+      >
+    | Prisma.PaymentCreateWithoutInvoiceInput[]
+    | Prisma.PaymentUncheckedCreateWithoutInvoiceInput[];
+  connectOrCreate?:
+    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput
+    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput[];
+  createMany?: Prisma.PaymentCreateManyInvoiceInputEnvelope;
+  connect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+};
+
+export type PaymentUpdateManyWithoutInvoiceNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PaymentCreateWithoutInvoiceInput,
+        Prisma.PaymentUncheckedCreateWithoutInvoiceInput
+      >
+    | Prisma.PaymentCreateWithoutInvoiceInput[]
+    | Prisma.PaymentUncheckedCreateWithoutInvoiceInput[];
+  connectOrCreate?:
+    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput
+    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput[];
+  upsert?:
+    | Prisma.PaymentUpsertWithWhereUniqueWithoutInvoiceInput
+    | Prisma.PaymentUpsertWithWhereUniqueWithoutInvoiceInput[];
+  createMany?: Prisma.PaymentCreateManyInvoiceInputEnvelope;
+  set?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+  disconnect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+  delete?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+  connect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+  update?:
+    | Prisma.PaymentUpdateWithWhereUniqueWithoutInvoiceInput
+    | Prisma.PaymentUpdateWithWhereUniqueWithoutInvoiceInput[];
+  updateMany?:
+    | Prisma.PaymentUpdateManyWithWhereWithoutInvoiceInput
+    | Prisma.PaymentUpdateManyWithWhereWithoutInvoiceInput[];
+  deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
+};
+
+export type PaymentUncheckedUpdateManyWithoutInvoiceNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PaymentCreateWithoutInvoiceInput,
+        Prisma.PaymentUncheckedCreateWithoutInvoiceInput
+      >
+    | Prisma.PaymentCreateWithoutInvoiceInput[]
+    | Prisma.PaymentUncheckedCreateWithoutInvoiceInput[];
+  connectOrCreate?:
+    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput
+    | Prisma.PaymentCreateOrConnectWithoutInvoiceInput[];
+  upsert?:
+    | Prisma.PaymentUpsertWithWhereUniqueWithoutInvoiceInput
+    | Prisma.PaymentUpsertWithWhereUniqueWithoutInvoiceInput[];
+  createMany?: Prisma.PaymentCreateManyInvoiceInputEnvelope;
+  set?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+  disconnect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+  delete?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+  connect?: Prisma.PaymentWhereUniqueInput | Prisma.PaymentWhereUniqueInput[];
+  update?:
+    | Prisma.PaymentUpdateWithWhereUniqueWithoutInvoiceInput
+    | Prisma.PaymentUpdateWithWhereUniqueWithoutInvoiceInput[];
+  updateMany?:
+    | Prisma.PaymentUpdateManyWithWhereWithoutInvoiceInput
+    | Prisma.PaymentUpdateManyWithWhereWithoutInvoiceInput[];
+  deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
+};
+
 export type PaymentCreateNestedOneWithoutPartnerAccrualInput = {
   create?: Prisma.XOR<
     Prisma.PaymentCreateWithoutPartnerAccrualInput,
@@ -709,91 +709,6 @@ export type PaymentUpdateOneRequiredWithoutPartnerAccrualNestedInput = {
     >,
     Prisma.PaymentUncheckedUpdateWithoutPartnerAccrualInput
   >;
-};
-
-export type PaymentCreateWithoutInvoiceInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  paymentDate: Date | string;
-  paymentMethod?: string | null;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  confirmer?: Prisma.EmployeeCreateNestedOneWithoutPaymentsConfirmedInput;
-  partnerAccrual?: Prisma.PartnerAccrualCreateNestedOneWithoutPaymentInput;
-};
-
-export type PaymentUncheckedCreateWithoutInvoiceInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  paymentDate: Date | string;
-  paymentMethod?: string | null;
-  confirmedBy?: string | null;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  partnerAccrual?: Prisma.PartnerAccrualUncheckedCreateNestedOneWithoutPaymentInput;
-};
-
-export type PaymentCreateOrConnectWithoutInvoiceInput = {
-  where: Prisma.PaymentWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.PaymentCreateWithoutInvoiceInput,
-    Prisma.PaymentUncheckedCreateWithoutInvoiceInput
-  >;
-};
-
-export type PaymentCreateManyInvoiceInputEnvelope = {
-  data: Prisma.PaymentCreateManyInvoiceInput | Prisma.PaymentCreateManyInvoiceInput[];
-  skipDuplicates?: boolean;
-};
-
-export type PaymentUpsertWithWhereUniqueWithoutInvoiceInput = {
-  where: Prisma.PaymentWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.PaymentUpdateWithoutInvoiceInput,
-    Prisma.PaymentUncheckedUpdateWithoutInvoiceInput
-  >;
-  create: Prisma.XOR<
-    Prisma.PaymentCreateWithoutInvoiceInput,
-    Prisma.PaymentUncheckedCreateWithoutInvoiceInput
-  >;
-};
-
-export type PaymentUpdateWithWhereUniqueWithoutInvoiceInput = {
-  where: Prisma.PaymentWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.PaymentUpdateWithoutInvoiceInput,
-    Prisma.PaymentUncheckedUpdateWithoutInvoiceInput
-  >;
-};
-
-export type PaymentUpdateManyWithWhereWithoutInvoiceInput = {
-  where: Prisma.PaymentScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.PaymentUpdateManyMutationInput,
-    Prisma.PaymentUncheckedUpdateManyWithoutInvoiceInput
-  >;
-};
-
-export type PaymentScalarWhereInput = {
-  AND?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
-  OR?: Prisma.PaymentScalarWhereInput[];
-  NOT?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
-  id?: Prisma.StringFilter<'Payment'> | string;
-  invoiceId?: Prisma.StringFilter<'Payment'> | string;
-  amount?:
-    | Prisma.DecimalFilter<'Payment'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  paymentDate?: Prisma.DateTimeFilter<'Payment'> | Date | string;
-  paymentMethod?: Prisma.StringNullableFilter<'Payment'> | string | null;
-  confirmedBy?: Prisma.StringNullableFilter<'Payment'> | string | null;
-  notes?: Prisma.StringNullableFilter<'Payment'> | string | null;
-  createdAt?: Prisma.DateTimeFilter<'Payment'> | Date | string;
-  updatedAt?: Prisma.DateTimeFilter<'Payment'> | Date | string;
 };
 
 export type PaymentCreateWithoutConfirmerInput = {
@@ -858,6 +773,91 @@ export type PaymentUpdateManyWithWhereWithoutConfirmerInput = {
   data: Prisma.XOR<
     Prisma.PaymentUpdateManyMutationInput,
     Prisma.PaymentUncheckedUpdateManyWithoutConfirmerInput
+  >;
+};
+
+export type PaymentScalarWhereInput = {
+  AND?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
+  OR?: Prisma.PaymentScalarWhereInput[];
+  NOT?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
+  id?: Prisma.StringFilter<'Payment'> | string;
+  invoiceId?: Prisma.StringFilter<'Payment'> | string;
+  amount?:
+    | Prisma.DecimalFilter<'Payment'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  paymentDate?: Prisma.DateTimeFilter<'Payment'> | Date | string;
+  paymentMethod?: Prisma.StringNullableFilter<'Payment'> | string | null;
+  confirmedBy?: Prisma.StringNullableFilter<'Payment'> | string | null;
+  notes?: Prisma.StringNullableFilter<'Payment'> | string | null;
+  createdAt?: Prisma.DateTimeFilter<'Payment'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Payment'> | Date | string;
+};
+
+export type PaymentCreateWithoutInvoiceInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  paymentDate: Date | string;
+  paymentMethod?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  confirmer?: Prisma.EmployeeCreateNestedOneWithoutPaymentsConfirmedInput;
+  partnerAccrual?: Prisma.PartnerAccrualCreateNestedOneWithoutPaymentInput;
+};
+
+export type PaymentUncheckedCreateWithoutInvoiceInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  paymentDate: Date | string;
+  paymentMethod?: string | null;
+  confirmedBy?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  partnerAccrual?: Prisma.PartnerAccrualUncheckedCreateNestedOneWithoutPaymentInput;
+};
+
+export type PaymentCreateOrConnectWithoutInvoiceInput = {
+  where: Prisma.PaymentWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PaymentCreateWithoutInvoiceInput,
+    Prisma.PaymentUncheckedCreateWithoutInvoiceInput
+  >;
+};
+
+export type PaymentCreateManyInvoiceInputEnvelope = {
+  data: Prisma.PaymentCreateManyInvoiceInput | Prisma.PaymentCreateManyInvoiceInput[];
+  skipDuplicates?: boolean;
+};
+
+export type PaymentUpsertWithWhereUniqueWithoutInvoiceInput = {
+  where: Prisma.PaymentWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PaymentUpdateWithoutInvoiceInput,
+    Prisma.PaymentUncheckedUpdateWithoutInvoiceInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PaymentCreateWithoutInvoiceInput,
+    Prisma.PaymentUncheckedCreateWithoutInvoiceInput
+  >;
+};
+
+export type PaymentUpdateWithWhereUniqueWithoutInvoiceInput = {
+  where: Prisma.PaymentWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PaymentUpdateWithoutInvoiceInput,
+    Prisma.PaymentUncheckedUpdateWithoutInvoiceInput
+  >;
+};
+
+export type PaymentUpdateManyWithWhereWithoutInvoiceInput = {
+  where: Prisma.PaymentScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PaymentUpdateManyMutationInput,
+    Prisma.PaymentUncheckedUpdateManyWithoutInvoiceInput
   >;
 };
 
@@ -947,67 +947,6 @@ export type PaymentUncheckedUpdateWithoutPartnerAccrualInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type PaymentCreateManyInvoiceInput = {
-  id?: string;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  paymentDate: Date | string;
-  paymentMethod?: string | null;
-  confirmedBy?: string | null;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type PaymentUpdateWithoutInvoiceInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  paymentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  confirmer?: Prisma.EmployeeUpdateOneWithoutPaymentsConfirmedNestedInput;
-  partnerAccrual?: Prisma.PartnerAccrualUpdateOneWithoutPaymentNestedInput;
-};
-
-export type PaymentUncheckedUpdateWithoutInvoiceInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  paymentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  confirmedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  partnerAccrual?: Prisma.PartnerAccrualUncheckedUpdateOneWithoutPaymentNestedInput;
-};
-
-export type PaymentUncheckedUpdateManyWithoutInvoiceInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  paymentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  confirmedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
 export type PaymentCreateManyConfirmerInput = {
   id?: string;
   invoiceId: string;
@@ -1064,6 +1003,67 @@ export type PaymentUncheckedUpdateManyWithoutConfirmerInput = {
     | string;
   paymentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PaymentCreateManyInvoiceInput = {
+  id?: string;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  paymentDate: Date | string;
+  paymentMethod?: string | null;
+  confirmedBy?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PaymentUpdateWithoutInvoiceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  paymentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  confirmer?: Prisma.EmployeeUpdateOneWithoutPaymentsConfirmedNestedInput;
+  partnerAccrual?: Prisma.PartnerAccrualUpdateOneWithoutPaymentNestedInput;
+};
+
+export type PaymentUncheckedUpdateWithoutInvoiceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  paymentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  confirmedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  partnerAccrual?: Prisma.PartnerAccrualUncheckedUpdateOneWithoutPaymentNestedInput;
+};
+
+export type PaymentUncheckedUpdateManyWithoutInvoiceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  paymentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  paymentMethod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  confirmedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;

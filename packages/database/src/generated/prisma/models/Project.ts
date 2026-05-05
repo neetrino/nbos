@@ -521,6 +521,16 @@ export type ProjectUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+export type ProjectNullableScalarRelationFilter = {
+  is?: Prisma.ProjectWhereInput | null;
+  isNot?: Prisma.ProjectWhereInput | null;
+};
+
+export type ProjectScalarRelationFilter = {
+  is?: Prisma.ProjectWhereInput;
+  isNot?: Prisma.ProjectWhereInput;
+};
+
 export type ProjectListRelationFilter = {
   every?: Prisma.ProjectWhereInput;
   some?: Prisma.ProjectWhereInput;
@@ -567,14 +577,58 @@ export type ProjectMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder;
 };
 
-export type ProjectScalarRelationFilter = {
-  is?: Prisma.ProjectWhereInput;
-  isNot?: Prisma.ProjectWhereInput;
+export type ProjectCreateNestedOneWithoutAuditLogsInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutAuditLogsInput,
+    Prisma.ProjectUncheckedCreateWithoutAuditLogsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutAuditLogsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
 };
 
-export type ProjectNullableScalarRelationFilter = {
-  is?: Prisma.ProjectWhereInput | null;
-  isNot?: Prisma.ProjectWhereInput | null;
+export type ProjectUpdateOneWithoutAuditLogsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutAuditLogsInput,
+    Prisma.ProjectUncheckedCreateWithoutAuditLogsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutAuditLogsInput;
+  upsert?: Prisma.ProjectUpsertWithoutAuditLogsInput;
+  disconnect?: Prisma.ProjectWhereInput | boolean;
+  delete?: Prisma.ProjectWhereInput | boolean;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutAuditLogsInput,
+      Prisma.ProjectUpdateWithoutAuditLogsInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutAuditLogsInput
+  >;
+};
+
+export type ProjectCreateNestedOneWithoutClientServiceRecordsInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutClientServiceRecordsInput,
+    Prisma.ProjectUncheckedCreateWithoutClientServiceRecordsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutClientServiceRecordsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+};
+
+export type ProjectUpdateOneRequiredWithoutClientServiceRecordsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutClientServiceRecordsInput,
+    Prisma.ProjectUncheckedCreateWithoutClientServiceRecordsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutClientServiceRecordsInput;
+  upsert?: Prisma.ProjectUpsertWithoutClientServiceRecordsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutClientServiceRecordsInput,
+      Prisma.ProjectUpdateWithoutClientServiceRecordsInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutClientServiceRecordsInput
+  >;
 };
 
 export type ProjectCreateNestedManyWithoutContactInput = {
@@ -749,85 +803,57 @@ export type ProjectUncheckedUpdateManyWithoutCompanyNestedInput = {
   deleteMany?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[];
 };
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean;
-};
-
-export type ProjectCreateNestedOneWithoutKickoffChecklistItemsInput = {
+export type ProjectCreateNestedOneWithoutCredentialsInput = {
   create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
-    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+    Prisma.ProjectCreateWithoutCredentialsInput,
+    Prisma.ProjectUncheckedCreateWithoutCredentialsInput
   >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutKickoffChecklistItemsInput;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutCredentialsInput;
   connect?: Prisma.ProjectWhereUniqueInput;
 };
 
-export type ProjectUpdateOneRequiredWithoutKickoffChecklistItemsNestedInput = {
+export type ProjectUpdateOneWithoutCredentialsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
-    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+    Prisma.ProjectCreateWithoutCredentialsInput,
+    Prisma.ProjectUncheckedCreateWithoutCredentialsInput
   >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutKickoffChecklistItemsInput;
-  upsert?: Prisma.ProjectUpsertWithoutKickoffChecklistItemsInput;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutCredentialsInput;
+  upsert?: Prisma.ProjectUpsertWithoutCredentialsInput;
+  disconnect?: Prisma.ProjectWhereInput | boolean;
+  delete?: Prisma.ProjectWhereInput | boolean;
   connect?: Prisma.ProjectWhereUniqueInput;
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutKickoffChecklistItemsInput,
-      Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput
+      Prisma.ProjectUpdateToOneWithWhereWithoutCredentialsInput,
+      Prisma.ProjectUpdateWithoutCredentialsInput
     >,
-    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
+    Prisma.ProjectUncheckedUpdateWithoutCredentialsInput
   >;
 };
 
-export type ProjectCreateNestedOneWithoutProductsInput = {
+export type ProjectCreateNestedOneWithoutDomainsInput = {
   create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutProductsInput,
-    Prisma.ProjectUncheckedCreateWithoutProductsInput
+    Prisma.ProjectCreateWithoutDomainsInput,
+    Prisma.ProjectUncheckedCreateWithoutDomainsInput
   >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutProductsInput;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutDomainsInput;
   connect?: Prisma.ProjectWhereUniqueInput;
 };
 
-export type ProjectUpdateOneRequiredWithoutProductsNestedInput = {
+export type ProjectUpdateOneRequiredWithoutDomainsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutProductsInput,
-    Prisma.ProjectUncheckedCreateWithoutProductsInput
+    Prisma.ProjectCreateWithoutDomainsInput,
+    Prisma.ProjectUncheckedCreateWithoutDomainsInput
   >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutProductsInput;
-  upsert?: Prisma.ProjectUpsertWithoutProductsInput;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutDomainsInput;
+  upsert?: Prisma.ProjectUpsertWithoutDomainsInput;
   connect?: Prisma.ProjectWhereUniqueInput;
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutProductsInput,
-      Prisma.ProjectUpdateWithoutProductsInput
+      Prisma.ProjectUpdateToOneWithWhereWithoutDomainsInput,
+      Prisma.ProjectUpdateWithoutDomainsInput
     >,
-    Prisma.ProjectUncheckedUpdateWithoutProductsInput
-  >;
-};
-
-export type ProjectCreateNestedOneWithoutExtensionsInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutExtensionsInput,
-    Prisma.ProjectUncheckedCreateWithoutExtensionsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutExtensionsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-};
-
-export type ProjectUpdateOneRequiredWithoutExtensionsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutExtensionsInput,
-    Prisma.ProjectUncheckedCreateWithoutExtensionsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutExtensionsInput;
-  upsert?: Prisma.ProjectUpsertWithoutExtensionsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutExtensionsInput,
-      Prisma.ProjectUpdateWithoutExtensionsInput
-    >,
-    Prisma.ProjectUncheckedUpdateWithoutExtensionsInput
+    Prisma.ProjectUncheckedUpdateWithoutDomainsInput
   >;
 };
 
@@ -1045,140 +1071,6 @@ export type ProjectUpdateOneRequiredWithoutProductBonusPoolsNestedInput = {
   >;
 };
 
-export type ProjectCreateNestedOneWithoutWorkSpacesInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutWorkSpacesInput,
-    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutWorkSpacesInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-};
-
-export type ProjectUpdateOneWithoutWorkSpacesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutWorkSpacesInput,
-    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutWorkSpacesInput;
-  upsert?: Prisma.ProjectUpsertWithoutWorkSpacesInput;
-  disconnect?: Prisma.ProjectWhereInput | boolean;
-  delete?: Prisma.ProjectWhereInput | boolean;
-  connect?: Prisma.ProjectWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutWorkSpacesInput,
-      Prisma.ProjectUpdateWithoutWorkSpacesInput
-    >,
-    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
-  >;
-};
-
-export type ProjectCreateNestedOneWithoutTicketsInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutTicketsInput,
-    Prisma.ProjectUncheckedCreateWithoutTicketsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutTicketsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-};
-
-export type ProjectUpdateOneRequiredWithoutTicketsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutTicketsInput,
-    Prisma.ProjectUncheckedCreateWithoutTicketsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutTicketsInput;
-  upsert?: Prisma.ProjectUpsertWithoutTicketsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutTicketsInput,
-      Prisma.ProjectUpdateWithoutTicketsInput
-    >,
-    Prisma.ProjectUncheckedUpdateWithoutTicketsInput
-  >;
-};
-
-export type ProjectCreateNestedOneWithoutCredentialsInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutCredentialsInput,
-    Prisma.ProjectUncheckedCreateWithoutCredentialsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutCredentialsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-};
-
-export type ProjectUpdateOneWithoutCredentialsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutCredentialsInput,
-    Prisma.ProjectUncheckedCreateWithoutCredentialsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutCredentialsInput;
-  upsert?: Prisma.ProjectUpsertWithoutCredentialsInput;
-  disconnect?: Prisma.ProjectWhereInput | boolean;
-  delete?: Prisma.ProjectWhereInput | boolean;
-  connect?: Prisma.ProjectWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutCredentialsInput,
-      Prisma.ProjectUpdateWithoutCredentialsInput
-    >,
-    Prisma.ProjectUncheckedUpdateWithoutCredentialsInput
-  >;
-};
-
-export type ProjectCreateNestedOneWithoutDomainsInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutDomainsInput,
-    Prisma.ProjectUncheckedCreateWithoutDomainsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutDomainsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-};
-
-export type ProjectUpdateOneRequiredWithoutDomainsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutDomainsInput,
-    Prisma.ProjectUncheckedCreateWithoutDomainsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutDomainsInput;
-  upsert?: Prisma.ProjectUpsertWithoutDomainsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutDomainsInput,
-      Prisma.ProjectUpdateWithoutDomainsInput
-    >,
-    Prisma.ProjectUncheckedUpdateWithoutDomainsInput
-  >;
-};
-
-export type ProjectCreateNestedOneWithoutClientServiceRecordsInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutClientServiceRecordsInput,
-    Prisma.ProjectUncheckedCreateWithoutClientServiceRecordsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutClientServiceRecordsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-};
-
-export type ProjectUpdateOneRequiredWithoutClientServiceRecordsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutClientServiceRecordsInput,
-    Prisma.ProjectUncheckedCreateWithoutClientServiceRecordsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutClientServiceRecordsInput;
-  upsert?: Prisma.ProjectUpsertWithoutClientServiceRecordsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutClientServiceRecordsInput,
-      Prisma.ProjectUpdateWithoutClientServiceRecordsInput
-    >,
-    Prisma.ProjectUncheckedUpdateWithoutClientServiceRecordsInput
-  >;
-};
-
 export type ProjectCreateNestedOneWithoutPartnerAccrualsInput = {
   create?: Prisma.XOR<
     Prisma.ProjectCreateWithoutPartnerAccrualsInput,
@@ -1230,6 +1122,138 @@ export type ProjectUpdateOneWithoutPartnerServiceTermsNestedInput = {
       Prisma.ProjectUpdateWithoutPartnerServiceTermsInput
     >,
     Prisma.ProjectUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+};
+
+export type ProjectCreateNestedOneWithoutKickoffChecklistItemsInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutKickoffChecklistItemsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+};
+
+export type ProjectUpdateOneRequiredWithoutKickoffChecklistItemsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutKickoffChecklistItemsInput;
+  upsert?: Prisma.ProjectUpsertWithoutKickoffChecklistItemsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutKickoffChecklistItemsInput,
+      Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
+  >;
+};
+
+export type ProjectCreateNestedOneWithoutProductsInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutProductsInput,
+    Prisma.ProjectUncheckedCreateWithoutProductsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutProductsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+};
+
+export type ProjectUpdateOneRequiredWithoutProductsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutProductsInput,
+    Prisma.ProjectUncheckedCreateWithoutProductsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutProductsInput;
+  upsert?: Prisma.ProjectUpsertWithoutProductsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutProductsInput,
+      Prisma.ProjectUpdateWithoutProductsInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutProductsInput
+  >;
+};
+
+export type ProjectCreateNestedOneWithoutExtensionsInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutExtensionsInput,
+    Prisma.ProjectUncheckedCreateWithoutExtensionsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutExtensionsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+};
+
+export type ProjectUpdateOneRequiredWithoutExtensionsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutExtensionsInput,
+    Prisma.ProjectUncheckedCreateWithoutExtensionsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutExtensionsInput;
+  upsert?: Prisma.ProjectUpsertWithoutExtensionsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutExtensionsInput,
+      Prisma.ProjectUpdateWithoutExtensionsInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutExtensionsInput
+  >;
+};
+
+export type ProjectCreateNestedOneWithoutTicketsInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutTicketsInput,
+    Prisma.ProjectUncheckedCreateWithoutTicketsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutTicketsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+};
+
+export type ProjectUpdateOneRequiredWithoutTicketsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutTicketsInput,
+    Prisma.ProjectUncheckedCreateWithoutTicketsInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutTicketsInput;
+  upsert?: Prisma.ProjectUpsertWithoutTicketsInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutTicketsInput,
+      Prisma.ProjectUpdateWithoutTicketsInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutTicketsInput
+  >;
+};
+
+export type ProjectCreateNestedOneWithoutWorkSpacesInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutWorkSpacesInput;
+  connect?: Prisma.ProjectWhereUniqueInput;
+};
+
+export type ProjectUpdateOneWithoutWorkSpacesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ProjectCreateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
+  >;
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutWorkSpacesInput;
+  upsert?: Prisma.ProjectUpsertWithoutWorkSpacesInput;
+  disconnect?: Prisma.ProjectWhereInput | boolean;
+  delete?: Prisma.ProjectWhereInput | boolean;
+  connect?: Prisma.ProjectWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ProjectUpdateToOneWithWhereWithoutWorkSpacesInput,
+      Prisma.ProjectUpdateWithoutWorkSpacesInput
+    >,
+    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
   >;
 };
 
@@ -1311,32 +1335,324 @@ export type ProjectUpdateOneRequiredWithoutTechnicalEnvironmentsNestedInput = {
   >;
 };
 
-export type ProjectCreateNestedOneWithoutAuditLogsInput = {
-  create?: Prisma.XOR<
-    Prisma.ProjectCreateWithoutAuditLogsInput,
-    Prisma.ProjectUncheckedCreateWithoutAuditLogsInput
-  >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutAuditLogsInput;
-  connect?: Prisma.ProjectWhereUniqueInput;
+export type ProjectCreateWithoutAuditLogsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
 };
 
-export type ProjectUpdateOneWithoutAuditLogsNestedInput = {
-  create?: Prisma.XOR<
+export type ProjectUncheckedCreateWithoutAuditLogsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutAuditLogsInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
     Prisma.ProjectCreateWithoutAuditLogsInput,
     Prisma.ProjectUncheckedCreateWithoutAuditLogsInput
   >;
-  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutAuditLogsInput;
-  upsert?: Prisma.ProjectUpsertWithoutAuditLogsInput;
-  disconnect?: Prisma.ProjectWhereInput | boolean;
-  delete?: Prisma.ProjectWhereInput | boolean;
-  connect?: Prisma.ProjectWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ProjectUpdateToOneWithWhereWithoutAuditLogsInput,
-      Prisma.ProjectUpdateWithoutAuditLogsInput
-    >,
+};
+
+export type ProjectUpsertWithoutAuditLogsInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutAuditLogsInput,
     Prisma.ProjectUncheckedUpdateWithoutAuditLogsInput
   >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutAuditLogsInput,
+    Prisma.ProjectUncheckedCreateWithoutAuditLogsInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutAuditLogsInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutAuditLogsInput,
+    Prisma.ProjectUncheckedUpdateWithoutAuditLogsInput
+  >;
+};
+
+export type ProjectUpdateWithoutAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutAuditLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectCreateWithoutClientServiceRecordsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectUncheckedCreateWithoutClientServiceRecordsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutClientServiceRecordsInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutClientServiceRecordsInput,
+    Prisma.ProjectUncheckedCreateWithoutClientServiceRecordsInput
+  >;
+};
+
+export type ProjectUpsertWithoutClientServiceRecordsInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutClientServiceRecordsInput,
+    Prisma.ProjectUncheckedUpdateWithoutClientServiceRecordsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutClientServiceRecordsInput,
+    Prisma.ProjectUncheckedCreateWithoutClientServiceRecordsInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutClientServiceRecordsInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutClientServiceRecordsInput,
+    Prisma.ProjectUncheckedUpdateWithoutClientServiceRecordsInput
+  >;
+};
+
+export type ProjectUpdateWithoutClientServiceRecordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutClientServiceRecordsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutContactInput = {
@@ -1568,7 +1884,7 @@ export type ProjectUpdateManyWithWhereWithoutCompanyInput = {
   >;
 };
 
-export type ProjectCreateWithoutKickoffChecklistItemsInput = {
+export type ProjectCreateWithoutCredentialsInput = {
   id?: string;
   code: string;
   name: string;
@@ -1583,166 +1899,6 @@ export type ProjectCreateWithoutKickoffChecklistItemsInput = {
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
   workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutKickoffChecklistItemsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutKickoffChecklistItemsInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
-    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
-  >;
-};
-
-export type ProjectUpsertWithoutKickoffChecklistItemsInput = {
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput,
-    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
-    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
-  >;
-  where?: Prisma.ProjectWhereInput;
-};
-
-export type ProjectUpdateToOneWithWhereWithoutKickoffChecklistItemsInput = {
-  where?: Prisma.ProjectWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput,
-    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
-  >;
-};
-
-export type ProjectUpdateWithoutKickoffChecklistItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectCreateWithoutProductsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
@@ -1761,7 +1917,7 @@ export type ProjectCreateWithoutProductsInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
 };
 
-export type ProjectUncheckedCreateWithoutProductsInput = {
+export type ProjectUncheckedCreateWithoutCredentialsInput = {
   id?: string;
   code: string;
   name: string;
@@ -1771,11 +1927,11 @@ export type ProjectUncheckedCreateWithoutProductsInput = {
   isArchived?: boolean;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
   workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
@@ -1794,35 +1950,35 @@ export type ProjectUncheckedCreateWithoutProductsInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
 };
 
-export type ProjectCreateOrConnectWithoutProductsInput = {
+export type ProjectCreateOrConnectWithoutCredentialsInput = {
   where: Prisma.ProjectWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutProductsInput,
-    Prisma.ProjectUncheckedCreateWithoutProductsInput
+    Prisma.ProjectCreateWithoutCredentialsInput,
+    Prisma.ProjectUncheckedCreateWithoutCredentialsInput
   >;
 };
 
-export type ProjectUpsertWithoutProductsInput = {
+export type ProjectUpsertWithoutCredentialsInput = {
   update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutProductsInput,
-    Prisma.ProjectUncheckedUpdateWithoutProductsInput
+    Prisma.ProjectUpdateWithoutCredentialsInput,
+    Prisma.ProjectUncheckedUpdateWithoutCredentialsInput
   >;
   create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutProductsInput,
-    Prisma.ProjectUncheckedCreateWithoutProductsInput
+    Prisma.ProjectCreateWithoutCredentialsInput,
+    Prisma.ProjectUncheckedCreateWithoutCredentialsInput
   >;
   where?: Prisma.ProjectWhereInput;
 };
 
-export type ProjectUpdateToOneWithWhereWithoutProductsInput = {
+export type ProjectUpdateToOneWithWhereWithoutCredentialsInput = {
   where?: Prisma.ProjectWhereInput;
   data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutProductsInput,
-    Prisma.ProjectUncheckedUpdateWithoutProductsInput
+    Prisma.ProjectUpdateWithoutCredentialsInput,
+    Prisma.ProjectUncheckedUpdateWithoutCredentialsInput
   >;
 };
 
-export type ProjectUpdateWithoutProductsInput = {
+export type ProjectUpdateWithoutCredentialsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1832,11 +1988,11 @@ export type ProjectUpdateWithoutProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
   workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
@@ -1855,7 +2011,7 @@ export type ProjectUpdateWithoutProductsInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
 };
 
-export type ProjectUncheckedUpdateWithoutProductsInput = {
+export type ProjectUncheckedUpdateWithoutCredentialsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1865,11 +2021,11 @@ export type ProjectUncheckedUpdateWithoutProductsInput = {
   isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
   workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
   domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
@@ -1888,7 +2044,7 @@ export type ProjectUncheckedUpdateWithoutProductsInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
-export type ProjectCreateWithoutExtensionsInput = {
+export type ProjectCreateWithoutDomainsInput = {
   id?: string;
   code: string;
   name: string;
@@ -1899,11 +2055,11 @@ export type ProjectCreateWithoutExtensionsInput = {
   contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
   company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
   products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
   workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
   expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
@@ -1921,7 +2077,7 @@ export type ProjectCreateWithoutExtensionsInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
 };
 
-export type ProjectUncheckedCreateWithoutExtensionsInput = {
+export type ProjectUncheckedCreateWithoutDomainsInput = {
   id?: string;
   code: string;
   name: string;
@@ -1932,11 +2088,11 @@ export type ProjectUncheckedCreateWithoutExtensionsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
   workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
   credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
   expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
@@ -1954,35 +2110,35 @@ export type ProjectUncheckedCreateWithoutExtensionsInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
 };
 
-export type ProjectCreateOrConnectWithoutExtensionsInput = {
+export type ProjectCreateOrConnectWithoutDomainsInput = {
   where: Prisma.ProjectWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutExtensionsInput,
-    Prisma.ProjectUncheckedCreateWithoutExtensionsInput
+    Prisma.ProjectCreateWithoutDomainsInput,
+    Prisma.ProjectUncheckedCreateWithoutDomainsInput
   >;
 };
 
-export type ProjectUpsertWithoutExtensionsInput = {
+export type ProjectUpsertWithoutDomainsInput = {
   update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutExtensionsInput,
-    Prisma.ProjectUncheckedUpdateWithoutExtensionsInput
+    Prisma.ProjectUpdateWithoutDomainsInput,
+    Prisma.ProjectUncheckedUpdateWithoutDomainsInput
   >;
   create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutExtensionsInput,
-    Prisma.ProjectUncheckedCreateWithoutExtensionsInput
+    Prisma.ProjectCreateWithoutDomainsInput,
+    Prisma.ProjectUncheckedCreateWithoutDomainsInput
   >;
   where?: Prisma.ProjectWhereInput;
 };
 
-export type ProjectUpdateToOneWithWhereWithoutExtensionsInput = {
+export type ProjectUpdateToOneWithWhereWithoutDomainsInput = {
   where?: Prisma.ProjectWhereInput;
   data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutExtensionsInput,
-    Prisma.ProjectUncheckedUpdateWithoutExtensionsInput
+    Prisma.ProjectUpdateWithoutDomainsInput,
+    Prisma.ProjectUncheckedUpdateWithoutDomainsInput
   >;
 };
 
-export type ProjectUpdateWithoutExtensionsInput = {
+export type ProjectUpdateWithoutDomainsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1993,11 +2149,11 @@ export type ProjectUpdateWithoutExtensionsInput = {
   contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
   company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
   products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
   workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
   expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
@@ -2015,7 +2171,7 @@ export type ProjectUpdateWithoutExtensionsInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
 };
 
-export type ProjectUncheckedUpdateWithoutExtensionsInput = {
+export type ProjectUncheckedUpdateWithoutDomainsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   name?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -2026,11 +2182,11 @@ export type ProjectUncheckedUpdateWithoutExtensionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
   workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
   credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
   expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
@@ -3328,806 +3484,6 @@ export type ProjectUncheckedUpdateWithoutProductBonusPoolsInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
-export type ProjectCreateWithoutWorkSpacesInput = {
-  id?: string;
-  code: string;
-  name: string;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutWorkSpacesInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutWorkSpacesInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutWorkSpacesInput,
-    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
-  >;
-};
-
-export type ProjectUpsertWithoutWorkSpacesInput = {
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutWorkSpacesInput,
-    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutWorkSpacesInput,
-    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
-  >;
-  where?: Prisma.ProjectWhereInput;
-};
-
-export type ProjectUpdateToOneWithWhereWithoutWorkSpacesInput = {
-  where?: Prisma.ProjectWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutWorkSpacesInput,
-    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
-  >;
-};
-
-export type ProjectUpdateWithoutWorkSpacesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutWorkSpacesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectCreateWithoutTicketsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutTicketsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutTicketsInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutTicketsInput,
-    Prisma.ProjectUncheckedCreateWithoutTicketsInput
-  >;
-};
-
-export type ProjectUpsertWithoutTicketsInput = {
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutTicketsInput,
-    Prisma.ProjectUncheckedUpdateWithoutTicketsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutTicketsInput,
-    Prisma.ProjectUncheckedCreateWithoutTicketsInput
-  >;
-  where?: Prisma.ProjectWhereInput;
-};
-
-export type ProjectUpdateToOneWithWhereWithoutTicketsInput = {
-  where?: Prisma.ProjectWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutTicketsInput,
-    Prisma.ProjectUncheckedUpdateWithoutTicketsInput
-  >;
-};
-
-export type ProjectUpdateWithoutTicketsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutTicketsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectCreateWithoutCredentialsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutCredentialsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutCredentialsInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutCredentialsInput,
-    Prisma.ProjectUncheckedCreateWithoutCredentialsInput
-  >;
-};
-
-export type ProjectUpsertWithoutCredentialsInput = {
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutCredentialsInput,
-    Prisma.ProjectUncheckedUpdateWithoutCredentialsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutCredentialsInput,
-    Prisma.ProjectUncheckedCreateWithoutCredentialsInput
-  >;
-  where?: Prisma.ProjectWhereInput;
-};
-
-export type ProjectUpdateToOneWithWhereWithoutCredentialsInput = {
-  where?: Prisma.ProjectWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutCredentialsInput,
-    Prisma.ProjectUncheckedUpdateWithoutCredentialsInput
-  >;
-};
-
-export type ProjectUpdateWithoutCredentialsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutCredentialsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectCreateWithoutDomainsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutDomainsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutDomainsInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutDomainsInput,
-    Prisma.ProjectUncheckedCreateWithoutDomainsInput
-  >;
-};
-
-export type ProjectUpsertWithoutDomainsInput = {
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutDomainsInput,
-    Prisma.ProjectUncheckedUpdateWithoutDomainsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutDomainsInput,
-    Prisma.ProjectUncheckedCreateWithoutDomainsInput
-  >;
-  where?: Prisma.ProjectWhereInput;
-};
-
-export type ProjectUpdateToOneWithWhereWithoutDomainsInput = {
-  where?: Prisma.ProjectWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutDomainsInput,
-    Prisma.ProjectUncheckedUpdateWithoutDomainsInput
-  >;
-};
-
-export type ProjectUpdateWithoutDomainsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutDomainsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectCreateWithoutClientServiceRecordsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutClientServiceRecordsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
-  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutClientServiceRecordsInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutClientServiceRecordsInput,
-    Prisma.ProjectUncheckedCreateWithoutClientServiceRecordsInput
-  >;
-};
-
-export type ProjectUpsertWithoutClientServiceRecordsInput = {
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutClientServiceRecordsInput,
-    Prisma.ProjectUncheckedUpdateWithoutClientServiceRecordsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutClientServiceRecordsInput,
-    Prisma.ProjectUncheckedCreateWithoutClientServiceRecordsInput
-  >;
-  where?: Prisma.ProjectWhereInput;
-};
-
-export type ProjectUpdateToOneWithWhereWithoutClientServiceRecordsInput = {
-  where?: Prisma.ProjectWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutClientServiceRecordsInput,
-    Prisma.ProjectUncheckedUpdateWithoutClientServiceRecordsInput
-  >;
-};
-
-export type ProjectUpdateWithoutClientServiceRecordsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutClientServiceRecordsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
-  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
 export type ProjectCreateWithoutPartnerAccrualsInput = {
   id?: string;
   code: string;
@@ -4446,6 +3802,806 @@ export type ProjectUncheckedUpdateWithoutPartnerServiceTermsInput = {
   technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectCreateWithoutKickoffChecklistItemsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectUncheckedCreateWithoutKickoffChecklistItemsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutKickoffChecklistItemsInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+  >;
+};
+
+export type ProjectUpsertWithoutKickoffChecklistItemsInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedCreateWithoutKickoffChecklistItemsInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutKickoffChecklistItemsInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutKickoffChecklistItemsInput,
+    Prisma.ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput
+  >;
+};
+
+export type ProjectUpdateWithoutKickoffChecklistItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutKickoffChecklistItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectCreateWithoutProductsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectUncheckedCreateWithoutProductsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutProductsInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutProductsInput,
+    Prisma.ProjectUncheckedCreateWithoutProductsInput
+  >;
+};
+
+export type ProjectUpsertWithoutProductsInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutProductsInput,
+    Prisma.ProjectUncheckedUpdateWithoutProductsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutProductsInput,
+    Prisma.ProjectUncheckedCreateWithoutProductsInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutProductsInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutProductsInput,
+    Prisma.ProjectUncheckedUpdateWithoutProductsInput
+  >;
+};
+
+export type ProjectUpdateWithoutProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutProductsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectCreateWithoutExtensionsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectUncheckedCreateWithoutExtensionsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutExtensionsInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutExtensionsInput,
+    Prisma.ProjectUncheckedCreateWithoutExtensionsInput
+  >;
+};
+
+export type ProjectUpsertWithoutExtensionsInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutExtensionsInput,
+    Prisma.ProjectUncheckedUpdateWithoutExtensionsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutExtensionsInput,
+    Prisma.ProjectUncheckedCreateWithoutExtensionsInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutExtensionsInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutExtensionsInput,
+    Prisma.ProjectUncheckedUpdateWithoutExtensionsInput
+  >;
+};
+
+export type ProjectUpdateWithoutExtensionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutExtensionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectCreateWithoutTicketsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectUncheckedCreateWithoutTicketsInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutTicketsInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutTicketsInput,
+    Prisma.ProjectUncheckedCreateWithoutTicketsInput
+  >;
+};
+
+export type ProjectUpsertWithoutTicketsInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutTicketsInput,
+    Prisma.ProjectUncheckedUpdateWithoutTicketsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutTicketsInput,
+    Prisma.ProjectUncheckedCreateWithoutTicketsInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutTicketsInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutTicketsInput,
+    Prisma.ProjectUncheckedUpdateWithoutTicketsInput
+  >;
+};
+
+export type ProjectUpdateWithoutTicketsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutTicketsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectCreateWithoutWorkSpacesInput = {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
+  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
+  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectUncheckedCreateWithoutWorkSpacesInput = {
+  id?: string;
+  code: string;
+  name: string;
+  contactId: string;
+  companyId?: string | null;
+  description?: string | null;
+  isArchived?: boolean;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
+  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutProjectInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
+};
+
+export type ProjectCreateOrConnectWithoutWorkSpacesInput = {
+  where: Prisma.ProjectWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
+  >;
+};
+
+export type ProjectUpsertWithoutWorkSpacesInput = {
+  update: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProjectCreateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedCreateWithoutWorkSpacesInput
+  >;
+  where?: Prisma.ProjectWhereInput;
+};
+
+export type ProjectUpdateToOneWithWhereWithoutWorkSpacesInput = {
+  where?: Prisma.ProjectWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProjectUpdateWithoutWorkSpacesInput,
+    Prisma.ProjectUncheckedUpdateWithoutWorkSpacesInput
+  >;
+};
+
+export type ProjectUpdateWithoutWorkSpacesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
+  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
+};
+
+export type ProjectUncheckedUpdateWithoutWorkSpacesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
+  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutProjectNestedInput;
+  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
 };
 
 export type ProjectCreateWithoutTechnicalProfilesInput = {
@@ -4923,166 +5079,6 @@ export type ProjectUncheckedUpdateWithoutTechnicalEnvironmentsInput = {
   kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
   technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
   technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectCreateWithoutAuditLogsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  contact: Prisma.ContactCreateNestedOneWithoutProjectsInput;
-  company?: Prisma.CompanyCreateNestedOneWithoutProjectsInput;
-  products?: Prisma.ProductCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectUncheckedCreateWithoutAuditLogsInput = {
-  id?: string;
-  code: string;
-  name: string;
-  contactId: string;
-  companyId?: string | null;
-  description?: string | null;
-  isArchived?: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  products?: Prisma.ProductUncheckedCreateNestedManyWithoutProjectInput;
-  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProjectInput;
-  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutProjectInput;
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutProjectInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedCreateNestedManyWithoutProjectInput;
-  credentials?: Prisma.CredentialUncheckedCreateNestedManyWithoutProjectInput;
-  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutProjectInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProjectInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutProjectInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProjectInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutProjectInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProjectInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProjectInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedCreateNestedManyWithoutProjectInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProjectInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProjectInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProjectInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProjectInput;
-  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProjectInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutProjectInput;
-};
-
-export type ProjectCreateOrConnectWithoutAuditLogsInput = {
-  where: Prisma.ProjectWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutAuditLogsInput,
-    Prisma.ProjectUncheckedCreateWithoutAuditLogsInput
-  >;
-};
-
-export type ProjectUpsertWithoutAuditLogsInput = {
-  update: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutAuditLogsInput,
-    Prisma.ProjectUncheckedUpdateWithoutAuditLogsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ProjectCreateWithoutAuditLogsInput,
-    Prisma.ProjectUncheckedCreateWithoutAuditLogsInput
-  >;
-  where?: Prisma.ProjectWhereInput;
-};
-
-export type ProjectUpdateToOneWithWhereWithoutAuditLogsInput = {
-  where?: Prisma.ProjectWhereInput;
-  data: Prisma.XOR<
-    Prisma.ProjectUpdateWithoutAuditLogsInput,
-    Prisma.ProjectUncheckedUpdateWithoutAuditLogsInput
-  >;
-};
-
-export type ProjectUpdateWithoutAuditLogsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  contact?: Prisma.ContactUpdateOneRequiredWithoutProjectsNestedInput;
-  company?: Prisma.CompanyUpdateOneWithoutProjectsNestedInput;
-  products?: Prisma.ProductUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProjectNestedInput;
-  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProjectNestedInput;
-  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProjectNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutProjectNestedInput;
-};
-
-export type ProjectUncheckedUpdateWithoutAuditLogsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
-  companyId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  isArchived?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  products?: Prisma.ProductUncheckedUpdateManyWithoutProjectNestedInput;
-  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProjectNestedInput;
-  orders?: Prisma.OrderUncheckedUpdateManyWithoutProjectNestedInput;
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutProjectNestedInput;
-  workSpaces?: Prisma.WorkSpaceUncheckedUpdateManyWithoutProjectNestedInput;
-  credentials?: Prisma.CredentialUncheckedUpdateManyWithoutProjectNestedInput;
-  domains?: Prisma.DomainUncheckedUpdateManyWithoutProjectNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProjectNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutProjectNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutProjectNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProjectNestedInput;
-  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProjectNestedInput;
-  kickoffChecklistItems?: Prisma.ProjectKickoffChecklistItemUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProjectNestedInput;
-  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProjectNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProjectNestedInput;
   partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProjectNestedInput;
   partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutProjectNestedInput;

@@ -485,20 +485,8 @@ export type ContactNullableScalarRelationFilter = {
   isNot?: Prisma.ContactWhereInput | null;
 };
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string;
-};
-
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null;
-};
-
 export type EnumContactRoleFieldUpdateOperationsInput = {
   set?: $Enums.ContactRole;
-};
-
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string;
 };
 
 export type ContactCreateNestedOneWithoutCompaniesInput = {
@@ -524,32 +512,6 @@ export type ContactUpdateOneRequiredWithoutCompaniesNestedInput = {
       Prisma.ContactUpdateWithoutCompaniesInput
     >,
     Prisma.ContactUncheckedUpdateWithoutCompaniesInput
-  >;
-};
-
-export type ContactCreateNestedOneWithoutProjectsInput = {
-  create?: Prisma.XOR<
-    Prisma.ContactCreateWithoutProjectsInput,
-    Prisma.ContactUncheckedCreateWithoutProjectsInput
-  >;
-  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutProjectsInput;
-  connect?: Prisma.ContactWhereUniqueInput;
-};
-
-export type ContactUpdateOneRequiredWithoutProjectsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ContactCreateWithoutProjectsInput,
-    Prisma.ContactUncheckedCreateWithoutProjectsInput
-  >;
-  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutProjectsInput;
-  upsert?: Prisma.ContactUpsertWithoutProjectsInput;
-  connect?: Prisma.ContactWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ContactUpdateToOneWithWhereWithoutProjectsInput,
-      Prisma.ContactUpdateWithoutProjectsInput
-    >,
-    Prisma.ContactUncheckedUpdateWithoutProjectsInput
   >;
 };
 
@@ -663,34 +625,6 @@ export type ContactUpdateOneWithoutDealsAsSourceNestedInput = {
   >;
 };
 
-export type ContactCreateNestedOneWithoutTicketsInput = {
-  create?: Prisma.XOR<
-    Prisma.ContactCreateWithoutTicketsInput,
-    Prisma.ContactUncheckedCreateWithoutTicketsInput
-  >;
-  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutTicketsInput;
-  connect?: Prisma.ContactWhereUniqueInput;
-};
-
-export type ContactUpdateOneWithoutTicketsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ContactCreateWithoutTicketsInput,
-    Prisma.ContactUncheckedCreateWithoutTicketsInput
-  >;
-  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutTicketsInput;
-  upsert?: Prisma.ContactUpsertWithoutTicketsInput;
-  disconnect?: Prisma.ContactWhereInput | boolean;
-  delete?: Prisma.ContactWhereInput | boolean;
-  connect?: Prisma.ContactWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ContactUpdateToOneWithWhereWithoutTicketsInput,
-      Prisma.ContactUpdateWithoutTicketsInput
-    >,
-    Prisma.ContactUncheckedUpdateWithoutTicketsInput
-  >;
-};
-
 export type ContactCreateNestedOneWithoutPartnersInput = {
   create?: Prisma.XOR<
     Prisma.ContactCreateWithoutPartnersInput,
@@ -744,6 +678,60 @@ export type ContactUpdateOneWithoutPartnerServiceTermsNestedInput = {
       Prisma.ContactUpdateWithoutPartnerServiceTermsInput
     >,
     Prisma.ContactUncheckedUpdateWithoutPartnerServiceTermsInput
+  >;
+};
+
+export type ContactCreateNestedOneWithoutProjectsInput = {
+  create?: Prisma.XOR<
+    Prisma.ContactCreateWithoutProjectsInput,
+    Prisma.ContactUncheckedCreateWithoutProjectsInput
+  >;
+  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutProjectsInput;
+  connect?: Prisma.ContactWhereUniqueInput;
+};
+
+export type ContactUpdateOneRequiredWithoutProjectsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ContactCreateWithoutProjectsInput,
+    Prisma.ContactUncheckedCreateWithoutProjectsInput
+  >;
+  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutProjectsInput;
+  upsert?: Prisma.ContactUpsertWithoutProjectsInput;
+  connect?: Prisma.ContactWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ContactUpdateToOneWithWhereWithoutProjectsInput,
+      Prisma.ContactUpdateWithoutProjectsInput
+    >,
+    Prisma.ContactUncheckedUpdateWithoutProjectsInput
+  >;
+};
+
+export type ContactCreateNestedOneWithoutTicketsInput = {
+  create?: Prisma.XOR<
+    Prisma.ContactCreateWithoutTicketsInput,
+    Prisma.ContactUncheckedCreateWithoutTicketsInput
+  >;
+  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutTicketsInput;
+  connect?: Prisma.ContactWhereUniqueInput;
+};
+
+export type ContactUpdateOneWithoutTicketsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ContactCreateWithoutTicketsInput,
+    Prisma.ContactUncheckedCreateWithoutTicketsInput
+  >;
+  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutTicketsInput;
+  upsert?: Prisma.ContactUpsertWithoutTicketsInput;
+  disconnect?: Prisma.ContactWhereInput | boolean;
+  delete?: Prisma.ContactWhereInput | boolean;
+  connect?: Prisma.ContactWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ContactUpdateToOneWithWhereWithoutTicketsInput,
+      Prisma.ContactUpdateWithoutTicketsInput
+    >,
+    Prisma.ContactUncheckedUpdateWithoutTicketsInput
   >;
 };
 
@@ -850,118 +838,6 @@ export type ContactUncheckedUpdateWithoutCompaniesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
-  leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
-  deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
-  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
-  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
-  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
-  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientContactNestedInput;
-};
-
-export type ContactCreateWithoutProjectsInput = {
-  id?: string;
-  firstName: string;
-  lastName: string;
-  phone?: string | null;
-  email?: string | null;
-  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  role?: $Enums.ContactRole;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
-  leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
-  deals?: Prisma.DealCreateNestedManyWithoutContactInput;
-  tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
-  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
-  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
-  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientContactInput;
-};
-
-export type ContactUncheckedCreateWithoutProjectsInput = {
-  id?: string;
-  firstName: string;
-  lastName: string;
-  phone?: string | null;
-  email?: string | null;
-  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  role?: $Enums.ContactRole;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
-  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
-  deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
-  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
-  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
-  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
-  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientContactInput;
-};
-
-export type ContactCreateOrConnectWithoutProjectsInput = {
-  where: Prisma.ContactWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ContactCreateWithoutProjectsInput,
-    Prisma.ContactUncheckedCreateWithoutProjectsInput
-  >;
-};
-
-export type ContactUpsertWithoutProjectsInput = {
-  update: Prisma.XOR<
-    Prisma.ContactUpdateWithoutProjectsInput,
-    Prisma.ContactUncheckedUpdateWithoutProjectsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ContactCreateWithoutProjectsInput,
-    Prisma.ContactUncheckedCreateWithoutProjectsInput
-  >;
-  where?: Prisma.ContactWhereInput;
-};
-
-export type ContactUpdateToOneWithWhereWithoutProjectsInput = {
-  where?: Prisma.ContactWhereInput;
-  data: Prisma.XOR<
-    Prisma.ContactUpdateWithoutProjectsInput,
-    Prisma.ContactUncheckedUpdateWithoutProjectsInput
-  >;
-};
-
-export type ContactUpdateWithoutProjectsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
-  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
-  leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
-  deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
-  tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
-  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
-  dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
-  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientContactNestedInput;
-};
-
-export type ContactUncheckedUpdateWithoutProjectsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
-  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
@@ -1419,118 +1295,6 @@ export type ContactUncheckedUpdateWithoutDealsAsSourceInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientContactNestedInput;
 };
 
-export type ContactCreateWithoutTicketsInput = {
-  id?: string;
-  firstName: string;
-  lastName: string;
-  phone?: string | null;
-  email?: string | null;
-  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  role?: $Enums.ContactRole;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
-  projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
-  leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
-  deals?: Prisma.DealCreateNestedManyWithoutContactInput;
-  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
-  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
-  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientContactInput;
-};
-
-export type ContactUncheckedCreateWithoutTicketsInput = {
-  id?: string;
-  firstName: string;
-  lastName: string;
-  phone?: string | null;
-  email?: string | null;
-  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  role?: $Enums.ContactRole;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
-  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
-  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
-  deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
-  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
-  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
-  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientContactInput;
-};
-
-export type ContactCreateOrConnectWithoutTicketsInput = {
-  where: Prisma.ContactWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ContactCreateWithoutTicketsInput,
-    Prisma.ContactUncheckedCreateWithoutTicketsInput
-  >;
-};
-
-export type ContactUpsertWithoutTicketsInput = {
-  update: Prisma.XOR<
-    Prisma.ContactUpdateWithoutTicketsInput,
-    Prisma.ContactUncheckedUpdateWithoutTicketsInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ContactCreateWithoutTicketsInput,
-    Prisma.ContactUncheckedCreateWithoutTicketsInput
-  >;
-  where?: Prisma.ContactWhereInput;
-};
-
-export type ContactUpdateToOneWithWhereWithoutTicketsInput = {
-  where?: Prisma.ContactWhereInput;
-  data: Prisma.XOR<
-    Prisma.ContactUpdateWithoutTicketsInput,
-    Prisma.ContactUncheckedUpdateWithoutTicketsInput
-  >;
-};
-
-export type ContactUpdateWithoutTicketsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
-  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
-  projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
-  leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
-  deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
-  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
-  dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
-  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientContactNestedInput;
-};
-
-export type ContactUncheckedUpdateWithoutTicketsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
-  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
-  projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
-  leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
-  deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
-  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
-  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
-  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
-  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientContactNestedInput;
-};
-
 export type ContactCreateWithoutPartnersInput = {
   id?: string;
   firstName: string;
@@ -1753,6 +1517,230 @@ export type ContactUncheckedUpdateWithoutPartnerServiceTermsInput = {
   leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
   dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
   partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
+};
+
+export type ContactCreateWithoutProjectsInput = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  email?: string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: $Enums.ContactRole;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
+  deals?: Prisma.DealCreateNestedManyWithoutContactInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
+  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
+  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientContactInput;
+};
+
+export type ContactUncheckedCreateWithoutProjectsInput = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  email?: string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: $Enums.ContactRole;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
+  deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
+  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
+  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientContactInput;
+};
+
+export type ContactCreateOrConnectWithoutProjectsInput = {
+  where: Prisma.ContactWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ContactCreateWithoutProjectsInput,
+    Prisma.ContactUncheckedCreateWithoutProjectsInput
+  >;
+};
+
+export type ContactUpsertWithoutProjectsInput = {
+  update: Prisma.XOR<
+    Prisma.ContactUpdateWithoutProjectsInput,
+    Prisma.ContactUncheckedUpdateWithoutProjectsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ContactCreateWithoutProjectsInput,
+    Prisma.ContactUncheckedCreateWithoutProjectsInput
+  >;
+  where?: Prisma.ContactWhereInput;
+};
+
+export type ContactUpdateToOneWithWhereWithoutProjectsInput = {
+  where?: Prisma.ContactWhereInput;
+  data: Prisma.XOR<
+    Prisma.ContactUpdateWithoutProjectsInput,
+    Prisma.ContactUncheckedUpdateWithoutProjectsInput
+  >;
+};
+
+export type ContactUpdateWithoutProjectsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
+  deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
+  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
+  dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientContactNestedInput;
+};
+
+export type ContactUncheckedUpdateWithoutProjectsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
+  deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
+  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
+  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientContactNestedInput;
+};
+
+export type ContactCreateWithoutTicketsInput = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  email?: string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: $Enums.ContactRole;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
+  leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
+  deals?: Prisma.DealCreateNestedManyWithoutContactInput;
+  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
+  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientContactInput;
+};
+
+export type ContactUncheckedCreateWithoutTicketsInput = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  email?: string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: $Enums.ContactRole;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
+  deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
+  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
+  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientContactInput;
+};
+
+export type ContactCreateOrConnectWithoutTicketsInput = {
+  where: Prisma.ContactWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ContactCreateWithoutTicketsInput,
+    Prisma.ContactUncheckedCreateWithoutTicketsInput
+  >;
+};
+
+export type ContactUpsertWithoutTicketsInput = {
+  update: Prisma.XOR<
+    Prisma.ContactUpdateWithoutTicketsInput,
+    Prisma.ContactUncheckedUpdateWithoutTicketsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ContactCreateWithoutTicketsInput,
+    Prisma.ContactUncheckedCreateWithoutTicketsInput
+  >;
+  where?: Prisma.ContactWhereInput;
+};
+
+export type ContactUpdateToOneWithWhereWithoutTicketsInput = {
+  where?: Prisma.ContactWhereInput;
+  data: Prisma.XOR<
+    Prisma.ContactUpdateWithoutTicketsInput,
+    Prisma.ContactUncheckedUpdateWithoutTicketsInput
+  >;
+};
+
+export type ContactUpdateWithoutTicketsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
+  leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
+  deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
+  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
+  dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientContactNestedInput;
+};
+
+export type ContactUncheckedUpdateWithoutTicketsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
+  deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
+  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
+  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientContactNestedInput;
 };
 
 /**

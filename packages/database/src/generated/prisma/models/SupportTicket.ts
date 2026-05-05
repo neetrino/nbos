@@ -755,6 +755,178 @@ export type SupportTicketUncheckedUpdateManyWithoutContactNestedInput = {
   deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
 };
 
+export type SupportTicketCreateNestedManyWithoutExtensionDealInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SupportTicketCreateWithoutExtensionDealInput,
+        Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput
+      >
+    | Prisma.SupportTicketCreateWithoutExtensionDealInput[]
+    | Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput[];
+  connectOrCreate?:
+    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput
+    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput[];
+  createMany?: Prisma.SupportTicketCreateManyExtensionDealInputEnvelope;
+  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+};
+
+export type SupportTicketUncheckedCreateNestedManyWithoutExtensionDealInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SupportTicketCreateWithoutExtensionDealInput,
+        Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput
+      >
+    | Prisma.SupportTicketCreateWithoutExtensionDealInput[]
+    | Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput[];
+  connectOrCreate?:
+    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput
+    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput[];
+  createMany?: Prisma.SupportTicketCreateManyExtensionDealInputEnvelope;
+  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+};
+
+export type SupportTicketUpdateManyWithoutExtensionDealNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SupportTicketCreateWithoutExtensionDealInput,
+        Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput
+      >
+    | Prisma.SupportTicketCreateWithoutExtensionDealInput[]
+    | Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput[];
+  connectOrCreate?:
+    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput
+    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput[];
+  upsert?:
+    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutExtensionDealInput
+    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutExtensionDealInput[];
+  createMany?: Prisma.SupportTicketCreateManyExtensionDealInputEnvelope;
+  set?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  disconnect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  delete?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  update?:
+    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutExtensionDealInput
+    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutExtensionDealInput[];
+  updateMany?:
+    | Prisma.SupportTicketUpdateManyWithWhereWithoutExtensionDealInput
+    | Prisma.SupportTicketUpdateManyWithWhereWithoutExtensionDealInput[];
+  deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
+};
+
+export type SupportTicketUncheckedUpdateManyWithoutExtensionDealNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SupportTicketCreateWithoutExtensionDealInput,
+        Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput
+      >
+    | Prisma.SupportTicketCreateWithoutExtensionDealInput[]
+    | Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput[];
+  connectOrCreate?:
+    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput
+    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput[];
+  upsert?:
+    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutExtensionDealInput
+    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutExtensionDealInput[];
+  createMany?: Prisma.SupportTicketCreateManyExtensionDealInputEnvelope;
+  set?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  disconnect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  delete?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  update?:
+    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutExtensionDealInput
+    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutExtensionDealInput[];
+  updateMany?:
+    | Prisma.SupportTicketUpdateManyWithWhereWithoutExtensionDealInput
+    | Prisma.SupportTicketUpdateManyWithWhereWithoutExtensionDealInput[];
+  deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
+};
+
+export type SupportTicketCreateNestedManyWithoutAssigneeInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SupportTicketCreateWithoutAssigneeInput,
+        Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput
+      >
+    | Prisma.SupportTicketCreateWithoutAssigneeInput[]
+    | Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput[];
+  connectOrCreate?:
+    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput
+    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput[];
+  createMany?: Prisma.SupportTicketCreateManyAssigneeInputEnvelope;
+  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+};
+
+export type SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SupportTicketCreateWithoutAssigneeInput,
+        Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput
+      >
+    | Prisma.SupportTicketCreateWithoutAssigneeInput[]
+    | Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput[];
+  connectOrCreate?:
+    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput
+    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput[];
+  createMany?: Prisma.SupportTicketCreateManyAssigneeInputEnvelope;
+  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+};
+
+export type SupportTicketUpdateManyWithoutAssigneeNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SupportTicketCreateWithoutAssigneeInput,
+        Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput
+      >
+    | Prisma.SupportTicketCreateWithoutAssigneeInput[]
+    | Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput[];
+  connectOrCreate?:
+    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput
+    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput[];
+  upsert?:
+    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutAssigneeInput
+    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutAssigneeInput[];
+  createMany?: Prisma.SupportTicketCreateManyAssigneeInputEnvelope;
+  set?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  disconnect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  delete?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  update?:
+    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutAssigneeInput
+    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutAssigneeInput[];
+  updateMany?:
+    | Prisma.SupportTicketUpdateManyWithWhereWithoutAssigneeInput
+    | Prisma.SupportTicketUpdateManyWithWhereWithoutAssigneeInput[];
+  deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
+};
+
+export type SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SupportTicketCreateWithoutAssigneeInput,
+        Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput
+      >
+    | Prisma.SupportTicketCreateWithoutAssigneeInput[]
+    | Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput[];
+  connectOrCreate?:
+    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput
+    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput[];
+  upsert?:
+    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutAssigneeInput
+    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutAssigneeInput[];
+  createMany?: Prisma.SupportTicketCreateManyAssigneeInputEnvelope;
+  set?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  disconnect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  delete?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
+  update?:
+    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutAssigneeInput
+    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutAssigneeInput[];
+  updateMany?:
+    | Prisma.SupportTicketUpdateManyWithWhereWithoutAssigneeInput
+    | Prisma.SupportTicketUpdateManyWithWhereWithoutAssigneeInput[];
+  deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
+};
+
 export type SupportTicketCreateNestedManyWithoutProjectInput = {
   create?:
     | Prisma.XOR<
@@ -927,92 +1099,6 @@ export type SupportTicketUncheckedUpdateManyWithoutProductNestedInput = {
   deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
 };
 
-export type SupportTicketCreateNestedManyWithoutExtensionDealInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SupportTicketCreateWithoutExtensionDealInput,
-        Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput
-      >
-    | Prisma.SupportTicketCreateWithoutExtensionDealInput[]
-    | Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput[];
-  connectOrCreate?:
-    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput
-    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput[];
-  createMany?: Prisma.SupportTicketCreateManyExtensionDealInputEnvelope;
-  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-};
-
-export type SupportTicketUncheckedCreateNestedManyWithoutExtensionDealInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SupportTicketCreateWithoutExtensionDealInput,
-        Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput
-      >
-    | Prisma.SupportTicketCreateWithoutExtensionDealInput[]
-    | Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput[];
-  connectOrCreate?:
-    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput
-    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput[];
-  createMany?: Prisma.SupportTicketCreateManyExtensionDealInputEnvelope;
-  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-};
-
-export type SupportTicketUpdateManyWithoutExtensionDealNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SupportTicketCreateWithoutExtensionDealInput,
-        Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput
-      >
-    | Prisma.SupportTicketCreateWithoutExtensionDealInput[]
-    | Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput[];
-  connectOrCreate?:
-    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput
-    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput[];
-  upsert?:
-    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutExtensionDealInput
-    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutExtensionDealInput[];
-  createMany?: Prisma.SupportTicketCreateManyExtensionDealInputEnvelope;
-  set?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  disconnect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  delete?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  update?:
-    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutExtensionDealInput
-    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutExtensionDealInput[];
-  updateMany?:
-    | Prisma.SupportTicketUpdateManyWithWhereWithoutExtensionDealInput
-    | Prisma.SupportTicketUpdateManyWithWhereWithoutExtensionDealInput[];
-  deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
-};
-
-export type SupportTicketUncheckedUpdateManyWithoutExtensionDealNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SupportTicketCreateWithoutExtensionDealInput,
-        Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput
-      >
-    | Prisma.SupportTicketCreateWithoutExtensionDealInput[]
-    | Prisma.SupportTicketUncheckedCreateWithoutExtensionDealInput[];
-  connectOrCreate?:
-    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput
-    | Prisma.SupportTicketCreateOrConnectWithoutExtensionDealInput[];
-  upsert?:
-    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutExtensionDealInput
-    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutExtensionDealInput[];
-  createMany?: Prisma.SupportTicketCreateManyExtensionDealInputEnvelope;
-  set?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  disconnect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  delete?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  update?:
-    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutExtensionDealInput
-    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutExtensionDealInput[];
-  updateMany?:
-    | Prisma.SupportTicketUpdateManyWithWhereWithoutExtensionDealInput
-    | Prisma.SupportTicketUpdateManyWithWhereWithoutExtensionDealInput[];
-  deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
-};
-
 export type EnumTicketCategoryEnumFieldUpdateOperationsInput = {
   set?: $Enums.TicketCategoryEnum;
 };
@@ -1027,92 +1113,6 @@ export type EnumTicketStatusEnumFieldUpdateOperationsInput = {
 
 export type NullableEnumSupportCoverageEnumFieldUpdateOperationsInput = {
   set?: $Enums.SupportCoverageEnum | null;
-};
-
-export type SupportTicketCreateNestedManyWithoutAssigneeInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SupportTicketCreateWithoutAssigneeInput,
-        Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput
-      >
-    | Prisma.SupportTicketCreateWithoutAssigneeInput[]
-    | Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput[];
-  connectOrCreate?:
-    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput
-    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput[];
-  createMany?: Prisma.SupportTicketCreateManyAssigneeInputEnvelope;
-  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-};
-
-export type SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SupportTicketCreateWithoutAssigneeInput,
-        Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput
-      >
-    | Prisma.SupportTicketCreateWithoutAssigneeInput[]
-    | Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput[];
-  connectOrCreate?:
-    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput
-    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput[];
-  createMany?: Prisma.SupportTicketCreateManyAssigneeInputEnvelope;
-  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-};
-
-export type SupportTicketUpdateManyWithoutAssigneeNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SupportTicketCreateWithoutAssigneeInput,
-        Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput
-      >
-    | Prisma.SupportTicketCreateWithoutAssigneeInput[]
-    | Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput[];
-  connectOrCreate?:
-    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput
-    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput[];
-  upsert?:
-    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutAssigneeInput
-    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutAssigneeInput[];
-  createMany?: Prisma.SupportTicketCreateManyAssigneeInputEnvelope;
-  set?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  disconnect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  delete?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  update?:
-    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutAssigneeInput
-    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutAssigneeInput[];
-  updateMany?:
-    | Prisma.SupportTicketUpdateManyWithWhereWithoutAssigneeInput
-    | Prisma.SupportTicketUpdateManyWithWhereWithoutAssigneeInput[];
-  deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
-};
-
-export type SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SupportTicketCreateWithoutAssigneeInput,
-        Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput
-      >
-    | Prisma.SupportTicketCreateWithoutAssigneeInput[]
-    | Prisma.SupportTicketUncheckedCreateWithoutAssigneeInput[];
-  connectOrCreate?:
-    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput
-    | Prisma.SupportTicketCreateOrConnectWithoutAssigneeInput[];
-  upsert?:
-    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutAssigneeInput
-    | Prisma.SupportTicketUpsertWithWhereUniqueWithoutAssigneeInput[];
-  createMany?: Prisma.SupportTicketCreateManyAssigneeInputEnvelope;
-  set?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  disconnect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  delete?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  connect?: Prisma.SupportTicketWhereUniqueInput | Prisma.SupportTicketWhereUniqueInput[];
-  update?:
-    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutAssigneeInput
-    | Prisma.SupportTicketUpdateWithWhereUniqueWithoutAssigneeInput[];
-  updateMany?:
-    | Prisma.SupportTicketUpdateManyWithWhereWithoutAssigneeInput
-    | Prisma.SupportTicketUpdateManyWithWhereWithoutAssigneeInput[];
-  deleteMany?: Prisma.SupportTicketScalarWhereInput | Prisma.SupportTicketScalarWhereInput[];
 };
 
 export type SupportTicketCreateWithoutContactInput = {
@@ -1221,168 +1221,6 @@ export type SupportTicketScalarWhereInput = {
   slaResolveDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'SupportTicket'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'SupportTicket'> | Date | string;
-};
-
-export type SupportTicketCreateWithoutProjectInput = {
-  id?: string;
-  code: string;
-  category: $Enums.TicketCategoryEnum;
-  priority?: $Enums.TicketPriorityEnum;
-  status?: $Enums.TicketStatusEnum;
-  coverageDecision?: $Enums.SupportCoverageEnum | null;
-  title: string;
-  description?: string | null;
-  billable?: boolean;
-  slaResponseDeadline?: Date | string | null;
-  slaResolveDeadline?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  product?: Prisma.ProductCreateNestedOneWithoutTicketsInput;
-  extensionDeal?: Prisma.DealCreateNestedOneWithoutSupportTicketsInput;
-  contact?: Prisma.ContactCreateNestedOneWithoutTicketsInput;
-  assignee?: Prisma.EmployeeCreateNestedOneWithoutTicketsAssignedInput;
-};
-
-export type SupportTicketUncheckedCreateWithoutProjectInput = {
-  id?: string;
-  code: string;
-  productId?: string | null;
-  contactId?: string | null;
-  extensionDealId?: string | null;
-  category: $Enums.TicketCategoryEnum;
-  priority?: $Enums.TicketPriorityEnum;
-  status?: $Enums.TicketStatusEnum;
-  coverageDecision?: $Enums.SupportCoverageEnum | null;
-  title: string;
-  description?: string | null;
-  billable?: boolean;
-  assignedTo?: string | null;
-  slaResponseDeadline?: Date | string | null;
-  slaResolveDeadline?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type SupportTicketCreateOrConnectWithoutProjectInput = {
-  where: Prisma.SupportTicketWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.SupportTicketCreateWithoutProjectInput,
-    Prisma.SupportTicketUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type SupportTicketCreateManyProjectInputEnvelope = {
-  data: Prisma.SupportTicketCreateManyProjectInput | Prisma.SupportTicketCreateManyProjectInput[];
-  skipDuplicates?: boolean;
-};
-
-export type SupportTicketUpsertWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.SupportTicketWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.SupportTicketUpdateWithoutProjectInput,
-    Prisma.SupportTicketUncheckedUpdateWithoutProjectInput
-  >;
-  create: Prisma.XOR<
-    Prisma.SupportTicketCreateWithoutProjectInput,
-    Prisma.SupportTicketUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type SupportTicketUpdateWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.SupportTicketWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.SupportTicketUpdateWithoutProjectInput,
-    Prisma.SupportTicketUncheckedUpdateWithoutProjectInput
-  >;
-};
-
-export type SupportTicketUpdateManyWithWhereWithoutProjectInput = {
-  where: Prisma.SupportTicketScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.SupportTicketUpdateManyMutationInput,
-    Prisma.SupportTicketUncheckedUpdateManyWithoutProjectInput
-  >;
-};
-
-export type SupportTicketCreateWithoutProductInput = {
-  id?: string;
-  code: string;
-  category: $Enums.TicketCategoryEnum;
-  priority?: $Enums.TicketPriorityEnum;
-  status?: $Enums.TicketStatusEnum;
-  coverageDecision?: $Enums.SupportCoverageEnum | null;
-  title: string;
-  description?: string | null;
-  billable?: boolean;
-  slaResponseDeadline?: Date | string | null;
-  slaResolveDeadline?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  project: Prisma.ProjectCreateNestedOneWithoutTicketsInput;
-  extensionDeal?: Prisma.DealCreateNestedOneWithoutSupportTicketsInput;
-  contact?: Prisma.ContactCreateNestedOneWithoutTicketsInput;
-  assignee?: Prisma.EmployeeCreateNestedOneWithoutTicketsAssignedInput;
-};
-
-export type SupportTicketUncheckedCreateWithoutProductInput = {
-  id?: string;
-  code: string;
-  projectId: string;
-  contactId?: string | null;
-  extensionDealId?: string | null;
-  category: $Enums.TicketCategoryEnum;
-  priority?: $Enums.TicketPriorityEnum;
-  status?: $Enums.TicketStatusEnum;
-  coverageDecision?: $Enums.SupportCoverageEnum | null;
-  title: string;
-  description?: string | null;
-  billable?: boolean;
-  assignedTo?: string | null;
-  slaResponseDeadline?: Date | string | null;
-  slaResolveDeadline?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type SupportTicketCreateOrConnectWithoutProductInput = {
-  where: Prisma.SupportTicketWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.SupportTicketCreateWithoutProductInput,
-    Prisma.SupportTicketUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type SupportTicketCreateManyProductInputEnvelope = {
-  data: Prisma.SupportTicketCreateManyProductInput | Prisma.SupportTicketCreateManyProductInput[];
-  skipDuplicates?: boolean;
-};
-
-export type SupportTicketUpsertWithWhereUniqueWithoutProductInput = {
-  where: Prisma.SupportTicketWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.SupportTicketUpdateWithoutProductInput,
-    Prisma.SupportTicketUncheckedUpdateWithoutProductInput
-  >;
-  create: Prisma.XOR<
-    Prisma.SupportTicketCreateWithoutProductInput,
-    Prisma.SupportTicketUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type SupportTicketUpdateWithWhereUniqueWithoutProductInput = {
-  where: Prisma.SupportTicketWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.SupportTicketUpdateWithoutProductInput,
-    Prisma.SupportTicketUncheckedUpdateWithoutProductInput
-  >;
-};
-
-export type SupportTicketUpdateManyWithWhereWithoutProductInput = {
-  where: Prisma.SupportTicketScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.SupportTicketUpdateManyMutationInput,
-    Prisma.SupportTicketUncheckedUpdateManyWithoutProductInput
-  >;
 };
 
 export type SupportTicketCreateWithoutExtensionDealInput = {
@@ -1549,6 +1387,168 @@ export type SupportTicketUpdateManyWithWhereWithoutAssigneeInput = {
   >;
 };
 
+export type SupportTicketCreateWithoutProjectInput = {
+  id?: string;
+  code: string;
+  category: $Enums.TicketCategoryEnum;
+  priority?: $Enums.TicketPriorityEnum;
+  status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
+  title: string;
+  description?: string | null;
+  billable?: boolean;
+  slaResponseDeadline?: Date | string | null;
+  slaResolveDeadline?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  product?: Prisma.ProductCreateNestedOneWithoutTicketsInput;
+  extensionDeal?: Prisma.DealCreateNestedOneWithoutSupportTicketsInput;
+  contact?: Prisma.ContactCreateNestedOneWithoutTicketsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutTicketsAssignedInput;
+};
+
+export type SupportTicketUncheckedCreateWithoutProjectInput = {
+  id?: string;
+  code: string;
+  productId?: string | null;
+  contactId?: string | null;
+  extensionDealId?: string | null;
+  category: $Enums.TicketCategoryEnum;
+  priority?: $Enums.TicketPriorityEnum;
+  status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
+  title: string;
+  description?: string | null;
+  billable?: boolean;
+  assignedTo?: string | null;
+  slaResponseDeadline?: Date | string | null;
+  slaResolveDeadline?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type SupportTicketCreateOrConnectWithoutProjectInput = {
+  where: Prisma.SupportTicketWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SupportTicketCreateWithoutProjectInput,
+    Prisma.SupportTicketUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type SupportTicketCreateManyProjectInputEnvelope = {
+  data: Prisma.SupportTicketCreateManyProjectInput | Prisma.SupportTicketCreateManyProjectInput[];
+  skipDuplicates?: boolean;
+};
+
+export type SupportTicketUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.SupportTicketWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.SupportTicketUpdateWithoutProjectInput,
+    Prisma.SupportTicketUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SupportTicketCreateWithoutProjectInput,
+    Prisma.SupportTicketUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type SupportTicketUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.SupportTicketWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.SupportTicketUpdateWithoutProjectInput,
+    Prisma.SupportTicketUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type SupportTicketUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.SupportTicketScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.SupportTicketUpdateManyMutationInput,
+    Prisma.SupportTicketUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
+export type SupportTicketCreateWithoutProductInput = {
+  id?: string;
+  code: string;
+  category: $Enums.TicketCategoryEnum;
+  priority?: $Enums.TicketPriorityEnum;
+  status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
+  title: string;
+  description?: string | null;
+  billable?: boolean;
+  slaResponseDeadline?: Date | string | null;
+  slaResolveDeadline?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutTicketsInput;
+  extensionDeal?: Prisma.DealCreateNestedOneWithoutSupportTicketsInput;
+  contact?: Prisma.ContactCreateNestedOneWithoutTicketsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutTicketsAssignedInput;
+};
+
+export type SupportTicketUncheckedCreateWithoutProductInput = {
+  id?: string;
+  code: string;
+  projectId: string;
+  contactId?: string | null;
+  extensionDealId?: string | null;
+  category: $Enums.TicketCategoryEnum;
+  priority?: $Enums.TicketPriorityEnum;
+  status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
+  title: string;
+  description?: string | null;
+  billable?: boolean;
+  assignedTo?: string | null;
+  slaResponseDeadline?: Date | string | null;
+  slaResolveDeadline?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type SupportTicketCreateOrConnectWithoutProductInput = {
+  where: Prisma.SupportTicketWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.SupportTicketCreateWithoutProductInput,
+    Prisma.SupportTicketUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type SupportTicketCreateManyProductInputEnvelope = {
+  data: Prisma.SupportTicketCreateManyProductInput | Prisma.SupportTicketCreateManyProductInput[];
+  skipDuplicates?: boolean;
+};
+
+export type SupportTicketUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.SupportTicketWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.SupportTicketUpdateWithoutProductInput,
+    Prisma.SupportTicketUncheckedUpdateWithoutProductInput
+  >;
+  create: Prisma.XOR<
+    Prisma.SupportTicketCreateWithoutProductInput,
+    Prisma.SupportTicketUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type SupportTicketUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.SupportTicketWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.SupportTicketUpdateWithoutProductInput,
+    Prisma.SupportTicketUncheckedUpdateWithoutProductInput
+  >;
+};
+
+export type SupportTicketUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.SupportTicketScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.SupportTicketUpdateManyMutationInput,
+    Prisma.SupportTicketUncheckedUpdateManyWithoutProductInput
+  >;
+};
+
 export type SupportTicketCreateManyContactInput = {
   id?: string;
   code: string;
@@ -1620,184 +1620,6 @@ export type SupportTicketUncheckedUpdateManyWithoutContactInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
-  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
-  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
-  coverageDecision?:
-    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
-    | $Enums.SupportCoverageEnum
-    | null;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type SupportTicketCreateManyProjectInput = {
-  id?: string;
-  code: string;
-  productId?: string | null;
-  contactId?: string | null;
-  extensionDealId?: string | null;
-  category: $Enums.TicketCategoryEnum;
-  priority?: $Enums.TicketPriorityEnum;
-  status?: $Enums.TicketStatusEnum;
-  coverageDecision?: $Enums.SupportCoverageEnum | null;
-  title: string;
-  description?: string | null;
-  billable?: boolean;
-  assignedTo?: string | null;
-  slaResponseDeadline?: Date | string | null;
-  slaResolveDeadline?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type SupportTicketUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
-  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
-  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
-  coverageDecision?:
-    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
-    | $Enums.SupportCoverageEnum
-    | null;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  product?: Prisma.ProductUpdateOneWithoutTicketsNestedInput;
-  extensionDeal?: Prisma.DealUpdateOneWithoutSupportTicketsNestedInput;
-  contact?: Prisma.ContactUpdateOneWithoutTicketsNestedInput;
-  assignee?: Prisma.EmployeeUpdateOneWithoutTicketsAssignedNestedInput;
-};
-
-export type SupportTicketUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
-  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
-  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
-  coverageDecision?:
-    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
-    | $Enums.SupportCoverageEnum
-    | null;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type SupportTicketUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
-  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
-  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
-  coverageDecision?:
-    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
-    | $Enums.SupportCoverageEnum
-    | null;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type SupportTicketCreateManyProductInput = {
-  id?: string;
-  code: string;
-  projectId: string;
-  contactId?: string | null;
-  extensionDealId?: string | null;
-  category: $Enums.TicketCategoryEnum;
-  priority?: $Enums.TicketPriorityEnum;
-  status?: $Enums.TicketStatusEnum;
-  coverageDecision?: $Enums.SupportCoverageEnum | null;
-  title: string;
-  description?: string | null;
-  billable?: boolean;
-  assignedTo?: string | null;
-  slaResponseDeadline?: Date | string | null;
-  slaResolveDeadline?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type SupportTicketUpdateWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
-  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
-  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
-  coverageDecision?:
-    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
-    | $Enums.SupportCoverageEnum
-    | null;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutTicketsNestedInput;
-  extensionDeal?: Prisma.DealUpdateOneWithoutSupportTicketsNestedInput;
-  contact?: Prisma.ContactUpdateOneWithoutTicketsNestedInput;
-  assignee?: Prisma.EmployeeUpdateOneWithoutTicketsAssignedNestedInput;
-};
-
-export type SupportTicketUncheckedUpdateWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
-  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
-  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
-  coverageDecision?:
-    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
-    | $Enums.SupportCoverageEnum
-    | null;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type SupportTicketUncheckedUpdateManyWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  code?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
   priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
@@ -1988,6 +1810,184 @@ export type SupportTicketUncheckedUpdateManyWithoutAssigneeInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type SupportTicketCreateManyProjectInput = {
+  id?: string;
+  code: string;
+  productId?: string | null;
+  contactId?: string | null;
+  extensionDealId?: string | null;
+  category: $Enums.TicketCategoryEnum;
+  priority?: $Enums.TicketPriorityEnum;
+  status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
+  title: string;
+  description?: string | null;
+  billable?: boolean;
+  assignedTo?: string | null;
+  slaResponseDeadline?: Date | string | null;
+  slaResolveDeadline?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type SupportTicketUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
+  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
+  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  product?: Prisma.ProductUpdateOneWithoutTicketsNestedInput;
+  extensionDeal?: Prisma.DealUpdateOneWithoutSupportTicketsNestedInput;
+  contact?: Prisma.ContactUpdateOneWithoutTicketsNestedInput;
+  assignee?: Prisma.EmployeeUpdateOneWithoutTicketsAssignedNestedInput;
+};
+
+export type SupportTicketUncheckedUpdateWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
+  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
+  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type SupportTicketUncheckedUpdateManyWithoutProjectInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
+  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
+  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type SupportTicketCreateManyProductInput = {
+  id?: string;
+  code: string;
+  projectId: string;
+  contactId?: string | null;
+  extensionDealId?: string | null;
+  category: $Enums.TicketCategoryEnum;
+  priority?: $Enums.TicketPriorityEnum;
+  status?: $Enums.TicketStatusEnum;
+  coverageDecision?: $Enums.SupportCoverageEnum | null;
+  title: string;
+  description?: string | null;
+  billable?: boolean;
+  assignedTo?: string | null;
+  slaResponseDeadline?: Date | string | null;
+  slaResolveDeadline?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type SupportTicketUpdateWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
+  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
+  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutTicketsNestedInput;
+  extensionDeal?: Prisma.DealUpdateOneWithoutSupportTicketsNestedInput;
+  contact?: Prisma.ContactUpdateOneWithoutTicketsNestedInput;
+  assignee?: Prisma.EmployeeUpdateOneWithoutTicketsAssignedNestedInput;
+};
+
+export type SupportTicketUncheckedUpdateWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
+  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
+  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type SupportTicketUncheckedUpdateManyWithoutProductInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  code?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  extensionDealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?: Prisma.EnumTicketCategoryEnumFieldUpdateOperationsInput | $Enums.TicketCategoryEnum;
+  priority?: Prisma.EnumTicketPriorityEnumFieldUpdateOperationsInput | $Enums.TicketPriorityEnum;
+  status?: Prisma.EnumTicketStatusEnumFieldUpdateOperationsInput | $Enums.TicketStatusEnum;
+  coverageDecision?:
+    | Prisma.NullableEnumSupportCoverageEnumFieldUpdateOperationsInput
+    | $Enums.SupportCoverageEnum
+    | null;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;

@@ -1,0 +1,67 @@
+// ─── CLIENT SERVICE RECORDS ────────────────────────────────
+
+enum ClientServiceType {
+  DOMAIN
+  HOSTING
+  SERVICE
+  ACCOUNT
+  LICENSE
+}
+
+enum ClientServiceStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  EXPIRING_SOON
+  EXPIRED
+  CANCELLED
+}
+
+enum ClientServiceBillingModel {
+  CLIENT_PAID
+  COMPANY_PAID
+}
+
+enum ClientServicePricingModel {
+  FIXED
+  USAGE_BASED
+}
+
+model ClientServiceRecord {
+  id                   String                    @id @default(uuid())
+  projectId            String                    @map("project_id")
+  productId            String?                   @map("product_id")
+  type                 ClientServiceType
+  name                 String
+  provider             String?
+  providerAccountId    String?                   @map("provider_account_id")
+  status               ClientServiceStatus       @default(PENDING)
+  billingModel         ClientServiceBillingModel @default(CLIENT_PAID) @map("billing_model")
+  pricingModel         ClientServicePricingModel @default(FIXED) @map("pricing_model")
+  frequency            ExpenseFrequency          @default(YEARLY)
+  ourCost              Decimal?                  @map("our_cost") @db.Decimal(12, 2)
+  clientCharge         Decimal?                  @map("client_charge") @db.Decimal(12, 2)
+  taxStatus            TaxStatus                 @default(TAX) @map("tax_status")
+  notificationsEnabled Boolean                   @default(true) @map("notifications_enabled")
+  startDate            DateTime?                 @map("start_date")
+  renewalDate          DateTime?                 @map("renewal_date")
+  notes                String?
+  createdAt            DateTime                  @default(now()) @map("created_at")
+  updatedAt            DateTime                  @updatedAt @map("updated_at")
+
+  project         Project       @relation(fields: [projectId], references: [id])
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
+  providerAccount Credential?   @relation(fields: [providerAccountId], references: [id], onDelete: SetNull)
+  invoices        Invoice[]
+  expensePlans    ExpensePlan[]
+  expenses        Expense[]
+
+  @@index([projectId])
+  @@index([productId])
+  @@index([providerAccountId])
+  @@index([type])
+  @@index([status])
+  @@index([billingModel])
+  @@index([renewalDate])
+  @@map("client_service_records")
+}

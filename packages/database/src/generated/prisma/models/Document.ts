@@ -863,92 +863,6 @@ export type DocumentScalarRelationFilter = {
   isNot?: Prisma.DocumentWhereInput;
 };
 
-export type DocumentCreateNestedManyWithoutCoverFileAssetInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.DocumentCreateWithoutCoverFileAssetInput,
-        Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
-      >
-    | Prisma.DocumentCreateWithoutCoverFileAssetInput[]
-    | Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput[];
-  connectOrCreate?:
-    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput
-    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput[];
-  createMany?: Prisma.DocumentCreateManyCoverFileAssetInputEnvelope;
-  connect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-};
-
-export type DocumentUncheckedCreateNestedManyWithoutCoverFileAssetInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.DocumentCreateWithoutCoverFileAssetInput,
-        Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
-      >
-    | Prisma.DocumentCreateWithoutCoverFileAssetInput[]
-    | Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput[];
-  connectOrCreate?:
-    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput
-    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput[];
-  createMany?: Prisma.DocumentCreateManyCoverFileAssetInputEnvelope;
-  connect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-};
-
-export type DocumentUpdateManyWithoutCoverFileAssetNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.DocumentCreateWithoutCoverFileAssetInput,
-        Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
-      >
-    | Prisma.DocumentCreateWithoutCoverFileAssetInput[]
-    | Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput[];
-  connectOrCreate?:
-    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput
-    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput[];
-  upsert?:
-    | Prisma.DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput
-    | Prisma.DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput[];
-  createMany?: Prisma.DocumentCreateManyCoverFileAssetInputEnvelope;
-  set?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-  disconnect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-  delete?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-  connect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-  update?:
-    | Prisma.DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput
-    | Prisma.DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput[];
-  updateMany?:
-    | Prisma.DocumentUpdateManyWithWhereWithoutCoverFileAssetInput
-    | Prisma.DocumentUpdateManyWithWhereWithoutCoverFileAssetInput[];
-  deleteMany?: Prisma.DocumentScalarWhereInput | Prisma.DocumentScalarWhereInput[];
-};
-
-export type DocumentUncheckedUpdateManyWithoutCoverFileAssetNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.DocumentCreateWithoutCoverFileAssetInput,
-        Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
-      >
-    | Prisma.DocumentCreateWithoutCoverFileAssetInput[]
-    | Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput[];
-  connectOrCreate?:
-    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput
-    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput[];
-  upsert?:
-    | Prisma.DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput
-    | Prisma.DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput[];
-  createMany?: Prisma.DocumentCreateManyCoverFileAssetInputEnvelope;
-  set?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-  disconnect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-  delete?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-  connect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
-  update?:
-    | Prisma.DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput
-    | Prisma.DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput[];
-  updateMany?:
-    | Prisma.DocumentUpdateManyWithWhereWithoutCoverFileAssetInput
-    | Prisma.DocumentUpdateManyWithWhereWithoutCoverFileAssetInput[];
-  deleteMany?: Prisma.DocumentScalarWhereInput | Prisma.DocumentScalarWhereInput[];
-};
-
 export type DocumentCreateNestedManyWithoutSectionInput = {
   create?:
     | Prisma.XOR<
@@ -1329,145 +1243,90 @@ export type DocumentUpdateOneRequiredWithoutActivityEventsNestedInput = {
   >;
 };
 
-export type DocumentCreateWithoutCoverFileAssetInput = {
-  id?: string;
-  type?: $Enums.DocumentTypeEnum;
-  title: string;
-  slug: string;
-  description?: string | null;
-  status?: $Enums.DocumentStatusEnum;
-  ownerId?: string | null;
-  createdById?: string | null;
-  updatedById?: string | null;
-  publishedById?: string | null;
-  publishedAt?: Date | string | null;
-  archivedAt?: Date | string | null;
-  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  contentHtml?: string | null;
-  plainText?: string | null;
-  visibility?: $Enums.FileVisibilityEnum;
-  contentStorage?: $Enums.DocumentContentStorageEnum;
-  contentObjectKey?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
-  section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
-  parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
-  children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
-  externalLink?: Prisma.ExternalDocumentLinkCreateNestedOneWithoutDocumentsInput;
-  tagLinks?: Prisma.DocumentTagOnDocumentCreateNestedManyWithoutDocumentInput;
-  attachments?: Prisma.DocumentAttachmentCreateNestedManyWithoutDocumentInput;
-  activityEvents?: Prisma.DocumentActivityEventCreateNestedManyWithoutDocumentInput;
+export type DocumentCreateNestedManyWithoutCoverFileAssetInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DocumentCreateWithoutCoverFileAssetInput,
+        Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
+      >
+    | Prisma.DocumentCreateWithoutCoverFileAssetInput[]
+    | Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput
+    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput[];
+  createMany?: Prisma.DocumentCreateManyCoverFileAssetInputEnvelope;
+  connect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
 };
 
-export type DocumentUncheckedCreateWithoutCoverFileAssetInput = {
-  id?: string;
-  type?: $Enums.DocumentTypeEnum;
-  title: string;
-  slug: string;
-  description?: string | null;
-  sectionId: string;
-  parentId?: string | null;
-  status?: $Enums.DocumentStatusEnum;
-  ownerId?: string | null;
-  createdById?: string | null;
-  updatedById?: string | null;
-  publishedById?: string | null;
-  publishedAt?: Date | string | null;
-  archivedAt?: Date | string | null;
-  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  contentHtml?: string | null;
-  plainText?: string | null;
-  externalDocumentLinkId?: string | null;
-  visibility?: $Enums.FileVisibilityEnum;
-  contentStorage?: $Enums.DocumentContentStorageEnum;
-  contentObjectKey?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
-  children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
-  tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
-  attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
-  activityEvents?: Prisma.DocumentActivityEventUncheckedCreateNestedManyWithoutDocumentInput;
+export type DocumentUncheckedCreateNestedManyWithoutCoverFileAssetInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DocumentCreateWithoutCoverFileAssetInput,
+        Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
+      >
+    | Prisma.DocumentCreateWithoutCoverFileAssetInput[]
+    | Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput
+    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput[];
+  createMany?: Prisma.DocumentCreateManyCoverFileAssetInputEnvelope;
+  connect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
 };
 
-export type DocumentCreateOrConnectWithoutCoverFileAssetInput = {
-  where: Prisma.DocumentWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.DocumentCreateWithoutCoverFileAssetInput,
-    Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
-  >;
+export type DocumentUpdateManyWithoutCoverFileAssetNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DocumentCreateWithoutCoverFileAssetInput,
+        Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
+      >
+    | Prisma.DocumentCreateWithoutCoverFileAssetInput[]
+    | Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput
+    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput[];
+  upsert?:
+    | Prisma.DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput
+    | Prisma.DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput[];
+  createMany?: Prisma.DocumentCreateManyCoverFileAssetInputEnvelope;
+  set?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
+  disconnect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
+  delete?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
+  connect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
+  update?:
+    | Prisma.DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput
+    | Prisma.DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput[];
+  updateMany?:
+    | Prisma.DocumentUpdateManyWithWhereWithoutCoverFileAssetInput
+    | Prisma.DocumentUpdateManyWithWhereWithoutCoverFileAssetInput[];
+  deleteMany?: Prisma.DocumentScalarWhereInput | Prisma.DocumentScalarWhereInput[];
 };
 
-export type DocumentCreateManyCoverFileAssetInputEnvelope = {
-  data:
-    | Prisma.DocumentCreateManyCoverFileAssetInput
-    | Prisma.DocumentCreateManyCoverFileAssetInput[];
-  skipDuplicates?: boolean;
-};
-
-export type DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput = {
-  where: Prisma.DocumentWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.DocumentUpdateWithoutCoverFileAssetInput,
-    Prisma.DocumentUncheckedUpdateWithoutCoverFileAssetInput
-  >;
-  create: Prisma.XOR<
-    Prisma.DocumentCreateWithoutCoverFileAssetInput,
-    Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
-  >;
-};
-
-export type DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput = {
-  where: Prisma.DocumentWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.DocumentUpdateWithoutCoverFileAssetInput,
-    Prisma.DocumentUncheckedUpdateWithoutCoverFileAssetInput
-  >;
-};
-
-export type DocumentUpdateManyWithWhereWithoutCoverFileAssetInput = {
-  where: Prisma.DocumentScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.DocumentUpdateManyMutationInput,
-    Prisma.DocumentUncheckedUpdateManyWithoutCoverFileAssetInput
-  >;
-};
-
-export type DocumentScalarWhereInput = {
-  AND?: Prisma.DocumentScalarWhereInput | Prisma.DocumentScalarWhereInput[];
-  OR?: Prisma.DocumentScalarWhereInput[];
-  NOT?: Prisma.DocumentScalarWhereInput | Prisma.DocumentScalarWhereInput[];
-  id?: Prisma.StringFilter<'Document'> | string;
-  type?: Prisma.EnumDocumentTypeEnumFilter<'Document'> | $Enums.DocumentTypeEnum;
-  title?: Prisma.StringFilter<'Document'> | string;
-  slug?: Prisma.StringFilter<'Document'> | string;
-  description?: Prisma.StringNullableFilter<'Document'> | string | null;
-  sectionId?: Prisma.StringFilter<'Document'> | string;
-  parentId?: Prisma.StringNullableFilter<'Document'> | string | null;
-  status?: Prisma.EnumDocumentStatusEnumFilter<'Document'> | $Enums.DocumentStatusEnum;
-  ownerId?: Prisma.StringNullableFilter<'Document'> | string | null;
-  createdById?: Prisma.StringNullableFilter<'Document'> | string | null;
-  updatedById?: Prisma.StringNullableFilter<'Document'> | string | null;
-  publishedById?: Prisma.StringNullableFilter<'Document'> | string | null;
-  publishedAt?: Prisma.DateTimeNullableFilter<'Document'> | Date | string | null;
-  archivedAt?: Prisma.DateTimeNullableFilter<'Document'> | Date | string | null;
-  contentJson?: Prisma.JsonNullableFilter<'Document'>;
-  contentHtml?: Prisma.StringNullableFilter<'Document'> | string | null;
-  plainText?: Prisma.StringNullableFilter<'Document'> | string | null;
-  coverFileAssetId?: Prisma.StringNullableFilter<'Document'> | string | null;
-  externalDocumentLinkId?: Prisma.StringNullableFilter<'Document'> | string | null;
-  visibility?: Prisma.EnumFileVisibilityEnumFilter<'Document'> | $Enums.FileVisibilityEnum;
-  contentStorage?:
-    | Prisma.EnumDocumentContentStorageEnumFilter<'Document'>
-    | $Enums.DocumentContentStorageEnum;
-  contentObjectKey?: Prisma.StringNullableFilter<'Document'> | string | null;
-  createdAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
-  updatedAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
-  listScopeOverride?:
-    | Prisma.EnumDocumentListScopeEnumNullableFilter<'Document'>
-    | $Enums.DocumentListScopeEnum
-    | null;
+export type DocumentUncheckedUpdateManyWithoutCoverFileAssetNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DocumentCreateWithoutCoverFileAssetInput,
+        Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
+      >
+    | Prisma.DocumentCreateWithoutCoverFileAssetInput[]
+    | Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput
+    | Prisma.DocumentCreateOrConnectWithoutCoverFileAssetInput[];
+  upsert?:
+    | Prisma.DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput
+    | Prisma.DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput[];
+  createMany?: Prisma.DocumentCreateManyCoverFileAssetInputEnvelope;
+  set?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
+  disconnect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
+  delete?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
+  connect?: Prisma.DocumentWhereUniqueInput | Prisma.DocumentWhereUniqueInput[];
+  update?:
+    | Prisma.DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput
+    | Prisma.DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput[];
+  updateMany?:
+    | Prisma.DocumentUpdateManyWithWhereWithoutCoverFileAssetInput
+    | Prisma.DocumentUpdateManyWithWhereWithoutCoverFileAssetInput[];
+  deleteMany?: Prisma.DocumentScalarWhereInput | Prisma.DocumentScalarWhereInput[];
 };
 
 export type DocumentCreateWithoutSectionInput = {
@@ -1571,6 +1430,42 @@ export type DocumentUpdateManyWithWhereWithoutSectionInput = {
     Prisma.DocumentUpdateManyMutationInput,
     Prisma.DocumentUncheckedUpdateManyWithoutSectionInput
   >;
+};
+
+export type DocumentScalarWhereInput = {
+  AND?: Prisma.DocumentScalarWhereInput | Prisma.DocumentScalarWhereInput[];
+  OR?: Prisma.DocumentScalarWhereInput[];
+  NOT?: Prisma.DocumentScalarWhereInput | Prisma.DocumentScalarWhereInput[];
+  id?: Prisma.StringFilter<'Document'> | string;
+  type?: Prisma.EnumDocumentTypeEnumFilter<'Document'> | $Enums.DocumentTypeEnum;
+  title?: Prisma.StringFilter<'Document'> | string;
+  slug?: Prisma.StringFilter<'Document'> | string;
+  description?: Prisma.StringNullableFilter<'Document'> | string | null;
+  sectionId?: Prisma.StringFilter<'Document'> | string;
+  parentId?: Prisma.StringNullableFilter<'Document'> | string | null;
+  status?: Prisma.EnumDocumentStatusEnumFilter<'Document'> | $Enums.DocumentStatusEnum;
+  ownerId?: Prisma.StringNullableFilter<'Document'> | string | null;
+  createdById?: Prisma.StringNullableFilter<'Document'> | string | null;
+  updatedById?: Prisma.StringNullableFilter<'Document'> | string | null;
+  publishedById?: Prisma.StringNullableFilter<'Document'> | string | null;
+  publishedAt?: Prisma.DateTimeNullableFilter<'Document'> | Date | string | null;
+  archivedAt?: Prisma.DateTimeNullableFilter<'Document'> | Date | string | null;
+  contentJson?: Prisma.JsonNullableFilter<'Document'>;
+  contentHtml?: Prisma.StringNullableFilter<'Document'> | string | null;
+  plainText?: Prisma.StringNullableFilter<'Document'> | string | null;
+  coverFileAssetId?: Prisma.StringNullableFilter<'Document'> | string | null;
+  externalDocumentLinkId?: Prisma.StringNullableFilter<'Document'> | string | null;
+  visibility?: Prisma.EnumFileVisibilityEnumFilter<'Document'> | $Enums.FileVisibilityEnum;
+  contentStorage?:
+    | Prisma.EnumDocumentContentStorageEnumFilter<'Document'>
+    | $Enums.DocumentContentStorageEnum;
+  contentObjectKey?: Prisma.StringNullableFilter<'Document'> | string | null;
+  createdAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Document'> | Date | string;
+  listScopeOverride?:
+    | Prisma.EnumDocumentListScopeEnumNullableFilter<'Document'>
+    | $Enums.DocumentListScopeEnum
+    | null;
 };
 
 export type DocumentCreateWithoutExternalLinkInput = {
@@ -2427,7 +2322,38 @@ export type DocumentUncheckedUpdateWithoutActivityEventsInput = {
   attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
 };
 
-export type DocumentCreateManyCoverFileAssetInput = {
+export type DocumentCreateWithoutCoverFileAssetInput = {
+  id?: string;
+  type?: $Enums.DocumentTypeEnum;
+  title: string;
+  slug: string;
+  description?: string | null;
+  status?: $Enums.DocumentStatusEnum;
+  ownerId?: string | null;
+  createdById?: string | null;
+  updatedById?: string | null;
+  publishedById?: string | null;
+  publishedAt?: Date | string | null;
+  archivedAt?: Date | string | null;
+  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  contentHtml?: string | null;
+  plainText?: string | null;
+  visibility?: $Enums.FileVisibilityEnum;
+  contentStorage?: $Enums.DocumentContentStorageEnum;
+  contentObjectKey?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
+  section: Prisma.DocumentSectionCreateNestedOneWithoutDocumentsInput;
+  parent?: Prisma.DocumentCreateNestedOneWithoutChildrenInput;
+  children?: Prisma.DocumentCreateNestedManyWithoutParentInput;
+  externalLink?: Prisma.ExternalDocumentLinkCreateNestedOneWithoutDocumentsInput;
+  tagLinks?: Prisma.DocumentTagOnDocumentCreateNestedManyWithoutDocumentInput;
+  attachments?: Prisma.DocumentAttachmentCreateNestedManyWithoutDocumentInput;
+  activityEvents?: Prisma.DocumentActivityEventCreateNestedManyWithoutDocumentInput;
+};
+
+export type DocumentUncheckedCreateWithoutCoverFileAssetInput = {
   id?: string;
   type?: $Enums.DocumentTypeEnum;
   title: string;
@@ -2452,110 +2378,53 @@ export type DocumentCreateManyCoverFileAssetInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   listScopeOverride?: $Enums.DocumentListScopeEnum | null;
+  children?: Prisma.DocumentUncheckedCreateNestedManyWithoutParentInput;
+  tagLinks?: Prisma.DocumentTagOnDocumentUncheckedCreateNestedManyWithoutDocumentInput;
+  attachments?: Prisma.DocumentAttachmentUncheckedCreateNestedManyWithoutDocumentInput;
+  activityEvents?: Prisma.DocumentActivityEventUncheckedCreateNestedManyWithoutDocumentInput;
 };
 
-export type DocumentUpdateWithoutCoverFileAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumDocumentTypeEnumFieldUpdateOperationsInput | $Enums.DocumentTypeEnum;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  slug?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumDocumentStatusEnumFieldUpdateOperationsInput | $Enums.DocumentStatusEnum;
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publishedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  contentHtml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  plainText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
-  contentStorage?:
-    | Prisma.EnumDocumentContentStorageEnumFieldUpdateOperationsInput
-    | $Enums.DocumentContentStorageEnum;
-  contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  listScopeOverride?:
-    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
-    | $Enums.DocumentListScopeEnum
-    | null;
-  section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
-  parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
-  children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
-  externalLink?: Prisma.ExternalDocumentLinkUpdateOneWithoutDocumentsNestedInput;
-  tagLinks?: Prisma.DocumentTagOnDocumentUpdateManyWithoutDocumentNestedInput;
-  attachments?: Prisma.DocumentAttachmentUpdateManyWithoutDocumentNestedInput;
-  activityEvents?: Prisma.DocumentActivityEventUpdateManyWithoutDocumentNestedInput;
+export type DocumentCreateOrConnectWithoutCoverFileAssetInput = {
+  where: Prisma.DocumentWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.DocumentCreateWithoutCoverFileAssetInput,
+    Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
+  >;
 };
 
-export type DocumentUncheckedUpdateWithoutCoverFileAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumDocumentTypeEnumFieldUpdateOperationsInput | $Enums.DocumentTypeEnum;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  slug?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  sectionId?: Prisma.StringFieldUpdateOperationsInput | string;
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumDocumentStatusEnumFieldUpdateOperationsInput | $Enums.DocumentStatusEnum;
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publishedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  contentHtml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  plainText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  externalDocumentLinkId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
-  contentStorage?:
-    | Prisma.EnumDocumentContentStorageEnumFieldUpdateOperationsInput
-    | $Enums.DocumentContentStorageEnum;
-  contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  listScopeOverride?:
-    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
-    | $Enums.DocumentListScopeEnum
-    | null;
-  children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
-  tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
-  attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
-  activityEvents?: Prisma.DocumentActivityEventUncheckedUpdateManyWithoutDocumentNestedInput;
+export type DocumentCreateManyCoverFileAssetInputEnvelope = {
+  data:
+    | Prisma.DocumentCreateManyCoverFileAssetInput
+    | Prisma.DocumentCreateManyCoverFileAssetInput[];
+  skipDuplicates?: boolean;
 };
 
-export type DocumentUncheckedUpdateManyWithoutCoverFileAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumDocumentTypeEnumFieldUpdateOperationsInput | $Enums.DocumentTypeEnum;
-  title?: Prisma.StringFieldUpdateOperationsInput | string;
-  slug?: Prisma.StringFieldUpdateOperationsInput | string;
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  sectionId?: Prisma.StringFieldUpdateOperationsInput | string;
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumDocumentStatusEnumFieldUpdateOperationsInput | $Enums.DocumentStatusEnum;
-  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publishedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  contentHtml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  plainText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  externalDocumentLinkId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
-  contentStorage?:
-    | Prisma.EnumDocumentContentStorageEnumFieldUpdateOperationsInput
-    | $Enums.DocumentContentStorageEnum;
-  contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  listScopeOverride?:
-    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
-    | $Enums.DocumentListScopeEnum
-    | null;
+export type DocumentUpsertWithWhereUniqueWithoutCoverFileAssetInput = {
+  where: Prisma.DocumentWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.DocumentUpdateWithoutCoverFileAssetInput,
+    Prisma.DocumentUncheckedUpdateWithoutCoverFileAssetInput
+  >;
+  create: Prisma.XOR<
+    Prisma.DocumentCreateWithoutCoverFileAssetInput,
+    Prisma.DocumentUncheckedCreateWithoutCoverFileAssetInput
+  >;
+};
+
+export type DocumentUpdateWithWhereUniqueWithoutCoverFileAssetInput = {
+  where: Prisma.DocumentWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.DocumentUpdateWithoutCoverFileAssetInput,
+    Prisma.DocumentUncheckedUpdateWithoutCoverFileAssetInput
+  >;
+};
+
+export type DocumentUpdateManyWithWhereWithoutCoverFileAssetInput = {
+  where: Prisma.DocumentScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.DocumentUpdateManyMutationInput,
+    Prisma.DocumentUncheckedUpdateManyWithoutCoverFileAssetInput
+  >;
 };
 
 export type DocumentCreateManySectionInput = {
@@ -2937,6 +2806,137 @@ export type DocumentUncheckedUpdateManyWithoutParentInput = {
   contentHtml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   plainText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   coverFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  externalDocumentLinkId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
+  contentStorage?:
+    | Prisma.EnumDocumentContentStorageEnumFieldUpdateOperationsInput
+    | $Enums.DocumentContentStorageEnum;
+  contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
+};
+
+export type DocumentCreateManyCoverFileAssetInput = {
+  id?: string;
+  type?: $Enums.DocumentTypeEnum;
+  title: string;
+  slug: string;
+  description?: string | null;
+  sectionId: string;
+  parentId?: string | null;
+  status?: $Enums.DocumentStatusEnum;
+  ownerId?: string | null;
+  createdById?: string | null;
+  updatedById?: string | null;
+  publishedById?: string | null;
+  publishedAt?: Date | string | null;
+  archivedAt?: Date | string | null;
+  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  contentHtml?: string | null;
+  plainText?: string | null;
+  externalDocumentLinkId?: string | null;
+  visibility?: $Enums.FileVisibilityEnum;
+  contentStorage?: $Enums.DocumentContentStorageEnum;
+  contentObjectKey?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  listScopeOverride?: $Enums.DocumentListScopeEnum | null;
+};
+
+export type DocumentUpdateWithoutCoverFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumDocumentTypeEnumFieldUpdateOperationsInput | $Enums.DocumentTypeEnum;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumDocumentStatusEnumFieldUpdateOperationsInput | $Enums.DocumentStatusEnum;
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publishedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  contentHtml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  plainText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
+  contentStorage?:
+    | Prisma.EnumDocumentContentStorageEnumFieldUpdateOperationsInput
+    | $Enums.DocumentContentStorageEnum;
+  contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
+  section?: Prisma.DocumentSectionUpdateOneRequiredWithoutDocumentsNestedInput;
+  parent?: Prisma.DocumentUpdateOneWithoutChildrenNestedInput;
+  children?: Prisma.DocumentUpdateManyWithoutParentNestedInput;
+  externalLink?: Prisma.ExternalDocumentLinkUpdateOneWithoutDocumentsNestedInput;
+  tagLinks?: Prisma.DocumentTagOnDocumentUpdateManyWithoutDocumentNestedInput;
+  attachments?: Prisma.DocumentAttachmentUpdateManyWithoutDocumentNestedInput;
+  activityEvents?: Prisma.DocumentActivityEventUpdateManyWithoutDocumentNestedInput;
+};
+
+export type DocumentUncheckedUpdateWithoutCoverFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumDocumentTypeEnumFieldUpdateOperationsInput | $Enums.DocumentTypeEnum;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sectionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumDocumentStatusEnumFieldUpdateOperationsInput | $Enums.DocumentStatusEnum;
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publishedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  contentHtml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  plainText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  externalDocumentLinkId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
+  contentStorage?:
+    | Prisma.EnumDocumentContentStorageEnumFieldUpdateOperationsInput
+    | $Enums.DocumentContentStorageEnum;
+  contentObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  listScopeOverride?:
+    | Prisma.NullableEnumDocumentListScopeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentListScopeEnum
+    | null;
+  children?: Prisma.DocumentUncheckedUpdateManyWithoutParentNestedInput;
+  tagLinks?: Prisma.DocumentTagOnDocumentUncheckedUpdateManyWithoutDocumentNestedInput;
+  attachments?: Prisma.DocumentAttachmentUncheckedUpdateManyWithoutDocumentNestedInput;
+  activityEvents?: Prisma.DocumentActivityEventUncheckedUpdateManyWithoutDocumentNestedInput;
+};
+
+export type DocumentUncheckedUpdateManyWithoutCoverFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumDocumentTypeEnumFieldUpdateOperationsInput | $Enums.DocumentTypeEnum;
+  title?: Prisma.StringFieldUpdateOperationsInput | string;
+  slug?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  sectionId?: Prisma.StringFieldUpdateOperationsInput | string;
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumDocumentStatusEnumFieldUpdateOperationsInput | $Enums.DocumentStatusEnum;
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  updatedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publishedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  contentJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  contentHtml?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  plainText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   externalDocumentLinkId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   visibility?: Prisma.EnumFileVisibilityEnumFieldUpdateOperationsInput | $Enums.FileVisibilityEnum;
   contentStorage?:

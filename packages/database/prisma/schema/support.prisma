@@ -1,0 +1,61 @@
+// ─── SUPPORT ──────────────────────────────────────────────
+
+enum TicketCategoryEnum {
+  INCIDENT
+  SERVICE_REQUEST
+  CHANGE_REQUEST
+  PROBLEM
+}
+
+enum TicketPriorityEnum {
+  P1
+  P2
+  P3
+}
+
+enum TicketStatusEnum {
+  NEW
+  TRIAGED
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REOPENED
+}
+
+enum SupportCoverageEnum {
+  COVERED_BY_MAINTENANCE
+  FREE_GOODWILL
+  BILLABLE_SMALL_WORK
+  EXTENSION_REQUIRED
+  NOT_COVERED_REJECTED
+}
+
+model SupportTicket {
+  id                  String               @id @default(uuid())
+  code                String               @unique
+  projectId           String               @map("project_id")
+  productId           String?              @map("product_id")
+  contactId           String?              @map("contact_id")
+  extensionDealId     String?              @unique @map("extension_deal_id")
+  category            TicketCategoryEnum
+  priority            TicketPriorityEnum   @default(P3)
+  status              TicketStatusEnum     @default(NEW)
+  coverageDecision    SupportCoverageEnum? @map("coverage_decision")
+  title               String
+  description         String?
+  billable            Boolean              @default(false)
+  assignedTo          String?              @map("assigned_to")
+  slaResponseDeadline DateTime?            @map("sla_response_deadline")
+  slaResolveDeadline  DateTime?            @map("sla_resolve_deadline")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+
+  project       Project   @relation(fields: [projectId], references: [id])
+  product       Product?  @relation(fields: [productId], references: [id])
+  extensionDeal Deal?     @relation(fields: [extensionDealId], references: [id])
+  contact       Contact?  @relation(fields: [contactId], references: [id])
+  assignee      Employee? @relation("TicketAssignee", fields: [assignedTo], references: [id])
+
+  @@map("support_tickets")
+}

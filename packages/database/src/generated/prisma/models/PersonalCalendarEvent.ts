@@ -438,6 +438,10 @@ export type PersonalCalendarEventMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder;
 };
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean;
+};
+
 export type EnumPersonalCalendarEventStatusFieldUpdateOperationsInput = {
   set?: $Enums.PersonalCalendarEventStatus;
 };

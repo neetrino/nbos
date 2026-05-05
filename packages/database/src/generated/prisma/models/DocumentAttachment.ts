@@ -430,100 +430,6 @@ export type DocumentAttachmentSumOrderByAggregateInput = {
   sortOrder?: Prisma.SortOrder;
 };
 
-export type DocumentAttachmentCreateNestedManyWithoutFileAssetInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
-        Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
-      >
-    | Prisma.DocumentAttachmentCreateWithoutFileAssetInput[]
-    | Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput[];
-  connectOrCreate?:
-    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput
-    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput[];
-  createMany?: Prisma.DocumentAttachmentCreateManyFileAssetInputEnvelope;
-  connect?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
-};
-
-export type DocumentAttachmentUncheckedCreateNestedManyWithoutFileAssetInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
-        Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
-      >
-    | Prisma.DocumentAttachmentCreateWithoutFileAssetInput[]
-    | Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput[];
-  connectOrCreate?:
-    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput
-    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput[];
-  createMany?: Prisma.DocumentAttachmentCreateManyFileAssetInputEnvelope;
-  connect?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
-};
-
-export type DocumentAttachmentUpdateManyWithoutFileAssetNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
-        Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
-      >
-    | Prisma.DocumentAttachmentCreateWithoutFileAssetInput[]
-    | Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput[];
-  connectOrCreate?:
-    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput
-    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput[];
-  upsert?:
-    | Prisma.DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput
-    | Prisma.DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput[];
-  createMany?: Prisma.DocumentAttachmentCreateManyFileAssetInputEnvelope;
-  set?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
-  disconnect?:
-    | Prisma.DocumentAttachmentWhereUniqueInput
-    | Prisma.DocumentAttachmentWhereUniqueInput[];
-  delete?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
-  connect?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
-  update?:
-    | Prisma.DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput
-    | Prisma.DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput[];
-  updateMany?:
-    | Prisma.DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput
-    | Prisma.DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput[];
-  deleteMany?:
-    | Prisma.DocumentAttachmentScalarWhereInput
-    | Prisma.DocumentAttachmentScalarWhereInput[];
-};
-
-export type DocumentAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
-        Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
-      >
-    | Prisma.DocumentAttachmentCreateWithoutFileAssetInput[]
-    | Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput[];
-  connectOrCreate?:
-    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput
-    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput[];
-  upsert?:
-    | Prisma.DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput
-    | Prisma.DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput[];
-  createMany?: Prisma.DocumentAttachmentCreateManyFileAssetInputEnvelope;
-  set?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
-  disconnect?:
-    | Prisma.DocumentAttachmentWhereUniqueInput
-    | Prisma.DocumentAttachmentWhereUniqueInput[];
-  delete?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
-  connect?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
-  update?:
-    | Prisma.DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput
-    | Prisma.DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput[];
-  updateMany?:
-    | Prisma.DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput
-    | Prisma.DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput[];
-  deleteMany?:
-    | Prisma.DocumentAttachmentScalarWhereInput
-    | Prisma.DocumentAttachmentScalarWhereInput[];
-};
-
 export type DocumentAttachmentCreateNestedManyWithoutDocumentInput = {
   create?:
     | Prisma.XOR<
@@ -622,80 +528,98 @@ export type EnumDocumentAttachmentPurposeEnumFieldUpdateOperationsInput = {
   set?: $Enums.DocumentAttachmentPurposeEnum;
 };
 
-export type DocumentAttachmentCreateWithoutFileAssetInput = {
-  id?: string;
-  purpose?: $Enums.DocumentAttachmentPurposeEnum;
-  sortOrder?: number;
-  createdById?: string | null;
-  createdAt?: Date | string;
-  document: Prisma.DocumentCreateNestedOneWithoutAttachmentsInput;
+export type DocumentAttachmentCreateNestedManyWithoutFileAssetInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
+        Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
+      >
+    | Prisma.DocumentAttachmentCreateWithoutFileAssetInput[]
+    | Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput
+    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput[];
+  createMany?: Prisma.DocumentAttachmentCreateManyFileAssetInputEnvelope;
+  connect?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
 };
 
-export type DocumentAttachmentUncheckedCreateWithoutFileAssetInput = {
-  id?: string;
-  documentId: string;
-  purpose?: $Enums.DocumentAttachmentPurposeEnum;
-  sortOrder?: number;
-  createdById?: string | null;
-  createdAt?: Date | string;
+export type DocumentAttachmentUncheckedCreateNestedManyWithoutFileAssetInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
+        Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
+      >
+    | Prisma.DocumentAttachmentCreateWithoutFileAssetInput[]
+    | Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput
+    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput[];
+  createMany?: Prisma.DocumentAttachmentCreateManyFileAssetInputEnvelope;
+  connect?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
 };
 
-export type DocumentAttachmentCreateOrConnectWithoutFileAssetInput = {
-  where: Prisma.DocumentAttachmentWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
-    Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
-  >;
+export type DocumentAttachmentUpdateManyWithoutFileAssetNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
+        Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
+      >
+    | Prisma.DocumentAttachmentCreateWithoutFileAssetInput[]
+    | Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput
+    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput[];
+  upsert?:
+    | Prisma.DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput
+    | Prisma.DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput[];
+  createMany?: Prisma.DocumentAttachmentCreateManyFileAssetInputEnvelope;
+  set?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
+  disconnect?:
+    | Prisma.DocumentAttachmentWhereUniqueInput
+    | Prisma.DocumentAttachmentWhereUniqueInput[];
+  delete?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
+  connect?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
+  update?:
+    | Prisma.DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput
+    | Prisma.DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput[];
+  updateMany?:
+    | Prisma.DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput
+    | Prisma.DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput[];
+  deleteMany?:
+    | Prisma.DocumentAttachmentScalarWhereInput
+    | Prisma.DocumentAttachmentScalarWhereInput[];
 };
 
-export type DocumentAttachmentCreateManyFileAssetInputEnvelope = {
-  data:
-    | Prisma.DocumentAttachmentCreateManyFileAssetInput
-    | Prisma.DocumentAttachmentCreateManyFileAssetInput[];
-  skipDuplicates?: boolean;
-};
-
-export type DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput = {
-  where: Prisma.DocumentAttachmentWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.DocumentAttachmentUpdateWithoutFileAssetInput,
-    Prisma.DocumentAttachmentUncheckedUpdateWithoutFileAssetInput
-  >;
-  create: Prisma.XOR<
-    Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
-    Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
-  >;
-};
-
-export type DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput = {
-  where: Prisma.DocumentAttachmentWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.DocumentAttachmentUpdateWithoutFileAssetInput,
-    Prisma.DocumentAttachmentUncheckedUpdateWithoutFileAssetInput
-  >;
-};
-
-export type DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput = {
-  where: Prisma.DocumentAttachmentScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.DocumentAttachmentUpdateManyMutationInput,
-    Prisma.DocumentAttachmentUncheckedUpdateManyWithoutFileAssetInput
-  >;
-};
-
-export type DocumentAttachmentScalarWhereInput = {
-  AND?: Prisma.DocumentAttachmentScalarWhereInput | Prisma.DocumentAttachmentScalarWhereInput[];
-  OR?: Prisma.DocumentAttachmentScalarWhereInput[];
-  NOT?: Prisma.DocumentAttachmentScalarWhereInput | Prisma.DocumentAttachmentScalarWhereInput[];
-  id?: Prisma.StringFilter<'DocumentAttachment'> | string;
-  documentId?: Prisma.StringFilter<'DocumentAttachment'> | string;
-  fileAssetId?: Prisma.StringFilter<'DocumentAttachment'> | string;
-  purpose?:
-    | Prisma.EnumDocumentAttachmentPurposeEnumFilter<'DocumentAttachment'>
-    | $Enums.DocumentAttachmentPurposeEnum;
-  sortOrder?: Prisma.IntFilter<'DocumentAttachment'> | number;
-  createdById?: Prisma.StringNullableFilter<'DocumentAttachment'> | string | null;
-  createdAt?: Prisma.DateTimeFilter<'DocumentAttachment'> | Date | string;
+export type DocumentAttachmentUncheckedUpdateManyWithoutFileAssetNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
+        Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
+      >
+    | Prisma.DocumentAttachmentCreateWithoutFileAssetInput[]
+    | Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput
+    | Prisma.DocumentAttachmentCreateOrConnectWithoutFileAssetInput[];
+  upsert?:
+    | Prisma.DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput
+    | Prisma.DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput[];
+  createMany?: Prisma.DocumentAttachmentCreateManyFileAssetInputEnvelope;
+  set?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
+  disconnect?:
+    | Prisma.DocumentAttachmentWhereUniqueInput
+    | Prisma.DocumentAttachmentWhereUniqueInput[];
+  delete?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
+  connect?: Prisma.DocumentAttachmentWhereUniqueInput | Prisma.DocumentAttachmentWhereUniqueInput[];
+  update?:
+    | Prisma.DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput
+    | Prisma.DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput[];
+  updateMany?:
+    | Prisma.DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput
+    | Prisma.DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput[];
+  deleteMany?:
+    | Prisma.DocumentAttachmentScalarWhereInput
+    | Prisma.DocumentAttachmentScalarWhereInput[];
 };
 
 export type DocumentAttachmentCreateWithoutDocumentInput = {
@@ -759,7 +683,31 @@ export type DocumentAttachmentUpdateManyWithWhereWithoutDocumentInput = {
   >;
 };
 
-export type DocumentAttachmentCreateManyFileAssetInput = {
+export type DocumentAttachmentScalarWhereInput = {
+  AND?: Prisma.DocumentAttachmentScalarWhereInput | Prisma.DocumentAttachmentScalarWhereInput[];
+  OR?: Prisma.DocumentAttachmentScalarWhereInput[];
+  NOT?: Prisma.DocumentAttachmentScalarWhereInput | Prisma.DocumentAttachmentScalarWhereInput[];
+  id?: Prisma.StringFilter<'DocumentAttachment'> | string;
+  documentId?: Prisma.StringFilter<'DocumentAttachment'> | string;
+  fileAssetId?: Prisma.StringFilter<'DocumentAttachment'> | string;
+  purpose?:
+    | Prisma.EnumDocumentAttachmentPurposeEnumFilter<'DocumentAttachment'>
+    | $Enums.DocumentAttachmentPurposeEnum;
+  sortOrder?: Prisma.IntFilter<'DocumentAttachment'> | number;
+  createdById?: Prisma.StringNullableFilter<'DocumentAttachment'> | string | null;
+  createdAt?: Prisma.DateTimeFilter<'DocumentAttachment'> | Date | string;
+};
+
+export type DocumentAttachmentCreateWithoutFileAssetInput = {
+  id?: string;
+  purpose?: $Enums.DocumentAttachmentPurposeEnum;
+  sortOrder?: number;
+  createdById?: string | null;
+  createdAt?: Date | string;
+  document: Prisma.DocumentCreateNestedOneWithoutAttachmentsInput;
+};
+
+export type DocumentAttachmentUncheckedCreateWithoutFileAssetInput = {
   id?: string;
   documentId: string;
   purpose?: $Enums.DocumentAttachmentPurposeEnum;
@@ -768,37 +716,47 @@ export type DocumentAttachmentCreateManyFileAssetInput = {
   createdAt?: Date | string;
 };
 
-export type DocumentAttachmentUpdateWithoutFileAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  purpose?:
-    | Prisma.EnumDocumentAttachmentPurposeEnumFieldUpdateOperationsInput
-    | $Enums.DocumentAttachmentPurposeEnum;
-  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  document?: Prisma.DocumentUpdateOneRequiredWithoutAttachmentsNestedInput;
+export type DocumentAttachmentCreateOrConnectWithoutFileAssetInput = {
+  where: Prisma.DocumentAttachmentWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
+    Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
+  >;
 };
 
-export type DocumentAttachmentUncheckedUpdateWithoutFileAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  documentId?: Prisma.StringFieldUpdateOperationsInput | string;
-  purpose?:
-    | Prisma.EnumDocumentAttachmentPurposeEnumFieldUpdateOperationsInput
-    | $Enums.DocumentAttachmentPurposeEnum;
-  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type DocumentAttachmentCreateManyFileAssetInputEnvelope = {
+  data:
+    | Prisma.DocumentAttachmentCreateManyFileAssetInput
+    | Prisma.DocumentAttachmentCreateManyFileAssetInput[];
+  skipDuplicates?: boolean;
 };
 
-export type DocumentAttachmentUncheckedUpdateManyWithoutFileAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  documentId?: Prisma.StringFieldUpdateOperationsInput | string;
-  purpose?:
-    | Prisma.EnumDocumentAttachmentPurposeEnumFieldUpdateOperationsInput
-    | $Enums.DocumentAttachmentPurposeEnum;
-  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
-  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type DocumentAttachmentUpsertWithWhereUniqueWithoutFileAssetInput = {
+  where: Prisma.DocumentAttachmentWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.DocumentAttachmentUpdateWithoutFileAssetInput,
+    Prisma.DocumentAttachmentUncheckedUpdateWithoutFileAssetInput
+  >;
+  create: Prisma.XOR<
+    Prisma.DocumentAttachmentCreateWithoutFileAssetInput,
+    Prisma.DocumentAttachmentUncheckedCreateWithoutFileAssetInput
+  >;
+};
+
+export type DocumentAttachmentUpdateWithWhereUniqueWithoutFileAssetInput = {
+  where: Prisma.DocumentAttachmentWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.DocumentAttachmentUpdateWithoutFileAssetInput,
+    Prisma.DocumentAttachmentUncheckedUpdateWithoutFileAssetInput
+  >;
+};
+
+export type DocumentAttachmentUpdateManyWithWhereWithoutFileAssetInput = {
+  where: Prisma.DocumentAttachmentScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.DocumentAttachmentUpdateManyMutationInput,
+    Prisma.DocumentAttachmentUncheckedUpdateManyWithoutFileAssetInput
+  >;
 };
 
 export type DocumentAttachmentCreateManyDocumentInput = {
@@ -835,6 +793,48 @@ export type DocumentAttachmentUncheckedUpdateWithoutDocumentInput = {
 export type DocumentAttachmentUncheckedUpdateManyWithoutDocumentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   fileAssetId?: Prisma.StringFieldUpdateOperationsInput | string;
+  purpose?:
+    | Prisma.EnumDocumentAttachmentPurposeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentAttachmentPurposeEnum;
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type DocumentAttachmentCreateManyFileAssetInput = {
+  id?: string;
+  documentId: string;
+  purpose?: $Enums.DocumentAttachmentPurposeEnum;
+  sortOrder?: number;
+  createdById?: string | null;
+  createdAt?: Date | string;
+};
+
+export type DocumentAttachmentUpdateWithoutFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  purpose?:
+    | Prisma.EnumDocumentAttachmentPurposeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentAttachmentPurposeEnum;
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  document?: Prisma.DocumentUpdateOneRequiredWithoutAttachmentsNestedInput;
+};
+
+export type DocumentAttachmentUncheckedUpdateWithoutFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  documentId?: Prisma.StringFieldUpdateOperationsInput | string;
+  purpose?:
+    | Prisma.EnumDocumentAttachmentPurposeEnumFieldUpdateOperationsInput
+    | $Enums.DocumentAttachmentPurposeEnum;
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number;
+  createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type DocumentAttachmentUncheckedUpdateManyWithoutFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  documentId?: Prisma.StringFieldUpdateOperationsInput | string;
   purpose?:
     | Prisma.EnumDocumentAttachmentPurposeEnumFieldUpdateOperationsInput
     | $Enums.DocumentAttachmentPurposeEnum;

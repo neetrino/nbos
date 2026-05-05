@@ -717,92 +717,6 @@ export type BonusEntryScalarRelationFilter = {
   isNot?: Prisma.BonusEntryWhereInput;
 };
 
-export type BonusEntryCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusEntryCreateWithoutProjectInput,
-        Prisma.BonusEntryUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.BonusEntryCreateWithoutProjectInput[]
-    | Prisma.BonusEntryUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput
-    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.BonusEntryCreateManyProjectInputEnvelope;
-  connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-};
-
-export type BonusEntryUncheckedCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusEntryCreateWithoutProjectInput,
-        Prisma.BonusEntryUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.BonusEntryCreateWithoutProjectInput[]
-    | Prisma.BonusEntryUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput
-    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.BonusEntryCreateManyProjectInputEnvelope;
-  connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-};
-
-export type BonusEntryUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusEntryCreateWithoutProjectInput,
-        Prisma.BonusEntryUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.BonusEntryCreateWithoutProjectInput[]
-    | Prisma.BonusEntryUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput
-    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.BonusEntryCreateManyProjectInputEnvelope;
-  set?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-  disconnect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-  delete?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-  connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-  update?:
-    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.BonusEntryUpdateManyWithWhereWithoutProjectInput
-    | Prisma.BonusEntryUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
-};
-
-export type BonusEntryUncheckedUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.BonusEntryCreateWithoutProjectInput,
-        Prisma.BonusEntryUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.BonusEntryCreateWithoutProjectInput[]
-    | Prisma.BonusEntryUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput
-    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.BonusEntryCreateManyProjectInputEnvelope;
-  set?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-  disconnect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-  delete?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-  connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
-  update?:
-    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.BonusEntryUpdateManyWithWhereWithoutProjectInput
-    | Prisma.BonusEntryUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
-};
-
 export type BonusEntryCreateNestedManyWithoutDealInput = {
   create?:
     | Prisma.XOR<
@@ -886,6 +800,92 @@ export type BonusEntryUncheckedUpdateManyWithoutDealNestedInput = {
   updateMany?:
     | Prisma.BonusEntryUpdateManyWithWhereWithoutDealInput
     | Prisma.BonusEntryUpdateManyWithWhereWithoutDealInput[];
+  deleteMany?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
+};
+
+export type BonusEntryCreateNestedManyWithoutEmployeeInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusEntryCreateWithoutEmployeeInput,
+        Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+      >
+    | Prisma.BonusEntryCreateWithoutEmployeeInput[]
+    | Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput[];
+  connectOrCreate?:
+    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput
+    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput[];
+  createMany?: Prisma.BonusEntryCreateManyEmployeeInputEnvelope;
+  connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+};
+
+export type BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusEntryCreateWithoutEmployeeInput,
+        Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+      >
+    | Prisma.BonusEntryCreateWithoutEmployeeInput[]
+    | Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput[];
+  connectOrCreate?:
+    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput
+    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput[];
+  createMany?: Prisma.BonusEntryCreateManyEmployeeInputEnvelope;
+  connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+};
+
+export type BonusEntryUpdateManyWithoutEmployeeNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusEntryCreateWithoutEmployeeInput,
+        Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+      >
+    | Prisma.BonusEntryCreateWithoutEmployeeInput[]
+    | Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput[];
+  connectOrCreate?:
+    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput
+    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput[];
+  upsert?:
+    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput
+    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput[];
+  createMany?: Prisma.BonusEntryCreateManyEmployeeInputEnvelope;
+  set?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+  disconnect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+  delete?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+  connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+  update?:
+    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput
+    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput[];
+  updateMany?:
+    | Prisma.BonusEntryUpdateManyWithWhereWithoutEmployeeInput
+    | Prisma.BonusEntryUpdateManyWithWhereWithoutEmployeeInput[];
+  deleteMany?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
+};
+
+export type BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.BonusEntryCreateWithoutEmployeeInput,
+        Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+      >
+    | Prisma.BonusEntryCreateWithoutEmployeeInput[]
+    | Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput[];
+  connectOrCreate?:
+    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput
+    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput[];
+  upsert?:
+    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput
+    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput[];
+  createMany?: Prisma.BonusEntryCreateManyEmployeeInputEnvelope;
+  set?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+  disconnect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+  delete?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+  connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
+  update?:
+    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput
+    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput[];
+  updateMany?:
+    | Prisma.BonusEntryUpdateManyWithWhereWithoutEmployeeInput
+    | Prisma.BonusEntryUpdateManyWithWhereWithoutEmployeeInput[];
   deleteMany?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
 };
 
@@ -1017,204 +1017,90 @@ export type BonusEntryUpdateOneRequiredWithoutBonusReleasesNestedInput = {
   >;
 };
 
-export type BonusEntryCreateNestedManyWithoutEmployeeInput = {
+export type BonusEntryCreateNestedManyWithoutProjectInput = {
   create?:
     | Prisma.XOR<
-        Prisma.BonusEntryCreateWithoutEmployeeInput,
-        Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+        Prisma.BonusEntryCreateWithoutProjectInput,
+        Prisma.BonusEntryUncheckedCreateWithoutProjectInput
       >
-    | Prisma.BonusEntryCreateWithoutEmployeeInput[]
-    | Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput[];
+    | Prisma.BonusEntryCreateWithoutProjectInput[]
+    | Prisma.BonusEntryUncheckedCreateWithoutProjectInput[];
   connectOrCreate?:
-    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput
-    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput[];
-  createMany?: Prisma.BonusEntryCreateManyEmployeeInputEnvelope;
+    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput
+    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.BonusEntryCreateManyProjectInputEnvelope;
   connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
 };
 
-export type BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput = {
+export type BonusEntryUncheckedCreateNestedManyWithoutProjectInput = {
   create?:
     | Prisma.XOR<
-        Prisma.BonusEntryCreateWithoutEmployeeInput,
-        Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+        Prisma.BonusEntryCreateWithoutProjectInput,
+        Prisma.BonusEntryUncheckedCreateWithoutProjectInput
       >
-    | Prisma.BonusEntryCreateWithoutEmployeeInput[]
-    | Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput[];
+    | Prisma.BonusEntryCreateWithoutProjectInput[]
+    | Prisma.BonusEntryUncheckedCreateWithoutProjectInput[];
   connectOrCreate?:
-    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput
-    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput[];
-  createMany?: Prisma.BonusEntryCreateManyEmployeeInputEnvelope;
+    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput
+    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.BonusEntryCreateManyProjectInputEnvelope;
   connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
 };
 
-export type BonusEntryUpdateManyWithoutEmployeeNestedInput = {
+export type BonusEntryUpdateManyWithoutProjectNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.BonusEntryCreateWithoutEmployeeInput,
-        Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+        Prisma.BonusEntryCreateWithoutProjectInput,
+        Prisma.BonusEntryUncheckedCreateWithoutProjectInput
       >
-    | Prisma.BonusEntryCreateWithoutEmployeeInput[]
-    | Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput[];
+    | Prisma.BonusEntryCreateWithoutProjectInput[]
+    | Prisma.BonusEntryUncheckedCreateWithoutProjectInput[];
   connectOrCreate?:
-    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput
-    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput[];
+    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput
+    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput[];
   upsert?:
-    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput
-    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput[];
-  createMany?: Prisma.BonusEntryCreateManyEmployeeInputEnvelope;
+    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.BonusEntryCreateManyProjectInputEnvelope;
   set?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
   disconnect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
   delete?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
   connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
   update?:
-    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput
-    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput[];
+    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutProjectInput[];
   updateMany?:
-    | Prisma.BonusEntryUpdateManyWithWhereWithoutEmployeeInput
-    | Prisma.BonusEntryUpdateManyWithWhereWithoutEmployeeInput[];
+    | Prisma.BonusEntryUpdateManyWithWhereWithoutProjectInput
+    | Prisma.BonusEntryUpdateManyWithWhereWithoutProjectInput[];
   deleteMany?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
 };
 
-export type BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput = {
+export type BonusEntryUncheckedUpdateManyWithoutProjectNestedInput = {
   create?:
     | Prisma.XOR<
-        Prisma.BonusEntryCreateWithoutEmployeeInput,
-        Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+        Prisma.BonusEntryCreateWithoutProjectInput,
+        Prisma.BonusEntryUncheckedCreateWithoutProjectInput
       >
-    | Prisma.BonusEntryCreateWithoutEmployeeInput[]
-    | Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput[];
+    | Prisma.BonusEntryCreateWithoutProjectInput[]
+    | Prisma.BonusEntryUncheckedCreateWithoutProjectInput[];
   connectOrCreate?:
-    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput
-    | Prisma.BonusEntryCreateOrConnectWithoutEmployeeInput[];
+    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput
+    | Prisma.BonusEntryCreateOrConnectWithoutProjectInput[];
   upsert?:
-    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput
-    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput[];
-  createMany?: Prisma.BonusEntryCreateManyEmployeeInputEnvelope;
+    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.BonusEntryUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.BonusEntryCreateManyProjectInputEnvelope;
   set?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
   disconnect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
   delete?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
   connect?: Prisma.BonusEntryWhereUniqueInput | Prisma.BonusEntryWhereUniqueInput[];
   update?:
-    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput
-    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput[];
+    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.BonusEntryUpdateWithWhereUniqueWithoutProjectInput[];
   updateMany?:
-    | Prisma.BonusEntryUpdateManyWithWhereWithoutEmployeeInput
-    | Prisma.BonusEntryUpdateManyWithWhereWithoutEmployeeInput[];
+    | Prisma.BonusEntryUpdateManyWithWhereWithoutProjectInput
+    | Prisma.BonusEntryUpdateManyWithWhereWithoutProjectInput[];
   deleteMany?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
-};
-
-export type BonusEntryCreateWithoutProjectInput = {
-  id?: string;
-  salesAccrualInvoiceId?: string | null;
-  salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
-  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  type: $Enums.BonusTypeEnum;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.BonusStatusEnum;
-  kpiGatePassed?: boolean | null;
-  payoutMonth?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  employee: Prisma.EmployeeCreateNestedOneWithoutBonusEntriesInput;
-  order: Prisma.OrderCreateNestedOneWithoutBonusEntriesInput;
-  deal?: Prisma.DealCreateNestedOneWithoutSalesBonusEntriesInput;
-  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutBonusEntryInput;
-};
-
-export type BonusEntryUncheckedCreateWithoutProjectInput = {
-  id?: string;
-  employeeId: string;
-  orderId: string;
-  dealId?: string | null;
-  salesAccrualInvoiceId?: string | null;
-  salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
-  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  type: $Enums.BonusTypeEnum;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.BonusStatusEnum;
-  kpiGatePassed?: boolean | null;
-  payoutMonth?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutBonusEntryInput;
-};
-
-export type BonusEntryCreateOrConnectWithoutProjectInput = {
-  where: Prisma.BonusEntryWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.BonusEntryCreateWithoutProjectInput,
-    Prisma.BonusEntryUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type BonusEntryCreateManyProjectInputEnvelope = {
-  data: Prisma.BonusEntryCreateManyProjectInput | Prisma.BonusEntryCreateManyProjectInput[];
-  skipDuplicates?: boolean;
-};
-
-export type BonusEntryUpsertWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.BonusEntryWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.BonusEntryUpdateWithoutProjectInput,
-    Prisma.BonusEntryUncheckedUpdateWithoutProjectInput
-  >;
-  create: Prisma.XOR<
-    Prisma.BonusEntryCreateWithoutProjectInput,
-    Prisma.BonusEntryUncheckedCreateWithoutProjectInput
-  >;
-};
-
-export type BonusEntryUpdateWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.BonusEntryWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.BonusEntryUpdateWithoutProjectInput,
-    Prisma.BonusEntryUncheckedUpdateWithoutProjectInput
-  >;
-};
-
-export type BonusEntryUpdateManyWithWhereWithoutProjectInput = {
-  where: Prisma.BonusEntryScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.BonusEntryUpdateManyMutationInput,
-    Prisma.BonusEntryUncheckedUpdateManyWithoutProjectInput
-  >;
-};
-
-export type BonusEntryScalarWhereInput = {
-  AND?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
-  OR?: Prisma.BonusEntryScalarWhereInput[];
-  NOT?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
-  id?: Prisma.StringFilter<'BonusEntry'> | string;
-  employeeId?: Prisma.StringFilter<'BonusEntry'> | string;
-  orderId?: Prisma.StringFilter<'BonusEntry'> | string;
-  projectId?: Prisma.StringFilter<'BonusEntry'> | string;
-  dealId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
-  salesAccrualInvoiceId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
-  salesBonusSlot?:
-    | Prisma.EnumSalesBonusSlotEnumNullableFilter<'BonusEntry'>
-    | $Enums.SalesBonusSlotEnum
-    | null;
-  calculationSnapshot?: Prisma.JsonNullableFilter<'BonusEntry'>;
-  type?: Prisma.EnumBonusTypeEnumFilter<'BonusEntry'> | $Enums.BonusTypeEnum;
-  amount?:
-    | Prisma.DecimalFilter<'BonusEntry'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFilter<'BonusEntry'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?: Prisma.EnumBonusStatusEnumFilter<'BonusEntry'> | $Enums.BonusStatusEnum;
-  kpiGatePassed?: Prisma.BoolNullableFilter<'BonusEntry'> | boolean | null;
-  payoutMonth?: Prisma.DateTimeNullableFilter<'BonusEntry'> | Date | string | null;
-  createdAt?: Prisma.DateTimeFilter<'BonusEntry'> | Date | string;
-  updatedAt?: Prisma.DateTimeFilter<'BonusEntry'> | Date | string;
 };
 
 export type BonusEntryCreateWithoutDealInput = {
@@ -1293,6 +1179,120 @@ export type BonusEntryUpdateManyWithWhereWithoutDealInput = {
   data: Prisma.XOR<
     Prisma.BonusEntryUpdateManyMutationInput,
     Prisma.BonusEntryUncheckedUpdateManyWithoutDealInput
+  >;
+};
+
+export type BonusEntryScalarWhereInput = {
+  AND?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
+  OR?: Prisma.BonusEntryScalarWhereInput[];
+  NOT?: Prisma.BonusEntryScalarWhereInput | Prisma.BonusEntryScalarWhereInput[];
+  id?: Prisma.StringFilter<'BonusEntry'> | string;
+  employeeId?: Prisma.StringFilter<'BonusEntry'> | string;
+  orderId?: Prisma.StringFilter<'BonusEntry'> | string;
+  projectId?: Prisma.StringFilter<'BonusEntry'> | string;
+  dealId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
+  salesAccrualInvoiceId?: Prisma.StringNullableFilter<'BonusEntry'> | string | null;
+  salesBonusSlot?:
+    | Prisma.EnumSalesBonusSlotEnumNullableFilter<'BonusEntry'>
+    | $Enums.SalesBonusSlotEnum
+    | null;
+  calculationSnapshot?: Prisma.JsonNullableFilter<'BonusEntry'>;
+  type?: Prisma.EnumBonusTypeEnumFilter<'BonusEntry'> | $Enums.BonusTypeEnum;
+  amount?:
+    | Prisma.DecimalFilter<'BonusEntry'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFilter<'BonusEntry'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumBonusStatusEnumFilter<'BonusEntry'> | $Enums.BonusStatusEnum;
+  kpiGatePassed?: Prisma.BoolNullableFilter<'BonusEntry'> | boolean | null;
+  payoutMonth?: Prisma.DateTimeNullableFilter<'BonusEntry'> | Date | string | null;
+  createdAt?: Prisma.DateTimeFilter<'BonusEntry'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'BonusEntry'> | Date | string;
+};
+
+export type BonusEntryCreateWithoutEmployeeInput = {
+  id?: string;
+  salesAccrualInvoiceId?: string | null;
+  salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
+  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  type: $Enums.BonusTypeEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.BonusStatusEnum;
+  kpiGatePassed?: boolean | null;
+  payoutMonth?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order: Prisma.OrderCreateNestedOneWithoutBonusEntriesInput;
+  project: Prisma.ProjectCreateNestedOneWithoutBonusEntriesInput;
+  deal?: Prisma.DealCreateNestedOneWithoutSalesBonusEntriesInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutBonusEntryInput;
+};
+
+export type BonusEntryUncheckedCreateWithoutEmployeeInput = {
+  id?: string;
+  orderId: string;
+  projectId: string;
+  dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
+  salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
+  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  type: $Enums.BonusTypeEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.BonusStatusEnum;
+  kpiGatePassed?: boolean | null;
+  payoutMonth?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutBonusEntryInput;
+};
+
+export type BonusEntryCreateOrConnectWithoutEmployeeInput = {
+  where: Prisma.BonusEntryWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.BonusEntryCreateWithoutEmployeeInput,
+    Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+  >;
+};
+
+export type BonusEntryCreateManyEmployeeInputEnvelope = {
+  data: Prisma.BonusEntryCreateManyEmployeeInput | Prisma.BonusEntryCreateManyEmployeeInput[];
+  skipDuplicates?: boolean;
+};
+
+export type BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput = {
+  where: Prisma.BonusEntryWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.BonusEntryUpdateWithoutEmployeeInput,
+    Prisma.BonusEntryUncheckedUpdateWithoutEmployeeInput
+  >;
+  create: Prisma.XOR<
+    Prisma.BonusEntryCreateWithoutEmployeeInput,
+    Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
+  >;
+};
+
+export type BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput = {
+  where: Prisma.BonusEntryWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.BonusEntryUpdateWithoutEmployeeInput,
+    Prisma.BonusEntryUncheckedUpdateWithoutEmployeeInput
+  >;
+};
+
+export type BonusEntryUpdateManyWithWhereWithoutEmployeeInput = {
+  where: Prisma.BonusEntryScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.BonusEntryUpdateManyMutationInput,
+    Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeInput
   >;
 };
 
@@ -1505,7 +1505,7 @@ export type BonusEntryUncheckedUpdateWithoutBonusReleasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type BonusEntryCreateWithoutEmployeeInput = {
+export type BonusEntryCreateWithoutProjectInput = {
   id?: string;
   salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
@@ -1518,73 +1518,13 @@ export type BonusEntryCreateWithoutEmployeeInput = {
   payoutMonth?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  employee: Prisma.EmployeeCreateNestedOneWithoutBonusEntriesInput;
   order: Prisma.OrderCreateNestedOneWithoutBonusEntriesInput;
-  project: Prisma.ProjectCreateNestedOneWithoutBonusEntriesInput;
   deal?: Prisma.DealCreateNestedOneWithoutSalesBonusEntriesInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutBonusEntryInput;
 };
 
-export type BonusEntryUncheckedCreateWithoutEmployeeInput = {
-  id?: string;
-  orderId: string;
-  projectId: string;
-  dealId?: string | null;
-  salesAccrualInvoiceId?: string | null;
-  salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
-  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  type: $Enums.BonusTypeEnum;
-  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
-  status?: $Enums.BonusStatusEnum;
-  kpiGatePassed?: boolean | null;
-  payoutMonth?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutBonusEntryInput;
-};
-
-export type BonusEntryCreateOrConnectWithoutEmployeeInput = {
-  where: Prisma.BonusEntryWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.BonusEntryCreateWithoutEmployeeInput,
-    Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
-  >;
-};
-
-export type BonusEntryCreateManyEmployeeInputEnvelope = {
-  data: Prisma.BonusEntryCreateManyEmployeeInput | Prisma.BonusEntryCreateManyEmployeeInput[];
-  skipDuplicates?: boolean;
-};
-
-export type BonusEntryUpsertWithWhereUniqueWithoutEmployeeInput = {
-  where: Prisma.BonusEntryWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.BonusEntryUpdateWithoutEmployeeInput,
-    Prisma.BonusEntryUncheckedUpdateWithoutEmployeeInput
-  >;
-  create: Prisma.XOR<
-    Prisma.BonusEntryCreateWithoutEmployeeInput,
-    Prisma.BonusEntryUncheckedCreateWithoutEmployeeInput
-  >;
-};
-
-export type BonusEntryUpdateWithWhereUniqueWithoutEmployeeInput = {
-  where: Prisma.BonusEntryWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.BonusEntryUpdateWithoutEmployeeInput,
-    Prisma.BonusEntryUncheckedUpdateWithoutEmployeeInput
-  >;
-};
-
-export type BonusEntryUpdateManyWithWhereWithoutEmployeeInput = {
-  where: Prisma.BonusEntryScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.BonusEntryUpdateManyMutationInput,
-    Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeInput
-  >;
-};
-
-export type BonusEntryCreateManyProjectInput = {
+export type BonusEntryUncheckedCreateWithoutProjectInput = {
   id?: string;
   employeeId: string;
   orderId: string;
@@ -1600,101 +1540,48 @@ export type BonusEntryCreateManyProjectInput = {
   payoutMonth?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutBonusEntryInput;
 };
 
-export type BonusEntryUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  salesBonusSlot?:
-    | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
-    | $Enums.SalesBonusSlotEnum
-    | null;
-  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  type?: Prisma.EnumBonusTypeEnumFieldUpdateOperationsInput | $Enums.BonusTypeEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?: Prisma.EnumBonusStatusEnumFieldUpdateOperationsInput | $Enums.BonusStatusEnum;
-  kpiGatePassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-  payoutMonth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  employee?: Prisma.EmployeeUpdateOneRequiredWithoutBonusEntriesNestedInput;
-  order?: Prisma.OrderUpdateOneRequiredWithoutBonusEntriesNestedInput;
-  deal?: Prisma.DealUpdateOneWithoutSalesBonusEntriesNestedInput;
-  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutBonusEntryNestedInput;
+export type BonusEntryCreateOrConnectWithoutProjectInput = {
+  where: Prisma.BonusEntryWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.BonusEntryCreateWithoutProjectInput,
+    Prisma.BonusEntryUncheckedCreateWithoutProjectInput
+  >;
 };
 
-export type BonusEntryUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
-  dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  salesBonusSlot?:
-    | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
-    | $Enums.SalesBonusSlotEnum
-    | null;
-  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  type?: Prisma.EnumBonusTypeEnumFieldUpdateOperationsInput | $Enums.BonusTypeEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?: Prisma.EnumBonusStatusEnumFieldUpdateOperationsInput | $Enums.BonusStatusEnum;
-  kpiGatePassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-  payoutMonth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutBonusEntryNestedInput;
+export type BonusEntryCreateManyProjectInputEnvelope = {
+  data: Prisma.BonusEntryCreateManyProjectInput | Prisma.BonusEntryCreateManyProjectInput[];
+  skipDuplicates?: boolean;
 };
 
-export type BonusEntryUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
-  dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  salesBonusSlot?:
-    | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
-    | $Enums.SalesBonusSlotEnum
-    | null;
-  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
-  type?: Prisma.EnumBonusTypeEnumFieldUpdateOperationsInput | $Enums.BonusTypeEnum;
-  amount?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  percent?:
-    | Prisma.DecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string;
-  status?: Prisma.EnumBonusStatusEnumFieldUpdateOperationsInput | $Enums.BonusStatusEnum;
-  kpiGatePassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
-  payoutMonth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type BonusEntryUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.BonusEntryWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.BonusEntryUpdateWithoutProjectInput,
+    Prisma.BonusEntryUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.BonusEntryCreateWithoutProjectInput,
+    Prisma.BonusEntryUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type BonusEntryUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.BonusEntryWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.BonusEntryUpdateWithoutProjectInput,
+    Prisma.BonusEntryUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type BonusEntryUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.BonusEntryScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.BonusEntryUpdateManyMutationInput,
+    Prisma.BonusEntryUncheckedUpdateManyWithoutProjectInput
+  >;
 };
 
 export type BonusEntryCreateManyDealInput = {
@@ -1784,6 +1671,119 @@ export type BonusEntryUncheckedUpdateManyWithoutDealInput = {
   employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
   projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesBonusSlot?:
+    | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
+    | $Enums.SalesBonusSlotEnum
+    | null;
+  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  type?: Prisma.EnumBonusTypeEnumFieldUpdateOperationsInput | $Enums.BonusTypeEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumBonusStatusEnumFieldUpdateOperationsInput | $Enums.BonusStatusEnum;
+  kpiGatePassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  payoutMonth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type BonusEntryCreateManyEmployeeInput = {
+  id?: string;
+  orderId: string;
+  projectId: string;
+  dealId?: string | null;
+  salesAccrualInvoiceId?: string | null;
+  salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
+  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  type: $Enums.BonusTypeEnum;
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  percent: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.BonusStatusEnum;
+  kpiGatePassed?: boolean | null;
+  payoutMonth?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type BonusEntryUpdateWithoutEmployeeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesBonusSlot?:
+    | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
+    | $Enums.SalesBonusSlotEnum
+    | null;
+  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  type?: Prisma.EnumBonusTypeEnumFieldUpdateOperationsInput | $Enums.BonusTypeEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumBonusStatusEnumFieldUpdateOperationsInput | $Enums.BonusStatusEnum;
+  kpiGatePassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  payoutMonth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUpdateOneRequiredWithoutBonusEntriesNestedInput;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusEntriesNestedInput;
+  deal?: Prisma.DealUpdateOneWithoutSalesBonusEntriesNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutBonusEntryNestedInput;
+};
+
+export type BonusEntryUncheckedUpdateWithoutEmployeeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  salesBonusSlot?:
+    | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
+    | $Enums.SalesBonusSlotEnum
+    | null;
+  calculationSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  type?: Prisma.EnumBonusTypeEnumFieldUpdateOperationsInput | $Enums.BonusTypeEnum;
+  amount?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  percent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumBonusStatusEnumFieldUpdateOperationsInput | $Enums.BonusStatusEnum;
+  kpiGatePassed?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null;
+  payoutMonth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutBonusEntryNestedInput;
+};
+
+export type BonusEntryUncheckedUpdateManyWithoutEmployeeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  orderId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
     | Prisma.NullableEnumSalesBonusSlotEnumFieldUpdateOperationsInput
@@ -1923,10 +1923,10 @@ export type BonusEntryUncheckedUpdateManyWithoutOrderInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type BonusEntryCreateManyEmployeeInput = {
+export type BonusEntryCreateManyProjectInput = {
   id?: string;
+  employeeId: string;
   orderId: string;
-  projectId: string;
   dealId?: string | null;
   salesAccrualInvoiceId?: string | null;
   salesBonusSlot?: $Enums.SalesBonusSlotEnum | null;
@@ -1941,7 +1941,7 @@ export type BonusEntryCreateManyEmployeeInput = {
   updatedAt?: Date | string;
 };
 
-export type BonusEntryUpdateWithoutEmployeeInput = {
+export type BonusEntryUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
@@ -1967,16 +1967,16 @@ export type BonusEntryUpdateWithoutEmployeeInput = {
   payoutMonth?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  employee?: Prisma.EmployeeUpdateOneRequiredWithoutBonusEntriesNestedInput;
   order?: Prisma.OrderUpdateOneRequiredWithoutBonusEntriesNestedInput;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutBonusEntriesNestedInput;
   deal?: Prisma.DealUpdateOneWithoutSalesBonusEntriesNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutBonusEntryNestedInput;
 };
 
-export type BonusEntryUncheckedUpdateWithoutEmployeeInput = {
+export type BonusEntryUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
@@ -2005,10 +2005,10 @@ export type BonusEntryUncheckedUpdateWithoutEmployeeInput = {
   bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutBonusEntryNestedInput;
 };
 
-export type BonusEntryUncheckedUpdateManyWithoutEmployeeInput = {
+export type BonusEntryUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
+  employeeId?: Prisma.StringFieldUpdateOperationsInput | string;
   orderId?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
   dealId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesAccrualInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   salesBonusSlot?:
