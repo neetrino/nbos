@@ -23,9 +23,11 @@ import {
 } from './partner-accrual-balance.ops';
 import {
   approvePartnerPayoutBatch,
+  cancelPartnerPayoutBatch,
   createPartnerPayoutBatch,
   listPartnerPayoutBatches,
   type ApprovePartnerPayoutBatchInput,
+  type CancelPartnerPayoutBatchInput,
   type CreatePartnerPayoutBatchInput,
   type PartnerPayoutBatchDto,
 } from './partner-payout-batch.ops';
@@ -266,6 +268,15 @@ export class PartnersService {
   ): Promise<PartnerPayoutBatchDto> {
     await this.findById(partnerId);
     return approvePartnerPayoutBatch(this.prisma, partnerId, batchId, input);
+  }
+
+  async cancelPartnerPayoutBatch(
+    partnerId: string,
+    batchId: string,
+    input: CancelPartnerPayoutBatchInput,
+  ): Promise<PartnerPayoutBatchDto> {
+    await this.findById(partnerId);
+    return cancelPartnerPayoutBatch(this.prisma, partnerId, batchId, input);
   }
 
   async getStats() {

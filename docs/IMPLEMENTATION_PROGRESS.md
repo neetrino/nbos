@@ -124,7 +124,9 @@
   `PartnerPayoutBatch` + `payout_batch_id` на accruals; `GET/POST /api/partners/:id/payout-batches`;
   `POST /api/partners/:id/payout-batches/:batchId/approve` создаёт Expense `PARTNER_PAYOUT`;
   при полной оплате Expense batch и accruals переходят в `PAID`. **Срез 5 (web UI):** карточка партнёра:
-  выбор `ELIGIBLE` accruals → create batch, список batch и approve draft batch. Дальше: manual cancel/hold
+  выбор `ELIGIBLE` accruals → create batch, список batch и approve draft batch. **Срез 6 (manual cancel):**
+  `POST /api/partners/:id/payout-batches/:batchId/cancel` для draft с rollback `IN_BATCH` → `ELIGIBLE`;
+  web: кнопка Cancel в таблице batch. Дальше: hold reason / outbound terms
 - Partners: outbound terms / service case разделение — M
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
 - Reports: централизованные permissions на источники — M

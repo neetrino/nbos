@@ -105,6 +105,10 @@ export interface ApprovePartnerPayoutBatchPayload {
   notes?: string;
 }
 
+export interface CancelPartnerPayoutBatchPayload {
+  notes?: string;
+}
+
 export interface PartnerListParams {
   page?: number;
   pageSize?: number;
@@ -214,6 +218,18 @@ export const partnersApi = {
   ): Promise<PartnerPayoutBatch> {
     const resp = await api.post<PartnerPayoutBatch>(
       `/api/partners/${partnerId}/payout-batches/${batchId}/approve`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async cancelPayoutBatch(
+    partnerId: string,
+    batchId: string,
+    body: CancelPartnerPayoutBatchPayload = {},
+  ): Promise<PartnerPayoutBatch> {
+    const resp = await api.post<PartnerPayoutBatch>(
+      `/api/partners/${partnerId}/payout-batches/${batchId}/cancel`,
       body,
     );
     return resp.data;

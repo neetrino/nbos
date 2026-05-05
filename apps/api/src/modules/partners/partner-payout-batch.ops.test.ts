@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import {
   approvePartnerPayoutBatch,
+  cancelPartnerPayoutBatch,
   createPartnerPayoutBatch,
   syncPartnerPayoutPaidFromExpense,
 } from './partner-payout-batch.ops';
@@ -115,5 +116,29 @@ describe('partner payout batch ops', () => {
       where: { payoutBatchId: 'batch-1', status: 'IN_BATCH' },
       data: { status: 'PAID' },
     });
+  });
+
+  it('cancels draft batch and releases in-batch accruals back to eligible', async () => {
+    prisma.partnerPayoutBatch.findUnique.mockResolvedValue({
+      id: 'batch-1',
+      partnerId: 'partner-1',
+      status: 'DRAFT',
+      notes: null,
+    });
+    prisma.partnerPayoutBatch.findFirst.mockResolvedValue(mockBatchRow({ status: 'CANCELLED' }));
+
+    const result = await cancelPartnerPayoutBatch(prisma as never, 'partner-1', 'batch-1', {
+      notes: 'manual cancel',
+    });
+
+    expect(prisma.partnerPayoutBatch.update).toHaveBeenCalledWith({
+      where: { id: 'batch-1' },
+      data: { status: 'CANCELLED', notes: 'manual cancel' },
+    });
+    expect(prisma.partnerAccrual.updateMany).toHaveBeenCalledWith({
+      where: { payoutBatchId: 'batch-1', status: 'IN_BATCH' },
+      data: { status: 'ELIGIBLE', payoutBatchId: null },
+    });
+    expect(result.status).toBe('CANCELLED');
   });
 });

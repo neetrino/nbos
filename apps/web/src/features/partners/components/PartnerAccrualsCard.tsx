@@ -38,6 +38,7 @@ export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: numb
   const [actionError, setActionError] = useState<string | null>(null);
   const [creatingBatch, setCreatingBatch] = useState(false);
   const [approvingBatchId, setApprovingBatchId] = useState<string | null>(null);
+  const [cancellingBatchId, setCancellingBatchId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -99,6 +100,23 @@ export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: numb
       setActionError(getApiErrorMessage(caught, 'Payout batch could not be approved.'));
     } finally {
       setApprovingBatchId(null);
+    }
+  };
+
+  const cancelPayoutBatch = async (batchId: string) => {
+    if (approvingBatchId || cancellingBatchId) return;
+    if (!window.confirm('Cancel this draft payout batch and release accruals back to eligible?')) {
+      return;
+    }
+    setCancellingBatchId(batchId);
+    setActionError(null);
+    try {
+      await partnersApi.cancelPayoutBatch(partnerId, batchId);
+      await load();
+    } catch (caught) {
+      setActionError(getApiErrorMessage(caught, 'Payout batch could not be cancelled.'));
+    } finally {
+      setCancellingBatchId(null);
     }
   };
 
@@ -315,15 +333,26 @@ export function PartnerAccrualsCard(props: { partnerId: string; reloadKey?: numb
                     </td>
                     <td className="py-2 text-right align-top">
                       {batch.status === 'DRAFT' ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => void approvePayoutBatch(batch.id)}
-                          disabled={approvingBatchId !== null}
-                        >
-                          {approvingBatchId === batch.id ? 'Approving…' : 'Approve'}
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => void cancelPayoutBatch(batch.id)}
+                            disabled={approvingBatchId !== null || cancellingBatchId !== null}
+                          >
+                            {cancellingBatchId === batch.id ? 'Cancelling…' : 'Cancel'}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => void approvePayoutBatch(batch.id)}
+                            disabled={approvingBatchId !== null || cancellingBatchId !== null}
+                          >
+                            {approvingBatchId === batch.id ? 'Approving…' : 'Approve'}
+                          </Button>
+                        </div>
                       ) : (
                         <span className="text-muted-foreground text-xs">—</span>
                       )}

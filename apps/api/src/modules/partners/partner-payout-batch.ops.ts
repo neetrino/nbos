@@ -15,6 +15,10 @@ export interface ApprovePartnerPayoutBatchInput {
   notes?: string;
 }
 
+export interface CancelPartnerPayoutBatchInput {
+  notes?: string;
+}
+
 export interface PartnerPayoutBatchDto {
   id: string;
   partnerId: string;
@@ -169,6 +173,38 @@ export async function syncPartnerPayoutPaidFromExpense(
       data: { status: 'PAID' },
     }),
   ]);
+}
+
+export async function cancelPartnerPayoutBatch(
+  prisma: InstanceType<typeof PrismaClient>,
+  partnerId: string,
+  batchId: string,
+  input: CancelPartnerPayoutBatchInput = {},
+): Promise<PartnerPayoutBatchDto> {
+  const existing = await prisma.partnerPayoutBatch.findUnique({
+    where: { id: batchId },
+    select: { id: true, partnerId: true, status: true, notes: true },
+  });
+  if (!existing || existing.partnerId !== partnerId) {
+    throw new NotFoundException(`Partner payout batch ${batchId} not found`);
+  }
+  if (existing.status !== 'DRAFT') {
+    throw new BadRequestException('Only draft payout batches can be cancelled');
+  }
+
+  const nextNotes = normalizeNotes(input.notes) ?? existing.notes;
+  await prisma.$transaction([
+    prisma.partnerPayoutBatch.update({
+      where: { id: batchId },
+      data: { status: 'CANCELLED', notes: nextNotes },
+    }),
+    prisma.partnerAccrual.updateMany({
+      where: { payoutBatchId: batchId, status: 'IN_BATCH' },
+      data: { status: 'ELIGIBLE', payoutBatchId: null },
+    }),
+  ]);
+
+  return findPartnerPayoutBatchDto(prisma, partnerId, batchId);
 }
 
 async function findPartnerPayoutBatchDto(

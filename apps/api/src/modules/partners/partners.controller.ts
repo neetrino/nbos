@@ -130,6 +130,18 @@ export class PartnersController {
     return this.partnersService.approvePartnerPayoutBatch(id, batchId, body);
   }
 
+  @Post(':id/payout-batches/:batchId/cancel')
+  @ApiOperation({
+    summary: 'Cancel draft payout batch and release accruals back to eligible pool',
+  })
+  async cancelPartnerPayoutBatch(
+    @Param('id') id: string,
+    @Param('batchId') batchId: string,
+    @Body() body: { notes?: string },
+  ) {
+    return this.partnersService.cancelPartnerPayoutBatch(id, batchId, body);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get partner by ID' })
   async findOne(@Param('id') id: string) {
