@@ -52,6 +52,21 @@ export class NotificationController {
     return this.notificationService.updateUserPreference(user.id, eventType, body);
   }
 
+  @Get('admin/rules')
+  @ApiOperation({ summary: 'List admin-managed notification rules (excluding per-user overrides)' })
+  async listAdminRules() {
+    return this.notificationService.listAdminRules();
+  }
+
+  @Patch('admin/rules/:code')
+  @ApiOperation({ summary: 'Patch admin-managed notification rule fields' })
+  async patchAdminRule(
+    @Param('code') code: string,
+    @Body() body: { enabled?: boolean; priority?: string; channels?: string[] },
+  ) {
+    return this.notificationService.patchAdminRule(code, body);
+  }
+
   @Patch('read-all')
   @ApiOperation({ summary: 'Mark all notifications as read' })
   async markAllAsRead(@CurrentUser() user: CurrentUserPayload) {

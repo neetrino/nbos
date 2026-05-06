@@ -69,6 +69,15 @@ export interface NotificationPreferenceRow {
   channels: string[];
 }
 
+export interface NotificationAdminRuleRow {
+  code: string;
+  eventType: string;
+  recipientResolver: string;
+  enabled: boolean;
+  priority: string;
+  channels: string[];
+}
+
 const USER_PREF_RULE_PREFIX = 'user_pref';
 
 const DEFAULT_PAGE = 1;
@@ -357,6 +366,67 @@ export class NotificationService {
           channels: override?.channels?.length ? override.channels : ['IN_APP'],
         };
       });
+  }
+
+  async listAdminRules(): Promise<NotificationAdminRuleRow[]> {
+    const rows = await this.prisma.notificationRule.findMany({
+      orderBy: [{ eventType: 'asc' }, { code: 'asc' }],
+      select: {
+        code: true,
+        eventType: true,
+        recipientResolver: true,
+        enabled: true,
+        priority: true,
+        channels: true,
+      },
+    });
+    return rows
+      .filter((row) => !row.code.startsWith(`${USER_PREF_RULE_PREFIX}:`))
+      .map((row) => ({
+        code: row.code,
+        eventType: row.eventType,
+        recipientResolver: row.recipientResolver,
+        enabled: row.enabled,
+        priority: row.priority,
+        channels: row.channels?.length ? row.channels : ['IN_APP'],
+      }));
+  }
+
+  async patchAdminRule(
+    code: string,
+    patch: { enabled?: boolean; priority?: string; channels?: string[] },
+  ): Promise<NotificationAdminRuleRow> {
+    const channels = this.normalizeChannels(patch.channels);
+    const priority = patch.priority?.trim().toLowerCase();
+    const normalizedPriority =
+      priority === 'critical' || priority === 'high' || priority === 'normal' || priority === 'low'
+        ? priority
+        : undefined;
+
+    const row = await this.prisma.notificationRule.update({
+      where: { code },
+      data: {
+        ...(patch.enabled !== undefined ? { enabled: patch.enabled } : {}),
+        ...(normalizedPriority ? { priority: normalizedPriority } : {}),
+        ...(channels ? { channels } : {}),
+      },
+      select: {
+        code: true,
+        eventType: true,
+        recipientResolver: true,
+        enabled: true,
+        priority: true,
+        channels: true,
+      },
+    });
+    return {
+      code: row.code,
+      eventType: row.eventType,
+      recipientResolver: row.recipientResolver,
+      enabled: row.enabled,
+      priority: row.priority,
+      channels: row.channels?.length ? row.channels : ['IN_APP'],
+    };
   }
 
   async updateUserPreference(

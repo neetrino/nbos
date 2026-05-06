@@ -95,8 +95,8 @@ function buildInMemoryPrisma() {
     notificationRule: {
       findUnique: async ({ where }: { where: { code: string } }) =>
         rules.find((rule) => rule.code === where.code) ?? null,
-      findMany: async ({ where }: { where: { code?: { startsWith: string } } }) => {
-        if (where.code?.startsWith) {
+      findMany: async ({ where }: { where?: { code?: { startsWith: string } } }) => {
+        if (where?.code?.startsWith) {
           return rules.filter((rule) => rule.code.startsWith(where.code!.startsWith));
         }
         return [...rules];
@@ -128,6 +128,19 @@ function buildInMemoryPrisma() {
         };
         rules.push(row);
         return row;
+      },
+      update: async ({
+        where,
+        data,
+      }: {
+        where: { code: string };
+        data: Partial<NotificationRuleRow>;
+      }) => {
+        const idx = rules.findIndex((rule) => rule.code === where.code);
+        if (idx < 0) throw new Error('not found');
+        const next = { ...rules[idx]!, ...data };
+        rules[idx] = next;
+        return next;
       },
     },
     notificationEvent: {
@@ -295,6 +308,30 @@ describe('NotificationService', () => {
         channels: ['IN_APP', 'EMAIL'],
       });
       expect(updated.channels).toContain('EMAIL');
+    });
+  });
+
+  describe('admin rules', () => {
+    it('lists only admin-managed rules (without user_pref overrides)', async () => {
+      await service.updateUserPreference('u1', 'task.overdue', { enabled: false });
+      await service.create({ type: 'task.overdue', recipientId: 'u2', title: 'A', body: 'B' });
+
+      const rows = await service.listAdminRules();
+      expect(rows.some((row) => row.code.startsWith('user_pref:'))).toBe(false);
+    });
+
+    it('patches admin-managed rule priority and channels', async () => {
+      await service.create({ type: 'task.overdue', recipientId: 'u2', title: 'A', body: 'B' });
+      const rules = await service.listAdminRules();
+      const target = rules.find((row) => row.eventType === 'task.overdue');
+      expect(target).toBeTruthy();
+
+      const patched = await service.patchAdminRule(target!.code, {
+        priority: 'critical',
+        channels: ['IN_APP', 'EMAIL'],
+      });
+      expect(patched.priority).toBe('critical');
+      expect(patched.channels).toContain('EMAIL');
     });
   });
 
