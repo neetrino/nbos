@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import type { StatusVariant } from '@/components/shared/StatusBadge';
 import {
   CREDENTIAL_CATEGORIES,
   CREDENTIAL_CRITICALITIES,
@@ -100,11 +101,11 @@ interface CredentialListItem {
 
 function credentialHealthBadge(
   health?: CredentialListItem['health'],
-): { label: string; variant: 'default' | 'success' | 'warning' | 'danger' } | null {
+): { label: string; variant: StatusVariant } | null {
   if (!health) return null;
-  if (health.status === 'OVERDUE') return { label: 'Overdue', variant: 'danger' };
-  if (health.status === 'DUE_SOON') return { label: 'Due soon', variant: 'warning' };
-  if (health.status === 'HEALTHY') return { label: 'Healthy', variant: 'success' };
+  if (health.status === 'OVERDUE') return { label: 'Overdue', variant: 'red' };
+  if (health.status === 'DUE_SOON') return { label: 'Due soon', variant: 'amber' };
+  if (health.status === 'HEALTHY') return { label: 'Healthy', variant: 'green' };
   return { label: 'Unknown', variant: 'default' };
 }
 

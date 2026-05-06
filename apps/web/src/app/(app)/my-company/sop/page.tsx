@@ -151,7 +151,7 @@ export default function SopPage() {
                     <td className="px-4 py-2">
                       <StatusBadge
                         label={inQueue ? 'Review due' : 'Fresh'}
-                        variant={inQueue ? 'yellow' : 'blue'}
+                        variant={inQueue ? 'amber' : 'blue'}
                       />
                     </td>
                   </tr>

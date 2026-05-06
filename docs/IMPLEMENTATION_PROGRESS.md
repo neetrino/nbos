@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-06 (Support resolution/close + extension auto-close; support create/filter product context)
+**Обновлено:** 2026-05-06 (Finance: drop legacy invoice status; web strict typecheck cleanup)
 
 ---
 
@@ -164,7 +164,7 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-- Finance: убрать legacy `InvoiceStatusEnum` из схемы и кода после полного отказа от companion-слоя — L (**финишер**)
+- 🟢 [x] Finance: убрать legacy `InvoiceStatusEnum` и колонку `Invoice.status` — единый `money_status` — L → миграция `20260506210000_drop_invoice_legacy_status` (backfill `FAIL`→`money_status` `CANCELLED`); API без `PATCH …/status` и без фильтра `status`; web/DTO на `moneyStatus`; после среза **web:** `StatusBadge` variants на credentials/KPI/SOP, `Link`+`buttonVariants` на support (Base UI `Button` без `asChild`), `TechnicalBackupPolicyDraft` + `emptyBackupPolicyDraft` в Product Technical; `pnpm --filter @nbos/api typecheck` и `pnpm --filter @nbos/web typecheck` зелёные
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
 - Ручная приёмка блока «Support глубина» — S

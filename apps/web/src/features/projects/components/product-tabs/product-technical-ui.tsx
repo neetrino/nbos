@@ -9,6 +9,7 @@ import type {
   TechnicalProductProfileResponse,
 } from '@/lib/api/technical';
 import { SelectInput, TextInput } from './product-technical-inputs';
+import type { TechnicalBackupPolicyDraft } from './product-technical-state';
 
 export const ASSET_TYPES: TechnicalAssetType[] = [
   'DOMAIN',
@@ -65,15 +66,6 @@ export type TechnicalDeployDraft = {
   status: TechnicalDeployStatus;
   environment: TechnicalEnvironmentKind;
   version: string;
-  notes: string;
-};
-
-export type TechnicalBackupPolicyDraft = {
-  backupStatus: TechnicalBackupStatus;
-  policyName: string;
-  rpoHours: string;
-  rtoHours: string;
-  restoreTestCadenceDays: string;
   notes: string;
 };
 

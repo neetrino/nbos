@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FilePlus2, FolderKanban, RefreshCcw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -71,9 +72,9 @@ export default function SupportChangeControlPage() {
         <Button variant="outline" size="icon" onClick={() => void fetchTickets()}>
           <RefreshCcw size={16} />
         </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/support">Back to Support</Link>
-        </Button>
+        <Link href="/support" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
+          Back to Support
+        </Link>
       </PageHeader>
 
       {loading ? (

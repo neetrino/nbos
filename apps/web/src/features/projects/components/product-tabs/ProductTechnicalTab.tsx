@@ -5,6 +5,7 @@ import { technicalApi, type TechnicalProductProfileResponse } from '@/lib/api/te
 import {
   backupPolicyDraftFromData,
   emptyAssetDraft,
+  emptyBackupPolicyDraft,
   emptyDeployDraft,
   emptyEnvironmentDraft,
   emptyProfileDraft,
@@ -28,7 +29,7 @@ export function ProductTechnicalTab({ productId }: { productId: string }) {
   const [assetDraft, setAssetDraft] = useState(emptyAssetDraft);
   const [envDraft, setEnvDraft] = useState(emptyEnvironmentDraft);
   const [deployDraft, setDeployDraft] = useState(emptyDeployDraft);
-  const [backupDraft, setBackupDraft] = useState(() => backupPolicyDraftFromDataPlaceholder());
+  const [backupDraft, setBackupDraft] = useState(() => emptyBackupPolicyDraft());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -177,15 +178,4 @@ function parseNumberOrNull(value: string): number | null {
   if (!trimmed) return null;
   const parsed = Number(trimmed);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function backupPolicyDraftFromDataPlaceholder() {
-  return {
-    backupStatus: 'UNKNOWN' as const,
-    policyName: '',
-    rpoHours: '',
-    rtoHours: '',
-    restoreTestCadenceDays: '',
-    notes: '',
-  };
 }

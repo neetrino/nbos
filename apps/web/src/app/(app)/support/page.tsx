@@ -16,7 +16,8 @@ import {
   AlertTriangle,
   Server,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -485,9 +486,12 @@ export default function SupportPage() {
         >
           <TableProperties size={16} aria-hidden />
         </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/support/change-control">Change Control View</Link>
-        </Button>
+        <Link
+          href="/support/change-control"
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+        >
+          Change Control View
+        </Link>
         <div className="border-border flex rounded-lg border">
           <Button
             variant={view === 'list' ? 'secondary' : 'ghost'}

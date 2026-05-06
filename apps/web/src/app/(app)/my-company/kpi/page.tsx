@@ -4,18 +4,19 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Target, TrendingUp, Wallet, Timer } from 'lucide-react';
 import { PageHeader, StatusBadge } from '@/components/shared';
+import type { StatusVariant } from '@/components/shared/StatusBadge';
 import { dashboardApi, type DashboardControlCenterProjection } from '@/lib/api/dashboard';
 
 type KpiGateRow = {
   label: string;
   threshold: string;
   payout: string;
-  variant: 'green' | 'yellow' | 'red';
+  variant: StatusVariant;
 };
 
 const KPI_GATE_TABLE: KpiGateRow[] = [
   { label: 'Strong delivery', threshold: '>= 70%', payout: '100%', variant: 'green' },
-  { label: 'Warning zone', threshold: '50% - 69%', payout: '50%', variant: 'yellow' },
+  { label: 'Warning zone', threshold: '50% - 69%', payout: '50%', variant: 'amber' },
   { label: 'Failed gate', threshold: '< 50%', payout: '0%', variant: 'red' },
 ];
 

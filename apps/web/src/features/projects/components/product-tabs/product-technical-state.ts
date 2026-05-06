@@ -50,6 +50,19 @@ export function backupPolicyDraftFromData(data: TechnicalProductProfileResponse)
   };
 }
 
+export type TechnicalBackupPolicyDraft = ReturnType<typeof backupPolicyDraftFromData>;
+
+export function emptyBackupPolicyDraft(): TechnicalBackupPolicyDraft {
+  return {
+    backupStatus: 'UNKNOWN',
+    policyName: '',
+    rpoHours: '',
+    rtoHours: '',
+    restoreTestCadenceDays: '',
+    notes: '',
+  };
+}
+
 export function technicalAssetItems(data: TechnicalProductProfileResponse) {
   return data.assets.map((asset) => ({
     id: asset.id,
