@@ -30,6 +30,7 @@ describe('SupportService', () => {
     it('applies all filters', async () => {
       await service.findAll({
         projectId: 'p1',
+        productId: 'prod-1',
         status: 'NEW',
         priority: 'P1',
         category: 'INCIDENT',
@@ -39,9 +40,46 @@ describe('SupportService', () => {
       });
       expect(prisma.supportTicket.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ coverageDecision: 'COVERED_BY_MAINTENANCE' }),
+          where: expect.objectContaining({
+            coverageDecision: 'COVERED_BY_MAINTENANCE',
+            productId: 'prod-1',
+          }),
         }),
       );
+    });
+  });
+
+  describe('closeLinkedTicketsAfterExtensionDelivered', () => {
+    it('closes open tickets for the extension order deal', async () => {
+      prisma.order.findFirst.mockResolvedValue({ id: 'ord-1', dealId: 'deal-1' });
+      prisma.supportTicket.findMany.mockResolvedValue([
+        {
+          id: 't1',
+          projectId: 'p1',
+          status: 'IN_PROGRESS',
+          resolutionSummary: null,
+          waitingState: 'NONE',
+          slaPausedTotalSeconds: 0,
+          slaPauseStartedAt: null,
+        },
+      ]);
+      await service.closeLinkedTicketsAfterExtensionDelivered('ext-1', 'user-1');
+      expect(prisma.supportTicket.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 't1' },
+          data: expect.objectContaining({
+            status: 'CLOSED',
+            closeReason: 'EXTENSION_DELIVERED',
+          }),
+        }),
+      );
+      expect(auditService.log).toHaveBeenCalled();
+    });
+
+    it('no-ops when order has no deal', async () => {
+      prisma.order.findFirst.mockResolvedValue({ id: 'ord-1', dealId: null });
+      await service.closeLinkedTicketsAfterExtensionDelivered('ext-1', 'user-1');
+      expect(prisma.supportTicket.findMany).not.toHaveBeenCalled();
     });
   });
 
@@ -143,6 +181,8 @@ describe('SupportService', () => {
         extensionDeal: null,
         contact: null,
         assignee: null,
+        technicalAsset: null,
+        technicalEnvironment: null,
       });
       prisma.supportTicket.update.mockResolvedValue({
         id: '1',
@@ -159,10 +199,58 @@ describe('SupportService', () => {
         extensionDeal: null,
         contact: null,
         assignee: null,
+        technicalAsset: null,
+        technicalEnvironment: null,
+        resolutionSummary: 'Fixed the issue for the customer.',
+        closeReason: null,
       });
-      const result = await service.updateStatus('1', 'RESOLVED', 'user-1');
+      const result = await service.updateStatus('1', 'RESOLVED', 'user-1', {
+        resolutionSummary: 'Fixed the issue for the customer.',
+      });
       expect(result.status).toBe('RESOLVED');
       expect(result.slaState.state).toBe('CLOSED');
+    });
+
+    it('rejects Resolved without resolutionSummary', async () => {
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: '1',
+        projectId: 'p1',
+        status: 'IN_PROGRESS',
+        waitingState: 'NONE',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: null,
+        project: { id: 'p1', code: 'P1', name: 'Proj' },
+        product: null,
+        extensionDeal: null,
+        contact: null,
+        assignee: null,
+        technicalAsset: null,
+        technicalEnvironment: null,
+      });
+      await expect(service.updateStatus('1', 'RESOLVED', 'user-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('rejects Closed when not Resolved', async () => {
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: '1',
+        projectId: 'p1',
+        status: 'IN_PROGRESS',
+        waitingState: 'NONE',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: null,
+        project: { id: 'p1', code: 'P1', name: 'Proj' },
+        product: null,
+        extensionDeal: null,
+        contact: null,
+        assignee: null,
+        technicalAsset: null,
+        technicalEnvironment: null,
+      });
+      await expect(service.updateStatus('1', 'CLOSED', 'user-1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rejects REOPENED as persistent status', async () => {
@@ -186,6 +274,8 @@ describe('SupportService', () => {
         extensionDeal: null,
         contact: null,
         assignee: null,
+        technicalAsset: null,
+        technicalEnvironment: null,
       });
       prisma.supportTicket.update.mockResolvedValue({
         id: '1',
@@ -201,6 +291,8 @@ describe('SupportService', () => {
         extensionDeal: null,
         contact: null,
         assignee: null,
+        technicalAsset: null,
+        technicalEnvironment: null,
       });
 
       const result = await service.reopen('1', 'user-1', 'Customer returned');
@@ -211,6 +303,8 @@ describe('SupportService', () => {
           where: { id: '1' },
           data: expect.objectContaining({
             status: 'IN_PROGRESS',
+            resolutionSummary: null,
+            closeReason: null,
             waitingState: 'NONE',
             waitingReason: null,
           }),

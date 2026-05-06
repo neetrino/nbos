@@ -20,6 +20,11 @@ import {
 } from './support-sla-pause';
 import { resolveSupportSlaNotificationRecipientIds } from './support-sla-recipients';
 import { assertSupportTechnicalLinksValid } from './support-technical-link.validation';
+import { parseSupportTicketCloseReason } from './support-close-reason.parse';
+import {
+  MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH,
+  SUPPORT_EXTENSION_DELIVERED_RESOLUTION_SUMMARY,
+} from './support-ticket-status.constants';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 
@@ -97,6 +102,7 @@ interface CreateTicketDto {
 interface UpdateTicketDto {
   title?: string;
   description?: string;
+  resolutionSummary?: string | null;
   projectId?: string;
   productId?: string | null;
   contactId?: string;
@@ -282,9 +288,18 @@ export class SupportService {
       technicalEnvironmentId: nextTechnicalEnvironmentId,
     });
 
+    if (data.resolutionSummary !== undefined) {
+      if (existing.status === 'CLOSED') {
+        throw new BadRequestException('Resolution fields cannot be edited on a closed ticket.');
+      }
+    }
+
     const updateData: Prisma.SupportTicketUpdateInput = {
       ...(data.title && { title: data.title }),
       ...(data.description !== undefined && { description: data.description }),
+      ...(data.resolutionSummary !== undefined && {
+        resolutionSummary: data.resolutionSummary?.trim() || null,
+      }),
       ...(data.projectId && { project: { connect: { id: data.projectId } } }),
       ...(data.productId !== undefined && {
         product: data.productId ? { connect: { id: data.productId } } : { disconnect: true },
@@ -401,7 +416,12 @@ export class SupportService {
     return deal;
   }
 
-  async updateStatus(id: string, status: string, actorId: string) {
+  async updateStatus(
+    id: string,
+    status: string,
+    actorId: string,
+    options?: { resolutionSummary?: string; closeReason?: string },
+  ) {
     if (status === 'REOPENED') {
       throw new BadRequestException(
         'REOPENED is not a persistent status. Use reopen action endpoint instead.',
@@ -412,6 +432,28 @@ export class SupportService {
       include: SUPPORT_TICKET_INCLUDE,
     });
     if (!beforeRow) throw new NotFoundException(`Support ticket ${id} not found`);
+
+    const nextStatus = status as TicketStatusEnum;
+    if (nextStatus === 'IN_PROGRESS' && ['RESOLVED', 'CLOSED'].includes(beforeRow.status)) {
+      throw new BadRequestException(
+        'Use the reopen action to return a ticket to In Progress from Resolved or Closed.',
+      );
+    }
+
+    if (nextStatus === 'RESOLVED') {
+      const summary = options?.resolutionSummary?.trim() ?? '';
+      if (summary.length < MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH) {
+        throw new BadRequestException(
+          `resolutionSummary is required (at least ${MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH} characters) when moving to Resolved.`,
+        );
+      }
+    }
+
+    if (nextStatus === 'CLOSED' && beforeRow.status !== 'RESOLVED') {
+      throw new BadRequestException(
+        'Tickets can only be closed manually from Resolved. Extension delivery uses system close.',
+      );
+    }
 
     let terminalClear: Prisma.SupportTicketUpdateInput = {};
     if (['RESOLVED', 'CLOSED'].includes(status)) {
@@ -431,16 +473,96 @@ export class SupportService {
       };
     }
 
+    const data: Prisma.SupportTicketUpdateInput = {
+      status: nextStatus,
+      ...terminalClear,
+    };
+
+    if (nextStatus === 'RESOLVED') {
+      data.resolutionSummary = options!.resolutionSummary!.trim();
+      data.closeReason = null;
+    }
+    if (nextStatus === 'CLOSED') {
+      data.closeReason =
+        parseSupportTicketCloseReason(options?.closeReason) ?? ('CLIENT_CONFIRMED' as const);
+    }
+
     const ticket = await this.prisma.supportTicket.update({
       where: { id },
-      data: { status: status as TicketStatusEnum, ...terminalClear },
+      data,
       include: SUPPORT_TICKET_INCLUDE,
     });
     await this.logStatusEvent(id, beforeRow.projectId, actorId, 'support.status_changed', {
       from: beforeRow.status,
       to: ticket.status,
+      resolutionSummary: nextStatus === 'RESOLVED' ? ticket.resolutionSummary : undefined,
+      closeReason: nextStatus === 'CLOSED' ? ticket.closeReason : undefined,
     });
     return this.attachSla(ticket);
+  }
+
+  /**
+   * When an extension reaches Done, close any change-control ticket linked to the same deal/order.
+   */
+  async closeLinkedTicketsAfterExtensionDelivered(
+    extensionId: string,
+    actorId: string,
+  ): Promise<void> {
+    const order = await this.prisma.order.findFirst({
+      where: { extensionId },
+      select: { id: true, dealId: true },
+    });
+    if (!order?.dealId) return;
+
+    const tickets = await this.prisma.supportTicket.findMany({
+      where: { extensionDealId: order.dealId, status: { not: 'CLOSED' } },
+      select: {
+        id: true,
+        projectId: true,
+        status: true,
+        resolutionSummary: true,
+        waitingState: true,
+        slaPausedTotalSeconds: true,
+        slaPauseStartedAt: true,
+      },
+    });
+
+    for (const row of tickets) {
+      const pause = buildPauseFieldsAfterWaitingChange(
+        {
+          waitingState: row.waitingState,
+          slaPausedTotalSeconds: row.slaPausedTotalSeconds,
+          slaPauseStartedAt: row.slaPauseStartedAt,
+        },
+        'NONE',
+        new Date(),
+      );
+      await this.prisma.supportTicket.update({
+        where: { id: row.id },
+        data: {
+          status: 'CLOSED',
+          resolutionSummary:
+            row.resolutionSummary?.trim() || SUPPORT_EXTENSION_DELIVERED_RESOLUTION_SUMMARY,
+          closeReason: 'EXTENSION_DELIVERED',
+          waitingState: 'NONE',
+          waitingReason: null,
+          ...pause,
+        },
+      });
+      await this.logStatusEvent(
+        row.id,
+        row.projectId,
+        actorId,
+        'support.closed_extension_delivered',
+        {
+          from: row.status,
+          to: 'CLOSED',
+          orderId: order.id,
+          extensionId,
+          closeReason: 'EXTENSION_DELIVERED',
+        },
+      );
+    }
   }
 
   async reopen(id: string, actorId: string, reason?: string) {
@@ -465,6 +587,8 @@ export class SupportService {
       where: { id },
       data: {
         status: 'IN_PROGRESS',
+        resolutionSummary: null,
+        closeReason: null,
         waitingState: 'NONE',
         waitingReason: null,
         ...pause,

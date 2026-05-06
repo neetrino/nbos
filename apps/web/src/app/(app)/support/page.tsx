@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Plus,
@@ -17,6 +17,7 @@ import {
   Server,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -51,13 +52,17 @@ import {
   TICKET_WAITING_STATES,
   TICKET_WAITING_OVERLAY_OPTIONS,
   getTicketCategory,
+  getTicketCloseReasonLabel,
   getTicketCoverage,
   getTicketPriority,
   getTicketSlaState,
   getTicketStatus,
   getTicketWaitingState,
+  MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH,
+  SUPPORT_TICKET_CLOSE_REASON_OPTIONS,
 } from '@/features/support/constants/support';
 import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
+import { projectsApi, type Project, type ProjectProductSummary } from '@/lib/api/projects';
 import { technicalApi, type TechnicalProductProfileResponse } from '@/lib/api/technical';
 import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-scope-stats-csv-export';
 import { usePermission } from '@/lib/permissions';
@@ -83,6 +88,22 @@ export default function SupportPage() {
   const [technicalProfileLoading, setTechnicalProfileLoading] = useState(false);
   const [draftTechnicalAssetId, setDraftTechnicalAssetId] = useState('');
   const [draftTechnicalEnvId, setDraftTechnicalEnvId] = useState('');
+  const [projectsForFilters, setProjectsForFilters] = useState<Project[]>([]);
+  const [productFilterOptions, setProductFilterOptions] = useState<ProjectProductSummary[]>([]);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createTitle, setCreateTitle] = useState('');
+  const [createProjectId, setCreateProjectId] = useState('');
+  const [createProductId, setCreateProductId] = useState('');
+  const [createCategory, setCreateCategory] = useState('INCIDENT');
+  const [createPriority, setCreatePriority] = useState('P3');
+  const [createDescription, setCreateDescription] = useState('');
+  const [createProductOptions, setCreateProductOptions] = useState<ProjectProductSummary[]>([]);
+  const [statusDialog, setStatusDialog] = useState<null | {
+    ticket: SupportTicket;
+    mode: 'RESOLVED' | 'CLOSED';
+  }>(null);
+  const [statusResolutionDraft, setStatusResolutionDraft] = useState('');
+  const [statusCloseReason, setStatusCloseReason] = useState('CLIENT_CONFIRMED');
   const { me } = usePermission();
 
   const { handleExportScopeStatsCsv } = useSupportScopeStatsCsvExport(stats);
@@ -93,6 +114,8 @@ export default function SupportPage() {
       const { items } = await supportApi.getAll({
         pageSize: 100,
         search: search || undefined,
+        projectId: filters.projectId && filters.projectId !== 'all' ? filters.projectId : undefined,
+        productId: filters.productId && filters.productId !== 'all' ? filters.productId : undefined,
         category: filters.category && filters.category !== 'all' ? filters.category : undefined,
         priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
@@ -141,6 +164,202 @@ export default function SupportPage() {
     };
   }, [technicalTicket]);
 
+  useEffect(() => {
+    let cancelled = false;
+    void projectsApi.getAll({ pageSize: 200 }).then((res) => {
+      if (!cancelled) setProjectsForFilters(res.items);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const pid = filters.projectId;
+    if (!pid || pid === 'all') {
+      setProductFilterOptions([]);
+      return;
+    }
+    let cancelled = false;
+    void projectsApi.getById(pid).then((p) => {
+      if (!cancelled) setProductFilterOptions(p.products ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [filters.projectId]);
+
+  useEffect(() => {
+    if (!createProjectId) {
+      setCreateProductOptions([]);
+      return;
+    }
+    let cancelled = false;
+    void projectsApi.getById(createProjectId).then((p) => {
+      if (!cancelled) setCreateProductOptions(p.products ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [createProjectId]);
+
+  useEffect(() => {
+    setCreateProductId('');
+  }, [createProjectId]);
+
+  useEffect(() => {
+    if (!createOpen) return;
+    setCreateTitle('');
+    setCreateProjectId('');
+    setCreateProductId('');
+    setCreateCategory('INCIDENT');
+    setCreatePriority('P3');
+    setCreateDescription('');
+    setCreateProductOptions([]);
+  }, [createOpen]);
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === 'projectId') next.productId = 'all';
+      return next;
+    });
+  };
+
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'category',
+        label: 'Category',
+        options: TICKET_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
+      },
+      {
+        key: 'priority',
+        label: 'Priority',
+        options: TICKET_PRIORITIES.map((p) => ({ value: p.value, label: p.label })),
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        options: TICKET_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+      },
+      {
+        key: 'waitingState',
+        label: 'Waiting',
+        options: TICKET_WAITING_STATES.map((w) => ({ value: w.value, label: w.label })),
+      },
+      {
+        key: 'projectId',
+        label: 'Project',
+        options: projectsForFilters.map((p) => ({
+          value: p.id,
+          label: `${p.code} · ${p.name}`,
+        })),
+      },
+      {
+        key: 'productId',
+        label: 'Product',
+        options: productFilterOptions.map((p) => ({ value: p.id, label: p.name })),
+      },
+    ],
+    [projectsForFilters, productFilterOptions],
+  );
+
+  const patchTicketStatus = async (
+    id: string,
+    status: string,
+    extra?: { resolutionSummary?: string; closeReason?: string },
+  ): Promise<boolean> => {
+    setActionId(`status:${id}`);
+    try {
+      await supportApi.updateStatus(id, status, extra);
+      setError(null);
+      await fetchTickets();
+      return true;
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Status could not be updated.'));
+      return false;
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleStatusSelect = (ticket: SupportTicket, next: string) => {
+    if (next === ticket.status) return;
+    if (next === 'RESOLVED') {
+      setStatusResolutionDraft(ticket.resolutionSummary ?? '');
+      setStatusDialog({ ticket, mode: 'RESOLVED' });
+      return;
+    }
+    if (next === 'CLOSED') {
+      if (ticket.status !== 'RESOLVED') {
+        setError(
+          'Move the ticket to Resolved before Closed (extension delivery may close it automatically).',
+        );
+        return;
+      }
+      setStatusCloseReason('CLIENT_CONFIRMED');
+      setStatusDialog({ ticket, mode: 'CLOSED' });
+      return;
+    }
+    void patchTicketStatus(ticket.id, next);
+  };
+
+  const submitResolveDialog = async () => {
+    if (!statusDialog || statusDialog.mode !== 'RESOLVED') return;
+    const text = statusResolutionDraft.trim();
+    if (text.length < MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH) {
+      setError(
+        `Resolution summary must be at least ${MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH} characters.`,
+      );
+      return;
+    }
+    const ok = await patchTicketStatus(statusDialog.ticket.id, 'RESOLVED', {
+      resolutionSummary: text,
+    });
+    if (ok) setStatusDialog(null);
+  };
+
+  const submitCloseDialog = async () => {
+    if (!statusDialog || statusDialog.mode !== 'CLOSED') return;
+    const ok = await patchTicketStatus(statusDialog.ticket.id, 'CLOSED', {
+      closeReason: statusCloseReason,
+    });
+    if (ok) setStatusDialog(null);
+  };
+
+  const submitCreateTicket = async () => {
+    const title = createTitle.trim();
+    if (!title || !createProjectId) {
+      setError('Title and project are required to create a ticket.');
+      return;
+    }
+    setActionId('create-ticket');
+    try {
+      await supportApi.create({
+        title,
+        projectId: createProjectId,
+        category: createCategory,
+        priority: createPriority,
+        description: createDescription.trim() || undefined,
+        productId: createProductId || undefined,
+      });
+      setCreateOpen(false);
+      setError(null);
+      await fetchTickets();
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Ticket could not be created.'));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleKanbanMove = (itemId: string, _from: string, toColumn: string) => {
+    const ticket = tickets.find((t) => t.id === itemId);
+    if (!ticket) return;
+    handleStatusSelect(ticket, toColumn);
+  };
+
   const openTechnicalDialog = (ticket: SupportTicket) => {
     setTechnicalTicket(ticket);
     setDraftTechnicalAssetId(ticket.technicalAsset?.id ?? '');
@@ -166,29 +385,6 @@ export default function SupportPage() {
   };
 
   const openTickets = tickets.filter((t) => !['RESOLVED', 'CLOSED'].includes(t.status));
-
-  const filterConfigs = [
-    {
-      key: 'category',
-      label: 'Category',
-      options: TICKET_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
-    },
-    {
-      key: 'priority',
-      label: 'Priority',
-      options: TICKET_PRIORITIES.map((p) => ({ value: p.value, label: p.label })),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      options: TICKET_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-    },
-    {
-      key: 'waitingState',
-      label: 'Waiting',
-      options: TICKET_WAITING_STATES.map((w) => ({ value: w.value, label: w.label })),
-    },
-  ];
 
   const kanbanColumns = TICKET_STATUSES.map((status) => ({
     key: status.value,
@@ -310,7 +506,7 @@ export default function SupportPage() {
             <LayoutGrid size={14} />
           </Button>
         </div>
-        <Button>
+        <Button type="button" onClick={() => setCreateOpen(true)}>
           <Plus size={16} />
           New Ticket
         </Button>
@@ -343,7 +539,7 @@ export default function SupportPage() {
         searchPlaceholder="Search tickets..."
         filters={filterConfigs}
         filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+        onFilterChange={handleFilterChange}
         onClearFilters={() => setFilters({})}
       />
 
@@ -357,7 +553,7 @@ export default function SupportPage() {
           title="No tickets yet"
           description="Support tickets will appear here"
           action={
-            <Button>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
               <Plus size={16} /> Create First Ticket
             </Button>
           }
@@ -366,6 +562,7 @@ export default function SupportPage() {
         <KanbanBoard
           columns={kanbanColumns}
           getItemId={(t: SupportTicket) => t.id}
+          onMove={handleKanbanMove}
           renderCard={(ticket: SupportTicket) => {
             const cat = getTicketCategory(ticket.category);
             const pri = getTicketPriority(ticket.priority);
@@ -506,6 +703,7 @@ export default function SupportPage() {
                 <TableHead>Category</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Resolution</TableHead>
                 <TableHead>SLA</TableHead>
                 <TableHead>Waiting</TableHead>
                 <TableHead>Escalate</TableHead>
@@ -543,7 +741,22 @@ export default function SupportPage() {
                       {pri && <StatusBadge label={pri.label} variant={pri.variant} />}
                     </TableCell>
                     <TableCell>
-                      {st && <StatusBadge label={st.label} variant={st.variant} />}
+                      <select
+                        className="border-border bg-background max-w-[168px] rounded-md border px-2 py-1 text-xs"
+                        value={ticket.status}
+                        onChange={(e) => handleStatusSelect(ticket, e.target.value)}
+                        disabled={!!actionId?.startsWith('status:')}
+                        aria-label="Ticket status"
+                      >
+                        {TICKET_STATUSES.map((s) => (
+                          <option key={s.value} value={s.value}>
+                            {s.label}
+                          </option>
+                        ))}
+                      </select>
+                      {st ? (
+                        <p className="text-muted-foreground mt-1 text-[10px]">{st.label}</p>
+                      ) : null}
                       {['RESOLVED', 'CLOSED'].includes(ticket.status) && (
                         <div className="mt-1">
                           <Button
@@ -558,6 +771,18 @@ export default function SupportPage() {
                           </Button>
                         </div>
                       )}
+                    </TableCell>
+                    <TableCell className="max-w-[220px] text-xs">
+                      {ticket.resolutionSummary ? (
+                        <p className="line-clamp-3">{ticket.resolutionSummary}</p>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                      {ticket.status === 'CLOSED' && ticket.closeReason ? (
+                        <p className="text-muted-foreground mt-1 text-[10px]">
+                          {getTicketCloseReasonLabel(ticket.closeReason)}
+                        </p>
+                      ) : null}
                     </TableCell>
                     <TableCell>
                       {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
@@ -829,6 +1054,198 @@ export default function SupportPage() {
               onClick={() => void saveTechnicalContext()}
             >
               Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>New support ticket</DialogTitle>
+            <DialogDescription>
+              Pick a project and optional product. Product also drives filters and technical
+              linking.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="support-new-title">Title</Label>
+              <Input
+                id="support-new-title"
+                value={createTitle}
+                onChange={(e) => setCreateTitle(e.target.value)}
+                placeholder="Short description of the issue"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="support-new-project">Project</Label>
+              <select
+                id="support-new-project"
+                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                value={createProjectId}
+                onChange={(e) => setCreateProjectId(e.target.value)}
+              >
+                <option value="">Select project</option>
+                {projectsForFilters.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.code} · {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="support-new-product">Product (optional)</Label>
+              <select
+                id="support-new-product"
+                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                value={createProductId}
+                onChange={(e) => setCreateProductId(e.target.value)}
+                disabled={!createProjectId}
+              >
+                <option value="">None</option>
+                {createProductOptions.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="support-new-category">Category</Label>
+                <select
+                  id="support-new-category"
+                  className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                  value={createCategory}
+                  onChange={(e) => setCreateCategory(e.target.value)}
+                >
+                  {TICKET_CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="support-new-priority">Priority</Label>
+                <select
+                  id="support-new-priority"
+                  className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                  value={createPriority}
+                  onChange={(e) => setCreatePriority(e.target.value)}
+                >
+                  {TICKET_PRIORITIES.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="support-new-desc">Description (optional)</Label>
+              <Textarea
+                id="support-new-desc"
+                value={createDescription}
+                onChange={(e) => setCreateDescription(e.target.value)}
+                rows={3}
+                className="resize-y"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={actionId === 'create-ticket'}
+              onClick={() => void submitCreateTicket()}
+            >
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!statusDialog && statusDialog.mode === 'RESOLVED'}
+        onOpenChange={(open) => {
+          if (!open) setStatusDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mark resolved</DialogTitle>
+            <DialogDescription>
+              Resolution summary is required ({MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH}+ characters).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="support-resolve-summary">Resolution summary</Label>
+            <Textarea
+              id="support-resolve-summary"
+              value={statusResolutionDraft}
+              onChange={(e) => setStatusResolutionDraft(e.target.value)}
+              rows={4}
+              className="resize-y"
+              placeholder="What was done, verification, client communication…"
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setStatusDialog(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={!!actionId?.startsWith('status:')}
+              onClick={() => void submitResolveDialog()}
+            >
+              Save resolved
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!statusDialog && statusDialog.mode === 'CLOSED'}
+        onOpenChange={(open) => {
+          if (!open) setStatusDialog(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Close ticket</DialogTitle>
+            <DialogDescription>
+              Record why the case left the active queue (audit). Default is client confirmation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1">
+            <Label htmlFor="support-close-reason">Close reason</Label>
+            <select
+              id="support-close-reason"
+              className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+              value={statusCloseReason}
+              onChange={(e) => setStatusCloseReason(e.target.value)}
+            >
+              {SUPPORT_TICKET_CLOSE_REASON_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setStatusDialog(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={!!actionId?.startsWith('status:')}
+              onClick={() => void submitCloseDialog()}
+            >
+              Close ticket
             </Button>
           </DialogFooter>
         </DialogContent>

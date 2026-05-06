@@ -1092,6 +1092,17 @@ export const TicketWaitingStateEnum = {
 export type TicketWaitingStateEnum =
   (typeof TicketWaitingStateEnum)[keyof typeof TicketWaitingStateEnum];
 
+export const SupportTicketCloseReasonEnum = {
+  CLIENT_CONFIRMED: 'CLIENT_CONFIRMED',
+  AUTO_TIMED_OUT: 'AUTO_TIMED_OUT',
+  EXTENSION_DELIVERED: 'EXTENSION_DELIVERED',
+  MANUAL: 'MANUAL',
+  DUPLICATE: 'DUPLICATE',
+} as const;
+
+export type SupportTicketCloseReasonEnum =
+  (typeof SupportTicketCloseReasonEnum)[keyof typeof SupportTicketCloseReasonEnum];
+
 export const TaskStatusEnum = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',

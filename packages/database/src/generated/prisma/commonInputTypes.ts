@@ -3435,6 +3435,25 @@ export type EnumSupportCoverageEnumNullableFilter<$PrismaModel = never> = {
     | null;
 };
 
+export type EnumSupportTicketCloseReasonEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SupportTicketCloseReasonEnum
+    | Prisma.EnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SupportTicketCloseReasonEnum[]
+    | Prisma.ListEnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SupportTicketCloseReasonEnum[]
+    | Prisma.ListEnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSupportTicketCloseReasonEnumNullableFilter<$PrismaModel>
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
+};
+
 export type EnumTicketWaitingStateEnumFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.TicketWaitingStateEnum
@@ -3508,6 +3527,28 @@ export type EnumSupportCoverageEnumNullableWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
+};
+
+export type EnumSupportTicketCloseReasonEnumNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SupportTicketCloseReasonEnum
+    | Prisma.EnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SupportTicketCloseReasonEnum[]
+    | Prisma.ListEnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SupportTicketCloseReasonEnum[]
+    | Prisma.ListEnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSupportTicketCloseReasonEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSupportTicketCloseReasonEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSupportTicketCloseReasonEnumNullableFilter<$PrismaModel>;
 };
 
 export type EnumTicketWaitingStateEnumWithAggregatesFilter<$PrismaModel = never> = {
@@ -7231,6 +7272,25 @@ export type NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel = never> = 
     | null;
 };
 
+export type NestedEnumSupportTicketCloseReasonEnumNullableFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.SupportTicketCloseReasonEnum
+    | Prisma.EnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SupportTicketCloseReasonEnum[]
+    | Prisma.ListEnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SupportTicketCloseReasonEnum[]
+    | Prisma.ListEnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSupportTicketCloseReasonEnumNullableFilter<$PrismaModel>
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
+};
+
 export type NestedEnumTicketWaitingStateEnumFilter<$PrismaModel = never> = {
   equals?:
     | $Enums.TicketWaitingStateEnum
@@ -7304,6 +7364,30 @@ export type NestedEnumSupportCoverageEnumNullableWithAggregatesFilter<$PrismaMod
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
+};
+
+export type NestedEnumSupportTicketCloseReasonEnumNullableWithAggregatesFilter<
+  $PrismaModel = never,
+> = {
+  equals?:
+    | $Enums.SupportTicketCloseReasonEnum
+    | Prisma.EnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  in?:
+    | $Enums.SupportTicketCloseReasonEnum[]
+    | Prisma.ListEnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  notIn?:
+    | $Enums.SupportTicketCloseReasonEnum[]
+    | Prisma.ListEnumSupportTicketCloseReasonEnumFieldRefInput<$PrismaModel>
+    | null;
+  not?:
+    | Prisma.NestedEnumSupportTicketCloseReasonEnumNullableWithAggregatesFilter<$PrismaModel>
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumSupportTicketCloseReasonEnumNullableFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumSupportTicketCloseReasonEnumNullableFilter<$PrismaModel>;
 };
 
 export type NestedEnumTicketWaitingStateEnumWithAggregatesFilter<$PrismaModel = never> = {

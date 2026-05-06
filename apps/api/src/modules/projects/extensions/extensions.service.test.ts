@@ -9,6 +9,9 @@ describe('ExtensionsService', () => {
   let service: ExtensionsService;
   let prisma: MockPrisma;
   let notifications: NotificationService;
+  const supportService = {
+    closeLinkedTicketsAfterExtensionDelivered: vi.fn().mockResolvedValue(undefined),
+  };
 
   const partnerAccrualClassic = {
     tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
@@ -18,7 +21,13 @@ describe('ExtensionsService', () => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
-    service = new ExtensionsService(prisma as never, notifications, partnerAccrualClassic as never);
+    supportService.closeLinkedTicketsAfterExtensionDelivered.mockClear();
+    service = new ExtensionsService(
+      prisma as never,
+      notifications,
+      partnerAccrualClassic as never,
+      supportService as never,
+    );
   });
 
   describe('findAll', () => {
@@ -419,8 +428,12 @@ describe('ExtensionsService', () => {
         deliveryResolution: 'DONE',
       });
 
-      const result = await service.complete('e1');
+      const result = await service.complete('e1', 'user-1');
 
+      expect(supportService.closeLinkedTicketsAfterExtensionDelivered).toHaveBeenCalledWith(
+        'e1',
+        'user-1',
+      );
       expect(prisma.extension.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -442,7 +455,7 @@ describe('ExtensionsService', () => {
         deliveryWorkStatus: 'ON_HOLD',
       });
 
-      await expect(service.complete('e1')).rejects.toThrow(BadRequestException);
+      await expect(service.complete('e1', 'user-1')).rejects.toThrow(BadRequestException);
       expect(prisma.extension.update).not.toHaveBeenCalled();
     });
 

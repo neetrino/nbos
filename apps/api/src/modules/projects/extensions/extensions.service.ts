@@ -24,6 +24,7 @@ import {
 } from '../delivery-lifecycle';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
+import { SupportService } from '../../support/support.service';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -76,6 +77,7 @@ export class ExtensionsService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly supportService: SupportService,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -301,7 +303,7 @@ export class ExtensionsService {
     return attachExtensionReadiness(updated);
   }
 
-  async complete(id: string) {
+  async complete(id: string, actorId: string) {
     const extension = await this.findById(id);
     this.ensureActiveForStageMove(extension.deliveryLifecycle);
     const target = 'DONE' as ExtensionStatusEnum;
@@ -326,6 +328,7 @@ export class ExtensionsService {
       await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
       await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
     }
+    await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
     return attachExtensionReadiness(updated);
   }
 

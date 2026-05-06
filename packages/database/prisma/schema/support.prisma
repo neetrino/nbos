@@ -38,6 +38,14 @@ enum TicketWaitingStateEnum {
   ESCALATED
 }
 
+enum SupportTicketCloseReasonEnum {
+  CLIENT_CONFIRMED
+  AUTO_TIMED_OUT
+  EXTENSION_DELIVERED
+  MANUAL
+  DUPLICATE
+}
+
 model SupportTicket {
   id                  String               @id @default(uuid())
   code                String               @unique
@@ -51,6 +59,8 @@ model SupportTicket {
   coverageDecision    SupportCoverageEnum? @map("coverage_decision")
   title               String
   description         String?
+  resolutionSummary   String?              @map("resolution_summary") @db.Text
+  closeReason         SupportTicketCloseReasonEnum? @map("close_reason")
   billable            Boolean              @default(false)
   assignedTo          String?              @map("assigned_to")
   slaResponseDeadline DateTime?            @map("sla_response_deadline")

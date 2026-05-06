@@ -46,6 +46,24 @@ export const TICKET_WAITING_OVERLAY_OPTIONS = TICKET_WAITING_STATES.filter(
   (w) => w.value !== 'all',
 );
 
+/** Matches API `MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH` when moving to Resolved. */
+export const MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH = 10;
+
+export const SUPPORT_TICKET_CLOSE_REASON_OPTIONS = [
+  { value: 'CLIENT_CONFIRMED', label: 'Client confirmed' },
+  { value: 'MANUAL', label: 'Manual / management' },
+  { value: 'DUPLICATE', label: 'Duplicate' },
+  { value: 'AUTO_TIMED_OUT', label: 'Auto timed out' },
+] as const;
+
+export function getTicketCloseReasonLabel(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  const row = SUPPORT_TICKET_CLOSE_REASON_OPTIONS.find((o) => o.value === value);
+  if (row) return row.label;
+  if (value === 'EXTENSION_DELIVERED') return 'Extension delivered';
+  return value;
+}
+
 export const TICKET_STATUSES = [
   { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
   {

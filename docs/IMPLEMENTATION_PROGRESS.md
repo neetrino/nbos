@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-06 (Marketing board + dashboard period filter; CRM deep link by id; CPL/ROI gating; expense plan UX)
+**Обновлено:** 2026-05-06 (Support resolution/close + extension auto-close; support create/filter product context)
 
 ---
 
@@ -164,8 +164,8 @@
 - 🟢 [x] Support: change-control представление отдельно от основного потока — M → добавлен отдельный route `GET /support/change-control` (web view) с выделенной очередью `CHANGE_REQUEST`, фокусом на conversion в Extension Deal и отдельной таблицей; в основном `/support` добавлен переход в `Change Control View`, а в Sidebar у Support появились подпункты `Tickets` и `Change Control`
 - 🟢 [x] Support: SLA pause / breach / escalation оркестрация — L → `TicketWaitingStateEnum` + `sla_paused_total_seconds` / `sla_pause_started_at`; overlay pauses SLA projection; `PATCH …/waiting`, `POST …/actions/escalate`; `SupportSlaOrchestrationService` + `POST /scheduler/support-sla-escalation` (resolve warning / response & resolve breach in-app); UI waiting select + escalate dialog
 - 🟢 [x] Support: связь Ticket → Technical asset / environment — M → `technical_asset_id` / `technical_environment_id` + валидация project/product; `create`/`update`; include в API; UI диалог Context на `/support` (загрузка `GET /technical/products/:id/profile`)
-- Support: resolution requirements + auto-close после Extension Done где канон — M
-- Support: product-context в UI create/filter — M
+- 🟢 [x] Support: resolution requirements + auto-close после Extension Done где канон — M → `resolution_summary` + `close_reason`; Resolved требует summary; Closed только из Resolved с reason; `PATCH …/complete` extension → `closeLinkedTicketsAfterExtensionDelivered`; audit `support.closed_extension_delivered`
+- 🟢 [x] Support: product-context в UI create/filter — M → фильтры Project/Product на `/support` (загрузка продуктов по проекту); диалог New Ticket с project + optional product; API `productId` уже был в list
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
 - Ручная приёмка блока «Support глубина» — S

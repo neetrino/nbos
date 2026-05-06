@@ -108,6 +108,7 @@ export class SupportController {
     body: {
       title?: string;
       description?: string;
+      resolutionSummary?: string | null;
       projectId?: string;
       productId?: string | null;
       contactId?: string;
@@ -128,9 +129,13 @@ export class SupportController {
   async updateStatus(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-    @Body('status') status: string,
+    @Body()
+    body: { status: string; resolutionSummary?: string; closeReason?: string },
   ) {
-    return this.supportService.updateStatus(id, status, user.id);
+    return this.supportService.updateStatus(id, body.status, user.id, {
+      resolutionSummary: body.resolutionSummary,
+      closeReason: body.closeReason,
+    });
   }
 
   @Post(':id/actions/reopen')

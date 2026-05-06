@@ -47,6 +47,8 @@ export type SupportTicketMinAggregateOutputType = {
   coverageDecision: $Enums.SupportCoverageEnum | null;
   title: string | null;
   description: string | null;
+  resolutionSummary: string | null;
+  closeReason: $Enums.SupportTicketCloseReasonEnum | null;
   billable: boolean | null;
   assignedTo: string | null;
   slaResponseDeadline: Date | null;
@@ -74,6 +76,8 @@ export type SupportTicketMaxAggregateOutputType = {
   coverageDecision: $Enums.SupportCoverageEnum | null;
   title: string | null;
   description: string | null;
+  resolutionSummary: string | null;
+  closeReason: $Enums.SupportTicketCloseReasonEnum | null;
   billable: boolean | null;
   assignedTo: string | null;
   slaResponseDeadline: Date | null;
@@ -101,6 +105,8 @@ export type SupportTicketCountAggregateOutputType = {
   coverageDecision: number;
   title: number;
   description: number;
+  resolutionSummary: number;
+  closeReason: number;
   billable: number;
   assignedTo: number;
   slaResponseDeadline: number;
@@ -137,6 +143,8 @@ export type SupportTicketMinAggregateInputType = {
   coverageDecision?: true;
   title?: true;
   description?: true;
+  resolutionSummary?: true;
+  closeReason?: true;
   billable?: true;
   assignedTo?: true;
   slaResponseDeadline?: true;
@@ -164,6 +172,8 @@ export type SupportTicketMaxAggregateInputType = {
   coverageDecision?: true;
   title?: true;
   description?: true;
+  resolutionSummary?: true;
+  closeReason?: true;
   billable?: true;
   assignedTo?: true;
   slaResponseDeadline?: true;
@@ -191,6 +201,8 @@ export type SupportTicketCountAggregateInputType = {
   coverageDecision?: true;
   title?: true;
   description?: true;
+  resolutionSummary?: true;
+  closeReason?: true;
   billable?: true;
   assignedTo?: true;
   slaResponseDeadline?: true;
@@ -310,6 +322,8 @@ export type SupportTicketGroupByOutputType = {
   coverageDecision: $Enums.SupportCoverageEnum | null;
   title: string;
   description: string | null;
+  resolutionSummary: string | null;
+  closeReason: $Enums.SupportTicketCloseReasonEnum | null;
   billable: boolean;
   assignedTo: string | null;
   slaResponseDeadline: Date | null;
@@ -360,6 +374,11 @@ export type SupportTicketWhereInput = {
     | null;
   title?: Prisma.StringFilter<'SupportTicket'> | string;
   description?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+  resolutionSummary?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+  closeReason?:
+    | Prisma.EnumSupportTicketCloseReasonEnumNullableFilter<'SupportTicket'>
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFilter<'SupportTicket'> | boolean;
   assignedTo?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
   slaResponseDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
@@ -405,6 +424,8 @@ export type SupportTicketOrderByWithRelationInput = {
   coverageDecision?: Prisma.SortOrderInput | Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
+  resolutionSummary?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closeReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   billable?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -446,6 +467,11 @@ export type SupportTicketWhereUniqueInput = Prisma.AtLeast<
       | null;
     title?: Prisma.StringFilter<'SupportTicket'> | string;
     description?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+    resolutionSummary?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+    closeReason?:
+      | Prisma.EnumSupportTicketCloseReasonEnumNullableFilter<'SupportTicket'>
+      | $Enums.SupportTicketCloseReasonEnum
+      | null;
     billable?: Prisma.BoolFilter<'SupportTicket'> | boolean;
     assignedTo?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
     slaResponseDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
@@ -502,6 +528,8 @@ export type SupportTicketOrderByWithAggregationInput = {
   coverageDecision?: Prisma.SortOrderInput | Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
+  resolutionSummary?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closeReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   billable?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -550,6 +578,11 @@ export type SupportTicketScalarWhereWithAggregatesInput = {
     | null;
   title?: Prisma.StringWithAggregatesFilter<'SupportTicket'> | string;
   description?: Prisma.StringNullableWithAggregatesFilter<'SupportTicket'> | string | null;
+  resolutionSummary?: Prisma.StringNullableWithAggregatesFilter<'SupportTicket'> | string | null;
+  closeReason?:
+    | Prisma.EnumSupportTicketCloseReasonEnumNullableWithAggregatesFilter<'SupportTicket'>
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolWithAggregatesFilter<'SupportTicket'> | boolean;
   assignedTo?: Prisma.StringNullableWithAggregatesFilter<'SupportTicket'> | string | null;
   slaResponseDeadline?:
@@ -590,6 +623,8 @@ export type SupportTicketCreateInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -621,6 +656,8 @@ export type SupportTicketUncheckedCreateInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -647,6 +684,11 @@ export type SupportTicketUpdateInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -683,6 +725,11 @@ export type SupportTicketUncheckedUpdateInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -712,6 +759,8 @@ export type SupportTicketCreateManyInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -738,6 +787,11 @@ export type SupportTicketUpdateManyMutationInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -767,6 +821,11 @@ export type SupportTicketUncheckedUpdateManyInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -806,6 +865,8 @@ export type SupportTicketCountOrderByAggregateInput = {
   coverageDecision?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
+  resolutionSummary?: Prisma.SortOrder;
+  closeReason?: Prisma.SortOrder;
   billable?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrder;
@@ -837,6 +898,8 @@ export type SupportTicketMaxOrderByAggregateInput = {
   coverageDecision?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
+  resolutionSummary?: Prisma.SortOrder;
+  closeReason?: Prisma.SortOrder;
   billable?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrder;
@@ -864,6 +927,8 @@ export type SupportTicketMinOrderByAggregateInput = {
   coverageDecision?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
+  resolutionSummary?: Prisma.SortOrder;
+  closeReason?: Prisma.SortOrder;
   billable?: Prisma.SortOrder;
   assignedTo?: Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrder;
@@ -1328,6 +1393,10 @@ export type NullableEnumSupportCoverageEnumFieldUpdateOperationsInput = {
   set?: $Enums.SupportCoverageEnum | null;
 };
 
+export type NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput = {
+  set?: $Enums.SupportTicketCloseReasonEnum | null;
+};
+
 export type EnumTicketWaitingStateEnumFieldUpdateOperationsInput = {
   set?: $Enums.TicketWaitingStateEnum;
 };
@@ -1513,6 +1582,8 @@ export type SupportTicketCreateWithoutContactInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -1542,6 +1613,8 @@ export type SupportTicketUncheckedCreateWithoutContactInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -1616,6 +1689,11 @@ export type SupportTicketScalarWhereInput = {
     | null;
   title?: Prisma.StringFilter<'SupportTicket'> | string;
   description?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+  resolutionSummary?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+  closeReason?:
+    | Prisma.EnumSupportTicketCloseReasonEnumNullableFilter<'SupportTicket'>
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFilter<'SupportTicket'> | boolean;
   assignedTo?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
   slaResponseDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
@@ -1641,6 +1719,8 @@ export type SupportTicketCreateWithoutExtensionDealInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -1670,6 +1750,8 @@ export type SupportTicketUncheckedCreateWithoutExtensionDealInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -1736,6 +1818,8 @@ export type SupportTicketCreateWithoutAssigneeInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -1766,6 +1850,8 @@ export type SupportTicketUncheckedCreateWithoutAssigneeInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -1829,6 +1915,8 @@ export type SupportTicketCreateWithoutProjectInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -1858,6 +1946,8 @@ export type SupportTicketUncheckedCreateWithoutProjectInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -1922,6 +2012,8 @@ export type SupportTicketCreateWithoutProductInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -1951,6 +2043,8 @@ export type SupportTicketUncheckedCreateWithoutProductInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2015,6 +2109,8 @@ export type SupportTicketCreateWithoutTechnicalAssetInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -2045,6 +2141,8 @@ export type SupportTicketUncheckedCreateWithoutTechnicalAssetInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2110,6 +2208,8 @@ export type SupportTicketCreateWithoutTechnicalEnvironmentInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -2140,6 +2240,8 @@ export type SupportTicketUncheckedCreateWithoutTechnicalEnvironmentInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2208,6 +2310,8 @@ export type SupportTicketCreateManyContactInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2234,6 +2338,11 @@ export type SupportTicketUpdateWithoutContactInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2268,6 +2377,11 @@ export type SupportTicketUncheckedUpdateWithoutContactInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2299,6 +2413,11 @@ export type SupportTicketUncheckedUpdateManyWithoutContactInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2327,6 +2446,8 @@ export type SupportTicketCreateManyExtensionDealInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2353,6 +2474,11 @@ export type SupportTicketUpdateWithoutExtensionDealInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2387,6 +2513,11 @@ export type SupportTicketUncheckedUpdateWithoutExtensionDealInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2418,6 +2549,11 @@ export type SupportTicketUncheckedUpdateManyWithoutExtensionDealInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2447,6 +2583,8 @@ export type SupportTicketCreateManyAssigneeInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
@@ -2472,6 +2610,11 @@ export type SupportTicketUpdateWithoutAssigneeInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2507,6 +2650,11 @@ export type SupportTicketUncheckedUpdateWithoutAssigneeInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2538,6 +2686,11 @@ export type SupportTicketUncheckedUpdateManyWithoutAssigneeInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2565,6 +2718,8 @@ export type SupportTicketCreateManyProjectInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2591,6 +2746,11 @@ export type SupportTicketUpdateWithoutProjectInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2625,6 +2785,11 @@ export type SupportTicketUncheckedUpdateWithoutProjectInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2656,6 +2821,11 @@ export type SupportTicketUncheckedUpdateManyWithoutProjectInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2684,6 +2854,8 @@ export type SupportTicketCreateManyProductInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2710,6 +2882,11 @@ export type SupportTicketUpdateWithoutProductInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2744,6 +2921,11 @@ export type SupportTicketUncheckedUpdateWithoutProductInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2775,6 +2957,11 @@ export type SupportTicketUncheckedUpdateManyWithoutProductInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2804,6 +2991,8 @@ export type SupportTicketCreateManyTechnicalAssetInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2829,6 +3018,11 @@ export type SupportTicketUpdateWithoutTechnicalAssetInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2864,6 +3058,11 @@ export type SupportTicketUncheckedUpdateWithoutTechnicalAssetInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2895,6 +3094,11 @@ export type SupportTicketUncheckedUpdateManyWithoutTechnicalAssetInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2923,6 +3127,8 @@ export type SupportTicketCreateManyTechnicalEnvironmentInput = {
   coverageDecision?: $Enums.SupportCoverageEnum | null;
   title: string;
   description?: string | null;
+  resolutionSummary?: string | null;
+  closeReason?: $Enums.SupportTicketCloseReasonEnum | null;
   billable?: boolean;
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
@@ -2948,6 +3154,11 @@ export type SupportTicketUpdateWithoutTechnicalEnvironmentInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -2983,6 +3194,11 @@ export type SupportTicketUncheckedUpdateWithoutTechnicalEnvironmentInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3014,6 +3230,11 @@ export type SupportTicketUncheckedUpdateManyWithoutTechnicalEnvironmentInput = {
     | null;
   title?: Prisma.StringFieldUpdateOperationsInput | string;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  resolutionSummary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closeReason?:
+    | Prisma.NullableEnumSupportTicketCloseReasonEnumFieldUpdateOperationsInput
+    | $Enums.SupportTicketCloseReasonEnum
+    | null;
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -3045,6 +3266,8 @@ export type SupportTicketSelect<
     coverageDecision?: boolean;
     title?: boolean;
     description?: boolean;
+    resolutionSummary?: boolean;
+    closeReason?: boolean;
     billable?: boolean;
     assignedTo?: boolean;
     slaResponseDeadline?: boolean;
@@ -3084,6 +3307,8 @@ export type SupportTicketSelectCreateManyAndReturn<
     coverageDecision?: boolean;
     title?: boolean;
     description?: boolean;
+    resolutionSummary?: boolean;
+    closeReason?: boolean;
     billable?: boolean;
     assignedTo?: boolean;
     slaResponseDeadline?: boolean;
@@ -3123,6 +3348,8 @@ export type SupportTicketSelectUpdateManyAndReturn<
     coverageDecision?: boolean;
     title?: boolean;
     description?: boolean;
+    resolutionSummary?: boolean;
+    closeReason?: boolean;
     billable?: boolean;
     assignedTo?: boolean;
     slaResponseDeadline?: boolean;
@@ -3159,6 +3386,8 @@ export type SupportTicketSelectScalar = {
   coverageDecision?: boolean;
   title?: boolean;
   description?: boolean;
+  resolutionSummary?: boolean;
+  closeReason?: boolean;
   billable?: boolean;
   assignedTo?: boolean;
   slaResponseDeadline?: boolean;
@@ -3188,6 +3417,8 @@ export type SupportTicketOmit<
   | 'coverageDecision'
   | 'title'
   | 'description'
+  | 'resolutionSummary'
+  | 'closeReason'
   | 'billable'
   | 'assignedTo'
   | 'slaResponseDeadline'
@@ -3263,6 +3494,8 @@ export type $SupportTicketPayload<
       coverageDecision: $Enums.SupportCoverageEnum | null;
       title: string;
       description: string | null;
+      resolutionSummary: string | null;
+      closeReason: $Enums.SupportTicketCloseReasonEnum | null;
       billable: boolean;
       assignedTo: string | null;
       slaResponseDeadline: Date | null;
@@ -3949,6 +4182,8 @@ export interface SupportTicketFieldRefs {
   readonly coverageDecision: Prisma.FieldRef<'SupportTicket', 'SupportCoverageEnum'>;
   readonly title: Prisma.FieldRef<'SupportTicket', 'String'>;
   readonly description: Prisma.FieldRef<'SupportTicket', 'String'>;
+  readonly resolutionSummary: Prisma.FieldRef<'SupportTicket', 'String'>;
+  readonly closeReason: Prisma.FieldRef<'SupportTicket', 'SupportTicketCloseReasonEnum'>;
   readonly billable: Prisma.FieldRef<'SupportTicket', 'Boolean'>;
   readonly assignedTo: Prisma.FieldRef<'SupportTicket', 'String'>;
   readonly slaResponseDeadline: Prisma.FieldRef<'SupportTicket', 'DateTime'>;

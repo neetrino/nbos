@@ -44,6 +44,8 @@ export interface SupportTicket {
     kind: string;
     status: string;
   } | null;
+  resolutionSummary: string | null;
+  closeReason: string | null;
   slaState: {
     state: 'ON_TRACK' | 'AT_RISK' | 'HIGH_RISK' | 'BREACHED' | 'PAUSED' | 'CLOSED';
     responseDeadline: string | null;
@@ -109,8 +111,15 @@ export const supportApi = {
     const resp = await api.put<SupportTicket>(`/api/support/${id}`, data);
     return resp.data;
   },
-  async updateStatus(id: string, status: string): Promise<SupportTicket> {
-    const resp = await api.patch<SupportTicket>(`/api/support/${id}/status`, { status });
+  async updateStatus(
+    id: string,
+    status: string,
+    extra?: { resolutionSummary?: string; closeReason?: string },
+  ): Promise<SupportTicket> {
+    const resp = await api.patch<SupportTicket>(`/api/support/${id}/status`, {
+      status,
+      ...extra,
+    });
     return resp.data;
   },
   async reopen(id: string, reason?: string): Promise<SupportTicket> {

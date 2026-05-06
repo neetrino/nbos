@@ -1667,6 +1667,8 @@ export const SupportTicketScalarFieldEnum = {
   coverageDecision: 'coverageDecision',
   title: 'title',
   description: 'description',
+  resolutionSummary: 'resolutionSummary',
+  closeReason: 'closeReason',
   billable: 'billable',
   assignedTo: 'assignedTo',
   slaResponseDeadline: 'slaResponseDeadline',
