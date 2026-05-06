@@ -1,4 +1,8 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { AuditService } from '../audit/audit.service';
 import { DriveService } from '../drive/drive.service';
@@ -17,7 +21,10 @@ function createDriveService(): Partial<DriveService> {
 }
 
 function createReportsQueueService(): Partial<ReportsQueueService> {
-  return { enqueueExport: vi.fn().mockResolvedValue(true) };
+  return {
+    isQueueAvailable: vi.fn().mockReturnValue(true),
+    enqueueExport: vi.fn().mockResolvedValue(true),
+  };
 }
 
 const QUEUED_JOB = {
@@ -405,5 +412,66 @@ describe('ReportsService', () => {
         data: expect.objectContaining({ status: 'CANCELLED' }),
       }),
     );
+  });
+
+  it('rejects export creation when BullMQ is not configured and sync fallback is off', async () => {
+    vi.mocked(queue.isQueueAvailable!).mockReturnValue(false);
+    delete process.env.REPORT_EXPORT_SYNC_FALLBACK;
+
+    await expect(
+      service.createExportJob('employee-1', FINANCE_PERMISSIONS, {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+      }),
+    ).rejects.toThrow(ServiceUnavailableException);
+
+    expect(prisma.reportExportJob.create).not.toHaveBeenCalled();
+  });
+
+  it('uses in-process export when sync fallback is enabled without Redis', async () => {
+    vi.mocked(queue.isQueueAvailable!).mockReturnValue(false);
+    process.env.REPORT_EXPORT_SYNC_FALLBACK = 'true';
+    const spy = vi
+      .spyOn(service, 'processExportJob')
+      .mockImplementation(
+        async () =>
+          ({ ...QUEUED_JOB, fileAsset: null }) as unknown as Awaited<
+            ReturnType<ReportsService['processExportJob']>
+          >,
+      );
+
+    await service.createExportJob('employee-1', FINANCE_PERMISSIONS, {
+      reportKey: 'company-pnl',
+      ownerModule: 'FINANCE',
+      format: 'CSV',
+    });
+
+    expect(spy).toHaveBeenCalledWith('job-1', 'employee-1');
+    spy.mockRestore();
+    delete process.env.REPORT_EXPORT_SYNC_FALLBACK;
+    vi.mocked(queue.isQueueAvailable!).mockReturnValue(true);
+  });
+
+  it('marks export failed and throws when enqueue returns false', async () => {
+    vi.mocked(queue.isQueueAvailable!).mockReturnValue(true);
+    vi.mocked(queue.enqueueExport!).mockResolvedValue(false);
+
+    await expect(
+      service.createExportJob('employee-1', FINANCE_PERMISSIONS, {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+      }),
+    ).rejects.toThrow(ServiceUnavailableException);
+
+    expect(prisma.reportExportJob.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'job-1' },
+        data: expect.objectContaining({ status: 'FAILED' }),
+      }),
+    );
+
+    vi.mocked(queue.enqueueExport!).mockResolvedValue(true);
   });
 });

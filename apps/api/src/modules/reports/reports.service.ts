@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -25,6 +26,7 @@ import { renderReportExportFile } from './reports-export-content';
 import { buildRuntimeDataQualityWarnings } from './reports-data-quality-runtime';
 import { hasReportSourceAccess } from './reports-permissions';
 import { findReportDefinition, getReportDefinitions } from './report-definition-registry';
+import { assertReportExportDispatchForHttp } from './reports-export-availability';
 import { ReportsQueueService } from './reports-queue.service';
 import {
   parseReportExportJobInput,
@@ -176,6 +178,7 @@ export class ReportsService {
       userPermissions,
     );
     this.assertExportFormatSupported(definition.supportedExports, parsed.format);
+    assertReportExportDispatchForHttp(this.reportsQueueService?.isQueueAvailable() ?? false);
     const job = await this.prisma.reportExportJob.create({
       data: {
         reportKey: definition.key,
@@ -196,7 +199,7 @@ export class ReportsService {
       changes: this.buildAuditChanges(job.reportKey, job.format, parsed.filters),
     });
 
-    await this.reportsQueueService?.enqueueExport({ jobId: job.id, actorId: requestedById });
+    await this.dispatchReportExportJob(job.id, requestedById);
     return job;
   }
 
@@ -215,6 +218,7 @@ export class ReportsService {
       userPermissions,
     );
     this.assertExportFormatSupported(definition.supportedExports, sourceJob.format);
+    assertReportExportDispatchForHttp(this.reportsQueueService?.isQueueAvailable() ?? false);
     const retriedJob = await this.prisma.reportExportJob.create({
       data: {
         reportKey: sourceJob.reportKey,
@@ -239,8 +243,27 @@ export class ReportsService {
         ...buildSensitiveReportAuditContext(retriedJob.reportKey),
       },
     });
-    await this.reportsQueueService?.enqueueExport({ jobId: retriedJob.id, actorId: requestedById });
+    await this.dispatchReportExportJob(retriedJob.id, requestedById);
     return retriedJob;
+  }
+
+  /**
+   * After a `ReportExportJob` row exists: enqueue to BullMQ when Redis is configured,
+   * otherwise process in-process when `REPORT_EXPORT_SYNC_FALLBACK=true` (dev only).
+   */
+  async dispatchReportExportJob(jobId: string, actorId: string): Promise<void> {
+    const queueOk = this.reportsQueueService?.isQueueAvailable() ?? false;
+    if (queueOk) {
+      const enqueued = await this.reportsQueueService!.enqueueExport({ jobId, actorId });
+      if (!enqueued) {
+        await this.failExportJob(jobId, actorId, 'Could not enqueue export job to Redis.');
+        throw new ServiceUnavailableException(
+          'Report export queue is unavailable. Try again later.',
+        );
+      }
+      return;
+    }
+    void this.processExportJob(jobId, actorId);
   }
 
   async cancelExportJob(

@@ -169,7 +169,7 @@
 
 - 🟢 [x] Обновить cleanup registers статусами по мере закрытия срезов — S → **волна 1:** Finance, Support, Partners, Tasks, CRM, Projects Hub (`moneyStatus` cross-refs). **Волна 2 (2026-05-06):** Drive §1 snapshot, Documents B1 wording, Reports §C stale bullets, Marketing B2/B9/§C, Calendar scheduler note, Settings A2, UI Shell A2. **Что формально остаётся:** длинные Phase-backlog блоки в Drive/Documents/Projects Hub — это **план будущих работ**, а не «ошибка статуса»; обновлять при изменении кода. **Блокер «идеального нуля расхождений»:** нет автоматического doc↔code диффа в CI — дальше только ручная сверка после срезов или отдельная задача на doc-lint.
 - 🟢 [x] Синхронизировать `docs/дожать до 100% описанного.md` или заменить ссылкой на этот файл — S → **корень** [`дожать до 100% описанного.md`](./дожать%20до%20100%25%20описанного.md) — заглушка на **`IMPLEMENTATION_PROGRESS.md`**; **архив** [`Progress Archive/дожать до 100% описанного.md`](Progress%20Archive/дожать%20до%20100%25%20описанного.md) — политика «не вести дубль матрицы построчно; источник правды — этот файл + `*-Cleanup-Register.md`»; в §04 Finance уточнена строка про summary/scheduler и срез `money_status`
-- Производительность: тяжёлые отчёты только через очередь (контроль) — S
+- 🟢 [x] Производительность: тяжёлые отчёты только через очередь (контроль) — S → без `REDIS_URL` HTTP не создаёт «висящие» jobs (`503` + сообщение); при сбое `enqueue` job → `FAILED`; cron schedules не продвигаются без dispatch; локально опционально `REPORT_EXPORT_SYNC_FALLBACK=true`
 - Messenger: поиск/история PostgreSQL — доработка UX при объёме — S
 - Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S
 - Регрессионные тесты на критичные гейты после крупных срезов — M

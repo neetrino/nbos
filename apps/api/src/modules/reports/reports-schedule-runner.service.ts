@@ -3,8 +3,10 @@ import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { buildSensitiveReportAuditContext } from './reports-audit-context';
+import { getReportExportDispatchBlockedReason } from './reports-export-availability';
 import { ReportsQueueService } from './reports-queue.service';
 import { calculateNextReportScheduleRun } from './reports-schedule-recurrence';
+import { ReportsService } from './reports.service';
 
 const REPORT_SCHEDULE_AUDIT_ENTITY = 'REPORT_SCHEDULE';
 const REPORT_SCHEDULE_DUE_LIMIT = 25;
@@ -18,6 +20,7 @@ export class ReportsScheduleRunnerService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    private readonly reportsService: ReportsService,
     private readonly reportsQueueService?: ReportsQueueService,
   ) {}
 
@@ -42,6 +45,13 @@ export class ReportsScheduleRunnerService {
   }
 
   private async runDueSchedule(schedule: DueReportSchedule, now: Date): Promise<void> {
+    const blocked = getReportExportDispatchBlockedReason(
+      this.reportsQueueService?.isQueueAvailable() ?? false,
+    );
+    if (blocked) {
+      throw new Error(blocked);
+    }
+
     const exportJob = await this.prisma.reportExportJob.create({
       data: {
         reportKey: schedule.reportKey,
@@ -53,10 +63,7 @@ export class ReportsScheduleRunnerService {
       },
       include: { fileAsset: true },
     });
-    await this.reportsQueueService?.enqueueExport({
-      jobId: exportJob.id,
-      actorId: schedule.ownerId,
-    });
+    await this.reportsService.dispatchReportExportJob(exportJob.id, schedule.ownerId);
     await this.advanceSchedule(schedule, exportJob.id, now);
   }
 

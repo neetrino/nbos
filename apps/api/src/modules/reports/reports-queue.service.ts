@@ -27,6 +27,10 @@ export class ReportsQueueService implements OnModuleInit, OnModuleDestroy {
     await this.connection?.quit();
   }
 
+  isQueueAvailable(): boolean {
+    return this.queue !== null;
+  }
+
   async enqueueExport(payload: ReportExportQueuePayload): Promise<boolean> {
     if (!this.queue) return false;
     try {
