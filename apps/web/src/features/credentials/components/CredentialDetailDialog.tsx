@@ -64,8 +64,10 @@ export function CredentialDetailDialog({
 
   const handleReveal = async (field: CredentialSecretField) => {
     if (!credentialId) return;
+    const stepUpPassword = window.prompt('Confirm password to reveal secret');
+    if (!stepUpPassword) return;
     try {
-      const { value } = await credentialsApi.revealSecret(credentialId, field);
+      const { value } = await credentialsApi.revealSecret(credentialId, field, stepUpPassword);
       setRevealed((prev) => ({ ...prev, [field]: value }));
     } catch {
       toast.error('Could not reveal secret');
@@ -74,8 +76,10 @@ export function CredentialDetailDialog({
 
   const handleCopy = async (field: CredentialSecretField) => {
     if (!credentialId) return;
+    const stepUpPassword = window.prompt('Confirm password to copy secret');
+    if (!stepUpPassword) return;
     try {
-      const { value } = await credentialsApi.copySecret(credentialId, field);
+      const { value } = await credentialsApi.copySecret(credentialId, field, stepUpPassword);
       await navigator.clipboard.writeText(value);
       toast.success('Copied');
     } catch {

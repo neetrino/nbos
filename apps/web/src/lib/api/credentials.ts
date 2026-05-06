@@ -78,20 +78,22 @@ export const credentialsApi = {
   async revealSecret(
     id: string,
     field: CredentialSecretField,
+    stepUpPassword: string,
   ): Promise<{ field: CredentialSecretField; value: string }> {
     const resp = await api.post<{ field: CredentialSecretField; value: string }>(
       `/api/credentials/${id}/secrets/reveal`,
-      { field },
+      { field, stepUpPassword },
     );
     return resp.data;
   },
   async copySecret(
     id: string,
     field: CredentialSecretField,
+    stepUpPassword: string,
   ): Promise<{ field: CredentialSecretField; value: string }> {
     const resp = await api.post<{ field: CredentialSecretField; value: string }>(
       `/api/credentials/${id}/secrets/copy`,
-      { field },
+      { field, stepUpPassword },
     );
     return resp.data;
   },

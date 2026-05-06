@@ -36,6 +36,7 @@ export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
   { eventType: 'mail.health_degraded', category: 'system_health', priority: 'high' },
   { eventType: 'mail.send_failed', category: 'system_health', priority: 'high' },
   { eventType: 'document.access_changed', category: 'audit_security', priority: 'normal' },
+  { eventType: 'credentials.high_risk_action', category: 'audit_security', priority: 'high' },
 ];
 
 const RULE_CONFIG_BY_EVENT = new Map(

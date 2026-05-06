@@ -80,10 +80,10 @@ export class CredentialsController {
   @ApiOperation({ summary: 'Reveal one encrypted secret field (audited as secret_revealed)' })
   async revealSecret(
     @Param('id') id: string,
-    @Body() body: { field: string },
+    @Body() body: { field: string; stepUpPassword?: string },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.revealSecretField(id, body.field, {
+    return this.credentialsService.revealSecretField(id, body.field, body.stepUpPassword, {
       employeeId: user.id,
       departmentIds: user.departmentIds ?? [],
     });
@@ -97,13 +97,37 @@ export class CredentialsController {
   })
   async copySecret(
     @Param('id') id: string,
-    @Body() body: { field: string },
+    @Body() body: { field: string; stepUpPassword?: string },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.copySecretField(id, body.field, {
+    return this.credentialsService.copySecretField(id, body.field, body.stepUpPassword, {
       employeeId: user.id,
       departmentIds: user.departmentIds ?? [],
     });
+  }
+
+  @Post('export')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Export visible credentials metadata + selected decrypted secret fields (step-up required)',
+  })
+  async exportCredentials(
+    @Body() body: { credentialIds?: string[]; fields?: string[]; stepUpPassword?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.exportCredentials(
+      {
+        credentialIds: Array.isArray(body.credentialIds) ? body.credentialIds : undefined,
+        fields: Array.isArray(body.fields) ? body.fields : undefined,
+        stepUpPassword: body.stepUpPassword,
+      },
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds ?? [],
+      },
+    );
   }
 
   @Post(':id/open-url')
