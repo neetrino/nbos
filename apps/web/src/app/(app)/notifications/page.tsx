@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Archive, Bell, CheckCheck, RefreshCw } from 'lucide-react';
-import type { NotificationDto } from '@/lib/api/notifications';
+import type { NotificationDto, NotificationPreferenceDto } from '@/lib/api/notifications';
 import { notificationsApi } from '@/lib/api/notifications';
 import { getNotificationVisual } from '@/lib/notifications/notification-type-visual';
 
@@ -44,6 +44,8 @@ export default function NotificationsPage() {
   const [category, setCategory] = useState<CategoryFilter>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [preferences, setPreferences] = useState<NotificationPreferenceDto[]>([]);
+  const [prefsLoading, setPrefsLoading] = useState(true);
 
   const unreadCount = useMemo(() => items.filter((item) => !item.isRead).length, [items]);
 
@@ -65,6 +67,17 @@ export default function NotificationsPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    void (async () => {
+      setPrefsLoading(true);
+      try {
+        setPreferences(await notificationsApi.getPreferences());
+      } finally {
+        setPrefsLoading(false);
+      }
+    })();
+  }, []);
+
   async function markAllRead() {
     await notificationsApi.markAllAsRead();
     const readAt = new Date().toISOString();
@@ -81,6 +94,35 @@ export default function NotificationsPage() {
   async function archive(id: string) {
     await notificationsApi.archive(id);
     setItems((current) => current.filter((item) => item.id !== id));
+  }
+
+  async function togglePreferenceEnabled(row: NotificationPreferenceDto) {
+    const nextEnabled = !row.enabled;
+    setPreferences((current) =>
+      current.map((it) => (it.eventType === row.eventType ? { ...it, enabled: nextEnabled } : it)),
+    );
+    try {
+      await notificationsApi.patchPreference(row.eventType, { enabled: nextEnabled });
+    } catch {
+      setPreferences((current) => current.map((it) => (it.eventType === row.eventType ? row : it)));
+    }
+  }
+
+  async function togglePreferenceChannel(row: NotificationPreferenceDto, channel: string) {
+    const has = row.channels.includes(channel);
+    const nextChannels = has
+      ? row.channels.filter((c) => c !== channel)
+      : [...row.channels, channel];
+    const normalizedNext = nextChannels.length ? nextChannels : ['IN_APP'];
+    const optimistic = { ...row, channels: normalizedNext };
+    setPreferences((current) =>
+      current.map((it) => (it.eventType === row.eventType ? optimistic : it)),
+    );
+    try {
+      await notificationsApi.patchPreference(row.eventType, { channels: normalizedNext });
+    } catch {
+      setPreferences((current) => current.map((it) => (it.eventType === row.eventType ? row : it)));
+    }
   }
 
   return (
@@ -128,6 +170,61 @@ export default function NotificationsPage() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="border-border bg-card rounded-2xl border p-4">
+        <div className="mb-3">
+          <h2 className="text-foreground text-sm font-semibold">Your Notification Preferences</h2>
+          <p className="text-muted-foreground text-xs">
+            Enable or disable event types and preferred delivery channels.
+          </p>
+        </div>
+        {prefsLoading ? (
+          <p className="text-muted-foreground text-sm">Loading preferences…</p>
+        ) : (
+          <div className="space-y-2">
+            {preferences.map((pref) => (
+              <div
+                key={pref.eventType}
+                className="border-border flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3"
+              >
+                <div className="min-w-0">
+                  <p className="text-foreground truncate text-sm font-medium">{pref.eventType}</p>
+                  <p className="text-muted-foreground text-xs">
+                    Channels: {pref.channels.join(', ')}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void togglePreferenceEnabled(pref)}
+                    className={`rounded-full px-3 py-1 text-xs ${
+                      pref.enabled
+                        ? 'bg-emerald-600/15 text-emerald-700'
+                        : 'bg-secondary text-muted-foreground'
+                    }`}
+                  >
+                    {pref.enabled ? 'Enabled' : 'Disabled'}
+                  </button>
+                  {(['IN_APP', 'EMAIL', 'TELEGRAM', 'WHATSAPP'] as const).map((channel) => (
+                    <button
+                      key={channel}
+                      type="button"
+                      onClick={() => void togglePreferenceChannel(pref, channel)}
+                      className={`rounded-full px-3 py-1 text-xs ${
+                        pref.channels.includes(channel)
+                          ? 'bg-accent text-accent-foreground'
+                          : 'bg-secondary text-muted-foreground'
+                      }`}
+                    >
+                      {channel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="border-border bg-card overflow-hidden rounded-2xl border">

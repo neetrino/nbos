@@ -34,7 +34,7 @@ Problems:
 - no scheduler queue/retry/backoff yet;
 - no channel adapters;
 - no integration with Messenger outbound copy;
-- no user preferences beyond mock UI;
+- **Done (2026-05-06):** user preferences by event type/channel (`GET/PATCH /api/notifications/preferences/*`) + Notification Center settings UI; runtime respects disabled event/channel for in-app delivery.
 - no websocket/live unread count.
 
 ## C. Stale documentation removed

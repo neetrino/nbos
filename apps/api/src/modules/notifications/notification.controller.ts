@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { NotificationService } from './notification.service';
@@ -34,6 +34,22 @@ export class NotificationController {
   @ApiOperation({ summary: 'Get unread notifications count' })
   async getUnreadCount(@CurrentUser() user: CurrentUserPayload) {
     return this.notificationService.getUnreadCount(user.id);
+  }
+
+  @Get('preferences')
+  @ApiOperation({ summary: 'Get current user notification preferences by event type and channels' })
+  async getPreferences(@CurrentUser() user: CurrentUserPayload) {
+    return this.notificationService.getUserPreferences(user.id);
+  }
+
+  @Patch('preferences/:eventType')
+  @ApiOperation({ summary: 'Update one notification preference row for current user' })
+  async patchPreference(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('eventType') eventType: string,
+    @Body() body: { enabled?: boolean; channels?: string[] },
+  ) {
+    return this.notificationService.updateUserPreference(user.id, eventType, body);
   }
 
   @Patch('read-all')

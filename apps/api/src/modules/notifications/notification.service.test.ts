@@ -40,7 +40,15 @@ type CreateArgs = {
 type WhereInput = Partial<InAppNotificationRow>;
 
 type NotificationJobRow = { id: string; dedupeKey: string };
-type NotificationRuleRow = { id: string; code: string };
+type NotificationRuleRow = {
+  id: string;
+  code: string;
+  eventType: string;
+  recipientResolver: string;
+  channels: string[];
+  priority: string;
+  enabled: boolean;
+};
 type NotificationEventRow = { id: string; idempotencyKey: string };
 
 function matchesWhere(row: InAppNotificationRow, where: WhereInput): boolean {
@@ -85,10 +93,39 @@ function buildInMemoryPrisma() {
       },
     },
     notificationRule: {
-      upsert: async ({ where }: { where: { code: string } }) => {
+      findUnique: async ({ where }: { where: { code: string } }) =>
+        rules.find((rule) => rule.code === where.code) ?? null,
+      findMany: async ({ where }: { where: { code?: { startsWith: string } } }) => {
+        if (where.code?.startsWith) {
+          return rules.filter((rule) => rule.code.startsWith(where.code!.startsWith));
+        }
+        return [...rules];
+      },
+      upsert: async ({
+        where,
+        create,
+        update,
+      }: {
+        where: { code: string };
+        create?: Partial<NotificationRuleRow>;
+        update?: Partial<NotificationRuleRow>;
+      }) => {
         const existing = rules.find((rule) => rule.code === where.code);
-        if (existing) return existing;
-        const row = { id: randomUUID(), code: where.code };
+        if (existing) {
+          const next = { ...existing, ...(update ?? {}) };
+          const idx = rules.findIndex((r) => r.code === where.code);
+          rules[idx] = next;
+          return next;
+        }
+        const row: NotificationRuleRow = {
+          id: randomUUID(),
+          code: where.code,
+          eventType: create?.eventType ?? 'unknown',
+          recipientResolver: create?.recipientResolver ?? 'EXPLICIT_RECIPIENT',
+          channels: create?.channels ?? ['IN_APP'],
+          priority: create?.priority ?? 'normal',
+          enabled: create?.enabled ?? true,
+        };
         rules.push(row);
         return row;
       },
@@ -231,6 +268,33 @@ describe('NotificationService', () => {
       expect(result.link).toBeNull();
       expect(result.entityType).toBeNull();
       expect(result.entityId).toBeNull();
+    });
+
+    it('skips in-app delivery when user preference disables event type', async () => {
+      await service.updateUserPreference('u1', 'info', { enabled: false, channels: ['IN_APP'] });
+
+      const result = await service.create({
+        type: 'info',
+        recipientId: 'u1',
+        title: 'T',
+        body: 'B',
+      });
+
+      expect(result.id.startsWith('skipped:')).toBe(true);
+      expect(result.isRead).toBe(true);
+    });
+  });
+
+  describe('preferences', () => {
+    it('returns defaults and persists channel overrides', async () => {
+      const list = await service.getUserPreferences('u1');
+      expect(list.length).toBeGreaterThan(0);
+
+      const updated = await service.updateUserPreference('u1', 'task.overdue', {
+        enabled: true,
+        channels: ['IN_APP', 'EMAIL'],
+      });
+      expect(updated.channels).toContain('EMAIL');
     });
   });
 
