@@ -1,0 +1,2 @@
+-- No-op: bonus release ledger DDL is applied in `20260505230000_bonus_release_ledger`.
+-- This folder is kept so migration ordering and `_prisma_migrations` history stay consistent.
