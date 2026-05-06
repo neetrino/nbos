@@ -97,6 +97,9 @@ export function MessengerThread({
   dmInitials,
   messages,
   messagesLoading,
+  hasMoreOlder,
+  olderLoading,
+  onLoadOlder,
   newMessage,
   onNewMessageChange,
   attachmentDraft,
@@ -116,6 +119,9 @@ export function MessengerThread({
   dmInitials: string;
   messages: MessengerViewMessage[];
   messagesLoading: boolean;
+  hasMoreOlder?: boolean;
+  olderLoading?: boolean;
+  onLoadOlder?: () => void | Promise<void>;
   newMessage: string;
   onNewMessageChange: (v: string) => void;
   attachmentDraft: string;
@@ -131,9 +137,27 @@ export function MessengerThread({
   channelReadReceipt?: { seen: boolean; anchorId: string | null } | null;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const lastMessageId = messages[messages.length - 1]?.id;
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length]);
+  }, [lastMessageId]);
+
+  const handleLoadOlderClick = () => {
+    if (!onLoadOlder || olderLoading || !hasMoreOlder) return;
+    const el = scrollAreaRef.current;
+    const prevScrollHeight = el?.scrollHeight ?? 0;
+    void (async () => {
+      await onLoadOlder();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const node = scrollAreaRef.current;
+          if (node) node.scrollTop += node.scrollHeight - prevScrollHeight;
+        });
+      });
+    })();
+  };
 
   const grouped: { label: string; items: MessengerViewMessage[] }[] = [];
   let currentLabel = '';
@@ -192,7 +216,7 @@ export function MessengerThread({
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4">
+      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto py-4">
         {messagesLoading ? (
           <div className="flex h-full items-center justify-center">
             <p className="text-sm text-black/40">Loading messages…</p>
@@ -202,23 +226,37 @@ export function MessengerThread({
             <p className="text-sm text-black/30">No messages yet. Start the conversation!</p>
           </div>
         ) : (
-          grouped.map((group) => (
-            <div key={group.label}>
-              <DateDivider label={group.label} />
-              {group.items.map((msg) => (
-                <MessageBubble
-                  key={msg.id}
-                  message={msg}
-                  readReceiptLabel={readReceiptLabelForMessage(
-                    active,
-                    msg,
-                    dmReadReceiptMessageId,
-                    channelReadReceipt ?? null,
-                  )}
-                />
-              ))}
-            </div>
-          ))
+          <>
+            {hasMoreOlder ? (
+              <div className="flex justify-center px-5 pb-3">
+                <button
+                  type="button"
+                  onClick={handleLoadOlderClick}
+                  disabled={olderLoading}
+                  className="rounded-full border border-black/[0.08] bg-[#F5F5F0] px-3 py-1 text-xs font-medium text-black/55 transition-colors hover:bg-black/[0.04] disabled:opacity-50"
+                >
+                  {olderLoading ? 'Loading older…' : 'Load older messages'}
+                </button>
+              </div>
+            ) : null}
+            {grouped.map((group) => (
+              <div key={group.label}>
+                <DateDivider label={group.label} />
+                {group.items.map((msg) => (
+                  <MessageBubble
+                    key={msg.id}
+                    message={msg}
+                    readReceiptLabel={readReceiptLabelForMessage(
+                      active,
+                      msg,
+                      dmReadReceiptMessageId,
+                      channelReadReceipt ?? null,
+                    )}
+                  />
+                ))}
+              </div>
+            ))}
+          </>
         )}
         <div ref={bottomRef} />
       </div>
