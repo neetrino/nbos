@@ -72,4 +72,15 @@ export class SchedulerController {
   async runReportSchedulesDue() {
     return this.schedulerService.runReportSchedulesDue();
   }
+
+  @Post('support-sla-escalation')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Support SLA warning / breach in-app notifications (external cron)',
+    description:
+      'Scans open tickets; creates idempotent in-app notifications for resolve warning, response breach, and resolve breach. Waiting overlay pauses the SLA clock.',
+  })
+  async runSupportSlaEscalation() {
+    return this.schedulerService.runSupportSlaEscalation();
+  }
 }

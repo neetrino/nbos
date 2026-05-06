@@ -1671,6 +1671,10 @@ export const SupportTicketScalarFieldEnum = {
   assignedTo: 'assignedTo',
   slaResponseDeadline: 'slaResponseDeadline',
   slaResolveDeadline: 'slaResolveDeadline',
+  waitingState: 'waitingState',
+  waitingReason: 'waitingReason',
+  slaPausedTotalSeconds: 'slaPausedTotalSeconds',
+  slaPauseStartedAt: 'slaPauseStartedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;

@@ -13,8 +13,19 @@ import {
   CheckSquare,
   FilePlus2,
   RotateCcw,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Table,
   TableHeader,
@@ -36,11 +47,14 @@ import {
   TICKET_CATEGORIES,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
+  TICKET_WAITING_STATES,
+  TICKET_WAITING_OVERLAY_OPTIONS,
   getTicketCategory,
   getTicketCoverage,
   getTicketPriority,
   getTicketSlaState,
   getTicketStatus,
+  getTicketWaitingState,
 } from '@/features/support/constants/support';
 import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
 import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-scope-stats-csv-export';
@@ -58,6 +72,8 @@ export default function SupportPage() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [view, setView] = useState<ViewMode>('list');
   const [actionId, setActionId] = useState<string | null>(null);
+  const [escalateTicket, setEscalateTicket] = useState<SupportTicket | null>(null);
+  const [escalateReason, setEscalateReason] = useState('');
   const { me } = usePermission();
 
   const { handleExportScopeStatsCsv } = useSupportScopeStatsCsvExport(stats);
@@ -71,6 +87,8 @@ export default function SupportPage() {
         category: filters.category && filters.category !== 'all' ? filters.category : undefined,
         priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        waitingState:
+          filters.waitingState && filters.waitingState !== 'all' ? filters.waitingState : undefined,
       });
       setTickets(items);
       setError(null);
@@ -109,6 +127,11 @@ export default function SupportPage() {
       label: 'Status',
       options: TICKET_STATUSES.map((s) => ({ value: s.value, label: s.label })),
     },
+    {
+      key: 'waitingState',
+      label: 'Waiting',
+      options: TICKET_WAITING_STATES.map((w) => ({ value: w.value, label: w.label })),
+    },
   ];
 
   const kanbanColumns = TICKET_STATUSES.map((status) => ({
@@ -141,6 +164,35 @@ export default function SupportPage() {
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Extension Deal could not be created.'));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleWaitingChange = async (ticket: SupportTicket, value: string) => {
+    setActionId(`wait:${ticket.id}`);
+    try {
+      await supportApi.updateWaiting(ticket.id, { waitingState: value });
+      await fetchTickets();
+      setError(null);
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Waiting state could not be updated.'));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleSubmitEscalation = async () => {
+    if (!escalateTicket) return;
+    setActionId(`escalate:${escalateTicket.id}`);
+    try {
+      await supportApi.escalate(escalateTicket.id, escalateReason.trim() || undefined);
+      setEscalateTicket(null);
+      setEscalateReason('');
+      await fetchTickets();
+      setError(null);
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Escalation could not be recorded.'));
     } finally {
       setActionId(null);
     }
@@ -281,6 +333,47 @@ export default function SupportPage() {
                   {coverage && <StatusBadge label={coverage.label} variant={coverage.variant} />}
                   {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
                 </div>
+                <label className="text-muted-foreground text-[10px] font-medium uppercase">
+                  Waiting overlay
+                </label>
+                <select
+                  className="border-border bg-background text-foreground w-full rounded-md border px-2 py-1.5 text-xs"
+                  value={ticket.waitingState ?? 'NONE'}
+                  onChange={(e) => void handleWaitingChange(ticket, e.target.value)}
+                  disabled={
+                    actionId === `wait:${ticket.id}` ||
+                    ['RESOLVED', 'CLOSED'].includes(ticket.status)
+                  }
+                  aria-label="Waiting overlay"
+                >
+                  {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                {ticket.waitingReason ? (
+                  <p className="text-muted-foreground line-clamp-2 text-[11px]">
+                    {ticket.waitingReason}
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1 px-2 text-xs"
+                  disabled={
+                    ['RESOLVED', 'CLOSED'].includes(ticket.status) ||
+                    actionId?.startsWith('escalate:')
+                  }
+                  onClick={() => {
+                    setEscalateTicket(ticket);
+                    setEscalateReason(ticket.waitingReason ?? '');
+                  }}
+                >
+                  <AlertTriangle size={12} />
+                  Escalate
+                </Button>
                 {ticket.project && (
                   <div className="text-muted-foreground flex items-center gap-1 text-xs">
                     <FolderKanban size={10} />
@@ -333,6 +426,8 @@ export default function SupportPage() {
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>SLA</TableHead>
+                <TableHead>Waiting</TableHead>
+                <TableHead>Escalate</TableHead>
                 <TableHead>Coverage</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead>Product</TableHead>
@@ -350,6 +445,7 @@ export default function SupportPage() {
                 const st = getTicketStatus(ticket.status);
                 const coverage = getTicketCoverage(ticket.coverageDecision);
                 const sla = getTicketSlaState(ticket.slaState.state);
+                const waiting = getTicketWaitingState(ticket.waitingState ?? 'NONE');
                 return (
                   <TableRow key={ticket.id}>
                     <TableCell>
@@ -383,6 +479,53 @@ export default function SupportPage() {
                     </TableCell>
                     <TableCell>
                       {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <select
+                          className="border-border bg-background text-foreground max-w-[200px] rounded-md border px-2 py-1 text-xs"
+                          value={ticket.waitingState ?? 'NONE'}
+                          onChange={(e) => void handleWaitingChange(ticket, e.target.value)}
+                          disabled={
+                            actionId === `wait:${ticket.id}` ||
+                            ['RESOLVED', 'CLOSED'].includes(ticket.status)
+                          }
+                          aria-label="Waiting overlay"
+                        >
+                          {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                        {waiting && waiting.value !== 'NONE' ? (
+                          <span className="text-muted-foreground text-[10px]">{waiting.label}</span>
+                        ) : null}
+                        {ticket.waitingReason ? (
+                          <span className="text-muted-foreground line-clamp-2 text-[10px]">
+                            {ticket.waitingReason}
+                          </span>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 gap-1 px-2 text-xs"
+                        disabled={
+                          ['RESOLVED', 'CLOSED'].includes(ticket.status) ||
+                          actionId === `escalate:${ticket.id}`
+                        }
+                        onClick={() => {
+                          setEscalateTicket(ticket);
+                          setEscalateReason(ticket.waitingReason ?? '');
+                        }}
+                      >
+                        <AlertTriangle size={12} />
+                        Escalate
+                      </Button>
                     </TableCell>
                     <TableCell>
                       {coverage ? (
@@ -443,6 +586,57 @@ export default function SupportPage() {
           </Table>
         </div>
       )}
+
+      <Dialog
+        open={!!escalateTicket}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEscalateTicket(null);
+            setEscalateReason('');
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Managerial escalation</DialogTitle>
+            <DialogDescription>
+              Sends in-app notifications to the assignee and users with global Support ticket
+              access. The ticket is marked Escalated and the SLA clock pauses until the overlay is
+              cleared.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="support-escalate-reason">Reason</Label>
+            <Textarea
+              id="support-escalate-reason"
+              value={escalateReason}
+              onChange={(e) => setEscalateReason(e.target.value)}
+              rows={3}
+              placeholder="Business risk, needs another specialist, client urgency…"
+              className="resize-y"
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setEscalateTicket(null);
+                setEscalateReason('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={!escalateTicket || !!actionId?.startsWith('escalate:')}
+              onClick={() => void handleSubmitEscalation()}
+            >
+              Confirm escalation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

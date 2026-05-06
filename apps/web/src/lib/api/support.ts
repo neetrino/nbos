@@ -16,6 +16,8 @@ export interface SupportTicket {
   coverageDecision: string | null;
   billable: boolean;
   assignedTo: string | null;
+  waitingState: string;
+  waitingReason: string | null;
   createdAt: string;
   updatedAt: string;
   project: { id: string; code: string; name: string };
@@ -30,9 +32,13 @@ export interface SupportTicket {
   contact: { id: string; firstName: string; lastName: string } | null;
   assignee: { id: string; firstName: string; lastName: string } | null;
   slaState: {
-    state: 'ON_TRACK' | 'AT_RISK' | 'BREACHED' | 'CLOSED';
+    state: 'ON_TRACK' | 'AT_RISK' | 'HIGH_RISK' | 'BREACHED' | 'PAUSED' | 'CLOSED';
     responseDeadline: string | null;
     resolveDeadline: string | null;
+    effectiveResponseDeadline: string | null;
+    effectiveResolveDeadline: string | null;
+    pauseActive: boolean;
+    waitingState: string;
   };
   executionTasks?: Task[];
 }
@@ -51,6 +57,7 @@ interface TicketQueryParams {
   coverageDecision?: string;
   projectId?: string;
   productId?: string;
+  waitingState?: string;
   search?: string;
 }
 
@@ -95,6 +102,17 @@ export const supportApi = {
   },
   async reopen(id: string, reason?: string): Promise<SupportTicket> {
     const resp = await api.post<SupportTicket>(`/api/support/${id}/actions/reopen`, { reason });
+    return resp.data;
+  },
+  async updateWaiting(
+    id: string,
+    data: { waitingState: string; waitingReason?: string | null },
+  ): Promise<SupportTicket> {
+    const resp = await api.patch<SupportTicket>(`/api/support/${id}/waiting`, data);
+    return resp.data;
+  },
+  async escalate(id: string, reason?: string): Promise<SupportTicket> {
+    const resp = await api.post<SupportTicket>(`/api/support/${id}/actions/escalate`, { reason });
     return resp.data;
   },
   async createExecutionTask(

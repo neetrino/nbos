@@ -31,6 +31,13 @@ enum SupportCoverageEnum {
   NOT_COVERED_REJECTED
 }
 
+enum TicketWaitingStateEnum {
+  NONE
+  WAITING_FOR_CLIENT
+  WAITING_FOR_THIRD_PARTY
+  ESCALATED
+}
+
 model SupportTicket {
   id                  String               @id @default(uuid())
   code                String               @unique
@@ -48,6 +55,10 @@ model SupportTicket {
   assignedTo          String?              @map("assigned_to")
   slaResponseDeadline DateTime?            @map("sla_response_deadline")
   slaResolveDeadline  DateTime?            @map("sla_resolve_deadline")
+  waitingState           TicketWaitingStateEnum @default(NONE) @map("waiting_state")
+  waitingReason          String?                @map("waiting_reason")
+  slaPausedTotalSeconds  Int                    @default(0) @map("sla_paused_total_seconds")
+  slaPauseStartedAt      DateTime?              @map("sla_pause_started_at")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 

@@ -6,6 +6,7 @@ import { InvoiceCardRemindersService } from '../finance/invoices/invoice-card-re
 import { ExpenseBacklogRemindersService } from '../expenses/expense-backlog-reminders.service';
 import { ExpensePlansService } from '../expenses/expense-plans.service';
 import { ReportsScheduleRunnerService } from '../reports/reports-schedule-runner.service';
+import { SupportSlaOrchestrationService } from '../support/support-sla-orchestration.service';
 
 interface OverdueResult {
   marked: number;
@@ -24,6 +25,7 @@ export class SchedulerService {
     private readonly expenseBacklogRemindersService: ExpenseBacklogRemindersService,
     private readonly expensePlansService: ExpensePlansService,
     private readonly reportsScheduleRunnerService: ReportsScheduleRunnerService,
+    private readonly supportSlaOrchestrationService: SupportSlaOrchestrationService,
   ) {}
 
   /** Monthly subscription billing (generates invoices). */
@@ -125,6 +127,16 @@ export class SchedulerService {
     const result = await this.reportsScheduleRunnerService.runDueSchedules();
     this.logger.log(
       `Report schedules due: processed=${result.processed}, failures=${result.failed}`,
+    );
+    return result;
+  }
+
+  /** Support: SLA warning / breach in-app orchestration (idempotent per ticket + recipient). */
+  async runSupportSlaEscalation() {
+    this.logger.log('Scheduler: support SLA escalation scan');
+    const result = await this.supportSlaOrchestrationService.runSlaEscalationScan();
+    this.logger.log(
+      `Support SLA scan: scanned=${result.scanned}, warnings=${result.warnings}, responseBreaches=${result.responseBreaches}, resolveBreaches=${result.resolveBreaches}`,
     );
     return result;
   }

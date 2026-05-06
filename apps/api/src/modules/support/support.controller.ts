@@ -32,6 +32,7 @@ export class SupportController {
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'coverageDecision', required: false })
   @ApiQuery({ name: 'assignedTo', required: false })
+  @ApiQuery({ name: 'waitingState', required: false })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
     @Query('page') page?: string,
@@ -43,6 +44,7 @@ export class SupportController {
     @Query('category') category?: string,
     @Query('coverageDecision') coverageDecision?: string,
     @Query('assignedTo') assignedTo?: string,
+    @Query('waitingState') waitingState?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
@@ -57,6 +59,7 @@ export class SupportController {
       category,
       coverageDecision,
       assignedTo,
+      waitingState,
       search,
       sortBy,
       sortOrder,
@@ -137,6 +140,26 @@ export class SupportController {
     @Body() body: { reason?: string },
   ) {
     return this.supportService.reopen(id, user.id, body.reason);
+  }
+
+  @Patch(':id/waiting')
+  @ApiOperation({ summary: 'Set waiting overlay (SLA pause when not NONE)' })
+  async updateWaiting(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { waitingState: string; waitingReason?: string | null },
+  ) {
+    return this.supportService.updateWaitingState(id, body, user.id);
+  }
+
+  @Post(':id/actions/escalate')
+  @ApiOperation({ summary: 'Managerial escalation (overlay + in-app notify)' })
+  async escalate(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.supportService.recordManagerialEscalation(id, user.id, body.reason);
   }
 
   @Post(':id/actions/create-task')

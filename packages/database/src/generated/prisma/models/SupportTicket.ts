@@ -20,8 +20,18 @@ export type SupportTicketModel =
 
 export type AggregateSupportTicket = {
   _count: SupportTicketCountAggregateOutputType | null;
+  _avg: SupportTicketAvgAggregateOutputType | null;
+  _sum: SupportTicketSumAggregateOutputType | null;
   _min: SupportTicketMinAggregateOutputType | null;
   _max: SupportTicketMaxAggregateOutputType | null;
+};
+
+export type SupportTicketAvgAggregateOutputType = {
+  slaPausedTotalSeconds: number | null;
+};
+
+export type SupportTicketSumAggregateOutputType = {
+  slaPausedTotalSeconds: number | null;
 };
 
 export type SupportTicketMinAggregateOutputType = {
@@ -41,6 +51,10 @@ export type SupportTicketMinAggregateOutputType = {
   assignedTo: string | null;
   slaResponseDeadline: Date | null;
   slaResolveDeadline: Date | null;
+  waitingState: $Enums.TicketWaitingStateEnum | null;
+  waitingReason: string | null;
+  slaPausedTotalSeconds: number | null;
+  slaPauseStartedAt: Date | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -62,6 +76,10 @@ export type SupportTicketMaxAggregateOutputType = {
   assignedTo: string | null;
   slaResponseDeadline: Date | null;
   slaResolveDeadline: Date | null;
+  waitingState: $Enums.TicketWaitingStateEnum | null;
+  waitingReason: string | null;
+  slaPausedTotalSeconds: number | null;
+  slaPauseStartedAt: Date | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -83,9 +101,21 @@ export type SupportTicketCountAggregateOutputType = {
   assignedTo: number;
   slaResponseDeadline: number;
   slaResolveDeadline: number;
+  waitingState: number;
+  waitingReason: number;
+  slaPausedTotalSeconds: number;
+  slaPauseStartedAt: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
+};
+
+export type SupportTicketAvgAggregateInputType = {
+  slaPausedTotalSeconds?: true;
+};
+
+export type SupportTicketSumAggregateInputType = {
+  slaPausedTotalSeconds?: true;
 };
 
 export type SupportTicketMinAggregateInputType = {
@@ -105,6 +135,10 @@ export type SupportTicketMinAggregateInputType = {
   assignedTo?: true;
   slaResponseDeadline?: true;
   slaResolveDeadline?: true;
+  waitingState?: true;
+  waitingReason?: true;
+  slaPausedTotalSeconds?: true;
+  slaPauseStartedAt?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -126,6 +160,10 @@ export type SupportTicketMaxAggregateInputType = {
   assignedTo?: true;
   slaResponseDeadline?: true;
   slaResolveDeadline?: true;
+  waitingState?: true;
+  waitingReason?: true;
+  slaPausedTotalSeconds?: true;
+  slaPauseStartedAt?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -147,6 +185,10 @@ export type SupportTicketCountAggregateInputType = {
   assignedTo?: true;
   slaResponseDeadline?: true;
   slaResolveDeadline?: true;
+  waitingState?: true;
+  waitingReason?: true;
+  slaPausedTotalSeconds?: true;
+  slaPauseStartedAt?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -194,6 +236,18 @@ export type SupportTicketAggregateArgs<
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    *
+   * Select which fields to average
+   **/
+  _avg?: SupportTicketAvgAggregateInputType;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   *
+   * Select which fields to sum
+   **/
+  _sum?: SupportTicketSumAggregateInputType;
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   *
    * Select which fields to find the minimum value
    **/
   _min?: SupportTicketMinAggregateInputType;
@@ -225,6 +279,8 @@ export type SupportTicketGroupByArgs<
   take?: number;
   skip?: number;
   _count?: SupportTicketCountAggregateInputType | true;
+  _avg?: SupportTicketAvgAggregateInputType;
+  _sum?: SupportTicketSumAggregateInputType;
   _min?: SupportTicketMinAggregateInputType;
   _max?: SupportTicketMaxAggregateInputType;
 };
@@ -246,9 +302,15 @@ export type SupportTicketGroupByOutputType = {
   assignedTo: string | null;
   slaResponseDeadline: Date | null;
   slaResolveDeadline: Date | null;
+  waitingState: $Enums.TicketWaitingStateEnum;
+  waitingReason: string | null;
+  slaPausedTotalSeconds: number;
+  slaPauseStartedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   _count: SupportTicketCountAggregateOutputType | null;
+  _avg: SupportTicketAvgAggregateOutputType | null;
+  _sum: SupportTicketSumAggregateOutputType | null;
   _min: SupportTicketMinAggregateOutputType | null;
   _max: SupportTicketMaxAggregateOutputType | null;
 };
@@ -288,6 +350,12 @@ export type SupportTicketWhereInput = {
   assignedTo?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
   slaResponseDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
   slaResolveDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFilter<'SupportTicket'>
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFilter<'SupportTicket'> | number;
+  slaPauseStartedAt?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'SupportTicket'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'SupportTicket'> | Date | string;
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
@@ -317,6 +385,10 @@ export type SupportTicketOrderByWithRelationInput = {
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   slaResolveDeadline?: Prisma.SortOrderInput | Prisma.SortOrder;
+  waitingState?: Prisma.SortOrder;
+  waitingReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+  slaPausedTotalSeconds?: Prisma.SortOrder;
+  slaPauseStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   project?: Prisma.ProjectOrderByWithRelationInput;
@@ -350,6 +422,12 @@ export type SupportTicketWhereUniqueInput = Prisma.AtLeast<
     assignedTo?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
     slaResponseDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
     slaResolveDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
+    waitingState?:
+      | Prisma.EnumTicketWaitingStateEnumFilter<'SupportTicket'>
+      | $Enums.TicketWaitingStateEnum;
+    waitingReason?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+    slaPausedTotalSeconds?: Prisma.IntFilter<'SupportTicket'> | number;
+    slaPauseStartedAt?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
     createdAt?: Prisma.DateTimeFilter<'SupportTicket'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'SupportTicket'> | Date | string;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
@@ -390,11 +468,17 @@ export type SupportTicketOrderByWithAggregationInput = {
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   slaResolveDeadline?: Prisma.SortOrderInput | Prisma.SortOrder;
+  waitingState?: Prisma.SortOrder;
+  waitingReason?: Prisma.SortOrderInput | Prisma.SortOrder;
+  slaPausedTotalSeconds?: Prisma.SortOrder;
+  slaPauseStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.SupportTicketCountOrderByAggregateInput;
+  _avg?: Prisma.SupportTicketAvgOrderByAggregateInput;
   _max?: Prisma.SupportTicketMaxOrderByAggregateInput;
   _min?: Prisma.SupportTicketMinOrderByAggregateInput;
+  _sum?: Prisma.SupportTicketSumOrderByAggregateInput;
 };
 
 export type SupportTicketScalarWhereWithAggregatesInput = {
@@ -438,6 +522,16 @@ export type SupportTicketScalarWhereWithAggregatesInput = {
     | Date
     | string
     | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumWithAggregatesFilter<'SupportTicket'>
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.StringNullableWithAggregatesFilter<'SupportTicket'> | string | null;
+  slaPausedTotalSeconds?: Prisma.IntWithAggregatesFilter<'SupportTicket'> | number;
+  slaPauseStartedAt?:
+    | Prisma.DateTimeNullableWithAggregatesFilter<'SupportTicket'>
+    | Date
+    | string
+    | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'SupportTicket'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'SupportTicket'> | Date | string;
 };
@@ -454,6 +548,10 @@ export type SupportTicketCreateInput = {
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutTicketsInput;
@@ -480,6 +578,10 @@ export type SupportTicketUncheckedCreateInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -499,6 +601,12 @@ export type SupportTicketUpdateInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutTicketsNestedInput;
@@ -528,6 +636,12 @@ export type SupportTicketUncheckedUpdateInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -549,6 +663,10 @@ export type SupportTicketCreateManyInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -568,6 +686,12 @@ export type SupportTicketUpdateManyMutationInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -592,6 +716,12 @@ export type SupportTicketUncheckedUpdateManyInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -623,8 +753,16 @@ export type SupportTicketCountOrderByAggregateInput = {
   assignedTo?: Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrder;
   slaResolveDeadline?: Prisma.SortOrder;
+  waitingState?: Prisma.SortOrder;
+  waitingReason?: Prisma.SortOrder;
+  slaPausedTotalSeconds?: Prisma.SortOrder;
+  slaPauseStartedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+};
+
+export type SupportTicketAvgOrderByAggregateInput = {
+  slaPausedTotalSeconds?: Prisma.SortOrder;
 };
 
 export type SupportTicketMaxOrderByAggregateInput = {
@@ -644,6 +782,10 @@ export type SupportTicketMaxOrderByAggregateInput = {
   assignedTo?: Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrder;
   slaResolveDeadline?: Prisma.SortOrder;
+  waitingState?: Prisma.SortOrder;
+  waitingReason?: Prisma.SortOrder;
+  slaPausedTotalSeconds?: Prisma.SortOrder;
+  slaPauseStartedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -665,8 +807,16 @@ export type SupportTicketMinOrderByAggregateInput = {
   assignedTo?: Prisma.SortOrder;
   slaResponseDeadline?: Prisma.SortOrder;
   slaResolveDeadline?: Prisma.SortOrder;
+  waitingState?: Prisma.SortOrder;
+  waitingReason?: Prisma.SortOrder;
+  slaPausedTotalSeconds?: Prisma.SortOrder;
+  slaPauseStartedAt?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
+};
+
+export type SupportTicketSumOrderByAggregateInput = {
+  slaPausedTotalSeconds?: Prisma.SortOrder;
 };
 
 export type SupportTicketCreateNestedManyWithoutContactInput = {
@@ -1115,6 +1265,10 @@ export type NullableEnumSupportCoverageEnumFieldUpdateOperationsInput = {
   set?: $Enums.SupportCoverageEnum | null;
 };
 
+export type EnumTicketWaitingStateEnumFieldUpdateOperationsInput = {
+  set?: $Enums.TicketWaitingStateEnum;
+};
+
 export type SupportTicketCreateWithoutContactInput = {
   id?: string;
   code: string;
@@ -1127,6 +1281,10 @@ export type SupportTicketCreateWithoutContactInput = {
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutTicketsInput;
@@ -1151,6 +1309,10 @@ export type SupportTicketUncheckedCreateWithoutContactInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1219,6 +1381,12 @@ export type SupportTicketScalarWhereInput = {
   assignedTo?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
   slaResponseDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
   slaResolveDeadline?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFilter<'SupportTicket'>
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.StringNullableFilter<'SupportTicket'> | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFilter<'SupportTicket'> | number;
+  slaPauseStartedAt?: Prisma.DateTimeNullableFilter<'SupportTicket'> | Date | string | null;
   createdAt?: Prisma.DateTimeFilter<'SupportTicket'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'SupportTicket'> | Date | string;
 };
@@ -1235,6 +1403,10 @@ export type SupportTicketCreateWithoutExtensionDealInput = {
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutTicketsInput;
@@ -1259,6 +1431,10 @@ export type SupportTicketUncheckedCreateWithoutExtensionDealInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1318,6 +1494,10 @@ export type SupportTicketCreateWithoutAssigneeInput = {
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutTicketsInput;
@@ -1342,6 +1522,10 @@ export type SupportTicketUncheckedCreateWithoutAssigneeInput = {
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1399,6 +1583,10 @@ export type SupportTicketCreateWithoutProjectInput = {
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   product?: Prisma.ProductCreateNestedOneWithoutTicketsInput;
@@ -1423,6 +1611,10 @@ export type SupportTicketUncheckedCreateWithoutProjectInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1480,6 +1672,10 @@ export type SupportTicketCreateWithoutProductInput = {
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutTicketsInput;
@@ -1504,6 +1700,10 @@ export type SupportTicketUncheckedCreateWithoutProductInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1565,6 +1765,10 @@ export type SupportTicketCreateManyContactInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1584,6 +1788,12 @@ export type SupportTicketUpdateWithoutContactInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutTicketsNestedInput;
@@ -1611,6 +1821,12 @@ export type SupportTicketUncheckedUpdateWithoutContactInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1634,6 +1850,12 @@ export type SupportTicketUncheckedUpdateManyWithoutContactInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1654,6 +1876,10 @@ export type SupportTicketCreateManyExtensionDealInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1673,6 +1899,12 @@ export type SupportTicketUpdateWithoutExtensionDealInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutTicketsNestedInput;
@@ -1700,6 +1932,12 @@ export type SupportTicketUncheckedUpdateWithoutExtensionDealInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1723,6 +1961,12 @@ export type SupportTicketUncheckedUpdateManyWithoutExtensionDealInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1743,6 +1987,10 @@ export type SupportTicketCreateManyAssigneeInput = {
   billable?: boolean;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1762,6 +2010,12 @@ export type SupportTicketUpdateWithoutAssigneeInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutTicketsNestedInput;
@@ -1789,6 +2043,12 @@ export type SupportTicketUncheckedUpdateWithoutAssigneeInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1812,6 +2072,12 @@ export type SupportTicketUncheckedUpdateManyWithoutAssigneeInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1832,6 +2098,10 @@ export type SupportTicketCreateManyProjectInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1851,6 +2121,12 @@ export type SupportTicketUpdateWithoutProjectInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneWithoutTicketsNestedInput;
@@ -1878,6 +2154,12 @@ export type SupportTicketUncheckedUpdateWithoutProjectInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1901,6 +2183,12 @@ export type SupportTicketUncheckedUpdateManyWithoutProjectInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1921,6 +2209,10 @@ export type SupportTicketCreateManyProductInput = {
   assignedTo?: string | null;
   slaResponseDeadline?: Date | string | null;
   slaResolveDeadline?: Date | string | null;
+  waitingState?: $Enums.TicketWaitingStateEnum;
+  waitingReason?: string | null;
+  slaPausedTotalSeconds?: number;
+  slaPauseStartedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -1940,6 +2232,12 @@ export type SupportTicketUpdateWithoutProductInput = {
   billable?: Prisma.BoolFieldUpdateOperationsInput | boolean;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutTicketsNestedInput;
@@ -1967,6 +2265,12 @@ export type SupportTicketUncheckedUpdateWithoutProductInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -1990,6 +2294,12 @@ export type SupportTicketUncheckedUpdateManyWithoutProductInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   slaResponseDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   slaResolveDeadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  waitingState?:
+    | Prisma.EnumTicketWaitingStateEnumFieldUpdateOperationsInput
+    | $Enums.TicketWaitingStateEnum;
+  waitingReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  slaPausedTotalSeconds?: Prisma.IntFieldUpdateOperationsInput | number;
+  slaPauseStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -2014,6 +2324,10 @@ export type SupportTicketSelect<
     assignedTo?: boolean;
     slaResponseDeadline?: boolean;
     slaResolveDeadline?: boolean;
+    waitingState?: boolean;
+    waitingReason?: boolean;
+    slaPausedTotalSeconds?: boolean;
+    slaPauseStartedAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
@@ -2045,6 +2359,10 @@ export type SupportTicketSelectCreateManyAndReturn<
     assignedTo?: boolean;
     slaResponseDeadline?: boolean;
     slaResolveDeadline?: boolean;
+    waitingState?: boolean;
+    waitingReason?: boolean;
+    slaPausedTotalSeconds?: boolean;
+    slaPauseStartedAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
@@ -2076,6 +2394,10 @@ export type SupportTicketSelectUpdateManyAndReturn<
     assignedTo?: boolean;
     slaResponseDeadline?: boolean;
     slaResolveDeadline?: boolean;
+    waitingState?: boolean;
+    waitingReason?: boolean;
+    slaPausedTotalSeconds?: boolean;
+    slaPauseStartedAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
@@ -2104,6 +2426,10 @@ export type SupportTicketSelectScalar = {
   assignedTo?: boolean;
   slaResponseDeadline?: boolean;
   slaResolveDeadline?: boolean;
+  waitingState?: boolean;
+  waitingReason?: boolean;
+  slaPausedTotalSeconds?: boolean;
+  slaPauseStartedAt?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -2127,6 +2453,10 @@ export type SupportTicketOmit<
   | 'assignedTo'
   | 'slaResponseDeadline'
   | 'slaResolveDeadline'
+  | 'waitingState'
+  | 'waitingReason'
+  | 'slaPausedTotalSeconds'
+  | 'slaPauseStartedAt'
   | 'createdAt'
   | 'updatedAt',
   ExtArgs['result']['supportTicket']
@@ -2188,6 +2518,10 @@ export type $SupportTicketPayload<
       assignedTo: string | null;
       slaResponseDeadline: Date | null;
       slaResolveDeadline: Date | null;
+      waitingState: $Enums.TicketWaitingStateEnum;
+      waitingReason: string | null;
+      slaPausedTotalSeconds: number;
+      slaPauseStartedAt: Date | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -2842,6 +3176,10 @@ export interface SupportTicketFieldRefs {
   readonly assignedTo: Prisma.FieldRef<'SupportTicket', 'String'>;
   readonly slaResponseDeadline: Prisma.FieldRef<'SupportTicket', 'DateTime'>;
   readonly slaResolveDeadline: Prisma.FieldRef<'SupportTicket', 'DateTime'>;
+  readonly waitingState: Prisma.FieldRef<'SupportTicket', 'TicketWaitingStateEnum'>;
+  readonly waitingReason: Prisma.FieldRef<'SupportTicket', 'String'>;
+  readonly slaPausedTotalSeconds: Prisma.FieldRef<'SupportTicket', 'Int'>;
+  readonly slaPauseStartedAt: Prisma.FieldRef<'SupportTicket', 'DateTime'>;
   readonly createdAt: Prisma.FieldRef<'SupportTicket', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'SupportTicket', 'DateTime'>;
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SupportService } from './support.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -8,11 +8,17 @@ describe('SupportService', () => {
   let service: SupportService;
   let prisma: MockPrisma;
   let auditService: Pick<AuditService, 'log'>;
+  let notificationService: { create: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    auditService = { log: async () => ({ id: 'audit-1' }) };
-    service = new SupportService(prisma as never, auditService as never);
+    auditService = { log: vi.fn().mockResolvedValue(undefined) } as Pick<AuditService, 'log'>;
+    notificationService = { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
+    service = new SupportService(
+      prisma as never,
+      auditService as never,
+      notificationService as never,
+    );
   });
 
   describe('findAll', () => {
@@ -51,6 +57,10 @@ describe('SupportService', () => {
       prisma.supportTicket.create.mockResolvedValue({
         id: '1',
         code: 'TKT-2026-0001',
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        waitingState: 'NONE',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: null,
         slaResponseDeadline: new Date('2099-01-01T00:00:00Z'),
         slaResolveDeadline: new Date('2099-01-02T00:00:00Z'),
         status: 'NEW',
@@ -97,7 +107,12 @@ describe('SupportService', () => {
 
   describe('update', () => {
     it('recalculates SLA when priority changes', async () => {
-      prisma.supportTicket.findUnique.mockResolvedValue({ id: '1' });
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: '1',
+        waitingState: 'WAITING_FOR_CLIENT',
+        slaPausedTotalSeconds: 10,
+        slaPauseStartedAt: new Date('2026-01-02T00:00:00Z'),
+      });
       prisma.supportTicket.update.mockResolvedValue({ id: '1', priority: 'P1' });
       await service.update('1', { priority: 'P1' });
       expect(prisma.supportTicket.update).toHaveBeenCalledWith(
@@ -106,6 +121,8 @@ describe('SupportService', () => {
             priority: 'P1',
             slaResponseDeadline: expect.any(Date),
             slaResolveDeadline: expect.any(Date),
+            slaPausedTotalSeconds: 0,
+            slaPauseStartedAt: expect.any(Date),
           }),
         }),
       );
@@ -118,8 +135,31 @@ describe('SupportService', () => {
         id: '1',
         projectId: 'p1',
         status: 'NEW',
+        waitingState: 'WAITING_FOR_CLIENT',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: new Date('2026-01-01T00:00:00Z'),
+        project: { id: 'p1', code: 'P1', name: 'Proj' },
+        product: null,
+        extensionDeal: null,
+        contact: null,
+        assignee: null,
       });
-      prisma.supportTicket.update.mockResolvedValue({ id: '1', status: 'RESOLVED' });
+      prisma.supportTicket.update.mockResolvedValue({
+        id: '1',
+        status: 'RESOLVED',
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        waitingState: 'NONE',
+        waitingReason: null,
+        slaPausedTotalSeconds: 3600,
+        slaPauseStartedAt: null,
+        slaResponseDeadline: new Date('2099-01-01T00:00:00Z'),
+        slaResolveDeadline: new Date('2099-01-02T00:00:00Z'),
+        project: { id: 'p1', code: 'P1', name: 'Proj' },
+        product: null,
+        extensionDeal: null,
+        contact: null,
+        assignee: null,
+      });
       const result = await service.updateStatus('1', 'RESOLVED', 'user-1');
       expect(result.status).toBe('RESOLVED');
       expect(result.slaState.state).toBe('CLOSED');
@@ -138,8 +178,30 @@ describe('SupportService', () => {
         id: '1',
         projectId: 'p1',
         status: 'CLOSED',
+        waitingState: 'NONE',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: null,
+        project: { id: 'p1', code: 'P1', name: 'Proj' },
+        product: null,
+        extensionDeal: null,
+        contact: null,
+        assignee: null,
       });
-      prisma.supportTicket.update.mockResolvedValue({ id: '1', status: 'IN_PROGRESS' });
+      prisma.supportTicket.update.mockResolvedValue({
+        id: '1',
+        status: 'IN_PROGRESS',
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        waitingState: 'NONE',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: null,
+        slaResponseDeadline: new Date('2099-01-01T00:00:00Z'),
+        slaResolveDeadline: new Date('2099-01-02T00:00:00Z'),
+        project: { id: 'p1', code: 'P1', name: 'Proj' },
+        product: null,
+        extensionDeal: null,
+        contact: null,
+        assignee: null,
+      });
 
       const result = await service.reopen('1', 'user-1', 'Customer returned');
 
@@ -147,7 +209,11 @@ describe('SupportService', () => {
       expect(prisma.supportTicket.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: '1' },
-          data: { status: 'IN_PROGRESS' },
+          data: expect.objectContaining({
+            status: 'IN_PROGRESS',
+            waitingState: 'NONE',
+            waitingReason: null,
+          }),
         }),
       );
     });
@@ -159,14 +225,47 @@ describe('SupportService', () => {
         {
           id: 'ticket-1',
           status: 'IN_PROGRESS',
+          createdAt: new Date('2020-01-01T00:00:00Z'),
+          waitingState: 'NONE',
+          slaPausedTotalSeconds: 0,
+          slaPauseStartedAt: null,
           slaResponseDeadline: new Date('2020-01-01T00:00:00Z'),
           slaResolveDeadline: new Date('2020-01-02T00:00:00Z'),
+          project: { id: 'p1', code: 'P1', name: 'Proj' },
+          product: null,
+          extensionDeal: null,
+          contact: null,
+          assignee: null,
         },
       ]);
 
       const result = await service.findAll({});
 
       expect(result.items[0].slaState.state).toBe('BREACHED');
+    });
+
+    it('pauses SLA state while waiting overlay is active', async () => {
+      prisma.supportTicket.findMany.mockResolvedValue([
+        {
+          id: 'ticket-1',
+          status: 'IN_PROGRESS',
+          createdAt: new Date('2020-01-01T00:00:00Z'),
+          waitingState: 'WAITING_FOR_CLIENT',
+          slaPausedTotalSeconds: 0,
+          slaPauseStartedAt: new Date('2026-05-01T00:00:00Z'),
+          slaResponseDeadline: new Date('2020-01-01T00:00:00Z'),
+          slaResolveDeadline: new Date('2020-01-02T00:00:00Z'),
+          project: { id: 'p1', code: 'P1', name: 'Proj' },
+          product: null,
+          extensionDeal: null,
+          contact: null,
+          assignee: null,
+        },
+      ]);
+
+      const result = await service.findAll({});
+
+      expect(result.items[0].slaState.state).toBe('PAUSED');
     });
   });
 
@@ -313,6 +412,50 @@ describe('SupportService', () => {
         service.createExtensionDeal('ticket-1', { sellerId: 'seller-1' }),
       ).rejects.toThrow('Only CHANGE_REQUEST tickets can create Extension Deals.');
       expect(prisma.deal.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateWaitingState', () => {
+    it('updates waiting overlay and SLA pause fields', async () => {
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: '1',
+        projectId: 'p1',
+        status: 'IN_PROGRESS',
+        waitingState: 'NONE',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: null,
+        project: { id: 'p1', code: 'P1', name: 'Proj' },
+        product: null,
+        extensionDeal: null,
+        contact: null,
+        assignee: null,
+      });
+      prisma.supportTicket.update.mockResolvedValue({
+        id: '1',
+        status: 'IN_PROGRESS',
+        waitingState: 'WAITING_FOR_CLIENT',
+        waitingReason: null,
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: new Date('2026-05-06T00:00:00Z'),
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        slaResponseDeadline: new Date('2099-01-01T00:00:00Z'),
+        slaResolveDeadline: new Date('2099-01-02T00:00:00Z'),
+        project: { id: 'p1', code: 'P1', name: 'Proj' },
+        product: null,
+        extensionDeal: null,
+        contact: null,
+        assignee: null,
+      });
+
+      const result = await service.updateWaitingState(
+        '1',
+        { waitingState: 'WAITING_FOR_CLIENT' },
+        'user-1',
+      );
+
+      expect(result.waitingState).toBe('WAITING_FOR_CLIENT');
+      expect(result.slaState.state).toBe('PAUSED');
+      expect(prisma.supportTicket.update).toHaveBeenCalled();
     });
   });
 

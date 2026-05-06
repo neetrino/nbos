@@ -37,6 +37,10 @@ export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
   { eventType: 'mail.send_failed', category: 'system_health', priority: 'high' },
   { eventType: 'document.access_changed', category: 'audit_security', priority: 'normal' },
   { eventType: 'credentials.high_risk_action', category: 'audit_security', priority: 'high' },
+  { eventType: 'support.sla.resolve_warning', category: 'action_required', priority: 'high' },
+  { eventType: 'support.sla.response_breached', category: 'action_required', priority: 'high' },
+  { eventType: 'support.sla.resolve_breached', category: 'action_required', priority: 'high' },
+  { eventType: 'support.escalation.manager', category: 'action_required', priority: 'high' },
 ];
 
 const RULE_CONFIG_BY_EVENT = new Map(

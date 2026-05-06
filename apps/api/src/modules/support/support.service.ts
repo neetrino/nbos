@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   PrismaClient,
@@ -8,10 +9,18 @@ import {
   type TicketStatusEnum,
   type TicketPriorityEnum,
   type TicketCategoryEnum,
+  type TicketWaitingStateEnum,
+  type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { buildSupportSlaProjection } from './support-sla';
+import {
+  buildPauseFieldsAfterWaitingChange,
+  resetPauseForSlaRecalculation,
+} from './support-sla-pause';
+import { resolveSupportSlaNotificationRecipientIds } from './support-sla-recipients';
 import { AuditService } from '../audit/audit.service';
+import { NotificationService } from '../notifications/notification.service';
 
 const SLA_DEADLINES: Record<string, { responseHours: number; resolveHours: number }> = {
   P1: { responseHours: 4, resolveHours: 24 },
@@ -22,6 +31,20 @@ const SLA_DEADLINES: Record<string, { responseHours: number; resolveHours: numbe
 const SUPPORT_TICKET_ENTITY_TYPE = 'SUPPORT_TICKET';
 const PROJECT_ENTITY_TYPE = 'PROJECT';
 const PRODUCT_ENTITY_TYPE = 'PRODUCT';
+
+function assertTicketWaitingState(value: string): TicketWaitingStateEnum {
+  if (
+    value === 'NONE' ||
+    value === 'WAITING_FOR_CLIENT' ||
+    value === 'WAITING_FOR_THIRD_PARTY' ||
+    value === 'ESCALATED'
+  ) {
+    return value;
+  }
+  throw new BadRequestException('Invalid waitingState value.');
+}
+
+const MANAGER_ESCALATION_NOTIFICATION = 'support.escalation.manager';
 
 const TICKET_PRIORITY_TO_TASK_PRIORITY: Record<TicketPriorityEnum, TaskPriorityEnum> = {
   P1: 'CRITICAL',
@@ -85,6 +108,7 @@ interface TicketQueryParams {
   priority?: string;
   category?: string;
   assignedTo?: string;
+  waitingState?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -111,6 +135,7 @@ export class SupportService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async findAll(params: TicketQueryParams) {
@@ -124,6 +149,7 @@ export class SupportService {
       category,
       coverageDecision,
       assignedTo,
+      waitingState,
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc',
@@ -137,6 +163,7 @@ export class SupportService {
       category,
       coverageDecision,
       assignedTo,
+      waitingState,
       search,
     });
 
@@ -194,7 +221,8 @@ export class SupportService {
   }
 
   async update(id: string, data: UpdateTicketDto) {
-    await this.findById(id);
+    const existing = await this.prisma.supportTicket.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException(`Support ticket ${id} not found`);
 
     const updateData: Prisma.SupportTicketUpdateInput = {
       ...(data.title && { title: data.title }),
@@ -220,9 +248,12 @@ export class SupportService {
 
     if (data.priority) {
       const sla = this.calculateSlaDeadlines(data.priority as TicketPriorityEnum);
+      const pauseReset = resetPauseForSlaRecalculation(existing.waitingState, new Date());
       updateData.priority = data.priority as TicketPriorityEnum;
       updateData.slaResponseDeadline = sla.responseDeadline;
       updateData.slaResolveDeadline = sla.resolveDeadline;
+      updateData.slaPausedTotalSeconds = pauseReset.slaPausedTotalSeconds;
+      updateData.slaPauseStartedAt = pauseReset.slaPauseStartedAt;
     }
 
     const ticket = await this.prisma.supportTicket.update({
@@ -303,35 +334,197 @@ export class SupportService {
         'REOPENED is not a persistent status. Use reopen action endpoint instead.',
       );
     }
-    const before = await this.findById(id);
-    const ticket = await this.prisma.supportTicket.update({
+    const beforeRow = await this.prisma.supportTicket.findUnique({
       where: { id },
-      data: { status: status as TicketStatusEnum },
       include: SUPPORT_TICKET_INCLUDE,
     });
-    await this.logStatusEvent(id, before.projectId, actorId, 'support.status_changed', {
-      from: before.status,
+    if (!beforeRow) throw new NotFoundException(`Support ticket ${id} not found`);
+
+    let terminalClear: Prisma.SupportTicketUpdateInput = {};
+    if (['RESOLVED', 'CLOSED'].includes(status)) {
+      const pause = buildPauseFieldsAfterWaitingChange(
+        {
+          waitingState: beforeRow.waitingState,
+          slaPausedTotalSeconds: beforeRow.slaPausedTotalSeconds,
+          slaPauseStartedAt: beforeRow.slaPauseStartedAt,
+        },
+        'NONE',
+        new Date(),
+      );
+      terminalClear = {
+        waitingState: 'NONE',
+        waitingReason: null,
+        ...pause,
+      };
+    }
+
+    const ticket = await this.prisma.supportTicket.update({
+      where: { id },
+      data: { status: status as TicketStatusEnum, ...terminalClear },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    await this.logStatusEvent(id, beforeRow.projectId, actorId, 'support.status_changed', {
+      from: beforeRow.status,
       to: ticket.status,
     });
     return this.attachSla(ticket);
   }
 
   async reopen(id: string, actorId: string, reason?: string) {
-    const before = await this.findById(id);
-    if (!['RESOLVED', 'CLOSED'].includes(before.status)) {
-      throw new BadRequestException('Only resolved or closed tickets can be reopened.');
-    }
-    const ticket = await this.prisma.supportTicket.update({
+    const beforeRow = await this.prisma.supportTicket.findUnique({
       where: { id },
-      data: { status: 'IN_PROGRESS' },
       include: SUPPORT_TICKET_INCLUDE,
     });
-    await this.logStatusEvent(id, before.projectId, actorId, 'support.reopened', {
-      from: before.status,
+    if (!beforeRow) throw new NotFoundException(`Support ticket ${id} not found`);
+    if (!['RESOLVED', 'CLOSED'].includes(beforeRow.status)) {
+      throw new BadRequestException('Only resolved or closed tickets can be reopened.');
+    }
+    const pause = buildPauseFieldsAfterWaitingChange(
+      {
+        waitingState: beforeRow.waitingState,
+        slaPausedTotalSeconds: beforeRow.slaPausedTotalSeconds,
+        slaPauseStartedAt: beforeRow.slaPauseStartedAt,
+      },
+      'NONE',
+      new Date(),
+    );
+    const ticket = await this.prisma.supportTicket.update({
+      where: { id },
+      data: {
+        status: 'IN_PROGRESS',
+        waitingState: 'NONE',
+        waitingReason: null,
+        ...pause,
+      },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    await this.logStatusEvent(id, beforeRow.projectId, actorId, 'support.reopened', {
+      from: beforeRow.status,
       to: 'IN_PROGRESS',
       reason: reason?.trim() || null,
     });
     return this.attachSla(ticket);
+  }
+
+  async updateWaitingState(
+    id: string,
+    body: { waitingState: string; waitingReason?: string | null },
+    actorId: string,
+  ) {
+    const row = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    if (!row) throw new NotFoundException(`Support ticket ${id} not found`);
+    if (['RESOLVED', 'CLOSED'].includes(row.status)) {
+      throw new BadRequestException('Waiting overlay cannot be set on resolved or closed tickets.');
+    }
+    const next = assertTicketWaitingState(body.waitingState);
+    const pause = buildPauseFieldsAfterWaitingChange(
+      {
+        waitingState: row.waitingState,
+        slaPausedTotalSeconds: row.slaPausedTotalSeconds,
+        slaPauseStartedAt: row.slaPauseStartedAt,
+      },
+      next,
+      new Date(),
+    );
+    const reasonTrim = body.waitingReason?.trim() ?? null;
+    const ticket = await this.prisma.supportTicket.update({
+      where: { id },
+      data: {
+        waitingState: next,
+        waitingReason: reasonTrim || null,
+        slaPausedTotalSeconds: pause.slaPausedTotalSeconds,
+        slaPauseStartedAt: pause.slaPauseStartedAt,
+      },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    await this.logStatusEvent(id, row.projectId, actorId, 'support.waiting_changed', {
+      from: row.waitingState,
+      to: next,
+      reason: ticket.waitingReason,
+    });
+    return this.attachSla(ticket);
+  }
+
+  async recordManagerialEscalation(id: string, actorId: string, reason?: string) {
+    const row = await this.prisma.supportTicket.findUnique({
+      where: { id },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    if (!row) throw new NotFoundException(`Support ticket ${id} not found`);
+    if (['RESOLVED', 'CLOSED'].includes(row.status)) {
+      throw new BadRequestException('Escalation is not available for resolved or closed tickets.');
+    }
+    const pause = buildPauseFieldsAfterWaitingChange(
+      {
+        waitingState: row.waitingState,
+        slaPausedTotalSeconds: row.slaPausedTotalSeconds,
+        slaPauseStartedAt: row.slaPauseStartedAt,
+      },
+      'ESCALATED',
+      new Date(),
+    );
+    const mergedReason = reason?.trim() || row.waitingReason;
+    const ticket = await this.prisma.supportTicket.update({
+      where: { id },
+      data: {
+        waitingState: 'ESCALATED',
+        waitingReason: mergedReason || null,
+        slaPausedTotalSeconds: pause.slaPausedTotalSeconds,
+        slaPauseStartedAt: pause.slaPauseStartedAt,
+      },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    await this.logStatusEvent(id, row.projectId, actorId, 'support.escalation_manager', {
+      reason: mergedReason || null,
+      escalatedBy: actorId,
+    });
+
+    await this.sendManagerialEscalationNotifications(ticket, mergedReason ?? null);
+
+    return this.attachSla(ticket);
+  }
+
+  private async sendManagerialEscalationNotifications(
+    ticket: {
+      id: string;
+      code: string;
+      title: string;
+      assignedTo: string | null;
+      project: { name: string };
+    },
+    mergedReason: string | null,
+  ): Promise<void> {
+    const recipients = await resolveSupportSlaNotificationRecipientIds(
+      this.prisma,
+      ticket.assignedTo,
+    );
+    const headline = mergedReason?.length
+      ? `Managerial escalation: ${mergedReason}`
+      : 'Managerial escalation';
+    const burst = randomUUID();
+    for (const recipientId of recipients) {
+      await this.notificationService.create({
+        type: MANAGER_ESCALATION_NOTIFICATION,
+        recipientId,
+        title: 'Support escalation',
+        body: `${ticket.code} · ${headline}`,
+        link: '/support',
+        entityType: 'SupportTicket',
+        entityId: ticket.id,
+        sourceModule: 'support',
+        dedupeKey: `support-escalation-manual:${ticket.id}:${burst}:${recipientId}`,
+        idempotencyKey: `support-escalation-manual:${ticket.id}:${burst}:${recipientId}`,
+        payload: {
+          ticketCode: ticket.code,
+          ticketTitle: ticket.title,
+          projectName: ticket.project.name,
+          reason: mergedReason,
+        },
+      });
+    }
   }
 
   async delete(id: string) {
@@ -371,6 +564,9 @@ export class SupportService {
       where.coverageDecision = filters.coverageDecision as SupportCoverageEnum;
     }
     if (filters.assignedTo) where.assignedTo = filters.assignedTo;
+    if (filters.waitingState) {
+      where.waitingState = filters.waitingState as TicketWaitingStateEnum;
+    }
     if (filters.search) {
       where.OR = [
         { title: { contains: filters.search, mode: 'insensitive' } },
@@ -381,7 +577,15 @@ export class SupportService {
   }
 
   private attachSla<
-    T extends { status: string; slaResponseDeadline: Date | null; slaResolveDeadline: Date | null },
+    T extends {
+      status: string;
+      createdAt: Date;
+      waitingState: TicketWaitingStateEnum;
+      slaResponseDeadline: Date | null;
+      slaResolveDeadline: Date | null;
+      slaPausedTotalSeconds: number;
+      slaPauseStartedAt: Date | null;
+    },
   >(ticket: T) {
     return { ...ticket, slaState: buildSupportSlaProjection(ticket) };
   }
@@ -514,7 +718,7 @@ export class SupportService {
     projectId: string,
     actorId: string,
     action: string,
-    changes: Prisma.InputJsonValue,
+    changes: InputJsonValue,
   ): Promise<void> {
     await this.auditService.log({
       entityType: 'SupportTicket',

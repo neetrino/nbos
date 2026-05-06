@@ -1082,12 +1082,25 @@ export const SupportCoverageEnum = {
 
 export type SupportCoverageEnum = (typeof SupportCoverageEnum)[keyof typeof SupportCoverageEnum];
 
+export const TicketWaitingStateEnum = {
+  NONE: 'NONE',
+  WAITING_FOR_CLIENT: 'WAITING_FOR_CLIENT',
+  WAITING_FOR_THIRD_PARTY: 'WAITING_FOR_THIRD_PARTY',
+  ESCALATED: 'ESCALATED',
+} as const;
+
+export type TicketWaitingStateEnum =
+  (typeof TicketWaitingStateEnum)[keyof typeof TicketWaitingStateEnum];
+
 export const TaskStatusEnum = {
-  NEW: 'NEW',
+  OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
-  DONE: 'DONE',
+  REVIEW: 'REVIEW',
+  COMPLETED: 'COMPLETED',
   DEFERRED: 'DEFERRED',
   CANCELLED: 'CANCELLED',
+  NEW: 'NEW',
+  DONE: 'DONE',
 } as const;
 
 export type TaskStatusEnum = (typeof TaskStatusEnum)[keyof typeof TaskStatusEnum];

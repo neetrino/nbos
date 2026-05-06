@@ -3435,6 +3435,19 @@ export type EnumSupportCoverageEnumNullableFilter<$PrismaModel = never> = {
     | null;
 };
 
+export type EnumTicketWaitingStateEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TicketWaitingStateEnum
+    | Prisma.EnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TicketWaitingStateEnum[]
+    | Prisma.ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TicketWaitingStateEnum[]
+    | Prisma.ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTicketWaitingStateEnumFilter<$PrismaModel> | $Enums.TicketWaitingStateEnum;
+};
+
 export type EnumTicketCategoryEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.TicketCategoryEnum | Prisma.EnumTicketCategoryEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.TicketCategoryEnum[] | Prisma.ListEnumTicketCategoryEnumFieldRefInput<$PrismaModel>;
@@ -3495,6 +3508,24 @@ export type EnumSupportCoverageEnumNullableWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
+};
+
+export type EnumTicketWaitingStateEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TicketWaitingStateEnum
+    | Prisma.EnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TicketWaitingStateEnum[]
+    | Prisma.ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TicketWaitingStateEnum[]
+    | Prisma.ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTicketWaitingStateEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.TicketWaitingStateEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTicketWaitingStateEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTicketWaitingStateEnumFilter<$PrismaModel>;
 };
 
 export type EnumWorkSpaceTypeEnumFilter<$PrismaModel = never> = {
@@ -7200,6 +7231,19 @@ export type NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel = never> = 
     | null;
 };
 
+export type NestedEnumTicketWaitingStateEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TicketWaitingStateEnum
+    | Prisma.EnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TicketWaitingStateEnum[]
+    | Prisma.ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TicketWaitingStateEnum[]
+    | Prisma.ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumTicketWaitingStateEnumFilter<$PrismaModel> | $Enums.TicketWaitingStateEnum;
+};
+
 export type NestedEnumTicketCategoryEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.TicketCategoryEnum | Prisma.EnumTicketCategoryEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.TicketCategoryEnum[] | Prisma.ListEnumTicketCategoryEnumFieldRefInput<$PrismaModel>;
@@ -7260,6 +7304,24 @@ export type NestedEnumSupportCoverageEnumNullableWithAggregatesFilter<$PrismaMod
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumSupportCoverageEnumNullableFilter<$PrismaModel>;
+};
+
+export type NestedEnumTicketWaitingStateEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.TicketWaitingStateEnum
+    | Prisma.EnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.TicketWaitingStateEnum[]
+    | Prisma.ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.TicketWaitingStateEnum[]
+    | Prisma.ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumTicketWaitingStateEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.TicketWaitingStateEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumTicketWaitingStateEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumTicketWaitingStateEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumWorkSpaceTypeEnumFilter<$PrismaModel = never> = {

@@ -9289,6 +9289,10 @@ export const SupportTicketScalarFieldEnum = {
   assignedTo: 'assignedTo',
   slaResponseDeadline: 'slaResponseDeadline',
   slaResolveDeadline: 'slaResolveDeadline',
+  waitingState: 'waitingState',
+  waitingReason: 'waitingReason',
+  slaPausedTotalSeconds: 'slaPausedTotalSeconds',
+  slaPauseStartedAt: 'slaPauseStartedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
@@ -11275,6 +11279,22 @@ export type EnumSupportCoverageEnumFieldRefInput<$PrismaModel> = FieldRefInputTy
 export type ListEnumSupportCoverageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'SupportCoverageEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'TicketWaitingStateEnum'
+ */
+export type EnumTicketWaitingStateEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TicketWaitingStateEnum'
+>;
+
+/**
+ * Reference to a field of type 'TicketWaitingStateEnum[]'
+ */
+export type ListEnumTicketWaitingStateEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'TicketWaitingStateEnum[]'
 >;
 
 /**
