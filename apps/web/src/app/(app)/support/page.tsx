@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   Plus,
   RefreshCcw,
@@ -179,6 +180,9 @@ export default function SupportPage() {
           title="UTF-8 CSV snapshot from GET /api/support/stats (workspace-wide groupBy; list filters not applied—see scope_note row)"
         >
           <TableProperties size={16} aria-hidden />
+        </Button>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/support/change-control">Change Control View</Link>
         </Button>
         <div className="border-border flex rounded-lg border">
           <Button

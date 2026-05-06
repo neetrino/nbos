@@ -161,7 +161,7 @@
 - Закрыть открытые пункты `00-Technical-Decisions-By-Module.md` по мере срезов (FX, dedup notifications, Drive retention, …) — M
 - 🟢 [x] Support: **reopen** как событие/переход, убрать `REOPENED` как постоянный enum при необходимости — M → добавлен `POST /api/support/:id/actions/reopen` (только `RESOLVED/CLOSED -> IN_PROGRESS`), `PATCH /api/support/:id/status` больше не принимает `REOPENED` (явная ошибка с направлением на reopen action), события `support.reopened` и `support.status_changed` пишутся в audit; UI `/support` получил `Reopen` action для закрытых тикетов
 - Support: waiting overlay (client / third party / escalated) — M
-- Support: change-control представление отдельно от основного потока — M
+- 🟢 [x] Support: change-control представление отдельно от основного потока — M → добавлен отдельный route `GET /support/change-control` (web view) с выделенной очередью `CHANGE_REQUEST`, фокусом на conversion в Extension Deal и отдельной таблицей; в основном `/support` добавлен переход в `Change Control View`, а в Sidebar у Support появились подпункты `Tickets` и `Change Control`
 - Support: SLA pause / breach / escalation оркестрация — L
 - Support: связь Ticket → Technical asset / environment — M
 - Support: resolution requirements + auto-close после Extension Done где канон — M
