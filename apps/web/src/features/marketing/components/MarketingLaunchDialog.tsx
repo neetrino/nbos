@@ -101,9 +101,11 @@ export function MarketingLaunchDialog({
       <DialogContent className="sm:max-w-xl">
         <form onSubmit={handleLaunch} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Launch activity</DialogTitle>
+            <DialogTitle>Launch: {activity.title}</DialogTitle>
             <DialogDescription>
-              Validate launch fields and propose a Finance expense card when spend is expected.
+              Required fields match Marketing canon before an activity becomes a CRM &quot;Which
+              one&quot; source. Paid launches propose a Finance expense card; Finance owns payment
+              status.
             </DialogDescription>
           </DialogHeader>
 
@@ -130,6 +132,10 @@ export function MarketingLaunchDialog({
                 value={form.endDate}
                 onChange={(event) => setForm({ ...form, endDate: event.target.value })}
               />
+              <p className="text-muted-foreground mt-1 text-xs">
+                For Meta-style ads, expected payment often follows the flight; set end date
+                accordingly.
+              </p>
             </div>
             <div>
               <Label>Budget</Label>
@@ -168,6 +174,10 @@ export function MarketingLaunchDialog({
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-muted-foreground mt-1 text-xs">
+                List.am requires a Marketing account. Link the account to a Finance expense plan in
+                Marketing Settings for spend tracking.
+              </p>
             </div>
           )}
 
@@ -176,11 +186,14 @@ export function MarketingLaunchDialog({
             <Textarea
               value={form.noExpenseReason}
               onChange={(event) => setForm({ ...form, noExpenseReason: event.target.value })}
-              placeholder="Use when activity has no Finance expense proposal."
+              placeholder="Required when there is no expected payment date for a paid activity."
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:justify-end">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={saving}>
               {saving ? 'Launching...' : 'Launch activity'}
             </Button>

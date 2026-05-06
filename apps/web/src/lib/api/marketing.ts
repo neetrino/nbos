@@ -44,15 +44,19 @@ export interface MarketingDashboardSummary {
     launchedActivities: number;
     activitiesWithFinanceExpense: number;
     missingFinanceLinks: number;
+    attributedLeads: number;
     attributedDeals: number;
     wonAttributedDeals: number;
   };
   money: {
     plannedSpend: number;
+    paidMarketingSpend: number;
+    roiMetricsAvailable: boolean;
     paidRevenue: number;
-    netReturn: number;
+    netReturn: number | null;
     roas: number | null;
     costPerWonDeal: number | null;
+    costPerAttributedLead: number | null;
   };
   efficiency: {
     isReliable: boolean;

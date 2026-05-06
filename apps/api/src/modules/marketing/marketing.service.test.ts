@@ -147,6 +147,8 @@ describe('MarketingService', () => {
       },
       { status: 'SEND_OFFER', orders: [] },
     ]);
+    prisma.lead.count.mockResolvedValue(4);
+    prisma.expensePayment.aggregate.mockResolvedValue({ _sum: { amount: 30000 } });
 
     const summary = await service.getDashboardSummary();
 
@@ -157,19 +159,23 @@ describe('MarketingService', () => {
         launchedActivities: 1,
         activitiesWithFinanceExpense: 1,
         missingFinanceLinks: 2,
+        attributedLeads: 4,
         attributedDeals: 2,
         wonAttributedDeals: 1,
       },
       money: {
         plannedSpend: 75000,
+        paidMarketingSpend: 30000,
+        roiMetricsAvailable: true,
         paidRevenue: 50000,
-        netReturn: -25000,
-        roas: 50000 / 75000,
-        costPerWonDeal: 75000,
+        netReturn: null,
+        roas: null,
+        costPerWonDeal: null,
+        costPerAttributedLead: null,
       },
       efficiency: {
         isReliable: false,
-        reason: 'Missing Finance links',
+        reason: 'Missing Finance links; ROI and CPL stay hidden until coverage is complete',
       },
     });
     expect(summary.warnings).toEqual([
@@ -177,6 +183,31 @@ describe('MarketingService', () => {
       expect.objectContaining({ code: 'MISSING_ACTIVITY_EXPENSE_LINKS', count: 1 }),
       expect.objectContaining({ code: 'EFFICIENCY_PARTIAL_DATA', count: 2 }),
     ]);
+  });
+
+  it('withholds ROI and CPL fields when no paid marketing spend is recorded', async () => {
+    prisma.marketingAccount.findMany.mockResolvedValue([{ financeExpensePlanId: 'plan-1' }]);
+    prisma.marketingActivity.findMany.mockResolvedValue([
+      { status: 'LAUNCHED', budget: 50000, expenseCardId: 'expense-1' },
+    ]);
+    prisma.deal.findMany.mockResolvedValue([]);
+    prisma.lead.count.mockResolvedValue(0);
+    prisma.expensePayment.aggregate.mockResolvedValue({ _sum: { amount: null } });
+
+    const summary = await service.getDashboardSummary();
+
+    expect(summary.money).toMatchObject({
+      paidMarketingSpend: 0,
+      roiMetricsAvailable: false,
+      netReturn: null,
+      roas: null,
+      costPerWonDeal: null,
+      costPerAttributedLead: null,
+    });
+    expect(summary.efficiency).toMatchObject({
+      isReliable: false,
+      reason: 'No paid marketing spend recorded',
+    });
   });
 
   it('returns active CRM Where options only', async () => {

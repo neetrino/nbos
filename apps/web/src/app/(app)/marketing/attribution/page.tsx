@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { GitBranch, RefreshCcw } from 'lucide-react';
+import Link from 'next/link';
+import { ExternalLink, GitBranch, RefreshCcw } from 'lucide-react';
 import { EmptyState, ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { marketingApi } from '@/lib/api/marketing';
 import type { Deal } from '@/lib/api/deals';
 import type { Lead } from '@/lib/api/leads';
@@ -40,11 +42,33 @@ export default function AttributionReviewPage() {
     <div className="space-y-6">
       <PageHeader
         title="Attribution Review"
-        description={`${totalIssues} CRM records need source cleanup or Which one attribution.`}
+        description={`${totalIssues} CRM records need source cleanup or Which one attribution. Open a record in CRM to fix From / Where / Which one.`}
       >
-        <Button variant="outline" size="icon" onClick={fetchReview}>
-          <RefreshCcw size={16} />
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/crm/leads"
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'inline-flex items-center gap-1.5',
+            )}
+          >
+            Leads pipeline
+            <ExternalLink className="size-3 shrink-0" aria-hidden />
+          </Link>
+          <Link
+            href="/crm/deals"
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'inline-flex items-center gap-1.5',
+            )}
+          >
+            Deals pipeline
+            <ExternalLink className="size-3 shrink-0" aria-hidden />
+          </Link>
+          <Button variant="outline" size="icon" onClick={fetchReview} aria-label="Refresh review">
+            <RefreshCcw size={16} />
+          </Button>
+        </div>
       </PageHeader>
 
       {loading ? (
@@ -59,8 +83,18 @@ export default function AttributionReviewPage() {
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          <ReviewColumn title="Leads" items={review.leads} kind="Lead" />
-          <ReviewColumn title="Deals" items={review.deals} kind="Deal" />
+          <ReviewColumn
+            title="Leads"
+            items={review.leads}
+            kind="Lead"
+            hrefFor={(item) => `/crm/leads?openLeadId=${encodeURIComponent(item.id)}`}
+          />
+          <ReviewColumn
+            title="Deals"
+            items={review.deals}
+            kind="Deal"
+            hrefFor={(item) => `/crm/deals?openDealId=${encodeURIComponent(item.id)}`}
+          />
         </div>
       )}
     </div>
@@ -71,10 +105,12 @@ function ReviewColumn({
   title,
   items,
   kind,
+  hrefFor,
 }: {
   title: string;
   items: Array<Lead | Deal>;
   kind: string;
+  hrefFor: (item: Lead | Deal) => string;
 }) {
   return (
     <section className="border-border bg-card rounded-2xl border p-4">
@@ -100,6 +136,16 @@ function ReviewColumn({
               <StatusBadge label={item.status.replace(/_/g, ' ')} variant="blue" />
             </div>
             <p className="text-muted-foreground mt-2 text-sm">{describeIssue(item)}</p>
+            <Link
+              href={hrefFor(item)}
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'sm' }),
+                'mt-3 inline-flex w-full items-center gap-1.5 sm:w-auto',
+              )}
+            >
+              Open in CRM
+              <ExternalLink className="size-3 shrink-0" aria-hidden />
+            </Link>
           </div>
         ))}
       </div>

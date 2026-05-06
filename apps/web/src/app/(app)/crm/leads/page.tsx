@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,6 +64,7 @@ interface PendingLeadTransition {
 }
 
 export default function LeadsPipelinePage() {
+  const searchParams = useSearchParams();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +106,18 @@ export default function LeadsPipelinePage() {
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
+
+  const openLeadId = searchParams.get('openLeadId');
+
+  useEffect(() => {
+    if (!openLeadId || loading) return;
+    const match = leads.find((lead) => lead.id === openLeadId);
+    if (match) {
+      setSelectedLead(match);
+      setLeadBlockerNav(null);
+      setSheetOpen(true);
+    }
+  }, [openLeadId, loading, leads]);
 
   const handleLeadCreated = async (lead: Lead, options?: { openFull?: boolean }) => {
     setLeads((prev) => [lead, ...prev.filter((item) => item.id !== lead.id)]);

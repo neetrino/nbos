@@ -59,13 +59,14 @@ export default function MarketingDashboardPage() {
 function MarketingDashboardContent({ summary }: { summary: MarketingDashboardSummary }) {
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Activities" value={summary.totals.activities} />
         <MetricCard label="Launched now" value={summary.totals.launchedActivities} />
         <MetricCard
           label="Finance-linked activities"
           value={summary.totals.activitiesWithFinanceExpense}
         />
+        <MetricCard label="Attributed leads" value={summary.totals.attributedLeads} />
         <MetricCard label="Attributed deals" value={summary.totals.attributedDeals} />
         <MetricCard label="Won attributed deals" value={summary.totals.wonAttributedDeals} />
         <MetricCard
@@ -104,8 +105,16 @@ function SpendReadinessCard({ summary }: { summary: MarketingDashboardSummary })
       </h2>
       <div className="space-y-2 text-sm">
         <SummaryRow
-          label="Planned marketing spend"
+          label="Planned budgets (activities)"
           value={formatMoney(summary.money.plannedSpend)}
+        />
+        <SummaryRow
+          label="Paid marketing spend (Finance)"
+          value={
+            summary.money.roiMetricsAvailable
+              ? formatMoney(summary.money.paidMarketingSpend)
+              : 'No spend data'
+          }
         />
         <SummaryRow
           label="Paid attributed revenue"
@@ -114,31 +123,70 @@ function SpendReadinessCard({ summary }: { summary: MarketingDashboardSummary })
         <SummaryRow label="Missing finance links" value={summary.totals.missingFinanceLinks} />
       </div>
       <p className="text-muted-foreground mt-3 text-xs">
-        Revenue is counted from real payments on invoices linked to attributed deals.
+        Paid marketing spend sums Finance expense payments for cards and plans linked from
+        Marketing. Revenue uses real invoice payments on attributed deals.
       </p>
     </div>
   );
 }
 
 function EfficiencyCard({ summary }: { summary: MarketingDashboardSummary }) {
+  if (!summary.money.roiMetricsAvailable) {
+    return (
+      <div className="border-border bg-card rounded-2xl border p-5">
+        <h2 className="mb-3 flex items-center gap-2 font-semibold">
+          <AreaChart size={18} />
+          CPL / ROI snapshot
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Cost metrics (CPL, ROAS, net return) are hidden until Finance records paid marketing spend
+          on linked expense cards or expense plans.
+        </p>
+        <p className="text-muted-foreground mt-3 text-xs">
+          Planned budgets alone are not used as spend for ROI.
+        </p>
+      </div>
+    );
+  }
+
+  if (!summary.efficiency.isReliable) {
+    return (
+      <div className="border-border bg-card rounded-2xl border p-5">
+        <h2 className="mb-3 flex items-center gap-2 font-semibold">
+          <AreaChart size={18} />
+          CPL / ROI snapshot
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          {summary.efficiency.reason ??
+            'ROI and CPL stay hidden until marketing spend coverage is complete in Finance.'}
+        </p>
+        <p className="text-muted-foreground mt-3 text-xs">
+          Partial payment totals are not shown as CPL or ROI.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="border-border bg-card rounded-2xl border p-5">
       <h2 className="mb-3 flex items-center gap-2 font-semibold">
         <AreaChart size={18} />
-        Efficiency snapshot
+        CPL / ROI snapshot
       </h2>
       <div className="space-y-2 text-sm">
         <SummaryRow label="ROAS" value={formatRatio(summary.money.roas)} />
-        <SummaryRow label="Net return" value={formatMoney(summary.money.netReturn)} />
+        <SummaryRow label="Net return" value={formatOptionalMoney(summary.money.netReturn)} />
         <SummaryRow
-          label="Cost per won attributed deal"
+          label="Cost per attributed lead (CPL)"
+          value={formatOptionalMoney(summary.money.costPerAttributedLead)}
+        />
+        <SummaryRow
+          label="Cost per won attributed deal (CAC)"
           value={formatOptionalMoney(summary.money.costPerWonDeal)}
         />
       </div>
       <p className="text-muted-foreground mt-3 text-xs">
-        {summary.efficiency.isReliable
-          ? 'Efficiency uses linked spend and paid attributed revenue.'
-          : `Efficiency is partial: ${summary.efficiency.reason ?? 'insufficient data'}.`}
+        Metrics use paid marketing spend from Finance and paid attributed revenue.
       </p>
     </div>
   );

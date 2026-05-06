@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Plus, RefreshCcw, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,6 +62,7 @@ interface PendingDealTransition {
 }
 
 export default function DealsPipelinePage() {
+  const searchParams = useSearchParams();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +107,18 @@ export default function DealsPipelinePage() {
   useEffect(() => {
     fetchDeals();
   }, [fetchDeals]);
+
+  const openDealId = searchParams.get('openDealId');
+
+  useEffect(() => {
+    if (!openDealId || loading) return;
+    const match = deals.find((deal) => deal.id === openDealId);
+    if (match) {
+      setSelectedDeal(match);
+      setDealBlockerNav(null);
+      setSheetOpen(true);
+    }
+  }, [openDealId, loading, deals]);
 
   const handleStatusChange = async (id: string, status: string) => {
     const previousDeals = deals;
