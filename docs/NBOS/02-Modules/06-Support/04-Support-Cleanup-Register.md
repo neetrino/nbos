@@ -26,13 +26,13 @@
 
 Эти места устарели только как текст или формулировка.
 
-| Область                                                            | Статус  | Что устарело                                                                   |
-| ------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------ |
-| Дублирование документов внутри `06-Support`                        | `FIXED` | Старый `02-Ticket-Workflow.md` удалён как конфликтующий дубль                  |
-| `Reopened` как будто отдельная постоянная колонка                  | `STALE` | Новый канон трактует reopen как событие/действие, а не основную колонку        |
-| Смешение support flow и change control в одной очереди             | `STALE` | Новый канон отделяет `Change Request` в отдельный route/view                   |
-| Слишком жёсткое hourly-описание daily routine                      | `STALE` | Новый канон опирается на operational control, а не на расписание по минутам    |
-| UI-описания support board как только Kanban с одной линией колонок | `STALE` | Новый канон требует учитывать overlay states и отдельный change-control взгляд |
+| Область                                                            | Статус    | Что устарело                                                                                                                                                |
+| ------------------------------------------------------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Дублирование документов внутри `06-Support`                        | `FIXED`   | Старый `02-Ticket-Workflow.md` удалён как конфликтующий дубль                                                                                               |
+| `Reopened` как будто отдельная постоянная колонка                  | `PARTIAL` | **2026-05-06:** runtime получил explicit `reopen` action (`RESOLVED/CLOSED -> IN_PROGRESS`) и UI action; отдельной канонической колонки `REOPENED` в UI нет |
+| Смешение support flow и change control в одной очереди             | `STALE`   | Новый канон отделяет `Change Request` в отдельный route/view                                                                                                |
+| Слишком жёсткое hourly-описание daily routine                      | `STALE`   | Новый канон опирается на operational control, а не на расписание по минутам                                                                                 |
+| UI-описания support board как только Kanban с одной линией колонок | `STALE`   | Новый канон требует учитывать overlay states и отдельный change-control взгляд                                                                              |
 
 ---
 
@@ -40,19 +40,19 @@
 
 Эти части уже расходятся с каноном и потом потребуют рефакторинга.
 
-| Область                                            | Статус       | Что не совпадает                                                                                |
-| -------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------- |
-| `REOPENED` в `TicketStatusEnum`                    | `STALE CODE` | В runtime reopen живёт как отдельный enum status, а канон переводит его в событие/transition    |
-| Нет explicit waiting overlay model                 | `STALE CODE` | Нет `waiting for client / third party / escalated` как отдельного overlay-state                 |
-| API create/update ticket не работает с `productId` | `PARTIAL`    | Product context is accepted by API, deeper UI creation/filtering still needed                   |
-| Ticket detail and task bridge                      | `PARTIAL`    | Ticket can create linked execution tasks; richer detail/timeline still missing                  |
-| Change control bridge                              | `PARTIAL`    | Ticket can create/link Extension Deal; auto-close after Extension Done is still missing         |
-| SLA pause / breach / escalation logic              | `STALE CODE` | Есть только дедлайны, но нет зрелого pause/escalation orchestration                             |
-| Support UI                                         | `STALE CODE` | Сейчас это базовая list/kanban page без product-context, change-control view и waiting overlays |
-| Support -> Technical Infrastructure link           | `MISSING`    | Нет связи ticket с Technical Asset / Environment / Deployment Record                            |
-| Coverage decision                                  | `PARTIAL`    | Runtime field exists; maintenance/finance bridge remains manual                                 |
-| External Messenger message link                    | `MISSING`    | Нет связи ticket с external WhatsApp/CRM conversation/message                                   |
-| Resolution close requirements                      | `PARTIAL`    | Нет обязательных resolution summary, client confirmation / auto-close reason                    |
+| Область                                            | Статус       | Что не совпадает                                                                                                                                                      |
+| -------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `REOPENED` в `TicketStatusEnum`                    | `PARTIAL`    | **2026-05-06:** `PATCH status` больше не принимает `REOPENED`, reopen вынесен в action endpoint + audit event; enum cleanup на уровне Prisma остаётся отдельным шагом |
+| Нет explicit waiting overlay model                 | `STALE CODE` | Нет `waiting for client / third party / escalated` как отдельного overlay-state                                                                                       |
+| API create/update ticket не работает с `productId` | `PARTIAL`    | Product context is accepted by API, deeper UI creation/filtering still needed                                                                                         |
+| Ticket detail and task bridge                      | `PARTIAL`    | Ticket can create linked execution tasks; richer detail/timeline still missing                                                                                        |
+| Change control bridge                              | `PARTIAL`    | Ticket can create/link Extension Deal; auto-close after Extension Done is still missing                                                                               |
+| SLA pause / breach / escalation logic              | `STALE CODE` | Есть только дедлайны, но нет зрелого pause/escalation orchestration                                                                                                   |
+| Support UI                                         | `STALE CODE` | Сейчас это базовая list/kanban page без product-context, change-control view и waiting overlays                                                                       |
+| Support -> Technical Infrastructure link           | `MISSING`    | Нет связи ticket с Technical Asset / Environment / Deployment Record                                                                                                  |
+| Coverage decision                                  | `PARTIAL`    | Runtime field exists; maintenance/finance bridge remains manual                                                                                                       |
+| External Messenger message link                    | `MISSING`    | Нет связи ticket с external WhatsApp/CRM conversation/message                                                                                                         |
+| Resolution close requirements                      | `PARTIAL`    | Нет обязательных resolution summary, client confirmation / auto-close reason                                                                                          |
 
 ---
 

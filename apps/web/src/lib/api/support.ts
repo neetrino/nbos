@@ -93,6 +93,10 @@ export const supportApi = {
     const resp = await api.patch<SupportTicket>(`/api/support/${id}/status`, { status });
     return resp.data;
   },
+  async reopen(id: string, reason?: string): Promise<SupportTicket> {
+    const resp = await api.post<SupportTicket>(`/api/support/${id}/actions/reopen`, { reason });
+    return resp.data;
+  },
   async createExecutionTask(
     id: string,
     data: { creatorId: string; title?: string; description?: string; dueDate?: string | null },

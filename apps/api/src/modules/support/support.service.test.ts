@@ -1,15 +1,18 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SupportService } from './support.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import type { AuditService } from '../audit/audit.service';
 
 describe('SupportService', () => {
   let service: SupportService;
   let prisma: MockPrisma;
+  let auditService: Pick<AuditService, 'log'>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new SupportService(prisma as never);
+    auditService = { log: async () => ({ id: 'audit-1' }) };
+    service = new SupportService(prisma as never, auditService as never);
   });
 
   describe('findAll', () => {
@@ -48,8 +51,8 @@ describe('SupportService', () => {
       prisma.supportTicket.create.mockResolvedValue({
         id: '1',
         code: 'TKT-2026-0001',
-        slaResponseDeadline: new Date(),
-        slaResolveDeadline: new Date(),
+        slaResponseDeadline: new Date('2099-01-01T00:00:00Z'),
+        slaResolveDeadline: new Date('2099-01-02T00:00:00Z'),
         status: 'NEW',
       });
       const result = await service.create({
@@ -111,11 +114,42 @@ describe('SupportService', () => {
 
   describe('updateStatus', () => {
     it('updates status', async () => {
-      prisma.supportTicket.findUnique.mockResolvedValue({ id: '1' });
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: '1',
+        projectId: 'p1',
+        status: 'NEW',
+      });
       prisma.supportTicket.update.mockResolvedValue({ id: '1', status: 'RESOLVED' });
-      const result = await service.updateStatus('1', 'RESOLVED');
+      const result = await service.updateStatus('1', 'RESOLVED', 'user-1');
       expect(result.status).toBe('RESOLVED');
       expect(result.slaState.state).toBe('CLOSED');
+    });
+
+    it('rejects REOPENED as persistent status', async () => {
+      await expect(service.updateStatus('1', 'REOPENED', 'user-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
+  describe('reopen', () => {
+    it('reopens closed ticket to IN_PROGRESS', async () => {
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: '1',
+        projectId: 'p1',
+        status: 'CLOSED',
+      });
+      prisma.supportTicket.update.mockResolvedValue({ id: '1', status: 'IN_PROGRESS' });
+
+      const result = await service.reopen('1', 'user-1', 'Customer returned');
+
+      expect(result.status).toBe('IN_PROGRESS');
+      expect(prisma.supportTicket.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1' },
+          data: { status: 'IN_PROGRESS' },
+        }),
+      );
     });
   });
 

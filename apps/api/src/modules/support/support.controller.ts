@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { SupportService } from './support.service';
 
 @ApiTags('Support')
@@ -117,8 +118,25 @@ export class SupportController {
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update support ticket status' })
-  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
-    return this.supportService.updateStatus(id, status);
+  async updateStatus(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body('status') status: string,
+  ) {
+    return this.supportService.updateStatus(id, status, user.id);
+  }
+
+  @Post(':id/actions/reopen')
+  @ApiOperation({
+    summary:
+      'Reopen resolved/closed ticket as transition event (status -> IN_PROGRESS, not REOPENED)',
+  })
+  async reopenTicket(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.supportService.reopen(id, user.id, body.reason);
   }
 
   @Post(':id/actions/create-task')

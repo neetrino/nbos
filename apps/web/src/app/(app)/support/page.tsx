@@ -11,6 +11,7 @@ import {
   TableProperties,
   CheckSquare,
   FilePlus2,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -139,6 +140,19 @@ export default function SupportPage() {
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Extension Deal could not be created.'));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleReopenTicket = async (ticket: SupportTicket) => {
+    setActionId(`reopen:${ticket.id}`);
+    try {
+      await supportApi.reopen(ticket.id);
+      await fetchTickets();
+      setError(null);
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Ticket could not be reopened.'));
     } finally {
       setActionId(null);
     }
@@ -283,6 +297,18 @@ export default function SupportPage() {
                   <CheckSquare size={12} />
                   Create task
                 </Button>
+                {['RESOLVED', 'CLOSED'].includes(ticket.status) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={actionId === `reopen:${ticket.id}`}
+                    onClick={() => void handleReopenTicket(ticket)}
+                    className="h-7 gap-1 px-2 text-xs"
+                  >
+                    <RotateCcw size={12} />
+                    Reopen
+                  </Button>
+                )}
                 <SupportChangeControlAction
                   ticket={ticket}
                   busy={actionId === `deal:${ticket.id}`}
@@ -336,6 +362,20 @@ export default function SupportPage() {
                     </TableCell>
                     <TableCell>
                       {st && <StatusBadge label={st.label} variant={st.variant} />}
+                      {['RESOLVED', 'CLOSED'].includes(ticket.status) && (
+                        <div className="mt-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 gap-1 px-2 text-xs"
+                            disabled={actionId === `reopen:${ticket.id}`}
+                            onClick={() => void handleReopenTicket(ticket)}
+                          >
+                            <RotateCcw size={10} />
+                            Reopen
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       {sla && <StatusBadge label={sla.label} variant={sla.variant} />}

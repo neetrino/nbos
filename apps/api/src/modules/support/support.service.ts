@@ -11,6 +11,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { buildSupportSlaProjection } from './support-sla';
+import { AuditService } from '../audit/audit.service';
 
 const SLA_DEADLINES: Record<string, { responseHours: number; resolveHours: number }> = {
   P1: { responseHours: 4, resolveHours: 24 },
@@ -107,7 +108,10 @@ interface CreateExtensionDealDto {
 
 @Injectable()
 export class SupportService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(params: TicketQueryParams) {
     const {
@@ -293,12 +297,39 @@ export class SupportService {
     return deal;
   }
 
-  async updateStatus(id: string, status: string) {
-    await this.findById(id);
+  async updateStatus(id: string, status: string, actorId: string) {
+    if (status === 'REOPENED') {
+      throw new BadRequestException(
+        'REOPENED is not a persistent status. Use reopen action endpoint instead.',
+      );
+    }
+    const before = await this.findById(id);
     const ticket = await this.prisma.supportTicket.update({
       where: { id },
       data: { status: status as TicketStatusEnum },
       include: SUPPORT_TICKET_INCLUDE,
+    });
+    await this.logStatusEvent(id, before.projectId, actorId, 'support.status_changed', {
+      from: before.status,
+      to: ticket.status,
+    });
+    return this.attachSla(ticket);
+  }
+
+  async reopen(id: string, actorId: string, reason?: string) {
+    const before = await this.findById(id);
+    if (!['RESOLVED', 'CLOSED'].includes(before.status)) {
+      throw new BadRequestException('Only resolved or closed tickets can be reopened.');
+    }
+    const ticket = await this.prisma.supportTicket.update({
+      where: { id },
+      data: { status: 'IN_PROGRESS' },
+      include: SUPPORT_TICKET_INCLUDE,
+    });
+    await this.logStatusEvent(id, before.projectId, actorId, 'support.reopened', {
+      from: before.status,
+      to: 'IN_PROGRESS',
+      reason: reason?.trim() || null,
     });
     return this.attachSla(ticket);
   }
@@ -476,5 +507,22 @@ export class SupportService {
     return [notes?.trim(), `Support ticket: ${ticket.code}`, ticket.description]
       .filter(Boolean)
       .join('\n\n');
+  }
+
+  private async logStatusEvent(
+    ticketId: string,
+    projectId: string,
+    actorId: string,
+    action: string,
+    changes: Prisma.InputJsonValue,
+  ): Promise<void> {
+    await this.auditService.log({
+      entityType: 'SupportTicket',
+      entityId: ticketId,
+      action,
+      userId: actorId,
+      projectId,
+      changes,
+    });
   }
 }
